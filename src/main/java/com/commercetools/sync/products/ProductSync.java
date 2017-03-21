@@ -1,4 +1,4 @@
-package com.commercetools.sync;
+package com.commercetools.sync.products;
 
 public interface ProductSync {
 }
