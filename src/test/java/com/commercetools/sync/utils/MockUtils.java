@@ -15,8 +15,8 @@ public class MockUtils {
     private static final long timeout = 30;
 
     public static CategorySyncOptions getMockCategorySyncOptions() {
-        return new CategorySyncOptions("hesham-baywa-testing-86",
-                "l8rhXwMsYlal3eOJ_5tRF-3N", "hIJrCsyca5MgFMZQtsVKY2ai04px3Vow");
+        return new CategorySyncOptions("xxxxxx",
+                "xxxxxx", "xxxxxxx");
     }
 
     public static List<CategoryDraft> getMockCategoryDrafts() {

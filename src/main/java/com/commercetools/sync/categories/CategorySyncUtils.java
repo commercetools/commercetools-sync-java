@@ -30,10 +30,6 @@ public class CategorySyncUtils {
         return updateActions;
     }
 
-    /**
-     * TODO:
-     * - delete?? Should I delete a category if it doesn't exist in new feed!? TODO
-     */
     @Nonnull
     public static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category existingCategory,
                                                                 @Nonnull final CategoryDraft newCategory) {

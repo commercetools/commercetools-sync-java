@@ -33,8 +33,6 @@ public class CategorySyncImpl implements CategorySync {
         this.processedCategories = 0;
     }
 
-    // TODO: NEED TO DELETE CATEGORY IF IT DOESN'T EXIST IN CATEGORYDRAFTS
-    // TODO: MAYBE BETTER TO EXPECT A MAP INSTEAD OF CATEGORY DRAFTS
     // TODO: REFACTOR
     @Override
     public void syncCategoryDrafts(@Nonnull List<CategoryDraft> categoryDrafts) {
