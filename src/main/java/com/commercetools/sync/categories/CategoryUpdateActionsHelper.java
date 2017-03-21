@@ -19,6 +19,7 @@ import java.util.*;
 
 public class CategoryUpdateActionsHelper {
 
+    //TODO: JAVADOC
     @Nonnull
     static Optional<UpdateAction<Category>> buildChangeNameUpdateAction(
             @Nonnull final Category existingCategory,
@@ -28,6 +29,7 @@ public class CategoryUpdateActionsHelper {
                 ChangeName.of(newCategory.getName()));
     }
 
+    //TODO: JAVADOC
     @Nonnull
     static Optional<UpdateAction<Category>> buildChangeSlugUpdateAction(
             @Nonnull final Category existingCategory,
@@ -37,11 +39,12 @@ public class CategoryUpdateActionsHelper {
                 ChangeSlug.of(newCategory.getSlug()));
     }
 
+    //TODO: JAVADOC
     @Nonnull
     static Optional<UpdateAction<Category>> buildSetDescriptionUpdateAction(
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
-        // TODO: NEED TO HANDLE PARENT REMOVAL
+        // TODO: NEED TO HANDLE DESCRIPTION REMOVAL
         // TODO: TEMP WORKAROUND:
         if (newCategory.getDescription() == null) {
             return Optional.empty();
@@ -51,6 +54,7 @@ public class CategoryUpdateActionsHelper {
                 SetDescription.of(newCategory.getDescription()));
     }
 
+    //TODO: JAVADOC
     @Nonnull
     static Optional<UpdateAction<Category>> buildChangeParentUpdateAction(
             @Nonnull final Category existingCategory,
@@ -66,6 +70,7 @@ public class CategoryUpdateActionsHelper {
                 ChangeParent.of(newCategory.getParent()));
     }
 
+    //TODO: JAVADOC
     @Nonnull
     static Optional<UpdateAction<Category>> buildChangeOrderHintUpdateAction(
             @Nonnull final Category existingCategory,
@@ -79,6 +84,7 @@ public class CategoryUpdateActionsHelper {
                 ChangeOrderHint.of(newCategory.getOrderHint()));
     }
 
+    //TODO: JAVADOC
     @Nonnull
     static Optional<UpdateAction<Category>> buildSetMetaTitleUpdateAction(
             @Nonnull final Category existingCategory,
@@ -88,6 +94,7 @@ public class CategoryUpdateActionsHelper {
                 SetMetaTitle.of(newCategory.getMetaTitle()));
     }
 
+    //TODO: JAVADOC
     @Nonnull
     static Optional<UpdateAction<Category>> buildSetMetaKeywordsUpdateAction(
             @Nonnull final Category existingCategory,
@@ -97,6 +104,7 @@ public class CategoryUpdateActionsHelper {
                 SetMetaKeywords.of(newCategory.getMetaKeywords()));
     }
 
+    //TODO: JAVADOC
     @Nonnull
     static Optional<UpdateAction<Category>> buildSetMetaDescriptionUpdateAction(
             @Nonnull final Category existingCategory,
@@ -106,34 +114,38 @@ public class CategoryUpdateActionsHelper {
                 SetMetaDescription.of(newCategory.getMetaDescription()));
     }
 
+    //TODO: JAVADOC
     @Nonnull
-    private static Optional<UpdateAction<Category>> buildUpdateActionForLocalizedStrings(
-            @Nullable final LocalizedString localizedString1,
-            @Nullable final LocalizedString localizedString2,
+    static Optional<UpdateAction<Category>> buildUpdateActionForLocalizedStrings(
+            @Nullable final LocalizedString existingLocalisedString,
+            @Nullable final LocalizedString newLocalisedString,
             UpdateAction<Category> updateAction) {
-        return buildUpdateActionForObjects(localizedString1, localizedString2, updateAction);
+        return buildUpdateActionForObjects(existingLocalisedString, newLocalisedString, updateAction);
     }
 
+    //TODO: JAVADOC
     @Nonnull
-    private static Optional<UpdateAction<Category>> buildUpdateActionForReferences(
-            @Nullable final Reference<Category> categoryReference1,
-            @Nullable final Reference<Category> categoryReference2,
+    static Optional<UpdateAction<Category>> buildUpdateActionForReferences(
+            @Nullable final Reference<Category> existingCategoryReference,
+            @Nullable final Reference<Category> newCategoryReference,
             UpdateAction<Category> updateAction) {
-        return buildUpdateActionForObjects(categoryReference1, categoryReference2, updateAction);
+        return buildUpdateActionForObjects(existingCategoryReference, newCategoryReference, updateAction);
     }
 
+    //TODO: JAVADOC
     @Nonnull
-    private static Optional<UpdateAction<Category>> buildUpdateActionForStrings(@Nullable final String string1,
-                                                                                @Nullable final String string2,
+    static Optional<UpdateAction<Category>> buildUpdateActionForStrings(@Nullable final String existingString,
+                                                                                @Nullable final String newString,
                                                                                 UpdateAction<Category> updateAction) {
-        return buildUpdateActionForObjects(string1, string2, updateAction);
+        return buildUpdateActionForObjects(existingString, newString, updateAction);
     }
 
+    //TODO: JAVADOC
     @Nonnull
-    private static Optional<UpdateAction<Category>> buildUpdateActionForObjects(@Nullable final Object Object1,
-                                                                                @Nullable final Object Object2,
+    static Optional<UpdateAction<Category>> buildUpdateActionForObjects(@Nullable final Object existingObject,
+                                                                                @Nullable final Object newObject,
                                                                                 UpdateAction<Category> updateAction) {
-        if (!Objects.equals(Object1, Object2)) {
+        if (!Objects.equals(existingObject, newObject)) {
             return Optional.of(updateAction);
         }
         return Optional.empty();
@@ -141,6 +153,8 @@ public class CategoryUpdateActionsHelper {
 
     /**
      * TODO: REFACTOR AND RENAME!!!
+     * //TODO: UNIT TEST
+     //TODO: JAVADOC
      *
      * @param newCategory
      * @param existingCategory
@@ -191,6 +205,9 @@ public class CategoryUpdateActionsHelper {
 
     /**
      * TODO: REFACTOR
+     * //TODO: UNIT TEST
+     //TODO: JAVADOC
+     *
      *
      * @param existingCustomFields
      * @param newCustomFields
