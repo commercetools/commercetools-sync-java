@@ -14,16 +14,30 @@ public class CategorySyncUtils {
 
     @Nonnull
     public static List<UpdateAction<Category>> buildActions(@Nonnull final Category existingCategory,
-                                                            @Nonnull final CategoryDraft newCategory) {
+                                                            @Nonnull final Category newCategory) {
         List<UpdateAction<Category>> updateActions = buildCoreActions(existingCategory, newCategory);
         List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(existingCategory, newCategory);
         updateActions.addAll(assetUpdateActions);
         return updateActions;
     }
 
+    // TODO: NEEDS TO BE IMPLEMENTED
+    @Nonnull
+    public static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category existingCategory,
+                                                                @Nonnull final Category newCategory) {
+        return new ArrayList<>();
+    }
+
+    // TODO: NEEDS TO BE IMPLEMENTED
+    @Nonnull
+    public static List<UpdateAction<Category>> buildAssetActions(@Nonnull final Category existingCategory,
+                                                                 @Nonnull final Category newCategory) {
+        return new ArrayList<>();
+    }
+
     @Nonnull
     public static List<UpdateAction<Category>> buildActions(@Nonnull final Category existingCategory,
-                                                            @Nonnull final Category newCategory) {
+                                                            @Nonnull final CategoryDraft newCategory) {
         List<UpdateAction<Category>> updateActions = buildCoreActions(existingCategory, newCategory);
         List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(existingCategory, newCategory);
         updateActions.addAll(assetUpdateActions);
@@ -62,11 +76,6 @@ public class CategorySyncUtils {
         return updateActions;
     }
 
-    @Nonnull
-    public static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category existingCategory,
-                                                                @Nonnull final Category newCategory) {
-        return new ArrayList<>();
-    }
 
     /**
      * - addAsset
@@ -86,12 +95,6 @@ public class CategorySyncUtils {
     @Nonnull
     public static List<UpdateAction<Category>> buildAssetActions(@Nonnull final Category existingCategory,
                                                                  @Nonnull final CategoryDraft newCategory) {
-        return new ArrayList<>();
-    }
-
-    @Nonnull
-    public static List<UpdateAction<Category>> buildAssetActions(@Nonnull final Category existingCategory,
-                                                                 @Nonnull final Category newCategory) {
         return new ArrayList<>();
     }
 }

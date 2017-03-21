@@ -33,6 +33,10 @@ public class CategorySyncImpl implements CategorySync {
         this.processedCategories = 0;
     }
 
+    @Override
+    public void syncCategories(@Nonnull List<Category> categories) {
+    }
+
     // TODO: REFACTOR
     @Override
     public void syncCategoryDrafts(@Nonnull List<CategoryDraft> categoryDrafts) {
@@ -60,22 +64,6 @@ public class CategorySyncImpl implements CategorySync {
     }
 
     @Nullable
-    private Category updateCategory(@Nonnull final Category category, List<UpdateAction<Category>> updateActions) {
-        Category updatedCategory = null;
-        try {
-            final CategoryUpdateCommand categoryUpdateCommand = CategoryUpdateCommand.of(category, updateActions);
-            updatedCategory = options.getCTPclient().executeBlocking(categoryUpdateCommand);
-            updatedCategories++;
-        } catch (Exception e) {
-            LOGGER.error(format("Failed to update category with id" +
-                            " '%s' in CTP project with key '%s",
-                    category.getId(), options.getCtpProjectKey()), e);
-            failedCategories++;
-        }
-        return updatedCategory;
-    }
-
-    @Nullable
     private Category createCategory(@Nonnull final CategoryDraft newCategory) {
         Category category = null;
         try {
@@ -91,8 +79,20 @@ public class CategorySyncImpl implements CategorySync {
         return category;
     }
 
-    @Override
-    public void syncCategories(@Nonnull List<Category> categories) {
+    @Nullable
+    private Category updateCategory(@Nonnull final Category category, List<UpdateAction<Category>> updateActions) {
+        Category updatedCategory = null;
+        try {
+            final CategoryUpdateCommand categoryUpdateCommand = CategoryUpdateCommand.of(category, updateActions);
+            updatedCategory = options.getCTPclient().executeBlocking(categoryUpdateCommand);
+            updatedCategories++;
+        } catch (Exception e) {
+            LOGGER.error(format("Failed to update category with id" +
+                            " '%s' in CTP project with key '%s",
+                    category.getId(), options.getCtpProjectKey()), e);
+            failedCategories++;
+        }
+        return updatedCategory;
     }
 
     @Override
