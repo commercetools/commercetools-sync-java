@@ -1,4 +1,4 @@
-package com.commercetools.sync.utils;
+package com.commercetools.sync.commons;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -15,8 +15,8 @@ public class MockUtils {
     private static final long timeout = 30;
 
     public static CategorySyncOptions getMockCategorySyncOptions() {
-        return new CategorySyncOptions("xxxxxx",
-                "xxxxxx", "xxxxxxx");
+        return new CategorySyncOptions("hesham-baywa-testing-86",
+                "l8rhXwMsYlal3eOJ_5tRF-3N", "hIJrCsyca5MgFMZQtsVKY2ai04px3Vow");
     }
 
     public static List<CategoryDraft> getMockCategoryDrafts() {

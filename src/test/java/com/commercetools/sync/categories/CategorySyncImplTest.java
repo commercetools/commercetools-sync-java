@@ -1,15 +1,13 @@
-package com.commercetools.sync;
+package com.commercetools.sync.categories;
 
 
-import com.commercetools.sync.categories.CategorySyncImpl;
-import com.commercetools.sync.categories.CategorySyncOptions;
 import io.sphere.sdk.categories.CategoryDraft;
 import org.junit.Test;
 
 import java.util.List;
 
-import static com.commercetools.sync.utils.MockUtils.getMockCategoryDrafts;
-import static com.commercetools.sync.utils.MockUtils.getMockCategorySyncOptions;
+import static com.commercetools.sync.commons.MockUtils.getMockCategoryDrafts;
+import static com.commercetools.sync.commons.MockUtils.getMockCategorySyncOptions;
 
 public class CategorySyncImplTest {
 
