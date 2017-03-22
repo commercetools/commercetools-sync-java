@@ -8,10 +8,8 @@ import io.sphere.sdk.categories.commands.updateactions.*;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -135,79 +133,85 @@ public class CategoryUpdateActionsHelper {
     //TODO: JAVADOC
     @Nonnull
     static Optional<UpdateAction<Category>> buildUpdateActionForStrings(@Nullable final String existingString,
-                                                                                @Nullable final String newString,
-                                                                                UpdateAction<Category> updateAction) {
+                                                                        @Nullable final String newString,
+                                                                        UpdateAction<Category> updateAction) {
         return buildUpdateActionForObjects(existingString, newString, updateAction);
     }
 
     //TODO: JAVADOC
     @Nonnull
     static Optional<UpdateAction<Category>> buildUpdateActionForObjects(@Nullable final Object existingObject,
-                                                                                @Nullable final Object newObject,
-                                                                                UpdateAction<Category> updateAction) {
+                                                                        @Nullable final Object newObject,
+                                                                        UpdateAction<Category> updateAction) {
         if (!Objects.equals(existingObject, newObject)) {
             return Optional.of(updateAction);
         }
         return Optional.empty();
     }
 
-    /**
-     * TODO: REFACTOR AND RENAME!!!
-     * //TODO: UNIT TEST
-     //TODO: JAVADOC
-     *
-     * @param newCategory
-     * @param existingCategory
-     * @return
-     */
+    //TODO: UNIT TEST
+    //TODO: JAVADOC
     @Nonnull
-    static List<UpdateAction<Category>> buildSetCustomTypeUpdateActions(@Nonnull final Category existingCategory,
-                                                                        @Nonnull final CategoryDraft newCategory) {
-        CustomFieldsDraft newCategoryCustom = newCategory.getCustom();
-        CustomFields existingCategoryCustom = existingCategory.getCustom();
-        if (existingCategoryCustom != null && newCategoryCustom != null) {
-            ResourceIdentifier<Type> newCategoryCustomType = newCategoryCustom.getType();
-            Map<String, JsonNode> newCategoryCustomFields = newCategoryCustom.getFields();
-            ResourceIdentifier<Type> existingCategoryCustomType = existingCategoryCustom.getType().toResourceIdentifier();
-            Map<String, JsonNode> existingCategoryCustomFields = existingCategoryCustom.getFieldsJsonMap();
-            // compare custom types
-            if (existingCategoryCustomType.getKey().equals(newCategoryCustomType.getKey())) {
-                // CASE#1 Both categories have same key of category custom type.
-                // Start value comparison..
-                return buildSetCustomFieldsUpdateActions(existingCategoryCustomFields, newCategoryCustomFields);
-            } else {
-                // CASE#2 Categories have different keys of custom type. Then set the existing category to the new custom type
-                return Collections.singletonList(
-                        SetCustomType.ofTypeKeyAndJson(
-                                newCategoryCustom.getType().getKey(), newCategoryCustomFields)
-                );
-            }
+    static List<UpdateAction<Category>> buildUpdateActionsForCustomTypes(@Nonnull final Category existingCategory,
+                                                                         @Nonnull final CategoryDraft newCategory) {
+        return buildUpdateActionsForCustomFields(existingCategory.getCustom(), newCategory.getCustom());
+    }
+
+    //TODO: UNIT TEST
+    //TODO: JAVADOC
+    @Nonnull
+    static List<UpdateAction<Category>> buildUpdateActionsForCustomFields(@Nullable final CustomFields existingCustomFields,
+                                                                          @Nullable final CustomFieldsDraft newCustomFieldsDraft) {
+        if (existingCustomFields != null && newCustomFieldsDraft != null) {
+            return buildUpdateActionsForNonNullCustomFields(existingCustomFields, newCustomFieldsDraft);
         } else {
-            if (newCategoryCustom != null) {
-                // Existing Category has no custom type but new one has custom type set.
-                // CASE#2
-                Map<String, JsonNode> newCategoryCustomFields = newCategoryCustom.getFields();
-                return Collections.singletonList(
-                        SetCustomType.ofTypeKeyAndJson(
-                                newCategoryCustom.getType().getKey(), newCategoryCustomFields)
-                );
-            } else {
-                if (existingCategoryCustom != null) {
-                    // CASE#3
-                    // New Category has no custom type set and existing one has custom type set.
-                    return Collections.singletonList(SetCustomType.ofRemoveType());
+            if (existingCustomFields == null) {
+                if (newCustomFieldsDraft != null) {
+                    // New category's custom fields are set, but existing category's custom fields are not set. So we
+                    // should set the custom type and fields of the new category to the existing one.
+                    String newCustomFieldsDraftTypeKey = newCustomFieldsDraft.getType().getKey();
+                    Map<String, JsonNode> newCustomFieldsDraftJsonMap = newCustomFieldsDraft.getFields();
+                    return Collections.singletonList(
+                            SetCustomType.ofTypeKeyAndJson(
+                                    newCustomFieldsDraftTypeKey, newCustomFieldsDraftJsonMap)
+                    );
                 }
+            } else {
+                // New category's custom fields are not set, but existing category's custom fields are set. So we
+                // should remove the custom type from the existing category.
+                return Collections.singletonList(SetCustomType.ofRemoveType());
             }
         }
-        // CASE#4 DO NOTHING
         return Collections.emptyList();
     }
 
+    // TODO: REFACTOR BAD NAME
+    // TODO: UNIT TEST
+    //TODO: JAVADOC
+    @Nonnull
+    static List<UpdateAction<Category>> buildUpdateActionsForNonNullCustomFields(@Nonnull final CustomFields existingCustomFields,
+                                                                                 @Nonnull final CustomFieldsDraft newCustomFieldsDraft) {
+        // TODO: Get rid of usage of getObj() and fetch the key from the cached map of (Type internal id -> key)..
+        final String existingCustomFieldsTypeKey = existingCustomFields.getType().getObj().getKey();
+        final Map<String, JsonNode> existingCustomFieldsJsonMap = existingCustomFields.getFieldsJsonMap();
+        final String newCustomFieldsDraftTypeKey = newCustomFieldsDraft.getType().getKey();
+        final Map<String, JsonNode> newCustomFieldsDraftJsonMap = newCustomFieldsDraft.getFields();
+
+        if (Objects.equals(existingCustomFieldsTypeKey, newCustomFieldsDraftTypeKey)) {
+            // New and existing category's custom fields are set. So we should calculate update actions for the
+            // the fields of both.
+            return buildSetCustomFieldsUpdateActions(existingCustomFieldsJsonMap, newCustomFieldsDraftJsonMap);
+        } else {
+            return Collections.singletonList(
+                    SetCustomType.ofTypeKeyAndJson(
+                            existingCustomFieldsTypeKey, newCustomFieldsDraftJsonMap)
+            );
+        }
+    }
+
     /**
-     * TODO: REFACTOR
      * //TODO: UNIT TEST
-     //TODO: JAVADOC
-     *
+     * //TODO: JAVADOC
      *
      * @param existingCustomFields
      * @param newCustomFields
@@ -217,14 +221,16 @@ public class CategoryUpdateActionsHelper {
     private static List<UpdateAction<Category>> buildSetCustomFieldsUpdateActions(
             @Nonnull final Map<String, JsonNode> existingCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields) {
-        List<UpdateAction<Category>> updateActions = new ArrayList<>();
-        Iterator<Map.Entry<String, JsonNode>> newCustomFieldsIterator = newCustomFields.entrySet().iterator();
+        final List<UpdateAction<Category>> updateActions = new ArrayList<>();
+        final Iterator<Map.Entry<String, JsonNode>> newCustomFieldsIterator = newCustomFields.entrySet().iterator();
         while (newCustomFieldsIterator.hasNext()) {
             Map.Entry newCustomFieldsEntry = newCustomFieldsIterator.next();
             String newCustomFieldEntryKey = (String) newCustomFieldsEntry.getKey();
+
             JsonNode newCustomFieldValue = newCustomFields.get(newCustomFieldEntryKey);
             JsonNode existingCustomFieldValue = existingCustomFields.get(newCustomFieldEntryKey);
-            if (!newCustomFieldValue.equals(existingCustomFieldValue)) {
+
+            if (!Objects.equals(newCustomFieldValue, existingCustomFieldValue)) {
                 updateActions.add(SetCustomField.ofJson(newCustomFieldEntryKey, newCustomFieldValue));
             }
         }
