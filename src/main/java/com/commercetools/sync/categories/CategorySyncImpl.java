@@ -6,6 +6,7 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.queries.PagedQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +47,10 @@ public class CategorySyncImpl implements CategorySync {
         for (int i = 0; i < categoryDrafts.size(); i++) {
             CategoryDraft newCategoryDraft = categoryDrafts.get(i);
             if (newCategoryDraft != null && newCategoryDraft.getExternalId()!=null) { // TODO CHECK THIS!
-                CategoryQuery categoryQuery = CategoryQuery.of().byExternalId(newCategoryDraft.getExternalId());
-                final PagedQueryResult<Category> pagedQueryResult = options.getCTPclient().executeBlocking(categoryQuery);
+                CategoryQuery categoryQuery = CategoryQuery.of()
+                        .byExternalId(newCategoryDraft.getExternalId())
+                        .plusExpansionPaths(ExpansionPath.of("custom.type")); //TODO: REMOVE REFERENCE EXPANSION FOR EFFICIENCY AND CACHE CUSTOM TYPES IN ADVANCE
+                final PagedQueryResult<Category> pagedQueryResult = options.getCTPclient().executeBlocking(categoryQuery); // TODO: HANDLE PAGINATION
                 Category existingCategory = pagedQueryResult.head().orElse(null);
                 if (existingCategory == null) {
                     createCategory(newCategoryDraft);
