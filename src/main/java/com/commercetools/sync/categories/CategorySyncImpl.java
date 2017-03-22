@@ -8,12 +8,16 @@ import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.queries.PagedQueryResult;
+import io.sphere.sdk.types.Type;
+import io.sphere.sdk.types.queries.TypeQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.String.format;
 
@@ -44,6 +48,9 @@ public class CategorySyncImpl implements CategorySync {
         processedCategories = categoryDrafts.size();
         LOGGER.info(format("About to sync %d category drafts into CTP project with key '%s'."
                 , categoryDrafts.size(), options.getCtpProjectKey()));
+        // cache types
+        Map<String, String> typeKeyMap = getCustomTypeKeyMap();
+
         for (int i = 0; i < categoryDrafts.size(); i++) {
             CategoryDraft newCategoryDraft = categoryDrafts.get(i);
             if (newCategoryDraft != null && newCategoryDraft.getExternalId()!=null) { // TODO CHECK THIS!
@@ -96,6 +103,26 @@ public class CategorySyncImpl implements CategorySync {
             failedCategories++;
         }
         return updatedCategory;
+    }
+
+    /**
+     * Cache a map of Types internal id -> key
+     * // TODO: USE graphQL to get only keys
+     * // TODO: UNIT TEST
+     * // TODO: JAVA DOC
+     */
+    @Nonnull
+    private Map<String, String> getCustomTypeKeyMap() {
+        Map<String, String> typeKeyMap = new HashMap<>();
+        try {
+            final PagedQueryResult<Type> pagedQueryResult = options.getCTPclient().executeBlocking(TypeQuery.of());
+            pagedQueryResult.getResults()
+                    .forEach(type -> typeKeyMap.put(type.getId(), type.getKey()));
+        } catch (Exception e) {
+            LOGGER.error(format("Failed to fetch Types" +
+                            "from CTP project with key '%s", options.getCtpProjectKey()), e);
+        }
+        return typeKeyMap;
     }
 
     @Override
