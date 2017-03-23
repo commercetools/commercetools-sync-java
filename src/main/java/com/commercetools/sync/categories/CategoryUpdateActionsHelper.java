@@ -193,19 +193,29 @@ public class CategoryUpdateActionsHelper {
         final Map<String, JsonNode> newCustomFieldsDraftJsonMap = newCustomFieldsDraft.getFields();
 
         if (Objects.equals(existingCustomFieldsTypeKey, newCustomFieldsDraftTypeKey)) {
+            if (existingCustomFieldsTypeKey == null && newCustomFieldsDraftTypeKey == null) {
+                // TODO: LOG THIS AS AN ERROR: "CUSTOM TYPE FOR BOTH EXISTING AND NEW CATEGORY IS NOT SET"
+                // TODO: wrap all procesesing results in a ProcessResult wrapper class.
+                return Collections.emptyList();
+            }
+            if (newCustomFieldsDraftJsonMap == null) {
+                // TODO: LOG THIS AS AN ERROR: "CUSTOM TYPE WITH NO CUSTOM FIELDS"
+                return Collections.emptyList();
+            }
             // New and existing category's custom fields are set. So we should calculate update actions for the
             // the fields of both.
             return buildSetCustomFieldsActions(existingCustomFieldsJsonMap, newCustomFieldsDraftJsonMap);
         } else {
             return Collections.singletonList(
                     SetCustomType.ofTypeKeyAndJson(
-                            existingCustomFieldsTypeKey, newCustomFieldsDraftJsonMap)
+                            newCustomFieldsDraftTypeKey, newCustomFieldsDraftJsonMap)
             );
         }
     }
 
     /**
      * TODO: JAVADOC
+     *
      * @param existingCustomFields
      * @param newCustomFields
      * @return
