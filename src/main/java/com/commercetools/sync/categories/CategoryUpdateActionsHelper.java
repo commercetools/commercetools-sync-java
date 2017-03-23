@@ -193,7 +193,7 @@ public class CategoryUpdateActionsHelper {
         if (Objects.equals(existingCustomFieldsTypeKey, newCustomFieldsDraftTypeKey)) {
             // New and existing category's custom fields are set. So we should calculate update actions for the
             // the fields of both.
-            return buildSetCustomFieldsUpdateActions(existingCustomFieldsJsonMap, newCustomFieldsDraftJsonMap);
+            return buildSetCustomFieldsActions(existingCustomFieldsJsonMap, newCustomFieldsDraftJsonMap);
         } else {
             return Collections.singletonList(
                     SetCustomType.ofTypeKeyAndJson(
@@ -203,30 +203,56 @@ public class CategoryUpdateActionsHelper {
     }
 
     /**
-     * //TODO: UNIT TEST
-     * //TODO: JAVADOC
-     *
+     * TODO: JAVADOC
      * @param existingCustomFields
      * @param newCustomFields
      * @return
      */
     @Nonnull
-    private static List<UpdateAction<Category>> buildSetCustomFieldsUpdateActions(
+    static List<UpdateAction<Category>> buildSetCustomFieldsActions(
             @Nonnull final Map<String, JsonNode> existingCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields) {
         final List<UpdateAction<Category>> updateActions = new ArrayList<>();
-        final Iterator<Map.Entry<String, JsonNode>> newCustomFieldsIterator = newCustomFields.entrySet().iterator();
-        while (newCustomFieldsIterator.hasNext()) {
-            Map.Entry newCustomFieldsEntry = newCustomFieldsIterator.next();
-            String newCustomFieldEntryKey = (String) newCustomFieldsEntry.getKey();
+        updateActions.addAll(buildNewOrModifiedCustomFieldsActions(existingCustomFields, newCustomFields));
+        updateActions.addAll(buildRemovedCustomFieldsActions(existingCustomFields, newCustomFields));
+        return updateActions;
+    }
 
-            JsonNode newCustomFieldValue = newCustomFields.get(newCustomFieldEntryKey);
-            JsonNode existingCustomFieldValue = existingCustomFields.get(newCustomFieldEntryKey);
+    /**
+     * TODO: JAVADOC
+     * Calculate update actions for new or changed custom fields.
+     * @param existingCustomFields
+     * @param newCustomFields
+     * @return
+     */
+    @Nonnull
+    static List<UpdateAction<Category>> buildNewOrModifiedCustomFieldsActions(
+            @Nonnull final Map<String, JsonNode> existingCustomFields,
+            @Nonnull final Map<String, JsonNode> newCustomFields) {
+        final List<UpdateAction<Category>> updateActions = new ArrayList<>();
+        newCustomFields.entrySet().stream()
+                .map(Map.Entry::getKey)
+                .filter(newCustomFieldName -> !Objects.equals(newCustomFields.get(newCustomFieldName), existingCustomFields.get(newCustomFieldName)))
+                .forEach(newCustomFieldName -> updateActions.add(SetCustomField.ofJson(newCustomFieldName, newCustomFields.get(newCustomFieldName))));
+        return updateActions;
+    }
 
-            if (!Objects.equals(newCustomFieldValue, existingCustomFieldValue)) {
-                updateActions.add(SetCustomField.ofJson(newCustomFieldEntryKey, newCustomFieldValue));
-            }
-        }
+    /**
+     * TODO: JAVADOC
+     * Calculate update actions for custom fields that don't exist anymore.
+     * @param existingCustomFields
+     * @param newCustomFields
+     * @return
+     */
+    @Nonnull
+    static List<UpdateAction<Category>> buildRemovedCustomFieldsActions(
+            @Nonnull final Map<String, JsonNode> existingCustomFields,
+            @Nonnull final Map<String, JsonNode> newCustomFields) {
+        final List<UpdateAction<Category>> updateActions = new ArrayList<>();
+        existingCustomFields.entrySet().stream()
+                .map(Map.Entry::getKey)
+                .filter(existingCustomFieldsName -> Objects.isNull(newCustomFields.get(existingCustomFieldsName)))
+                .forEach(existingCustomFieldsName -> updateActions.add(SetCustomField.ofJson(existingCustomFieldsName, null)));
         return updateActions;
     }
 }
