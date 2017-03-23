@@ -72,7 +72,7 @@ public class CategorySyncUtils {
         buildSetMetaKeywordsUpdateAction(existingCategory, newCategory)
                 .map(updateActions::add);
 
-        updateActions.addAll(buildUpdateActionsForCustomTypes(existingCategory, newCategory));
+        updateActions.addAll(buildCustomTypeActions(existingCategory, newCategory));
         return updateActions;
     }
 
