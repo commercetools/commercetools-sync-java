@@ -1,5 +1,6 @@
 package com.commercetools.sync.categories;
 
+import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -37,8 +38,9 @@ public class CategorySyncUtils {
 
     @Nonnull
     public static List<UpdateAction<Category>> buildActions(@Nonnull final Category existingCategory,
-                                                            @Nonnull final CategoryDraft newCategory) {
-        List<UpdateAction<Category>> updateActions = buildCoreActions(existingCategory, newCategory);
+                                                            @Nonnull final CategoryDraft newCategory,
+                                                            @Nonnull final TypeService typeService) {
+        List<UpdateAction<Category>> updateActions = buildCoreActions(existingCategory, newCategory, typeService);
         List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(existingCategory, newCategory);
         updateActions.addAll(assetUpdateActions);
         return updateActions;
@@ -46,7 +48,8 @@ public class CategorySyncUtils {
 
     @Nonnull
     public static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category existingCategory,
-                                                                @Nonnull final CategoryDraft newCategory) {
+                                                                @Nonnull final CategoryDraft newCategory,
+                                                                @Nonnull final TypeService typeService) {
         List<UpdateAction<Category>> updateActions = new ArrayList<>();
         buildChangeNameUpdateAction(existingCategory, newCategory)
                 .map(updateActions::add);
@@ -72,7 +75,7 @@ public class CategorySyncUtils {
         buildSetMetaKeywordsUpdateAction(existingCategory, newCategory)
                 .map(updateActions::add);
 
-        updateActions.addAll(buildCustomTypeActions(existingCategory, newCategory));
+        updateActions.addAll(buildCustomTypeActions(existingCategory, newCategory, typeService));
         return updateActions;
     }
 

@@ -1,6 +1,7 @@
 package com.commercetools.sync.categories;
 
 
+import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -153,11 +154,12 @@ public class CategoryUpdateActionsHelper {
     //TODO: JAVADOC
     @Nonnull
     static List<UpdateAction<Category>> buildCustomTypeActions(@Nonnull final Category existingCategory,
-                                                               @Nonnull final CategoryDraft newCategory) {
+                                                               @Nonnull final CategoryDraft newCategory,
+                                                               @Nonnull final TypeService typeService) {
         final CustomFields existingCustomFields = existingCategory.getCustom();
         final CustomFieldsDraft newCustomFieldsDraft = newCategory.getCustom();
         if (existingCustomFields != null && newCustomFieldsDraft != null) {
-            return buildNonNullCustomFieldsActions(existingCustomFields, newCustomFieldsDraft);
+            return buildNonNullCustomFieldsActions(existingCustomFields, newCustomFieldsDraft, typeService);
         } else {
             if (existingCustomFields == null) {
                 if (newCustomFieldsDraft != null) {
@@ -180,12 +182,12 @@ public class CategoryUpdateActionsHelper {
     }
 
     // TODO: UNIT TEST
-    //TODO: JAVADOC
+    // TODO: JAVADOC
     @Nonnull
     static List<UpdateAction<Category>> buildNonNullCustomFieldsActions(@Nonnull final CustomFields existingCustomFields,
-                                                                        @Nonnull final CustomFieldsDraft newCustomFieldsDraft) {
-        // TODO: Get rid of usage of getObj() and fetch the key from the cached map of (Type internal id -> key)..
-        final String existingCustomFieldsTypeKey = existingCustomFields.getType().getObj().getKey();
+                                                                        @Nonnull final CustomFieldsDraft newCustomFieldsDraft,
+                                                                        @Nonnull final TypeService typeService) {
+        final String existingCustomFieldsTypeKey = typeService.getCachedTypeKeyById(existingCustomFields.getType().getId());
         final Map<String, JsonNode> existingCustomFieldsJsonMap = existingCustomFields.getFieldsJsonMap();
         final String newCustomFieldsDraftTypeKey = newCustomFieldsDraft.getType().getKey();
         final Map<String, JsonNode> newCustomFieldsDraftJsonMap = newCustomFieldsDraft.getFields();

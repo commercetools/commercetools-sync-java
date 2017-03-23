@@ -1,23 +1,19 @@
-package com.commercetools.sync.categories;
+package com.commercetools.sync.categories.impl;
 
+import com.commercetools.sync.categories.CategorySync;
+import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.CategorySyncUtils;
+import com.commercetools.sync.services.CategoryService;
+import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.categories.commands.CategoryCreateCommand;
-import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
-import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.expansion.ExpansionPath;
-import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.queries.TypeQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static java.lang.String.format;
 
@@ -27,15 +23,19 @@ public class CategorySyncImpl implements CategorySync {
     private int failedCategories;
     private int processedCategories;
     private final Logger LOGGER = LoggerFactory.getLogger(CategorySyncImpl.class);
-    @Nonnull
-    private CategorySyncOptions options;
 
-    public CategorySyncImpl(CategorySyncOptions options) {
+    private CategorySyncOptions options;
+    private TypeService typeService;
+    private CategoryService categoryService;
+
+    public CategorySyncImpl(CategorySyncOptions options, TypeService typeService, CategoryService categoryService) {
         this.options = options;
         this.updatedCategories = 0;
         this.createdCategories = 0;
         this.failedCategories = 0;
         this.processedCategories = 0;
+        this.typeService = typeService;
+        this.categoryService = categoryService;
     }
 
     @Override
@@ -48,25 +48,18 @@ public class CategorySyncImpl implements CategorySync {
         processedCategories = categoryDrafts.size();
         LOGGER.info(format("About to sync %d category drafts into CTP project with key '%s'."
                 , categoryDrafts.size(), options.getCtpProjectKey()));
-        // cache types
-        Map<String, String> typeKeyMap = getCustomTypeKeyMap();
-
         for (int i = 0; i < categoryDrafts.size(); i++) {
             CategoryDraft newCategoryDraft = categoryDrafts.get(i);
-            if (newCategoryDraft != null && newCategoryDraft.getExternalId()!=null) { // TODO CHECK THIS!
-                CategoryQuery categoryQuery = CategoryQuery.of()
-                        .byExternalId(newCategoryDraft.getExternalId())
-                        .plusExpansionPaths(ExpansionPath.of("custom.type")); //TODO: REMOVE REFERENCE EXPANSION FOR EFFICIENCY AND CACHE CUSTOM TYPES IN ADVANCE
-                final PagedQueryResult<Category> pagedQueryResult = options.getCTPclient().executeBlocking(categoryQuery); // TODO: HANDLE PAGINATION
-                Category existingCategory = pagedQueryResult.head().orElse(null);
+            String externalId = newCategoryDraft != null ? newCategoryDraft.getExternalId() : null;
+            if (externalId != null) { // TODO NEED TO PARALLELISE!
+                Category existingCategory = categoryService.fetchCategoryByExternalId(externalId);
                 if (existingCategory == null) {
                     createCategory(newCategoryDraft);
                 } else {
-                    List<UpdateAction<Category>> updateActions = CategorySyncUtils.buildActions(existingCategory, newCategoryDraft);
+                    List<UpdateAction<Category>> updateActions = CategorySyncUtils.buildActions(existingCategory, newCategoryDraft, typeService);
                     if (!updateActions.isEmpty()) {
                         updateCategory(existingCategory, updateActions);
                     }
-
                 }
             }
         }
@@ -77,8 +70,7 @@ public class CategorySyncImpl implements CategorySync {
     private Category createCategory(@Nonnull final CategoryDraft newCategory) {
         Category category = null;
         try {
-            final CategoryCreateCommand categoryCreateCommand = CategoryCreateCommand.of(newCategory);
-            category = options.getCTPclient().executeBlocking(categoryCreateCommand);
+            category = categoryService.createCategory(newCategory);
             createdCategories++;
         } catch (Exception e) {
             LOGGER.error(format("Failed to create category with external id" +
@@ -93,8 +85,7 @@ public class CategorySyncImpl implements CategorySync {
     private Category updateCategory(@Nonnull final Category category, List<UpdateAction<Category>> updateActions) {
         Category updatedCategory = null;
         try {
-            final CategoryUpdateCommand categoryUpdateCommand = CategoryUpdateCommand.of(category, updateActions);
-            updatedCategory = options.getCTPclient().executeBlocking(categoryUpdateCommand);
+            updatedCategory = categoryService.updateCategory(category, updateActions);
             updatedCategories++;
         } catch (Exception e) {
             LOGGER.error(format("Failed to update category with id" +
@@ -105,25 +96,6 @@ public class CategorySyncImpl implements CategorySync {
         return updatedCategory;
     }
 
-    /**
-     * Cache a map of Types internal id -> key
-     * // TODO: USE graphQL to get only keys
-     * // TODO: UNIT TEST
-     * // TODO: JAVA DOC
-     */
-    @Nonnull
-    private Map<String, String> getCustomTypeKeyMap() {
-        Map<String, String> typeKeyMap = new HashMap<>();
-        try {
-            final PagedQueryResult<Type> pagedQueryResult = options.getCTPclient().executeBlocking(TypeQuery.of());
-            pagedQueryResult.getResults()
-                    .forEach(type -> typeKeyMap.put(type.getId(), type.getKey()));
-        } catch (Exception e) {
-            LOGGER.error(format("Failed to fetch Types" +
-                            "from CTP project with key '%s", options.getCtpProjectKey()), e);
-        }
-        return typeKeyMap;
-    }
 
     @Override
     public String getSummary() {
