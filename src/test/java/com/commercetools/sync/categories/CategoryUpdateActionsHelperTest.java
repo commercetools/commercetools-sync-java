@@ -1,6 +1,8 @@
 package com.commercetools.sync.categories;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.*;
@@ -10,9 +12,7 @@ import io.sphere.sdk.models.Reference;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 import static com.commercetools.sync.categories.CategoryUpdateActionsHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,25 +49,25 @@ public class CategoryUpdateActionsHelperTest {
 
     @Test
     public void buildChangeNameUpdateAction_ShouldBuildUpdateAction() {
-        CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getName()).thenReturn(LocalizedString.of(LOCALE, "newName"));
 
-        Optional<UpdateAction<Category>> changeNameUpdateAction =
+        final Optional<UpdateAction<Category>> changeNameUpdateAction =
                 buildChangeNameUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
         assertThat(changeNameUpdateAction).isNotNull();
         assertThat(changeNameUpdateAction).isPresent();
         assertThat(changeNameUpdateAction.get().getAction()).isEqualTo("changeName");
-        assertThat(((ChangeName)(changeNameUpdateAction.get())).getName()).isEqualTo(LocalizedString.of(LOCALE, "newName"));
+        assertThat(((ChangeName) (changeNameUpdateAction.get())).getName()).isEqualTo(LocalizedString.of(LOCALE, "newName"));
     }
 
     @Test
     public void buildChangeNameUpdateAction_ShouldNotBuildUpdateAction() {
-        CategoryDraft newCategoryDraftWithSameName = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraftWithSameName = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameName.getName())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
-        Optional<UpdateAction<Category>> changeNameUpdateAction =
+        final Optional<UpdateAction<Category>> changeNameUpdateAction =
                 buildChangeNameUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameName);
 
         assertThat(changeNameUpdateAction).isNotNull();
@@ -76,25 +76,25 @@ public class CategoryUpdateActionsHelperTest {
 
     @Test
     public void buildChangeSlugUpdateAction_ShouldBuildUpdateAction() {
-        CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getSlug()).thenReturn(LocalizedString.of(LOCALE, "newSlug"));
 
-        Optional<UpdateAction<Category>> changeSlugUpdateAction =
+        final Optional<UpdateAction<Category>> changeSlugUpdateAction =
                 buildChangeSlugUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
         assertThat(changeSlugUpdateAction).isNotNull();
         assertThat(changeSlugUpdateAction).isPresent();
         assertThat(changeSlugUpdateAction.get().getAction()).isEqualTo("changeSlug");
-        assertThat(((ChangeSlug)(changeSlugUpdateAction.get())).getSlug()).isEqualTo(LocalizedString.of(LOCALE, "newSlug"));
+        assertThat(((ChangeSlug) (changeSlugUpdateAction.get())).getSlug()).isEqualTo(LocalizedString.of(LOCALE, "newSlug"));
     }
 
     @Test
     public void buildChangeSlugUpdateAction_ShouldNotBuildUpdateAction() {
-        CategoryDraft newCategoryDraftWithSameSlug = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraftWithSameSlug = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameSlug.getSlug())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_SLUG));
 
-        Optional<UpdateAction<Category>> changeSlugUpdateAction =
+        final Optional<UpdateAction<Category>> changeSlugUpdateAction =
                 buildChangeSlugUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameSlug);
 
         assertThat(changeSlugUpdateAction).isNotNull();
@@ -103,26 +103,26 @@ public class CategoryUpdateActionsHelperTest {
 
     @Test
     public void buildSetDescriptionUpdateAction_ShouldBuildUpdateAction() {
-        CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getDescription()).thenReturn(LocalizedString.of(LOCALE, "newDescription"));
 
-        Optional<UpdateAction<Category>> setDescriptionUpdateAction =
+        final Optional<UpdateAction<Category>> setDescriptionUpdateAction =
                 buildSetDescriptionUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
         assertThat(setDescriptionUpdateAction).isNotNull();
         assertThat(setDescriptionUpdateAction).isPresent();
         assertThat(setDescriptionUpdateAction.get().getAction()).isEqualTo("setDescription");
-        assertThat(((SetDescription)(setDescriptionUpdateAction.get())).getDescription())
+        assertThat(((SetDescription) (setDescriptionUpdateAction.get())).getDescription())
                 .isEqualTo(LocalizedString.of(LOCALE, "newDescription"));
     }
 
     @Test
     public void buildSetDescriptionUpdateAction_ShouldNotBuildUpdateAction() {
-        CategoryDraft newCategoryDraftWithSameDescription = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraftWithSameDescription = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameDescription.getDescription())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_DESCRIPTION));
 
-        Optional<UpdateAction<Category>> setDescriptionUpdateAction =
+        final Optional<UpdateAction<Category>> setDescriptionUpdateAction =
                 buildSetDescriptionUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameDescription);
 
         assertThat(setDescriptionUpdateAction).isNotNull();
@@ -131,26 +131,26 @@ public class CategoryUpdateActionsHelperTest {
 
     @Test
     public void buildChangeParentUpdateAction_ShouldBuildUpdateAction() {
-        CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getParent()).thenReturn(Reference.of("Category", "2"));
 
-        Optional<UpdateAction<Category>> changeParentUpdateAction =
+        final Optional<UpdateAction<Category>> changeParentUpdateAction =
                 buildChangeParentUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction).isPresent();
         assertThat(changeParentUpdateAction.get().getAction()).isEqualTo("changeParent");
-        assertThat(((ChangeParent)(changeParentUpdateAction.get())).getParent())
+        assertThat(((ChangeParent) (changeParentUpdateAction.get())).getParent())
                 .isEqualTo(Reference.of("Category", "2"));
     }
 
     @Test
     public void buildChangeParentUpdateAction_ShouldNotBuildUpdateAction() {
-        CategoryDraft newCategoryDraftWithSameParent = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraftWithSameParent = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameParent.getParent())
                 .thenReturn(Reference.of(MOCK_CATEGORY_REFERENCE_TYPE, MOCK_EXISTING_CATEGORY_PARENT_ID));
 
-        Optional<UpdateAction<Category>> changeParentUpdateAction =
+        final Optional<UpdateAction<Category>> changeParentUpdateAction =
                 buildChangeParentUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameParent);
 
         assertThat(changeParentUpdateAction).isNotNull();
@@ -159,25 +159,25 @@ public class CategoryUpdateActionsHelperTest {
 
     @Test
     public void buildChangeOrderHintUpdateAction_ShouldBuildUpdateAction() {
-        CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getOrderHint()).thenReturn("099");
 
-        Optional<UpdateAction<Category>> changeOrderHintUpdateAction =
+        final Optional<UpdateAction<Category>> changeOrderHintUpdateAction =
                 buildChangeOrderHintUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
         assertThat(changeOrderHintUpdateAction).isNotNull();
         assertThat(changeOrderHintUpdateAction).isPresent();
         assertThat(changeOrderHintUpdateAction.get().getAction()).isEqualTo("changeOrderHint");
-        assertThat(((ChangeOrderHint)(changeOrderHintUpdateAction.get())).getOrderHint())
+        assertThat(((ChangeOrderHint) (changeOrderHintUpdateAction.get())).getOrderHint())
                 .isEqualTo("099");
     }
 
     @Test
     public void buildChangeOrderHintUpdateAction_ShouldNotBuildUpdateAction() {
-        CategoryDraft newCategoryDraftWithSameOrderHint = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraftWithSameOrderHint = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameOrderHint.getOrderHint()).thenReturn(MOCK_EXISTING_CATEGORY_ORDERHINT);
 
-        Optional<UpdateAction<Category>> changeOrderHintUpdateAction =
+        final Optional<UpdateAction<Category>> changeOrderHintUpdateAction =
                 buildChangeOrderHintUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameOrderHint);
 
         assertThat(changeOrderHintUpdateAction).isNotNull();
@@ -186,26 +186,26 @@ public class CategoryUpdateActionsHelperTest {
 
     @Test
     public void buildSetMetaTitleUpdateAction_ShouldBuildUpdateAction() {
-        CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getMetaTitle()).thenReturn(LocalizedString.of(LOCALE, "newMetaTitle"));
 
-        Optional<UpdateAction<Category>> setMetaTitleUpdateAction =
+        final Optional<UpdateAction<Category>> setMetaTitleUpdateAction =
                 buildSetMetaTitleUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
         assertThat(setMetaTitleUpdateAction).isNotNull();
         assertThat(setMetaTitleUpdateAction).isPresent();
         assertThat(setMetaTitleUpdateAction.get().getAction()).isEqualTo("setMetaTitle");
-        assertThat(((SetMetaTitle)(setMetaTitleUpdateAction.get())).getMetaTitle())
+        assertThat(((SetMetaTitle) (setMetaTitleUpdateAction.get())).getMetaTitle())
                 .isEqualTo(LocalizedString.of(LOCALE, "newMetaTitle"));
     }
 
     @Test
     public void buildSetMetaTitleUpdateAction_ShouldNotBuildUpdateAction() {
-        CategoryDraft newCategoryDraftWithSameTitle = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraftWithSameTitle = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameTitle.getMetaTitle())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_META_TITLE));
 
-        Optional<UpdateAction<Category>> setMetaTitleUpdateAction =
+        final Optional<UpdateAction<Category>> setMetaTitleUpdateAction =
                 buildSetMetaTitleUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameTitle);
 
         assertThat(setMetaTitleUpdateAction).isNotNull();
@@ -214,26 +214,26 @@ public class CategoryUpdateActionsHelperTest {
 
     @Test
     public void buildSetMetaKeywordsUpdateAction_ShouldBuildUpdateAction() {
-        CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getMetaKeywords()).thenReturn(LocalizedString.of(LOCALE, "newMetaKW"));
 
-        Optional<UpdateAction<Category>> setMetaKeywordsUpdateAction =
+        final Optional<UpdateAction<Category>> setMetaKeywordsUpdateAction =
                 buildSetMetaKeywordsUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
         assertThat(setMetaKeywordsUpdateAction).isNotNull();
         assertThat(setMetaKeywordsUpdateAction).isPresent();
         assertThat(setMetaKeywordsUpdateAction.get().getAction()).isEqualTo("setMetaKeywords");
-        assertThat(((SetMetaKeywords)(setMetaKeywordsUpdateAction.get())).getMetaKeywords())
+        assertThat(((SetMetaKeywords) (setMetaKeywordsUpdateAction.get())).getMetaKeywords())
                 .isEqualTo(LocalizedString.of(LOCALE, "newMetaKW"));
     }
 
     @Test
     public void buildSetMetaKeywordsUpdateAction_ShouldNotBuildUpdateAction() {
-        CategoryDraft newCategoryDraftWithSameMetaKeywords = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraftWithSameMetaKeywords = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameMetaKeywords.getMetaKeywords())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_META_KEYWORDS));
 
-        Optional<UpdateAction<Category>> setMetaKeywordsUpdateAction =
+        final Optional<UpdateAction<Category>> setMetaKeywordsUpdateAction =
                 buildSetMetaKeywordsUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameMetaKeywords);
 
         assertThat(setMetaKeywordsUpdateAction).isNotNull();
@@ -242,26 +242,26 @@ public class CategoryUpdateActionsHelperTest {
 
     @Test
     public void buildSetMetaDescriptionUpdateAction_ShouldBuildUpdateAction() {
-        CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getMetaDescription()).thenReturn(LocalizedString.of(LOCALE, "newMetaDesc"));
 
-        Optional<UpdateAction<Category>> setMetaDescriptionUpdateAction =
+        final Optional<UpdateAction<Category>> setMetaDescriptionUpdateAction =
                 buildSetMetaDescriptionUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
         assertThat(setMetaDescriptionUpdateAction).isNotNull();
         assertThat(setMetaDescriptionUpdateAction).isPresent();
         assertThat(setMetaDescriptionUpdateAction.get().getAction()).isEqualTo("setMetaDescription");
-        assertThat(((SetMetaDescription)(setMetaDescriptionUpdateAction.get())).getMetaDescription())
+        assertThat(((SetMetaDescription) (setMetaDescriptionUpdateAction.get())).getMetaDescription())
                 .isEqualTo(LocalizedString.of(LOCALE, "newMetaDesc"));
     }
 
     @Test
     public void buildSetMetaDescriptionUpdateAction_ShouldNotBuildUpdateAction() {
-        CategoryDraft newCategoryDraftWithSameMetaDescription = mock(CategoryDraft.class);
+        final CategoryDraft newCategoryDraftWithSameMetaDescription = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameMetaDescription.getMetaDescription())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_META_DESCRIPTION));
 
-        Optional<UpdateAction<Category>> setMetaDescriptionUpdateAction =
+        final Optional<UpdateAction<Category>> setMetaDescriptionUpdateAction =
                 buildSetMetaDescriptionUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameMetaDescription);
 
         assertThat(setMetaDescriptionUpdateAction).isNotNull();
@@ -271,8 +271,8 @@ public class CategoryUpdateActionsHelperTest {
     @Test
     public void buildUpdateActionForLocalizedStrings_ShouldBuildUpdateAction() {
         LocalizedString existingLocalisedString = LocalizedString.of(LOCALE, "Apfel");
-        LocalizedString newLocalisedString = LocalizedString.of(LOCALE, "Milch");
-        UpdateAction<Category> mockUpdateAction = ChangeName.of(
+        final LocalizedString newLocalisedString = LocalizedString.of(LOCALE, "Milch");
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
@@ -305,7 +305,7 @@ public class CategoryUpdateActionsHelperTest {
     public void buildUpdateActionForLocalizedStrings_ShouldNotBuildUpdateAction() {
         LocalizedString existingLocalisedString = LocalizedString.of(LOCALE, "Milch");
         LocalizedString newLocalisedString = LocalizedString.of(LOCALE, "Milch");
-        UpdateAction<Category> mockUpdateAction = ChangeName.of(
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
@@ -344,9 +344,9 @@ public class CategoryUpdateActionsHelperTest {
 
     @Test
     public void buildUpdateActionForReferences_ShouldBuildUpdateAction() {
-        Reference<Category> existingCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
+        final Reference<Category> existingCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
         Reference<Category> newCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "2");
-        UpdateAction<Category> mockUpdateAction = ChangeName.of(
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         Optional<UpdateAction<Category>> updateActionForReferences =
@@ -377,9 +377,9 @@ public class CategoryUpdateActionsHelperTest {
 
     @Test
     public void buildUpdateActionForReferences_ShouldNotBuildUpdateAction() {
-        Reference<Category> existingCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
-        Reference<Category> newCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
-        UpdateAction<Category> mockUpdateAction = ChangeName.of(
+        final Reference<Category> existingCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
+        final Reference<Category> newCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         Optional<UpdateAction<Category>> updateActionForReferences =
@@ -398,9 +398,9 @@ public class CategoryUpdateActionsHelperTest {
 
     @Test
     public void buildUpdateActionForStrings_ShouldBuildUpdateAction() {
-        String existingString = "1";
-        String newString = "2";
-        UpdateAction<Category> mockUpdateAction = ChangeName.of(
+        final String existingString = "1";
+        final String newString = "2";
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         Optional<UpdateAction<Category>> updateActionForStrings =
@@ -421,8 +421,8 @@ public class CategoryUpdateActionsHelperTest {
 
     @Test
     public void buildUpdateActionForStrings_ShouldNotBuildUpdateAction() {
-        String existingString = "1";
-        String newString = "1";
+        final String existingString = "1";
+        final String newString = "1";
         UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
@@ -438,5 +438,178 @@ public class CategoryUpdateActionsHelperTest {
 
         assertThat(updateActionForStrings).isNotNull();
         assertThat(updateActionForStrings).isNotPresent();
+    }
+
+    /***
+     * ===================================================================================================================
+     * ===================================================================================================================
+     */
+
+    @Test
+    public void buildSetCustomFieldsActions_ShouldBuildUpdateAction() {
+        Map<String, JsonNode> existingCustomFields = new HashMap<>();
+        existingCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
+        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+
+        Map<String, JsonNode> newCustomFields = new HashMap<>();
+        newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
+
+        List<UpdateAction<Category>> setCustomFieldsUpdateActions =
+                buildSetCustomFieldsActions(existingCustomFields, newCustomFields);
+
+        assertThat(setCustomFieldsUpdateActions).isNotNull();
+        assertThat(setCustomFieldsUpdateActions).isNotEmpty();
+        assertThat(setCustomFieldsUpdateActions).hasSize(2);
+        UpdateAction<Category> categoryUpdateAction = setCustomFieldsUpdateActions.get(0);
+        assertThat(categoryUpdateAction).isNotNull();
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("setCustomField");
+
+        // Assert that existing empty custom fields should be updated with all values in new custom fields
+        existingCustomFields = new HashMap<>();
+        newCustomFields.put("url", JsonNodeFactory.instance.objectNode().put("domain", "domain.com"));
+        newCustomFields.put("size", JsonNodeFactory.instance.objectNode().put("cm", 34));
+
+
+        setCustomFieldsUpdateActions =
+                buildSetCustomFieldsActions(existingCustomFields, newCustomFields);
+
+        assertThat(setCustomFieldsUpdateActions).isNotNull();
+        assertThat(setCustomFieldsUpdateActions).isNotEmpty();
+        assertThat(setCustomFieldsUpdateActions).hasSize(4);
+
+        // Assert that existing custom field value should be removed if it doesn't exist in new custom fields
+        existingCustomFields = new HashMap<>();
+        existingCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+
+        newCustomFields = new HashMap<>();
+        newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+
+
+        setCustomFieldsUpdateActions =
+                buildSetCustomFieldsActions(existingCustomFields, newCustomFields);
+
+        assertThat(setCustomFieldsUpdateActions).isNotNull();
+        assertThat(setCustomFieldsUpdateActions).isNotEmpty();
+        assertThat(setCustomFieldsUpdateActions).hasSize(1);
+    }
+
+    @Test
+    public void buildSetCustomFieldsActions_ShouldNotBuildUpdateAction() {
+        Map<String, JsonNode> existingCustomFields = new HashMap<>();
+        existingCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
+
+        Map<String, JsonNode> newCustomFields = new HashMap<>();
+        newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
+
+        List<UpdateAction<Category>> setCustomFieldsUpdateActions =
+                buildSetCustomFieldsActions(existingCustomFields, newCustomFields);
+
+        assertThat(setCustomFieldsUpdateActions).isNotNull();
+        assertThat(setCustomFieldsUpdateActions).isEmpty();
+
+        // Assert that order of JSON fields in the custom field value should be result in no update actions
+        existingCustomFields = new HashMap<>();
+        newCustomFields = new HashMap<>();
+
+        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("es", "rojo"));
+        newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo").put("de", "rot"));
+
+        setCustomFieldsUpdateActions =
+                buildSetCustomFieldsActions(existingCustomFields, newCustomFields);
+
+        assertThat(setCustomFieldsUpdateActions).isNotNull();
+        assertThat(setCustomFieldsUpdateActions).isEmpty();
+
+        // Assert that empty custom field values should result in no update actions
+        existingCustomFields = new HashMap<>();
+        newCustomFields = new HashMap<>();
+
+        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode());
+        newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode());
+
+        setCustomFieldsUpdateActions =
+                buildSetCustomFieldsActions(existingCustomFields, newCustomFields);
+
+        assertThat(setCustomFieldsUpdateActions).isNotNull();
+        assertThat(setCustomFieldsUpdateActions).isEmpty();
+
+        // Assert that empty custom fields should result in no update actions
+        existingCustomFields = new HashMap<>();
+        newCustomFields = new HashMap<>();
+
+        setCustomFieldsUpdateActions =
+                buildSetCustomFieldsActions(existingCustomFields, newCustomFields);
+
+        assertThat(setCustomFieldsUpdateActions).isNotNull();
+        assertThat(setCustomFieldsUpdateActions).isEmpty();
+    }
+
+    @Test
+    public void buildNewOrModifiedCustomFieldsActions_ShouldBuildUpdateActions() {
+        Map<String, JsonNode> existingCustomFields = new HashMap<>();
+        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+
+        Map<String, JsonNode> newCustomFields = new HashMap<>();
+        newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+
+        List<UpdateAction<Category>> customFieldsActions =
+                buildNewOrModifiedCustomFieldsActions(existingCustomFields, newCustomFields);
+
+        assertThat(customFieldsActions).isNotNull();
+        assertThat(customFieldsActions).isNotEmpty();
+        assertThat(customFieldsActions).hasSize(1);
+    }
+
+    @Test
+    public void buildNewOrModifiedCustomFieldsActions_ShouldNotBuildUpdateActions() {
+        Map<String, JsonNode> existingCustomFields = new HashMap<>();
+        existingCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+
+        Map<String, JsonNode> newCustomFields = new HashMap<>();
+        newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+
+        List<UpdateAction<Category>> customFieldsActions =
+                buildNewOrModifiedCustomFieldsActions(existingCustomFields, newCustomFields);
+
+        assertThat(customFieldsActions).isNotNull();
+        assertThat(customFieldsActions).isEmpty();
+    }
+
+    @Test
+    public void buildRemovedCustomFieldsActions_ShouldBuildUpdateActions() {
+        Map<String, JsonNode> existingCustomFields = new HashMap<>();
+        existingCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+
+        Map<String, JsonNode> newCustomFields = new HashMap<>();
+        newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+
+        List<UpdateAction<Category>> customFieldsActions =
+                buildRemovedCustomFieldsActions(existingCustomFields, newCustomFields);
+
+        assertThat(customFieldsActions).isNotNull();
+        assertThat(customFieldsActions).isNotEmpty();
+        assertThat(customFieldsActions).hasSize(1);
+    }
+
+    @Test
+    public void buildRemovedCustomFieldsActions_ShouldNotBuildUpdateActions() {
+        Map<String, JsonNode> existingCustomFields = new HashMap<>();
+        existingCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+
+        Map<String, JsonNode> newCustomFields = new HashMap<>();
+        newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+
+        List<UpdateAction<Category>> customFieldsActions =
+                buildRemovedCustomFieldsActions(existingCustomFields, newCustomFields);
+
+        assertThat(customFieldsActions).isNotNull();
+        assertThat(customFieldsActions).isEmpty();
     }
 }
