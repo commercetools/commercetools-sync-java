@@ -233,6 +233,7 @@ public class CategoryUpdateActionsHelper {
     /**
      * TODO: JAVADOC
      * Calculate update actions for new or changed custom fields.
+     *
      * @param existingCustomFields
      * @param newCustomFields
      * @return
@@ -252,6 +253,7 @@ public class CategoryUpdateActionsHelper {
     /**
      * TODO: JAVADOC
      * Calculate update actions for custom fields that don't exist anymore.
+     *
      * @param existingCustomFields
      * @param newCustomFields
      * @return
