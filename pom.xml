@@ -32,6 +32,13 @@
             <version>1.12.0</version>
         </dependency>
         <dependency>
+            <!-- QueryExecutionUtils and other-->
+            <groupId>com.commercetools.sdk.jvm.core</groupId>
+            <artifactId>commercetools-convenience</artifactId>
+            <version>1.12.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>1.6.2</version>
