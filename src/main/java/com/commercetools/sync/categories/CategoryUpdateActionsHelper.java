@@ -152,18 +152,12 @@ public class CategoryUpdateActionsHelper {
     //TODO: UNIT TEST
     //TODO: JAVADOC
     @Nonnull
-    static List<UpdateAction<Category>> buildUpdateActionsForCustomTypes(@Nonnull final Category existingCategory,
-                                                                         @Nonnull final CategoryDraft newCategory) {
-        return buildUpdateActionsForCustomFields(existingCategory.getCustom(), newCategory.getCustom());
-    }
-
-    //TODO: UNIT TEST
-    //TODO: JAVADOC
-    @Nonnull
-    static List<UpdateAction<Category>> buildUpdateActionsForCustomFields(@Nullable final CustomFields existingCustomFields,
-                                                                          @Nullable final CustomFieldsDraft newCustomFieldsDraft) {
+    static List<UpdateAction<Category>> buildCustomTypeActions(@Nonnull final Category existingCategory,
+                                                               @Nonnull final CategoryDraft newCategory) {
+        final CustomFields existingCustomFields = existingCategory.getCustom();
+        final CustomFieldsDraft newCustomFieldsDraft = newCategory.getCustom();
         if (existingCustomFields != null && newCustomFieldsDraft != null) {
-            return buildUpdateActionsForNonNullCustomFields(existingCustomFields, newCustomFieldsDraft);
+            return buildNonNullCustomFieldsActions(existingCustomFields, newCustomFieldsDraft);
         } else {
             if (existingCustomFields == null) {
                 if (newCustomFieldsDraft != null) {
@@ -185,12 +179,11 @@ public class CategoryUpdateActionsHelper {
         return Collections.emptyList();
     }
 
-    // TODO: REFACTOR BAD NAME
     // TODO: UNIT TEST
     //TODO: JAVADOC
     @Nonnull
-    static List<UpdateAction<Category>> buildUpdateActionsForNonNullCustomFields(@Nonnull final CustomFields existingCustomFields,
-                                                                                 @Nonnull final CustomFieldsDraft newCustomFieldsDraft) {
+    static List<UpdateAction<Category>> buildNonNullCustomFieldsActions(@Nonnull final CustomFields existingCustomFields,
+                                                                        @Nonnull final CustomFieldsDraft newCustomFieldsDraft) {
         // TODO: Get rid of usage of getObj() and fetch the key from the cached map of (Type internal id -> key)..
         final String existingCustomFieldsTypeKey = existingCustomFields.getType().getObj().getKey();
         final Map<String, JsonNode> existingCustomFieldsJsonMap = existingCustomFields.getFieldsJsonMap();
