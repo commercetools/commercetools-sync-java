@@ -1,6 +1,8 @@
 package com.commercetools.sync.categories;
 
 
+import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
@@ -9,6 +11,9 @@ import io.sphere.sdk.categories.commands.updateactions.*;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.types.CustomFields;
+import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.Type;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -16,6 +21,7 @@ import java.util.*;
 
 import static com.commercetools.sync.categories.CategoryUpdateActionsHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -445,8 +451,164 @@ public class CategoryUpdateActionsHelperTest {
      * ===================================================================================================================
      */
 
+    /**
+     * Refactor into smaller methods
+     */
     @Test
-    public void buildSetCustomFieldsActions_ShouldBuildUpdateAction() {
+    public void buildNonNullCustomFieldsActions_ShouldBuildUpdateActions() {
+        // Unit test custom fields comparison with the same Type, but different field values
+        Reference<Type> categoryTypeReference = mock(Reference.class);
+        String categoryCustomTypeInternalId = "categoryCustomTypeId";
+        String categoryCustomTypeKey = "categoryCustomTypeKey";
+        when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
+        when(categoryTypeReference.getKey()).thenReturn(categoryCustomTypeKey);
+
+        // Mock existing CustomFields
+        CustomFields existingCustomFieldsMock = mock(CustomFields.class);
+        Map<String, JsonNode> existingCustomFieldsJsonMapMock = new HashMap<>();
+        existingCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        when(existingCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        when(existingCustomFieldsMock.getFieldsJsonMap()).thenReturn(existingCustomFieldsJsonMapMock);
+
+        // Mock new CustomFieldsDraft
+        CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
+        Map<String, JsonNode> newCustomFieldsJsonMapMock = new HashMap<>();
+        newCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
+        when(newCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        when(newCustomFieldsMock.getFields()).thenReturn(newCustomFieldsJsonMapMock);
+
+        // Mock TypeService and Category Custom Type key Cache.
+        TypeService typeServiceMock = mock(TypeServiceImpl.class);
+        when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(categoryCustomTypeKey);
+
+        List<UpdateAction<Category>> updateActions =
+                buildNonNullCustomFieldsActions(existingCustomFieldsMock,
+                        newCustomFieldsMock, typeServiceMock);
+
+        assertThat(updateActions).isNotNull();
+        assertThat(updateActions).hasSize(1);
+        assertThat(updateActions.get(0).getAction()).isEqualTo("setCustomField");
+
+        //==========================================================================================
+
+        // Unit test custom fields comparison with the different Type
+        Reference<Type> newCategoryTypeReference = mock(Reference.class);
+        String newCategoryCustomTypeInternalId = "newCategoryCustomTypeId";
+        String newCategoryCustomTypeKey = "newCategoryCustomTypeKey";
+        when(newCategoryTypeReference.getId()).thenReturn(newCategoryCustomTypeInternalId);
+        when(newCategoryTypeReference.getKey()).thenReturn(newCategoryCustomTypeKey);
+
+        // Mock new CustomFieldsDraft
+        newCustomFieldsMock = mock(CustomFieldsDraft.class);
+        when(newCustomFieldsMock.getType()).thenReturn(newCategoryTypeReference);
+        when(newCustomFieldsMock.getFields()).thenReturn(newCustomFieldsJsonMapMock);
+
+        updateActions = buildNonNullCustomFieldsActions(existingCustomFieldsMock,
+                        newCustomFieldsMock, typeServiceMock);
+
+        assertThat(updateActions).isNotNull();
+        assertThat(updateActions).hasSize(1);
+        assertThat(updateActions.get(0).getAction()).isEqualTo("setCustomType");
+
+        //==========================================================================================
+
+        // Unit test custom fields comparison with the different Type, where only existing category has no key set.
+        categoryTypeReference = mock(Reference.class);
+        when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
+
+        existingCustomFieldsMock = mock(CustomFields.class);
+        when(existingCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+
+        updateActions = buildNonNullCustomFieldsActions(existingCustomFieldsMock,
+                newCustomFieldsMock, typeServiceMock);
+
+        assertThat(updateActions).isNotNull();
+        assertThat(updateActions).hasSize(1);
+        assertThat(updateActions.get(0).getAction()).isEqualTo("setCustomType");
+
+        //==========================================================================================
+
+        // Unit test custom fields comparison with the different Type, where only new category has no key set.
+        newCategoryTypeReference = mock(Reference.class);
+        when(newCategoryTypeReference.getId()).thenReturn(newCategoryCustomTypeInternalId);
+
+        categoryTypeReference = mock(Reference.class);
+        when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
+        when(newCategoryTypeReference.getKey()).thenReturn(categoryCustomTypeKey);
+
+        existingCustomFieldsMock = mock(CustomFields.class);
+        when(existingCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+
+        updateActions = buildNonNullCustomFieldsActions(existingCustomFieldsMock,
+                newCustomFieldsMock, typeServiceMock);
+
+        assertThat(updateActions).isNotNull();
+        assertThat(updateActions).hasSize(1);
+        assertThat(updateActions.get(0).getAction()).isEqualTo("setCustomType");
+    }
+
+    @Test
+    public void buildNonNullCustomFieldsActions_ShouldNotBuildUpdateActions() {
+        // Unit test custom fields comparison with the custom fields Types' keys not set.
+        Reference<Type> categoryTypeReference = mock(Reference.class);
+        String categoryCustomTypeInternalId = "categoryCustomTypeId";
+        when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
+
+        // Mock existing CustomFields
+        CustomFields existingCustomFieldsMock = mock(CustomFields.class);
+        Map<String, JsonNode> existingCustomFieldsJsonMapMock = new HashMap<>();
+        existingCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        when(existingCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        when(existingCustomFieldsMock.getFieldsJsonMap()).thenReturn(existingCustomFieldsJsonMapMock);
+
+        // Mock new CustomFieldsDraft
+        CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
+        Map<String, JsonNode> newCustomFieldsJsonMapMock = new HashMap<>();
+        newCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
+        when(newCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        when(newCustomFieldsMock.getFields()).thenReturn(newCustomFieldsJsonMapMock);
+
+        // Mock TypeService and Category Custom Type key Cache.
+        TypeService typeServiceMock = mock(TypeServiceImpl.class);
+        when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(null);
+
+        List<UpdateAction<Category>> updateActions =
+                buildNonNullCustomFieldsActions(existingCustomFieldsMock,
+                        newCustomFieldsMock, typeServiceMock);
+
+        assertThat(updateActions).isNotNull();
+        assertThat(updateActions).isEmpty();
+
+        //==========================================================================================
+
+        // Unit test custom fields comparison of Types of same keys, but new custom fields not set.
+        String categoryCustomTypeKey = "categoryCustomTypeKey";
+
+        Reference<Type> newCategoryTypeReference = mock(Reference.class);
+        when(newCategoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
+        when(newCategoryTypeReference.getKey()).thenReturn(categoryCustomTypeKey);
+        when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(categoryCustomTypeKey);
+
+        // Mock existing CustomFields
+        existingCustomFieldsMock = mock(CustomFields.class);
+        when(existingCustomFieldsMock.getType()).thenReturn(newCategoryTypeReference);
+        when(existingCustomFieldsMock.getFieldsJsonMap()).thenReturn(existingCustomFieldsJsonMapMock);
+
+        // Mock new CustomFieldsDraft
+        newCustomFieldsMock = mock(CustomFieldsDraft.class);
+        when(newCustomFieldsMock.getType()).thenReturn(newCategoryTypeReference);
+        when(newCustomFieldsMock.getFields()).thenReturn(null);
+
+        updateActions = buildNonNullCustomFieldsActions(existingCustomFieldsMock,
+                newCustomFieldsMock, typeServiceMock);
+
+        assertThat(updateActions).isNotNull();
+        assertThat(updateActions).isEmpty();
+        //==========================================================================================
+    }
+
+    @Test
+    public void buildSetCustomFieldsActions_ShouldBuildUpdateActions() {
         Map<String, JsonNode> existingCustomFields = new HashMap<>();
         existingCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
         existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
@@ -496,7 +658,7 @@ public class CategoryUpdateActionsHelperTest {
     }
 
     @Test
-    public void buildSetCustomFieldsActions_ShouldNotBuildUpdateAction() {
+    public void buildSetCustomFieldsActions_ShouldNotBuildUpdateActions() {
         Map<String, JsonNode> existingCustomFields = new HashMap<>();
         existingCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
         existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
