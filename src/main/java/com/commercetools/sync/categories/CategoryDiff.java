@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-public class CategoryUpdateActionsHelper {
+public class CategoryDiff {
 
     //TODO: JAVADOC
     @Nonnull

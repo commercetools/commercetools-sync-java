@@ -9,7 +9,8 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.commercetools.sync.categories.CategoryUpdateActionsHelper.*;
+import static com.commercetools.sync.categories.CategoryDiff.*;
+import static com.commercetools.sync.categories.CategoryTypeDiff.buildTypeActions;
 
 public class CategorySyncUtils {
 
