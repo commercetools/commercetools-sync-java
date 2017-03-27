@@ -76,7 +76,7 @@ public class CategorySyncUtils {
         buildSetMetaKeywordsUpdateAction(existingCategory, newCategory)
                 .map(updateActions::add);
 
-        updateActions.addAll(buildCustomTypeActions(existingCategory, newCategory, typeService));
+        updateActions.addAll(buildTypeActions(existingCategory, newCategory, typeService));
         return updateActions;
     }
 
