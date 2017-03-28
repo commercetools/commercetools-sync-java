@@ -15,12 +15,46 @@ import javax.annotation.Nonnull;
 import java.util.*;
 
 public class CategoryTypeDiff {
-    //TODO: UNIT TEST
-    //TODO: JAVADOC
+
+    /**
+     * Compares the {@link CustomFields}, of an existing {@link Category}, to the {@link CustomFieldsDraft}, of a new
+     * {@link CategoryDraft}, and returns a {@link List<UpdateAction<Category>>} as a result. If no update action is
+     * needed, for example in the case where both the {@link CustomFields} and the {@link CustomFieldsDraft} are null,
+     * an empty {@link List<UpdateAction<Category>>} is returned. A {@link TypeService} instance is injected into the
+     * method to fetch the key of the existing category type from it's
+     * cache (see {@link CategoryTypeDiff#buildNonNullCustomFieldsActions(CustomFields, CustomFieldsDraft, TypeService)}).
+     * <p>
+     * <p>
+     * An update action will be added to the result list in the following cases:-
+     * <p>
+     * 1. If the new category's custom type is set, but existing category's custom type is not. A "setCustomType" update
+     * actions is added, which sets the custom type (and all it's fields to the existing category).
+     * 2. If the new category's custom type is not set, but the existing category's custom type is set. A
+     * "setCustomType" update action is added, which removes the type set on the existing category.
+     * 3. If both the categories custom types are the same and the custom fields are both set. The custom
+     * field values of both categories are then calculated. (see {@link CategoryTypeDiff#buildSetCustomFieldsActions(Map, Map)})
+     * 4. If the keys of both custom types are different, then a "setCustomType" update action is added, where the
+     * existing category's custom type is set to be as the new one's.
+     * <p>
+     * <p>
+     * <p>
+     * An update action will <bold>not</bold> be added to the result list in the following cases:-
+     * 1. If both the categories' custom types are not set.
+     * 2. If both the categories' custom type keys are not set.
+     * 3. If both categories custom type keys are identical but the custom fields of the new category's custom type is not set.
+     * 4. Custom fields are both empty.
+     * 5. Custom field JSON values have different ordering.
+     * 6. Custom field values are identical.
+     *
+     * @param existingCategory the category which should be updated.
+     * @param newCategory      the category draft where we get the new custom fields.
+     * @param typeService      the type service that is used to fetch the cached key of the category custom type.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
+     */
     @Nonnull
     static List<UpdateAction<Category>> buildTypeActions(@Nonnull final Category existingCategory,
-                                                               @Nonnull final CategoryDraft newCategory,
-                                                               @Nonnull final TypeService typeService) {
+                                                         @Nonnull final CategoryDraft newCategory,
+                                                         @Nonnull final TypeService typeService) {
         final CustomFields existingCustomFields = existingCategory.getCustom();
         final CustomFieldsDraft newCustomFieldsDraft = newCategory.getCustom();
         if (existingCustomFields != null && newCustomFieldsDraft != null) {
@@ -46,7 +80,32 @@ public class CategoryTypeDiff {
         return Collections.emptyList();
     }
 
-    // TODO: JAVADOC
+    /**
+     * Compares a non null {@link CustomFields} to a non null {@link CustomFieldsDraft} and returns a
+     * {@link List<UpdateAction<Category>>} as a result. The keys are used to compare the custom types.
+     * The key of the existing category custom type is fetched from the caching mechanism of the injected
+     * {@link TypeService}. The key of the new category custom type is expected to be set on the type.
+     * If no update action is needed an empty {@link List<UpdateAction<Category>>} is returned.
+     * <p>
+     * <p>
+     * An update action will be added to the result list in the following cases:-
+     * <p>
+     * 1. If both the categories custom type keys are the same and the custom fields are both set. The custom
+     * field values of both categories are then calculated. (see {@link CategoryTypeDiff#buildSetCustomFieldsActions(Map, Map)})
+     * 2. If the keys of both custom types are different, then a "setCustomType" update action is added, where the
+     * existing category's custom type is set to be as the new one's.
+     * <p>
+     * <p>
+     * <p>
+     * An update action will <bold>not</bold> be added to the result list in the following cases:-
+     * 1. If both the categories' custom type keys are not set.
+     * 2. If both categories custom type keys are identical but the custom fields of the new category's custom type is not set.
+     *
+     * @param existingCustomFields the existing category's custom fields.
+     * @param newCustomFieldsDraft the new category draft's custom fields.
+     * @param typeService          the type service that is used to fetch the cached key of the category custom type.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
+     */
     @Nonnull
     static List<UpdateAction<Category>> buildNonNullCustomFieldsActions(@Nonnull final CustomFields existingCustomFields,
                                                                         @Nonnull final CustomFieldsDraft newCustomFieldsDraft,
@@ -78,11 +137,28 @@ public class CategoryTypeDiff {
     }
 
     /**
-     * TODO: JAVADOC
+     * TODO: USE COLLECT
+     * Compares two {@link Map<String, JsonNode>} representing a map of the custom field name to the JSON representation
+     * of the value of the corresponding custom field. It returns a {@link List<UpdateAction<Category>>} as a result.
+     * If no update action is needed an empty {@link List<UpdateAction<Category>>} is returned.
+     * <p>
+     * <p>
+     * An update action will be added to the result list in the following cases:-
+     * <p>
+     * 1. A custom field value is changed.
+     * 2. A custom field value is removed.
+     * 3. A new custom field value is added.
+     * <p>
+     * <p>
+     * <p>
+     * An update action will <bold>not</bold> be added to the result list in the following cases:-
+     * 1. Custom fields are both empty.
+     * 2. Custom field JSON values have different ordering.
+     * 3. Custom field values are identical.
      *
-     * @param existingCustomFields
-     * @param newCustomFields
-     * @return
+     * @param existingCustomFields the existing category's custom fields map of JSON values.
+     * @param newCustomFields      the new category's custom fields map of JSON values.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
     static List<UpdateAction<Category>> buildSetCustomFieldsActions(
@@ -95,12 +171,15 @@ public class CategoryTypeDiff {
     }
 
     /**
-     * TODO: JAVADOC
-     * Calculate update actions for new or changed custom fields.
+     * TODO: USE COLLECT
+     * Traverses the new category's custom fields map of JSON values {@link Map<String, JsonNode>} to create
+     * "setCustomField" update actions that represent either the modification of an existent custom field's
+     * value or the addition of a new one. It returns a {@link List<UpdateAction<Category>>} as a result.
+     * If no update action is needed an empty {@link List<UpdateAction<Category>>} is returned.
      *
-     * @param existingCustomFields
-     * @param newCustomFields
-     * @return
+     * @param existingCustomFields the existing category's custom fields map of JSON values.
+     * @param newCustomFields      the new category's custom fields map of JSON values.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
     static List<UpdateAction<Category>> buildNewOrModifiedCustomFieldsActions(
@@ -115,12 +194,15 @@ public class CategoryTypeDiff {
     }
 
     /**
-     * TODO: JAVADOC
-     * Calculate update actions for custom fields that don't exist anymore.
+     * TODO: USE COLLECT
+     * Traverses the existing category's custom fields map of JSON values {@link Map<String, JsonNode>} to create update
+     * "setCustomField" update actions that represent removal of an existent custom field from the new category's custom
+     * fields. It returns a {@link List<UpdateAction<Category>>} as a result.
+     * If no update action is needed an empty {@link List<UpdateAction<Category>>} is returned.
      *
-     * @param existingCustomFields
-     * @param newCustomFields
-     * @return
+     * @param existingCustomFields the existing category's custom fields map of JSON values.
+     * @param newCustomFields      the new category's custom fields map of JSON values.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
     static List<UpdateAction<Category>> buildRemovedCustomFieldsActions(
