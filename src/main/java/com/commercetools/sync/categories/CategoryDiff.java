@@ -29,9 +29,10 @@ public class CategoryDiff {
     static Optional<UpdateAction<Category>> buildChangeNameUpdateAction(
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
+        final LocalizedString newCategoryName = newCategory.getName();
         return buildUpdateActionForLocalizedStrings(existingCategory.getName(),
-                newCategory.getName(),
-                ChangeName.of(newCategory.getName()));
+                newCategoryName,
+                ChangeName.of(newCategoryName));
     }
 
     /**
@@ -48,9 +49,10 @@ public class CategoryDiff {
     static Optional<UpdateAction<Category>> buildChangeSlugUpdateAction(
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
+        final LocalizedString newCategorySlug = newCategory.getSlug();
         return buildUpdateActionForLocalizedStrings(existingCategory.getSlug(),
-                newCategory.getSlug(),
-                ChangeSlug.of(newCategory.getSlug()));
+                newCategorySlug,
+                ChangeSlug.of(newCategorySlug));
     }
 
     /**
