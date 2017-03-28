@@ -30,8 +30,8 @@ public class CategoryTypeDiff {
                 if (newCustomFieldsDraft != null) {
                     // New category's custom fields are set, but existing category's custom fields are not set. So we
                     // should set the custom type and fields of the new category to the existing one.
-                    String newCustomFieldsDraftTypeKey = newCustomFieldsDraft.getType().getKey();
-                    Map<String, JsonNode> newCustomFieldsDraftJsonMap = newCustomFieldsDraft.getFields();
+                    final String newCustomFieldsDraftTypeKey = newCustomFieldsDraft.getType().getKey();
+                    final Map<String, JsonNode> newCustomFieldsDraftJsonMap = newCustomFieldsDraft.getFields();
                     return Collections.singletonList(
                             SetCustomType.ofTypeKeyAndJson(
                                     newCustomFieldsDraftTypeKey, newCustomFieldsDraftJsonMap)
