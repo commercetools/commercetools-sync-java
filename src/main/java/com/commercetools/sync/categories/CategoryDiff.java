@@ -40,8 +40,8 @@ public class CategoryDiff {
     static Optional<UpdateAction<Category>> buildSetDescriptionUpdateAction(
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
-        // TODO: NEED TO HANDLE DESCRIPTION REMOVAL
-        // TODO: TEMP WORKAROUND:
+        // TODO: NEED TO HANDLE DESCRIPTION REMOVAL.
+        // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
         final LocalizedString newCategoryDescription = newCategory.getDescription();
         if (newCategoryDescription == null) {
             return Optional.empty();
@@ -56,8 +56,8 @@ public class CategoryDiff {
     static Optional<UpdateAction<Category>> buildChangeParentUpdateAction(
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
-        // TODO: NEED TO HANDLE PARENT REMOVAL
-        // TODO: TEMP WORKAROUND:
+        // TODO: NEED TO HANDLE PARENT REMOVAL.
+        // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
         final Reference<Category> parentCategoryReference = newCategory.getParent();
         if (parentCategoryReference == null) {
             return Optional.empty();
@@ -73,6 +73,7 @@ public class CategoryDiff {
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
         // TODO: NEED TO HANDLE ORDERHINT REMOVAL
+        // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
         final String orderHint = newCategory.getOrderHint();
         if (orderHint == null) {
             return Optional.empty();
