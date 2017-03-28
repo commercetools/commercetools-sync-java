@@ -13,6 +13,8 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CategoryTypeDiff {
 
@@ -164,14 +166,16 @@ public class CategoryTypeDiff {
     static List<UpdateAction<Category>> buildSetCustomFieldsActions(
             @Nonnull final Map<String, JsonNode> existingCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields) {
-        final List<UpdateAction<Category>> updateActions = new ArrayList<>();
-        updateActions.addAll(buildNewOrModifiedCustomFieldsActions(existingCustomFields, newCustomFields));
-        updateActions.addAll(buildRemovedCustomFieldsActions(existingCustomFields, newCustomFields));
-        return updateActions;
+        final List<UpdateAction<Category>> newOrModifiedCustomFieldsActions =
+                buildNewOrModifiedCustomFieldsActions(existingCustomFields, newCustomFields);
+        final List<UpdateAction<Category>> removedCustomFieldsActions =
+                buildRemovedCustomFieldsActions(existingCustomFields, newCustomFields);
+        return Stream.concat(newOrModifiedCustomFieldsActions.stream(),
+                removedCustomFieldsActions.stream())
+                .collect(Collectors.toList());
     }
 
     /**
-     * TODO: USE COLLECT
      * Traverses the new category's custom fields map of JSON values {@link Map<String, JsonNode>} to create
      * "setCustomField" update actions that represent either the modification of an existent custom field's
      * value or the addition of a new one. It returns a {@link List<UpdateAction<Category>>} as a result.
@@ -185,16 +189,14 @@ public class CategoryTypeDiff {
     static List<UpdateAction<Category>> buildNewOrModifiedCustomFieldsActions(
             @Nonnull final Map<String, JsonNode> existingCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields) {
-        final List<UpdateAction<Category>> updateActions = new ArrayList<>();
-        newCustomFields.entrySet().stream()
+        return newCustomFields.entrySet().stream()
                 .map(Map.Entry::getKey)
                 .filter(newCustomFieldName -> !Objects.equals(newCustomFields.get(newCustomFieldName), existingCustomFields.get(newCustomFieldName)))
-                .forEach(newCustomFieldName -> updateActions.add(SetCustomField.ofJson(newCustomFieldName, newCustomFields.get(newCustomFieldName))));
-        return updateActions;
+                .map(newCustomFieldName -> SetCustomField.ofJson(newCustomFieldName, newCustomFields.get(newCustomFieldName)))
+                .collect(Collectors.toList());
     }
 
     /**
-     * TODO: USE COLLECT
      * Traverses the existing category's custom fields map of JSON values {@link Map<String, JsonNode>} to create update
      * "setCustomField" update actions that represent removal of an existent custom field from the new category's custom
      * fields. It returns a {@link List<UpdateAction<Category>>} as a result.
@@ -208,11 +210,10 @@ public class CategoryTypeDiff {
     static List<UpdateAction<Category>> buildRemovedCustomFieldsActions(
             @Nonnull final Map<String, JsonNode> existingCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields) {
-        final List<UpdateAction<Category>> updateActions = new ArrayList<>();
-        existingCustomFields.entrySet().stream()
+        return existingCustomFields.entrySet().stream()
                 .map(Map.Entry::getKey)
                 .filter(existingCustomFieldsName -> Objects.isNull(newCustomFields.get(existingCustomFieldsName)))
-                .forEach(existingCustomFieldsName -> updateActions.add(SetCustomField.ofJson(existingCustomFieldsName, null)));
-        return updateActions;
+                .map(existingCustomFieldsName -> SetCustomField.ofJson(existingCustomFieldsName, null))
+                .collect(Collectors.toList());
     }
 }
