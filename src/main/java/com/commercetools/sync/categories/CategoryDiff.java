@@ -120,7 +120,7 @@ public class CategoryDiff {
     static Optional<UpdateAction<Category>> buildUpdateActionForLocalizedStrings(
             @Nullable final LocalizedString existingLocalisedString,
             @Nullable final LocalizedString newLocalisedString,
-            UpdateAction<Category> updateAction) {
+            @Nonnull final UpdateAction<Category> updateAction) {
         return buildUpdateActionForObjects(existingLocalisedString, newLocalisedString, updateAction);
     }
 
@@ -129,7 +129,7 @@ public class CategoryDiff {
     static Optional<UpdateAction<Category>> buildUpdateActionForReferences(
             @Nullable final Reference<Category> existingCategoryReference,
             @Nullable final Reference<Category> newCategoryReference,
-            UpdateAction<Category> updateAction) {
+            @Nonnull final UpdateAction<Category> updateAction) {
         return buildUpdateActionForObjects(existingCategoryReference, newCategoryReference, updateAction);
     }
 
@@ -137,7 +137,7 @@ public class CategoryDiff {
     @Nonnull
     static Optional<UpdateAction<Category>> buildUpdateActionForStrings(@Nullable final String existingString,
                                                                         @Nullable final String newString,
-                                                                        UpdateAction<Category> updateAction) {
+                                                                        @Nonnull final UpdateAction<Category> updateAction) {
         return buildUpdateActionForObjects(existingString, newString, updateAction);
     }
 
@@ -145,7 +145,7 @@ public class CategoryDiff {
     @Nonnull
     static Optional<UpdateAction<Category>> buildUpdateActionForObjects(@Nullable final Object existingObject,
                                                                         @Nullable final Object newObject,
-                                                                        UpdateAction<Category> updateAction) {
+                                                                        @Nonnull final UpdateAction<Category> updateAction) {
         if (!Objects.equals(existingObject, newObject)) {
             return Optional.of(updateAction);
         }
