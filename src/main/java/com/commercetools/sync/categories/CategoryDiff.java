@@ -42,12 +42,13 @@ public class CategoryDiff {
             @Nonnull final CategoryDraft newCategory) {
         // TODO: NEED TO HANDLE DESCRIPTION REMOVAL
         // TODO: TEMP WORKAROUND:
-        if (newCategory.getDescription() == null) {
+        final LocalizedString newCategoryDescription = newCategory.getDescription();
+        if (newCategoryDescription == null) {
             return Optional.empty();
         }
         return buildUpdateActionForLocalizedStrings(existingCategory.getDescription(),
-                newCategory.getDescription(),
-                SetDescription.of(newCategory.getDescription()));
+                newCategoryDescription,
+                SetDescription.of(newCategoryDescription));
     }
 
     //TODO: JAVADOC
@@ -57,13 +58,13 @@ public class CategoryDiff {
             @Nonnull final CategoryDraft newCategory) {
         // TODO: NEED TO HANDLE PARENT REMOVAL
         // TODO: TEMP WORKAROUND:
-        if (newCategory.getParent() == null) {
+        final Reference<Category> parentCategoryReference = newCategory.getParent();
+        if (parentCategoryReference == null) {
             return Optional.empty();
         }
-        assert newCategory.getParent() != null;
         return buildUpdateActionForReferences(existingCategory.getParent(),
-                newCategory.getParent(),
-                ChangeParent.of(newCategory.getParent()));
+                parentCategoryReference,
+                ChangeParent.of(parentCategoryReference));
     }
 
     //TODO: JAVADOC
@@ -72,12 +73,13 @@ public class CategoryDiff {
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
         // TODO: NEED TO HANDLE ORDERHINT REMOVAL
-        if (newCategory.getOrderHint() == null) {
+        final String orderHint = newCategory.getOrderHint();
+        if (orderHint == null) {
             return Optional.empty();
         }
         return buildUpdateActionForStrings(existingCategory.getOrderHint(),
-                newCategory.getOrderHint(),
-                ChangeOrderHint.of(newCategory.getOrderHint()));
+                orderHint,
+                ChangeOrderHint.of(orderHint));
     }
 
     //TODO: JAVADOC
@@ -85,9 +87,10 @@ public class CategoryDiff {
     static Optional<UpdateAction<Category>> buildSetMetaTitleUpdateAction(
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
+        final LocalizedString newCategoryMetaTitle = newCategory.getMetaTitle();
         return buildUpdateActionForLocalizedStrings(existingCategory.getMetaTitle(),
-                newCategory.getMetaTitle(),
-                SetMetaTitle.of(newCategory.getMetaTitle()));
+                newCategoryMetaTitle,
+                SetMetaTitle.of(newCategoryMetaTitle));
     }
 
     //TODO: JAVADOC
@@ -95,9 +98,10 @@ public class CategoryDiff {
     static Optional<UpdateAction<Category>> buildSetMetaKeywordsUpdateAction(
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
+        final LocalizedString newCategoryMetaKeywords = newCategory.getMetaKeywords();
         return buildUpdateActionForLocalizedStrings(existingCategory.getMetaKeywords(),
-                newCategory.getMetaKeywords(),
-                SetMetaKeywords.of(newCategory.getMetaKeywords()));
+                newCategoryMetaKeywords,
+                SetMetaKeywords.of(newCategoryMetaKeywords));
     }
 
     //TODO: JAVADOC
@@ -105,9 +109,10 @@ public class CategoryDiff {
     static Optional<UpdateAction<Category>> buildSetMetaDescriptionUpdateAction(
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
+        final LocalizedString newCategoryMetaDescription = newCategory.getMetaDescription();
         return buildUpdateActionForLocalizedStrings(existingCategory.getMetaDescription(),
-                newCategory.getMetaDescription(),
-                SetMetaDescription.of(newCategory.getMetaDescription()));
+                newCategoryMetaDescription,
+                SetMetaDescription.of(newCategoryMetaDescription));
     }
 
     //TODO: JAVADOC
