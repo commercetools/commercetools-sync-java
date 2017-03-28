@@ -33,7 +33,6 @@ public class CategoryDiffTest {
     private final static String MOCK_EXISTING_CATEGORY_META_KEYWORDS = "categoryKeywords";
     private final static String MOCK_EXISTING_CATEGORY_ORDERHINT = "123";
 
-
     @BeforeClass
     public static void setup() {
         when(MOCK_EXISTING_CATEGORY.getName()).thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
