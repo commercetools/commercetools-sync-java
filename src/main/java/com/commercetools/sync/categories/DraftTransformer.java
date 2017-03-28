@@ -19,9 +19,11 @@ import java.util.stream.Collectors;
 public class DraftTransformer {
 
     /**
+     * TODO: NEEDS TO BE IMPLEMENTED. GITHUB ISSUE#9
      * TODO: UNIT TEST
      * TODO: DOCUMENT
      * TODO: REFACTOR
+     *
      * @param categories
      * @return
      */
@@ -32,15 +34,17 @@ public class DraftTransformer {
     }
 
     /**
+     * TODO: NEEDS TO BE IMPLEMENTED. GITHUB ISSUE#9
      * TODO: UNIT TEST
      * TODO: DOCUMENT
      * TODO: REFACTOR
+     *
      * @param categories
      * @param categoryTypeKeyMap
      * @return
      */
     public static List<CategoryDraft> getCategoryDrafts(@Nonnull final List<Category> categories,
-                                                 @Nonnull final Map<String, String> categoryTypeKeyMap) {
+                                                        @Nonnull final Map<String, String> categoryTypeKeyMap) {
         return categories.stream()
                 .map(category -> {
                     CustomFields categoryCustomFields = category.getCustom();
@@ -60,9 +64,11 @@ public class DraftTransformer {
     }
 
     /**
+     * TODO: NEEDS TO BE IMPLEMENTED. GITHUB ISSUE#9
      * TODO: UNIT TEST
      * TODO: DOCUMENT
      * TODO: REFACTOR
+     *
      * @param category
      * @return
      */
@@ -81,22 +87,26 @@ public class DraftTransformer {
     }
 
     /**
+     * TODO: NEEDS TO BE IMPLEMENTED. GITHUB ISSUE#9
      * TODO: UNIT TEST
      * TODO: DOCUMENT
      * TODO: REFACTOR
+     *
      * @param category
      * @param categoryTypeKey
      * @return
      */
     public static CategoryDraft getCategoryDraft(@Nonnull final Category category,
-                                          @Nonnull final String categoryTypeKey) {
+                                                 @Nonnull final String categoryTypeKey) {
         return null;
     }
 
     /**
+     * TODO: NEEDS TO BE IMPLEMENTED. GITHUB ISSUE#9
      * TODO: UNIT TEST
      * TODO: DOCUMENT
      * TODO: REFACTOR
+     *
      * @param customFields
      * @return
      */
@@ -110,22 +120,26 @@ public class DraftTransformer {
     }
 
     /**
+     * TODO: NEEDS TO BE IMPLEMENTED. GITHUB ISSUE#9
      * TODO: UNIT TEST
      * TODO: DOCUMENT
      * TODO: REFACTOR
+     *
      * @param customFields
      * @param categoryTypeKey
      * @return
      */
     public static CustomFieldsDraft getCustomFieldsDraft(@Nonnull final CustomFields customFields,
-                                                  @Nonnull final String categoryTypeKey) {
+                                                         @Nonnull final String categoryTypeKey) {
         return CustomFieldsDraft.ofTypeKeyAndJson(categoryTypeKey, customFields.getFieldsJsonMap());
     }
 
     /**
+     * TODO: NEEDS TO BE IMPLEMENTED. GITHUB ISSUE#9
      * TODO: UNIT TEST
      * TODO: DOCUMENT
      * TODO: REFACTOR
+     *
      * @param assets
      * @return
      */
@@ -136,9 +150,11 @@ public class DraftTransformer {
     }
 
     /**
+     * TODO: NEEDS TO BE IMPLEMENTED. GITHUB ISSUE#9
      * TODO: UNIT TEST
      * TODO: DOCUMENT
      * TODO: REFACTOR
+     *
      * @param asset
      * @return
      */

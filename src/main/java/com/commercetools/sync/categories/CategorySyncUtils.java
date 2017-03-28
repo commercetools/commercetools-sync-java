@@ -16,30 +16,67 @@ import static com.commercetools.sync.categories.CategoryTypeDiff.buildTypeAction
 
 public class CategorySyncUtils {
 
+    /**
+     * TODO: JAVADOC.
+     * TODO: UNIT TEST.
+     * TODO: NEEDS TO BE IMPLEMENTED. GITHUB ISSUE#9
+     *
+     * @param existingCategory
+     * @param newCategory
+     * @param typeService
+     * @return
+     */
     @Nonnull
     public static List<UpdateAction<Category>> buildActions(@Nonnull final Category existingCategory,
-                                                            @Nonnull final Category newCategory) {
-        final List<UpdateAction<Category>> updateActions = buildCoreActions(existingCategory, newCategory);
+                                                            @Nonnull final Category newCategory,
+                                                            @Nonnull final TypeService typeService) {
+        final List<UpdateAction<Category>> updateActions = buildCoreActions(existingCategory, newCategory, typeService);
         final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(existingCategory, newCategory);
         return Stream.concat(updateActions.stream(),
                 assetUpdateActions.stream())
                 .collect(Collectors.toList());
     }
 
-    // TODO: NEEDS TO BE IMPLEMENTED
+    /**
+     * TODO: NEEDS TO BE IMPLEMENTED. GITHUB ISSUE#9
+     * SHOULD TRANSFORM Category TO CategoryDraft
+     * then call {@link CategorySyncUtils#buildCoreActions(Category, CategoryDraft, TypeService)}.
+     *
+     * @param existingCategory
+     * @param newCategory
+     * @param typeService
+     * @return
+     */
     @Nonnull
     public static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category existingCategory,
-                                                                @Nonnull final Category newCategory) {
+                                                                @Nonnull final Category newCategory,
+                                                                @Nonnull final TypeService typeService) {
         return new ArrayList<>();
     }
 
-    // TODO: NEEDS TO BE IMPLEMENTED
+    /**
+     * TODO: NEEDS TO BE IMPLEMENTED. GITHUB ISSUE#9
+     * SHOULD TRANSFORM Category TO CategoryDraft
+     * then call {@link CategorySyncUtils#buildAssetActions(Category, CategoryDraft)}.
+     *
+     * @param existingCategory
+     * @param newCategory
+     * @return
+     */
     @Nonnull
     public static List<UpdateAction<Category>> buildAssetActions(@Nonnull final Category existingCategory,
                                                                  @Nonnull final Category newCategory) {
         return new ArrayList<>();
     }
 
+    /**
+     * TODO: JAVADOC
+     * TODO: UNIT TEST
+     * @param existingCategory
+     * @param newCategory
+     * @param typeService
+     * @return
+     */
     @Nonnull
     public static List<UpdateAction<Category>> buildActions(@Nonnull final Category existingCategory,
                                                             @Nonnull final CategoryDraft newCategory,
@@ -51,6 +88,14 @@ public class CategorySyncUtils {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * TODO: JAVADOC
+     * TODO: UNIT TEST
+     * @param existingCategory
+     * @param newCategory
+     * @param typeService
+     * @return
+     */
     @Nonnull
     public static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category existingCategory,
                                                                 @Nonnull final CategoryDraft newCategory,
