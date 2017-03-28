@@ -73,12 +73,9 @@ public class CategoryDiff {
         // TODO: NEED TO HANDLE DESCRIPTION REMOVAL.
         // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
         final LocalizedString newCategoryDescription = newCategory.getDescription();
-        if (newCategoryDescription == null) {
-            return Optional.empty();
-        }
-        return buildUpdateActionForLocalizedStrings(existingCategory.getDescription(),
+        return newCategoryDescription != null ? buildUpdateActionForLocalizedStrings(existingCategory.getDescription(),
                 newCategoryDescription,
-                SetDescription.of(newCategoryDescription));
+                SetDescription.of(newCategoryDescription)) : Optional.empty();
     }
 
     /**
@@ -100,13 +97,10 @@ public class CategoryDiff {
             @Nonnull final CategoryDraft newCategory) {
         // TODO: NEED TO HANDLE PARENT REMOVAL.
         // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
-        final Reference<Category> parentCategoryReference = newCategory.getParent();
-        if (parentCategoryReference == null) {
-            return Optional.empty();
-        }
-        return buildUpdateActionForReferences(existingCategory.getParent(),
-                parentCategoryReference,
-                ChangeParent.of(parentCategoryReference));
+        final Reference<Category> newCategoryParentReference = newCategory.getParent();
+        return newCategoryParentReference != null ? buildUpdateActionForReferences(existingCategory.getParent(),
+                newCategoryParentReference,
+                ChangeParent.of(newCategoryParentReference)) : Optional.empty();
     }
 
     /**
@@ -128,13 +122,10 @@ public class CategoryDiff {
             @Nonnull final CategoryDraft newCategory) {
         // TODO: NEED TO HANDLE ORDERHINT REMOVAL
         // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
-        final String orderHint = newCategory.getOrderHint();
-        if (orderHint == null) {
-            return Optional.empty();
-        }
-        return buildUpdateActionForStrings(existingCategory.getOrderHint(),
-                orderHint,
-                ChangeOrderHint.of(orderHint));
+        final String newCategoryOrderHint = newCategory.getOrderHint();
+        return newCategoryOrderHint != null ? buildUpdateActionForStrings(existingCategory.getOrderHint(),
+                newCategoryOrderHint,
+                ChangeOrderHint.of(newCategoryOrderHint)) : Optional.empty();
     }
 
     /**
