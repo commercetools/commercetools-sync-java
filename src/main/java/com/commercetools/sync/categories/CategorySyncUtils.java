@@ -8,6 +8,8 @@ import io.sphere.sdk.commands.UpdateAction;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.commercetools.sync.categories.CategoryDiff.*;
 import static com.commercetools.sync.categories.CategoryTypeDiff.buildTypeActions;
@@ -17,10 +19,11 @@ public class CategorySyncUtils {
     @Nonnull
     public static List<UpdateAction<Category>> buildActions(@Nonnull final Category existingCategory,
                                                             @Nonnull final Category newCategory) {
-        List<UpdateAction<Category>> updateActions = buildCoreActions(existingCategory, newCategory);
-        List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(existingCategory, newCategory);
-        updateActions.addAll(assetUpdateActions);
-        return updateActions;
+        final List<UpdateAction<Category>> updateActions = buildCoreActions(existingCategory, newCategory);
+        final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(existingCategory, newCategory);
+        return Stream.concat(updateActions.stream(),
+                assetUpdateActions.stream())
+                .collect(Collectors.toList());
     }
 
     // TODO: NEEDS TO BE IMPLEMENTED
@@ -41,17 +44,18 @@ public class CategorySyncUtils {
     public static List<UpdateAction<Category>> buildActions(@Nonnull final Category existingCategory,
                                                             @Nonnull final CategoryDraft newCategory,
                                                             @Nonnull final TypeService typeService) {
-        List<UpdateAction<Category>> updateActions = buildCoreActions(existingCategory, newCategory, typeService);
-        List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(existingCategory, newCategory);
-        updateActions.addAll(assetUpdateActions);
-        return updateActions;
+        final List<UpdateAction<Category>> updateActions = buildCoreActions(existingCategory, newCategory, typeService);
+        final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(existingCategory, newCategory);
+        return Stream.concat(updateActions.stream(),
+                assetUpdateActions.stream())
+                .collect(Collectors.toList());
     }
 
     @Nonnull
     public static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category existingCategory,
                                                                 @Nonnull final CategoryDraft newCategory,
                                                                 @Nonnull final TypeService typeService) {
-        List<UpdateAction<Category>> updateActions = new ArrayList<>();
+        final List<UpdateAction<Category>> updateActions = new ArrayList<>();
         buildChangeNameUpdateAction(existingCategory, newCategory)
                 .map(updateActions::add);
 
@@ -76,8 +80,11 @@ public class CategorySyncUtils {
         buildSetMetaKeywordsUpdateAction(existingCategory, newCategory)
                 .map(updateActions::add);
 
-        updateActions.addAll(buildTypeActions(existingCategory, newCategory, typeService));
-        return updateActions;
+        final List<UpdateAction<Category>> categoryTypeUpdateActions =
+                buildTypeActions(existingCategory, newCategory, typeService);
+        return Stream.concat(updateActions.stream(),
+                categoryTypeUpdateActions.stream())
+                .collect(Collectors.toList());
     }
 
 
