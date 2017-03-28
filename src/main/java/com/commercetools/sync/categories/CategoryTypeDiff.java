@@ -139,7 +139,6 @@ public class CategoryTypeDiff {
     }
 
     /**
-     * TODO: USE COLLECT
      * Compares two {@link Map<String, JsonNode>} representing a map of the custom field name to the JSON representation
      * of the value of the corresponding custom field. It returns a {@link List<UpdateAction<Category>>} as a result.
      * If no update action is needed an empty {@link List<UpdateAction<Category>>} is returned.
