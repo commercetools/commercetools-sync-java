@@ -19,13 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * TODO: Use junit test naming convention as in CategoryTypeDiffTest
- */
 public class CategoryDiffTest {
     private final static Category MOCK_EXISTING_CATEGORY = mock(Category.class);
     private final static Locale LOCALE = Locale.GERMAN;
-    private final static String MOCK_CATEGORY_REFERENCE_TYPE = "Category";
+    private final static String MOCK_CATEGORY_REFERENCE_TYPE = "type";
     private final static String MOCK_EXISTING_CATEGORY_PARENT_ID = "1";
     private final static String MOCK_EXISTING_CATEGORY_NAME = "categoryName";
     private final static String MOCK_EXISTING_CATEGORY_SLUG = "categorySlug";
@@ -51,21 +48,21 @@ public class CategoryDiffTest {
     }
 
     @Test
-    public void buildChangeNameUpdateAction_ShouldBuildUpdateAction() {
+    public void buildChangeNameUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getName()).thenReturn(LocalizedString.of(LOCALE, "newName"));
 
         final Optional<UpdateAction<Category>> changeNameUpdateAction =
                 buildChangeNameUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
-        assertThat(changeNameUpdateAction).isNotNull();
-        assertThat(changeNameUpdateAction).isPresent();
-        assertThat(changeNameUpdateAction.get().getAction()).isEqualTo("changeName");
-        assertThat(((ChangeName) (changeNameUpdateAction.get())).getName()).isEqualTo(LocalizedString.of(LOCALE, "newName"));
+        UpdateAction<Category> categoryUpdateAction = changeNameUpdateAction.orElse(null);
+        assertThat(categoryUpdateAction).isNotNull();
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("changeName");
+        assertThat(((ChangeName) categoryUpdateAction).getName()).isEqualTo(LocalizedString.of(LOCALE, "newName"));
     }
 
     @Test
-    public void buildChangeNameUpdateAction_ShouldNotBuildUpdateAction() {
+    public void buildChangeNameUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameName = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameName.getName())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
@@ -78,21 +75,21 @@ public class CategoryDiffTest {
     }
 
     @Test
-    public void buildChangeSlugUpdateAction_ShouldBuildUpdateAction() {
+    public void buildChangeSlugUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getSlug()).thenReturn(LocalizedString.of(LOCALE, "newSlug"));
 
         final Optional<UpdateAction<Category>> changeSlugUpdateAction =
                 buildChangeSlugUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
-        assertThat(changeSlugUpdateAction).isNotNull();
-        assertThat(changeSlugUpdateAction).isPresent();
-        assertThat(changeSlugUpdateAction.get().getAction()).isEqualTo("changeSlug");
-        assertThat(((ChangeSlug) (changeSlugUpdateAction.get())).getSlug()).isEqualTo(LocalizedString.of(LOCALE, "newSlug"));
+        UpdateAction<Category> categoryUpdateAction = changeSlugUpdateAction.orElse(null);
+        assertThat(categoryUpdateAction).isNotNull();
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("changeSlug");
+        assertThat(((ChangeSlug) categoryUpdateAction).getSlug()).isEqualTo(LocalizedString.of(LOCALE, "newSlug"));
     }
 
     @Test
-    public void buildChangeSlugUpdateAction_ShouldNotBuildUpdateAction() {
+    public void buildChangeSlugUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameSlug = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameSlug.getSlug())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_SLUG));
@@ -105,22 +102,22 @@ public class CategoryDiffTest {
     }
 
     @Test
-    public void buildSetDescriptionUpdateAction_ShouldBuildUpdateAction() {
+    public void buildSetDescriptionUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getDescription()).thenReturn(LocalizedString.of(LOCALE, "newDescription"));
 
         final Optional<UpdateAction<Category>> setDescriptionUpdateAction =
                 buildSetDescriptionUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
-        assertThat(setDescriptionUpdateAction).isNotNull();
-        assertThat(setDescriptionUpdateAction).isPresent();
-        assertThat(setDescriptionUpdateAction.get().getAction()).isEqualTo("setDescription");
-        assertThat(((SetDescription) (setDescriptionUpdateAction.get())).getDescription())
+        UpdateAction<Category> categoryUpdateAction = setDescriptionUpdateAction.orElse(null);
+        assertThat(categoryUpdateAction).isNotNull();
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("setDescription");
+        assertThat(((SetDescription) categoryUpdateAction).getDescription())
                 .isEqualTo(LocalizedString.of(LOCALE, "newDescription"));
     }
 
     @Test
-    public void buildSetDescriptionUpdateAction_ShouldNotBuildUpdateAction() {
+    public void buildSetDescriptionUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameDescription = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameDescription.getDescription())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_DESCRIPTION));
@@ -133,22 +130,22 @@ public class CategoryDiffTest {
     }
 
     @Test
-    public void buildChangeParentUpdateAction_ShouldBuildUpdateAction() {
+    public void buildChangeParentUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getParent()).thenReturn(Reference.of("Category", "2"));
 
         final Optional<UpdateAction<Category>> changeParentUpdateAction =
                 buildChangeParentUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
-        assertThat(changeParentUpdateAction).isNotNull();
-        assertThat(changeParentUpdateAction).isPresent();
-        assertThat(changeParentUpdateAction.get().getAction()).isEqualTo("changeParent");
-        assertThat(((ChangeParent) (changeParentUpdateAction.get())).getParent())
+        UpdateAction<Category> categoryUpdateAction = changeParentUpdateAction.orElse(null);
+        assertThat(categoryUpdateAction).isNotNull();
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("changeParent");
+        assertThat(((ChangeParent) categoryUpdateAction).getParent())
                 .isEqualTo(Reference.of("Category", "2"));
     }
 
     @Test
-    public void buildChangeParentUpdateAction_ShouldNotBuildUpdateAction() {
+    public void buildChangeParentUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameParent = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameParent.getParent())
                 .thenReturn(Reference.of(MOCK_CATEGORY_REFERENCE_TYPE, MOCK_EXISTING_CATEGORY_PARENT_ID));
@@ -161,22 +158,22 @@ public class CategoryDiffTest {
     }
 
     @Test
-    public void buildChangeOrderHintUpdateAction_ShouldBuildUpdateAction() {
+    public void buildChangeOrderHintUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getOrderHint()).thenReturn("099");
 
         final Optional<UpdateAction<Category>> changeOrderHintUpdateAction =
                 buildChangeOrderHintUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
-        assertThat(changeOrderHintUpdateAction).isNotNull();
-        assertThat(changeOrderHintUpdateAction).isPresent();
-        assertThat(changeOrderHintUpdateAction.get().getAction()).isEqualTo("changeOrderHint");
-        assertThat(((ChangeOrderHint) (changeOrderHintUpdateAction.get())).getOrderHint())
+        UpdateAction<Category> categoryUpdateAction = changeOrderHintUpdateAction.orElse(null);
+        assertThat(categoryUpdateAction).isNotNull();
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("changeOrderHint");
+        assertThat(((ChangeOrderHint) categoryUpdateAction).getOrderHint())
                 .isEqualTo("099");
     }
 
     @Test
-    public void buildChangeOrderHintUpdateAction_ShouldNotBuildUpdateAction() {
+    public void buildChangeOrderHintUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameOrderHint = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameOrderHint.getOrderHint()).thenReturn(MOCK_EXISTING_CATEGORY_ORDERHINT);
 
@@ -188,22 +185,22 @@ public class CategoryDiffTest {
     }
 
     @Test
-    public void buildSetMetaTitleUpdateAction_ShouldBuildUpdateAction() {
+    public void buildSetMetaTitleUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getMetaTitle()).thenReturn(LocalizedString.of(LOCALE, "newMetaTitle"));
 
         final Optional<UpdateAction<Category>> setMetaTitleUpdateAction =
                 buildSetMetaTitleUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
-        assertThat(setMetaTitleUpdateAction).isNotNull();
-        assertThat(setMetaTitleUpdateAction).isPresent();
-        assertThat(setMetaTitleUpdateAction.get().getAction()).isEqualTo("setMetaTitle");
-        assertThat(((SetMetaTitle) (setMetaTitleUpdateAction.get())).getMetaTitle())
+        UpdateAction<Category> categoryUpdateAction = setMetaTitleUpdateAction.orElse(null);
+        assertThat(categoryUpdateAction).isNotNull();
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("setMetaTitle");
+        assertThat(((SetMetaTitle) categoryUpdateAction).getMetaTitle())
                 .isEqualTo(LocalizedString.of(LOCALE, "newMetaTitle"));
     }
 
     @Test
-    public void buildSetMetaTitleUpdateAction_ShouldNotBuildUpdateAction() {
+    public void buildSetMetaTitleUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameTitle = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameTitle.getMetaTitle())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_META_TITLE));
@@ -216,22 +213,22 @@ public class CategoryDiffTest {
     }
 
     @Test
-    public void buildSetMetaKeywordsUpdateAction_ShouldBuildUpdateAction() {
+    public void buildSetMetaKeywordsUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getMetaKeywords()).thenReturn(LocalizedString.of(LOCALE, "newMetaKW"));
 
         final Optional<UpdateAction<Category>> setMetaKeywordsUpdateAction =
                 buildSetMetaKeywordsUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
+        UpdateAction<Category> categoryUpdateAction = setMetaKeywordsUpdateAction.orElse(null);
         assertThat(setMetaKeywordsUpdateAction).isNotNull();
-        assertThat(setMetaKeywordsUpdateAction).isPresent();
-        assertThat(setMetaKeywordsUpdateAction.get().getAction()).isEqualTo("setMetaKeywords");
-        assertThat(((SetMetaKeywords) (setMetaKeywordsUpdateAction.get())).getMetaKeywords())
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("setMetaKeywords");
+        assertThat(((SetMetaKeywords) categoryUpdateAction).getMetaKeywords())
                 .isEqualTo(LocalizedString.of(LOCALE, "newMetaKW"));
     }
 
     @Test
-    public void buildSetMetaKeywordsUpdateAction_ShouldNotBuildUpdateAction() {
+    public void buildSetMetaKeywordsUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameMetaKeywords = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameMetaKeywords.getMetaKeywords())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_META_KEYWORDS));
@@ -244,22 +241,22 @@ public class CategoryDiffTest {
     }
 
     @Test
-    public void buildSetMetaDescriptionUpdateAction_ShouldBuildUpdateAction() {
+    public void buildSetMetaDescriptionUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getMetaDescription()).thenReturn(LocalizedString.of(LOCALE, "newMetaDesc"));
 
         final Optional<UpdateAction<Category>> setMetaDescriptionUpdateAction =
                 buildSetMetaDescriptionUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
 
-        assertThat(setMetaDescriptionUpdateAction).isNotNull();
-        assertThat(setMetaDescriptionUpdateAction).isPresent();
-        assertThat(setMetaDescriptionUpdateAction.get().getAction()).isEqualTo("setMetaDescription");
-        assertThat(((SetMetaDescription) (setMetaDescriptionUpdateAction.get())).getMetaDescription())
+        UpdateAction<Category> categoryUpdateAction = setMetaDescriptionUpdateAction.orElse(null);
+        assertThat(categoryUpdateAction).isNotNull();
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("setMetaDescription");
+        assertThat(((SetMetaDescription) categoryUpdateAction).getMetaDescription())
                 .isEqualTo(LocalizedString.of(LOCALE, "newMetaDesc"));
     }
 
     @Test
-    public void buildSetMetaDescriptionUpdateAction_ShouldNotBuildUpdateAction() {
+    public void buildSetMetaDescriptionUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameMetaDescription = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameMetaDescription.getMetaDescription())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_META_DESCRIPTION));
@@ -272,36 +269,45 @@ public class CategoryDiffTest {
     }
 
     @Test
-    public void buildUpdateActionForLocalizedStrings_ShouldBuildUpdateAction() {
-        LocalizedString existingLocalisedString = LocalizedString.of(LOCALE, "Apfel");
+    public void buildUpdateActionForLocalizedStrings_WithDifferentFieldValues_ShouldBuildUpdateAction() {
+        final LocalizedString existingLocalisedString = LocalizedString.of(LOCALE, "Apfel");
         final LocalizedString newLocalisedString = LocalizedString.of(LOCALE, "Milch");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
-        Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
+        final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
                 buildUpdateActionForLocalizedStrings(existingLocalisedString, newLocalisedString, mockUpdateAction);
 
-        assertThat(updateActionForLocalizedStrings).isNotNull();
-        assertThat(updateActionForLocalizedStrings).isPresent();
-        assertThat(updateActionForLocalizedStrings.get().getAction()).isEqualTo("changeName");
+        UpdateAction<Category> categoryUpdateAction = updateActionForLocalizedStrings.orElse(null);
+        assertThat(categoryUpdateAction).isNotNull();
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("changeName");
+    }
 
-        // Assert that empty existing localised fields means that the localised strings are different.
-        existingLocalisedString = LocalizedString.of(new HashMap<>());
+    @Test
+    public void buildUpdateActionForLocalizedStrings_WithEmptyExistingFields_ShouldBuildUpdateAction() {
+        final LocalizedString existingLocalisedString = LocalizedString.of(new HashMap<>());
+        final LocalizedString newLocalisedString = LocalizedString.of(LOCALE, "Milch");
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
+                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
-        updateActionForLocalizedStrings =
+        final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
                 buildUpdateActionForLocalizedStrings(existingLocalisedString, newLocalisedString, mockUpdateAction);
 
-        assertThat(updateActionForLocalizedStrings).isNotNull();
-        assertThat(updateActionForLocalizedStrings).isPresent();
-        assertThat(updateActionForLocalizedStrings.get().getAction()).isEqualTo("changeName");
+        UpdateAction<Category> categoryUpdateAction = updateActionForLocalizedStrings.orElse(null);
+        assertThat(categoryUpdateAction).isNotNull();
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("changeName");
+    }
 
-        // Assert that one null LocalisedString means that the localised strings are different.
-        updateActionForLocalizedStrings =
-                buildUpdateActionForLocalizedStrings(null, newLocalisedString, mockUpdateAction);
+    @Test
+    public void buildUpdateActionForLocalizedStrings_WithEmptyFields_ShouldNotBuildUpdateAction() {
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
+                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+        final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
+                buildUpdateActionForLocalizedStrings(LocalizedString.of(new HashMap<>()),
+                        LocalizedString.of(new HashMap<>()), mockUpdateAction);
 
         assertThat(updateActionForLocalizedStrings).isNotNull();
-        assertThat(updateActionForLocalizedStrings).isPresent();
-        assertThat(updateActionForLocalizedStrings.get().getAction()).isEqualTo("changeName");
+        assertThat(updateActionForLocalizedStrings).isNotPresent();
     }
 
     @Test
@@ -346,53 +352,52 @@ public class CategoryDiffTest {
     }
 
     @Test
-    public void buildUpdateActionForReferences_ShouldBuildUpdateAction() {
+    public void buildUpdateActionForReferences_WithDifferentTypeReferenceIds_ShouldBuildUpdateAction() {
         final Reference<Category> existingCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
         Reference<Category> newCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "2");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
-        Optional<UpdateAction<Category>> updateActionForReferences =
+        final Optional<UpdateAction<Category>> updateActionForReferences =
                 buildUpdateActionForReferences(existingCategoryReference, newCategoryReference, mockUpdateAction);
 
-        assertThat(updateActionForReferences).isNotNull();
-        assertThat(updateActionForReferences).isPresent();
-        assertThat(updateActionForReferences.get().getAction()).isEqualTo("changeName");
-
-        // Assert if references differ by type not by id, then the Resources are different.
-        newCategoryReference = Reference.ofResourceTypeIdAndId("newType", "1");
-
-        updateActionForReferences =
-                buildUpdateActionForReferences(existingCategoryReference, newCategoryReference, mockUpdateAction);
-
-        assertThat(updateActionForReferences).isNotNull();
-        assertThat(updateActionForReferences).isPresent();
-        assertThat(updateActionForReferences.get().getAction()).isEqualTo("changeName");
-
-        // Assert if one of the references is null, then the Resources are different.
-        updateActionForReferences =
-                buildUpdateActionForReferences(null, newCategoryReference, mockUpdateAction);
-
-        assertThat(updateActionForReferences).isNotNull();
-        assertThat(updateActionForReferences).isPresent();
-        assertThat(updateActionForReferences.get().getAction()).isEqualTo("changeName");
+        UpdateAction<Category> categoryUpdateAction = updateActionForReferences.orElse(null);
+        assertThat(categoryUpdateAction).isNotNull();
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("changeName");
     }
 
     @Test
-    public void buildUpdateActionForReferences_ShouldNotBuildUpdateAction() {
-        final Reference<Category> existingCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
-        final Reference<Category> newCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
+    public void buildUpdateActionForReferences_WithOneNullReference_ShouldBuildUpdateAction() {
+        final Reference<Category> categoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
-        Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateActionForReferences(existingCategoryReference, newCategoryReference, mockUpdateAction);
+        final Optional<UpdateAction<Category>> updateActionForReferences =
+                buildUpdateActionForReferences(null, categoryReference, mockUpdateAction);
+
+        UpdateAction<Category> categoryUpdateAction = updateActionForReferences.orElse(null);
+        assertThat(categoryUpdateAction).isNotNull();
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("changeName");
+    }
+
+    @Test
+    public void buildUpdateActionForReferences_WithSameCategoryReferences_ShouldNotBuildUpdateAction() {
+        final Reference<Category> categoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
+                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+
+        final Optional<UpdateAction<Category>> updateActionForReferences =
+                buildUpdateActionForReferences(categoryReference, categoryReference, mockUpdateAction);
 
         assertThat(updateActionForReferences).isNotNull();
         assertThat(updateActionForReferences).isNotPresent();
+    }
 
-        // Assert if both references are null, then they still are not different.
-        updateActionForReferences =
+    @Test
+    public void buildUpdateActionForReferences_WithNullReferences_ShouldNotBuildUpdateAction() {
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
+                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+        final Optional<UpdateAction<Category>> updateActionForReferences =
                 buildUpdateActionForReferences(null, null, mockUpdateAction);
 
         assertThat(updateActionForReferences).isNotNull();
@@ -400,43 +405,48 @@ public class CategoryDiffTest {
     }
 
     @Test
-    public void buildUpdateActionForStrings_ShouldBuildUpdateAction() {
-        final String existingString = "1";
-        final String newString = "2";
+    public void buildUpdateActionForStrings_WithDifferentStrings_ShouldBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
-        Optional<UpdateAction<Category>> updateActionForStrings =
-                buildUpdateActionForStrings(existingString, newString, mockUpdateAction);
+        final Optional<UpdateAction<Category>> updateActionForStrings =
+                buildUpdateActionForStrings("1", "2", mockUpdateAction);
 
-        assertThat(updateActionForStrings).isNotNull();
-        assertThat(updateActionForStrings).isPresent();
-        assertThat(updateActionForStrings.get().getAction()).isEqualTo("changeName");
-
-        // Assert if one of the Strings is null, then they are different.
-        updateActionForStrings =
-                buildUpdateActionForStrings(null, newString, mockUpdateAction);
-
-        assertThat(updateActionForStrings).isNotNull();
-        assertThat(updateActionForStrings).isPresent();
-        assertThat(updateActionForStrings.get().getAction()).isEqualTo("changeName");
+        UpdateAction<Category> categoryUpdateAction = updateActionForStrings.orElse(null);
+        assertThat(categoryUpdateAction).isNotNull();
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("changeName");
     }
 
     @Test
-    public void buildUpdateActionForStrings_ShouldNotBuildUpdateAction() {
-        final String existingString = "1";
-        final String newString = "1";
-        UpdateAction<Category> mockUpdateAction = ChangeName.of(
+    public void buildUpdateActionForStrings_WithOneNullString_ShouldBuildUpdateAction() {
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
-        Optional<UpdateAction<Category>> updateActionForStrings =
-                buildUpdateActionForStrings(existingString, newString, mockUpdateAction);
+        final Optional<UpdateAction<Category>> updateActionForStrings =
+                buildUpdateActionForStrings(null, "2", mockUpdateAction);
+
+        UpdateAction<Category> categoryUpdateAction = updateActionForStrings.orElse(null);
+        assertThat(categoryUpdateAction).isNotNull();
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("changeName");
+    }
+
+    @Test
+    public void buildUpdateActionForStrings_WithSameStrings_ShouldNotBuildUpdateAction() {
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
+                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+
+        final Optional<UpdateAction<Category>> updateActionForStrings =
+                buildUpdateActionForStrings("1", "1", mockUpdateAction);
 
         assertThat(updateActionForStrings).isNotNull();
         assertThat(updateActionForStrings).isNotPresent();
+    }
 
-        // Assert if both strings are null, then they still are not different.
-        updateActionForStrings =
+    @Test
+    public void buildUpdateActionForStrings_WithNullStrings_ShouldNotBuildUpdateAction() {
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
+                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+        final Optional<UpdateAction<Category>> updateActionForStrings =
                 buildUpdateActionForStrings(null, null, mockUpdateAction);
 
         assertThat(updateActionForStrings).isNotNull();
