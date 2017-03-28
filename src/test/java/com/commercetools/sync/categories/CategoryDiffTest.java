@@ -310,44 +310,48 @@ public class CategoryDiffTest {
     }
 
     @Test
-    public void buildUpdateActionForLocalizedStrings_ShouldNotBuildUpdateAction() {
-        LocalizedString existingLocalisedString = LocalizedString.of(LOCALE, "Milch");
-        LocalizedString newLocalisedString = LocalizedString.of(LOCALE, "Milch");
+    public void buildUpdateActionForLocalizedStrings_WithSameValues_ShouldNotBuildUpdateAction() {
+        final LocalizedString existingLocalisedString = LocalizedString.of(LOCALE, "Milch");
+        final LocalizedString newLocalisedString = LocalizedString.of(LOCALE, "Milch");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
-        Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
+        final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
                 buildUpdateActionForLocalizedStrings(existingLocalisedString, newLocalisedString, mockUpdateAction);
 
         assertThat(updateActionForLocalizedStrings).isNotNull();
         assertThat(updateActionForLocalizedStrings).isNotPresent();
+    }
 
-        // Assert that order of localised fields shouldn't mean localised strings are different
-        newLocalisedString = newLocalisedString.plus(Locale.ENGLISH, "Milk");
-        newLocalisedString = newLocalisedString.plus(Locale.FRENCH, "Lait");
-        existingLocalisedString = existingLocalisedString.plus(Locale.FRENCH, "Lait");
-        existingLocalisedString = existingLocalisedString.plus(Locale.ENGLISH, "Milk");
+    @Test
+    public void buildUpdateActionForLocalizedStrings_WithSameValuesButDifferentFieldOrder_ShouldNotBuildUpdateAction() {
+        final LocalizedString existingLocalisedString = LocalizedString.of(LOCALE, "Milch")
+                .plus(Locale.FRENCH, "Lait")
+                .plus(Locale.ENGLISH, "Milk");
 
-        updateActionForLocalizedStrings =
+        final LocalizedString newLocalisedString = LocalizedString.of(LOCALE, "Milch")
+                .plus(Locale.ENGLISH, "Milk")
+                .plus(Locale.FRENCH, "Lait");
+
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
+                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+
+        final Optional<UpdateAction<Category>> updateActionForReferences =
                 buildUpdateActionForLocalizedStrings(existingLocalisedString, newLocalisedString, mockUpdateAction);
 
-        assertThat(updateActionForLocalizedStrings).isNotNull();
-        assertThat(updateActionForLocalizedStrings).isNotPresent();
+        assertThat(updateActionForReferences).isNotNull();
+        assertThat(updateActionForReferences).isNotPresent();
+    }
 
-        // Assert that both null localised fields shouldn't mean localised strings are different.
-        updateActionForLocalizedStrings =
+    @Test
+    public void buildUpdateActionForLocalizedStrings_WithNullValues_ShouldNotBuildUpdateAction() {
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
+                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+        final Optional<UpdateAction<Category>> updateActionForReferences =
                 buildUpdateActionForLocalizedStrings(null, null, mockUpdateAction);
 
-        assertThat(updateActionForLocalizedStrings).isNotNull();
-        assertThat(updateActionForLocalizedStrings).isNotPresent();
-
-        // Assert that both empty maps of localised fields shouldn't mean localised strings are different.
-        updateActionForLocalizedStrings =
-                buildUpdateActionForLocalizedStrings(LocalizedString.of(new HashMap<>()),
-                        LocalizedString.of(new HashMap<>()), mockUpdateAction);
-
-        assertThat(updateActionForLocalizedStrings).isNotNull();
-        assertThat(updateActionForLocalizedStrings).isNotPresent();
+        assertThat(updateActionForReferences).isNotNull();
+        assertThat(updateActionForReferences).isNotPresent();
     }
 
     @Test
