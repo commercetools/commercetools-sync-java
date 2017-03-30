@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.GenericUpdateActionBuilder.*;
 
-public class TypeDiff {
+public class CustomDiff {
 
     /**
      * Compares the {@link CustomFields}, of an existing resource {@link T} (for example {@link Category},
@@ -30,7 +30,7 @@ public class TypeDiff {
      * for example in the case where both the {@link CustomFields} and the {@link CustomFieldsDraft} are null, an empty
      * {@link List<UpdateAction>} is returned. A {@link TypeService} instance is injected into the
      * method to fetch the key of the existing resource type from it's
-     * cache (see {@link TypeDiff#buildNonNullCustomFieldsActions(CustomFields, CustomFieldsDraft, TypeService, Custom)}).
+     * cache (see {@link CustomDiff#buildNonNullCustomFieldsActions(CustomFields, CustomFieldsDraft, TypeService, Custom)}).
      * <p>
      * <p>
      * An update action will be added to the result list in the following cases:-
@@ -40,7 +40,7 @@ public class TypeDiff {
      * 2. If the new resource's custom type is not set, but the existing resource's custom type is set. A
      * "setCustomType" update action is added, which removes the type set on the existing resource.
      * 3. If both the resources custom types are the same and the custom fields are both set. The custom
-     * field values of both resources are then calculated. (see {@link TypeDiff#buildSetCustomFieldsActions(Map, Map, Custom)})
+     * field values of both resources are then calculated. (see {@link CustomDiff#buildSetCustomFieldsActions(Map, Map, Custom)})
      * 4. If the keys of both custom types are different, then a "setCustomType" update action is added, where the
      * existing resource's custom type is set to be as the new one's.
      * <p>
@@ -60,7 +60,7 @@ public class TypeDiff {
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    public static <T extends Custom, S extends CustomDraft> List<UpdateAction<T>> buildTypeActions(
+    public static <T extends Custom, S extends CustomDraft> List<UpdateAction<T>> buildCustomActions(
             @Nonnull final T existingResource,
             @Nonnull final S newResource,
             @Nonnull final TypeService typeService) {
@@ -99,7 +99,7 @@ public class TypeDiff {
      * An update action will be added to the result list in the following cases:-
      * <p>
      * 1. If both the resources custom type keys are the same and the custom fields are both set. The custom
-     * field values of both resources are then calculated. (see {@link TypeDiff#buildSetCustomFieldsActions(Map, Map, Custom)})
+     * field values of both resources are then calculated. (see {@link CustomDiff#buildSetCustomFieldsActions(Map, Map, Custom)})
      * 2. If the keys of both custom types are different, then a "setCustomType" update action is added, where the
      * existing resource's custom type is set to be as the new one's.
      * <p>

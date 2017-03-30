@@ -18,13 +18,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.commercetools.sync.commons.TypeDiff.*;
+import static com.commercetools.sync.commons.CustomDiff.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TypeDiffTest {
+public class CustomDiffTest {
     @Test
     public void buildTypeActions_WithNonNullCustomFieldsWithDifferentKeys_ShouldBuildUpdateActions() {
         final String existingCategoryCustomTypeKey = "1";
@@ -46,7 +46,7 @@ public class TypeDiffTest {
         when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(existingCategoryCustomTypeKey);
 
         final List<UpdateAction<Category>> updateActions =
-                buildTypeActions(existingCategory, newCategoryDraft, typeServiceMock);
+                buildCustomActions(existingCategory, newCategoryDraft, typeServiceMock);
 
         // Should set custom type of existing category.
         assertThat(updateActions).isNotNull();
@@ -68,7 +68,7 @@ public class TypeDiffTest {
         final TypeService typeServiceMock = mock(TypeServiceImpl.class);
 
         final List<UpdateAction<Category>> updateActions =
-                buildTypeActions(existingCategory, newCategoryDraft, typeServiceMock);
+                buildCustomActions(existingCategory, newCategoryDraft, typeServiceMock);
 
         // Should add custom type to existing category.
         assertThat(updateActions).isNotNull();
@@ -88,7 +88,7 @@ public class TypeDiffTest {
         final TypeService typeServiceMock = mock(TypeServiceImpl.class);
 
         final List<UpdateAction<Category>> updateActions =
-                buildTypeActions(existingCategory, newCategoryDraft, typeServiceMock);
+                buildCustomActions(existingCategory, newCategoryDraft, typeServiceMock);
 
         // Should remove custom type from existing category.
         assertThat(updateActions).isNotNull();
@@ -107,7 +107,7 @@ public class TypeDiffTest {
         final TypeService typeServiceMock = mock(TypeServiceImpl.class);
 
         final List<UpdateAction<Category>> updateActions =
-                buildTypeActions(existingCategory, newCategoryDraft, typeServiceMock);
+                buildCustomActions(existingCategory, newCategoryDraft, typeServiceMock);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).isEmpty();

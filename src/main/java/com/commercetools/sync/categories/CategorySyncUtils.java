@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.categories.CategoryDiff.*;
-import static com.commercetools.sync.commons.TypeDiff.buildTypeActions;
+import static com.commercetools.sync.commons.CustomDiff.buildCustomActions;
 
 public class CategorySyncUtils {
 
@@ -128,7 +128,7 @@ public class CategorySyncUtils {
                 .map(updateActions::add);
 
         final List<UpdateAction<Category>> categoryTypeUpdateActions =
-                buildTypeActions(existingCategory, newCategory, typeService);
+                buildCustomActions(existingCategory, newCategory, typeService);
         return Stream.concat(updateActions.stream(),
                 categoryTypeUpdateActions.stream())
                 .collect(Collectors.toList());
