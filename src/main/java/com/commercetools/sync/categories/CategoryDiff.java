@@ -30,7 +30,7 @@ public class CategoryDiff {
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategoryName = newCategory.getName();
-        return buildUpdateActionForLocalizedStrings(existingCategory.getName(),
+        return buildUpdateAction(existingCategory.getName(),
                 newCategoryName,
                 ChangeName.of(newCategoryName));
     }
@@ -50,7 +50,7 @@ public class CategoryDiff {
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategorySlug = newCategory.getSlug();
-        return buildUpdateActionForLocalizedStrings(existingCategory.getSlug(),
+        return buildUpdateAction(existingCategory.getSlug(),
                 newCategorySlug,
                 ChangeSlug.of(newCategorySlug));
     }
@@ -75,7 +75,7 @@ public class CategoryDiff {
         // TODO: NEED TO HANDLE DESCRIPTION REMOVAL.
         // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
         final LocalizedString newCategoryDescription = newCategory.getDescription();
-        return newCategoryDescription != null ? buildUpdateActionForLocalizedStrings(existingCategory.getDescription(),
+        return newCategoryDescription != null ? buildUpdateAction(existingCategory.getDescription(),
                 newCategoryDescription,
                 SetDescription.of(newCategoryDescription)) : Optional.empty();
     }
@@ -100,7 +100,7 @@ public class CategoryDiff {
         // TODO: NEED TO HANDLE PARENT REMOVAL.
         // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
         final Reference<Category> newCategoryParentReference = newCategory.getParent();
-        return newCategoryParentReference != null ? buildUpdateActionForReferences(existingCategory.getParent(),
+        return newCategoryParentReference != null ? buildUpdateAction(existingCategory.getParent(),
                 newCategoryParentReference,
                 ChangeParent.of(newCategoryParentReference)) : Optional.empty();
     }
@@ -125,7 +125,7 @@ public class CategoryDiff {
         // TODO: NEED TO HANDLE ORDERHINT REMOVAL
         // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
         final String newCategoryOrderHint = newCategory.getOrderHint();
-        return newCategoryOrderHint != null ? buildUpdateActionForStrings(existingCategory.getOrderHint(),
+        return newCategoryOrderHint != null ? buildUpdateAction(existingCategory.getOrderHint(),
                 newCategoryOrderHint,
                 ChangeOrderHint.of(newCategoryOrderHint)) : Optional.empty();
     }
@@ -145,7 +145,7 @@ public class CategoryDiff {
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategoryMetaTitle = newCategory.getMetaTitle();
-        return buildUpdateActionForLocalizedStrings(existingCategory.getMetaTitle(),
+        return buildUpdateAction(existingCategory.getMetaTitle(),
                 newCategoryMetaTitle,
                 SetMetaTitle.of(newCategoryMetaTitle));
     }
@@ -165,7 +165,7 @@ public class CategoryDiff {
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategoryMetaKeywords = newCategory.getMetaKeywords();
-        return buildUpdateActionForLocalizedStrings(existingCategory.getMetaKeywords(),
+        return buildUpdateAction(existingCategory.getMetaKeywords(),
                 newCategoryMetaKeywords,
                 SetMetaKeywords.of(newCategoryMetaKeywords));
     }
@@ -185,7 +185,7 @@ public class CategoryDiff {
             @Nonnull final Category existingCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategoryMetaDescription = newCategory.getMetaDescription();
-        return buildUpdateActionForLocalizedStrings(existingCategory.getMetaDescription(),
+        return buildUpdateAction(existingCategory.getMetaDescription(),
                 newCategoryMetaDescription,
                 SetMetaDescription.of(newCategoryMetaDescription));
     }

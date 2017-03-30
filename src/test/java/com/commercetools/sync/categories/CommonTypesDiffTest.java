@@ -12,9 +12,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Optional;
 
-import static com.commercetools.sync.categories.CommonTypesDiff.buildUpdateActionForLocalizedStrings;
-import static com.commercetools.sync.categories.CommonTypesDiff.buildUpdateActionForReferences;
-import static com.commercetools.sync.categories.CommonTypesDiff.buildUpdateActionForStrings;
+import static com.commercetools.sync.categories.CommonTypesDiff.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -40,7 +38,7 @@ public class CommonTypesDiffTest {
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
-                buildUpdateActionForLocalizedStrings(existingLocalisedString, newLocalisedString, mockUpdateAction);
+                buildUpdateAction(existingLocalisedString, newLocalisedString, mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForLocalizedStrings.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -55,7 +53,7 @@ public class CommonTypesDiffTest {
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
-                buildUpdateActionForLocalizedStrings(existingLocalisedString, newLocalisedString, mockUpdateAction);
+                buildUpdateAction(existingLocalisedString, newLocalisedString, mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForLocalizedStrings.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -67,7 +65,7 @@ public class CommonTypesDiffTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
-                buildUpdateActionForLocalizedStrings(LocalizedString.of(new HashMap<>()),
+                buildUpdateAction(LocalizedString.of(new HashMap<>()),
                         LocalizedString.of(new HashMap<>()), mockUpdateAction);
 
         assertThat(updateActionForLocalizedStrings).isNotNull();
@@ -82,7 +80,7 @@ public class CommonTypesDiffTest {
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
-                buildUpdateActionForLocalizedStrings(existingLocalisedString, newLocalisedString, mockUpdateAction);
+                buildUpdateAction(existingLocalisedString, newLocalisedString, mockUpdateAction);
 
         assertThat(updateActionForLocalizedStrings).isNotNull();
         assertThat(updateActionForLocalizedStrings).isNotPresent();
@@ -102,7 +100,7 @@ public class CommonTypesDiffTest {
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateActionForLocalizedStrings(existingLocalisedString, newLocalisedString, mockUpdateAction);
+                buildUpdateAction(existingLocalisedString, newLocalisedString, mockUpdateAction);
 
         assertThat(updateActionForReferences).isNotNull();
         assertThat(updateActionForReferences).isNotPresent();
@@ -113,7 +111,7 @@ public class CommonTypesDiffTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateActionForLocalizedStrings(null, null, mockUpdateAction);
+                buildUpdateAction(null, null, mockUpdateAction);
 
         assertThat(updateActionForReferences).isNotNull();
         assertThat(updateActionForReferences).isNotPresent();
@@ -127,7 +125,7 @@ public class CommonTypesDiffTest {
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateActionForReferences(existingCategoryReference, newCategoryReference, mockUpdateAction);
+                buildUpdateAction(existingCategoryReference, newCategoryReference, mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForReferences.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -141,7 +139,7 @@ public class CommonTypesDiffTest {
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateActionForReferences(null, categoryReference, mockUpdateAction);
+                buildUpdateAction(null, categoryReference, mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForReferences.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -155,7 +153,7 @@ public class CommonTypesDiffTest {
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateActionForReferences(categoryReference, categoryReference, mockUpdateAction);
+                buildUpdateAction(categoryReference, categoryReference, mockUpdateAction);
 
         assertThat(updateActionForReferences).isNotNull();
         assertThat(updateActionForReferences).isNotPresent();
@@ -166,7 +164,7 @@ public class CommonTypesDiffTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateActionForReferences(null, null, mockUpdateAction);
+                buildUpdateAction(null, null, mockUpdateAction);
 
         assertThat(updateActionForReferences).isNotNull();
         assertThat(updateActionForReferences).isNotPresent();
@@ -178,7 +176,7 @@ public class CommonTypesDiffTest {
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForStrings =
-                buildUpdateActionForStrings("1", "2", mockUpdateAction);
+                buildUpdateAction("1", "2", mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForStrings.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -191,7 +189,7 @@ public class CommonTypesDiffTest {
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForStrings =
-                buildUpdateActionForStrings(null, "2", mockUpdateAction);
+                buildUpdateAction(null, "2", mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForStrings.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -204,7 +202,7 @@ public class CommonTypesDiffTest {
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForStrings =
-                buildUpdateActionForStrings("1", "1", mockUpdateAction);
+                buildUpdateAction("1", "1", mockUpdateAction);
 
         assertThat(updateActionForStrings).isNotNull();
         assertThat(updateActionForStrings).isNotPresent();
@@ -215,7 +213,7 @@ public class CommonTypesDiffTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForStrings =
-                buildUpdateActionForStrings(null, null, mockUpdateAction);
+                buildUpdateAction(null, null, mockUpdateAction);
 
         assertThat(updateActionForStrings).isNotNull();
         assertThat(updateActionForStrings).isNotPresent();
