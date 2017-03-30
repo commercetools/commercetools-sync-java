@@ -1,4 +1,4 @@
-package com.commercetools.sync.categories;
+package com.commercetools.sync.commons;
 
 
 import com.commercetools.sync.services.TypeService;
@@ -18,13 +18,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.commercetools.sync.categories.CategoryTypeDiff.*;
+import static com.commercetools.sync.commons.TypeDiff.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class CategoryTypeDiffTest {
+public class TypeDiffTest {
     @Test
     public void buildTypeActions_WithNonNullCustomFieldsWithDifferentKeys_ShouldBuildUpdateActions() {
         final String existingCategoryCustomTypeKey = "1";
@@ -141,7 +141,7 @@ public class CategoryTypeDiffTest {
 
         final List<UpdateAction<Category>> updateActions =
                 buildNonNullCustomFieldsActions(existingCustomFieldsMock,
-                        newCustomFieldsMock, typeServiceMock);
+                        newCustomFieldsMock, typeServiceMock, mock(Category.class));
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
@@ -175,7 +175,7 @@ public class CategoryTypeDiffTest {
         when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(categoryCustomTypeKey);
 
         final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsActions(existingCustomFieldsMock,
-                newCustomFieldsMock, typeServiceMock);
+                newCustomFieldsMock, typeServiceMock, mock(Category.class));
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
@@ -203,7 +203,7 @@ public class CategoryTypeDiffTest {
         when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(null);
 
         final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsActions(existingCustomFieldsMock,
-                newCustomFieldsMock, typeServiceMock);
+                newCustomFieldsMock, typeServiceMock, mock(Category.class));
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
@@ -230,7 +230,7 @@ public class CategoryTypeDiffTest {
         when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(categoryCustomTypeKey);
 
         final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsActions(existingCustomFieldsMock,
-                newCustomFieldsMock, typeServiceMock);
+                newCustomFieldsMock, typeServiceMock, mock(Category.class));
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
@@ -257,7 +257,7 @@ public class CategoryTypeDiffTest {
 
         final List<UpdateAction<Category>> updateActions =
                 buildNonNullCustomFieldsActions(existingCustomFieldsMock,
-                        newCustomFieldsMock, typeServiceMock);
+                        newCustomFieldsMock, typeServiceMock, mock(Category.class));
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).isEmpty();
@@ -289,7 +289,7 @@ public class CategoryTypeDiffTest {
 
         final List<UpdateAction<Category>> updateActions =
                 buildNonNullCustomFieldsActions(existingCustomFieldsMock,
-                        newCustomFieldsMock, typeServiceMock);
+                        newCustomFieldsMock, typeServiceMock, mock(Category.class));
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).isEmpty();
@@ -306,7 +306,7 @@ public class CategoryTypeDiffTest {
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsActions(existingCustomFields, newCustomFields);
+                buildSetCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isNotEmpty();
@@ -327,7 +327,7 @@ public class CategoryTypeDiffTest {
         newCustomFields.put("size", JsonNodeFactory.instance.objectNode().put("cm", 34));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsActions(existingCustomFields, newCustomFields);
+                buildSetCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isNotEmpty();
@@ -344,7 +344,7 @@ public class CategoryTypeDiffTest {
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsActions(existingCustomFields, newCustomFields);
+                buildSetCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isNotEmpty();
@@ -362,7 +362,7 @@ public class CategoryTypeDiffTest {
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsActions(existingCustomFields, newCustomFields);
+                buildSetCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -377,7 +377,7 @@ public class CategoryTypeDiffTest {
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo").put("de", "rot"));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsActions(existingCustomFields, newCustomFields);
+                buildSetCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -392,7 +392,7 @@ public class CategoryTypeDiffTest {
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode());
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsActions(existingCustomFields, newCustomFields);
+                buildSetCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -405,7 +405,7 @@ public class CategoryTypeDiffTest {
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsActions(existingCustomFields, newCustomFields);
+                buildSetCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -420,7 +420,7 @@ public class CategoryTypeDiffTest {
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> customFieldsActions =
-                buildNewOrModifiedCustomFieldsActions(existingCustomFields, newCustomFields);
+                buildNewOrModifiedCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isNotEmpty();
@@ -437,7 +437,7 @@ public class CategoryTypeDiffTest {
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> customFieldsActions =
-                buildNewOrModifiedCustomFieldsActions(existingCustomFields, newCustomFields);
+                buildNewOrModifiedCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isEmpty();
@@ -453,7 +453,7 @@ public class CategoryTypeDiffTest {
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> customFieldsActions =
-                buildRemovedCustomFieldsActions(existingCustomFields, newCustomFields);
+                buildRemovedCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isNotEmpty();
@@ -470,7 +470,7 @@ public class CategoryTypeDiffTest {
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
 
         final List<UpdateAction<Category>> customFieldsActions =
-                buildRemovedCustomFieldsActions(existingCustomFields, newCustomFields);
+                buildRemovedCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isEmpty();

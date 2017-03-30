@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.categories.CategoryDiff.*;
-import static com.commercetools.sync.categories.CategoryTypeDiff.buildTypeActions;
+import static com.commercetools.sync.commons.TypeDiff.buildTypeActions;
 
 public class CategorySyncUtils {
 
