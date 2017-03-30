@@ -52,13 +52,13 @@ public class CategorySyncImpl implements CategorySync {
             CategoryDraft newCategoryDraft = categoryDrafts.get(i);
             String externalId = newCategoryDraft != null ? newCategoryDraft.getExternalId() : null;
             if (externalId != null) { // TODO NEED TO PARALLELISE!
-                Category existingCategory = categoryService.fetchCategoryByExternalId(externalId);
-                if (existingCategory == null) {
+                Category oldCategory = categoryService.fetchCategoryByExternalId(externalId);
+                if (oldCategory == null) {
                     createCategory(newCategoryDraft);
                 } else {
-                    List<UpdateAction<Category>> updateActions = CategorySyncUtils.buildActions(existingCategory, newCategoryDraft, typeService);
+                    List<UpdateAction<Category>> updateActions = CategorySyncUtils.buildActions(oldCategory, newCategoryDraft, typeService);
                     if (!updateActions.isEmpty()) {
-                        updateCategory(existingCategory, updateActions);
+                        updateCategory(oldCategory, updateActions);
                     }
                 }
             }

@@ -21,16 +21,16 @@ public class CategoryDiff {
      * case where both the {@link Category} and the {@link CategoryDraft} have the same name, an empty {@link Optional}
      * is returned.
      *
-     * @param existingCategory the category which should be updated.
-     * @param newCategory      the category draft where we get the new name.
+     * @param oldCategory the category which should be updated.
+     * @param newCategory the category draft where we get the new name.
      * @return A filled optional with the update action or an empty optional if the names are identical.
      */
     @Nonnull
     static Optional<UpdateAction<Category>> buildChangeNameUpdateAction(
-            @Nonnull final Category existingCategory,
+            @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategoryName = newCategory.getName();
-        return buildUpdateAction(existingCategory.getName(),
+        return buildUpdateAction(oldCategory.getName(),
                 newCategoryName,
                 ChangeName.of(newCategoryName));
     }
@@ -41,16 +41,16 @@ public class CategoryDiff {
      * case where both the {@link Category} and the {@link CategoryDraft} have the same slugs, an empty {@link Optional}
      * is returned.
      *
-     * @param existingCategory the category which should be updated.
-     * @param newCategory      the category draft where we get the new slug.
+     * @param oldCategory the category which should be updated.
+     * @param newCategory the category draft where we get the new slug.
      * @return A filled optional with the update action or an empty optional if the slugs are identical.
      */
     @Nonnull
     static Optional<UpdateAction<Category>> buildChangeSlugUpdateAction(
-            @Nonnull final Category existingCategory,
+            @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategorySlug = newCategory.getSlug();
-        return buildUpdateAction(existingCategory.getSlug(),
+        return buildUpdateAction(oldCategory.getSlug(),
                 newCategorySlug,
                 ChangeSlug.of(newCategorySlug));
     }
@@ -64,18 +64,18 @@ public class CategoryDiff {
      * Note: If the description of the new {@link CategoryDraft} is null, an empty {@link Optional} is returned with
      * no update actions.
      *
-     * @param existingCategory the category which should be updated.
-     * @param newCategory      the category draft where we get the new description.
+     * @param oldCategory the category which should be updated.
+     * @param newCategory the category draft where we get the new description.
      * @return A filled optional with the update action or an empty optional if the descriptions are identical.
      */
     @Nonnull
     static Optional<UpdateAction<Category>> buildSetDescriptionUpdateAction(
-            @Nonnull final Category existingCategory,
+            @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         // TODO: NEED TO HANDLE DESCRIPTION REMOVAL.
         // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
         final LocalizedString newCategoryDescription = newCategory.getDescription();
-        return newCategoryDescription != null ? buildUpdateAction(existingCategory.getDescription(),
+        return newCategoryDescription != null ? buildUpdateAction(oldCategory.getDescription(),
                 newCategoryDescription,
                 SetDescription.of(newCategoryDescription)) : Optional.empty();
     }
@@ -89,18 +89,18 @@ public class CategoryDiff {
      * Note: If the parent {@link Reference<Category>} of the new {@link CategoryDraft} is null, an empty
      * {@link Optional} is returned with no update actions.
      *
-     * @param existingCategory the category which should be updated.
-     * @param newCategory      the category draft where we get the new parent.
+     * @param oldCategory the category which should be updated.
+     * @param newCategory the category draft where we get the new parent.
      * @return A filled optional with the update action or an empty optional if the parent references are identical.
      */
     @Nonnull
     static Optional<UpdateAction<Category>> buildChangeParentUpdateAction(
-            @Nonnull final Category existingCategory,
+            @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         // TODO: NEED TO HANDLE PARENT REMOVAL.
         // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
         final Reference<Category> newCategoryParentReference = newCategory.getParent();
-        return newCategoryParentReference != null ? buildUpdateAction(existingCategory.getParent(),
+        return newCategoryParentReference != null ? buildUpdateAction(oldCategory.getParent(),
                 newCategoryParentReference,
                 ChangeParent.of(newCategoryParentReference)) : Optional.empty();
     }
@@ -114,18 +114,18 @@ public class CategoryDiff {
      * Note: If the orderHint of the new {@link CategoryDraft} is null, an empty {@link Optional} is returned with
      * no update actions.
      *
-     * @param existingCategory the category which should be updated.
-     * @param newCategory      the category draft where we get the new orderHint.
+     * @param oldCategory the category which should be updated.
+     * @param newCategory the category draft where we get the new orderHint.
      * @return A filled optional with the update action or an empty optional if the orderHint values are identical.
      */
     @Nonnull
     static Optional<UpdateAction<Category>> buildChangeOrderHintUpdateAction(
-            @Nonnull final Category existingCategory,
+            @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         // TODO: NEED TO HANDLE ORDERHINT REMOVAL
         // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
         final String newCategoryOrderHint = newCategory.getOrderHint();
-        return newCategoryOrderHint != null ? buildUpdateAction(existingCategory.getOrderHint(),
+        return newCategoryOrderHint != null ? buildUpdateAction(oldCategory.getOrderHint(),
                 newCategoryOrderHint,
                 ChangeOrderHint.of(newCategoryOrderHint)) : Optional.empty();
     }
@@ -136,16 +136,16 @@ public class CategoryDiff {
      * case where both the {@link Category} and the {@link CategoryDraft} have the same meta title values, an empty
      * {@link Optional} is returned.
      *
-     * @param existingCategory the category which should be updated.
-     * @param newCategory      the category draft where we get the new meta title.
+     * @param oldCategory the category which should be updated.
+     * @param newCategory the category draft where we get the new meta title.
      * @return A filled optional with the update action or an empty optional if the meta titles values are identical.
      */
     @Nonnull
     static Optional<UpdateAction<Category>> buildSetMetaTitleUpdateAction(
-            @Nonnull final Category existingCategory,
+            @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategoryMetaTitle = newCategory.getMetaTitle();
-        return buildUpdateAction(existingCategory.getMetaTitle(),
+        return buildUpdateAction(oldCategory.getMetaTitle(),
                 newCategoryMetaTitle,
                 SetMetaTitle.of(newCategoryMetaTitle));
     }
@@ -156,16 +156,16 @@ public class CategoryDiff {
      * case where both the {@link Category} and the {@link CategoryDraft} have the same meta keywords values, an empty
      * {@link Optional} is returned.
      *
-     * @param existingCategory the category which should be updated.
-     * @param newCategory      the category draft where we get the new meta keywords.
+     * @param oldCategory the category which should be updated.
+     * @param newCategory the category draft where we get the new meta keywords.
      * @return A filled optional with the update action or an empty optional if the meta keywords values are identical.
      */
     @Nonnull
     static Optional<UpdateAction<Category>> buildSetMetaKeywordsUpdateAction(
-            @Nonnull final Category existingCategory,
+            @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategoryMetaKeywords = newCategory.getMetaKeywords();
-        return buildUpdateAction(existingCategory.getMetaKeywords(),
+        return buildUpdateAction(oldCategory.getMetaKeywords(),
                 newCategoryMetaKeywords,
                 SetMetaKeywords.of(newCategoryMetaKeywords));
     }
@@ -176,16 +176,16 @@ public class CategoryDiff {
      * for example in case where both the {@link Category} and the {@link CategoryDraft} have the same meta description
      * values, an empty {@link Optional} is returned.
      *
-     * @param existingCategory the category which should be updated.
-     * @param newCategory      the category draft where we get the new meta description.
+     * @param oldCategory the category which should be updated.
+     * @param newCategory the category draft where we get the new meta description.
      * @return A filled optional with the update action or an empty optional if the meta description values are identical.
      */
     @Nonnull
     static Optional<UpdateAction<Category>> buildSetMetaDescriptionUpdateAction(
-            @Nonnull final Category existingCategory,
+            @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategoryMetaDescription = newCategory.getMetaDescription();
-        return buildUpdateAction(existingCategory.getMetaDescription(),
+        return buildUpdateAction(oldCategory.getMetaDescription(),
                 newCategoryMetaDescription,
                 SetMetaDescription.of(newCategoryMetaDescription));
     }

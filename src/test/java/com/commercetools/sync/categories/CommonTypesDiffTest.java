@@ -18,27 +18,27 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class CommonTypesDiffTest {
-    private final static Category MOCK_EXISTING_CATEGORY = mock(Category.class);
+    private final static Category MOCK_OLD_CATEGORY = mock(Category.class);
     private final static Locale LOCALE = Locale.GERMAN;
     private final static String MOCK_CATEGORY_REFERENCE_TYPE = "type";
-    private final static String MOCK_EXISTING_CATEGORY_PARENT_ID = "1";
-    private final static String MOCK_EXISTING_CATEGORY_NAME = "categoryName";
+    private final static String MOCK_OLD_CATEGORY_PARENT_ID = "1";
+    private final static String MOCK_OLD_CATEGORY_NAME = "categoryName";
 
     @BeforeClass
     public static void setup() {
-        when(MOCK_EXISTING_CATEGORY.getName()).thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
-        when(MOCK_EXISTING_CATEGORY.getParent()).thenReturn(Reference.of(MOCK_CATEGORY_REFERENCE_TYPE, MOCK_EXISTING_CATEGORY_PARENT_ID));
+        when(MOCK_OLD_CATEGORY.getName()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
+        when(MOCK_OLD_CATEGORY.getParent()).thenReturn(Reference.of(MOCK_CATEGORY_REFERENCE_TYPE, MOCK_OLD_CATEGORY_PARENT_ID));
     }
 
     @Test
     public void buildUpdateActionForLocalizedStrings_WithDifferentFieldValues_ShouldBuildUpdateAction() {
-        final LocalizedString existingLocalisedString = LocalizedString.of(LOCALE, "Apfel");
+        final LocalizedString oldLocalisedString = LocalizedString.of(LOCALE, "Apfel");
         final LocalizedString newLocalisedString = LocalizedString.of(LOCALE, "Milch");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
-                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
-                buildUpdateAction(existingLocalisedString, newLocalisedString, mockUpdateAction);
+                buildUpdateAction(oldLocalisedString, newLocalisedString, mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForLocalizedStrings.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -46,14 +46,14 @@ public class CommonTypesDiffTest {
     }
 
     @Test
-    public void buildUpdateActionForLocalizedStrings_WithEmptyExistingFields_ShouldBuildUpdateAction() {
-        final LocalizedString existingLocalisedString = LocalizedString.of(new HashMap<>());
+    public void buildUpdateActionForLocalizedStrings_WithEmptyOldFields_ShouldBuildUpdateAction() {
+        final LocalizedString oldLocalisedString = LocalizedString.of(new HashMap<>());
         final LocalizedString newLocalisedString = LocalizedString.of(LOCALE, "Milch");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
-                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
-                buildUpdateAction(existingLocalisedString, newLocalisedString, mockUpdateAction);
+                buildUpdateAction(oldLocalisedString, newLocalisedString, mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForLocalizedStrings.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -63,7 +63,7 @@ public class CommonTypesDiffTest {
     @Test
     public void buildUpdateActionForLocalizedStrings_WithEmptyFields_ShouldNotBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
-                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
                 buildUpdateAction(LocalizedString.of(new HashMap<>()),
                         LocalizedString.of(new HashMap<>()), mockUpdateAction);
@@ -74,13 +74,13 @@ public class CommonTypesDiffTest {
 
     @Test
     public void buildUpdateActionForLocalizedStrings_WithSameValues_ShouldNotBuildUpdateAction() {
-        final LocalizedString existingLocalisedString = LocalizedString.of(LOCALE, "Milch");
+        final LocalizedString oldLocalisedString = LocalizedString.of(LOCALE, "Milch");
         final LocalizedString newLocalisedString = LocalizedString.of(LOCALE, "Milch");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
-                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
-                buildUpdateAction(existingLocalisedString, newLocalisedString, mockUpdateAction);
+                buildUpdateAction(oldLocalisedString, newLocalisedString, mockUpdateAction);
 
         assertThat(updateActionForLocalizedStrings).isNotNull();
         assertThat(updateActionForLocalizedStrings).isNotPresent();
@@ -88,7 +88,7 @@ public class CommonTypesDiffTest {
 
     @Test
     public void buildUpdateActionForLocalizedStrings_WithSameValuesButDifferentFieldOrder_ShouldNotBuildUpdateAction() {
-        final LocalizedString existingLocalisedString = LocalizedString.of(LOCALE, "Milch")
+        final LocalizedString oldLocalisedString = LocalizedString.of(LOCALE, "Milch")
                 .plus(Locale.FRENCH, "Lait")
                 .plus(Locale.ENGLISH, "Milk");
 
@@ -97,10 +97,10 @@ public class CommonTypesDiffTest {
                 .plus(Locale.FRENCH, "Lait");
 
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
-                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateAction(existingLocalisedString, newLocalisedString, mockUpdateAction);
+                buildUpdateAction(oldLocalisedString, newLocalisedString, mockUpdateAction);
 
         assertThat(updateActionForReferences).isNotNull();
         assertThat(updateActionForReferences).isNotPresent();
@@ -109,7 +109,7 @@ public class CommonTypesDiffTest {
     @Test
     public void buildUpdateActionForLocalizedStrings_WithNullValues_ShouldNotBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
-                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForReferences =
                 buildUpdateAction(null, null, mockUpdateAction);
 
@@ -119,13 +119,13 @@ public class CommonTypesDiffTest {
 
     @Test
     public void buildUpdateActionForReferences_WithDifferentTypeReferenceIds_ShouldBuildUpdateAction() {
-        final Reference<Category> existingCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
+        final Reference<Category> oldCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
         Reference<Category> newCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "2");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
-                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateAction(existingCategoryReference, newCategoryReference, mockUpdateAction);
+                buildUpdateAction(oldCategoryReference, newCategoryReference, mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForReferences.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -136,7 +136,7 @@ public class CommonTypesDiffTest {
     public void buildUpdateActionForReferences_WithOneNullReference_ShouldBuildUpdateAction() {
         final Reference<Category> categoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
-                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForReferences =
                 buildUpdateAction(null, categoryReference, mockUpdateAction);
@@ -150,7 +150,7 @@ public class CommonTypesDiffTest {
     public void buildUpdateActionForReferences_WithSameCategoryReferences_ShouldNotBuildUpdateAction() {
         final Reference<Category> categoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
-                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForReferences =
                 buildUpdateAction(categoryReference, categoryReference, mockUpdateAction);
@@ -162,7 +162,7 @@ public class CommonTypesDiffTest {
     @Test
     public void buildUpdateActionForReferences_WithNullReferences_ShouldNotBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
-                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForReferences =
                 buildUpdateAction(null, null, mockUpdateAction);
 
@@ -173,7 +173,7 @@ public class CommonTypesDiffTest {
     @Test
     public void buildUpdateActionForStrings_WithDifferentStrings_ShouldBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
-                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForStrings =
                 buildUpdateAction("1", "2", mockUpdateAction);
@@ -186,7 +186,7 @@ public class CommonTypesDiffTest {
     @Test
     public void buildUpdateActionForStrings_WithOneNullString_ShouldBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
-                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForStrings =
                 buildUpdateAction(null, "2", mockUpdateAction);
@@ -199,7 +199,7 @@ public class CommonTypesDiffTest {
     @Test
     public void buildUpdateActionForStrings_WithSameStrings_ShouldNotBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
-                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForStrings =
                 buildUpdateAction("1", "1", mockUpdateAction);
@@ -211,7 +211,7 @@ public class CommonTypesDiffTest {
     @Test
     public void buildUpdateActionForStrings_WithNullStrings_ShouldNotBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
-                LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForStrings =
                 buildUpdateAction(null, null, mockUpdateAction);
 

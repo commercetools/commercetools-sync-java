@@ -19,30 +19,30 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class CategoryDiffTest {
-    private final static Category MOCK_EXISTING_CATEGORY = mock(Category.class);
+    private final static Category MOCK_OLD_CATEGORY = mock(Category.class);
     private final static Locale LOCALE = Locale.GERMAN;
     private final static String MOCK_CATEGORY_REFERENCE_TYPE = "type";
-    private final static String MOCK_EXISTING_CATEGORY_PARENT_ID = "1";
-    private final static String MOCK_EXISTING_CATEGORY_NAME = "categoryName";
-    private final static String MOCK_EXISTING_CATEGORY_SLUG = "categorySlug";
-    private final static String MOCK_EXISTING_CATEGORY_EXTERNAL_ID = "externalId";
-    private final static String MOCK_EXISTING_CATEGORY_DESCRIPTION = "categoryDesc";
-    private final static String MOCK_EXISTING_CATEGORY_META_DESCRIPTION = "categoryMetaDesc";
-    private final static String MOCK_EXISTING_CATEGORY_META_TITLE = "categoryMetaTitle";
-    private final static String MOCK_EXISTING_CATEGORY_META_KEYWORDS = "categoryKeywords";
-    private final static String MOCK_EXISTING_CATEGORY_ORDERHINT = "123";
+    private final static String MOCK_OLD_CATEGORY_PARENT_ID = "1";
+    private final static String MOCK_OLD_CATEGORY_NAME = "categoryName";
+    private final static String MOCK_OLD_CATEGORY_SLUG = "categorySlug";
+    private final static String MOCK_OLD_CATEGORY_EXTERNAL_ID = "externalId";
+    private final static String MOCK_OLD_CATEGORY_DESCRIPTION = "categoryDesc";
+    private final static String MOCK_OLD_CATEGORY_META_DESCRIPTION = "categoryMetaDesc";
+    private final static String MOCK_OLD_CATEGORY_META_TITLE = "categoryMetaTitle";
+    private final static String MOCK_OLD_CATEGORY_META_KEYWORDS = "categoryKeywords";
+    private final static String MOCK_OLD_CATEGORY_ORDERHINT = "123";
 
     @BeforeClass
     public static void setup() {
-        when(MOCK_EXISTING_CATEGORY.getName()).thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
-        when(MOCK_EXISTING_CATEGORY.getSlug()).thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_SLUG));
-        when(MOCK_EXISTING_CATEGORY.getExternalId()).thenReturn(MOCK_EXISTING_CATEGORY_EXTERNAL_ID);
-        when(MOCK_EXISTING_CATEGORY.getDescription()).thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_DESCRIPTION));
-        when(MOCK_EXISTING_CATEGORY.getMetaDescription()).thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_META_DESCRIPTION));
-        when(MOCK_EXISTING_CATEGORY.getMetaTitle()).thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_META_TITLE));
-        when(MOCK_EXISTING_CATEGORY.getMetaKeywords()).thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_META_KEYWORDS));
-        when(MOCK_EXISTING_CATEGORY.getOrderHint()).thenReturn(MOCK_EXISTING_CATEGORY_ORDERHINT);
-        when(MOCK_EXISTING_CATEGORY.getParent()).thenReturn(Reference.of(MOCK_CATEGORY_REFERENCE_TYPE, MOCK_EXISTING_CATEGORY_PARENT_ID));
+        when(MOCK_OLD_CATEGORY.getName()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
+        when(MOCK_OLD_CATEGORY.getSlug()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_SLUG));
+        when(MOCK_OLD_CATEGORY.getExternalId()).thenReturn(MOCK_OLD_CATEGORY_EXTERNAL_ID);
+        when(MOCK_OLD_CATEGORY.getDescription()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_DESCRIPTION));
+        when(MOCK_OLD_CATEGORY.getMetaDescription()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_DESCRIPTION));
+        when(MOCK_OLD_CATEGORY.getMetaTitle()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_TITLE));
+        when(MOCK_OLD_CATEGORY.getMetaKeywords()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_KEYWORDS));
+        when(MOCK_OLD_CATEGORY.getOrderHint()).thenReturn(MOCK_OLD_CATEGORY_ORDERHINT);
+        when(MOCK_OLD_CATEGORY.getParent()).thenReturn(Reference.of(MOCK_CATEGORY_REFERENCE_TYPE, MOCK_OLD_CATEGORY_PARENT_ID));
     }
 
     @Test
@@ -51,7 +51,7 @@ public class CategoryDiffTest {
         when(newCategoryDraft.getName()).thenReturn(LocalizedString.of(LOCALE, "newName"));
 
         final Optional<UpdateAction<Category>> changeNameUpdateAction =
-                buildChangeNameUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
+                buildChangeNameUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
 
         UpdateAction<Category> categoryUpdateAction = changeNameUpdateAction.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -63,10 +63,10 @@ public class CategoryDiffTest {
     public void buildChangeNameUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameName = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameName.getName())
-                .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_NAME));
+                .thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> changeNameUpdateAction =
-                buildChangeNameUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameName);
+                buildChangeNameUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameName);
 
         assertThat(changeNameUpdateAction).isNotNull();
         assertThat(changeNameUpdateAction).isNotPresent();
@@ -78,7 +78,7 @@ public class CategoryDiffTest {
         when(newCategoryDraft.getSlug()).thenReturn(LocalizedString.of(LOCALE, "newSlug"));
 
         final Optional<UpdateAction<Category>> changeSlugUpdateAction =
-                buildChangeSlugUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
+                buildChangeSlugUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
 
         UpdateAction<Category> categoryUpdateAction = changeSlugUpdateAction.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -90,10 +90,10 @@ public class CategoryDiffTest {
     public void buildChangeSlugUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameSlug = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameSlug.getSlug())
-                .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_SLUG));
+                .thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_SLUG));
 
         final Optional<UpdateAction<Category>> changeSlugUpdateAction =
-                buildChangeSlugUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameSlug);
+                buildChangeSlugUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameSlug);
 
         assertThat(changeSlugUpdateAction).isNotNull();
         assertThat(changeSlugUpdateAction).isNotPresent();
@@ -105,7 +105,7 @@ public class CategoryDiffTest {
         when(newCategoryDraft.getDescription()).thenReturn(LocalizedString.of(LOCALE, "newDescription"));
 
         final Optional<UpdateAction<Category>> setDescriptionUpdateAction =
-                buildSetDescriptionUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
+                buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
 
         UpdateAction<Category> categoryUpdateAction = setDescriptionUpdateAction.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -118,10 +118,10 @@ public class CategoryDiffTest {
     public void buildSetDescriptionUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameDescription = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameDescription.getDescription())
-                .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_DESCRIPTION));
+                .thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_DESCRIPTION));
 
         final Optional<UpdateAction<Category>> setDescriptionUpdateAction =
-                buildSetDescriptionUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameDescription);
+                buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameDescription);
 
         assertThat(setDescriptionUpdateAction).isNotNull();
         assertThat(setDescriptionUpdateAction).isNotPresent();
@@ -133,7 +133,7 @@ public class CategoryDiffTest {
         when(newCategoryDraft.getParent()).thenReturn(Reference.of("Category", "2"));
 
         final Optional<UpdateAction<Category>> changeParentUpdateAction =
-                buildChangeParentUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
+                buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
 
         UpdateAction<Category> categoryUpdateAction = changeParentUpdateAction.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -146,10 +146,10 @@ public class CategoryDiffTest {
     public void buildChangeParentUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameParent = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameParent.getParent())
-                .thenReturn(Reference.of(MOCK_CATEGORY_REFERENCE_TYPE, MOCK_EXISTING_CATEGORY_PARENT_ID));
+                .thenReturn(Reference.of(MOCK_CATEGORY_REFERENCE_TYPE, MOCK_OLD_CATEGORY_PARENT_ID));
 
         final Optional<UpdateAction<Category>> changeParentUpdateAction =
-                buildChangeParentUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameParent);
+                buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameParent);
 
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction).isNotPresent();
@@ -161,7 +161,7 @@ public class CategoryDiffTest {
         when(newCategoryDraft.getOrderHint()).thenReturn("099");
 
         final Optional<UpdateAction<Category>> changeOrderHintUpdateAction =
-                buildChangeOrderHintUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
+                buildChangeOrderHintUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
 
         UpdateAction<Category> categoryUpdateAction = changeOrderHintUpdateAction.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -173,10 +173,10 @@ public class CategoryDiffTest {
     @Test
     public void buildChangeOrderHintUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameOrderHint = mock(CategoryDraft.class);
-        when(newCategoryDraftWithSameOrderHint.getOrderHint()).thenReturn(MOCK_EXISTING_CATEGORY_ORDERHINT);
+        when(newCategoryDraftWithSameOrderHint.getOrderHint()).thenReturn(MOCK_OLD_CATEGORY_ORDERHINT);
 
         final Optional<UpdateAction<Category>> changeOrderHintUpdateAction =
-                buildChangeOrderHintUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameOrderHint);
+                buildChangeOrderHintUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameOrderHint);
 
         assertThat(changeOrderHintUpdateAction).isNotNull();
         assertThat(changeOrderHintUpdateAction).isNotPresent();
@@ -188,7 +188,7 @@ public class CategoryDiffTest {
         when(newCategoryDraft.getMetaTitle()).thenReturn(LocalizedString.of(LOCALE, "newMetaTitle"));
 
         final Optional<UpdateAction<Category>> setMetaTitleUpdateAction =
-                buildSetMetaTitleUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
+                buildSetMetaTitleUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
 
         UpdateAction<Category> categoryUpdateAction = setMetaTitleUpdateAction.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -201,10 +201,10 @@ public class CategoryDiffTest {
     public void buildSetMetaTitleUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameTitle = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameTitle.getMetaTitle())
-                .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_META_TITLE));
+                .thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_TITLE));
 
         final Optional<UpdateAction<Category>> setMetaTitleUpdateAction =
-                buildSetMetaTitleUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameTitle);
+                buildSetMetaTitleUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameTitle);
 
         assertThat(setMetaTitleUpdateAction).isNotNull();
         assertThat(setMetaTitleUpdateAction).isNotPresent();
@@ -216,7 +216,7 @@ public class CategoryDiffTest {
         when(newCategoryDraft.getMetaKeywords()).thenReturn(LocalizedString.of(LOCALE, "newMetaKW"));
 
         final Optional<UpdateAction<Category>> setMetaKeywordsUpdateAction =
-                buildSetMetaKeywordsUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
+                buildSetMetaKeywordsUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
 
         UpdateAction<Category> categoryUpdateAction = setMetaKeywordsUpdateAction.orElse(null);
         assertThat(setMetaKeywordsUpdateAction).isNotNull();
@@ -229,10 +229,10 @@ public class CategoryDiffTest {
     public void buildSetMetaKeywordsUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameMetaKeywords = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameMetaKeywords.getMetaKeywords())
-                .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_META_KEYWORDS));
+                .thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_KEYWORDS));
 
         final Optional<UpdateAction<Category>> setMetaKeywordsUpdateAction =
-                buildSetMetaKeywordsUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameMetaKeywords);
+                buildSetMetaKeywordsUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameMetaKeywords);
 
         assertThat(setMetaKeywordsUpdateAction).isNotNull();
         assertThat(setMetaKeywordsUpdateAction).isNotPresent();
@@ -244,7 +244,7 @@ public class CategoryDiffTest {
         when(newCategoryDraft.getMetaDescription()).thenReturn(LocalizedString.of(LOCALE, "newMetaDesc"));
 
         final Optional<UpdateAction<Category>> setMetaDescriptionUpdateAction =
-                buildSetMetaDescriptionUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraft);
+                buildSetMetaDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
 
         UpdateAction<Category> categoryUpdateAction = setMetaDescriptionUpdateAction.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -257,10 +257,10 @@ public class CategoryDiffTest {
     public void buildSetMetaDescriptionUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameMetaDescription = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameMetaDescription.getMetaDescription())
-                .thenReturn(LocalizedString.of(LOCALE, MOCK_EXISTING_CATEGORY_META_DESCRIPTION));
+                .thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_DESCRIPTION));
 
         final Optional<UpdateAction<Category>> setMetaDescriptionUpdateAction =
-                buildSetMetaDescriptionUpdateAction(MOCK_EXISTING_CATEGORY, newCategoryDraftWithSameMetaDescription);
+                buildSetMetaDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameMetaDescription);
 
         assertThat(setMetaDescriptionUpdateAction).isNotNull();
         assertThat(setMetaDescriptionUpdateAction).isNotPresent();

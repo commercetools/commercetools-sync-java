@@ -27,12 +27,12 @@ import static org.mockito.Mockito.when;
 public class CustomDiffTest {
     @Test
     public void buildTypeActions_WithNonNullCustomFieldsWithDifferentKeys_ShouldBuildUpdateActions() {
-        final String existingCategoryCustomTypeKey = "1";
-        final Category existingCategory = mock(Category.class);
-        final CustomFields existingCategoryCustomFields = mock(CustomFields.class);
-        final Reference<Type> existingCategoryCustomFieldsDraftTypeReference = mock(Reference.class);
-        when(existingCategoryCustomFields.getType()).thenReturn(existingCategoryCustomFieldsDraftTypeReference);
-        when(existingCategory.getCustom()).thenReturn(existingCategoryCustomFields);
+        final String oldCategoryCustomTypeKey = "1";
+        final Category oldCategory = mock(Category.class);
+        final CustomFields oldCategoryCustomFields = mock(CustomFields.class);
+        final Reference<Type> oldCategoryCustomFieldsDraftTypeReference = mock(Reference.class);
+        when(oldCategoryCustomFields.getType()).thenReturn(oldCategoryCustomFieldsDraftTypeReference);
+        when(oldCategory.getCustom()).thenReturn(oldCategoryCustomFields);
 
         final String newCategoryCustomTypeKey = "2";
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
@@ -43,21 +43,21 @@ public class CustomDiffTest {
         when(newCategoryDraft.getCustom()).thenReturn(newCategoryCustomFieldsDraft);
 
         final TypeService typeServiceMock = mock(TypeServiceImpl.class);
-        when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(existingCategoryCustomTypeKey);
+        when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(oldCategoryCustomTypeKey);
 
         final List<UpdateAction<Category>> updateActions =
-                buildCustomActions(existingCategory, newCategoryDraft, typeServiceMock);
+                buildCustomActions(oldCategory, newCategoryDraft, typeServiceMock);
 
-        // Should set custom type of existing category.
+        // Should set custom type of old category.
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
         assertThat(updateActions.get(0).getAction()).isEqualTo("setCustomType");
     }
 
     @Test
-    public void buildTypeActions_WithNullExistingCustomFields_ShouldBuildUpdateActions() {
-        final Category existingCategory = mock(Category.class);
-        when(existingCategory.getCustom()).thenReturn(null);
+    public void buildTypeActions_WithNullOldCustomFields_ShouldBuildUpdateActions() {
+        final Category oldCategory = mock(Category.class);
+        when(oldCategory.getCustom()).thenReturn(null);
 
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         final CustomFieldsDraft newCategoryCustomFieldsDraft = mock(CustomFieldsDraft.class);
@@ -68,9 +68,9 @@ public class CustomDiffTest {
         final TypeService typeServiceMock = mock(TypeServiceImpl.class);
 
         final List<UpdateAction<Category>> updateActions =
-                buildCustomActions(existingCategory, newCategoryDraft, typeServiceMock);
+                buildCustomActions(oldCategory, newCategoryDraft, typeServiceMock);
 
-        // Should add custom type to existing category.
+        // Should add custom type to old category.
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
         assertThat(updateActions.get(0).getAction()).isEqualTo("setCustomType");
@@ -78,9 +78,9 @@ public class CustomDiffTest {
 
     @Test
     public void buildTypeActions_WithNullNewCustomFields_ShouldBuildUpdateActions() {
-        final Category existingCategory = mock(Category.class);
-        final CustomFields existingCategoryCustomFields = mock(CustomFields.class);
-        when(existingCategory.getCustom()).thenReturn(existingCategoryCustomFields);
+        final Category oldCategory = mock(Category.class);
+        final CustomFields oldCategoryCustomFields = mock(CustomFields.class);
+        when(oldCategory.getCustom()).thenReturn(oldCategoryCustomFields);
 
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getCustom()).thenReturn(null);
@@ -88,9 +88,9 @@ public class CustomDiffTest {
         final TypeService typeServiceMock = mock(TypeServiceImpl.class);
 
         final List<UpdateAction<Category>> updateActions =
-                buildCustomActions(existingCategory, newCategoryDraft, typeServiceMock);
+                buildCustomActions(oldCategory, newCategoryDraft, typeServiceMock);
 
-        // Should remove custom type from existing category.
+        // Should remove custom type from old category.
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
         assertThat(updateActions.get(0).getAction()).isEqualTo("setCustomType");
@@ -98,8 +98,8 @@ public class CustomDiffTest {
 
     @Test
     public void buildTypeActions_WithBothNullCustomFields_ShouldNotBuildUpdateActions() {
-        final Category existingCategory = mock(Category.class);
-        when(existingCategory.getCustom()).thenReturn(null);
+        final Category oldCategory = mock(Category.class);
+        when(oldCategory.getCustom()).thenReturn(null);
 
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getCustom()).thenReturn(null);
@@ -107,7 +107,7 @@ public class CustomDiffTest {
         final TypeService typeServiceMock = mock(TypeServiceImpl.class);
 
         final List<UpdateAction<Category>> updateActions =
-                buildCustomActions(existingCategory, newCategoryDraft, typeServiceMock);
+                buildCustomActions(oldCategory, newCategoryDraft, typeServiceMock);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).isEmpty();
@@ -121,12 +121,12 @@ public class CustomDiffTest {
         when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
         when(categoryTypeReference.getKey()).thenReturn(categoryCustomTypeKey);
 
-        // Mock existing CustomFields
-        final CustomFields existingCustomFieldsMock = mock(CustomFields.class);
-        final Map<String, JsonNode> existingCustomFieldsJsonMapMock = new HashMap<>();
-        existingCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-        when(existingCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
-        when(existingCustomFieldsMock.getFieldsJsonMap()).thenReturn(existingCustomFieldsJsonMapMock);
+        // Mock old CustomFields
+        final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
+        final Map<String, JsonNode> oldCustomFieldsJsonMapMock = new HashMap<>();
+        oldCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        when(oldCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        when(oldCustomFieldsMock.getFieldsJsonMap()).thenReturn(oldCustomFieldsJsonMapMock);
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
@@ -140,7 +140,7 @@ public class CustomDiffTest {
         when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(categoryCustomTypeKey);
 
         final List<UpdateAction<Category>> updateActions =
-                buildNonNullCustomFieldsActions(existingCustomFieldsMock,
+                buildNonNullCustomFieldsActions(oldCustomFieldsMock,
                         newCustomFieldsMock, typeServiceMock, mock(Category.class));
 
         assertThat(updateActions).isNotNull();
@@ -162,9 +162,9 @@ public class CustomDiffTest {
         when(newCategoryTypeReference.getId()).thenReturn(newCategoryCustomTypeId);
         when(newCategoryTypeReference.getKey()).thenReturn(newCategoryCustomTypeKey);
 
-        // Mock existing CustomFields
-        final CustomFields existingCustomFieldsMock = mock(CustomFields.class);
-        when(existingCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        // Mock old CustomFields
+        final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
+        when(oldCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
@@ -174,7 +174,7 @@ public class CustomDiffTest {
         final TypeService typeServiceMock = mock(TypeServiceImpl.class);
         when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(categoryCustomTypeKey);
 
-        final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsActions(existingCustomFieldsMock,
+        final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsActions(oldCustomFieldsMock,
                 newCustomFieldsMock, typeServiceMock, mock(Category.class));
 
         assertThat(updateActions).isNotNull();
@@ -183,16 +183,16 @@ public class CustomDiffTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsActions_WithNullExistingCategoryTypeKey_ShouldBuildUpdateActions() {
+    public void buildNonNullCustomFieldsActions_WithNullOldCategoryTypeKey_ShouldBuildUpdateActions() {
         final Reference<Type> categoryTypeReference = mock(Reference.class);
         final String categoryCustomTypeInternalId = "categoryCustomTypeId";
         final String categoryCustomTypeKey = "categoryCustomTypeKey";
         when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
         when(categoryTypeReference.getKey()).thenReturn(categoryCustomTypeKey);
 
-        // Mock existing CustomFields
-        final CustomFields existingCustomFieldsMock = mock(CustomFields.class);
-        when(existingCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        // Mock old CustomFields
+        final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
+        when(oldCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
@@ -202,7 +202,7 @@ public class CustomDiffTest {
         final TypeService typeServiceMock = mock(TypeServiceImpl.class);
         when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(null);
 
-        final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsActions(existingCustomFieldsMock,
+        final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsActions(oldCustomFieldsMock,
                 newCustomFieldsMock, typeServiceMock, mock(Category.class));
 
         assertThat(updateActions).isNotNull();
@@ -217,9 +217,9 @@ public class CustomDiffTest {
         final String categoryCustomTypeKey = "categoryCustomTypeKey";
         when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
 
-        // Mock existing CustomFields
-        final CustomFields existingCustomFieldsMock = mock(CustomFields.class);
-        when(existingCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        // Mock old CustomFields
+        final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
+        when(oldCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
@@ -229,7 +229,7 @@ public class CustomDiffTest {
         final TypeService typeServiceMock = mock(TypeServiceImpl.class);
         when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(categoryCustomTypeKey);
 
-        final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsActions(existingCustomFieldsMock,
+        final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsActions(oldCustomFieldsMock,
                 newCustomFieldsMock, typeServiceMock, mock(Category.class));
 
         assertThat(updateActions).isNotNull();
@@ -243,9 +243,9 @@ public class CustomDiffTest {
         final String categoryCustomTypeInternalId = "categoryCustomTypeId";
         when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
 
-        // Mock existing CustomFields
-        final CustomFields existingCustomFieldsMock = mock(CustomFields.class);
-        when(existingCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        // Mock old CustomFields
+        final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
+        when(oldCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
@@ -256,7 +256,7 @@ public class CustomDiffTest {
         when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(null);
 
         final List<UpdateAction<Category>> updateActions =
-                buildNonNullCustomFieldsActions(existingCustomFieldsMock,
+                buildNonNullCustomFieldsActions(oldCustomFieldsMock,
                         newCustomFieldsMock, typeServiceMock, mock(Category.class));
 
         assertThat(updateActions).isNotNull();
@@ -271,12 +271,12 @@ public class CustomDiffTest {
         when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
         when(categoryTypeReference.getKey()).thenReturn(categoryCustomTypeKey);
 
-        // Mock existing CustomFields
-        final CustomFields existingCustomFieldsMock = mock(CustomFields.class);
-        final Map<String, JsonNode> existingCustomFieldsJsonMapMock = new HashMap<>();
-        existingCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-        when(existingCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
-        when(existingCustomFieldsMock.getFieldsJsonMap()).thenReturn(existingCustomFieldsJsonMapMock);
+        // Mock old CustomFields
+        final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
+        final Map<String, JsonNode> oldCustomFieldsJsonMapMock = new HashMap<>();
+        oldCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        when(oldCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        when(oldCustomFieldsMock.getFieldsJsonMap()).thenReturn(oldCustomFieldsJsonMapMock);
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
@@ -288,7 +288,7 @@ public class CustomDiffTest {
         when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(categoryCustomTypeKey);
 
         final List<UpdateAction<Category>> updateActions =
-                buildNonNullCustomFieldsActions(existingCustomFieldsMock,
+                buildNonNullCustomFieldsActions(oldCustomFieldsMock,
                         newCustomFieldsMock, typeServiceMock, mock(Category.class));
 
         assertThat(updateActions).isNotNull();
@@ -297,16 +297,16 @@ public class CustomDiffTest {
 
     @Test
     public void buildSetCustomFieldsActions_WithDifferentCustomFieldValues_ShouldBuildUpdateActions() {
-        final Map<String, JsonNode> existingCustomFields = new HashMap<>();
-        existingCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
-        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
+        oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
+        oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
+                buildSetCustomFieldsActions(oldCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isNotEmpty();
@@ -317,8 +317,8 @@ public class CustomDiffTest {
     }
 
     @Test
-    public void buildSetCustomFieldsActions_WithNoNewCustomFieldsInExistingCustomFields_ShouldBuildUpdateActions() {
-        final Map<String, JsonNode> existingCustomFields = new HashMap<>();
+    public void buildSetCustomFieldsActions_WithNoNewCustomFieldsInOldCustomFields_ShouldBuildUpdateActions() {
+        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
@@ -327,7 +327,7 @@ public class CustomDiffTest {
         newCustomFields.put("size", JsonNodeFactory.instance.objectNode().put("cm", 34));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
+                buildSetCustomFieldsActions(oldCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isNotEmpty();
@@ -335,16 +335,16 @@ public class CustomDiffTest {
     }
 
     @Test
-    public void buildSetCustomFieldsActions_WithExistingCustomFieldNotInNewFields_ShouldBuildUpdateActions() {
-        final Map<String, JsonNode> existingCustomFields = new HashMap<>();
-        existingCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+    public void buildSetCustomFieldsActions_WithOldCustomFieldNotInNewFields_ShouldBuildUpdateActions() {
+        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
+        oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
+                buildSetCustomFieldsActions(oldCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isNotEmpty();
@@ -353,16 +353,16 @@ public class CustomDiffTest {
 
     @Test
     public void buildSetCustomFieldsActions_WithSameCustomFieldValues_ShouldNotBuildUpdateActions() {
-        final Map<String, JsonNode> existingCustomFields = new HashMap<>();
-        existingCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
+        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
+        oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
+                buildSetCustomFieldsActions(oldCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -370,14 +370,14 @@ public class CustomDiffTest {
 
     @Test
     public void buildSetCustomFieldsActions_WithDifferentOrderOfCustomFieldValues_ShouldNotBuildUpdateActions() {
-        final Map<String, JsonNode> existingCustomFields = new HashMap<>();
-        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("es", "rojo"));
+        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
+        oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("es", "rojo"));
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo").put("de", "rot"));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
+                buildSetCustomFieldsActions(oldCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -385,14 +385,14 @@ public class CustomDiffTest {
 
     @Test
     public void buildSetCustomFieldsActions_WithEmptyCustomFieldValues_ShouldNotBuildUpdateActions() {
-        final Map<String, JsonNode> existingCustomFields = new HashMap<>();
-        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode());
+        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
+        oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode());
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode());
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
+                buildSetCustomFieldsActions(oldCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -400,12 +400,12 @@ public class CustomDiffTest {
 
     @Test
     public void buildSetCustomFieldsActions_WithEmptyCustomFields_ShouldNotBuildUpdateActions() {
-        final Map<String, JsonNode> existingCustomFields = new HashMap<>();
+        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
+                buildSetCustomFieldsActions(oldCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -413,14 +413,14 @@ public class CustomDiffTest {
 
     @Test
     public void buildNewOrModifiedCustomFieldsActions_WithNewOrModifiedCustomFields_ShouldBuildUpdateActions() {
-        final Map<String, JsonNode> existingCustomFields = new HashMap<>();
-        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
+        oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> customFieldsActions =
-                buildNewOrModifiedCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
+                buildNewOrModifiedCustomFieldsActions(oldCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isNotEmpty();
@@ -429,15 +429,15 @@ public class CustomDiffTest {
 
     @Test
     public void buildNewOrModifiedCustomFieldsActions_WithNoNewOrModifiedCustomFields_ShouldNotBuildUpdateActions() {
-        final Map<String, JsonNode> existingCustomFields = new HashMap<>();
-        existingCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
+        oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> customFieldsActions =
-                buildNewOrModifiedCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
+                buildNewOrModifiedCustomFieldsActions(oldCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isEmpty();
@@ -445,15 +445,15 @@ public class CustomDiffTest {
 
     @Test
     public void buildRemovedCustomFieldsActions_WithRemovedCustomField_ShouldBuildUpdateActions() {
-        final Map<String, JsonNode> existingCustomFields = new HashMap<>();
-        existingCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-        existingCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
+        oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> customFieldsActions =
-                buildRemovedCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
+                buildRemovedCustomFieldsActions(oldCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isNotEmpty();
@@ -462,15 +462,15 @@ public class CustomDiffTest {
 
     @Test
     public void buildRemovedCustomFieldsActions_WithNoRemovedCustomField_ShouldNotBuildUpdateActions() {
-        final Map<String, JsonNode> existingCustomFields = new HashMap<>();
-        existingCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
+        oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
 
         final List<UpdateAction<Category>> customFieldsActions =
-                buildRemovedCustomFieldsActions(existingCustomFields, newCustomFields, mock(Category.class));
+                buildRemovedCustomFieldsActions(oldCustomFields, newCustomFields, mock(Category.class));
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isEmpty();

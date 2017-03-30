@@ -21,17 +21,17 @@ public class CategorySyncUtils {
      * TODO: UNIT TEST.
      * TODO: NEEDS TO BE IMPLEMENTED. GITHUB ISSUE#9
      *
-     * @param existingCategory
+     * @param oldCategory
      * @param newCategory
      * @param typeService
      * @return
      */
     @Nonnull
-    public static List<UpdateAction<Category>> buildActions(@Nonnull final Category existingCategory,
+    public static List<UpdateAction<Category>> buildActions(@Nonnull final Category oldCategory,
                                                             @Nonnull final Category newCategory,
                                                             @Nonnull final TypeService typeService) {
-        final List<UpdateAction<Category>> updateActions = buildCoreActions(existingCategory, newCategory, typeService);
-        final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(existingCategory, newCategory);
+        final List<UpdateAction<Category>> updateActions = buildCoreActions(oldCategory, newCategory, typeService);
+        final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(oldCategory, newCategory);
         return Stream.concat(updateActions.stream(),
                 assetUpdateActions.stream())
                 .collect(Collectors.toList());
@@ -42,13 +42,13 @@ public class CategorySyncUtils {
      * SHOULD TRANSFORM Category TO CategoryDraft
      * then call {@link CategorySyncUtils#buildCoreActions(Category, CategoryDraft, TypeService)}.
      *
-     * @param existingCategory
+     * @param oldCategory
      * @param newCategory
      * @param typeService
      * @return
      */
     @Nonnull
-    public static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category existingCategory,
+    public static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category oldCategory,
                                                                 @Nonnull final Category newCategory,
                                                                 @Nonnull final TypeService typeService) {
         return new ArrayList<>();
@@ -59,12 +59,12 @@ public class CategorySyncUtils {
      * SHOULD TRANSFORM Category TO CategoryDraft
      * then call {@link CategorySyncUtils#buildAssetActions(Category, CategoryDraft)}.
      *
-     * @param existingCategory
+     * @param oldCategory
      * @param newCategory
      * @return
      */
     @Nonnull
-    public static List<UpdateAction<Category>> buildAssetActions(@Nonnull final Category existingCategory,
+    public static List<UpdateAction<Category>> buildAssetActions(@Nonnull final Category oldCategory,
                                                                  @Nonnull final Category newCategory) {
         return new ArrayList<>();
     }
@@ -73,17 +73,17 @@ public class CategorySyncUtils {
      * TODO: JAVADOC
      * TODO: UNIT TEST
      *
-     * @param existingCategory
+     * @param oldCategory
      * @param newCategory
      * @param typeService
      * @return
      */
     @Nonnull
-    public static List<UpdateAction<Category>> buildActions(@Nonnull final Category existingCategory,
+    public static List<UpdateAction<Category>> buildActions(@Nonnull final Category oldCategory,
                                                             @Nonnull final CategoryDraft newCategory,
                                                             @Nonnull final TypeService typeService) {
-        final List<UpdateAction<Category>> updateActions = buildCoreActions(existingCategory, newCategory, typeService);
-        final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(existingCategory, newCategory);
+        final List<UpdateAction<Category>> updateActions = buildCoreActions(oldCategory, newCategory, typeService);
+        final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(oldCategory, newCategory);
         return Stream.concat(updateActions.stream(),
                 assetUpdateActions.stream())
                 .collect(Collectors.toList());
@@ -93,42 +93,42 @@ public class CategorySyncUtils {
      * TODO: JAVADOC
      * TODO: UNIT TEST
      *
-     * @param existingCategory
+     * @param oldCategory
      * @param newCategory
      * @param typeService
      * @return
      */
     @Nonnull
-    public static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category existingCategory,
+    public static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category oldCategory,
                                                                 @Nonnull final CategoryDraft newCategory,
                                                                 @Nonnull final TypeService typeService) {
         final List<UpdateAction<Category>> updateActions = new ArrayList<>();
-        buildChangeNameUpdateAction(existingCategory, newCategory)
+        buildChangeNameUpdateAction(oldCategory, newCategory)
                 .map(updateActions::add);
 
-        buildChangeSlugUpdateAction(existingCategory, newCategory)
+        buildChangeSlugUpdateAction(oldCategory, newCategory)
                 .map(updateActions::add);
 
-        buildSetDescriptionUpdateAction(existingCategory, newCategory)
+        buildSetDescriptionUpdateAction(oldCategory, newCategory)
                 .map(updateActions::add);
 
-        buildChangeParentUpdateAction(existingCategory, newCategory)
+        buildChangeParentUpdateAction(oldCategory, newCategory)
                 .map(updateActions::add);
 
-        buildChangeOrderHintUpdateAction(existingCategory, newCategory)
+        buildChangeOrderHintUpdateAction(oldCategory, newCategory)
                 .map(updateActions::add);
 
-        buildSetMetaTitleUpdateAction(existingCategory, newCategory)
+        buildSetMetaTitleUpdateAction(oldCategory, newCategory)
                 .map(updateActions::add);
 
-        buildSetMetaDescriptionUpdateAction(existingCategory, newCategory)
+        buildSetMetaDescriptionUpdateAction(oldCategory, newCategory)
                 .map(updateActions::add);
 
-        buildSetMetaKeywordsUpdateAction(existingCategory, newCategory)
+        buildSetMetaKeywordsUpdateAction(oldCategory, newCategory)
                 .map(updateActions::add);
 
         final List<UpdateAction<Category>> categoryTypeUpdateActions =
-                buildCustomActions(existingCategory, newCategory, typeService);
+                buildCustomActions(oldCategory, newCategory, typeService);
         return Stream.concat(updateActions.stream(),
                 categoryTypeUpdateActions.stream())
                 .collect(Collectors.toList());
@@ -146,12 +146,12 @@ public class CategorySyncUtils {
      * - setAssetCustomType
      * - setAssetCustomField
      *
-     * @param existingCategory
+     * @param oldCategory
      * @param newCategory
      * @return
      */
     @Nonnull
-    public static List<UpdateAction<Category>> buildAssetActions(@Nonnull final Category existingCategory,
+    public static List<UpdateAction<Category>> buildAssetActions(@Nonnull final Category oldCategory,
                                                                  @Nonnull final CategoryDraft newCategory) {
         return new ArrayList<>();
     }
