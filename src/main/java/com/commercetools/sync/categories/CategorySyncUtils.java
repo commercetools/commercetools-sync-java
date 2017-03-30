@@ -72,6 +72,7 @@ public class CategorySyncUtils {
     /**
      * TODO: JAVADOC
      * TODO: UNIT TEST
+     *
      * @param existingCategory
      * @param newCategory
      * @param typeService
@@ -91,6 +92,7 @@ public class CategorySyncUtils {
     /**
      * TODO: JAVADOC
      * TODO: UNIT TEST
+     *
      * @param existingCategory
      * @param newCategory
      * @param typeService
