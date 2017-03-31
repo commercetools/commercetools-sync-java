@@ -11,7 +11,10 @@ import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -196,8 +199,7 @@ public class CustomUpdateActionUtils {
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource) {
-        return newCustomFields.entrySet().stream()
-                .map(Map.Entry::getKey)
+        return newCustomFields.keySet().stream()
                 .filter(newCustomFieldName -> !Objects.equals(
                         newCustomFields.get(newCustomFieldName), oldCustomFields.get(newCustomFieldName)))
                 .map(newCustomFieldName -> buildTypedSetCustomFieldUpdateAction(
@@ -221,8 +223,7 @@ public class CustomUpdateActionUtils {
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource) {
-        return oldCustomFields.entrySet().stream()
-                .map(Map.Entry::getKey)
+        return oldCustomFields.keySet().stream()
                 .filter(oldCustomFieldsName -> Objects.isNull(newCustomFields.get(oldCustomFieldsName)))
                 .map(oldCustomFieldsName -> buildTypedSetCustomFieldUpdateAction(
                         oldCustomFieldsName, null, resource).orElse(null))
