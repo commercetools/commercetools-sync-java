@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 
 public class CustomUpdateActionUtilsTest {
     @Test
-    public void buildTypeActions_WithNonNullCustomFieldsWithDifferentKeys_ShouldBuildUpdateActions() {
+    public void buildCustomUpdateActions_WithNonNullCustomFieldsWithDifferentKeys_ShouldBuildUpdateActions() {
         final String oldCategoryCustomTypeKey = "1";
         final Category oldCategory = mock(Category.class);
         final CustomFields oldCategoryCustomFields = mock(CustomFields.class);
@@ -56,7 +56,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildTypeActions_WithNullOldCustomFields_ShouldBuildUpdateActions() {
+    public void buildCustomUpdateActions_WithNullOldCustomFields_ShouldBuildUpdateActions() {
         final Category oldCategory = mock(Category.class);
         when(oldCategory.getCustom()).thenReturn(null);
 
@@ -78,7 +78,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildTypeActions_WithNullNewCustomFields_ShouldBuildUpdateActions() {
+    public void buildCustomUpdateActions_WithNullNewCustomFields_ShouldBuildUpdateActions() {
         final Category oldCategory = mock(Category.class);
         final CustomFields oldCategoryCustomFields = mock(CustomFields.class);
         when(oldCategory.getCustom()).thenReturn(oldCategoryCustomFields);
@@ -98,7 +98,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildTypeActions_WithBothNullCustomFields_ShouldNotBuildUpdateActions() {
+    public void buildNonNullCustomFieldsUpdateActions_WithBothNullCustomFields_ShouldNotBuildUpdateActions() {
         final Category oldCategory = mock(Category.class);
         when(oldCategory.getCustom()).thenReturn(null);
 
@@ -115,7 +115,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsActions_WithSameCategoryTypeKeys_ShouldBuildUpdateActions() {
+    public void buildNonNullCustomFieldsUpdateActions_WithSameCategoryTypeKeys_ShouldBuildUpdateActions() {
         final Reference<Type> categoryTypeReference = mock(Reference.class);
         final String categoryCustomTypeInternalId = "categoryCustomTypeId";
         final String categoryCustomTypeKey = "categoryCustomTypeKey";
@@ -150,7 +150,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsActions_WithDifferentCategoryTypeKeys_ShouldBuildUpdateActions() {
+    public void buildNonNullCustomFieldsUpdateActions_WithDifferentCategoryTypeKeys_ShouldBuildUpdateActions() {
         final Reference<Type> categoryTypeReference = mock(Reference.class);
         final String categoryCustomTypeInternalId = "categoryCustomTypeId";
         final String categoryCustomTypeKey = "categoryCustomTypeKey";
@@ -184,7 +184,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsActions_WithNullOldCategoryTypeKey_ShouldBuildUpdateActions() {
+    public void buildNonNullCustomFieldsUpdateActions_WithNullOldCategoryTypeKey_ShouldBuildUpdateActions() {
         final Reference<Type> categoryTypeReference = mock(Reference.class);
         final String categoryCustomTypeInternalId = "categoryCustomTypeId";
         final String categoryCustomTypeKey = "categoryCustomTypeKey";
@@ -212,7 +212,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsActions_WithNullNewCategoryTypeKey_ShouldBuildUpdateActions() {
+    public void buildNonNullCustomFieldsUpdateActions_WithNullNewCategoryTypeKey_ShouldBuildUpdateActions() {
         final Reference<Type> categoryTypeReference = mock(Reference.class);
         final String categoryCustomTypeInternalId = "categoryCustomTypeId";
         final String categoryCustomTypeKey = "categoryCustomTypeKey";
@@ -239,7 +239,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsActions_WithNullKeys_ShouldNotBuildUpdateActions() {
+    public void buildNonNullCustomFieldsUpdateActions_WithNullKeys_ShouldNotBuildUpdateActions() {
         final Reference<Type> categoryTypeReference = mock(Reference.class);
         final String categoryCustomTypeInternalId = "categoryCustomTypeId";
         when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
@@ -265,7 +265,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsActions_WithSameKeysButNullNewCustomFields_ShouldNotBuildUpdateActions() {
+    public void buildNonNullCustomFieldsUpdateActions_WithSameKeysButNullNewCustomFields_ShouldNotBuildUpdateActions() {
         final Reference<Type> categoryTypeReference = mock(Reference.class);
         final String categoryCustomTypeInternalId = "categoryCustomTypeId";
         final String categoryCustomTypeKey = "categoryCustomTypeKey";
@@ -297,7 +297,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldsActions_WithDifferentCustomFieldValues_ShouldBuildUpdateActions() {
+    public void buildSetCustomFieldsUpdateActions_WithDifferentCustomFieldValues_ShouldBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
@@ -318,7 +318,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldsActions_WithNoNewCustomFieldsInOldCustomFields_ShouldBuildUpdateActions() {
+    public void buildSetCustomFieldsUpdateActions_WithNoNewCustomFieldsInOldCustomFields_ShouldBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
@@ -336,7 +336,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldsActions_WithOldCustomFieldNotInNewFields_ShouldBuildUpdateActions() {
+    public void buildSetCustomFieldsUpdateActions_WithOldCustomFieldNotInNewFields_ShouldBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
@@ -353,7 +353,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldsActions_WithSameCustomFieldValues_ShouldNotBuildUpdateActions() {
+    public void buildSetCustomFieldsUpdateActions_WithSameCustomFieldValues_ShouldNotBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
@@ -370,7 +370,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldsActions_WithDifferentOrderOfCustomFieldValues_ShouldNotBuildUpdateActions() {
+    public void buildSetCustomFieldsUpdateActions_WithDifferentOrderOfCustomFieldValues_ShouldNotBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("es", "rojo"));
 
@@ -385,7 +385,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldsActions_WithEmptyCustomFieldValues_ShouldNotBuildUpdateActions() {
+    public void buildSetCustomFieldsUpdateActions_WithEmptyCustomFieldValues_ShouldNotBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode());
 
@@ -400,7 +400,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldsActions_WithEmptyCustomFields_ShouldNotBuildUpdateActions() {
+    public void buildSetCustomFieldsUpdateActions_WithEmptyCustomFields_ShouldNotBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
@@ -413,7 +413,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNewOrModifiedCustomFieldsActions_WithNewOrModifiedCustomFields_ShouldBuildUpdateActions() {
+    public void buildNewOrModifiedCustomFieldsUpdateActions_WithNewOrModifiedCustomFields_ShouldBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
 
@@ -429,7 +429,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNewOrModifiedCustomFieldsActions_WithNewOrModifiedNonHandledResourceCustomFields_ShouldNotBuildUpdateActions() {
+    public void buildNewOrModifiedCustomFieldsUpdateActions_WithNewOrModifiedNonHandledResourceCustomFields_ShouldNotBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
 
@@ -445,7 +445,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNewOrModifiedCustomFieldsActions_WithNoNewOrModifiedCustomFields_ShouldNotBuildUpdateActions() {
+    public void buildNewOrModifiedCustomFieldsUpdateActions_WithNoNewOrModifiedCustomFields_ShouldNotBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
@@ -461,7 +461,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildRemovedCustomFieldsActions_WithRemovedCustomField_ShouldBuildUpdateActions() {
+    public void buildRemovedCustomFieldsUpdateActions_WithRemovedCustomField_ShouldBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
@@ -478,7 +478,7 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildRemovedCustomFieldsActions_WithNoRemovedCustomField_ShouldNotBuildUpdateActions() {
+    public void buildRemovedCustomFieldsUpdateActions_WithNoRemovedCustomField_ShouldNotBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
