@@ -101,10 +101,11 @@ class GenericUpdateActionUtils {
      * Creates a CTP update action on the given resource {@link T} (which currently could either be a {@link Category}
      * or a {@link Channel}) according to the {@code updateActionName} flag. According to this flag value, the required
      * update action is built:
-     * 1. SET_CUSTOM_TYPE_REMOVE -> creates a "setCustomType" update action that removes a custom type from the resource.
-     * 2. SET_CUSTOM_TYPE -> creates a "setCustomType" update action that changes the custom type set on the resource.
-     * 3. SET_CUSTOM_FIELD -> creates a "setCustomField" update action that changes the value of a custom field.
-     *
+     * <ol>
+     * <li>SET_CUSTOM_TYPE_REMOVE -> creates a "setCustomType" update action that removes a custom type from the resource.</li>
+     * <li>SET_CUSTOM_TYPE -> creates a "setCustomType" update action that changes the custom type set on the resource.</li>
+     * <li>SET_CUSTOM_FIELD -> creates a "setCustomField" update action that changes the value of a custom field.</li>
+     *</ol>
      * @param customTypeKey       the key of the new custom type, only if the flag is SET_CUSTOM_TYPE.
      * @param customFieldsJsonMap the custom fields map of JSON values, only if the flag is SET_CUSTOM_TYPE.
      * @param customFieldName     the name of the custom field to update, only if the flag is SET_CUSTOM_FIELD.

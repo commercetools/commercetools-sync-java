@@ -20,7 +20,7 @@ import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.*;
 public class CustomUpdateActionUtils {
 
     /**
-     * Compares the {@link CustomFields}, of an old resource {@link T} (for example {@link Category},
+     * Compares the {@link CustomFields} of an old resource {@link T} (for example {@link Category},
      * {@link io.sphere.sdk.products.Product}, etc..), to the {@link CustomFieldsDraft}, of a new
      * resource draft {@link S} (for example {@link CategoryDraft}, {@link io.sphere.sdk.products.ProductVariantDraft},
      * etc..), and returns a {@link List<UpdateAction>} as a result. If no update action is needed,
@@ -31,25 +31,26 @@ public class CustomUpdateActionUtils {
      * <p>
      * <p>
      * An update action will be added to the result list in the following cases:-
-     * <p>
-     * 1. If the new resources's custom type is set, but old resources's custom type is not. A "setCustomType" update
-     * actions is added, which sets the custom type (and all it's fields to the old resource).
-     * 2. If the new resource's custom type is not set, but the old resource's custom type is set. A
-     * "setCustomType" update action is added, which removes the type set on the old resource.
-     * 3. If both the resources custom types are the same and the custom fields are both set. The custom
-     * field values of both resources are then calculated. (see {@link CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom)})
-     * 4. If the keys of both custom types are different, then a "setCustomType" update action is added, where the
-     * old resource's custom type is set to be as the new one's.
-     * <p>
-     * <p>
+     * <ol>
+     * <li>If the new resources's custom type is set, but old resources's custom type is not. A "setCustomType" update
+     * actions is added, which sets the custom type (and all it's fields to the old resource).</li>
+     * <li>If the new resource's custom type is not set, but the old resource's custom type is set. A
+     * "setCustomType" update action is added, which removes the type set on the old resource.</li>
+     * <li>If both the resources custom types are the same and the custom fields are both set. The custom
+     * field values of both resources are then calculated. (see {@link CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom)})</li>
+     * <li>If the keys of both custom types are different, then a "setCustomType" update action is added, where the
+     * old resource's custom type is set to be as the new one's.</li>
+     * </ol>
      * <p>
      * An update action will <bold>not</bold> be added to the result list in the following cases:-
-     * 1. If both the resources' custom types are not set.
-     * 2. If both the resources' custom type keys are not set.
-     * 3. If both resources custom type keys are identical but the custom fields of the new resource's custom type is not set.
-     * 4. Custom fields are both empty.
-     * 5. Custom field JSON values have different ordering.
-     * 6. Custom field values are identical.
+     * <ol>
+     * <li>If both the resources' custom types are not set.</li>
+     * <li>If both the resources' custom type keys are not set.</li>
+     * <li>If both resources custom type keys are identical but the custom fields of the new resource's custom type is not set.</li>
+     * <li>Custom fields are both empty.</li>
+     * <li>Custom field JSON values have different ordering.</li>
+     * <li>Custom field values are identical.</li>
+     * </ol>
      *
      * @param oldResource the resource which should be updated.
      * @param newResource the resource draft where we get the new custom fields.
@@ -94,19 +95,19 @@ public class CustomUpdateActionUtils {
      * {@link TypeService}. The key of the new resource custom type is expected to be set on the type.
      * If no update action is needed an empty {@link List<UpdateAction>} is returned.
      * <p>
-     * <p>
      * An update action will be added to the result list in the following cases:-
-     * <p>
-     * 1. If both the resources custom type keys are the same and the custom fields are both set. The custom
-     * field values of both resources are then calculated. (see {@link CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom)})
-     * 2. If the keys of both custom types are different, then a "setCustomType" update action is added, where the
-     * old resource's custom type is set to be as the new one's.
-     * <p>
-     * <p>
+     * <ol>
+     * <li>If both the resources custom type keys are the same and the custom fields are both set. The custom
+     * field values of both resources are then calculated. (see {@link CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom)})</li>
+     * <li>If the keys of both custom types are different, then a "setCustomType" update action is added, where the
+     * old resource's custom type is set to be as the new one's.</li>
+     * </ol>
      * <p>
      * An update action will <bold>not</bold> be added to the result list in the following cases:-
-     * 1. If both the resources' custom type keys are not set.
-     * 2. If both resources custom type keys are identical but the custom fields of the new resource's custom type is not set.
+     * <ol>
+     * <li>If both the resources' custom type keys are not set.</li>
+     * <li>If both resources custom type keys are identical but the custom fields of the new resource's custom type is not set.</li>
+     * </ol>
      *
      * @param oldCustomFields the old resource's custom fields.
      * @param newCustomFields the new resource draft's custom fields.
@@ -149,19 +150,18 @@ public class CustomUpdateActionUtils {
      * of the value of the corresponding custom field. It returns a {@link List<UpdateAction>} as a result.
      * If no update action is needed an empty {@link List<UpdateAction>} is returned.
      * <p>
-     * <p>
      * An update action will be added to the result list in the following cases:-
-     * <p>
-     * 1. A custom field value is changed.
-     * 2. A custom field value is removed.
-     * 3. A new custom field value is added.
-     * <p>
-     * <p>
+     * <ol>
+     * <li>A custom field value is changed.</li>
+     * <li>A custom field value is removed.</li>
+     * <li>A new custom field value is added.</li>
+     * </ol>
      * <p>
      * An update action will <bold>not</bold> be added to the result list in the following cases:-
-     * 1. Custom fields are both empty.
-     * 2. Custom field JSON values have different ordering.
-     * 3. Custom field values are identical.
+     * <ol>
+     * <li>Custom fields are both empty.</li>
+     * <li>Custom field JSON values have different ordering.</li>
+     * <li>Custom field values are identical.</li>
      *
      * @param oldCustomFields the old resource's custom fields map of JSON values.
      * @param newCustomFields the new resource's custom fields map of JSON values.
