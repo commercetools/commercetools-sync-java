@@ -5,6 +5,7 @@ import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -19,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.*;
-import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildRemovedCustomFieldsUpdateActions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -426,6 +426,22 @@ public class CustomUpdateActionUtilsTest {
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isNotEmpty();
         assertThat(customFieldsActions).hasSize(1);
+    }
+
+    @Test
+    public void buildNewOrModifiedCustomFieldsActions_WithNewOrModifiedNonHandledResourceCustomFields_ShouldNotBuildUpdateActions() {
+        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
+        oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+
+        final Map<String, JsonNode> newCustomFields = new HashMap<>();
+        newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+
+        // Cart resource is not handled in GenericUpdateActionUtils#buildTypedUpdateAction
+        final List<UpdateAction<Cart>> customFieldsActions =
+                buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Cart.class));
+
+        assertThat(customFieldsActions).isNotNull();
+        assertThat(customFieldsActions).isEmpty();
     }
 
     @Test

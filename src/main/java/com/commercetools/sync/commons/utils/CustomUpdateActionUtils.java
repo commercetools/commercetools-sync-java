@@ -198,8 +198,10 @@ public class CustomUpdateActionUtils {
             @Nonnull final T resource) {
         return newCustomFields.entrySet().stream()
                 .map(Map.Entry::getKey)
-                .filter(newCustomFieldName -> !Objects.equals(newCustomFields.get(newCustomFieldName), oldCustomFields.get(newCustomFieldName)))
-                .map(newCustomFieldName -> buildTypedSetCustomFieldUpdateAction(newCustomFieldName, newCustomFields.get(newCustomFieldName), resource))
+                .filter(newCustomFieldName -> !Objects.equals(
+                        newCustomFields.get(newCustomFieldName), oldCustomFields.get(newCustomFieldName)))
+                .map(newCustomFieldName -> buildTypedSetCustomFieldUpdateAction(
+                        newCustomFieldName, newCustomFields.get(newCustomFieldName), resource).orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
@@ -222,7 +224,9 @@ public class CustomUpdateActionUtils {
         return oldCustomFields.entrySet().stream()
                 .map(Map.Entry::getKey)
                 .filter(oldCustomFieldsName -> Objects.isNull(newCustomFields.get(oldCustomFieldsName)))
-                .map(oldCustomFieldsName -> buildTypedSetCustomFieldUpdateAction(oldCustomFieldsName, null, resource))
+                .map(oldCustomFieldsName -> buildTypedSetCustomFieldUpdateAction(
+                        oldCustomFieldsName, null, resource).orElse(null))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 }
