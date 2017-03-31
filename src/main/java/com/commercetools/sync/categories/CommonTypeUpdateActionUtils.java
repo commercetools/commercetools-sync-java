@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-public class CommonTypesDiff {
+class CommonTypeUpdateActionUtils {
 
     /**
      * Compares two {@link Object} and returns a supplied {@link UpdateAction} as a result in an
@@ -21,7 +21,7 @@ public class CommonTypesDiff {
      * @return A filled optional with the update action or an empty optional if the object values are identical.
      */
     @Nonnull
-    public static <T> Optional<UpdateAction<T>> buildUpdateAction(@Nullable final Object oldObject,
+    static <T> Optional<UpdateAction<T>> buildUpdateAction(@Nullable final Object oldObject,
                                                                   @Nullable final Object newObject,
                                                                   @Nullable final UpdateAction<T> updateAction) {
         return !Objects.equals(oldObject, newObject) && updateAction != null

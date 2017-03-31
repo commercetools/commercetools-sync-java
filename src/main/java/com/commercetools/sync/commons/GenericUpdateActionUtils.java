@@ -17,30 +17,29 @@ import static com.commercetools.sync.commons.constants.UpdateActions.*;
  * TODO: UNIT TESTS
  * TODO: JAVADOC
  */
-public class GenericUpdateActionBuilder {
+class GenericUpdateActionUtils {
 
     @Nullable
-    static <T extends Custom> UpdateAction<T> buildTypedSetCustomTypeAction(@Nullable final String customTypeKey,
-                                                                            @Nullable final Map<String, JsonNode> customFieldsJsonMap,
-                                                                            @Nonnull final T resource) {
+    static <T extends Custom> UpdateAction<T> buildTypedSetCustomTypeUpdateAction(@Nullable final String customTypeKey,
+                                                                                  @Nullable final Map<String, JsonNode> customFieldsJsonMap,
+                                                                                  @Nonnull final T resource) {
         return buildTypedUpdateAction(customTypeKey, customFieldsJsonMap, resource, SET_CUSTOM_TYPE);
     }
 
     @Nullable
-    static <T extends Custom> UpdateAction<T> buildTypedRemoveCustomTypeAction(@Nonnull final T resource) {
+    static <T extends Custom> UpdateAction<T> buildTypedRemoveCustomTypeUpdateAction(@Nonnull final T resource) {
         return buildTypedUpdateAction(resource, SET_CUSTOM_TYPE_REMOVE);
     }
 
     @Nullable
-    @SuppressWarnings("unchecked")
-    static <T extends Custom> UpdateAction<T> buildTypedSetCustomFieldAction(@Nonnull final String customFieldName,
-                                                                             @Nullable final JsonNode customFieldValue,
-                                                                             @Nonnull final T resource) {
+    static <T extends Custom> UpdateAction<T> buildTypedSetCustomFieldUpdateAction(@Nonnull final String customFieldName,
+                                                                                   @Nullable final JsonNode customFieldValue,
+                                                                                   @Nonnull final T resource) {
         return buildTypedUpdateAction(customFieldName, customFieldValue, resource, SET_CUSTOM_FIELD);
     }
 
     @Nullable
-    static <T extends Custom> UpdateAction<T> buildTypedUpdateAction(@Nullable final String customTypeKey,
+    private static <T extends Custom> UpdateAction<T> buildTypedUpdateAction(@Nullable final String customTypeKey,
                                                                      @Nullable final Map<String, JsonNode> customFieldsJsonMap,
                                                                      @Nonnull final T resource,
                                                                      @Nonnull final String updateAction) {
@@ -49,15 +48,14 @@ public class GenericUpdateActionBuilder {
     }
 
     @Nullable
-    static <T extends Custom> UpdateAction<T> buildTypedUpdateAction(@Nonnull final T resource,
+    private static <T extends Custom> UpdateAction<T> buildTypedUpdateAction(@Nonnull final T resource,
                                                                      @Nonnull final String updateAction) {
         return buildTypedUpdateAction(null, null, null, null,
                 resource, updateAction);
     }
 
     @Nullable
-    @SuppressWarnings("unchecked")
-    static <T extends Custom> UpdateAction<T> buildTypedUpdateAction(@Nullable final String customFieldName,
+    private static <T extends Custom> UpdateAction<T> buildTypedUpdateAction(@Nullable final String customFieldName,
                                                                      @Nullable final JsonNode customFieldValue,
                                                                      @Nonnull final T resource,
                                                                      @Nonnull final String updateAction) {
@@ -68,7 +66,7 @@ public class GenericUpdateActionBuilder {
 
     @Nullable
     @SuppressWarnings("unchecked")
-    static <T extends Custom> UpdateAction<T> buildTypedUpdateAction(@Nullable final String customTypeKey,
+    private static <T extends Custom> UpdateAction<T> buildTypedUpdateAction(@Nullable final String customTypeKey,
                                                                      @Nullable final Map<String, JsonNode> customFieldsJsonMap,
                                                                      @Nullable final String customFieldName,
                                                                      @Nullable final JsonNode customFieldValue,

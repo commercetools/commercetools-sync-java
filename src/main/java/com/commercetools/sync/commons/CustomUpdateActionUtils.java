@@ -30,7 +30,7 @@ public class CustomUpdateActionUtils {
      * for example in the case where both the {@link CustomFields} and the {@link CustomFieldsDraft} are null, an empty
      * {@link List<UpdateAction>} is returned. A {@link TypeService} instance is injected into the
      * method to fetch the key of the old resource type from it's
-     * cache (see {@link CustomDiff#buildNonNullCustomFieldsActions(CustomFields, CustomFieldsDraft, TypeService, Custom)}).
+     * cache (see {@link CustomUpdateActionUtils#buildNonNullCustomFieldsUpdateActions(CustomFields, CustomFieldsDraft, TypeService, Custom)}).
      * <p>
      * <p>
      * An update action will be added to the result list in the following cases:-
@@ -40,7 +40,7 @@ public class CustomUpdateActionUtils {
      * 2. If the new resource's custom type is not set, but the old resource's custom type is set. A
      * "setCustomType" update action is added, which removes the type set on the old resource.
      * 3. If both the resources custom types are the same and the custom fields are both set. The custom
-     * field values of both resources are then calculated. (see {@link CustomDiff#buildSetCustomFieldsActions(Map, Map, Custom)})
+     * field values of both resources are then calculated. (see {@link CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom)})
      * 4. If the keys of both custom types are different, then a "setCustomType" update action is added, where the
      * old resource's custom type is set to be as the new one's.
      * <p>
@@ -60,14 +60,14 @@ public class CustomUpdateActionUtils {
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    public static <T extends Custom, S extends CustomDraft> List<UpdateAction<T>> buildCustomActions(
+    public static <T extends Custom, S extends CustomDraft> List<UpdateAction<T>> buildCustomUpdateActions(
             @Nonnull final T oldResource,
             @Nonnull final S newResource,
             @Nonnull final TypeService typeService) {
         final CustomFields oldResourceCustomFields = oldResource.getCustom();
         final CustomFieldsDraft newResourceCustomFields = newResource.getCustom();
         if (oldResourceCustomFields != null && newResourceCustomFields != null) {
-            return buildNonNullCustomFieldsActions(oldResourceCustomFields, newResourceCustomFields, typeService, oldResource);
+            return buildNonNullCustomFieldsUpdateActions(oldResourceCustomFields, newResourceCustomFields, typeService, oldResource);
         } else {
             if (oldResourceCustomFields == null) {
                 if (newResourceCustomFields != null) {
@@ -76,13 +76,13 @@ public class CustomUpdateActionUtils {
                     final String newCustomFieldsTypeKey = newResourceCustomFields.getType().getKey();
                     final Map<String, JsonNode> newCustomFieldsJsonMap = newResourceCustomFields.getFields();
                     return Collections.singletonList(
-                            buildTypedSetCustomTypeAction(
+                            buildTypedSetCustomTypeUpdateAction(
                                     newCustomFieldsTypeKey, newCustomFieldsJsonMap, oldResource));
                 }
             } else {
                 // New resource's custom fields are not set, but old resource's custom fields are set. So we
                 // should remove the custom type from the old resource.
-                return Collections.singletonList(buildTypedRemoveCustomTypeAction(oldResource));
+                return Collections.singletonList(buildTypedRemoveCustomTypeUpdateAction(oldResource));
             }
         }
         return Collections.emptyList();
@@ -99,7 +99,7 @@ public class CustomUpdateActionUtils {
      * An update action will be added to the result list in the following cases:-
      * <p>
      * 1. If both the resources custom type keys are the same and the custom fields are both set. The custom
-     * field values of both resources are then calculated. (see {@link CustomDiff#buildSetCustomFieldsActions(Map, Map, Custom)})
+     * field values of both resources are then calculated. (see {@link CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom)})
      * 2. If the keys of both custom types are different, then a "setCustomType" update action is added, where the
      * old resource's custom type is set to be as the new one's.
      * <p>
@@ -115,7 +115,7 @@ public class CustomUpdateActionUtils {
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    static <T extends Custom> List<UpdateAction<T>> buildNonNullCustomFieldsActions(
+    private static <T extends Custom> List<UpdateAction<T>> buildNonNullCustomFieldsUpdateActions(
             @Nonnull final CustomFields oldCustomFields,
             @Nonnull final CustomFieldsDraft newCustomFields,
             @Nonnull final TypeService typeService,
@@ -137,9 +137,9 @@ public class CustomUpdateActionUtils {
             }
             // old and new resource's custom fields are set. So we should calculate update actions for the
             // the fields of both.
-            return buildSetCustomFieldsActions(oldCustomFieldsJsonMap, newCustomFieldsJsonMap, resource);
+            return buildSetCustomFieldsUpdateActions(oldCustomFieldsJsonMap, newCustomFieldsJsonMap, resource);
         } else {
-            return Collections.singletonList(buildTypedSetCustomTypeAction(
+            return Collections.singletonList(buildTypedSetCustomTypeUpdateAction(
                     newCustomFieldsTypeKey, newCustomFieldsJsonMap, resource));
         }
     }
@@ -168,14 +168,14 @@ public class CustomUpdateActionUtils {
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    static <T extends Custom> List<UpdateAction<T>> buildSetCustomFieldsActions(
+    private static <T extends Custom> List<UpdateAction<T>> buildSetCustomFieldsUpdateActions(
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource) {
         final List<UpdateAction<T>> newOrModifiedCustomFieldsActions =
-                buildNewOrModifiedCustomFieldsActions(oldCustomFields, newCustomFields, resource);
+                buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource);
         final List<UpdateAction<T>> removedCustomFieldsActions =
-                buildRemovedCustomFieldsActions(oldCustomFields, newCustomFields, resource);
+                buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource);
         return Stream.concat(newOrModifiedCustomFieldsActions.stream(),
                 removedCustomFieldsActions.stream())
                 .collect(Collectors.toList());
@@ -192,14 +192,14 @@ public class CustomUpdateActionUtils {
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    static <T extends Custom> List<UpdateAction<T>> buildNewOrModifiedCustomFieldsActions(
+    private static <T extends Custom> List<UpdateAction<T>> buildNewOrModifiedCustomFieldsUpdateActions(
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource) {
         return newCustomFields.entrySet().stream()
                 .map(Map.Entry::getKey)
                 .filter(newCustomFieldName -> !Objects.equals(newCustomFields.get(newCustomFieldName), oldCustomFields.get(newCustomFieldName)))
-                .map(newCustomFieldName -> buildTypedSetCustomFieldAction(newCustomFieldName, newCustomFields.get(newCustomFieldName), resource))
+                .map(newCustomFieldName -> buildTypedSetCustomFieldUpdateAction(newCustomFieldName, newCustomFields.get(newCustomFieldName), resource))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
@@ -215,14 +215,14 @@ public class CustomUpdateActionUtils {
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    static <T extends Custom> List<UpdateAction<T>> buildRemovedCustomFieldsActions(
+    private static <T extends Custom> List<UpdateAction<T>> buildRemovedCustomFieldsUpdateActions(
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource) {
         return oldCustomFields.entrySet().stream()
                 .map(Map.Entry::getKey)
                 .filter(oldCustomFieldsName -> Objects.isNull(newCustomFields.get(oldCustomFieldsName)))
-                .map(oldCustomFieldsName -> buildTypedSetCustomFieldAction(oldCustomFieldsName, null, resource))
+                .map(oldCustomFieldsName -> buildTypedSetCustomFieldUpdateAction(oldCustomFieldsName, null, resource))
                 .collect(Collectors.toList());
     }
 }

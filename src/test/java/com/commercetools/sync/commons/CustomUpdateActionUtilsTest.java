@@ -46,7 +46,7 @@ public class CustomUpdateActionUtilsTest {
         when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(oldCategoryCustomTypeKey);
 
         final List<UpdateAction<Category>> updateActions =
-                buildCustomActions(oldCategory, newCategoryDraft, typeServiceMock);
+                buildCustomUpdateActions(oldCategory, newCategoryDraft, typeServiceMock);
 
         // Should set custom type of old category.
         assertThat(updateActions).isNotNull();
@@ -68,7 +68,7 @@ public class CustomUpdateActionUtilsTest {
         final TypeService typeServiceMock = mock(TypeServiceImpl.class);
 
         final List<UpdateAction<Category>> updateActions =
-                buildCustomActions(oldCategory, newCategoryDraft, typeServiceMock);
+                buildCustomUpdateActions(oldCategory, newCategoryDraft, typeServiceMock);
 
         // Should add custom type to old category.
         assertThat(updateActions).isNotNull();
@@ -88,7 +88,7 @@ public class CustomUpdateActionUtilsTest {
         final TypeService typeServiceMock = mock(TypeServiceImpl.class);
 
         final List<UpdateAction<Category>> updateActions =
-                buildCustomActions(oldCategory, newCategoryDraft, typeServiceMock);
+                buildCustomUpdateActions(oldCategory, newCategoryDraft, typeServiceMock);
 
         // Should remove custom type from old category.
         assertThat(updateActions).isNotNull();
@@ -107,7 +107,7 @@ public class CustomUpdateActionUtilsTest {
         final TypeService typeServiceMock = mock(TypeServiceImpl.class);
 
         final List<UpdateAction<Category>> updateActions =
-                buildCustomActions(oldCategory, newCategoryDraft, typeServiceMock);
+                buildCustomUpdateActions(oldCategory, newCategoryDraft, typeServiceMock);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).isEmpty();
