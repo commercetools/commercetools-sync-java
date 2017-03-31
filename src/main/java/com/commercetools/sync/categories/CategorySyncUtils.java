@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.categories.CategoryDiff.*;
 import static com.commercetools.sync.commons.CustomDiff.buildCustomActions;
+import static com.commercetools.sync.categories.CategoryUpdateActionUtils.*;
 
 public class CategorySyncUtils {
 

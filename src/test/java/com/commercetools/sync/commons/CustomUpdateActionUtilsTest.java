@@ -18,13 +18,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.commercetools.sync.commons.CustomDiff.*;
+import static com.commercetools.sync.commons.CustomUpdateActionUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class CustomDiffTest {
+public class CustomUpdateActionUtilsTest {
     @Test
     public void buildTypeActions_WithNonNullCustomFieldsWithDifferentKeys_ShouldBuildUpdateActions() {
         final String oldCategoryCustomTypeKey = "1";

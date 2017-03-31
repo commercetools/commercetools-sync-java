@@ -12,12 +12,12 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Optional;
 
-import static com.commercetools.sync.categories.CommonTypesDiff.*;
+import static com.commercetools.sync.categories.CommonTypeUpdateActionUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class CommonTypesDiffTest {
+public class CommonTypeUpdateActionUtilsTest {
     private final static Category MOCK_OLD_CATEGORY = mock(Category.class);
     private final static Locale LOCALE = Locale.GERMAN;
     private final static String MOCK_CATEGORY_REFERENCE_TYPE = "type";

@@ -11,9 +11,9 @@ import io.sphere.sdk.models.Reference;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-import static com.commercetools.sync.categories.CommonTypesDiff.*;
+import static com.commercetools.sync.categories.CommonTypeUpdateActionUtils.*;
 
-public class CategoryDiff {
+public class CategoryUpdateActionUtils {
 
     /**
      * Compares the {@link LocalizedString} names of a {@link Category} and a {@link CategoryDraft} and returns an

@@ -18,9 +18,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.commons.GenericUpdateActionBuilder.*;
+import static com.commercetools.sync.commons.GenericUpdateActionUtils.*;
 
-public class CustomDiff {
+public class CustomUpdateActionUtils {
 
     /**
      * Compares the {@link CustomFields}, of an old resource {@link T} (for example {@link Category},
