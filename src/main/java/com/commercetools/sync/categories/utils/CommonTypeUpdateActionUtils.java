@@ -1,4 +1,4 @@
-package com.commercetools.sync.categories;
+package com.commercetools.sync.categories.utils;
 
 
 import io.sphere.sdk.commands.UpdateAction;
@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-class CommonTypeUpdateActionUtils {
+public class CommonTypeUpdateActionUtils {
 
     /**
      * Compares two {@link Object} and returns a supplied {@link UpdateAction} as a result in an
@@ -21,7 +21,7 @@ class CommonTypeUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the object values are identical.
      */
     @Nonnull
-    static <T> Optional<UpdateAction<T>> buildUpdateAction(@Nullable final Object oldObject,
+    public static <T> Optional<UpdateAction<T>> buildUpdateAction(@Nullable final Object oldObject,
                                                                   @Nullable final Object newObject,
                                                                   @Nullable final UpdateAction<T> updateAction) {
         return !Objects.equals(oldObject, newObject) && updateAction != null

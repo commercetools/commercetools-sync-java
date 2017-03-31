@@ -1,4 +1,4 @@
-package com.commercetools.sync.categories;
+package com.commercetools.sync.categories.utils;
 
 
 import io.sphere.sdk.categories.Category;
@@ -11,7 +11,7 @@ import io.sphere.sdk.models.Reference;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-import static com.commercetools.sync.categories.CommonTypeUpdateActionUtils.*;
+import static com.commercetools.sync.categories.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 
 public class CategoryUpdateActionUtils {
 
@@ -26,7 +26,7 @@ public class CategoryUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the names are identical.
      */
     @Nonnull
-    static Optional<UpdateAction<Category>> buildChangeNameUpdateAction(
+    public static Optional<UpdateAction<Category>> buildChangeNameUpdateAction(
             @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategoryName = newCategory.getName();
@@ -46,7 +46,7 @@ public class CategoryUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the slugs are identical.
      */
     @Nonnull
-    static Optional<UpdateAction<Category>> buildChangeSlugUpdateAction(
+    public static Optional<UpdateAction<Category>> buildChangeSlugUpdateAction(
             @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategorySlug = newCategory.getSlug();
@@ -69,7 +69,7 @@ public class CategoryUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the descriptions are identical.
      */
     @Nonnull
-    static Optional<UpdateAction<Category>> buildSetDescriptionUpdateAction(
+    public static Optional<UpdateAction<Category>> buildSetDescriptionUpdateAction(
             @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         // TODO: NEED TO HANDLE DESCRIPTION REMOVAL.
@@ -94,7 +94,7 @@ public class CategoryUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the parent references are identical.
      */
     @Nonnull
-    static Optional<UpdateAction<Category>> buildChangeParentUpdateAction(
+    public static Optional<UpdateAction<Category>> buildChangeParentUpdateAction(
             @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         // TODO: NEED TO HANDLE PARENT REMOVAL.
@@ -119,7 +119,7 @@ public class CategoryUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the orderHint values are identical.
      */
     @Nonnull
-    static Optional<UpdateAction<Category>> buildChangeOrderHintUpdateAction(
+    public static Optional<UpdateAction<Category>> buildChangeOrderHintUpdateAction(
             @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         // TODO: NEED TO HANDLE ORDERHINT REMOVAL
@@ -141,7 +141,7 @@ public class CategoryUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the meta titles values are identical.
      */
     @Nonnull
-    static Optional<UpdateAction<Category>> buildSetMetaTitleUpdateAction(
+    public static Optional<UpdateAction<Category>> buildSetMetaTitleUpdateAction(
             @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategoryMetaTitle = newCategory.getMetaTitle();
@@ -161,7 +161,7 @@ public class CategoryUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the meta keywords values are identical.
      */
     @Nonnull
-    static Optional<UpdateAction<Category>> buildSetMetaKeywordsUpdateAction(
+    public static Optional<UpdateAction<Category>> buildSetMetaKeywordsUpdateAction(
             @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategoryMetaKeywords = newCategory.getMetaKeywords();
@@ -181,7 +181,7 @@ public class CategoryUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the meta description values are identical.
      */
     @Nonnull
-    static Optional<UpdateAction<Category>> buildSetMetaDescriptionUpdateAction(
+    public static Optional<UpdateAction<Category>> buildSetMetaDescriptionUpdateAction(
             @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory) {
         final LocalizedString newCategoryMetaDescription = newCategory.getMetaDescription();

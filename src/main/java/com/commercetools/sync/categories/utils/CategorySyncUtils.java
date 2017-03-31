@@ -1,4 +1,4 @@
-package com.commercetools.sync.categories;
+package com.commercetools.sync.categories.utils;
 
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.categories.CategoryUpdateActionUtils.*;
-import static com.commercetools.sync.commons.CustomUpdateActionUtils.buildCustomUpdateActions;
+import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.*;
+import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
 
 public class CategorySyncUtils {
 

@@ -1,4 +1,4 @@
-package com.commercetools.sync.categories;
+package com.commercetools.sync.categories.utils;
 
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Optional;
 
-import static com.commercetools.sync.categories.CommonTypeUpdateActionUtils.*;
+import static com.commercetools.sync.categories.utils.CommonTypeUpdateActionUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

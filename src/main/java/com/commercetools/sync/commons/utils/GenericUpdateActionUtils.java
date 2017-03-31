@@ -1,4 +1,4 @@
-package com.commercetools.sync.commons;
+package com.commercetools.sync.commons.utils;
 
 
 import com.fasterxml.jackson.databind.JsonNode;

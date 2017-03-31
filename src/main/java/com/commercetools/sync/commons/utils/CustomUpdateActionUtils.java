@@ -1,4 +1,4 @@
-package com.commercetools.sync.commons;
+package com.commercetools.sync.commons.utils;
 
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,7 +18,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.commons.GenericUpdateActionUtils.*;
+import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.*;
 
 public class CustomUpdateActionUtils {
 
@@ -115,7 +115,7 @@ public class CustomUpdateActionUtils {
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    private static <T extends Custom> List<UpdateAction<T>> buildNonNullCustomFieldsUpdateActions(
+    static <T extends Custom> List<UpdateAction<T>> buildNonNullCustomFieldsUpdateActions(
             @Nonnull final CustomFields oldCustomFields,
             @Nonnull final CustomFieldsDraft newCustomFields,
             @Nonnull final TypeService typeService,
@@ -168,7 +168,7 @@ public class CustomUpdateActionUtils {
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    private static <T extends Custom> List<UpdateAction<T>> buildSetCustomFieldsUpdateActions(
+    static <T extends Custom> List<UpdateAction<T>> buildSetCustomFieldsUpdateActions(
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource) {
@@ -192,7 +192,7 @@ public class CustomUpdateActionUtils {
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    private static <T extends Custom> List<UpdateAction<T>> buildNewOrModifiedCustomFieldsUpdateActions(
+    static <T extends Custom> List<UpdateAction<T>> buildNewOrModifiedCustomFieldsUpdateActions(
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource) {
@@ -215,7 +215,7 @@ public class CustomUpdateActionUtils {
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    private static <T extends Custom> List<UpdateAction<T>> buildRemovedCustomFieldsUpdateActions(
+    static <T extends Custom> List<UpdateAction<T>> buildRemovedCustomFieldsUpdateActions(
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource) {
