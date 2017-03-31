@@ -1,4 +1,4 @@
-package com.commercetools.sync.categories.utils;
+package com.commercetools.sync.commons.utils;
 
 
 import io.sphere.sdk.commands.UpdateAction;
