@@ -11,10 +11,7 @@ import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,7 +64,8 @@ public class CustomUpdateActionUtils {
         final CustomFields oldResourceCustomFields = oldResource.getCustom();
         final CustomFieldsDraft newResourceCustomFields = newResource.getCustom();
         if (oldResourceCustomFields != null && newResourceCustomFields != null) {
-            return buildNonNullCustomFieldsUpdateActions(oldResourceCustomFields, newResourceCustomFields, typeService, oldResource);
+            return buildNonNullCustomFieldsUpdateActions(oldResourceCustomFields, newResourceCustomFields, typeService,
+                    oldResource);
         } else {
             if (oldResourceCustomFields == null) {
                 if (newResourceCustomFields != null) {
@@ -75,14 +73,15 @@ public class CustomUpdateActionUtils {
                     // should set the custom type and fields of the new resource to the old one.
                     final String newCustomFieldsTypeKey = newResourceCustomFields.getType().getKey();
                     final Map<String, JsonNode> newCustomFieldsJsonMap = newResourceCustomFields.getFields();
-                    return Collections.singletonList(
-                            buildTypedSetCustomTypeUpdateAction(
-                                    newCustomFieldsTypeKey, newCustomFieldsJsonMap, oldResource));
+                    final UpdateAction<T> updateAction = buildTypedSetCustomTypeUpdateAction(
+                            newCustomFieldsTypeKey, newCustomFieldsJsonMap, oldResource).orElse(null);
+                    return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
                 }
             } else {
                 // New resource's custom fields are not set, but old resource's custom fields are set. So we
                 // should remove the custom type from the old resource.
-                return Collections.singletonList(buildTypedRemoveCustomTypeUpdateAction(oldResource));
+                final UpdateAction<T> updateAction = buildTypedRemoveCustomTypeUpdateAction(oldResource).orElse(null);
+                return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
             }
         }
         return Collections.emptyList();
@@ -139,8 +138,9 @@ public class CustomUpdateActionUtils {
             // the fields of both.
             return buildSetCustomFieldsUpdateActions(oldCustomFieldsJsonMap, newCustomFieldsJsonMap, resource);
         } else {
-            return Collections.singletonList(buildTypedSetCustomTypeUpdateAction(
-                    newCustomFieldsTypeKey, newCustomFieldsJsonMap, resource));
+            final UpdateAction<T> updateAction = buildTypedSetCustomTypeUpdateAction(
+                    newCustomFieldsTypeKey, newCustomFieldsJsonMap, resource).orElse(null);
+            return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
         }
     }
 
