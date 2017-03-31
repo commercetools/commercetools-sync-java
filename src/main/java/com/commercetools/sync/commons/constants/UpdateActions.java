@@ -1,7 +1,13 @@
 package com.commercetools.sync.commons.constants;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.sphere.sdk.types.Custom;
+
+import java.util.Map;
+
 /**
- * TODO: JAVADOC
+ * Used as a container of constants that could be used as flags to trigger the needed update action for
+ * {@link com.commercetools.sync.commons.utils.GenericUpdateActionUtils#buildTypedUpdateAction(String, Map, String, JsonNode, Custom, String)}
  */
 public class UpdateActions {
     public static final String SET_CUSTOM_TYPE_REMOVE = "SET_CUSTOM_TYPE_REMOVE";
