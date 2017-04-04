@@ -279,12 +279,13 @@ public class CustomUpdateActionUtilsTest {
         final TypeService typeServiceMock = mock(TypeServiceImpl.class);
         when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(categoryCustomTypeKey);
 
-        final List<UpdateAction<Category>> updateActions =
+        final SyncResult<Category> syncResult =
                 buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
                         newCustomFieldsMock, typeServiceMock, mock(Category.class));
 
-        assertThat(updateActions).isNotNull();
-        assertThat(updateActions).isEmpty();
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).hasSize(1);
+        assertThat(syncResult.getUpdateActions().get(0).getAction()).isEqualTo("setCustomType");
     }
 
     @Test
