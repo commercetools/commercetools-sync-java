@@ -143,8 +143,9 @@ public class CustomUpdateActionUtils {
                         typeId), new Exception()));
             }
             if (newCustomFieldsJsonMap == null) {
-                // TODO: LOG THIS AS AN ERROR: "CUSTOM TYPE WITH NO CUSTOM FIELDS"
-                return Collections.emptyList();
+                // New resource's custom fields are null/not set. So we should unset old custom fields.
+                return buildTypedSetCustomTypeUpdateAction(
+                        newCustomFieldsTypeKey, null, resource);
             }
             // old and new resource's custom fields are set. So we should calculate update actions for the
             // the fields of both.
