@@ -14,6 +14,9 @@ import org.junit.Test;
 import java.util.Locale;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.*;
+import static com.commercetools.sync.commons.constants.SyncMessages.CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT;
+import static com.commercetools.sync.commons.constants.SyncMessages.CATEGORY_CHANGE_PARENT_EMPTY_PARENT;
+import static com.commercetools.sync.commons.constants.SyncMessages.CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -127,6 +130,20 @@ public class CategoryUpdateActionUtilsTest {
     }
 
     @Test
+    public void buildSetDescriptionUpdateAction_WithNullNewDescription_ShouldAddStatistic() {
+        final CategoryDraft newCategory = mock(CategoryDraft.class);
+        when(newCategory.getDescription())
+                .thenReturn(null);
+
+        final SyncResult<Category> syncResult =
+                buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategory);
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
+        assertThat(syncResult.getStatistics()).hasSize(1);
+        assertThat(syncResult.getStatistics().get(CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION)).isEqualTo(1);
+    }
+
+    @Test
     public void buildChangeParentUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getParent()).thenReturn(Reference.of("Category", "2"));
@@ -155,6 +172,20 @@ public class CategoryUpdateActionUtilsTest {
     }
 
     @Test
+    public void buildChangeParentUpdateAction_WithNullNewDescription_ShouldAddStatistic() {
+        final CategoryDraft newCategory = mock(CategoryDraft.class);
+        when(newCategory.getParent())
+                .thenReturn(null);
+
+        final SyncResult<Category> syncResult =
+                buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategory);
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
+        assertThat(syncResult.getStatistics()).hasSize(1);
+        assertThat(syncResult.getStatistics().get(CATEGORY_CHANGE_PARENT_EMPTY_PARENT)).isEqualTo(1);
+    }
+
+    @Test
     public void buildChangeOrderHintUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getOrderHint()).thenReturn("099");
@@ -179,6 +210,20 @@ public class CategoryUpdateActionUtilsTest {
                 buildChangeOrderHintUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameOrderHint);
         assertThat(syncResult).isNotNull();
         assertThat(syncResult.getUpdateActions()).isEmpty();
+    }
+
+    @Test
+    public void buildChangeOrderHintUpdateAction_WithNullNewDescription_ShouldAddStatistic() {
+        final CategoryDraft newCategory = mock(CategoryDraft.class);
+        when(newCategory.getOrderHint())
+                .thenReturn(null);
+
+        final SyncResult<Category> syncResult =
+                buildChangeOrderHintUpdateAction(MOCK_OLD_CATEGORY, newCategory);
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
+        assertThat(syncResult.getStatistics()).hasSize(1);
+        assertThat(syncResult.getStatistics().get(CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT)).isEqualTo(1);
     }
 
     @Test
