@@ -1,5 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
+import com.commercetools.sync.commons.helpers.SyncResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.categories.Category;
@@ -20,12 +21,15 @@ public class GenericUpdateActionUtilsTest {
     public void buildTypedSetCustomTypeUpdateAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
         final Category category = mock(Category.class);
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
-        final UpdateAction<Category> updateAction = buildTypedSetCustomTypeUpdateAction("key",
-                fieldsJsonMap, category).orElse(null);
+        final SyncResult<Category> syncResult = buildTypedSetCustomTypeUpdateAction("key",
+                fieldsJsonMap, category);
 
-        assertThat(updateAction).isNotNull();
-        assertThat(updateAction.getAction()).isEqualTo("setCustomType");
-        assertThat(updateAction.getClass().getName())
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).hasSize(1);
+
+        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("setCustomType");
+        assertThat(categoryUpdateAction.getClass().getName())
                 .isEqualTo("io.sphere.sdk.categories.commands.updateactions.SetCustomType");
     }
 
@@ -33,12 +37,14 @@ public class GenericUpdateActionUtilsTest {
     public void buildTypedSetCustomTypeUpdateAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
         final Channel channel = mock(Channel.class);
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
-        final UpdateAction<Channel> updateAction = buildTypedSetCustomTypeUpdateAction("key",
-                fieldsJsonMap, channel).orElse(null);
+        final SyncResult<Channel> syncResult = buildTypedSetCustomTypeUpdateAction("key",
+                fieldsJsonMap, channel);
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).hasSize(1);
 
-        assertThat(updateAction).isNotNull();
-        assertThat(updateAction.getAction()).isEqualTo("setCustomType");
-        assertThat(updateAction.getClass().getName())
+        final UpdateAction<Channel> channelUpdateAction = syncResult.getUpdateActions().get(0);
+        assertThat(channelUpdateAction.getAction()).isEqualTo("setCustomType");
+        assertThat(channelUpdateAction.getClass().getName())
                 .isEqualTo("io.sphere.sdk.channels.commands.updateactions.SetCustomType");
     }
 
@@ -47,31 +53,34 @@ public class GenericUpdateActionUtilsTest {
         // Cart resource is not handled by buildTypedUpdateAction()
         final Cart cart = mock(Cart.class);
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
-        final UpdateAction<Cart> updateAction = buildTypedSetCustomTypeUpdateAction("key", fieldsJsonMap,
-                cart).orElse(null);
+        final SyncResult<Cart> syncResult = buildTypedSetCustomTypeUpdateAction("key", fieldsJsonMap,
+                cart);
 
-        assertThat(updateAction).isNull();
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
     }
 
     @Test
     public void buildTypedRemoveCustomTypeUpdateAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
         final Category category = mock(Category.class);
-        final UpdateAction<Category> updateAction = buildTypedRemoveCustomTypeUpdateAction(category).orElse(null);
+        final SyncResult<Category> syncResult = buildTypedRemoveCustomTypeUpdateAction(category);
+        assertThat(syncResult).isNotNull();
 
-        assertThat(updateAction).isNotNull();
-        assertThat(updateAction.getAction()).isEqualTo("setCustomType");
-        assertThat(updateAction.getClass().getName())
+        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("setCustomType");
+        assertThat(categoryUpdateAction.getClass().getName())
                 .isEqualTo("io.sphere.sdk.categories.commands.updateactions.SetCustomType");
     }
 
     @Test
     public void buildTypedRemoveCustomTypeUpdateAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
         final Channel channel = mock(Channel.class);
-        final UpdateAction<Channel> updateAction = buildTypedRemoveCustomTypeUpdateAction(channel).orElse(null);
+        final SyncResult<Channel> syncResult = buildTypedRemoveCustomTypeUpdateAction(channel);
+        assertThat(syncResult).isNotNull();
 
-        assertThat(updateAction).isNotNull();
-        assertThat(updateAction.getAction()).isEqualTo("setCustomType");
-        assertThat(updateAction.getClass().getName())
+        final UpdateAction<Channel> channelUpdateAction = syncResult.getUpdateActions().get(0);
+        assertThat(channelUpdateAction.getAction()).isEqualTo("setCustomType");
+        assertThat(channelUpdateAction.getClass().getName())
                 .isEqualTo("io.sphere.sdk.channels.commands.updateactions.SetCustomType");
     }
 
@@ -79,9 +88,10 @@ public class GenericUpdateActionUtilsTest {
     public void buildTypedRemoveCustomTypeUpdateAction_WithNonHandledResource_ShouldNotBuildUpdateAction() {
         // Cart resource is not handled by buildTypedUpdateAction()
         final Cart cart = mock(Cart.class);
-        final UpdateAction<Cart> updateAction = buildTypedRemoveCustomTypeUpdateAction(cart).orElse(null);
+        final SyncResult<Cart> syncResult = buildTypedRemoveCustomTypeUpdateAction(cart);
 
-        assertThat(updateAction).isNull();
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
     }
 
     @Test
@@ -89,12 +99,13 @@ public class GenericUpdateActionUtilsTest {
         final Category category = mock(Category.class);
         final JsonNode customFieldValue = mock(JsonNode.class);
         final String customFieldName = "name";
-        final UpdateAction<Category> updateAction = buildTypedSetCustomFieldUpdateAction(customFieldName,
-                customFieldValue, category).orElse(null);
+        final SyncResult<Category> syncResult = buildTypedSetCustomFieldUpdateAction(customFieldName,
+                customFieldValue, category);
+        assertThat(syncResult).isNotNull();
 
-        assertThat(updateAction).isNotNull();
-        assertThat(updateAction.getAction()).isEqualTo("setCustomField");
-        assertThat(updateAction.getClass().getName())
+        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
+        assertThat(categoryUpdateAction.getAction()).isEqualTo("setCustomField");
+        assertThat(categoryUpdateAction.getClass().getName())
                 .isEqualTo("io.sphere.sdk.categories.commands.updateactions.SetCustomField");
     }
 
@@ -103,12 +114,13 @@ public class GenericUpdateActionUtilsTest {
         final Channel channel = mock(Channel.class);
         final JsonNode customFieldValue = mock(JsonNode.class);
         final String customFieldName = "name";
-        final UpdateAction<Channel> updateAction = buildTypedSetCustomFieldUpdateAction(customFieldName,
-                customFieldValue, channel).orElse(null);
+        final SyncResult<Channel> syncResult = buildTypedSetCustomFieldUpdateAction(customFieldName,
+                customFieldValue, channel);
+        assertThat(syncResult).isNotNull();
 
-        assertThat(updateAction).isNotNull();
-        assertThat(updateAction.getAction()).isEqualTo("setCustomField");
-        assertThat(updateAction.getClass().getName())
+        final UpdateAction<Channel> channelUpdateAction = syncResult.getUpdateActions().get(0);
+        assertThat(channelUpdateAction.getAction()).isEqualTo("setCustomField");
+        assertThat(channelUpdateAction.getClass().getName())
                 .isEqualTo("io.sphere.sdk.channels.commands.updateactions.SetCustomField");
     }
 
@@ -118,29 +130,30 @@ public class GenericUpdateActionUtilsTest {
         final Cart cart = mock(Cart.class);
         final JsonNode customFieldValue = mock(JsonNode.class);
         final String customFieldName = "name";
-        final UpdateAction<Cart> updateAction =
-                buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart).orElse(null);
+        final SyncResult<Cart> syncResult =
+                buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart);
 
-        assertThat(updateAction).isNull();
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
     }
 
     @Test
     public void buildTypedUpdateAction_WithNonHandledCategoryUpdateAction_ShouldNotBuildUpdateAction() {
         final Category category = mock(Category.class);
         final String nonHandledUpdateActionName = "someUpdateActionName";
-        final UpdateAction<Category> updateAction = buildTypedUpdateAction(category, nonHandledUpdateActionName)
-                .orElse(null);
+        final SyncResult<Category> syncResult = buildTypedUpdateAction(category, nonHandledUpdateActionName);
 
-        assertThat(updateAction).isNull();
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
     }
 
     @Test
     public void buildTypedUpdateAction_WithNonHandledChannelUpdateAction_ShouldNotBuildUpdateAction() {
         final Channel channel = mock(Channel.class);
         final String nonHandledUpdateActionName = "someUpdateActionName";
-        final UpdateAction<Channel> updateAction = buildTypedUpdateAction(channel, nonHandledUpdateActionName)
-                .orElse(null);
+        final SyncResult<Channel> syncResult = buildTypedUpdateAction(channel, nonHandledUpdateActionName);
 
-        assertThat(updateAction).isNull();
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
     }
 }
