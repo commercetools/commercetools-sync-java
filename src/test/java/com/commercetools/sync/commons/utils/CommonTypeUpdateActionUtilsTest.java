@@ -1,5 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
+import com.commercetools.sync.commons.helpers.SyncResult;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.commands.UpdateAction;
@@ -10,9 +11,8 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.Optional;
 
-import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.*;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -37,10 +37,12 @@ public class CommonTypeUpdateActionUtilsTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
-        final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
+        final SyncResult<Category> syncResult =
                 buildUpdateAction(oldLocalisedString, newLocalisedString, mockUpdateAction);
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).hasSize(1);
 
-        UpdateAction<Category> categoryUpdateAction = updateActionForLocalizedStrings.orElse(null);
+        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
         assertThat(categoryUpdateAction).isNotNull();
         assertThat(categoryUpdateAction.getAction()).isEqualTo("changeName");
     }
@@ -52,10 +54,12 @@ public class CommonTypeUpdateActionUtilsTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
-        final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
+        final SyncResult<Category> syncResult =
                 buildUpdateAction(oldLocalisedString, newLocalisedString, mockUpdateAction);
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).hasSize(1);
 
-        UpdateAction<Category> categoryUpdateAction = updateActionForLocalizedStrings.orElse(null);
+        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
         assertThat(categoryUpdateAction).isNotNull();
         assertThat(categoryUpdateAction.getAction()).isEqualTo("changeName");
     }
@@ -64,12 +68,12 @@ public class CommonTypeUpdateActionUtilsTest {
     public void buildUpdateActionForLocalizedStrings_WithEmptyFields_ShouldNotBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
-        final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
+
+        final SyncResult<Category> syncResult =
                 buildUpdateAction(LocalizedString.of(new HashMap<>()),
                         LocalizedString.of(new HashMap<>()), mockUpdateAction);
-
-        assertThat(updateActionForLocalizedStrings).isNotNull();
-        assertThat(updateActionForLocalizedStrings).isNotPresent();
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
     }
 
     @Test
@@ -79,11 +83,10 @@ public class CommonTypeUpdateActionUtilsTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
-        final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
+        final SyncResult<Category> syncResult =
                 buildUpdateAction(oldLocalisedString, newLocalisedString, mockUpdateAction);
-
-        assertThat(updateActionForLocalizedStrings).isNotNull();
-        assertThat(updateActionForLocalizedStrings).isNotPresent();
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
     }
 
     @Test
@@ -99,22 +102,20 @@ public class CommonTypeUpdateActionUtilsTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
-        final Optional<UpdateAction<Category>> updateActionForReferences =
+        final SyncResult<Category> syncResult =
                 buildUpdateAction(oldLocalisedString, newLocalisedString, mockUpdateAction);
-
-        assertThat(updateActionForReferences).isNotNull();
-        assertThat(updateActionForReferences).isNotPresent();
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
     }
 
     @Test
     public void buildUpdateActionForLocalizedStrings_WithNullValues_ShouldNotBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
-        final Optional<UpdateAction<Category>> updateActionForReferences =
+        final SyncResult<Category> syncResult =
                 buildUpdateAction(null, null, mockUpdateAction);
-
-        assertThat(updateActionForReferences).isNotNull();
-        assertThat(updateActionForReferences).isNotPresent();
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
     }
 
     @Test
@@ -124,10 +125,10 @@ public class CommonTypeUpdateActionUtilsTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
-        final Optional<UpdateAction<Category>> updateActionForReferences =
+        final SyncResult<Category> syncResult =
                 buildUpdateAction(oldCategoryReference, newCategoryReference, mockUpdateAction);
 
-        UpdateAction<Category> categoryUpdateAction = updateActionForReferences.orElse(null);
+        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
         assertThat(categoryUpdateAction).isNotNull();
         assertThat(categoryUpdateAction.getAction()).isEqualTo("changeName");
     }
@@ -138,10 +139,10 @@ public class CommonTypeUpdateActionUtilsTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
-        final Optional<UpdateAction<Category>> updateActionForReferences =
+        final SyncResult<Category> syncResult =
                 buildUpdateAction(null, categoryReference, mockUpdateAction);
 
-        UpdateAction<Category> categoryUpdateAction = updateActionForReferences.orElse(null);
+        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
         assertThat(categoryUpdateAction).isNotNull();
         assertThat(categoryUpdateAction.getAction()).isEqualTo("changeName");
     }
@@ -152,22 +153,20 @@ public class CommonTypeUpdateActionUtilsTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
-        final Optional<UpdateAction<Category>> updateActionForReferences =
+        final SyncResult<Category> syncResult =
                 buildUpdateAction(categoryReference, categoryReference, mockUpdateAction);
-
-        assertThat(updateActionForReferences).isNotNull();
-        assertThat(updateActionForReferences).isNotPresent();
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
     }
 
     @Test
     public void buildUpdateActionForReferences_WithNullReferences_ShouldNotBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
-        final Optional<UpdateAction<Category>> updateActionForReferences =
+        final SyncResult<Category> syncResult =
                 buildUpdateAction(null, null, mockUpdateAction);
-
-        assertThat(updateActionForReferences).isNotNull();
-        assertThat(updateActionForReferences).isNotPresent();
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
     }
 
     @Test
@@ -175,10 +174,10 @@ public class CommonTypeUpdateActionUtilsTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
-        final Optional<UpdateAction<Category>> updateActionForStrings =
+        final SyncResult<Category> syncResult =
                 buildUpdateAction("1", "2", mockUpdateAction);
 
-        UpdateAction<Category> categoryUpdateAction = updateActionForStrings.orElse(null);
+        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
         assertThat(categoryUpdateAction).isNotNull();
         assertThat(categoryUpdateAction.getAction()).isEqualTo("changeName");
     }
@@ -188,10 +187,10 @@ public class CommonTypeUpdateActionUtilsTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
-        final Optional<UpdateAction<Category>> updateActionForStrings =
+        final SyncResult<Category> syncResult =
                 buildUpdateAction(null, "2", mockUpdateAction);
 
-        UpdateAction<Category> categoryUpdateAction = updateActionForStrings.orElse(null);
+        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
         assertThat(categoryUpdateAction).isNotNull();
         assertThat(categoryUpdateAction.getAction()).isEqualTo("changeName");
     }
@@ -201,21 +200,19 @@ public class CommonTypeUpdateActionUtilsTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
-        final Optional<UpdateAction<Category>> updateActionForStrings =
+        final SyncResult<Category> syncResult =
                 buildUpdateAction("1", "1", mockUpdateAction);
-
-        assertThat(updateActionForStrings).isNotNull();
-        assertThat(updateActionForStrings).isNotPresent();
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
     }
 
     @Test
     public void buildUpdateActionForStrings_WithNullStrings_ShouldNotBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
-        final Optional<UpdateAction<Category>> updateActionForStrings =
+        final SyncResult<Category> syncResult =
                 buildUpdateAction(null, null, mockUpdateAction);
-
-        assertThat(updateActionForStrings).isNotNull();
-        assertThat(updateActionForStrings).isNotPresent();
+        assertThat(syncResult).isNotNull();
+        assertThat(syncResult.getUpdateActions()).isEmpty();
     }
 }
