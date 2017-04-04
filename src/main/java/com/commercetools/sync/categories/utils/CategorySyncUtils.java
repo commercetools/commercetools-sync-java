@@ -1,5 +1,6 @@
 package com.commercetools.sync.categories.utils;
 
+import com.commercetools.sync.commons.helpers.SyncResult;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -55,7 +56,7 @@ public class CategorySyncUtils {
     }
 
     /**
-     * TODO: NEEDS TO BE IMPLEMENTED. GITHUB ISSUE#9
+     * TODO: SEE GITHUB ISSUE#3 & #9
      * SHOULD TRANSFORM Category TO CategoryDraft
      * then call {@link CategorySyncUtils#buildAssetActions(Category, CategoryDraft)}.
      *
@@ -79,14 +80,12 @@ public class CategorySyncUtils {
      * @return
      */
     @Nonnull
-    public static List<UpdateAction<Category>> buildActions(@Nonnull final Category oldCategory,
+    public static SyncResult<Category> buildActions(@Nonnull final Category oldCategory,
                                                             @Nonnull final CategoryDraft newCategory,
                                                             @Nonnull final TypeService typeService) {
-        final List<UpdateAction<Category>> updateActions = buildCoreActions(oldCategory, newCategory, typeService);
-        final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(oldCategory, newCategory);
-        return Stream.concat(updateActions.stream(),
-                assetUpdateActions.stream())
-                .collect(Collectors.toList());
+        final SyncResult<Category> syncResults = buildCoreActions(oldCategory, newCategory, typeService);
+        syncResults.merge(buildAssetActions(oldCategory, newCategory));
+        return syncResults;
     }
 
     /**
@@ -99,60 +98,32 @@ public class CategorySyncUtils {
      * @return
      */
     @Nonnull
-    public static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category oldCategory,
-                                                                @Nonnull final CategoryDraft newCategory,
-                                                                @Nonnull final TypeService typeService) {
-        final List<UpdateAction<Category>> updateActions = new ArrayList<>();
-        buildChangeNameUpdateAction(oldCategory, newCategory)
-                .map(updateActions::add);
-
-        buildChangeSlugUpdateAction(oldCategory, newCategory)
-                .map(updateActions::add);
-
-        buildSetDescriptionUpdateAction(oldCategory, newCategory)
-                .map(updateActions::add);
-
-        buildChangeParentUpdateAction(oldCategory, newCategory)
-                .map(updateActions::add);
-
-        buildChangeOrderHintUpdateAction(oldCategory, newCategory)
-                .map(updateActions::add);
-
-        buildSetMetaTitleUpdateAction(oldCategory, newCategory)
-                .map(updateActions::add);
-
-        buildSetMetaDescriptionUpdateAction(oldCategory, newCategory)
-                .map(updateActions::add);
-
-        buildSetMetaKeywordsUpdateAction(oldCategory, newCategory)
-                .map(updateActions::add);
-
-        final List<UpdateAction<Category>> categoryTypeUpdateActions =
-                buildCustomUpdateActions(oldCategory, newCategory, typeService);
-        return Stream.concat(updateActions.stream(),
-                categoryTypeUpdateActions.stream())
-                .collect(Collectors.toList());
+    public static SyncResult<Category> buildCoreActions(@Nonnull final Category oldCategory,
+                                                        @Nonnull final CategoryDraft newCategory,
+                                                        @Nonnull final TypeService typeService) {
+        final SyncResult<Category> syncResults = buildChangeNameUpdateAction(oldCategory, newCategory);
+        syncResults.merge(buildChangeSlugUpdateAction(oldCategory, newCategory));
+        syncResults.merge(buildSetDescriptionUpdateAction(oldCategory, newCategory));
+        syncResults.merge(buildChangeParentUpdateAction(oldCategory, newCategory));
+        syncResults.merge(buildChangeOrderHintUpdateAction(oldCategory, newCategory));
+        syncResults.merge(buildSetMetaTitleUpdateAction(oldCategory, newCategory));
+        syncResults.merge(buildSetMetaDescriptionUpdateAction(oldCategory, newCategory));
+        syncResults.merge(buildSetMetaKeywordsUpdateAction(oldCategory, newCategory));
+        syncResults.merge(buildCustomUpdateActions(oldCategory, newCategory, typeService));
+        return syncResults;
     }
 
 
     /**
-     * - addAsset
-     * - removeAsset
-     * - changeAssetOrder
-     * - changeAssetName
-     * - setAssetDescription
-     * - setAssetTags
-     * - setAssetSources
-     * - setAssetCustomType
-     * - setAssetCustomField
+     * TODO: SEE GITHUB ISSUE#3
      *
      * @param oldCategory
      * @param newCategory
      * @return
      */
     @Nonnull
-    public static List<UpdateAction<Category>> buildAssetActions(@Nonnull final Category oldCategory,
+    public static SyncResult<Category> buildAssetActions(@Nonnull final Category oldCategory,
                                                                  @Nonnull final CategoryDraft newCategory) {
-        return new ArrayList<>();
+        return SyncResult.emptyResult();
     }
 }
