@@ -1,11 +1,16 @@
 package com.commercetools.sync.inventory.utils;
 
+import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 
 import javax.annotation.Nonnull;
+import java.util.LinkedList;
 import java.util.List;
+
+import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
+import static com.commercetools.sync.inventory.utils.InventoryUpdateActionUtils.*;
 
 public final class InventorySyncUtils {
 
@@ -14,8 +19,9 @@ public final class InventorySyncUtils {
     }
 
     @Nonnull
-    public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldInventoryEntry,
-                                                                  @Nonnull final InventoryEntry newInventoryEntry) {
+    public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldEntry,
+                                                                  @Nonnull final InventoryEntry newEntry,
+                                                                  @Nonnull final TypeService typeService) {
         //TODO implement
         //TODO document
         //TODO test
@@ -24,12 +30,15 @@ public final class InventorySyncUtils {
     }
 
     @Nonnull
-    public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldInventoryEntry,
-                                                                  @Nonnull final InventoryEntryDraft newInventoryEntry) {
-        //TODO implement
-        //TODO document
-        //TODO test
-
-        return null;
+    public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldEntry,
+                                                                  @Nonnull final InventoryEntryDraft newEntry,
+                                                                  @Nonnull final TypeService typeService) {
+        final List<UpdateAction<InventoryEntry>> actions = new LinkedList<>();
+        actions.addAll(buildChangeQuantityAction(oldEntry, newEntry));
+        actions.addAll(buildSetRestockableInDaysAction(oldEntry, newEntry));
+        actions.addAll(buildSetExpectedDeliveryAction(oldEntry, newEntry));
+        actions.addAll(buildSetSupplyChannelAction(oldEntry, newEntry));
+        actions.addAll(buildCustomUpdateActions(oldEntry, newEntry, typeService).getUpdateActions());
+        return actions;
     }
 }
