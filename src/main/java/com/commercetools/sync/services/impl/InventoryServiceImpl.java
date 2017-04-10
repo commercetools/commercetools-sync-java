@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 //TODO implement one general method instead of findNextInventories and findNextChannels
-public class InventoryServiceImpl implements InventoryService {
+public final class InventoryServiceImpl implements InventoryService {
 
     //Override default page limit to have greater chance of fetching all in one query
     private final static int PAGE_SIZE = 200;
