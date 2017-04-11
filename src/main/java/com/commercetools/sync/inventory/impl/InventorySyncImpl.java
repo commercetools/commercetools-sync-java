@@ -18,6 +18,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+//TODO test
+//TODO document
 public final class InventorySyncImpl implements InventorySync {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventorySyncImpl.class);
@@ -34,9 +36,12 @@ public final class InventorySyncImpl implements InventorySync {
     private InventoryService inventoryService;
     private TypeService typeService;
 
-    public InventorySyncImpl(@Nonnull final InventorySyncOptions inventorySyncOptions) {
+    public InventorySyncImpl(@Nonnull final InventorySyncOptions inventorySyncOptions,
+                             @Nonnull final InventoryService inventoryService,
+                             @Nonnull final TypeService typeService) {
         this.inventorySyncOptions = inventorySyncOptions;
-        //TODO pass services or create on my own?
+        this.inventoryService = inventoryService;
+        this.typeService = typeService;
     }
 
     @Override
@@ -44,6 +49,7 @@ public final class InventorySyncImpl implements InventorySync {
         buildChannelMap();
         final List<InventoryEntryDraft> accumulator = new LinkedList<>();
 
+        //TODO parallelise process
         for (InventoryEntryDraft entry : inventories) {
             if (entry != null && entry.getSku() != null) {
                 accumulator.add(entry);
@@ -59,11 +65,22 @@ public final class InventorySyncImpl implements InventorySync {
         }
     }
 
+    @Override
+    public void syncInventory(@Nonnull List<InventoryEntry> inventories) {
+        //TODO implement
+    }
+
+    @Override
+    public String getSummary() {
+        //TODO implement
+        return null;
+    }
+
     private void buildChannelMap() {
         if (channelKeyToChannelId == null) {
-            channelKeyToChannelId = new HashMap<>();
-            inventoryService.fetchAllSupplyChannels()
-                    .forEach(channel -> channelKeyToChannelId.put(channel.getKey(), channel.getId()));
+            channelKeyToChannelId = inventoryService.fetchAllSupplyChannels()
+                    .stream()
+                    .collect(Collectors.toMap(Channel::getKey, Channel::getId));
         }
     }
 
@@ -77,8 +94,9 @@ public final class InventorySyncImpl implements InventorySync {
             final SkuKeyTuple processedSkuAndKey = SkuKeyTuple.of(processedDraft);
             if (existingInventoriesMap.containsKey(processedSkuAndKey)) {
                 final InventoryEntry existingEntry = existingInventoriesMap.get(processedSkuAndKey);
+                final InventoryEntryDraft toUpdate = replaceChannelReference(processedDraft);
                 final List<UpdateAction<InventoryEntry>> updateActions =
-                        InventorySyncUtils.buildActions(existingEntry, processedDraft, typeService);
+                        InventorySyncUtils.buildActions(existingEntry, toUpdate, typeService);
                 if (!updateActions.isEmpty()) {
                     inventoryService.updateInventoryEntry(existingEntry, updateActions);
                     updatedCounter.incrementAndGet();
@@ -115,7 +133,7 @@ public final class InventorySyncImpl implements InventorySync {
                         .referenceOfId(channelKeyToChannelId.get(supplyChannelKey));
                 return InventoryEntryDraft.of(inventoryEntryDraft.getSku(), inventoryEntryDraft.getQuantityOnStock(),
                         inventoryEntryDraft.getExpectedDelivery(), inventoryEntryDraft.getRestockableInDays(),
-                        supplyChannelRef);
+                        supplyChannelRef).withCustom(inventoryEntryDraft.getCustom());
             } else {
                 //TODO Create channel? Log error and skip this draft?
             }
