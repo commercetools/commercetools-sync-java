@@ -1,6 +1,5 @@
-package com.commercetools.sync.services.impl;
+package com.commercetools.sync.inventory.impl;
 
-import com.commercetools.sync.services.InventoryService;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.queries.ChannelQuery;
@@ -21,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public final class InventoryServiceImpl implements InventoryService {
+final class InventoryServiceImpl implements InventoryService {
 
     private final BlockingSphereClient ctpClient;
 

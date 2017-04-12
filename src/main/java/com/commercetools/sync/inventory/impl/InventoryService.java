@@ -1,4 +1,4 @@
-package com.commercetools.sync.services;
+package com.commercetools.sync.inventory.impl;
 
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
@@ -9,9 +9,8 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Set;
 
-public interface InventoryService {
+interface InventoryService {
 
-    //TODO by skus or by skus and supply channels keys?
     List<InventoryEntry> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus);
 
     List<Channel> fetchAllSupplyChannels();
