@@ -1,25 +1,21 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.commons.helpers.SyncError;
-import com.commercetools.sync.commons.helpers.SyncResult;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.types.Custom;
 import io.sphere.sdk.types.CustomDraft;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.*;
-import static java.lang.String.format;
 
 public class CustomUpdateActionUtils {
 
@@ -27,9 +23,8 @@ public class CustomUpdateActionUtils {
      * Compares the {@link CustomFields} of an old resource {@link T} (for example {@link Category},
      * {@link io.sphere.sdk.products.Product}, etc..), to the {@link CustomFieldsDraft}, of a new
      * resource draft {@link S} (for example {@link CategoryDraft}, {@link io.sphere.sdk.products.ProductVariantDraft},
-     * etc..), and returns a {@link SyncResult} containing a list of update actions as a result.
-     * If no update action is needed, for example in the case where both the {@link CustomFields} and
-     * the {@link CustomFieldsDraft} are null, a sync result containing an empty
+     * etc..), and returns a {@link List<UpdateAction>} as a result. If no update action is needed,
+     * for example in the case where both the {@link CustomFields} and the {@link CustomFieldsDraft} are null, an empty
      * {@link List<UpdateAction>} is returned. A {@link TypeService} instance is injected into the
      * method to fetch the key of the old resource type from it's
      * cache (see {@link CustomUpdateActionUtils#buildNonNullCustomFieldsUpdateActions(CustomFields, CustomFieldsDraft, TypeService, Custom)}).
@@ -61,11 +56,10 @@ public class CustomUpdateActionUtils {
      * @param oldResource the resource which should be updated.
      * @param newResource the resource draft where we get the new custom fields.
      * @param typeService the type service that is used to fetch the cached key of the resource custom type.
-     * @return A sync result with a list containing all the update actions or a sync result containing an empty list
-     * of update actions if non are needed.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    public static <T extends Custom & Resource<T>, S extends CustomDraft> SyncResult<T> buildCustomUpdateActions(
+    public static <T extends Custom, S extends CustomDraft> List<UpdateAction<T>> buildCustomUpdateActions(
             @Nonnull final T oldResource,
             @Nonnull final S newResource,
             @Nonnull final TypeService typeService) {
@@ -81,24 +75,26 @@ public class CustomUpdateActionUtils {
                     // should set the custom type and fields of the new resource to the old one.
                     final String newCustomFieldsTypeKey = newResourceCustomFields.getType().getKey();
                     final Map<String, JsonNode> newCustomFieldsJsonMap = newResourceCustomFields.getFields();
-                    return buildTypedSetCustomTypeUpdateAction(
-                            newCustomFieldsTypeKey, newCustomFieldsJsonMap, oldResource);
+                    final UpdateAction<T> updateAction = buildTypedSetCustomTypeUpdateAction(
+                            newCustomFieldsTypeKey, newCustomFieldsJsonMap, oldResource).orElse(null);
+                    return updateAction != null ? Arrays.asList(updateAction) : new ArrayList<>();
                 }
             } else {
                 // New resource's custom fields are not set, but old resource's custom fields are set. So we
                 // should remove the custom type from the old resource.
-                return buildTypedRemoveCustomTypeUpdateAction(oldResource);
+                final UpdateAction<T> updateAction = buildTypedRemoveCustomTypeUpdateAction(oldResource).orElse(null);
+                return updateAction != null ? Arrays.asList(updateAction) : new ArrayList<>();
             }
         }
-        return SyncResult.emptyResult();
+        return new ArrayList<>();
     }
 
     /**
      * Compares a non null {@link CustomFields} to a non null {@link CustomFieldsDraft} and returns a
-     * a {@link SyncResult} containing the {@link List<UpdateAction>} as a result. The keys are used to
-     * compare the custom types. The key of the old resource custom type is fetched from the caching mechanism of the
-     * injected {@link TypeService}. The key of the new resource custom type is expected to be set on the type.
-     * If no update action is needed a {@link SyncResult} containing an empty {@link List<UpdateAction>} is returned.
+     * {@link List<UpdateAction>} as a result. The keys are used to compare the custom types.
+     * The key of the old resource custom type is fetched from the caching mechanism of the injected
+     * {@link TypeService}. The key of the new resource custom type is expected to be set on the type.
+     * If no update action is needed an empty {@link List<UpdateAction>} is returned.
      * <p>
      * An update action will be added to the result list in the following cases:-
      * <ol>
@@ -118,11 +114,10 @@ public class CustomUpdateActionUtils {
      * @param oldCustomFields the old resource's custom fields.
      * @param newCustomFields the new resource draft's custom fields.
      * @param typeService     the type service that is used to fetch the cached key of the resource custom type.
-     * @return A sync result with a list containing all the update actions or a sync result containing an empty list
-     * of update actions if non are needed.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    static <T extends Custom & Resource<T>> SyncResult<T> buildNonNullCustomFieldsUpdateActions(
+    static <T extends Custom> List<UpdateAction<T>> buildNonNullCustomFieldsUpdateActions(
             @Nonnull final CustomFields oldCustomFields,
             @Nonnull final CustomFieldsDraft newCustomFields,
             @Nonnull final TypeService typeService,
@@ -138,29 +133,33 @@ public class CustomUpdateActionUtils {
                 // TODO: wrap all processing results in a ProcessResult wrapper class.
                 // TODO: TYPEID
                 final String typeId = newCustomFields.getType().getTypeId();
-                return SyncResult.ofError(SyncError.of(resource.getId(), format("Custom type keys are not set for both " +
-                                "old and new versions of %s. Custom fields and types were not updated.",
-                        typeId), new Exception()));
+                // TODO: LOG HERE!
+                // "Custom type keys are not set for both " +
+                // "old and new versions of %s. Custom fields and types were not updated."
+                return new ArrayList<>();
             }
             if (newCustomFieldsJsonMap == null) {
                 // New resource's custom fields are null/not set. So we should unset old custom fields.
-                return buildTypedSetCustomTypeUpdateAction(
-                        newCustomFieldsTypeKey, null, resource);
+                final UpdateAction<T> updateAction = buildTypedSetCustomTypeUpdateAction(
+                        newCustomFieldsTypeKey, null, resource).orElse(null);
+                return updateAction != null ? Arrays.asList(updateAction) : new ArrayList<>();
             }
             // old and new resource's custom fields are set. So we should calculate update actions for the
             // the fields of both.
             return buildSetCustomFieldsUpdateActions(oldCustomFieldsJsonMap, newCustomFieldsJsonMap, resource);
         } else {
-            return buildTypedSetCustomTypeUpdateAction(
-                    newCustomFieldsTypeKey, newCustomFieldsJsonMap, resource);
+            final UpdateAction<T> updateAction =
+                    buildTypedSetCustomTypeUpdateAction(
+                            newCustomFieldsTypeKey, newCustomFieldsJsonMap, resource)
+                            .orElse(null);
+            return updateAction != null ? Arrays.asList(updateAction) : new ArrayList<>();
         }
     }
 
     /**
      * Compares two {@link Map} objects representing a map of the custom field name to the JSON representation
-     * of the value of the corresponding custom field. It returns a {@link SyncResult} containing the
-     * {@link List<UpdateAction>} as a result. If no update action is needed a {@link SyncResult}
-     * containing an empty {@link List<UpdateAction>} is returned.
+     * of the value of the corresponding custom field. It returns a {@link List<UpdateAction>} as a result.
+     * If no update action is needed an empty {@link List<UpdateAction>} is returned.
      * <p>
      * An update action will be added to the result list in the following cases:-
      * <ol>
@@ -177,70 +176,67 @@ public class CustomUpdateActionUtils {
      *
      * @param oldCustomFields the old resource's custom fields map of JSON values.
      * @param newCustomFields the new resource's custom fields map of JSON values.
-     * @return A sync result with a list containing all the update actions or a sync result containing an empty list
-     * of update actions if non are needed.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    static <T extends Custom> SyncResult<T> buildSetCustomFieldsUpdateActions(
+    static <T extends Custom> List<UpdateAction<T>> buildSetCustomFieldsUpdateActions(
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource) {
-        final SyncResult<T> syncResult =
+        final List<UpdateAction<T>> newOrModifiedCustomFieldsActions =
                 buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource);
-        syncResult.merge(buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource));
-        return syncResult;
+        final List<UpdateAction<T>> removedCustomFieldsActions =
+                buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource);
+        return Stream.concat(newOrModifiedCustomFieldsActions.stream(),
+                removedCustomFieldsActions.stream())
+                .collect(Collectors.toList());
     }
 
     /**
      * Traverses the new resource's custom fields map of JSON values {@link Map} to create
      * "setCustomField" update actions that represent either the modification of an existent custom field's
-     * value or the addition of a new one. It returns a {@link SyncResult} containing the
-     * {@link List<UpdateAction>} as a result. If no update action is needed a {@link SyncResult}
-     * containing an empty {@link List<UpdateAction>} is returned.
+     * value or the addition of a new one. It returns a {@link List<UpdateAction>} as a result.
+     * If no update action is needed an empty {@link List<UpdateAction>} is returned.
      *
      * @param oldCustomFields the old resource's custom fields map of JSON values.
      * @param newCustomFields the new resource's custom fields map of JSON values.
-     * @return A sync result with a list containing all the update actions or a sync result containing an empty list
-     * of update actions if non are needed.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    static <T extends Custom> SyncResult<T> buildNewOrModifiedCustomFieldsUpdateActions(
+    static <T extends Custom> List<UpdateAction<T>> buildNewOrModifiedCustomFieldsUpdateActions(
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource) {
-        final SyncResult<T> syncResult = SyncResult.emptyResult();
-        newCustomFields.keySet().stream()
+        return newCustomFields.keySet().stream()
                 .filter(newCustomFieldName -> !Objects.equals(
                         newCustomFields.get(newCustomFieldName), oldCustomFields.get(newCustomFieldName)))
                 .map(newCustomFieldName -> buildTypedSetCustomFieldUpdateAction(
-                        newCustomFieldName, newCustomFields.get(newCustomFieldName), resource))
-                .forEach(syncResult::merge);
-        return syncResult;
+                        newCustomFieldName, newCustomFields.get(newCustomFieldName), resource).orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     /**
      * Traverses the old resource's custom fields map of JSON values {@link Map} to create update
      * "setCustomField" update actions that represent removal of an existent custom field from the new resource's custom
-     * fields. It returns a {@link SyncResult} containing the {@link List<UpdateAction>} as a result.
-     * If no update action is needed a {@link SyncResult} containing an empty {@link List<UpdateAction>} is returned.
+     * fields. It returns a {@link List<UpdateAction>} as a result.
+     * If no update action is needed an empty {@link List<UpdateAction>} is returned.
      *
      * @param oldCustomFields the old resource's custom fields map of JSON values.
      * @param newCustomFields the new resources's custom fields map of JSON values.
-     * @return A sync result with a list containing all the update actions or a sync result containing an empty list
-     * of update actions if non are needed.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    static <T extends Custom> SyncResult<T> buildRemovedCustomFieldsUpdateActions(
+    static <T extends Custom> List<UpdateAction<T>> buildRemovedCustomFieldsUpdateActions(
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource) {
-        final SyncResult<T> syncResult = SyncResult.emptyResult();
-        oldCustomFields.keySet().stream()
+        return oldCustomFields.keySet().stream()
                 .filter(oldCustomFieldsName -> Objects.isNull(newCustomFields.get(oldCustomFieldsName)))
                 .map(oldCustomFieldsName -> buildTypedSetCustomFieldUpdateAction(
-                        oldCustomFieldsName, null, resource))
-                .forEach(syncResult::merge);
-        return syncResult;
+                        oldCustomFieldsName, null, resource).orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }
 
