@@ -3,8 +3,8 @@ package com.commercetools.sync.inventory.impl;
 import com.commercetools.sync.inventory.InventorySync;
 import com.commercetools.sync.inventory.InventorySyncOptions;
 import com.commercetools.sync.inventory.utils.InventorySyncUtils;
-import com.commercetools.sync.services.InventoryService;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
@@ -18,6 +18,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toMap;
+
 //TODO test
 //TODO document
 public final class InventorySyncImpl implements InventorySync {
@@ -29,17 +31,21 @@ public final class InventorySyncImpl implements InventorySync {
     private AtomicInteger createdCounter = new AtomicInteger(0);
     private AtomicInteger updatedCounter = new AtomicInteger(0);
     private AtomicInteger failedCounter = new AtomicInteger(0);
+    private AtomicInteger emptySkuCounter = new AtomicInteger(0);
 
     private Map<String, String> channelKeyToChannelId;
 
-    private InventorySyncOptions inventorySyncOptions;
+    private InventorySyncOptions options;
     private InventoryService inventoryService;
     private TypeService typeService;
 
-    public InventorySyncImpl(@Nonnull final InventorySyncOptions inventorySyncOptions,
-                             @Nonnull final InventoryService inventoryService,
-                             @Nonnull final TypeService typeService) {
-        this.inventorySyncOptions = inventorySyncOptions;
+    public InventorySyncImpl(@Nonnull final InventorySyncOptions options) {
+        this(options, new InventoryServiceImpl(options.getCTPclient()), new TypeServiceImpl(options.getCTPclient()));
+    }
+
+    InventorySyncImpl(final InventorySyncOptions options, final InventoryService inventoryService,
+                      final TypeService typeService) {
+        this.options = options;
         this.inventoryService = inventoryService;
         this.typeService = typeService;
     }
@@ -49,16 +55,20 @@ public final class InventorySyncImpl implements InventorySync {
         buildChannelMap();
         final List<InventoryEntryDraft> accumulator = new LinkedList<>();
 
-        //TODO parallelise process
+        //TODO parallelise process (GITHUB ISSUE #16)
         for (InventoryEntryDraft entry : inventories) {
-            if (entry != null && entry.getSku() != null) {
-                accumulator.add(entry);
-                if (accumulator.size() == BATCH_SIZE) {
-                    //TODO when processed in parallel then accumulator should be handled differently (do not clear after passing)
-                    processBatch(accumulator);
-                    accumulator.clear();
+            if (entry != null) {
+                if (entry.getSku() != null) {
+                    accumulator.add(entry);
+                    if (accumulator.size() == BATCH_SIZE) {
+                        //TODO when processed in parallel then accumulator should be handled differently (do not clear after passing)
+                        processBatch(accumulator);
+                        accumulator.clear();
+                    }
+                } else {
+                    emptySkuCounter.incrementAndGet();
                 }
-            } //TODO increment error otherwise?
+            }
         }
         if (!accumulator.isEmpty()) {
             processBatch(accumulator);
@@ -67,62 +77,79 @@ public final class InventorySyncImpl implements InventorySync {
 
     @Override
     public void syncInventory(@Nonnull List<InventoryEntry> inventories) {
-        //TODO implement
+        //TODO implement (GITHUB ISSUE #17)
     }
 
     @Override
     public String getSummary() {
-        //TODO implement
+        //TODO implement (GITHUB ISSUE #17)
         return null;
     }
 
-    private void buildChannelMap() {
+    private synchronized void buildChannelMap() {
         if (channelKeyToChannelId == null) {
             channelKeyToChannelId = inventoryService.fetchAllSupplyChannels()
                     .stream()
-                    .collect(Collectors.toMap(Channel::getKey, Channel::getId));
+                    .collect(toMap(Channel::getKey, Channel::getId));
         }
     }
 
-    private void processBatch(List<InventoryEntryDraft> inventories) {
-        final List<InventoryEntry> existingInventories =
-                inventoryService.fetchInventoryEntriesBySkus(extractSkus(inventories));
-        final Map<SkuKeyTuple, InventoryEntry> existingInventoriesMap =
-                createMapOfExistingInventories(existingInventories);
+    private void processBatch(final List<InventoryEntryDraft> drafts) {
+        final Map<SkuKeyTuple, InventoryEntry> existingInventories = fetchExistingInventories(drafts);
 
-        inventories.forEach(processedDraft -> {
-            final SkuKeyTuple processedSkuAndKey = SkuKeyTuple.of(processedDraft);
-            if (existingInventoriesMap.containsKey(processedSkuAndKey)) {
-                final InventoryEntry existingEntry = existingInventoriesMap.get(processedSkuAndKey);
-                final InventoryEntryDraft toUpdate = replaceChannelReference(processedDraft);
-                final List<UpdateAction<InventoryEntry>> updateActions =
-                        InventorySyncUtils.buildActions(existingEntry, toUpdate, typeService);
-                if (!updateActions.isEmpty()) {
-                    inventoryService.updateInventoryEntry(existingEntry, updateActions);
-                    updatedCounter.incrementAndGet();
-                    //TODO handle error
-                }
+        drafts.forEach(draft -> {
+            final SkuKeyTuple skuKeyOfDraft = SkuKeyTuple.of(draft);
+            if (existingInventories.containsKey(skuKeyOfDraft)) {
+                final InventoryEntry existingEntry = existingInventories.get(skuKeyOfDraft);
+                attemptUpdate(existingEntry, draft);
             } else {
-                final InventoryEntryDraft toCreate = replaceChannelReference(processedDraft);
-                inventoryService.createInventoryEntry(toCreate);
-                createdCounter.incrementAndGet();
-                //TODO handle error
+                attemptCreate(draft);
             }
             processedCounter.incrementAndGet();
         });
     }
 
-    private Set<String> extractSkus(List<InventoryEntryDraft> inventories) {
+    private Map<SkuKeyTuple, InventoryEntry> fetchExistingInventories(final List<InventoryEntryDraft> drafts) {
+        final Set<String> skus = extractSkus(drafts);
+        final List<InventoryEntry> existingEntries = inventoryService.fetchInventoryEntriesBySkus(skus);
+        return mapSkuAndKeyToInventoryEntry(existingEntries);
+    }
+
+    private Set<String> extractSkus(final List<InventoryEntryDraft> inventories) {
         return inventories.stream()
                 .map(InventoryEntryDraft::getSku)
-                .filter(entry -> entry != null)
                 .collect(Collectors.toSet());
     }
 
-    private Map<SkuKeyTuple, InventoryEntry> createMapOfExistingInventories(List<InventoryEntry> existingInventories) {
-        final Map<SkuKeyTuple, InventoryEntry> skuKeyTupleToInventoryEntry = new HashMap<>();
-        existingInventories.forEach(entry -> skuKeyTupleToInventoryEntry.put(SkuKeyTuple.of(entry), entry));
-        return skuKeyTupleToInventoryEntry;
+    private Map<SkuKeyTuple, InventoryEntry> mapSkuAndKeyToInventoryEntry(final List<InventoryEntry> inventories) {
+        final Map<SkuKeyTuple, InventoryEntry> skuKeyToInventory = new HashMap<>();
+        inventories.forEach(entry -> skuKeyToInventory.put(SkuKeyTuple.of(entry), entry));
+        return skuKeyToInventory;
+    }
+
+    private void attemptUpdate(final InventoryEntry entry, final InventoryEntryDraft draft) {
+        final InventoryEntryDraft fixedDraft = replaceChannelReference(draft);
+        final List<UpdateAction<InventoryEntry>> updateActions =
+                InventorySyncUtils.buildActions(entry, fixedDraft, typeService);
+
+        if (!updateActions.isEmpty()) {
+            try {
+                inventoryService.updateInventoryEntry(entry, updateActions);
+                updatedCounter.incrementAndGet();
+            } catch (Exception e) {
+                failedCounter.incrementAndGet();
+            }
+        }
+    }
+
+    private void attemptCreate(final InventoryEntryDraft draft) {
+        final InventoryEntryDraft fixedDraft = replaceChannelReference(draft);
+        try {
+            inventoryService.createInventoryEntry(fixedDraft);
+            createdCounter.incrementAndGet();
+        } catch(Exception e) {
+            failedCounter.incrementAndGet();
+        }
     }
 
     private InventoryEntryDraft replaceChannelReference(final InventoryEntryDraft inventoryEntryDraft) {
@@ -135,7 +162,7 @@ public final class InventorySyncImpl implements InventorySync {
                         inventoryEntryDraft.getExpectedDelivery(), inventoryEntryDraft.getRestockableInDays(),
                         supplyChannelRef).withCustom(inventoryEntryDraft.getCustom());
             } else {
-                //TODO Create channel? Log error and skip this draft?
+                //TODO Handle (GITHUB ISSUE #18)
             }
         }
         return inventoryEntryDraft;
