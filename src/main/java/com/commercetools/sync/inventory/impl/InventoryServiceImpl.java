@@ -1,7 +1,10 @@
 package com.commercetools.sync.inventory.impl;
 
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.channels.ChannelDraft;
+import io.sphere.sdk.channels.ChannelDraftBuilder;
 import io.sphere.sdk.channels.ChannelRole;
+import io.sphere.sdk.channels.commands.ChannelCreateCommand;
 import io.sphere.sdk.channels.queries.ChannelQuery;
 import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
 import io.sphere.sdk.client.BlockingSphereClient;
@@ -19,6 +22,8 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 final class InventoryServiceImpl implements InventoryService {
 
@@ -48,6 +53,14 @@ final class InventoryServiceImpl implements InventoryService {
         return QueryExecutionUtils.queryAll(ctpClient, query)
                 .toCompletableFuture()
                 .join();
+    }
+
+    @Override
+    public Channel createSupplyChannel(String key) {
+        final ChannelDraft draft = ChannelDraftBuilder.of(key)
+                .roles(singleton(ChannelRole.INVENTORY_SUPPLY))
+                .build();
+        return ctpClient.executeBlocking(ChannelCreateCommand.of(draft));
     }
 
     @Override

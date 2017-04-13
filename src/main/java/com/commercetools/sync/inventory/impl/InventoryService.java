@@ -15,6 +15,8 @@ interface InventoryService {
 
     List<Channel> fetchAllSupplyChannels();
 
+    Channel createSupplyChannel(String key);
+
     InventoryEntry createInventoryEntry(@Nonnull final InventoryEntryDraft inventoryEntryDraft);
 
     InventoryEntry updateInventoryEntry(@Nonnull final InventoryEntry inventoryEntry,
