@@ -1,5 +1,6 @@
 package com.commercetools.sync.categories.utils;
 
+import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -126,7 +127,7 @@ public class CategorySyncUtils {
                 .map(updateActions::add);
 
         final List<UpdateAction<Category>> categoryTypeUpdateActions =
-                buildCustomUpdateActions(oldCategory, newCategory, typeService);
+                buildCustomUpdateActions(oldCategory, newCategory, options);
         return Stream.concat(updateActions.stream(),
                 categoryTypeUpdateActions.stream())
                 .collect(Collectors.toList());
@@ -142,7 +143,8 @@ public class CategorySyncUtils {
      */
     @Nonnull
     public static List<UpdateAction<Category>> buildAssetActions(@Nonnull final Category oldCategory,
-                                                                 @Nonnull final CategoryDraft newCategory) {
+                                                                 @Nonnull final CategoryDraft newCategory,
+                                                                 @Nonnull final CategorySyncOptions options) {
         return new ArrayList<>();
     }
 }

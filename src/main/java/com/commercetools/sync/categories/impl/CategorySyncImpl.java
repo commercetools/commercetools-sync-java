@@ -25,26 +25,22 @@ public class CategorySyncImpl implements CategorySync {
     private final Logger LOGGER = LoggerFactory.getLogger(CategorySyncImpl.class);
 
     private CategorySyncOptions options;
-    private TypeService typeService;
-    private CategoryService categoryService;
 
-    public CategorySyncImpl(CategorySyncOptions options, TypeService typeService, CategoryService categoryService) {
+    public CategorySyncImpl(@Nonnull final CategorySyncOptions options) {
         this.options = options;
         this.updatedCategories = 0;
         this.createdCategories = 0;
         this.failedCategories = 0;
         this.processedCategories = 0;
-        this.typeService = typeService;
-        this.categoryService = categoryService;
     }
 
     @Override
-    public void syncCategories(@Nonnull List<Category> categories) {
+    public void syncCategories(@Nonnull final List<Category> categories) {
     }
 
     // TODO: REFACTOR
     @Override
-    public void syncCategoryDrafts(@Nonnull List<CategoryDraft> categoryDrafts) {
+    public void syncCategoryDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {
         processedCategories = categoryDrafts.size();
         LOGGER.info(format("About to sync %d category drafts into CTP project with key '%s'."
                 , categoryDrafts.size(), options.getCtpProjectKey()));
@@ -52,7 +48,7 @@ public class CategorySyncImpl implements CategorySync {
             final CategoryDraft newCategoryDraft = categoryDrafts.get(i);
             final String externalId = newCategoryDraft != null ? newCategoryDraft.getExternalId() : null;
             if (externalId != null) { // TODO NEED TO PARALLELISE!
-                Category oldCategory = categoryService.fetchCategoryByExternalId(externalId);
+                Category oldCategory = options.getCategoryService().fetchCategoryByExternalId(externalId);
                 if (oldCategory == null) {
                     createCategory(newCategoryDraft);
                 } else {
@@ -71,12 +67,12 @@ public class CategorySyncImpl implements CategorySync {
     private Category createCategory(@Nonnull final CategoryDraft newCategory) {
         Category category = null;
         try {
-            category = categoryService.createCategory(newCategory);
+            category = options.getCategoryService().createCategory(newCategory);
             createdCategories++;
         } catch (Exception e) {
             LOGGER.error(format("Failed to create category with external id" +
                             " '%s' in CTP project with key '%s",
-                    newCategory.getExternalId(), options.getCtpProjectKey()), e);
+                    newCategory.getExternalId(), options.getClientConfig().getProjectKey()), e);
             failedCategories++;
         }
         return category;
@@ -86,12 +82,12 @@ public class CategorySyncImpl implements CategorySync {
     private Category updateCategory(@Nonnull final Category category, List<UpdateAction<Category>> updateActions) {
         Category updatedCategory = null;
         try {
-            updatedCategory = categoryService.updateCategory(category, updateActions);
+            updatedCategory = options.getCategoryService().updateCategory(category, updateActions);
             updatedCategories++;
         } catch (Exception e) {
             LOGGER.error(format("Failed to update category with id" +
                             " '%s' in CTP project with key '%s",
-                    category.getId(), options.getCtpProjectKey()), e);
+                    category.getId(), options.getClientConfig().getProjectKey()), e);
             failedCategories++;
         }
         return updatedCategory;

@@ -1,5 +1,7 @@
 package com.commercetools.sync.commons;
 
+import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 
@@ -9,6 +11,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class BaseOptions {
+    // Services
+    private TypeService typeService;
+
     // Custom Callbacks
     private BiConsumer<String, Throwable> updateActionErrorCallBack;
     private Consumer<String> updateActionWarningCallBack;
@@ -79,5 +84,11 @@ public class BaseOptions {
     public Consumer<String> getUpdateActionWarningCallBack() {
         return updateActionWarningCallBack;
     }
+
+    public TypeService getTypeService() {
+        if (typeService == null) {
+            typeService = new TypeServiceImpl(CTPclient);
+        }
+        return typeService;
     }
 }
