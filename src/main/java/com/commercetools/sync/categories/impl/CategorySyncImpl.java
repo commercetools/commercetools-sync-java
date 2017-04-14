@@ -43,7 +43,7 @@ public class CategorySyncImpl implements CategorySync {
     public void syncCategoryDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {
         processedCategories = categoryDrafts.size();
         LOGGER.info(format("About to sync %d category drafts into CTP project with key '%s'."
-                , categoryDrafts.size(), options.getCtpProjectKey()));
+                , categoryDrafts.size(), options.getClientConfig().getProjectKey()));
         for (int i = 0; i < categoryDrafts.size(); i++) {
             final CategoryDraft newCategoryDraft = categoryDrafts.get(i);
             final String externalId = newCategoryDraft != null ? newCategoryDraft.getExternalId() : null;
