@@ -5,16 +5,15 @@ import static java.lang.String.format;
 
 // TODO: DOCUMENT
 public class SyncMessages {
-    private static final String REQUIRED_FIELD_MESSAGE_FORMAT = "There were (x) %s with null/not set %s fields." +
-            " The old %s' %s fields weren't updated.";
+    private static final String REQUIRED_FIELD_MESSAGE_FORMAT = "Cannot unset %s field of %s" +
+            " with id '%s'.";
 
     public static final String CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION = format(REQUIRED_FIELD_MESSAGE_FORMAT,
-            "categories", "description", "categories", "description");
+            "description", "category", "%s");
     public static final String CATEGORY_CHANGE_PARENT_EMPTY_PARENT = format(REQUIRED_FIELD_MESSAGE_FORMAT,
-            "categories", "parent", "categories", "parent");
-
+            "parent", "category", "%s");
     public static final String CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT = format(REQUIRED_FIELD_MESSAGE_FORMAT,
-            "categories", "orderHint", "categories", "orderHint");
+            "orderHint", "category", "%s");
 
     private SyncMessages() {
     }

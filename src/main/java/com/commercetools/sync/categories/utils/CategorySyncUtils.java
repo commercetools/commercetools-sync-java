@@ -75,15 +75,14 @@ public class CategorySyncUtils {
      *
      * @param oldCategory
      * @param newCategory
-     * @param typeService
      * @return
      */
     @Nonnull
     public static List<UpdateAction<Category>> buildActions(@Nonnull final Category oldCategory,
                                                             @Nonnull final CategoryDraft newCategory,
-                                                            @Nonnull final TypeService typeService) {
-        final List<UpdateAction<Category>> updateActions = buildCoreActions(oldCategory, newCategory, typeService);
-        final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(oldCategory, newCategory);
+                                                            @Nonnull final CategorySyncOptions options) {
+        final List<UpdateAction<Category>> updateActions = buildCoreActions(oldCategory, newCategory, options);
+        final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(oldCategory, newCategory, options);
         return Stream.concat(updateActions.stream(),
                 assetUpdateActions.stream())
                 .collect(Collectors.toList());
@@ -95,13 +94,12 @@ public class CategorySyncUtils {
      *
      * @param oldCategory
      * @param newCategory
-     * @param typeService
      * @return
      */
     @Nonnull
     public static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category oldCategory,
                                                                 @Nonnull final CategoryDraft newCategory,
-                                                                @Nonnull final TypeService typeService) {
+                                                                @Nonnull final CategorySyncOptions options) {
         final List<UpdateAction<Category>> updateActions = new ArrayList<>();
         buildChangeNameUpdateAction(oldCategory, newCategory)
                 .map(updateActions::add);
@@ -109,13 +107,13 @@ public class CategorySyncUtils {
         buildChangeSlugUpdateAction(oldCategory, newCategory)
                 .map(updateActions::add);
 
-        buildSetDescriptionUpdateAction(oldCategory, newCategory)
+        buildSetDescriptionUpdateAction(oldCategory, newCategory, options)
                 .map(updateActions::add);
 
-        buildChangeParentUpdateAction(oldCategory, newCategory)
+        buildChangeParentUpdateAction(oldCategory, newCategory, options)
                 .map(updateActions::add);
 
-        buildChangeOrderHintUpdateAction(oldCategory, newCategory)
+        buildChangeOrderHintUpdateAction(oldCategory, newCategory, options)
                 .map(updateActions::add);
 
         buildSetMetaTitleUpdateAction(oldCategory, newCategory)

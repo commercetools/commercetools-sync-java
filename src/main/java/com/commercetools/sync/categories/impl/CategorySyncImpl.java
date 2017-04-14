@@ -57,7 +57,7 @@ public class CategorySyncImpl implements CategorySync {
                     createCategory(newCategoryDraft);
                 } else {
                     final List<UpdateAction<Category>> updateActions =
-                            CategorySyncUtils.buildActions(oldCategory, newCategoryDraft, typeService);
+                            CategorySyncUtils.buildActions(oldCategory, newCategoryDraft, options);
                     if (!updateActions.isEmpty()) {
                         updateCategory(oldCategory, updateActions);
                     }

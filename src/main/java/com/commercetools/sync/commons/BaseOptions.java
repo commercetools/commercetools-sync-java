@@ -5,8 +5,13 @@ import io.sphere.sdk.client.SphereClientConfig;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class BaseOptions {
+    // Custom Callbacks
+    private BiConsumer<String, Throwable> updateActionErrorCallBack;
+    private Consumer<String> updateActionWarningCallBack;
 
     // for just adding more localizations and not deleting existing ones.
     private boolean removeOtherLocales = true;
@@ -36,14 +41,29 @@ public class BaseOptions {
         this.ctpProjectKey = ctpProjectKey;
         this.ctpClientId = ctpClientId;
         this.ctpClientSecret = ctpClientSecret;
+                       @Nonnull final BiConsumer<String, Throwable> updateActionErrorCallBack,
+                       @Nonnull final Consumer<String> updateActionWarningCallBack) {
         this.clientConfig = SphereClientConfig.of(ctpProjectKey,
                 ctpClientId, ctpClientSecret);
         CTPclient = CTPUtils.createClient(clientConfig);
+        this.updateActionErrorCallBack = updateActionErrorCallBack;
+        this.updateActionWarningCallBack = updateActionWarningCallBack;
     }
 
     public BaseOptions(@Nonnull final SphereClientConfig clientConfig) {
         this.clientConfig = clientConfig;
         CTPclient = CTPUtils.createClient(clientConfig);
+    public void callUpdateActionErrorCallBack(@Nonnull final String errorMessage,
+                                              @Nonnull final Throwable exception) {
+        if (getUpdateActionErrorCallBack() != null) {
+            getUpdateActionErrorCallBack().accept(errorMessage, exception);
+        }
+    }
+
+    public void callUpdateActionWarningCallBack(@Nonnull final String warningMessage) {
+        if (getUpdateActionWarningCallBack() != null) {
+            getUpdateActionWarningCallBack().accept(warningMessage);
+        }
     }
 
     public BlockingSphereClient getCTPclient() {
@@ -52,5 +72,12 @@ public class BaseOptions {
 
     public String getCtpProjectKey() {
         return ctpProjectKey;
+    public BiConsumer<String, Throwable> getUpdateActionErrorCallBack() {
+        return updateActionErrorCallBack;
+    }
+
+    public Consumer<String> getUpdateActionWarningCallBack() {
+        return updateActionWarningCallBack;
+    }
     }
 }

@@ -1,6 +1,7 @@
 package com.commercetools.sync.categories.utils;
 
 
+import com.commercetools.sync.categories.CategorySyncOptions;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.*;
@@ -11,7 +12,11 @@ import io.sphere.sdk.models.Reference;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
+import static com.commercetools.sync.commons.constants.SyncMessages.CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT;
+import static com.commercetools.sync.commons.constants.SyncMessages.CATEGORY_CHANGE_PARENT_EMPTY_PARENT;
+import static com.commercetools.sync.commons.constants.SyncMessages.CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static java.lang.String.format;
 
 public class CategoryUpdateActionUtils {
 
@@ -62,22 +67,27 @@ public class CategoryUpdateActionUtils {
      * {@link Optional} is returned.
      * <p>
      * Note: If the description of the new {@link CategoryDraft} is null, an empty {@link Optional} is returned with
-     * no update actions.
+     * no update actions and a custom callback function, if set on the supplied {@link CategorySyncOptions}, is called.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new description.
+     * @param options     the sync options with which a custom callback function is called in case the description is null.
      * @return A filled optional with the update action or an empty optional if the descriptions are identical.
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildSetDescriptionUpdateAction(
             @Nonnull final Category oldCategory,
-            @Nonnull final CategoryDraft newCategory) {
-        // TODO: NEED TO HANDLE DESCRIPTION REMOVAL.
-        // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
+            @Nonnull final CategoryDraft newCategory,
+            @Nonnull final CategorySyncOptions options) {
         final LocalizedString newCategoryDescription = newCategory.getDescription();
-        return newCategoryDescription != null ? buildUpdateAction(oldCategory.getDescription(),
+        if (newCategoryDescription == null) {
+            options.callUpdateActionWarningCallBack(
+                    format(CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION, oldCategory.getId()));
+            return Optional.empty();
+        }
+        return buildUpdateAction(oldCategory.getDescription(),
                 newCategoryDescription,
-                SetDescription.of(newCategoryDescription)) : Optional.empty();
+                SetDescription.of(newCategoryDescription));
     }
 
     /**
@@ -87,22 +97,28 @@ public class CategoryUpdateActionUtils {
      * {@link Optional} is returned.
      * <p>
      * Note: If the parent {@link Reference<Category>} of the new {@link CategoryDraft} is null, an empty
-     * {@link Optional} is returned with no update actions.
+     * {@link Optional} is returned with no update actions and a custom callback function, if set on the
+     * supplied {@link CategorySyncOptions}, is called.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new parent.
+     * @param options     the sync options with which a custom callback function is called in case the parent is null.
      * @return A filled optional with the update action or an empty optional if the parent references are identical.
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildChangeParentUpdateAction(
             @Nonnull final Category oldCategory,
-            @Nonnull final CategoryDraft newCategory) {
-        // TODO: NEED TO HANDLE PARENT REMOVAL.
-        // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
+            @Nonnull final CategoryDraft newCategory,
+            @Nonnull final CategorySyncOptions options) {
         final Reference<Category> newCategoryParentReference = newCategory.getParent();
-        return newCategoryParentReference != null ? buildUpdateAction(oldCategory.getParent(),
+        if (newCategoryParentReference == null) {
+            options.callUpdateActionWarningCallBack(
+                    format(CATEGORY_CHANGE_PARENT_EMPTY_PARENT, oldCategory.getId()));
+            return Optional.empty();
+        }
+        return buildUpdateAction(oldCategory.getParent(),
                 newCategoryParentReference,
-                ChangeParent.of(newCategoryParentReference)) : Optional.empty();
+                ChangeParent.of(newCategoryParentReference));
     }
 
     /**
@@ -112,22 +128,27 @@ public class CategoryUpdateActionUtils {
      * {@link Optional} is returned.
      * <p>
      * Note: If the orderHint of the new {@link CategoryDraft} is null, an empty {@link Optional} is returned with
-     * no update actions.
+     * no update actions and a custom callback function, if set on the supplied {@link CategorySyncOptions}, is called.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new orderHint.
+     * @param options     the sync options with which a custom callback function is called in case the orderHint is null.
      * @return A filled optional with the update action or an empty optional if the orderHint values are identical.
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildChangeOrderHintUpdateAction(
             @Nonnull final Category oldCategory,
-            @Nonnull final CategoryDraft newCategory) {
-        // TODO: NEED TO HANDLE ORDERHINT REMOVAL
-        // TODO: TEMP WORKAROUND UNTIL GITHUB ISSUE#8 IS RESOLVED.
+            @Nonnull final CategoryDraft newCategory,
+            @Nonnull final CategorySyncOptions options) {
         final String newCategoryOrderHint = newCategory.getOrderHint();
-        return newCategoryOrderHint != null ? buildUpdateAction(oldCategory.getOrderHint(),
+        if (newCategoryOrderHint == null) {
+            options.callUpdateActionWarningCallBack(
+                    format(CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT, oldCategory.getId()));
+            return Optional.empty();
+        }
+        return buildUpdateAction(oldCategory.getOrderHint(),
                 newCategoryOrderHint,
-                ChangeOrderHint.of(newCategoryOrderHint)) : Optional.empty();
+                ChangeOrderHint.of(newCategoryOrderHint));
     }
 
     /**
