@@ -2,10 +2,6 @@ package com.commercetools.sync.categories;
 
 
 import com.commercetools.sync.categories.impl.CategorySyncImpl;
-import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.TypeService;
-import com.commercetools.sync.services.impl.CategoryServiceImpl;
-import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.categories.CategoryDraft;
 
 import java.util.List;
@@ -20,9 +16,7 @@ public class CategorySyncImplTest {
 
     // TODO: TEMP! REMOVE.
     public void testSyncCategoryDrafts() {
-        TypeService typeService = new TypeServiceImpl(CATEGORY_SYNC_OPTIONS.getCTPclient());
-        CategoryService categoryService = new CategoryServiceImpl(CATEGORY_SYNC_OPTIONS.getCTPclient());
-        CategorySyncImpl categorySync = new CategorySyncImpl(CATEGORY_SYNC_OPTIONS, typeService, categoryService);
+        CategorySyncImpl categorySync = new CategorySyncImpl(CATEGORY_SYNC_OPTIONS);
         categorySync.syncCategoryDrafts(CATEGORY_DRAFTS);
     }
 
