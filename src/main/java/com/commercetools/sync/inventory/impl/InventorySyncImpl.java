@@ -9,6 +9,7 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
+import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.inventory.utils.InventoryDraftTransformer.transformToDrafts;
 import static java.lang.String.format;
 
 //TODO test
@@ -88,7 +90,9 @@ public final class InventorySyncImpl implements InventorySync {
 
     @Override
     public void syncInventory(@Nonnull List<InventoryEntry> inventories) {
-        //TODO implement (GITHUB ISSUE #17)
+        LOGGER.info(format("Converting inventory entries to InventoryEntryDraft objects."));
+        final List<InventoryEntryDraft> drafts = transformToDrafts(inventories);
+        syncInventoryDrafts(drafts);
     }
 
     @Override
@@ -234,8 +238,9 @@ public final class InventorySyncImpl implements InventorySync {
     private InventoryEntryDraft ofEntryDraftPlusRefToSupplyChannel(@Nonnull final InventoryEntryDraft draft,
                                                                    @Nonnull final String supplyChannelId) {
         final Reference<Channel> supplyChannelRef = Channel.referenceOfId(supplyChannelId);
-        return InventoryEntryDraft.of(draft.getSku(), draft.getQuantityOnStock(), draft.getExpectedDelivery(),
-                draft.getRestockableInDays(), supplyChannelRef).withCustom(draft.getCustom());
+        return InventoryEntryDraftBuilder.of(draft)
+                .supplyChannel(supplyChannelRef)
+                .build();
     }
 
     /**

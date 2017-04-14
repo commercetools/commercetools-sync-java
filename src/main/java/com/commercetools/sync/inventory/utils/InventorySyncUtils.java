@@ -10,8 +10,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
+import static com.commercetools.sync.inventory.utils.InventoryDraftTransformer.transformToDraft;
 import static com.commercetools.sync.inventory.utils.InventoryUpdateActionUtils.*;
 
+//TODO document
+//TODO test
 public final class InventorySyncUtils {
 
     private InventorySyncUtils() {
@@ -22,11 +25,8 @@ public final class InventorySyncUtils {
     public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldEntry,
                                                                   @Nonnull final InventoryEntry newEntry,
                                                                   @Nonnull final TypeService typeService) {
-        //TODO implement
-        //TODO document
-        //TODO test
-
-        return null;
+        final InventoryEntryDraft newEntryDraft = transformToDraft(newEntry);
+        return buildActions(oldEntry, newEntryDraft, typeService);
     }
 
     @Nonnull
