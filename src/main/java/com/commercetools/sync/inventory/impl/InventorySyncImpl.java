@@ -28,6 +28,10 @@ import static java.lang.String.format;
 
 //TODO test
 //TODO document
+
+/**
+ * Default implementation of inventories sync process.
+ */
 public final class InventorySyncImpl implements InventorySync {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventorySyncImpl.class);
@@ -60,6 +64,22 @@ public final class InventorySyncImpl implements InventorySync {
         }
     }
 
+    /**
+     * <p>Performs full process of synchronisation between inventory entries present in a system
+     * and passed {@code inventories}. This is accomplished by:
+     * <ul>
+     *     <li>Comparing entries and drafts by {@code sku} and {@code supplyChannel} key</li>
+     *     <li>Calculating of necessary updates and creation commands</li>
+     *     <li>Actually <strong>performing</strong> changes in a target CTP project by sphere calls</li>
+     * </ul>
+     * The process is customized according to {@link InventorySyncOptions} passed to constructor of this object.
+     * After the process finishes you can obtain its summary by calling {@link InventorySyncImpl#getSummary()}.</p>
+     * <p><strong>This method is meant to be called once. For new sync process please create new {@link InventorySyncImpl}
+     * instance!</strong></p>
+     *
+     * @param inventories {@link List} of {@link InventoryEntryDraft} containing data that you would like to sync into
+     *                                your CTP project.
+     */
     @Override
     public void syncInventoryDrafts(@Nonnull List<InventoryEntryDraft> inventories) {
         LOGGER.info(format("About to sync %d inventories into CTP project with key '%s'.",
@@ -88,6 +108,13 @@ public final class InventorySyncImpl implements InventorySync {
                 options.getCtpProjectKey()));
     }
 
+    /**
+     * Converts {@code inventories} to {@link InventoryEntryDraft} objects and perform full synchronisation process
+     * as described in {@link InventorySyncImpl#syncInventoryDrafts(List)}.
+     *
+     * @param inventories  {@link List} of {@link InventoryEntry} that you would like to sync into your CTP project.
+     * @see InventorySyncImpl#syncInventoryDrafts(List)
+     */
     @Override
     public void syncInventory(@Nonnull List<InventoryEntry> inventories) {
         LOGGER.info(format("Converting inventory entries to InventoryEntryDraft objects."));
