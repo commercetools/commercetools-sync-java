@@ -1,7 +1,7 @@
 package com.commercetools.sync.inventory.impl;
 
+import com.commercetools.sync.inventory.InventoryEntryMock;
 import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ public class SkuKeyTupleTest {
     private static final String REF_ID = "456";
 
     @Test
-    public void ofInventoryEntryDraftReturnsTupleForDraftWithoutSupplyChannel() {
+    public void ofInventoryEntryDraft_returnsTuple_havingDraftWithoutSupplyChannel() {
         final InventoryEntryDraft draft = InventoryEntryDraft.of(SKU, 1l);
         final SkuKeyTuple tuple = SkuKeyTuple.of(draft);
         assertThat(tuple).isNotNull();
@@ -27,7 +27,7 @@ public class SkuKeyTupleTest {
     }
 
     @Test
-    public void ofInventoryEntryDraftReturnsTupleForDraftWithNotExpandedReference() {
+    public void ofInventoryEntryDraft_returnsTuple_havingDraftWithNotExpandedReference() {
         final InventoryEntryDraft draft = InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY));
         final SkuKeyTuple tuple = SkuKeyTuple.of(draft);
         assertThat(tuple).isNotNull();
@@ -36,7 +36,7 @@ public class SkuKeyTupleTest {
     }
 
     @Test
-    public void ofInventoryEntryDraftReturnsTupleForDraftWithExpandedReference() {
+    public void ofInventoryEntryDraft_returnsTuple_havingDraftWithExpandedReference() {
         final Channel channel = mock(Channel.class);
         when(channel.getKey()).thenReturn(KEY);
         final InventoryEntryDraft draft = InventoryEntryDraft.of(SKU, 1l, null, null,
@@ -49,63 +49,48 @@ public class SkuKeyTupleTest {
     }
 
     @Test
-    public void ofInventoryEntryReturnsTupleForEntryWithoutReference() {
-        final SkuKeyTuple tuple = SkuKeyTuple.of(mockInventoryEntry(SKU));
+    public void ofInventoryEntry_returnsTuple_havingEntryWithoutReference() {
+        final SkuKeyTuple tuple = SkuKeyTuple.of(InventoryEntryMock.of(SKU).build());
         assertThat(tuple).isNotNull();
         assertThat(tuple.getSku()).isEqualTo(SKU);
         assertThat(tuple.getKey()).isNull();
     }
 
     @Test
-    public void ofInventoryEntryReturnsTupleForEntryWithNotExpandedReference() {
-        final SkuKeyTuple tuple = SkuKeyTuple.of(mockInventoryEntryWithReference(SKU, REF_ID));
+    public void ofInventoryEntry_returnsTuple_havingEntryWithNotExpandedReference() {
+        final SkuKeyTuple tuple = SkuKeyTuple.of(InventoryEntryMock.of(SKU).withChannelRef(REF_ID).build());
         assertThat(tuple).isNotNull();
         assertThat(tuple.getSku()).isEqualTo(SKU);
         assertThat(tuple.getKey()).isNull();
     }
 
     @Test
-    public void ofInventoryEntryReturnsTupleForEntryWithExpandedReference() {
-        final SkuKeyTuple tuple = SkuKeyTuple.of(mockInventoryEntryWithExpandedReference(SKU, REF_ID, KEY));
+    public void ofInventoryEntry_returnsTuple_havingEntryWithExpandedReference() {
+        final SkuKeyTuple tuple = SkuKeyTuple
+                .of(InventoryEntryMock.of(SKU).withChannelRefExpanded(REF_ID, KEY).build());
         assertThat(tuple).isNotNull();
         assertThat(tuple.getSku()).isEqualTo(SKU);
         assertThat(tuple.getKey()).isEqualTo(KEY);
     }
 
     @Test
-    public void thatSkuKeyTuplesOfSimilarDraftAndEntryAreEquals() {
-        final SkuKeyTuple entryTuple = SkuKeyTuple.of(mockInventoryEntryWithExpandedReference(SKU, REF_ID, KEY));
-        final SkuKeyTuple draftTuple = SkuKeyTuple.of(InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
+    public void skuKeyTuples_areEqual_whenCreatedFromSimilarDraftAndEntry() {
+        final SkuKeyTuple entryTuple = SkuKeyTuple
+                .of(InventoryEntryMock.of(SKU).withChannelRefExpanded(REF_ID, KEY).build());
+        final SkuKeyTuple draftTuple = SkuKeyTuple
+                .of(InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
 
         assertThat(entryTuple).isEqualTo(draftTuple);
         assertThat(entryTuple.hashCode()).isEqualTo(draftTuple.hashCode());
     }
 
     @Test
-    public void thatSkuKeyTuplesOfNotSimilarDraftAndEntryAreNotEquals() {
-        final SkuKeyTuple entryTuple = SkuKeyTuple.of(mockInventoryEntryWithExpandedReference(SKU_2, REF_ID, KEY_2));
-        final SkuKeyTuple draftTuple = SkuKeyTuple.of(InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
+    public void skuKeyTuples_areNotEqual_whenCreatedFromVariousDraftAndEntry() {
+        final SkuKeyTuple entryTuple = SkuKeyTuple
+                .of(InventoryEntryMock.of(SKU_2).withChannelRefExpanded(REF_ID, KEY_2).build());
+        final SkuKeyTuple draftTuple = SkuKeyTuple
+                .of(InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
 
         assertThat(entryTuple).isNotEqualTo(draftTuple);
-    }
-
-    private InventoryEntry mockInventoryEntry(String sku){
-        final InventoryEntry entry = mock(InventoryEntry.class);
-        when(entry.getSku()).thenReturn(sku);
-        return entry;
-    }
-
-    private InventoryEntry mockInventoryEntryWithReference(String sku, String refId) {
-        final InventoryEntry entry = mockInventoryEntry(sku);
-        when(entry.getSupplyChannel()).thenReturn(Channel.referenceOfId(refId));
-        return entry;
-    }
-
-    private InventoryEntry mockInventoryEntryWithExpandedReference(String sku, String refId, String key) {
-        final InventoryEntry entry = mockInventoryEntry(sku);
-        final Channel channel = mock(Channel.class);
-        when(channel.getKey()).thenReturn(key);
-        when(entry.getSupplyChannel()).thenReturn(Channel.referenceOfId(refId).filled(channel));
-        return entry;
     }
 }

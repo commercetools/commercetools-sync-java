@@ -50,7 +50,7 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeQuantityActionReturnsActionForDifferentValues() {
+    public void buildChangeQuantityAction_returnsAction_havingDifferentValues() {
         final List<UpdateAction<InventoryEntry>> result = buildChangeQuantityAction(old, newDifferent);
         assertThat(result).isNotNull();
         assertThat(result).hasSize(1);
@@ -59,7 +59,7 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeQuantityActionReturnsEmptyListForNewNullValue() {
+    public void buildChangeQuantityAction_returnsEmptyList_havingNewNullValue() {
         final InventoryEntryDraft draft = mock(InventoryEntryDraft.class);
         when(draft.getQuantityOnStock()).thenReturn(null);
         final List<UpdateAction<InventoryEntry>> result = buildChangeQuantityAction(old, draft);
@@ -68,12 +68,12 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeQuantityActionReturnsEmptyListForSameValues() {
+    public void buildChangeQuantityAction_returnsEmptyList_havingSameValues() {
         assertNoUpdatesForSameValues(InventoryUpdateActionUtils::buildChangeQuantityAction);
     }
 
     @Test
-    public void buildSetRestockableInDaysActionReturnsActionForDifferentValues() {
+    public void buildSetRestockableInDaysAction_returnsAction_havingDifferentValues() {
         final List<UpdateAction<InventoryEntry>> result = buildSetRestockableInDaysAction(old, newDifferent);
         assertThat(result).isNotNull();
         assertThat(result).hasSize(1);
@@ -83,7 +83,7 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetRestockableInDaysActionReturnsActionForNewNullValue() {
+    public void buildSetRestockableInDaysAction_returnsAction_havingNewNullValue() {
         final List<UpdateAction<InventoryEntry>> result = buildSetRestockableInDaysAction(old, newWithNullValues);
         assertThat(result).isNotNull();
         assertThat(result).hasSize(1);
@@ -92,12 +92,12 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetRestockableInDaysActionReturnsEmptyListForSameValues() {
+    public void buildSetRestockableInDaysAction_returnsEmptyList_havingSameValues() {
         assertNoUpdatesForSameValues(InventoryUpdateActionUtils::buildSetRestockableInDaysAction);
     }
 
     @Test
-    public void buildSetExpectedDeliveryActionReturnsActionForDifferentValues() {
+    public void buildSetExpectedDeliveryAction_returnsAction_havingDifferentValues() {
         final List<UpdateAction<InventoryEntry>> result = buildSetExpectedDeliveryAction(old, newDifferent);
         assertThat(result).isNotNull();
         assertThat(result).hasSize(1);
@@ -107,7 +107,7 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetExpectedDeliveryActionReturnsActionForNewNullValue() {
+    public void buildSetExpectedDeliveryAction_returnsAction_havingNewNullValue() {
         final List<UpdateAction<InventoryEntry>> result = buildSetExpectedDeliveryAction(old, newWithNullValues);
         assertThat(result).isNotNull();
         assertThat(result).hasSize(1);
@@ -116,12 +116,12 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetExpectedDeliveryActionReturnsEmptyListForSameValues() {
+    public void buildSetExpectedDeliveryAction_returnsEmptyList_havingSameValues() {
         assertNoUpdatesForSameValues(InventoryUpdateActionUtils::buildSetExpectedDeliveryAction);
     }
 
     @Test
-    public void buildSetSupplyChannelActionReturnsActionForDifferentValues() {
+    public void buildSetSupplyChannelAction_returnsAction_havingDifferentValues() {
         final List<UpdateAction<InventoryEntry>> result = buildSetSupplyChannelAction(old, newDifferent);
         assertThat(result).isNotNull();
         assertThat(result).hasSize(1);
@@ -131,7 +131,7 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetSupplyChannelActionReturnsActionForNewNullValue() {
+    public void buildSetSupplyChannelAction_returnsAction_havingNewNullValue() {
         final List<UpdateAction<InventoryEntry>> result = buildSetSupplyChannelAction(old, newWithNullValues);
         assertThat(result).isNotNull();
         assertThat(result).hasSize(1);
@@ -140,7 +140,7 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetSupplyChannelActionReturnsEmptyListForSameValues() {
+    public void buildSetSupplyChannelAction_returnsEmptyList_havingSameValues() {
         assertNoUpdatesForSameValues(InventoryUpdateActionUtils::buildSetSupplyChannelAction);
     }
 

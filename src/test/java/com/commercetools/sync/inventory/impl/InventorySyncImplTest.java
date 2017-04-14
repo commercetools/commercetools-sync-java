@@ -1,5 +1,6 @@
 package com.commercetools.sync.inventory.impl;
 
+import com.commercetools.sync.inventory.InventoryEntryMock;
 import com.commercetools.sync.inventory.InventorySync;
 import com.commercetools.sync.inventory.InventorySyncOptions;
 import com.commercetools.sync.services.TypeService;
@@ -14,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static org.mockito.Matchers.any;
@@ -55,17 +58,15 @@ public class InventorySyncImplTest {
         Channel channel3 = mockChannel(REF_3, KEY_3);
 
         Reference<Channel> reference1 = Channel.referenceOfId(REF_1).filled(channel1);
-        Reference<Channel> reference2 = Channel.referenceOfId(REF_2).filled(channel2);
-        Reference<Channel> reference3 = Channel.referenceOfId(REF_3).filled(channel3);
 
         channelsDB = asList(channel1, channel2, channel3);
         inventoriesDB = asList(
-                mockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, null),
-                mockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, reference1),
-                mockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, reference2),
-                mockInventoryEntry(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1, null),
-                mockInventoryEntry(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1, reference1),
-                mockInventoryEntry(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1, reference2)
+                InventoryEntryMock.of(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1).build(),
+                InventoryEntryMock.of(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1).withChannelRefExpanded(REF_1, KEY_1).build(),
+                InventoryEntryMock.of(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1).withChannelRefExpanded(REF_2, KEY_2).build(),
+                InventoryEntryMock.of(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1).build(),
+                InventoryEntryMock.of(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1).withChannelRefExpanded(REF_1, KEY_1).build(),
+                InventoryEntryMock.of(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1).withChannelRefExpanded(REF_2, KEY_2).build()
         );
 
         drafts = asList(
@@ -83,10 +84,20 @@ public class InventorySyncImplTest {
 
 
     @Test
-    public void syncInventoryDraftsEndsWithoutExceptions() {
+    public void syncInventoryDrafts_returnsWithoutExceptions() {
         getInventorySyncer().syncInventoryDrafts(drafts);
     }
 
+    @Test
+    public void syncInventoryDrafts_returnsWithoutExceptions_havingParallelOption() {
+        final InventorySyncOptions options = mock(InventorySyncOptions.class);
+        when(options.getParallelProcessing()).thenReturn(4);
+        final List<InventoryEntryDraft> moreDrafts = Stream.generate(() -> drafts)
+                .limit(20)
+                .flatMap(list -> list.stream())
+                .collect(Collectors.toList());
+        (new InventorySyncImpl(options, mockInventoryService(), mockTypeService())).syncInventoryDrafts(moreDrafts);
+    }
 
     private InventorySync getInventorySyncer() {
         return new InventorySyncImpl(mock(InventorySyncOptions.class), mockInventoryService(), mockTypeService());
@@ -104,17 +115,6 @@ public class InventorySyncImplTest {
     private TypeService mockTypeService() {
         final TypeService typeService = mock(TypeService.class);
         return typeService;
-    }
-
-    private InventoryEntry mockInventoryEntry(String sku, Long quantity, Integer restockable, ZonedDateTime delivery,
-                                              Reference<Channel> supplyChannel) {
-        InventoryEntry entry = mock(InventoryEntry.class);
-        when(entry.getSku()).thenReturn(sku);
-        when(entry.getQuantityOnStock()).thenReturn(quantity);
-        when(entry.getRestockableInDays()).thenReturn(restockable);
-        when(entry.getExpectedDelivery()).thenReturn(delivery);
-        when(entry.getSupplyChannel()).thenReturn(supplyChannel);
-        return entry;
     }
 
     private Channel mockChannel(String id, String key) {
