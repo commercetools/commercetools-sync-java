@@ -7,6 +7,8 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.CustomFieldsDraft;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -20,13 +22,15 @@ public class MockUtils {
 
     public static CategorySyncOptions getMockCategorySyncOptions() {
         return new CategorySyncOptions("xxxxx",
-                "xxxxxxx", "xxxxxxxx");
+                "xxxxxxx", "xxxxxxxx",
+                LOGGER::error,
+                LOGGER::warn);
     }
 
     public static List<CategoryDraft> getMockCategoryDrafts() {
         List<CategoryDraft> categoryDrafts = new ArrayList<>();
-        CategoryDraft categoryDraft1 = getMockCategoryDraft(Locale.GERMAN,"draft1", "slug1", "SH663881");
-        CategoryDraft categoryDraft2 = getMockCategoryDraft(Locale.GERMAN,"draft2", "slug2", "SH604972");
+        CategoryDraft categoryDraft1 = getMockCategoryDraft(Locale.GERMAN, "draft1", "slug1", "SH663881");
+        CategoryDraft categoryDraft2 = getMockCategoryDraft(Locale.GERMAN, "draft2", "slug2", "SH604972");
         categoryDrafts.add(categoryDraft1);
         categoryDrafts.add(categoryDraft2);
         return categoryDrafts;
@@ -44,10 +48,10 @@ public class MockUtils {
         return mockCategoryDraft;
     }
 
-    public static CustomFieldsDraft getMockCustomFieldsDraft(){
+    public static CustomFieldsDraft getMockCustomFieldsDraft() {
         Map<String, JsonNode> customFieldsJsons = new HashMap<>();
         customFieldsJsons.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
-        customFieldsJsons.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de","rot").put("en", "red"));
+        customFieldsJsons.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
         return CustomFieldsDraft.ofTypeKeyAndJson("StepCategoryTypeKey", customFieldsJsons);
     }
 }
