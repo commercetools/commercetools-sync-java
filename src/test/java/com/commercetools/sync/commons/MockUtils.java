@@ -20,6 +20,8 @@ public class MockUtils {
     private static BlockingSphereClient ctpClient;
     private static final long timeout = 30;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MockUtils.class);
+
     public static CategorySyncOptions getMockCategorySyncOptions() {
         return new CategorySyncOptions("xxxxx",
                 "xxxxxxx", "xxxxxxxx",
