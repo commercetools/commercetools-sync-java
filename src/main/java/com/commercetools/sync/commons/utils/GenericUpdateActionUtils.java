@@ -50,14 +50,22 @@ class GenericUpdateActionUtils {
      * Creates a CTP "setCustomType" update action on the given resource {@link T} that removes the custom type set on
      * the given resource {@link T} (which currently could either be a {@link Category} or a {@link Channel}).
      *
-     * @param resource the resource to do the update action on.
-     * @param <T>      the type of the resource to do the update action on.
+     * @param resource    the resource to do the update action on.
+     * @param <T>         the type of the resource to do the update action on.
+     * @param syncOptions responsible for supplying the sync options to the sync utility method.
      * @return a setCustomType update action that removes the custom type from the resource it's requested on.
      */
     @Nonnull
-    static <T extends Custom> Optional<UpdateAction<T>> buildTypedRemoveCustomTypeUpdateAction(
-            @Nonnull final T resource) {
-        return buildTypedUpdateAction(resource, SET_CUSTOM_TYPE_REMOVE);
+    static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedRemoveCustomTypeUpdateAction(
+            @Nonnull final T resource, @Nonnull final BaseOptions syncOptions) {
+        try {
+            return buildTypedUpdateAction(resource, SET_CUSTOM_TYPE_REMOVE);
+        } catch (BuildUpdateActionException e) {
+            syncOptions.callUpdateActionErrorCallBack(format("Failed to build 'setCustomType' update action to" +
+                            " remove the custom type on the %s with id '%s'. Reason: %s",
+                    resource.toReference().getTypeId(), resource.getId(), e.getMessage()), e);
+            return Optional.empty();
+        }
     }
 
     /**
@@ -69,15 +77,24 @@ class GenericUpdateActionUtils {
      * @param customFieldValue the new JSON value of the custom field.
      * @param resource         the resource to do the update action on.
      * @param <T>              the type of the resource to do the update action on.
+     * @param syncOptions      responsible for supplying the sync options to the sync utility method.
      * @return a setCustomField update action on the provided field name, with the provided value
      * on the resource it's requested on.
      */
     @Nonnull
-    static <T extends Custom> Optional<UpdateAction<T>> buildTypedSetCustomFieldUpdateAction(
+    static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedSetCustomFieldUpdateAction(
             @Nonnull final String customFieldName,
             @Nullable final JsonNode customFieldValue,
-            @Nonnull final T resource) {
-        return buildTypedUpdateAction(customFieldName, customFieldValue, resource, SET_CUSTOM_FIELD);
+            @Nonnull final T resource,
+            @Nonnull final BaseOptions syncOptions) {
+        try {
+            return buildTypedUpdateAction(customFieldName, customFieldValue, resource, SET_CUSTOM_FIELD);
+        } catch (BuildUpdateActionException e) {
+            syncOptions.callUpdateActionErrorCallBack(format("Failed to build 'setCustomField' update action on " +
+                            "the custom field with the name '%s' on the %s with id '%s'. Reason: %s", customFieldName,
+                    resource.toReference().getTypeId(), resource.getId(), e.getMessage()), e);
+            return Optional.empty();
+        }
     }
 
     @Nonnull

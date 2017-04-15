@@ -99,7 +99,8 @@ public class GenericUpdateActionUtilsTest {
     @Test
     public void buildTypedRemoveCustomTypeUpdateAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
         final Category category = mock(Category.class);
-        final UpdateAction<Category> updateAction = buildTypedRemoveCustomTypeUpdateAction(category).orElse(null);
+        final UpdateAction<Category> updateAction = buildTypedRemoveCustomTypeUpdateAction(category,
+                mock(CategorySyncOptions.class)).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomType");
@@ -110,7 +111,8 @@ public class GenericUpdateActionUtilsTest {
     @Test
     public void buildTypedRemoveCustomTypeUpdateAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
         final Channel channel = mock(Channel.class);
-        final UpdateAction<Channel> updateAction = buildTypedRemoveCustomTypeUpdateAction(channel).orElse(null);
+        final UpdateAction<Channel> updateAction = buildTypedRemoveCustomTypeUpdateAction(channel,
+                mock(CategorySyncOptions.class)).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomType");
@@ -122,9 +124,44 @@ public class GenericUpdateActionUtilsTest {
     public void buildTypedRemoveCustomTypeUpdateAction_WithNonHandledResource_ShouldNotBuildUpdateAction() {
         // Cart resource is not handled by buildTypedUpdateAction()
         final Cart cart = mock(Cart.class);
-        final UpdateAction<Cart> updateAction = buildTypedRemoveCustomTypeUpdateAction(cart).orElse(null);
+        when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
+
+        final UpdateAction<Cart> updateAction = buildTypedRemoveCustomTypeUpdateAction(cart,
+                mock(CategorySyncOptions.class)).orElse(null);
 
         assertThat(updateAction).isNull();
+    }
+
+    @Test
+    public void buildTypedRemoveCustomTypeUpdateAction_WithNonHandledResource_ShouldCallSyncOptionsCallBack() {
+        // Cart resource is not handled by buildTypedUpdateAction()
+        final Cart cart = mock(Cart.class);
+        when(cart.getId()).thenReturn("cartId");
+        when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
+
+        final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
+
+        // Mock custom options error callback
+        final ArrayList<Object> callBackResponses = new ArrayList<>();
+        final BiConsumer<String, Throwable> updateActionErrorCallBack = (errorMessage, exception) -> {
+            callBackResponses.add(errorMessage);
+            callBackResponses.add(exception);
+        };
+
+        // Mock sync options
+        final CategorySyncOptions syncOptions = mock(CategorySyncOptions.class);
+        when(syncOptions.getUpdateActionErrorCallBack()).thenReturn(updateActionErrorCallBack);
+        doCallRealMethod().when(syncOptions).callUpdateActionErrorCallBack(anyString(), any(Throwable.class));
+
+        final UpdateAction<Cart> updateAction = buildTypedRemoveCustomTypeUpdateAction(cart,
+                syncOptions).orElse(null);
+
+        assertThat(updateAction).isNull();
+        assertThat(callBackResponses).hasSize(2);
+        assertThat(callBackResponses.get(0)).isEqualTo("Failed to build 'setCustomType' update action to remove the" +
+                " custom type on the cart with id 'cartId'. Reason: Update actions for " +
+                "resource: 'cart' is not implemented.");
+        assertThat((Exception)callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
     }
 
     @Test
@@ -133,7 +170,7 @@ public class GenericUpdateActionUtilsTest {
         final JsonNode customFieldValue = mock(JsonNode.class);
         final String customFieldName = "name";
         final UpdateAction<Category> updateAction = buildTypedSetCustomFieldUpdateAction(customFieldName,
-                customFieldValue, category).orElse(null);
+                customFieldValue, category, mock(CategorySyncOptions.class)).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomField");
@@ -147,7 +184,7 @@ public class GenericUpdateActionUtilsTest {
         final JsonNode customFieldValue = mock(JsonNode.class);
         final String customFieldName = "name";
         final UpdateAction<Channel> updateAction = buildTypedSetCustomFieldUpdateAction(customFieldName,
-                customFieldValue, channel).orElse(null);
+                customFieldValue, channel, mock(CategorySyncOptions.class)).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomField");
@@ -159,16 +196,50 @@ public class GenericUpdateActionUtilsTest {
     public void buildTypedSetCustomFieldUpdateAction_WithNonHandledResource_ShouldNotBuildUpdateAction() {
         // Cart resource is not handled by buildTypedUpdateAction()
         final Cart cart = mock(Cart.class);
+        when(cart.getId()).thenReturn("cartId");
+        when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
+
         final JsonNode customFieldValue = mock(JsonNode.class);
         final String customFieldName = "name";
+
         final UpdateAction<Cart> updateAction =
-                buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart).orElse(null);
+                buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart,
+                        mock(BaseOptions.class)).orElse(null);
 
         assertThat(updateAction).isNull();
     }
 
     @Test
-    public void buildTypedUpdateAction_WithNonHandledCategoryUpdateAction_ShouldNotBuildUpdateAction() {
+    public void buildTypedSetCustomFieldUpdateAction_WithNonHandledResource_ShouldCallSyncOptionsCallBack() {
+        // Cart resource is not handled by buildTypedUpdateAction()
+        final Cart cart = mock(Cart.class);
+        when(cart.getId()).thenReturn("cartId");
+        when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
+
+        final JsonNode customFieldValue = mock(JsonNode.class);
+        final String customFieldName = "name";
+        final ArrayList<Object> callBackResponses = new ArrayList<>();
+        final BiConsumer<String, Throwable> updateActionErrorCallBack = (errorMessage, exception) -> {
+            callBackResponses.add(errorMessage);
+            callBackResponses.add(exception);
+        };
+
+        final BaseOptions baseOptions = mock(BaseOptions.class);
+        when(baseOptions.getUpdateActionErrorCallBack()).thenReturn(updateActionErrorCallBack);
+        doCallRealMethod().when(baseOptions).callUpdateActionErrorCallBack(anyString(), any(Throwable.class));
+
+        final UpdateAction<Cart> updateAction =
+                buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart,
+                        baseOptions).orElse(null);
+
+        assertThat(updateAction).isNull();
+        assertThat(callBackResponses).hasSize(2);
+        assertThat(callBackResponses.get(0)).isEqualTo("Failed to build 'setCustomField' update action on the custom " +
+                "field with the name 'name' on the cart with id 'cartId'. Reason: Update actions for resource:" +
+                " 'cart' is not implemented.");
+        assertThat((Exception)callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
+    }
+
         final Category category = mock(Category.class);
         final String nonHandledUpdateActionName = "someUpdateActionName";
         final UpdateAction<Category> updateAction = buildTypedUpdateAction(category, nonHandledUpdateActionName)
