@@ -89,14 +89,15 @@ public class CustomUpdateActionUtils {
                     final String newCustomFieldsTypeKey = newResourceCustomFields.getType().getKey();
                     final Map<String, JsonNode> newCustomFieldsJsonMap = newResourceCustomFields.getFields();
                     final UpdateAction<T> updateAction = buildTypedSetCustomTypeUpdateAction(
-                            newCustomFieldsTypeKey, newCustomFieldsJsonMap, oldResource).orElse(null);
-                    return updateAction != null ? Arrays.asList(updateAction) : new ArrayList<>();
+                            newCustomFieldsTypeKey, newCustomFieldsJsonMap, oldResource, syncOptions).orElse(null);
+                    return updateAction != null ? Collections.singletonList(updateAction) : new ArrayList<>();
                 }
             } else {
                 // New resource's custom fields are not set, but old resource's custom fields are set. So we
                 // should remove the custom type from the old resource.
-                final UpdateAction<T> updateAction = buildTypedRemoveCustomTypeUpdateAction(oldResource).orElse(null);
-                return updateAction != null ? Arrays.asList(updateAction) : new ArrayList<>();
+                final UpdateAction<T> updateAction = buildTypedRemoveCustomTypeUpdateAction(oldResource, syncOptions)
+                        .orElse(null);
+                return updateAction != null ? Collections.singletonList(updateAction) : new ArrayList<>();
             }
         }
         return new ArrayList<>();
@@ -150,8 +151,8 @@ public class CustomUpdateActionUtils {
             if (newCustomFieldsJsonMap == null) {
                 // New resource's custom fields are null/not set. So we should unset old custom fields.
                 final UpdateAction<T> updateAction = buildTypedSetCustomTypeUpdateAction(
-                        newCustomFieldsTypeKey, null, resource).orElse(null);
-                return updateAction != null ? Arrays.asList(updateAction) : new ArrayList<>();
+                        newCustomFieldsTypeKey, null, resource, syncOptions).orElse(null);
+                return updateAction != null ? Collections.singletonList(updateAction) : new ArrayList<>();
             }
             // old and new resource's custom fields are set. So we should calculate update actions for the
             // the fields of both.
@@ -161,7 +162,7 @@ public class CustomUpdateActionUtils {
                     buildTypedSetCustomTypeUpdateAction(
                             newCustomFieldsTypeKey, newCustomFieldsJsonMap, resource, syncOptions)
                             .orElse(null);
-            return updateAction != null ? Arrays.asList(updateAction) : new ArrayList<>();
+            return updateAction != null ? Collections.singletonList(updateAction) : new ArrayList<>();
         }
     }
 
