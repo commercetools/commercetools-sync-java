@@ -1,10 +1,13 @@
 package com.commercetools.sync.commons.utils;
 
 
+import com.commercetools.sync.commons.BaseOptions;
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.types.Custom;
 
 import javax.annotation.Nonnull;
@@ -13,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.constants.UpdateActions.*;
+import static java.lang.String.format;
 
 class GenericUpdateActionUtils {
 
@@ -24,14 +28,22 @@ class GenericUpdateActionUtils {
      * @param customFieldsJsonMap the custom fields map of JSON values.
      * @param resource            the resource to do the update action on.
      * @param <T>                 the type of the resource to do the update action on.
+     * @param syncOptions         responsible for supplying the sync options to the sync utility method.
      * @return a setCustomType update action of the type of the resource it's requested on.
      */
     @Nonnull
-    static <T extends Custom> Optional<UpdateAction<T>> buildTypedSetCustomTypeUpdateAction(
+    static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedSetCustomTypeUpdateAction(
             @Nullable final String customTypeKey,
             @Nullable final Map<String, JsonNode> customFieldsJsonMap,
-            @Nonnull final T resource) {
-        return buildTypedUpdateAction(customTypeKey, customFieldsJsonMap, resource, SET_CUSTOM_TYPE);
+            @Nonnull final T resource,
+            @Nonnull final BaseOptions syncOptions) {
+        try {
+            return buildTypedUpdateAction(customTypeKey, customFieldsJsonMap, resource, SET_CUSTOM_TYPE);
+        } catch (BuildUpdateActionException e) {
+            syncOptions.callUpdateActionErrorCallBack(format("Failed to build 'setCustomType' update action on " +
+                    "the %s with id '%s'. Reason: %s", resource.toReference().getTypeId(), resource.getId(), e.getMessage()), e);
+            return Optional.empty();
+        }
     }
 
     /**

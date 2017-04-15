@@ -1,18 +1,28 @@
 package com.commercetools.sync.commons.utils;
 
+import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.commons.BaseOptions;
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.Reference;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class GenericUpdateActionUtilsTest {
 
@@ -21,7 +31,7 @@ public class GenericUpdateActionUtilsTest {
         final Category category = mock(Category.class);
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
         final UpdateAction<Category> updateAction = buildTypedSetCustomTypeUpdateAction("key",
-                fieldsJsonMap, category).orElse(null);
+                fieldsJsonMap, category, mock(CategorySyncOptions.class)).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomType");
@@ -34,7 +44,7 @@ public class GenericUpdateActionUtilsTest {
         final Channel channel = mock(Channel.class);
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
         final UpdateAction<Channel> updateAction = buildTypedSetCustomTypeUpdateAction("key",
-                fieldsJsonMap, channel).orElse(null);
+                fieldsJsonMap, channel, mock(CategorySyncOptions.class)).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomType");
@@ -46,11 +56,44 @@ public class GenericUpdateActionUtilsTest {
     public void buildTypedSetCustomTypeUpdateAction_WithNonHandledResource_ShouldNotBuildUpdateAction() {
         // Cart resource is not handled by buildTypedUpdateAction()
         final Cart cart = mock(Cart.class);
+        when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
+
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
         final UpdateAction<Cart> updateAction = buildTypedSetCustomTypeUpdateAction("key", fieldsJsonMap,
-                cart).orElse(null);
+                cart, mock(CategorySyncOptions.class)).orElse(null);
 
         assertThat(updateAction).isNull();
+    }
+
+    @Test
+    public void buildTypedSetCustomTypeUpdateAction_WithNonHandledResource_ShouldCallSyncOptionsCallBack() {
+        // Cart resource is not handled by buildTypedUpdateAction()
+        final Cart cart = mock(Cart.class);
+        when(cart.getId()).thenReturn("cartId");
+        when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
+
+        final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
+
+        // Mock custom options error callback
+        final ArrayList<Object> callBackResponses = new ArrayList<>();
+        final BiConsumer<String, Throwable> updateActionErrorCallBack = (errorMessage, exception) -> {
+            callBackResponses.add(errorMessage);
+            callBackResponses.add(exception);
+        };
+
+        // Mock sync options
+        final CategorySyncOptions syncOptions = mock(CategorySyncOptions.class);
+        when(syncOptions.getUpdateActionErrorCallBack()).thenReturn(updateActionErrorCallBack);
+        doCallRealMethod().when(syncOptions).callUpdateActionErrorCallBack(anyString(), any(Throwable.class));
+
+        final UpdateAction<Cart> updateAction = buildTypedSetCustomTypeUpdateAction("key", fieldsJsonMap,
+                cart, syncOptions).orElse(null);
+
+        assertThat(updateAction).isNull();
+        assertThat(callBackResponses).hasSize(2);
+        assertThat(callBackResponses.get(0)).isEqualTo("Failed to build 'setCustomType' update action on the cart with " +
+                "id 'cartId'. Reason: Update actions for resource: 'cart' is not implemented.");
+        assertThat((Exception)callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
     }
 
     @Test
