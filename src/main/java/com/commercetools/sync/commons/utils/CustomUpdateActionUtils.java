@@ -1,6 +1,5 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.commons.BaseOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.services.TypeService;
@@ -105,15 +104,16 @@ public class CustomUpdateActionUtils {
 
     /**
      * Compares a non null {@link CustomFields} to a non null {@link CustomFieldsDraft} and returns a
-     * {@link List<UpdateAction>} as a result. The keys are used to compare the custom types.
-     * The key of the old resource custom type is fetched from the caching mechanism of the injected
-     * {@link TypeService}. The key of the new resource custom type is expected to be set on the type.
+     * {@link List<UpdateAction>} as a result. The keys are used to compare the custom types. The key of the old
+     * resource custom type is fetched from the caching mechanism of the {@link TypeService} instance in the injected
+     * {@link BaseOptions} instance. The key of the new resource custom type is expected to be set on the type.
      * If no update action is needed an empty {@link List<UpdateAction>} is returned.
      * <p>
      * An update action will be added to the result list in the following cases:-
      * <ol>
      * <li>If both the resources custom type keys are the same and the custom fields are both set. The custom
-     * field values of both resources are then calculated. (see {@link CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom)})</li>
+     * field values of both resources are then calculated. (see
+     * {@link CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom, BaseOptions)})</li>
      * <li>If the keys of both custom types are different, then a "setCustomType" update action is added, where the
      * old resource's custom type is set to be as the new one's.</li>
      * <li>If both resources custom type keys are identical but the custom fields
@@ -127,30 +127,25 @@ public class CustomUpdateActionUtils {
      *
      * @param oldCustomFields the old resource's custom fields.
      * @param newCustomFields the new resource draft's custom fields.
-     * @param typeService     the type service that is used to fetch the cached key of the resource custom type.
+     * @param syncOptions responsible for supplying the sync options to the sync utility method.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    static <T extends Custom> List<UpdateAction<T>> buildNonNullCustomFieldsUpdateActions(
+    static <T extends Custom & Resource<T>> List<UpdateAction<T>>
+    buildNonNullCustomFieldsUpdateActions(
             @Nonnull final CustomFields oldCustomFields,
             @Nonnull final CustomFieldsDraft newCustomFields,
-            @Nonnull final TypeService typeService,
-            @Nonnull final T resource) {
-        final String oldCustomFieldsTypeKey = typeService.getCachedTypeKeyById(oldCustomFields.getType().getId());
+            @Nonnull final T resource,
+            @Nonnull final BaseOptions syncOptions) throws BuildUpdateActionException {
+        final String oldCustomFieldsTypeKey = syncOptions.getTypeService().getCachedTypeKeyById(oldCustomFields.getType().getId());
         final Map<String, JsonNode> oldCustomFieldsJsonMap = oldCustomFields.getFieldsJsonMap();
         final String newCustomFieldsTypeKey = newCustomFields.getType().getKey();
         final Map<String, JsonNode> newCustomFieldsJsonMap = newCustomFields.getFields();
 
         if (Objects.equals(oldCustomFieldsTypeKey, newCustomFieldsTypeKey)) {
             if (oldCustomFieldsTypeKey == null && newCustomFieldsTypeKey == null) {
-                // TODO: LOG THIS AS AN ERROR: "CUSTOM TYPE FOR BOTH OLD AND NEW RESOURCE IS NOT SET"
-                // TODO: wrap all processing results in a ProcessResult wrapper class.
-                // TODO: TYPEID
-                final String typeId = newCustomFields.getType().getTypeId();
-                // TODO: LOG HERE!
-                // "Custom type keys are not set for both " +
-                // "old and new versions of %s. Custom fields and types were not updated."
-                return new ArrayList<>();
+                throw new BuildUpdateActionException(format("Custom type keys are not set for both the old and new %s.",
+                        resource.toReference().getTypeId()));
             }
             if (newCustomFieldsJsonMap == null) {
                 // New resource's custom fields are null/not set. So we should unset old custom fields.
@@ -160,11 +155,11 @@ public class CustomUpdateActionUtils {
             }
             // old and new resource's custom fields are set. So we should calculate update actions for the
             // the fields of both.
-            return buildSetCustomFieldsUpdateActions(oldCustomFieldsJsonMap, newCustomFieldsJsonMap, resource);
+            return buildSetCustomFieldsUpdateActions(oldCustomFieldsJsonMap, newCustomFieldsJsonMap, resource, syncOptions);
         } else {
             final UpdateAction<T> updateAction =
                     buildTypedSetCustomTypeUpdateAction(
-                            newCustomFieldsTypeKey, newCustomFieldsJsonMap, resource)
+                            newCustomFieldsTypeKey, newCustomFieldsJsonMap, resource, syncOptions)
                             .orElse(null);
             return updateAction != null ? Arrays.asList(updateAction) : new ArrayList<>();
         }
