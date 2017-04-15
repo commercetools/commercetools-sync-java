@@ -98,29 +98,30 @@ class GenericUpdateActionUtils {
     }
 
     @Nonnull
-    private static <T extends Custom> Optional<UpdateAction<T>> buildTypedUpdateAction(
+    private static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedUpdateAction(
             @Nullable final String customTypeKey,
             @Nullable final Map<String, JsonNode> customFieldsJsonMap,
             @Nonnull final T resource,
-            @Nonnull final String updateActionName) {
+            @Nonnull final String updateActionName) throws BuildUpdateActionException {
         return buildTypedUpdateAction(customTypeKey, customFieldsJsonMap, null, null,
                 resource, updateActionName);
     }
 
+    // This method is not private since it is used by one of the unit tests.
     @Nonnull
-    static <T extends Custom> Optional<UpdateAction<T>> buildTypedUpdateAction(
+    static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedUpdateAction(
             @Nonnull final T resource,
-            @Nonnull final String updateActionName) {
+            @Nonnull final String updateActionName) throws BuildUpdateActionException {
         return buildTypedUpdateAction(null, null, null, null,
                 resource, updateActionName);
     }
 
     @Nonnull
-    private static <T extends Custom> Optional<UpdateAction<T>> buildTypedUpdateAction(
+    private static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedUpdateAction(
             @Nullable final String customFieldName,
             @Nullable final JsonNode customFieldValue,
             @Nonnull final T resource,
-            @Nonnull final String updateActionName) {
+            @Nonnull final String updateActionName) throws BuildUpdateActionException {
         return buildTypedUpdateAction(null, null, customFieldName, customFieldValue,
                 resource, updateActionName);
 
@@ -147,13 +148,13 @@ class GenericUpdateActionUtils {
      */
     @Nonnull
     @SuppressWarnings("unchecked")
-    private static <T extends Custom> Optional<UpdateAction<T>> buildTypedUpdateAction(
+    private static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedUpdateAction(
             @Nullable final String customTypeKey,
             @Nullable final Map<String, JsonNode> customFieldsJsonMap,
             @Nullable final String customFieldName,
             @Nullable final JsonNode customFieldValue,
             @Nonnull final T resource,
-            @Nonnull final String updateActionName) {
+            @Nonnull final String updateActionName) throws BuildUpdateActionException {
         if (resource instanceof Category) {
             switch (updateActionName) {
                 case SET_CUSTOM_TYPE_REMOVE:
@@ -167,8 +168,8 @@ class GenericUpdateActionUtils {
                     return Optional.of((UpdateAction<T>) io.sphere.sdk.categories.commands.updateactions
                             .SetCustomField.ofJson(customFieldName, customFieldValue));
                 default:
-                    // TODO: Keep record of errors.
-                    return Optional.empty();
+                    throw new BuildUpdateActionException(format("Update action '%s' for Categories is not implemented.",
+                            updateActionName));
             }
         }
         if (resource instanceof Channel) {
@@ -183,11 +184,11 @@ class GenericUpdateActionUtils {
                     return Optional.of((UpdateAction<T>) io.sphere.sdk.channels.commands.updateactions
                             .SetCustomField.ofJson(customFieldName, customFieldValue));
                 default:
-                    // TODO: Keep record of errors.
-                    return Optional.empty();
+                    throw new BuildUpdateActionException(format("Update action '%s' for Channels is not implemented.",
+                            updateActionName));
             }
         }
-        // TODO: Keep record of errors.
-        return Optional.empty();
+        throw new BuildUpdateActionException(format("Update actions for resource: '%s' is not implemented.",
+                resource.toReference().getTypeId()));
     }
 }
