@@ -389,7 +389,8 @@ public class CustomUpdateActionUtilsTest {
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class));
+                buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
+                        mock(CategorySyncOptions.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isNotEmpty();
@@ -410,7 +411,8 @@ public class CustomUpdateActionUtilsTest {
         newCustomFields.put("size", JsonNodeFactory.instance.objectNode().put("cm", 34));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class));
+                buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class)
+                        , mock(CategorySyncOptions.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isNotEmpty();
@@ -427,7 +429,8 @@ public class CustomUpdateActionUtilsTest {
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class));
+                buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class)
+                        , mock(CategorySyncOptions.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isNotEmpty();
@@ -445,7 +448,8 @@ public class CustomUpdateActionUtilsTest {
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class));
+                buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class)
+                        , mock(CategorySyncOptions.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -460,7 +464,8 @@ public class CustomUpdateActionUtilsTest {
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo").put("de", "rot"));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class));
+                buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class)
+                        , mock(CategorySyncOptions.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -475,7 +480,8 @@ public class CustomUpdateActionUtilsTest {
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode());
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class));
+                buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class)
+                        , mock(CategorySyncOptions.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -488,7 +494,8 @@ public class CustomUpdateActionUtilsTest {
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-                buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class));
+                buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class)
+                        , mock(CategorySyncOptions.class));
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -503,7 +510,8 @@ public class CustomUpdateActionUtilsTest {
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> customFieldsActions =
-                buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class));
+                buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class)
+                        , mock(CategorySyncOptions.class));
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isNotEmpty();
@@ -519,8 +527,12 @@ public class CustomUpdateActionUtilsTest {
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         // Cart resource is not handled in GenericUpdateActionUtils#buildTypedUpdateAction
+        final Cart cart = mock(Cart.class);
+        when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
+
         final List<UpdateAction<Cart>> customFieldsActions =
-                buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Cart.class));
+                buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, cart
+                        , mock(CategorySyncOptions.class));
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isEmpty();
@@ -536,7 +548,8 @@ public class CustomUpdateActionUtilsTest {
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> customFieldsActions =
-                buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class));
+                buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class)
+                        , mock(CategorySyncOptions.class));
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isEmpty();
@@ -552,7 +565,8 @@ public class CustomUpdateActionUtilsTest {
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> customFieldsActions =
-                buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class));
+                buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class)
+                        , mock(CategorySyncOptions.class));
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isNotEmpty();
@@ -569,7 +583,8 @@ public class CustomUpdateActionUtilsTest {
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
 
         final List<UpdateAction<Category>> customFieldsActions =
-                buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class));
+                buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class)
+                        , mock(CategorySyncOptions.class));
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isEmpty();

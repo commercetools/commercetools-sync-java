@@ -128,7 +128,9 @@ public class CustomUpdateActionUtils {
      *
      * @param oldCustomFields the old resource's custom fields.
      * @param newCustomFields the new resource draft's custom fields.
-     * @param syncOptions responsible for supplying the sync options to the sync utility method.
+     * @param resource        the resource that the custom fields are on. It is used to identify the type of the resource, to
+     *                        call the corresponding update actions.
+     * @param syncOptions     responsible for supplying the sync options to the sync utility method.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
@@ -186,17 +188,21 @@ public class CustomUpdateActionUtils {
      *
      * @param oldCustomFields the old resource's custom fields map of JSON values.
      * @param newCustomFields the new resource's custom fields map of JSON values.
+     * @param resource        the resource that the custom fields are on. It is used to identify the type of the resource, to
+     *                        call the corresponding update actions.
+     * @param syncOptions     responsible for supplying the sync options to the sync utility method.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    static <T extends Custom> List<UpdateAction<T>> buildSetCustomFieldsUpdateActions(
+    static <T extends Custom & Resource<T>> List<UpdateAction<T>> buildSetCustomFieldsUpdateActions(
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
-            @Nonnull final T resource) {
+            @Nonnull final T resource,
+            @Nonnull final BaseOptions syncOptions) {
         final List<UpdateAction<T>> newOrModifiedCustomFieldsActions =
-                buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource);
+                buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource, syncOptions);
         final List<UpdateAction<T>> removedCustomFieldsActions =
-                buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource);
+                buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource, syncOptions);
         return Stream.concat(newOrModifiedCustomFieldsActions.stream(),
                 removedCustomFieldsActions.stream())
                 .collect(Collectors.toList());
@@ -210,18 +216,22 @@ public class CustomUpdateActionUtils {
      *
      * @param oldCustomFields the old resource's custom fields map of JSON values.
      * @param newCustomFields the new resource's custom fields map of JSON values.
+     * @param resource        the resource that the custom fields are on. It is used to identify the type of the resource, to
+     *                        call the corresponding update actions.
+     * @param syncOptions     responsible for supplying the sync options to the sync utility method.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    static <T extends Custom> List<UpdateAction<T>> buildNewOrModifiedCustomFieldsUpdateActions(
+    static <T extends Custom & Resource<T>> List<UpdateAction<T>> buildNewOrModifiedCustomFieldsUpdateActions(
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
-            @Nonnull final T resource) {
+            @Nonnull final T resource,
+            @Nonnull final BaseOptions syncOptions) {
         return newCustomFields.keySet().stream()
                 .filter(newCustomFieldName -> !Objects.equals(
                         newCustomFields.get(newCustomFieldName), oldCustomFields.get(newCustomFieldName)))
                 .map(newCustomFieldName -> buildTypedSetCustomFieldUpdateAction(
-                        newCustomFieldName, newCustomFields.get(newCustomFieldName), resource).orElse(null))
+                        newCustomFieldName, newCustomFields.get(newCustomFieldName), resource, syncOptions).orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
@@ -234,17 +244,21 @@ public class CustomUpdateActionUtils {
      *
      * @param oldCustomFields the old resource's custom fields map of JSON values.
      * @param newCustomFields the new resources's custom fields map of JSON values.
+     * @param resource        the resource that the custom fields are on. It is used to identify the type of the resource, to
+     *                        call the corresponding update actions.
+     * @param syncOptions     responsible for supplying the sync options to the sync utility method.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
-    static <T extends Custom> List<UpdateAction<T>> buildRemovedCustomFieldsUpdateActions(
+    static <T extends Custom & Resource<T>> List<UpdateAction<T>> buildRemovedCustomFieldsUpdateActions(
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
-            @Nonnull final T resource) {
+            @Nonnull final T resource,
+            @Nonnull final BaseOptions syncOptions) {
         return oldCustomFields.keySet().stream()
                 .filter(oldCustomFieldsName -> Objects.isNull(newCustomFields.get(oldCustomFieldsName)))
                 .map(oldCustomFieldsName -> buildTypedSetCustomFieldUpdateAction(
-                        oldCustomFieldsName, null, resource).orElse(null))
+                        oldCustomFieldsName, null, resource, syncOptions).orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
