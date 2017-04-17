@@ -12,6 +12,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+// TODO: IMPLEMENTATION AFTER CATEGORY SYNC GITHUB ISSUE#5
+// TODO: JAVADOC
+// TODO: TESTING
 public class CategorySyncOptions extends BaseOptions {
     private CategoryService categoryService;
     public CategorySyncOptions(@Nonnull final String ctpProjectKey,
