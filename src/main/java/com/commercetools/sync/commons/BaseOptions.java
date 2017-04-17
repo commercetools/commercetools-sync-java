@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+// TODO: IMPLEMENTATION AFTER CATEGORY SYNC GITHUB ISSUE#5
+// TODO: JAVADOC
+// TODO: TESTING
 public class BaseOptions {
     // optional (for sync methods only) client options like CTP credentials,
     // retry count on error, CTP API host, timeout, withHeaders, stripSensitiveData
