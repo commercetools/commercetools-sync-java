@@ -1,10 +1,9 @@
 package com.commercetools.sync.categories.impl;
 
+import com.commercetools.sync.categories.CategoryStatistics;
 import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.utils.CategorySyncUtils;
-import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -18,20 +17,13 @@ import java.util.List;
 import static java.lang.String.format;
 
 public class CategorySyncImpl implements CategorySync {
-    private int updatedCategories;
-    private int createdCategories;
-    private int failedCategories;
-    private int processedCategories;
     private final Logger LOGGER = LoggerFactory.getLogger(CategorySyncImpl.class);
 
     private CategorySyncOptions options;
+    private CategoryStatistics statistics;
 
     public CategorySyncImpl(@Nonnull final CategorySyncOptions options) {
         this.options = options;
-        this.updatedCategories = 0;
-        this.createdCategories = 0;
-        this.failedCategories = 0;
-        this.processedCategories = 0;
     }
 
     @Override
@@ -41,10 +33,11 @@ public class CategorySyncImpl implements CategorySync {
     // TODO: REFACTOR
     @Override
     public void syncCategoryDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {
-        processedCategories = categoryDrafts.size();
+        statistics = new CategoryStatistics();
         LOGGER.info(format("About to sync %d category drafts into CTP project with key '%s'."
                 , categoryDrafts.size(), options.getClientConfig().getProjectKey()));
         for (int i = 0; i < categoryDrafts.size(); i++) {
+            statistics.incrementProcessed(); // Need to take care about null values.
             final CategoryDraft newCategoryDraft = categoryDrafts.get(i);
             final String externalId = newCategoryDraft != null ? newCategoryDraft.getExternalId() : null;
             if (externalId != null) { // TODO NEED TO PARALLELISE!
@@ -60,6 +53,7 @@ public class CategorySyncImpl implements CategorySync {
                 }
             }
         }
+        statistics.calculateProcessingTime();
         LOGGER.info(getSummary());
     }
 
@@ -68,12 +62,12 @@ public class CategorySyncImpl implements CategorySync {
         Category category = null;
         try {
             category = options.getCategoryService().createCategory(newCategory);
-            createdCategories++;
+            statistics.incrementCreated();
         } catch (Exception e) {
             LOGGER.error(format("Failed to create category with external id" +
                             " '%s' in CTP project with key '%s",
                     newCategory.getExternalId(), options.getClientConfig().getProjectKey()), e);
-            failedCategories++;
+            statistics.incrementFailed();
         }
         return category;
     }
@@ -83,12 +77,12 @@ public class CategorySyncImpl implements CategorySync {
         Category updatedCategory = null;
         try {
             updatedCategory = options.getCategoryService().updateCategory(category, updateActions);
-            updatedCategories++;
+            statistics.incrementUpdated();
         } catch (Exception e) {
             LOGGER.error(format("Failed to update category with id" +
                             " '%s' in CTP project with key '%s",
                     category.getId(), options.getClientConfig().getProjectKey()), e);
-            failedCategories++;
+            statistics.incrementFailed();
         }
         return updatedCategory;
     }
@@ -96,15 +90,7 @@ public class CategorySyncImpl implements CategorySync {
 
     @Override
     public String getSummary() {
-        return format("Category Sync completed successfully!\n" +
-                        "Summary: (%s) categories were processed in total." +
-                        "\n\t+ (%s) categories created." +
-                        "\n\t+ (%s) categories updated." +
-                        "\n\t+ (%s) categories failed to sync.",
-                processedCategories,
-                createdCategories,
-                updatedCategories,
-                failedCategories);
+        return statistics.getAsJSONString();
     }
 
 }
