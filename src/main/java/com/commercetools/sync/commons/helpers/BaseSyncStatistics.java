@@ -16,8 +16,8 @@ public class BaseSyncStatistics {
     private String reportMessage;
     private int updated;
     private int created;
-    private int processed;
     private int failed;
+    private int processed;
     private long startTime;
     private long processingTimeInDays;
     private long processingTimeInHours;
