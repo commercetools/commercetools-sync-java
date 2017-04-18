@@ -7,7 +7,7 @@ import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 
 import javax.annotation.Nonnull;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -15,33 +15,44 @@ import java.util.function.Consumer;
 // TODO: JAVADOC
 // TODO: TESTING
 public class BaseSyncOptions {
-    // optional (for sync methods only) client options like CTP credentials,
-    // retry count on error, CTP API host, timeout, withHeaders, stripSensitiveData
+    // CTP Client configuration
     private SphereClientConfig clientConfig;
-    private BlockingSphereClient CTPclient;
-
-    // Services
-    private TypeService typeService;
+    private long timeout = 30;
+    private TimeUnit timeoutTimeUnit = TimeUnit.SECONDS;
+    private BlockingSphereClient ctpClient;
 
     // Custom Callbacks
     private BiConsumer<String, Throwable> updateActionErrorCallBack;
     private Consumer<String> updateActionWarningCallBack;
 
-    // for just adding more localizations and not deleting existing ones.
+    // Services
+    private TypeService typeService;
+
+    // Add additional localizations without deleting existing ones.
     private boolean removeOtherLocales = true;
-    // for just accumulating entries in Sets instead of fully syncing.
+
+    // Add additional Set entries without deleting existing ones.
     private boolean removeOtherSetEntries = true;
-    // for just accumulating entries in sub-resources / collections like Assets, Images etc.
+
+    //  Add additional collection (e.g. Assets, Images etc.) entries without deleting existing ones.
     private boolean removeOtherCollectionEntries = true;
-    // for just adding object properties, custom fields or product attributes instead of deleting
+
+    // Add additional object properties (e.g. custom fields, product attributes, etc..) without deleting existing ones.
     private boolean removeOtherProperties = true;
-    // to control whether to compare to the staged data or the published ones.
-    private boolean compareStaged = true;
-    // to control whether to auto-publish or not
-    private boolean publish = false;
-    // defines which attributes
-    private List<String> whiteList;
-    private List<String> blackList;
+
+
+    public BaseSyncOptions(@Nonnull final String ctpProjectKey,
+                           @Nonnull final String ctpClientId,
+                           @Nonnull final String ctpClientSecret) {
+        this.clientConfig = SphereClientConfig.of(ctpProjectKey,
+                ctpClientId, ctpClientSecret);
+        ctpClient = CTPUtils.createClient(clientConfig, timeout, timeoutTimeUnit);
+    }
+
+    public BaseSyncOptions(@Nonnull final SphereClientConfig clientConfig) {
+        this.clientConfig = clientConfig;
+        ctpClient = CTPUtils.createClient(clientConfig, timeout, timeoutTimeUnit);
+    }
 
     public BaseSyncOptions(@Nonnull final String ctpProjectKey,
                            @Nonnull final String ctpClientId,
@@ -50,7 +61,16 @@ public class BaseSyncOptions {
                            @Nonnull final Consumer<String> updateActionWarningCallBack) {
         this.clientConfig = SphereClientConfig.of(ctpProjectKey,
                 ctpClientId, ctpClientSecret);
-        CTPclient = CTPUtils.createClient(clientConfig);
+        ctpClient = CTPUtils.createClient(clientConfig, timeout, timeoutTimeUnit);
+        this.updateActionErrorCallBack = updateActionErrorCallBack;
+        this.updateActionWarningCallBack = updateActionWarningCallBack;
+    }
+
+    public BaseSyncOptions(@Nonnull final SphereClientConfig clientConfig,
+                           @Nonnull final BiConsumer<String, Throwable> updateActionErrorCallBack,
+                           @Nonnull final Consumer<String> updateActionWarningCallBack) {
+        this.clientConfig = clientConfig;
+        ctpClient = CTPUtils.createClient(clientConfig, timeout, timeoutTimeUnit);
         this.updateActionErrorCallBack = updateActionErrorCallBack;
         this.updateActionWarningCallBack = updateActionWarningCallBack;
     }
@@ -74,8 +94,8 @@ public class BaseSyncOptions {
         }
     }
 
-    public BlockingSphereClient getCTPclient() {
-        return CTPclient;
+    public BlockingSphereClient getCtpClient() {
+        return ctpClient;
     }
 
     public SphereClientConfig getClientConfig() {
@@ -92,8 +112,24 @@ public class BaseSyncOptions {
 
     public TypeService getTypeService() {
         if (typeService == null) {
-            typeService = new TypeServiceImpl(CTPclient);
+            typeService = new TypeServiceImpl(ctpClient);
         }
         return typeService;
+    }
+
+    public boolean shouldRemoveOtherLocales() {
+        return removeOtherLocales;
+    }
+
+    public boolean shouldRemoveOtherSetEntries() {
+        return removeOtherSetEntries;
+    }
+
+    public boolean shouldRemoveOtherCollectionEntries() {
+        return removeOtherCollectionEntries;
+    }
+
+    public boolean shouldRemoveOtherProperties() {
+        return removeOtherProperties;
     }
 }

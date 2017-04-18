@@ -11,6 +11,15 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class ProductSyncOptions extends BaseSyncOptions {
+    // to control whether to compare to the staged data or the published ones.
+    private boolean compareStaged = true;
+
+    // to control whether to auto-publish or not
+    private boolean publish = false;
+
+    // defines which attributes
+    private List<String> whiteList;
+    private List<String> blackList;
     // to control whether to remove other product variants or not:
     private boolean removeOtherVariants = true;
 
