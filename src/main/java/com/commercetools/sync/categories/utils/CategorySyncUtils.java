@@ -94,9 +94,9 @@ public class CategorySyncUtils {
     public static List<UpdateAction<Category>> buildActions(@Nonnull final Category oldCategory,
                                                             @Nonnull final CategoryDraft newCategory,
                                                             @Nonnull final CategorySyncOptions syncOptions) {
-        final List<UpdateAction<Category>> updateActions = buildCoreActions(oldCategory, newCategory, syncOptions);
+        final List<UpdateAction<Category>> coreActions = buildCoreActions(oldCategory, newCategory, syncOptions);
         final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(oldCategory, newCategory, syncOptions);
-        return Stream.concat(updateActions.stream(),
+        return Stream.concat(coreActions.stream(),
                 assetUpdateActions.stream())
                 .collect(Collectors.toList());
     }
@@ -145,10 +145,10 @@ public class CategorySyncUtils {
         buildSetMetaKeywordsUpdateAction(oldCategory, newCategory)
                 .map(updateActions::add);
 
-        final List<UpdateAction<Category>> categoryTypeUpdateActions =
+        final List<UpdateAction<Category>> categoryCustomUpdateActions =
                 buildCustomUpdateActions(oldCategory, newCategory, syncOptions);
         return Stream.concat(updateActions.stream(),
-                categoryTypeUpdateActions.stream())
+                categoryCustomUpdateActions.stream())
                 .collect(Collectors.toList());
     }
 
