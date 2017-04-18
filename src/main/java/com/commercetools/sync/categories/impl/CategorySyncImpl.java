@@ -38,19 +38,26 @@ public class CategorySyncImpl implements CategorySync {
         LOGGER.info(format("About to sync %d category drafts into CTP project with key '%s'."
                 , categoryDrafts.size(), options.getClientConfig().getProjectKey()));
         for (int i = 0; i < categoryDrafts.size(); i++) {
-            statistics.incrementProcessed(); // Need to take care about null values.
-            final CategoryDraft newCategoryDraft = categoryDrafts.get(i);
-            final String externalId = newCategoryDraft != null ? newCategoryDraft.getExternalId() : null;
-            if (externalId != null) { // TODO NEED TO PARALLELISE!
-                Category oldCategory = options.getCategoryService().fetchCategoryByExternalId(externalId);
-                if (oldCategory == null) {
-                    createCategory(newCategoryDraft);
-                } else {
-                    final List<UpdateAction<Category>> updateActions =
-                            CategorySyncUtils.buildActions(oldCategory, newCategoryDraft, options);
-                    if (!updateActions.isEmpty()) {
-                        updateCategory(oldCategory, updateActions);
+            final CategoryDraft categoryDraft = categoryDrafts.get(i);
+            if (categoryDraft != null) {
+                final String externalId = categoryDraft.getExternalId();
+                if (externalId != null) {
+                    final Category oldCategory = options.getCategoryService().fetchCategoryByExternalId(externalId);
+                    statistics.incrementProcessed();
+                    if (oldCategory == null) {
+                        createCategory(categoryDraft);
+                    } else {
+                        final List<UpdateAction<Category>> updateActions =
+                                CategorySyncUtils.buildActions(oldCategory, categoryDraft, options);
+                        // Sort update actions according to GH ISSUE#13
+                        if (!updateActions.isEmpty()) {
+                            updateCategory(oldCategory, updateActions);
+                        }
                     }
+                } else {
+                    options.callUpdateActionErrorCallBack(format("CategoryDraft, with name: %s, doesn't have an externalId.",
+                            categoryDraft.getName().toString()));
+                    statistics.incrementFailed();
                 }
             }
         }

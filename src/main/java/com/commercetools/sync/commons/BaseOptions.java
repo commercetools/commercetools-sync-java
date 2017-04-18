@@ -61,6 +61,12 @@ public class BaseOptions {
         }
     }
 
+    public void callUpdateActionErrorCallBack(@Nonnull final String errorMessage) {
+        if (getUpdateActionErrorCallBack() != null) {
+            getUpdateActionErrorCallBack().accept(errorMessage, null);
+        }
+    }
+
     public void callUpdateActionWarningCallBack(@Nonnull final String warningMessage) {
         if (getUpdateActionWarningCallBack() != null) {
             getUpdateActionWarningCallBack().accept(warningMessage);
