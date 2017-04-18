@@ -12,9 +12,7 @@ import io.sphere.sdk.models.Reference;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.constants.SyncMessages.CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT;
-import static com.commercetools.sync.commons.constants.SyncMessages.CATEGORY_CHANGE_PARENT_EMPTY_PARENT;
-import static com.commercetools.sync.commons.constants.SyncMessages.CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION;
+import static com.commercetools.sync.commons.constants.SyncMessages.*;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.lang.String.format;
 
