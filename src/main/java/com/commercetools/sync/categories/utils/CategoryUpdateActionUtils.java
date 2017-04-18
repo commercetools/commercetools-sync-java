@@ -71,17 +71,17 @@ public class CategoryUpdateActionUtils {
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new description.
-     * @param options     the sync options with which a custom callback function is called in case the description is null.
+     * @param syncOptions     the sync syncOptions with which a custom callback function is called in case the description is null.
      * @return A filled optional with the update action or an empty optional if the descriptions are identical.
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildSetDescriptionUpdateAction(
             @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory,
-            @Nonnull final CategorySyncOptions options) {
+            @Nonnull final CategorySyncOptions syncOptions) {
         final LocalizedString newCategoryDescription = newCategory.getDescription();
         if (newCategoryDescription == null) {
-            options.callUpdateActionWarningCallBack(
+            syncOptions.callUpdateActionWarningCallBack(
                     format(CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION, oldCategory.getId()));
             return Optional.empty();
         }
@@ -102,17 +102,17 @@ public class CategoryUpdateActionUtils {
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new parent.
-     * @param options     the sync options with which a custom callback function is called in case the parent is null.
+     * @param syncOptions     the sync syncOptions with which a custom callback function is called in case the parent is null.
      * @return A filled optional with the update action or an empty optional if the parent references are identical.
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildChangeParentUpdateAction(
             @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory,
-            @Nonnull final CategorySyncOptions options) {
+            @Nonnull final CategorySyncOptions syncOptions) {
         final Reference<Category> newCategoryParentReference = newCategory.getParent();
         if (newCategoryParentReference == null) {
-            options.callUpdateActionWarningCallBack(
+            syncOptions.callUpdateActionWarningCallBack(
                     format(CATEGORY_CHANGE_PARENT_EMPTY_PARENT, oldCategory.getId()));
             return Optional.empty();
         }
@@ -132,17 +132,17 @@ public class CategoryUpdateActionUtils {
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new orderHint.
-     * @param options     the sync options with which a custom callback function is called in case the orderHint is null.
+     * @param syncOptions     the sync syncOptions with which a custom callback function is called in case the orderHint is null.
      * @return A filled optional with the update action or an empty optional if the orderHint values are identical.
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildChangeOrderHintUpdateAction(
             @Nonnull final Category oldCategory,
             @Nonnull final CategoryDraft newCategory,
-            @Nonnull final CategorySyncOptions options) {
+            @Nonnull final CategorySyncOptions syncOptions) {
         final String newCategoryOrderHint = newCategory.getOrderHint();
         if (newCategoryOrderHint == null) {
-            options.callUpdateActionWarningCallBack(
+            syncOptions.callUpdateActionWarningCallBack(
                     format(CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT, oldCategory.getId()));
             return Optional.empty();
         }
