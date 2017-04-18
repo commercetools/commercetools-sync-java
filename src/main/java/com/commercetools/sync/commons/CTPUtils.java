@@ -10,11 +10,11 @@ import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 
+import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
 
 public class CTPUtils {
     private static BlockingSphereClient ctpClient;
-    private static final long timeout = 30;
 
     /**
      *
@@ -22,12 +22,14 @@ public class CTPUtils {
      *
      * @return {@link BlockingSphereClient}
      */
-    public static BlockingSphereClient createClient(SphereClientConfig clientConfig) {
+    public static BlockingSphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
+                                                    final long timeout,
+                                                    @Nonnull final TimeUnit timeUnit) {
         if (ctpClient == null) {
             final HttpClient httpClient = newHttpClient();
             final SphereAccessTokenSupplier tokenSupplier = SphereAccessTokenSupplier.ofAutoRefresh(clientConfig, httpClient, false);
             final SphereClient underlying = SphereClient.of(clientConfig, httpClient, tokenSupplier);
-            ctpClient = BlockingSphereClient.of(underlying, timeout, TimeUnit.SECONDS);
+            ctpClient = BlockingSphereClient.of(underlying, timeout, timeUnit);
         }
         return ctpClient;
     }
