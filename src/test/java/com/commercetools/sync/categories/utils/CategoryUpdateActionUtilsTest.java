@@ -2,6 +2,7 @@ package com.commercetools.sync.categories.utils;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.commons.MockUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.*;
@@ -22,7 +23,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 public class CategoryUpdateActionUtilsTest {
-    private final static Category MOCK_OLD_CATEGORY = mock(Category.class);
+    private static Category MOCK_OLD_CATEGORY;
     private final static Locale LOCALE = Locale.GERMAN;
     private final static String MOCK_CATEGORY_REFERENCE_TYPE = "type";
     private final static String MOCK_OLD_CATEGORY_PARENT_ID = "1";
@@ -37,15 +38,16 @@ public class CategoryUpdateActionUtilsTest {
 
     @BeforeClass
     public static void setup() {
-        when(MOCK_OLD_CATEGORY.getName()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
-        when(MOCK_OLD_CATEGORY.getSlug()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_SLUG));
-        when(MOCK_OLD_CATEGORY.getExternalId()).thenReturn(MOCK_OLD_CATEGORY_EXTERNAL_ID);
-        when(MOCK_OLD_CATEGORY.getDescription()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_DESCRIPTION));
-        when(MOCK_OLD_CATEGORY.getMetaDescription()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_DESCRIPTION));
-        when(MOCK_OLD_CATEGORY.getMetaTitle()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_TITLE));
-        when(MOCK_OLD_CATEGORY.getMetaKeywords()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_KEYWORDS));
-        when(MOCK_OLD_CATEGORY.getOrderHint()).thenReturn(MOCK_OLD_CATEGORY_ORDERHINT);
-        when(MOCK_OLD_CATEGORY.getParent()).thenReturn(Reference.of(MOCK_CATEGORY_REFERENCE_TYPE, MOCK_OLD_CATEGORY_PARENT_ID));
+        MOCK_OLD_CATEGORY = MockUtils.getMockCategory(LOCALE,
+                MOCK_OLD_CATEGORY_NAME,
+                MOCK_OLD_CATEGORY_SLUG,
+                MOCK_OLD_CATEGORY_EXTERNAL_ID,
+                MOCK_OLD_CATEGORY_DESCRIPTION,
+                MOCK_OLD_CATEGORY_META_DESCRIPTION,
+                MOCK_OLD_CATEGORY_META_TITLE,
+                MOCK_OLD_CATEGORY_META_KEYWORDS,
+                MOCK_OLD_CATEGORY_ORDERHINT,
+                MOCK_OLD_CATEGORY_PARENT_ID);
     }
 
     @Test
