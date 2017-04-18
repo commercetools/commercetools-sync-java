@@ -135,6 +135,4 @@ public class BaseSyncStatisticsTest {
                         "processingTimeInMillis\":" + BASE_SYNC_STATISTICS.getProcessingTimeInMillis() + ",\"" +
                         "humanReadableProcessingTime\":\"" + BASE_SYNC_STATISTICS.getHumanReadableProcessingTime() + "\"}");
     }
-
-
 }
