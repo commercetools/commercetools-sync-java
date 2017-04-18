@@ -13,9 +13,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-// TODO: IMPLEMENTATION AFTER CATEGORY SYNC GITHUB ISSUE#5
-// TODO: JAVADOC
-// TODO: TESTING
 public class CategorySyncOptions extends BaseSyncOptions {
     // Filter function which can be applied on generated list of update actions
     private Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter;

@@ -11,9 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-// TODO: IMPLEMENTATION AFTER CATEGORY SYNC GITHUB ISSUE#5
-// TODO: JAVADOC
-// TODO: TESTING
 public class BaseSyncOptions {
     // CTP Client configuration
     private SphereClientConfig clientConfig;
@@ -27,6 +24,8 @@ public class BaseSyncOptions {
 
     // Services
     private TypeService typeService;
+
+    // Additional Options, still should be implemented GITHUB ISSUE#5
 
     // Add additional localizations without deleting existing ones.
     private boolean removeOtherLocales = true;
