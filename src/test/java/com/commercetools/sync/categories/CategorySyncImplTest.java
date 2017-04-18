@@ -1,6 +1,7 @@
 package com.commercetools.sync.categories;
 
 
+import com.commercetools.sync.categories.helpers.CategorySyncOptions;
 import com.commercetools.sync.categories.impl.CategorySyncImpl;
 import io.sphere.sdk.categories.CategoryDraft;
 
@@ -16,7 +17,7 @@ public class CategorySyncImplTest {
 
     // TODO: TEMP! REMOVE.
     public void testSyncCategoryDrafts() {
-        CategorySyncImpl categorySync = new CategorySyncImpl(CATEGORY_SYNC_OPTIONS);
+        final CategorySync categorySync = new CategorySyncImpl(CATEGORY_SYNC_OPTIONS);
         categorySync.syncCategoryDrafts(CATEGORY_DRAFTS);
     }
 

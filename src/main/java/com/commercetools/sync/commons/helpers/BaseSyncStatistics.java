@@ -10,8 +10,8 @@ import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 
-public class BaseStatistics {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaseStatistics.class);
+public class BaseSyncStatistics {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseSyncStatistics.class);
 
     private String reportMessage;
     private int updated;

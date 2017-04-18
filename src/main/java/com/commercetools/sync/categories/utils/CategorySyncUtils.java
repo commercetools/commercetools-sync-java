@@ -1,6 +1,7 @@
 package com.commercetools.sync.categories.utils;
 
-import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.helpers.CategorySyncOptions;
+import com.commercetools.sync.commons.helpers.BaseSyncOptions;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -86,7 +87,7 @@ public class CategorySyncUtils {
      * @param newCategory the category draft where we get the new parent.
      * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by the user.
      *                    For example, custom callbacks to call in case of warnings or errors occurring on the build
-     *                    update action process. And other options (See {@link com.commercetools.sync.commons.BaseOptions}
+     *                    update action process. And other options (See {@link BaseSyncOptions}
      *                    for more info.
      * @return A list of category-specific update actions.
      */
@@ -112,7 +113,7 @@ public class CategorySyncUtils {
      * @param newCategory the category draft where we get the new parent.
      * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by the user.
      *                    For example, custom callbacks to call in case of warnings or errors occurring on the build
-     *                    update action process. And other options (See {@link com.commercetools.sync.commons.BaseOptions}
+     *                    update action process. And other options (See {@link BaseSyncOptions}
      *                    for more info.
      * @return A list of category-specific update actions.
      */

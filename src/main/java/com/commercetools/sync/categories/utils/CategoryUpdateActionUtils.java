@@ -1,7 +1,7 @@
 package com.commercetools.sync.categories.utils;
 
 
-import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.helpers.CategorySyncOptions;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.*;

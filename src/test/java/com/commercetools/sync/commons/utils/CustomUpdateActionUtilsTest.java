@@ -1,7 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
 
-import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.helpers.CategorySyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;

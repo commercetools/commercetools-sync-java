@@ -1,7 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.categories.CategorySyncOptions;
-import com.commercetools.sync.commons.BaseOptions;
+import com.commercetools.sync.categories.helpers.CategorySyncOptions;
+import com.commercetools.sync.commons.helpers.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.carts.Cart;
@@ -204,7 +204,7 @@ public class GenericUpdateActionUtilsTest {
 
         final UpdateAction<Cart> updateAction =
                 buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart,
-                        mock(BaseOptions.class)).orElse(null);
+                        mock(BaseSyncOptions.class)).orElse(null);
 
         assertThat(updateAction).isNull();
     }
@@ -224,13 +224,13 @@ public class GenericUpdateActionUtilsTest {
             callBackResponses.add(exception);
         };
 
-        final BaseOptions baseOptions = mock(BaseOptions.class);
-        when(baseOptions.getUpdateActionErrorCallBack()).thenReturn(updateActionErrorCallBack);
-        doCallRealMethod().when(baseOptions).callUpdateActionErrorCallBack(anyString(), any(Throwable.class));
+        final BaseSyncOptions baseSyncOptions = mock(BaseSyncOptions.class);
+        when(baseSyncOptions.getUpdateActionErrorCallBack()).thenReturn(updateActionErrorCallBack);
+        doCallRealMethod().when(baseSyncOptions).callUpdateActionErrorCallBack(anyString(), any(Throwable.class));
 
         final UpdateAction<Cart> updateAction =
                 buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart,
-                        baseOptions).orElse(null);
+                        baseSyncOptions).orElse(null);
 
         assertThat(updateAction).isNull();
         assertThat(callBackResponses).hasSize(2);

@@ -1,8 +1,8 @@
 package com.commercetools.sync.categories.impl;
 
-import com.commercetools.sync.categories.CategoryStatistics;
+import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.categories.CategorySync;
-import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.helpers.CategorySyncOptions;
 import com.commercetools.sync.categories.utils.CategorySyncUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -14,14 +14,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-import static com.commercetools.sync.commons.helpers.BaseStatistics.getStatisticsAsJSONString;
+import static com.commercetools.sync.commons.helpers.BaseSyncStatistics.getStatisticsAsJSONString;
 import static java.lang.String.format;
 
 public class CategorySyncImpl implements CategorySync {
     private final Logger LOGGER = LoggerFactory.getLogger(CategorySyncImpl.class);
 
     private CategorySyncOptions options;
-    private CategoryStatistics statistics;
+    private CategorySyncStatistics statistics;
 
     public CategorySyncImpl(@Nonnull final CategorySyncOptions options) {
         this.options = options;
@@ -34,7 +34,7 @@ public class CategorySyncImpl implements CategorySync {
     // TODO: REFACTOR
     @Override
     public void syncCategoryDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {
-        statistics = new CategoryStatistics();
+        statistics = new CategorySyncStatistics();
         LOGGER.info(format("About to sync %d category drafts into CTP project with key '%s'."
                 , categoryDrafts.size(), options.getClientConfig().getProjectKey()));
         for (int i = 0; i < categoryDrafts.size(); i++) {

@@ -1,6 +1,6 @@
 package com.commercetools.sync.products;
 
-import com.commercetools.sync.commons.BaseOptions;
+import com.commercetools.sync.commons.helpers.BaseSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 
@@ -10,7 +10,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class ProductSyncOptions extends BaseOptions {
+public class ProductSyncOptions extends BaseSyncOptions {
     // to control whether to remove other product variants or not:
     private boolean removeOtherVariants = true;
 

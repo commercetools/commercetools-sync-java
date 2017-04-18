@@ -1,6 +1,6 @@
-package com.commercetools.sync.categories;
+package com.commercetools.sync.categories.helpers;
 
-import com.commercetools.sync.commons.BaseOptions;
+import com.commercetools.sync.commons.helpers.BaseSyncOptions;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import io.sphere.sdk.categories.Category;
@@ -15,7 +15,7 @@ import java.util.function.Function;
 // TODO: IMPLEMENTATION AFTER CATEGORY SYNC GITHUB ISSUE#5
 // TODO: JAVADOC
 // TODO: TESTING
-public class CategorySyncOptions extends BaseOptions {
+public class CategorySyncOptions extends BaseSyncOptions {
     private CategoryService categoryService;
     public CategorySyncOptions(@Nonnull final String ctpProjectKey,
                                @Nonnull final String ctpClientId,

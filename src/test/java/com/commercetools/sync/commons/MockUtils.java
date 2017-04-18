@@ -1,6 +1,6 @@
 package com.commercetools.sync.commons;
 
-import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.helpers.CategorySyncOptions;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;

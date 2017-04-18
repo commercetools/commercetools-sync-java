@@ -1,7 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
 
-import com.commercetools.sync.commons.BaseOptions;
+import com.commercetools.sync.commons.helpers.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
@@ -36,7 +36,7 @@ class GenericUpdateActionUtils {
             @Nullable final String customTypeKey,
             @Nullable final Map<String, JsonNode> customFieldsJsonMap,
             @Nonnull final T resource,
-            @Nonnull final BaseOptions syncOptions) {
+            @Nonnull final BaseSyncOptions syncOptions) {
         try {
             return buildTypedUpdateAction(customTypeKey, customFieldsJsonMap, resource, SET_CUSTOM_TYPE);
         } catch (BuildUpdateActionException e) {
@@ -57,7 +57,7 @@ class GenericUpdateActionUtils {
      */
     @Nonnull
     static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedRemoveCustomTypeUpdateAction(
-            @Nonnull final T resource, @Nonnull final BaseOptions syncOptions) {
+            @Nonnull final T resource, @Nonnull final BaseSyncOptions syncOptions) {
         try {
             return buildTypedUpdateAction(resource, SET_CUSTOM_TYPE_REMOVE);
         } catch (BuildUpdateActionException e) {
@@ -86,7 +86,7 @@ class GenericUpdateActionUtils {
             @Nonnull final String customFieldName,
             @Nullable final JsonNode customFieldValue,
             @Nonnull final T resource,
-            @Nonnull final BaseOptions syncOptions) {
+            @Nonnull final BaseSyncOptions syncOptions) {
         try {
             return buildTypedUpdateAction(customFieldName, customFieldValue, resource, SET_CUSTOM_FIELD);
         } catch (BuildUpdateActionException e) {

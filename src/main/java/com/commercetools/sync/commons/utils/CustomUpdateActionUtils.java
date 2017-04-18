@@ -1,6 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.commons.BaseOptions;
+import com.commercetools.sync.commons.helpers.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,11 +29,11 @@ public class CustomUpdateActionUtils {
      * resource draft {@link S} (for example {@link CategoryDraft}, {@link io.sphere.sdk.products.ProductVariantDraft},
      * etc..), and returns a {@link List<UpdateAction>} as a result. If no update action is needed,
      * for example in the case where both the {@link CustomFields} and the {@link CustomFieldsDraft} are null, an empty
-     * {@link List<UpdateAction>} is returned. A {@link BaseOptions} instance is injected into the
+     * {@link List<UpdateAction>} is returned. A {@link BaseSyncOptions} instance is injected into the
      * method which is responsible for supplying the sync options to the sync utility method. For example, the callbacks for errors,
      * services like the {@link TypeService} instance which is responsible for fetching the key of the old resource type
      * from it's cache (see {@link CustomUpdateActionUtils#buildNonNullCustomFieldsUpdateActions(CustomFields,
-     * CustomFieldsDraft, Custom, BaseOptions)}).
+     * CustomFieldsDraft, Custom, BaseSyncOptions)}).
      * <p>
      * <p>
      * An update action will be added to the result list in the following cases:-
@@ -44,7 +44,7 @@ public class CustomUpdateActionUtils {
      * "setCustomType" update action is added, which removes the type set on the old resource.</li>
      * <li>If both the resources custom types are the same and the custom fields are both set. The custom
      * field values of both resources are then calculated. (see
-     * {@link CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom, BaseOptions)})</li>
+     * {@link CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom, BaseSyncOptions)})</li>
      * <li>If the keys of both custom types are different, then a "setCustomType" update action is added, where the
      * old resource's custom type is set to be as the new one's.</li>
      * <li>If both resources custom type keys are identical but the custom fields of the new resource's custom type is
@@ -69,7 +69,7 @@ public class CustomUpdateActionUtils {
     public static <T extends Custom & Resource<T>, S extends CustomDraft> List<UpdateAction<T>> buildCustomUpdateActions(
             @Nonnull final T oldResource,
             @Nonnull final S newResource,
-            @Nonnull final BaseOptions syncOptions) {
+            @Nonnull final BaseSyncOptions syncOptions) {
         final CustomFields oldResourceCustomFields = oldResource.getCustom();
         final CustomFieldsDraft newResourceCustomFields = newResource.getCustom();
         if (oldResourceCustomFields != null && newResourceCustomFields != null) {
@@ -107,14 +107,14 @@ public class CustomUpdateActionUtils {
      * Compares a non null {@link CustomFields} to a non null {@link CustomFieldsDraft} and returns a
      * {@link List<UpdateAction>} as a result. The keys are used to compare the custom types. The key of the old
      * resource custom type is fetched from the caching mechanism of the {@link TypeService} instance in the injected
-     * {@link BaseOptions} instance. The key of the new resource custom type is expected to be set on the type.
+     * {@link BaseSyncOptions} instance. The key of the new resource custom type is expected to be set on the type.
      * If no update action is needed an empty {@link List<UpdateAction>} is returned.
      * <p>
      * An update action will be added to the result list in the following cases:-
      * <ol>
      * <li>If both the resources custom type keys are the same and the custom fields are both set. The custom
      * field values of both resources are then calculated. (see
-     * {@link CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom, BaseOptions)})</li>
+     * {@link CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom, BaseSyncOptions)})</li>
      * <li>If the keys of both custom types are different, then a "setCustomType" update action is added, where the
      * old resource's custom type is set to be as the new one's.</li>
      * <li>If both resources custom type keys are identical but the custom fields
@@ -139,7 +139,7 @@ public class CustomUpdateActionUtils {
             @Nonnull final CustomFields oldCustomFields,
             @Nonnull final CustomFieldsDraft newCustomFields,
             @Nonnull final T resource,
-            @Nonnull final BaseOptions syncOptions) throws BuildUpdateActionException {
+            @Nonnull final BaseSyncOptions syncOptions) throws BuildUpdateActionException {
         final String oldCustomFieldsTypeKey = syncOptions.getTypeService().getCachedTypeKeyById(oldCustomFields.getType().getId());
         final Map<String, JsonNode> oldCustomFieldsJsonMap = oldCustomFields.getFieldsJsonMap();
         final String newCustomFieldsTypeKey = newCustomFields.getType().getKey();
@@ -198,7 +198,7 @@ public class CustomUpdateActionUtils {
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource,
-            @Nonnull final BaseOptions syncOptions) {
+            @Nonnull final BaseSyncOptions syncOptions) {
         final List<UpdateAction<T>> newOrModifiedCustomFieldsActions =
                 buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource, syncOptions);
         final List<UpdateAction<T>> removedCustomFieldsActions =
@@ -226,7 +226,7 @@ public class CustomUpdateActionUtils {
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource,
-            @Nonnull final BaseOptions syncOptions) {
+            @Nonnull final BaseSyncOptions syncOptions) {
         return newCustomFields.keySet().stream()
                 .filter(newCustomFieldName -> !Objects.equals(
                         newCustomFields.get(newCustomFieldName), oldCustomFields.get(newCustomFieldName)))
@@ -254,7 +254,7 @@ public class CustomUpdateActionUtils {
             @Nonnull final Map<String, JsonNode> oldCustomFields,
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource,
-            @Nonnull final BaseOptions syncOptions) {
+            @Nonnull final BaseSyncOptions syncOptions) {
         return oldCustomFields.keySet().stream()
                 .filter(oldCustomFieldsName -> Objects.isNull(newCustomFields.get(oldCustomFieldsName)))
                 .map(oldCustomFieldsName -> buildTypedSetCustomFieldUpdateAction(
