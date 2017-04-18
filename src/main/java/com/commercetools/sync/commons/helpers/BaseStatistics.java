@@ -5,13 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 
 public class BaseStatistics {
-    private final Logger LOGGER = LoggerFactory.getLogger(BaseStatistics.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseStatistics.class);
 
+    private String reportMessage;
     private int updated;
     private int created;
     private int processed;
@@ -23,7 +25,6 @@ public class BaseStatistics {
     private long processingTimeInSeconds;
     private long processingTimeInMillis;
     private String humanReadableProcessingTime;
-    private String reportMessage;
 
     public BaseStatistics() {
         this.startTime = System.currentTimeMillis();
@@ -138,11 +139,11 @@ public class BaseStatistics {
         return reportMessage;
     }
 
-    public String getAsJSONString() {
+    public static String getStatisticsAsJSONString(@Nonnull final BaseStatistics statistics) {
         String result = null;
         final ObjectMapper mapper = new ObjectMapper();
         try {
-            result = mapper.writeValueAsString(this);
+            result = mapper.writeValueAsString(statistics);
         } catch (JsonProcessingException e) {
             LOGGER.error("Failed to build JSON String of summary.", e);
         }
