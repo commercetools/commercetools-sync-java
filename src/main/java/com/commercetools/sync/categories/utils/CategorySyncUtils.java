@@ -7,8 +7,10 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,9 +36,10 @@ public class CategorySyncUtils {
                                                              @Nonnull final CategorySyncOptions syncOptions) {
         final List<UpdateAction<Category>> updateActions = buildCoreActions(oldCategory, newCategory, syncOptions);
         final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(oldCategory, newCategory, syncOptions);
-        return Stream.concat(updateActions.stream(),
+        final List<UpdateAction<Category>> allUpdateActions = Stream.concat(updateActions.stream(),
                 assetUpdateActions.stream())
                 .collect(Collectors.toList());
+        return filterUpdateActions(allUpdateActions, syncOptions.getUpdateActionsFilter());
     }
 
     /**
@@ -77,6 +80,22 @@ public class CategorySyncUtils {
     }
 
     /**
+     * Applies a given filter function, if not null, {@code updateActionsFilter} on {@link List} of {@link UpdateAction}
+     * elements.
+     *
+     * @param updateActions       the list of update actions to apply the filter on.
+     * @param updateActionsFilter the filter functions to apply on the list of update actions
+     * @return a new resultant list from applying the filter function, if not null, on the supplied list. If the filter
+     * function supplied was null, the same supplied list is returned as is.
+     */
+    @Nonnull
+    private static List<UpdateAction<Category>> filterUpdateActions(@Nonnull final List<UpdateAction<Category>> updateActions,
+                                                                    @Nullable final Function<List<UpdateAction<Category>>
+                                                                            , List<UpdateAction<Category>>> updateActionsFilter) {
+        return updateActionsFilter != null ? updateActionsFilter.apply(updateActions) : updateActions;
+    }
+
+    /**
      * Compares the Name, Slug, Description, Parent, OrderHint, MetaTitle, MetaDescription, MetaKeywords and Custom
      * fields/ type fields and assets of a {@link Category} and a {@link CategoryDraft}. It returns a {@link List} of
      * {@link UpdateAction<Category>} as a result. If no update action is needed, for example in
@@ -97,9 +116,10 @@ public class CategorySyncUtils {
                                                             @Nonnull final CategorySyncOptions syncOptions) {
         final List<UpdateAction<Category>> coreActions = buildCoreActions(oldCategory, newCategory, syncOptions);
         final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(oldCategory, newCategory, syncOptions);
-        return Stream.concat(coreActions.stream(),
+        final List<UpdateAction<Category>> allUpdateActions = Stream.concat(coreActions.stream(),
                 assetUpdateActions.stream())
                 .collect(Collectors.toList());
+        return filterUpdateActions(allUpdateActions, syncOptions.getUpdateActionsFilter());
     }
 
     /**

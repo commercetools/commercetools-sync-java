@@ -23,17 +23,15 @@ public class ProductSyncOptions extends BaseSyncOptions {
     // to control whether to remove other product variants or not:
     private boolean removeOtherVariants = true;
 
+    // optional filter which can be applied on generated list of update actions
+    private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> filterActions;
+
     public ProductSyncOptions(@Nonnull final String ctpProjectKey,
                               @Nonnull final String ctpClientId,
                               @Nonnull final String ctpClientSecret,
                               @Nonnull final BiConsumer<String, Throwable> updateActionErrorCallBack,
                               @Nonnull final Consumer<String> updateActionWarningCallBack) {
         super(ctpProjectKey, ctpClientId, ctpClientSecret, updateActionErrorCallBack, updateActionWarningCallBack);
-    }
-
-    // optional filter which can be applied on generated list of update actions
-    private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> filterActions(){
-        return updateActions -> null;
     }
 
 }

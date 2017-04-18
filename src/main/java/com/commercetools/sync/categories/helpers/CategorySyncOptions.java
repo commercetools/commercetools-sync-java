@@ -17,6 +17,8 @@ import java.util.function.Function;
 // TODO: JAVADOC
 // TODO: TESTING
 public class CategorySyncOptions extends BaseSyncOptions {
+    // Filter function which can be applied on generated list of update actions
+    private Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter;
 
     // Services
     private CategoryService categoryService;
@@ -31,6 +33,19 @@ public class CategorySyncOptions extends BaseSyncOptions {
         super(sphereClientConfig);
     }
 
+    public CategorySyncOptions(@Nonnull final String ctpProjectKey,
+                               @Nonnull final String ctpClientId,
+                               @Nonnull final String ctpClientSecret,
+                               @Nonnull final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter) {
+        super(ctpProjectKey, ctpClientId, ctpClientSecret);
+        this.updateActionsFilter = updateActionsFilter;
+    }
+
+    public CategorySyncOptions(@Nonnull final SphereClientConfig sphereClientConfig,
+                               @Nonnull final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter) {
+        super(sphereClientConfig);
+        this.updateActionsFilter = updateActionsFilter;
+    }
 
     public CategorySyncOptions(@Nonnull final String ctpProjectKey,
                                @Nonnull final String ctpClientId,
@@ -40,16 +55,32 @@ public class CategorySyncOptions extends BaseSyncOptions {
         super(ctpProjectKey, ctpClientId, ctpClientSecret, updateActionErrorCallBack, updateActionWarningCallBack);
     }
 
-    // optional filter which can be applied on generated list of update actions
-    private Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> filterActions() {
-        return updateActions -> null;
     public CategorySyncOptions(@Nonnull final SphereClientConfig sphereClientConfig,
                                @Nonnull final BiConsumer<String, Throwable> updateActionErrorCallBack,
                                @Nonnull final Consumer<String> updateActionWarningCallBack) {
         super(sphereClientConfig, updateActionErrorCallBack, updateActionWarningCallBack);
     }
 
+    public CategorySyncOptions(@Nonnull final String ctpProjectKey,
+                               @Nonnull final String ctpClientId,
+                               @Nonnull final String ctpClientSecret,
+                               @Nonnull final BiConsumer<String, Throwable> updateActionErrorCallBack,
+                               @Nonnull final Consumer<String> updateActionWarningCallBack,
+                               @Nonnull final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter) {
+        super(ctpProjectKey, ctpClientId, ctpClientSecret, updateActionErrorCallBack, updateActionWarningCallBack);
+        this.updateActionsFilter = updateActionsFilter;
+    }
 
+    public CategorySyncOptions(@Nonnull final SphereClientConfig sphereClientConfig,
+                               @Nonnull final BiConsumer<String, Throwable> updateActionErrorCallBack,
+                               @Nonnull final Consumer<String> updateActionWarningCallBack,
+                               @Nonnull final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter) {
+        super(sphereClientConfig, updateActionErrorCallBack, updateActionWarningCallBack);
+        this.updateActionsFilter = updateActionsFilter;
+    }
+
+    public Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> getUpdateActionsFilter() {
+        return updateActionsFilter;
     }
 
     public CategoryService getCategoryService() {
