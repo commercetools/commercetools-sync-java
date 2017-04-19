@@ -1,36 +1,27 @@
 package com.commercetools.sync.commons;
 
+import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.helpers.CategorySyncOptions;
+import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
+import com.commercetools.sync.services.CategoryService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.client.BlockingSphereClient;
+import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFieldsDraft;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
 public class MockUtils {
-    private static BlockingSphereClient ctpClient;
-    private static final long timeout = 30;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MockUtils.class);
-
-    public static CategorySyncOptions getMockCategorySyncOptions() {
-        return new CategorySyncOptions("xxxxx",
-                "xxxxxxx", "xxxxxxxx",
-                LOGGER::error,
-                LOGGER::warn);
-    }
-
     public static Category getMockCategory(@Nonnull final Locale locale,
                                            @Nonnull final String name,
                                            @Nonnull final String slug,
@@ -66,7 +57,7 @@ public class MockUtils {
     public static CategoryDraft getMockCategoryDraft(@Nonnull final Locale locale,
                                                      @Nonnull final String name,
                                                      @Nonnull final String slug,
-                                                     @Nonnull final String externalId) {
+                                                     @Nullable final String externalId) {
         final CategoryDraft mockCategoryDraft = mock(CategoryDraft.class);
         when(mockCategoryDraft.getName()).thenReturn(LocalizedString.of(locale, name));
         when(mockCategoryDraft.getSlug()).thenReturn(LocalizedString.of(locale, slug));
@@ -103,5 +94,52 @@ public class MockUtils {
         customFieldsJsons.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
         customFieldsJsons.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
         return CustomFieldsDraft.ofTypeKeyAndJson("StepCategoryTypeKey", customFieldsJsons);
+    }
+
+    public static CategorySync getMockCategorySync() {
+        final CategorySyncOptions categorySyncOptions = getMockCategorySyncOptions();
+        final CategorySyncStatistics categorySyncStatistics = new CategorySyncStatistics();
+
+        final CategorySync categorySync = mock(CategorySync.class);
+        when(categorySync.getSyncOptions()).thenReturn(categorySyncOptions);
+        when(categorySync.getStatistics()).thenReturn(categorySyncStatistics);
+        doCallRealMethod().when(categorySync).syncDrafts(any());
+        doCallRealMethod().when(categorySync).fetchCategory(any());
+        doCallRealMethod().when(categorySync).updateCategory(any(), any());
+        doCallRealMethod().when(categorySync).getSummary();
+
+        return categorySync;
+    }
+
+    public static CategorySyncOptions getMockCategorySyncOptions() {
+        final CategoryService categoryService = getMockCategoryService();
+        final SphereClientConfig sphereClientConfig = SphereClientConfig
+                .of("testProjectKey", "testCliendId", "testClientSecret");
+
+        final CategorySyncOptions categorySyncOptions = mock(CategorySyncOptions.class);
+        when(categorySyncOptions.getCategoryService()).thenReturn(categoryService);
+        when(categorySyncOptions.getClientConfig()).thenReturn(sphereClientConfig);
+
+        return categorySyncOptions;
+    }
+
+    public static CategoryService getMockCategoryService() {
+        final Category category = getMockCategory(Locale.ENGLISH,
+                "name",
+                "slug",
+                "externalId",
+                "description",
+                "metaDescription",
+                "metaTitle",
+                "metaKeywords",
+                "orderHint",
+                "parentId");
+
+        final CategoryService categoryService = mock(CategoryService.class);
+        when(categoryService.fetchCategoryByExternalId(anyString())).thenReturn(category);
+        when(categoryService.updateCategory(any(), any())).thenReturn(category);
+        when(categoryService.createCategory(any())).thenReturn(category);
+
+        return categoryService;
     }
 }
