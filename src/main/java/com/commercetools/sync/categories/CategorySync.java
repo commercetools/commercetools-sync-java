@@ -53,12 +53,7 @@ public class CategorySync implements Sync {
                     getStatistics().incrementProcessed();
                     final String externalId = categoryDraft.getExternalId();
                     if (isNotBlank(externalId)) {
-                        final Category oldCategory = fetchCategory(externalId);
-                        if (oldCategory != null) {
-                            syncCategories(oldCategory, categoryDraft);
-                        } else {
-                            createCategory(categoryDraft);
-                        }
+                        createOrUpdateCategory(categoryDraft);
                     } else {
                         failSync(format("CategoryDraft with name: %s doesn't have an externalId.",
                                 categoryDraft.getName().toString()), null);
@@ -73,25 +68,30 @@ public class CategorySync implements Sync {
     }
 
     /**
-     * Given an external id , this method tries to fetch the existing category from CTP project stored in the {@code syncOptions}
-     * instance of this class.
+     * Given a category draft {@link CategoryDraft} with an externalId, this method tries to fetch the existing category
+     * from CTP project stored in the {@code syncOptions} instance of this class. It then either creates a new category,
+     * if none exist with the same external id, or update the existing category.
      * <p>
      * The {@code statistics} instance is updated accordingly to whether the CTP request was carried out successfully or not.
      * If an exception was thrown on executing the request to CTP,
      * the optional error callback specified in the {@code syncOptions} is called.
      *
-     * @param externalId the external id to fetch the category with.
+     * @param categoryDraft the category draft where we get the new data.
      */
-    Category fetchCategory(@Nonnull final String externalId) {
-        Category oldCategory = null;
+    void createOrUpdateCategory(@Nonnull final CategoryDraft categoryDraft) {
+        final String externalId = categoryDraft.getExternalId();
         try {
-            oldCategory = getSyncOptions().getCategoryService().fetchCategoryByExternalId(externalId);
+            final Category oldCategory = getSyncOptions().getCategoryService().fetchCategoryByExternalId(externalId);
+            if (oldCategory != null) {
+                syncCategories(oldCategory, categoryDraft);
+            } else {
+                createCategory(categoryDraft);
+            }
         } catch (SphereException e) {
             failSync(format("Failed to fetch category with external id" +
                             " '%s' in CTP project with key '%s",
                     externalId, getSyncOptions().getClientConfig().getProjectKey()), e);
         }
-        return oldCategory;
     }
 
     /**

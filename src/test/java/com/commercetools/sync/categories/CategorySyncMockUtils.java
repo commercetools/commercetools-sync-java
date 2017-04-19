@@ -99,7 +99,7 @@ public class CategorySyncMockUtils {
         when(categorySync.getSyncOptions()).thenReturn(categorySyncOptions);
         when(categorySync.getStatistics()).thenReturn(categorySyncStatistics);
         doCallRealMethod().when(categorySync).syncDrafts(any());
-        doCallRealMethod().when(categorySync).fetchCategory(any());
+        doCallRealMethod().when(categorySync).createOrUpdateCategory(any());
         doCallRealMethod().when(categorySync).updateCategory(any(), any());
         doCallRealMethod().when(categorySync).getSummary();
 
