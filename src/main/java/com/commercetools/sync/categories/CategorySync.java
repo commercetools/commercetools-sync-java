@@ -15,7 +15,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-import static com.commercetools.sync.commons.helpers.BaseSyncStatistics.getStatisticsAsJSONString;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -176,8 +175,8 @@ public class CategorySync implements Sync {
      */
     @Override
     @Nonnull
-    public String getSummary() {
-        return getStatisticsAsJSONString(getStatistics());
+    public CategorySyncStatistics getStatistics() {
+        return statistics;
     }
 
     @Override
@@ -187,9 +186,5 @@ public class CategorySync implements Sync {
 
     CategorySyncOptions getSyncOptions() {
         return syncOptions;
-    }
-
-    CategorySyncStatistics getStatistics() {
-        return statistics;
     }
 }

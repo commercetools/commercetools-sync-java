@@ -1,6 +1,8 @@
 package com.commercetools.sync.commons;
 
 
+import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
+
 import javax.annotation.Nonnull;
 import java.util.List;
 
@@ -26,10 +28,12 @@ public interface Sync {
     <T> void sync(@Nonnull final List<T> resources);
 
     /**
-     * Builds a summary message, as string, for the sync process.
+     * Builds a {@link BaseSyncStatistics} object containing all the stats of the sync process; which includes a report
+     * message, the total number of update, created, failed, processed resources and the processing time of the sync in
+     * different time units and in a human readable format.
      *
-     * @return summary message, as String, for the sync process.
+     * @return a statistics object for the sync process.
      */
     @Nonnull
-    String getSummary();
+    BaseSyncStatistics getStatistics();
 }
