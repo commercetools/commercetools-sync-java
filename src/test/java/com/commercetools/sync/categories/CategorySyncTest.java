@@ -130,5 +130,4 @@ public class CategorySyncTest {
                 "(0 created, 1 updated and 0 categories failed to sync).");
     }
 
-
 }
