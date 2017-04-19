@@ -20,11 +20,12 @@ import static java.lang.String.format;
 
 public class CategorySync implements Sync {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategorySync.class);
-    private CategorySyncOptions syncOptions;
-    private CategorySyncStatistics statistics;
+    private final CategorySyncOptions syncOptions;
+    private final CategorySyncStatistics statistics;
 
     public CategorySync(@Nonnull final CategorySyncOptions syncOptions) {
         this.syncOptions = syncOptions;
+        statistics = new CategorySyncStatistics();
     }
 
     /**
@@ -42,7 +43,6 @@ public class CategorySync implements Sync {
      */
     @Override
     public <T> void syncDrafts(@Nonnull final List<T> categoryDrafts) {
-        statistics = new CategorySyncStatistics();
         LOGGER.info(format("About to sync %d category drafts into CTP project with key '%s'."
                 , categoryDrafts.size(), getSyncOptions().getClientConfig().getProjectKey()));
         for (int i = 0; i < categoryDrafts.size(); i++) {
