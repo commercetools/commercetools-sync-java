@@ -7,6 +7,7 @@ import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -75,15 +76,9 @@ public class BaseSyncOptions {
     }
 
     public void callUpdateActionErrorCallBack(@Nonnull final String errorMessage,
-                                              @Nonnull final Throwable exception) {
+                                              @Nullable final Throwable exception) {
         if (getUpdateActionErrorCallBack() != null) {
             getUpdateActionErrorCallBack().accept(errorMessage, exception);
-        }
-    }
-
-    public void callUpdateActionErrorCallBack(@Nonnull final String errorMessage) {
-        if (getUpdateActionErrorCallBack() != null) {
-            getUpdateActionErrorCallBack().accept(errorMessage, null);
         }
     }
 
