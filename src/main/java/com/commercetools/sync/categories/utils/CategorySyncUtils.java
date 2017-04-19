@@ -103,7 +103,7 @@ public class CategorySyncUtils {
      * {@link List} is returned.
      *
      * @param oldCategory the category which should be updated.
-     * @param newCategory the category draft where we get the new parent.
+     * @param newCategory the category draft where we get the new data.
      * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by the user.
      *                    For example, custom callbacks to call in case of warnings or errors occurring on the build
      *                    update action process. And other options (See {@link BaseSyncOptions}
@@ -130,7 +130,7 @@ public class CategorySyncUtils {
      * {@link List} is returned.
      *
      * @param oldCategory the category which should be updated.
-     * @param newCategory the category draft where we get the new parent.
+     * @param newCategory the category draft where we get the new data.
      * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by the user.
      *                    For example, custom callbacks to call in case of warnings or errors occurring on the build
      *                    update action process. And other options (See {@link BaseSyncOptions}
