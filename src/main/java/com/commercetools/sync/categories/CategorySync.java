@@ -29,7 +29,7 @@ public class CategorySync implements Sync {
 
     /**
      * Traverses a {@link List} of {@link CategoryDraft} objects and tries to fetch a category, from the CTP project with
-     * the configuration stored in the {@Code syncOptions} instance of this class, using the external id. If a category exists,
+     * the configuration stored in the {@code syncOptions} instance of this class, using the external id. If a category exists,
      * this category is synced to be the same as the new category draft in this list. If no category exist with such external id,
      * a new category, identical to this new category draft  is created.
      * <p>
@@ -81,7 +81,7 @@ public class CategorySync implements Sync {
      *
      * @param externalId the external id to fetch the category with.
      */
-    public Category fetchCategory(@Nonnull final String externalId) {
+    Category fetchCategory(@Nonnull final String externalId) {
         Category oldCategory = null;
         try {
             oldCategory = getSyncOptions().getCategoryService().fetchCategoryByExternalId(externalId);
@@ -143,8 +143,8 @@ public class CategorySync implements Sync {
      * @param category      the category to update.
      * @param updateActions the list of update actions to update the category with.
      */
-    public void updateCategory(@Nonnull final Category category,
-                               @Nonnull final List<UpdateAction<Category>> updateActions) {
+    void updateCategory(@Nonnull final Category category,
+                        @Nonnull final List<UpdateAction<Category>> updateActions) {
         try {
             getSyncOptions().getCategoryService().updateCategory(category, updateActions);
             getStatistics().incrementUpdated();
@@ -184,11 +184,11 @@ public class CategorySync implements Sync {
         //TODO: SEE GITHUB ISSUE#12
     }
 
-    public CategorySyncOptions getSyncOptions() {
+    CategorySyncOptions getSyncOptions() {
         return syncOptions;
     }
 
-    public CategorySyncStatistics getStatistics() {
+    CategorySyncStatistics getStatistics() {
         return statistics;
     }
 }
