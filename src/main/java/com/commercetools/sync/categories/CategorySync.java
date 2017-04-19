@@ -17,6 +17,7 @@ import java.util.List;
 
 import static com.commercetools.sync.commons.helpers.BaseSyncStatistics.getStatisticsAsJSONString;
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class CategorySync implements Sync {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategorySync.class);
@@ -51,7 +52,7 @@ public class CategorySync implements Sync {
                 if (categoryDraft != null) {
                     getStatistics().incrementProcessed();
                     final String externalId = categoryDraft.getExternalId();
-                    if (externalId != null) {
+                    if (isNotBlank(externalId)) {
                         final Category oldCategory = fetchCategory(externalId);
                         if (oldCategory != null) {
                             syncCategories(oldCategory, categoryDraft);
