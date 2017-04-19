@@ -2,7 +2,6 @@ package com.commercetools.sync.categories.utils;
 
 
 import com.commercetools.sync.categories.helpers.CategorySyncOptions;
-import com.commercetools.sync.commons.MockUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.*;
@@ -16,6 +15,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
 
+import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
+import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -35,7 +36,7 @@ public class CategorySyncUtilsTest {
 
     @BeforeClass
     public static void setup() {
-        MOCK_OLD_CATEGORY = MockUtils.getMockCategory(LOCALE,
+        MOCK_OLD_CATEGORY = getMockCategory(LOCALE,
                 MOCK_OLD_CATEGORY_NAME,
                 MOCK_OLD_CATEGORY_SLUG,
                 MOCK_OLD_CATEGORY_EXTERNAL_ID,
@@ -49,7 +50,7 @@ public class CategorySyncUtilsTest {
 
     @Test
     public void buildActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
-        final CategoryDraft newCategoryDraft = MockUtils.getMockCategoryDraft(LOCALE,
+        final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
                 "differentName",
                 MOCK_OLD_CATEGORY_SLUG,
                 MOCK_OLD_CATEGORY_EXTERNAL_ID,
@@ -72,7 +73,7 @@ public class CategorySyncUtilsTest {
 
     @Test
     public void buildActions_FromDraftsWithMultipleDifferentValues_ShouldBuildUpdateActions() {
-        final CategoryDraft newCategoryDraft = MockUtils.getMockCategoryDraft(LOCALE,
+        final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
                 "differentName",
                 "differentSlug",
                 MOCK_OLD_CATEGORY_EXTERNAL_ID,
@@ -127,7 +128,7 @@ public class CategorySyncUtilsTest {
 
     @Test
     public void buildActions_FromDraftsWithMultipleDifferentValuesWithFilterFunction_ShouldBuildFilteredUpdateActions() {
-        final CategoryDraft newCategoryDraft = MockUtils.getMockCategoryDraft(LOCALE,
+        final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
                 "differentName",
                 "differentSlug",
                 MOCK_OLD_CATEGORY_EXTERNAL_ID,
@@ -190,7 +191,7 @@ public class CategorySyncUtilsTest {
 
     @Test
     public void buildCoreActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
-        final CategoryDraft newCategoryDraft = MockUtils.getMockCategoryDraft(LOCALE,
+        final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
                 "differentName",
                 MOCK_OLD_CATEGORY_SLUG,
                 MOCK_OLD_CATEGORY_EXTERNAL_ID,
@@ -213,7 +214,7 @@ public class CategorySyncUtilsTest {
 
     @Test
     public void buildCoreActions_FromDraftsWithMultipleDifferentValues_ShouldBuildUpdateActions() {
-        final CategoryDraft newCategoryDraft = MockUtils.getMockCategoryDraft(LOCALE,
+        final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
                 "differentName",
                 "differentSlug",
                 MOCK_OLD_CATEGORY_EXTERNAL_ID,
@@ -268,7 +269,7 @@ public class CategorySyncUtilsTest {
 
     @Test
     public void buildCoreActions_FromDraftsWithSameValues_ShouldNotBuildUpdateActions() {
-        final CategoryDraft newCategoryDraft = MockUtils.getMockCategoryDraft(LOCALE,
+        final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
                 MOCK_OLD_CATEGORY_NAME,
                 MOCK_OLD_CATEGORY_SLUG,
                 MOCK_OLD_CATEGORY_EXTERNAL_ID,

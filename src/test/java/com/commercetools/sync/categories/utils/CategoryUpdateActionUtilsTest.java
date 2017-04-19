@@ -2,7 +2,6 @@ package com.commercetools.sync.categories.utils;
 
 
 import com.commercetools.sync.categories.helpers.CategorySyncOptions;
-import com.commercetools.sync.commons.MockUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.*;
@@ -17,6 +16,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -38,7 +38,7 @@ public class CategoryUpdateActionUtilsTest {
 
     @BeforeClass
     public static void setup() {
-        MOCK_OLD_CATEGORY = MockUtils.getMockCategory(LOCALE,
+        MOCK_OLD_CATEGORY = getMockCategory(LOCALE,
                 MOCK_OLD_CATEGORY_NAME,
                 MOCK_OLD_CATEGORY_SLUG,
                 MOCK_OLD_CATEGORY_EXTERNAL_ID,

@@ -8,8 +8,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import static com.commercetools.sync.commons.MockUtils.getMockCategoryDraft;
-import static com.commercetools.sync.commons.MockUtils.getMockCategorySync;
+import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
+import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategorySync;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
