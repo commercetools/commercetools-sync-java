@@ -1,4 +1,4 @@
-package com.commercetools.sync.commons;
+package com.commercetools.sync.commons.utils;
 
 import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.SphereAccessTokenSupplier;
@@ -13,7 +13,7 @@ import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
 
-public class CTPUtils {
+public class ClientConfigurationUtils {
     private static BlockingSphereClient ctpClient;
 
     /**

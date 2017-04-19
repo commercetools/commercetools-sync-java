@@ -1,6 +1,6 @@
 package com.commercetools.sync.commons.helpers;
 
-import com.commercetools.sync.commons.CTPUtils;
+import com.commercetools.sync.commons.utils.ClientConfigurationUtils;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.client.BlockingSphereClient;
@@ -46,12 +46,12 @@ public class BaseSyncOptions {
                            @Nonnull final String ctpClientSecret) {
         this.clientConfig = SphereClientConfig.of(ctpProjectKey,
                 ctpClientId, ctpClientSecret);
-        ctpClient = CTPUtils.createClient(clientConfig, timeout, timeoutTimeUnit);
+        ctpClient = ClientConfigurationUtils.createClient(clientConfig, timeout, timeoutTimeUnit);
     }
 
     public BaseSyncOptions(@Nonnull final SphereClientConfig clientConfig) {
         this.clientConfig = clientConfig;
-        ctpClient = CTPUtils.createClient(clientConfig, timeout, timeoutTimeUnit);
+        ctpClient = ClientConfigurationUtils.createClient(clientConfig, timeout, timeoutTimeUnit);
     }
 
     public BaseSyncOptions(@Nonnull final String ctpProjectKey,
@@ -61,7 +61,7 @@ public class BaseSyncOptions {
                            @Nonnull final Consumer<String> updateActionWarningCallBack) {
         this.clientConfig = SphereClientConfig.of(ctpProjectKey,
                 ctpClientId, ctpClientSecret);
-        ctpClient = CTPUtils.createClient(clientConfig, timeout, timeoutTimeUnit);
+        ctpClient = ClientConfigurationUtils.createClient(clientConfig, timeout, timeoutTimeUnit);
         this.updateActionErrorCallBack = updateActionErrorCallBack;
         this.updateActionWarningCallBack = updateActionWarningCallBack;
     }
@@ -70,7 +70,7 @@ public class BaseSyncOptions {
                            @Nonnull final BiConsumer<String, Throwable> updateActionErrorCallBack,
                            @Nonnull final Consumer<String> updateActionWarningCallBack) {
         this.clientConfig = clientConfig;
-        ctpClient = CTPUtils.createClient(clientConfig, timeout, timeoutTimeUnit);
+        ctpClient = ClientConfigurationUtils.createClient(clientConfig, timeout, timeoutTimeUnit);
         this.updateActionErrorCallBack = updateActionErrorCallBack;
         this.updateActionWarningCallBack = updateActionWarningCallBack;
     }
