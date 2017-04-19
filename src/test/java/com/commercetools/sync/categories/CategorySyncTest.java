@@ -4,6 +4,7 @@ package com.commercetools.sync.categories;
 import com.commercetools.sync.categories.helpers.CategorySyncOptions;
 import com.commercetools.sync.categories.impl.CategorySyncImpl;
 import io.sphere.sdk.categories.CategoryDraft;
+import org.junit.Test;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class CategorySyncImplTest {
     private final static CategorySyncOptions CATEGORY_SYNC_OPTIONS = getMockCategorySyncOptions();
 
     // TODO: TEMP! REMOVE.
+    @Test
     public void testSyncCategoryDrafts() {
         final CategorySync categorySync = new CategorySyncImpl(CATEGORY_SYNC_OPTIONS);
         categorySync.syncCategoryDrafts(CATEGORY_DRAFTS);
