@@ -3,7 +3,10 @@ package com.commercetools.sync.commons.constants;
 
 import static java.lang.String.format;
 
-// TODO: DOCUMENT
+/**
+ * Used as a container or all {@link String} entries that are used
+ * as error/warning messages across the sync update action build modules.
+ */
 public class SyncMessages {
     private static final String REQUIRED_FIELD_MESSAGE_FORMAT = "Cannot unset %s field of %s" +
             " with id '%s'.";
