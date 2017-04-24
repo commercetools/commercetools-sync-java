@@ -22,7 +22,7 @@ public class TypeServiceImpl implements TypeService {
     private final BlockingSphereClient ctpClient;
     private final Map<String, String> cache = Collections.synchronizedMap(new HashMap<>());
 
-    public TypeServiceImpl(BlockingSphereClient ctpClient) {
+    public TypeServiceImpl(@Nonnull final BlockingSphereClient ctpClient) {
         this.ctpClient = ctpClient;
     }
 

@@ -1,7 +1,7 @@
 package com.commercetools.sync.categories.utils;
 
 
-import com.commercetools.sync.commons.helpers.SyncResult;
+import com.commercetools.sync.categories.helpers.CategorySyncOptions;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.*;
@@ -11,18 +11,19 @@ import io.sphere.sdk.models.Reference;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.function.Consumer;
 
+import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.*;
-import static com.commercetools.sync.commons.constants.SyncMessages.CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT;
-import static com.commercetools.sync.commons.constants.SyncMessages.CATEGORY_CHANGE_PARENT_EMPTY_PARENT;
-import static com.commercetools.sync.commons.constants.SyncMessages.CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
 public class CategoryUpdateActionUtilsTest {
-    private final static Category MOCK_OLD_CATEGORY = mock(Category.class);
+    private static Category MOCK_OLD_CATEGORY;
     private final static Locale LOCALE = Locale.GERMAN;
     private final static String MOCK_CATEGORY_REFERENCE_TYPE = "type";
     private final static String MOCK_OLD_CATEGORY_PARENT_ID = "1";
@@ -37,15 +38,16 @@ public class CategoryUpdateActionUtilsTest {
 
     @BeforeClass
     public static void setup() {
-        when(MOCK_OLD_CATEGORY.getName()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
-        when(MOCK_OLD_CATEGORY.getSlug()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_SLUG));
-        when(MOCK_OLD_CATEGORY.getExternalId()).thenReturn(MOCK_OLD_CATEGORY_EXTERNAL_ID);
-        when(MOCK_OLD_CATEGORY.getDescription()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_DESCRIPTION));
-        when(MOCK_OLD_CATEGORY.getMetaDescription()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_DESCRIPTION));
-        when(MOCK_OLD_CATEGORY.getMetaTitle()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_TITLE));
-        when(MOCK_OLD_CATEGORY.getMetaKeywords()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_KEYWORDS));
-        when(MOCK_OLD_CATEGORY.getOrderHint()).thenReturn(MOCK_OLD_CATEGORY_ORDERHINT);
-        when(MOCK_OLD_CATEGORY.getParent()).thenReturn(Reference.of(MOCK_CATEGORY_REFERENCE_TYPE, MOCK_OLD_CATEGORY_PARENT_ID));
+        MOCK_OLD_CATEGORY = getMockCategory(LOCALE,
+                MOCK_OLD_CATEGORY_NAME,
+                MOCK_OLD_CATEGORY_SLUG,
+                MOCK_OLD_CATEGORY_EXTERNAL_ID,
+                MOCK_OLD_CATEGORY_DESCRIPTION,
+                MOCK_OLD_CATEGORY_META_DESCRIPTION,
+                MOCK_OLD_CATEGORY_META_TITLE,
+                MOCK_OLD_CATEGORY_META_KEYWORDS,
+                MOCK_OLD_CATEGORY_ORDERHINT,
+                MOCK_OLD_CATEGORY_PARENT_ID);
     }
 
     @Test
@@ -53,13 +55,12 @@ public class CategoryUpdateActionUtilsTest {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getName()).thenReturn(LocalizedString.of(LOCALE, "newName"));
 
-        final SyncResult<Category> syncResult = buildChangeNameUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).hasSize(1);
+        final UpdateAction<Category> changeNameUpdateAction =
+                buildChangeNameUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft).orElse(null);
 
-        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
-        assertThat(categoryUpdateAction.getAction()).isEqualTo("changeName");
-        assertThat(((ChangeName) categoryUpdateAction).getName()).isEqualTo(LocalizedString.of(LOCALE, "newName"));
+        assertThat(changeNameUpdateAction).isNotNull();
+        assertThat(changeNameUpdateAction.getAction()).isEqualTo("changeName");
+        assertThat(((ChangeName) changeNameUpdateAction).getName()).isEqualTo(LocalizedString.of(LOCALE, "newName"));
     }
 
     @Test
@@ -68,10 +69,11 @@ public class CategoryUpdateActionUtilsTest {
         when(newCategoryDraftWithSameName.getName())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
-        final SyncResult<Category> syncResult =
+        final Optional<UpdateAction<Category>> changeNameUpdateAction =
                 buildChangeNameUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameName);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).isEmpty();
+
+        assertThat(changeNameUpdateAction).isNotNull();
+        assertThat(changeNameUpdateAction).isNotPresent();
     }
 
     @Test
@@ -79,14 +81,12 @@ public class CategoryUpdateActionUtilsTest {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getSlug()).thenReturn(LocalizedString.of(LOCALE, "newSlug"));
 
-        final SyncResult<Category> syncResult =
-                buildChangeSlugUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).hasSize(1);
+        final UpdateAction<Category> changeSlugUpdateAction =
+                buildChangeSlugUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft).orElse(null);
 
-        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
-        assertThat(categoryUpdateAction.getAction()).isEqualTo("changeSlug");
-        assertThat(((ChangeSlug) categoryUpdateAction).getSlug()).isEqualTo(LocalizedString.of(LOCALE, "newSlug"));
+        assertThat(changeSlugUpdateAction).isNotNull();
+        assertThat(changeSlugUpdateAction.getAction()).isEqualTo("changeSlug");
+        assertThat(((ChangeSlug) changeSlugUpdateAction).getSlug()).isEqualTo(LocalizedString.of(LOCALE, "newSlug"));
     }
 
     @Test
@@ -95,10 +95,11 @@ public class CategoryUpdateActionUtilsTest {
         when(newCategoryDraftWithSameSlug.getSlug())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_SLUG));
 
-        final SyncResult<Category> syncResult =
+        final Optional<UpdateAction<Category>> changeSlugUpdateAction =
                 buildChangeSlugUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameSlug);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).isEmpty();
+
+        assertThat(changeSlugUpdateAction).isNotNull();
+        assertThat(changeSlugUpdateAction).isNotPresent();
     }
 
     @Test
@@ -106,14 +107,13 @@ public class CategoryUpdateActionUtilsTest {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getDescription()).thenReturn(LocalizedString.of(LOCALE, "newDescription"));
 
-        final SyncResult<Category> syncResult =
-                buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).hasSize(1);
+        final UpdateAction<Category> setDescriptionUpdateAction =
+                buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft,
+                        mock(CategorySyncOptions.class)).orElse(null);
 
-        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
-        assertThat(categoryUpdateAction.getAction()).isEqualTo("setDescription");
-        assertThat(((SetDescription) categoryUpdateAction).getDescription())
+        assertThat(setDescriptionUpdateAction).isNotNull();
+        assertThat(setDescriptionUpdateAction.getAction()).isEqualTo("setDescription");
+        assertThat(((SetDescription) setDescriptionUpdateAction).getDescription())
                 .isEqualTo(LocalizedString.of(LOCALE, "newDescription"));
     }
 
@@ -123,24 +123,35 @@ public class CategoryUpdateActionUtilsTest {
         when(newCategoryDraftWithSameDescription.getDescription())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_DESCRIPTION));
 
-        final SyncResult<Category> syncResult =
-                buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameDescription);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).isEmpty();
+        final Optional<UpdateAction<Category>> setDescriptionUpdateAction =
+                buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameDescription,
+                        mock(CategorySyncOptions.class));
+
+        assertThat(setDescriptionUpdateAction).isNotNull();
+        assertThat(setDescriptionUpdateAction).isNotPresent();
     }
 
     @Test
-    public void buildSetDescriptionUpdateAction_WithNullNewDescription_ShouldAddStatistic() {
+    public void buildSetDescriptionUpdateAction_WithNullValues_ShouldNotBuildUpdateActionAndCallCallback() {
+        when(MOCK_OLD_CATEGORY.getId()).thenReturn("oldCatId");
         final CategoryDraft newCategory = mock(CategoryDraft.class);
-        when(newCategory.getDescription())
-                .thenReturn(null);
+        when(newCategory.getDescription()).thenReturn(null);
 
-        final SyncResult<Category> syncResult =
-                buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategory);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).isEmpty();
-        assertThat(syncResult.getStatistics()).hasSize(1);
-        assertThat(syncResult.getStatistics().get(CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION)).isEqualTo(1);
+        final ArrayList<Object> callBackResponse = new ArrayList<>();
+        final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
+
+        final CategorySyncOptions categorySyncOptions = mock(CategorySyncOptions.class);
+        when(categorySyncOptions.getUpdateActionWarningCallBack()).thenReturn(updateActionWarningCallBack);
+        doCallRealMethod().when(categorySyncOptions).callUpdateActionWarningCallBack(anyString());
+
+        final Optional<UpdateAction<Category>> setDescriptionUpdateAction =
+                buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategory,
+                        categorySyncOptions);
+
+        assertThat(setDescriptionUpdateAction).isNotNull();
+        assertThat(setDescriptionUpdateAction).isNotPresent();
+        assertThat(callBackResponse).hasSize(1);
+        assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset description field of category with id 'oldCatId'.");
     }
 
     @Test
@@ -148,14 +159,13 @@ public class CategoryUpdateActionUtilsTest {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getParent()).thenReturn(Reference.of("Category", "2"));
 
-        final SyncResult<Category> syncResult =
-                buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).hasSize(1);
+        final UpdateAction<Category> changeParentUpdateAction =
+                buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft,
+                        mock(CategorySyncOptions.class)).orElse(null);
 
-        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
-        assertThat(categoryUpdateAction.getAction()).isEqualTo("changeParent");
-        assertThat(((ChangeParent) categoryUpdateAction).getParent())
+        assertThat(changeParentUpdateAction).isNotNull();
+        assertThat(changeParentUpdateAction.getAction()).isEqualTo("changeParent");
+        assertThat(((ChangeParent) changeParentUpdateAction).getParent())
                 .isEqualTo(Reference.of("Category", "2"));
     }
 
@@ -165,24 +175,35 @@ public class CategoryUpdateActionUtilsTest {
         when(newCategoryDraftWithSameParent.getParent())
                 .thenReturn(Reference.of(MOCK_CATEGORY_REFERENCE_TYPE, MOCK_OLD_CATEGORY_PARENT_ID));
 
-        final SyncResult<Category> syncResult =
-                buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameParent);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).isEmpty();
+        final Optional<UpdateAction<Category>> changeParentUpdateAction =
+                buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameParent,
+                        mock(CategorySyncOptions.class));
+
+        assertThat(changeParentUpdateAction).isNotNull();
+        assertThat(changeParentUpdateAction).isNotPresent();
     }
 
     @Test
-    public void buildChangeParentUpdateAction_WithNullNewDescription_ShouldAddStatistic() {
+    public void buildChangeParentnUpdateAction_WithNullValues_ShouldNotBuildUpdateActionAndCallCallback() {
+        when(MOCK_OLD_CATEGORY.getId()).thenReturn("oldCatId");
         final CategoryDraft newCategory = mock(CategoryDraft.class);
-        when(newCategory.getParent())
-                .thenReturn(null);
+        when(newCategory.getParent()).thenReturn(null);
 
-        final SyncResult<Category> syncResult =
-                buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategory);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).isEmpty();
-        assertThat(syncResult.getStatistics()).hasSize(1);
-        assertThat(syncResult.getStatistics().get(CATEGORY_CHANGE_PARENT_EMPTY_PARENT)).isEqualTo(1);
+        final ArrayList<Object> callBackResponse = new ArrayList<>();
+        final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
+
+        final CategorySyncOptions categorySyncOptions = mock(CategorySyncOptions.class);
+        when(categorySyncOptions.getUpdateActionWarningCallBack()).thenReturn(updateActionWarningCallBack);
+        doCallRealMethod().when(categorySyncOptions).callUpdateActionWarningCallBack(anyString());
+
+        final Optional<UpdateAction<Category>> changeParentUpdateAction =
+                buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategory,
+                        categorySyncOptions);
+
+        assertThat(changeParentUpdateAction).isNotNull();
+        assertThat(changeParentUpdateAction).isNotPresent();
+        assertThat(callBackResponse).hasSize(1);
+        assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset parent field of category with id 'oldCatId'.");
     }
 
     @Test
@@ -190,14 +211,13 @@ public class CategoryUpdateActionUtilsTest {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getOrderHint()).thenReturn("099");
 
-        final SyncResult<Category> syncResult =
-                buildChangeOrderHintUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).hasSize(1);
+        final UpdateAction<Category> changeOrderHintUpdateAction =
+                buildChangeOrderHintUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft,
+                        mock(CategorySyncOptions.class)).orElse(null);
 
-        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
-        assertThat(categoryUpdateAction.getAction()).isEqualTo("changeOrderHint");
-        assertThat(((ChangeOrderHint) categoryUpdateAction).getOrderHint())
+        assertThat(changeOrderHintUpdateAction).isNotNull();
+        assertThat(changeOrderHintUpdateAction.getAction()).isEqualTo("changeOrderHint");
+        assertThat(((ChangeOrderHint) changeOrderHintUpdateAction).getOrderHint())
                 .isEqualTo("099");
     }
 
@@ -206,24 +226,35 @@ public class CategoryUpdateActionUtilsTest {
         final CategoryDraft newCategoryDraftWithSameOrderHint = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameOrderHint.getOrderHint()).thenReturn(MOCK_OLD_CATEGORY_ORDERHINT);
 
-        final SyncResult<Category> syncResult =
-                buildChangeOrderHintUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameOrderHint);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).isEmpty();
+        final Optional<UpdateAction<Category>> changeOrderHintUpdateAction =
+                buildChangeOrderHintUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameOrderHint,
+                        mock(CategorySyncOptions.class));
+
+        assertThat(changeOrderHintUpdateAction).isNotNull();
+        assertThat(changeOrderHintUpdateAction).isNotPresent();
     }
 
     @Test
-    public void buildChangeOrderHintUpdateAction_WithNullNewDescription_ShouldAddStatistic() {
+    public void buildChangeOrderHintUpdateAction_WithNullValues_ShouldNotBuildUpdateActionAndCallCallback() {
+        when(MOCK_OLD_CATEGORY.getId()).thenReturn("oldCatId");
         final CategoryDraft newCategory = mock(CategoryDraft.class);
-        when(newCategory.getOrderHint())
-                .thenReturn(null);
+        when(newCategory.getOrderHint()).thenReturn(null);
 
-        final SyncResult<Category> syncResult =
-                buildChangeOrderHintUpdateAction(MOCK_OLD_CATEGORY, newCategory);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).isEmpty();
-        assertThat(syncResult.getStatistics()).hasSize(1);
-        assertThat(syncResult.getStatistics().get(CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT)).isEqualTo(1);
+        final ArrayList<Object> callBackResponse = new ArrayList<>();
+        final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
+
+        final CategorySyncOptions categorySyncOptions = mock(CategorySyncOptions.class);
+        when(categorySyncOptions.getUpdateActionWarningCallBack()).thenReturn(updateActionWarningCallBack);
+        doCallRealMethod().when(categorySyncOptions).callUpdateActionWarningCallBack(anyString());
+
+        final Optional<UpdateAction<Category>> changeOrderHintUpdateAction =
+                buildChangeOrderHintUpdateAction(MOCK_OLD_CATEGORY, newCategory,
+                        categorySyncOptions);
+
+        assertThat(changeOrderHintUpdateAction).isNotNull();
+        assertThat(changeOrderHintUpdateAction).isNotPresent();
+        assertThat(callBackResponse).hasSize(1);
+        assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset orderHint field of category with id 'oldCatId'.");
     }
 
     @Test
@@ -231,14 +262,12 @@ public class CategoryUpdateActionUtilsTest {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getMetaTitle()).thenReturn(LocalizedString.of(LOCALE, "newMetaTitle"));
 
-        final SyncResult<Category> syncResult =
-                buildSetMetaTitleUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).hasSize(1);
+        final UpdateAction<Category> setMetaTitleUpdateAction =
+                buildSetMetaTitleUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft).orElse(null);
 
-        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
-        assertThat(categoryUpdateAction.getAction()).isEqualTo("setMetaTitle");
-        assertThat(((SetMetaTitle) categoryUpdateAction).getMetaTitle())
+        assertThat(setMetaTitleUpdateAction).isNotNull();
+        assertThat(setMetaTitleUpdateAction.getAction()).isEqualTo("setMetaTitle");
+        assertThat(((SetMetaTitle) setMetaTitleUpdateAction).getMetaTitle())
                 .isEqualTo(LocalizedString.of(LOCALE, "newMetaTitle"));
     }
 
@@ -248,10 +277,11 @@ public class CategoryUpdateActionUtilsTest {
         when(newCategoryDraftWithSameTitle.getMetaTitle())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_TITLE));
 
-        final SyncResult<Category> syncResult =
+        final Optional<UpdateAction<Category>> setMetaTitleUpdateAction =
                 buildSetMetaTitleUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameTitle);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).isEmpty();
+
+        assertThat(setMetaTitleUpdateAction).isNotNull();
+        assertThat(setMetaTitleUpdateAction).isNotPresent();
     }
 
     @Test
@@ -259,14 +289,12 @@ public class CategoryUpdateActionUtilsTest {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getMetaKeywords()).thenReturn(LocalizedString.of(LOCALE, "newMetaKW"));
 
-        final SyncResult<Category> syncResult =
-                buildSetMetaKeywordsUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).hasSize(1);
+        final UpdateAction<Category> setMetaKeywordsUpdateAction =
+                buildSetMetaKeywordsUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft).orElse(null);
 
-        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
-        assertThat(categoryUpdateAction.getAction()).isEqualTo("setMetaKeywords");
-        assertThat(((SetMetaKeywords) categoryUpdateAction).getMetaKeywords())
+        assertThat(setMetaKeywordsUpdateAction).isNotNull();
+        assertThat(setMetaKeywordsUpdateAction.getAction()).isEqualTo("setMetaKeywords");
+        assertThat(((SetMetaKeywords) setMetaKeywordsUpdateAction).getMetaKeywords())
                 .isEqualTo(LocalizedString.of(LOCALE, "newMetaKW"));
     }
 
@@ -276,10 +304,11 @@ public class CategoryUpdateActionUtilsTest {
         when(newCategoryDraftWithSameMetaKeywords.getMetaKeywords())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_KEYWORDS));
 
-        final SyncResult<Category> syncResult =
+        final Optional<UpdateAction<Category>> setMetaKeywordsUpdateAction =
                 buildSetMetaKeywordsUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameMetaKeywords);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).isEmpty();
+
+        assertThat(setMetaKeywordsUpdateAction).isNotNull();
+        assertThat(setMetaKeywordsUpdateAction).isNotPresent();
     }
 
     @Test
@@ -287,14 +316,12 @@ public class CategoryUpdateActionUtilsTest {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getMetaDescription()).thenReturn(LocalizedString.of(LOCALE, "newMetaDesc"));
 
-        final SyncResult<Category> syncResult =
-                buildSetMetaDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).hasSize(1);
+        final UpdateAction<Category> setMetaDescriptionUpdateAction =
+                buildSetMetaDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft).orElse(null);
 
-        final UpdateAction<Category> categoryUpdateAction = syncResult.getUpdateActions().get(0);
-        assertThat(categoryUpdateAction.getAction()).isEqualTo("setMetaDescription");
-        assertThat(((SetMetaDescription) categoryUpdateAction).getMetaDescription())
+        assertThat(setMetaDescriptionUpdateAction).isNotNull();
+        assertThat(setMetaDescriptionUpdateAction.getAction()).isEqualTo("setMetaDescription");
+        assertThat(((SetMetaDescription) setMetaDescriptionUpdateAction).getMetaDescription())
                 .isEqualTo(LocalizedString.of(LOCALE, "newMetaDesc"));
     }
 
@@ -304,9 +331,10 @@ public class CategoryUpdateActionUtilsTest {
         when(newCategoryDraftWithSameMetaDescription.getMetaDescription())
                 .thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_META_DESCRIPTION));
 
-        final SyncResult<Category> syncResult =
+        final Optional<UpdateAction<Category>> setMetaDescriptionUpdateAction =
                 buildSetMetaDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameMetaDescription);
-        assertThat(syncResult).isNotNull();
-        assertThat(syncResult.getUpdateActions()).isEmpty();
+
+        assertThat(setMetaDescriptionUpdateAction).isNotNull();
+        assertThat(setMetaDescriptionUpdateAction).isNotPresent();
     }
 }
