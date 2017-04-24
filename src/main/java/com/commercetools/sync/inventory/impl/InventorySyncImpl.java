@@ -1,10 +1,9 @@
 package com.commercetools.sync.inventory.impl;
 
 import com.commercetools.sync.inventory.InventorySync;
-import com.commercetools.sync.inventory.InventorySyncOptions;
+import com.commercetools.sync.inventory.helpers.InventorySyncOptions;
+import com.commercetools.sync.inventory.helpers.InventorySyncStatistics;
 import com.commercetools.sync.inventory.utils.InventorySyncUtils;
-import com.commercetools.sync.services.TypeService;
-import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
@@ -20,7 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.inventory.utils.InventoryDraftTransformer.transformToDrafts;
@@ -37,28 +35,29 @@ public final class InventorySyncImpl implements InventorySync {
     private static final Logger LOGGER = LoggerFactory.getLogger(InventorySyncImpl.class);
     private static final int BATCH_SIZE = 30;
 
-    private AtomicInteger processedCounter = new AtomicInteger(0);
-    private AtomicInteger createdCounter = new AtomicInteger(0);
-    private AtomicInteger updatedCounter = new AtomicInteger(0);
-    private AtomicInteger failedCounter = new AtomicInteger(0);
-    private AtomicInteger emptySkuCounter = new AtomicInteger(0);
-
+    /**
+     * Holds threads for executing sync process in parallel. Should be instantiated when parallel processing is
+     * enabled via {@link InventorySyncOptions}.
+     */
     private ExecutorService executorService = null;
+
+    /**
+     * Cache that maps supply channel key to supply channel Id for supply channels existing in database.
+     */
     private Map<String, String> supplyChannelKeyToId;
 
-    private InventorySyncOptions options;
     private InventoryService inventoryService;
-    private TypeService typeService;
+    private InventorySyncStatistics statistics;
+    private InventorySyncOptions options;
 
     public InventorySyncImpl(@Nonnull final InventorySyncOptions options) {
-        this(options, new InventoryServiceImpl(options.getCTPclient()), new TypeServiceImpl(options.getCTPclient()));
+        this(options, new InventoryServiceImpl(options.getCtpClient()));
     }
 
-    InventorySyncImpl(final InventorySyncOptions options, final InventoryService inventoryService,
-                      final TypeService typeService) {
+    InventorySyncImpl(final InventorySyncOptions options, final InventoryService inventoryService) {
         this.options = options;
         this.inventoryService = inventoryService;
-        this.typeService = typeService;
+        this.statistics = new InventorySyncStatistics();
         if (options.getParallelProcessing() > 1) {
             executorService = Executors.newFixedThreadPool(options.getParallelProcessing());
         }
@@ -73,7 +72,7 @@ public final class InventorySyncImpl implements InventorySync {
      *     <li>Actually <strong>performing</strong> changes in a target CTP project by sphere calls</li>
      * </ul>
      * The process is customized according to {@link InventorySyncOptions} passed to constructor of this object.
-     * After the process finishes you can obtain its summary by calling {@link InventorySyncImpl#getSummary()}.</p>
+     * After the process finishes you can obtain its summary by calling {@link InventorySyncImpl#getStatistics()}.</p>
      * <p><strong>This method is meant to be called once. For new sync process please create new {@link InventorySyncImpl}
      * instance!</strong></p>
      *
@@ -83,7 +82,7 @@ public final class InventorySyncImpl implements InventorySync {
     @Override
     public void syncInventoryDrafts(@Nonnull List<InventoryEntryDraft> inventories) {
         LOGGER.info(format("About to sync %d inventories into CTP project with key '%s'.",
-                inventories.size(), options.getCtpProjectKey()));
+                inventories.size(), options.getClientConfig().getProjectKey()));
 
         buildChannelMap();
         List<InventoryEntryDraft> accumulator = new LinkedList<>();
@@ -96,7 +95,7 @@ public final class InventorySyncImpl implements InventorySync {
                         accumulator = new LinkedList<>();
                     }
                 } else {
-                    emptySkuCounter.incrementAndGet();
+                    statistics.incrementUnprocessedDueToEmptySku();
                 }
             }
         }
@@ -104,8 +103,9 @@ public final class InventorySyncImpl implements InventorySync {
             runDraftsProcessing(accumulator);
         }
         awaitDraftsProcessingFinished();
+        statistics.calculateProcessingTime();
         LOGGER.info(format("Inventories sync for CTP project with key '%s' ended successfully!",
-                options.getCtpProjectKey()));
+                options.getClientConfig().getProjectKey()));
     }
 
     /**
@@ -123,19 +123,30 @@ public final class InventorySyncImpl implements InventorySync {
     }
 
     @Override
-    public String getSummary() {
-        //TODO implement (GITHUB ISSUE #17)
-        return null;
+    @Nonnull
+    public InventorySyncStatistics getStatistics() {
+        return statistics;
     }
 
+    /**
+     * Instantiate and fill {@code supplyChannelKeyToId} with values fetched from API.
+     */
     private void buildChannelMap() {
-        if (supplyChannelKeyToId == null) {
+        if (options.getParallelProcessing() > 1) {
             supplyChannelKeyToId = new ConcurrentHashMap<>();
-            inventoryService.fetchAllSupplyChannels()
-                    .forEach(c -> supplyChannelKeyToId.put(c.getKey(), c.getId()));
+        } else {
+            supplyChannelKeyToId = new HashMap<>();
         }
+        inventoryService.fetchAllSupplyChannels()
+                .forEach(c -> supplyChannelKeyToId.put(c.getKey(), c.getId()));
     }
 
+    /**
+     * Process batch in current thread in case of sequential processing or submit batch
+     * processing to {@code executorService} in case of parallel execution.
+     *
+     * @param drafts batch of {@link InventoryEntryDraft}
+     */
     private void runDraftsProcessing(final List<InventoryEntryDraft> drafts) {
         if (executorService != null) {
             executorService.submit(() -> processBatch(drafts));
@@ -144,6 +155,9 @@ public final class InventorySyncImpl implements InventorySync {
         }
     }
 
+    /**
+     * When processed in parallel it awaits for all tasks from {@code executorService} to end.
+     */
     private void awaitDraftsProcessingFinished() {
         if (executorService != null) {
             executorService.shutdown();
@@ -155,6 +169,16 @@ public final class InventorySyncImpl implements InventorySync {
         }
     }
 
+    /**
+     * Method process batch of {@link InventoryEntryDraft}. The processing means:
+     * <ol>
+     *     <li>Fetching existing {@link InventoryEntry} that correspond to passed {@code drafts}</li>
+     *     <li>Deciding if each draft should be used for creating new entry or updating existing one</li>
+     *     <li>Attempting to create new entries or update existing ones</li>
+     *     <li>Updates the {@code statistics} object backed for this instance</li>
+     * </ol>
+     * @param drafts batch of drafts that need to be synced
+     */
     private void processBatch(final List<InventoryEntryDraft> drafts) {
         final Map<SkuKeyTuple, InventoryEntry> existingInventories = fetchExistingInventories(drafts);
         drafts.forEach(draft -> {
@@ -165,58 +189,106 @@ public final class InventorySyncImpl implements InventorySync {
             } else {
                 attemptCreate(draft);
             }
-            processedCounter.incrementAndGet();
+            statistics.incrementProcessed();
         });
     }
 
+    /**
+     * Returns mapping of {@link SkuKeyTuple} to {@link InventoryEntry} of instances existing in a database.
+     * Instances are fetched from API by skus, that corresponds to skus present in {@code drafts}.
+     *
+     * @param drafts {@link List} of drafts
+     * @return {@link SkuKeyTuple} to {@link InventoryEntry} of existing entries that correspond to passed
+     * {@code drafts} by sku comparision.
+     */
     private Map<SkuKeyTuple, InventoryEntry> fetchExistingInventories(final List<InventoryEntryDraft> drafts) {
         final Set<String> skus = extractSkus(drafts);
         final List<InventoryEntry> existingEntries = inventoryService.fetchInventoryEntriesBySkus(skus);
         return mapSkuAndKeyToInventoryEntry(existingEntries);
     }
 
+    /**
+     *
+     * @param inventories {@link List} of {@link InventoryEntryDraft} where each draft contains its sku
+     * @return {@link Set} of distinct skus found in {@code inventories}
+     */
     private Set<String> extractSkus(final List<InventoryEntryDraft> inventories) {
         return inventories.stream()
                 .map(InventoryEntryDraft::getSku)
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * Creates map of {@link SkuKeyTuple} to {@link InventoryEntry}, so that all distinct tuples of sku and supply
+     * channel key from {@code inventories} are mapped to entry instance. For use in comparision with
+     * {@link InventoryEntryDraft} i.e. create mapping from existing entries and then decide if specific draft
+     * should be used for creation of new entry or for building update actions for existing entry (by checking if
+     * sku-key tuple of draft is present in returned mapping)
+     *
+     * @param inventories list of {@link InventoryEntry}
+     * @return {@link Map} of {@link SkuKeyTuple} to {@link InventoryEntry}
+     */
     private Map<SkuKeyTuple, InventoryEntry> mapSkuAndKeyToInventoryEntry(final List<InventoryEntry> inventories) {
         final Map<SkuKeyTuple, InventoryEntry> skuKeyToInventory = new HashMap<>();
         inventories.forEach(entry -> skuKeyToInventory.put(SkuKeyTuple.of(entry), entry));
         return skuKeyToInventory;
     }
 
+    /**
+     * Tries to update {@code entry} in database with data from {@code draft}.
+     * It calculates list of {@link UpdateAction} and calls API only when there is a need.
+     * Before calculate differences, the channel reference from {@code draft} is replaced, so it points to
+     * proper channel ID in target system.
+     * It either updates inventory entry and increments "updated" counter in statistics, or increments "failed" counter
+     * and log error in case of any exception.
+     *
+     * @param entry entry from existing system that could be updated.
+     * @param draft draft containing data that could differ from data in {@code entry}.
+     *              <strong>Sku isn't compared</strong>
+     */
     private void attemptUpdate(final InventoryEntry entry, final InventoryEntryDraft draft) {
         final Optional<InventoryEntryDraft> fixedDraft = replaceChannelReference(draft);
         if (fixedDraft.isPresent()) {
             final List<UpdateAction<InventoryEntry>> updateActions =
-                    InventorySyncUtils.buildActions(entry, fixedDraft.get(), typeService);
+                    InventorySyncUtils.buildActions(entry, fixedDraft.get(), options);
 
             if (!updateActions.isEmpty()) {
                 try {
                     inventoryService.updateInventoryEntry(entry, updateActions);
-                    updatedCounter.incrementAndGet();
+                    statistics.incrementUpdated();
                 } catch (Exception e) {
-                    failedCounter.incrementAndGet();
+                    LOGGER.error(format("Failed to update inventory entry ['%s'] with data from draft ['%s'].",
+                            entry.toString(), fixedDraft.get().toString()), e);
+                    statistics.incrementFailed();
                 }
             }
         } else {
-            failedCounter.incrementAndGet();
+            statistics.incrementFailed();
         }
     }
 
+    /**
+     * Tries to create Inventory Entry in database, using {@code draft}.
+     * Before calls API, the channel reference from {@code draft} is replaced, so it points to proper channel ID
+     * in target system.
+     * It either creates inventory entry and increments "created" counter in statistics, or increments "failed" counter
+     * and log error in case of any exception.
+     *
+     * @param draft draft of new inventory entry.
+     */
     private void attemptCreate(final InventoryEntryDraft draft) {
         final Optional<InventoryEntryDraft> fixedDraft = replaceChannelReference(draft);
         if (fixedDraft.isPresent()) {
             try {
                 inventoryService.createInventoryEntry(fixedDraft.get());
-                createdCounter.incrementAndGet();
+                statistics.incrementCreated();
             } catch (Exception e) {
-                failedCounter.incrementAndGet();
+                LOGGER.error(format("Failed to create inventory entry from draft ['%s'].",
+                        fixedDraft.get().toString()), e);
+                statistics.incrementFailed();
             }
         } else {
-            failedCounter.incrementAndGet();
+            statistics.incrementFailed();
         }
     }
 

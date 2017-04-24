@@ -1,12 +1,12 @@
-package com.commercetools.sync.inventory;
+package com.commercetools.sync.inventory.helpers;
 
-import com.commercetools.sync.commons.BaseOptions;
+import com.commercetools.sync.commons.helpers.BaseSyncOptions;
 
 import javax.annotation.Nonnull;
 
 //TODO implement (GITHUB ISSUE #15)
 //TODO document
-public class InventorySyncOptions extends BaseOptions {
+public class InventorySyncOptions extends BaseSyncOptions {
 
     //Indicates whether create supply channel if it doesn't exists in system for key from draft.
     private boolean ensureChannels = false;

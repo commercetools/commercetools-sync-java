@@ -1,6 +1,7 @@
 package com.commercetools.sync.inventory.utils;
 
 import com.commercetools.sync.inventory.InventoryEntryMock;
+import com.commercetools.sync.inventory.helpers.InventorySyncOptions;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
@@ -34,7 +35,7 @@ public class InventorySyncUtilsTest {
     @Test
     public void buidActions_returnsEmptyList_havingSimilarEntries() {
         List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
-                .buildActions(inventoryEntry, similarDraft, mock(TypeService.class));
+                .buildActions(inventoryEntry, similarDraft, mock(InventorySyncOptions.class));
 
         assertThat(actions).isEmpty();
     }
@@ -42,7 +43,7 @@ public class InventorySyncUtilsTest {
     @Test
     public void buildActions_returnsActions_havingVariouEntries() {
         List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
-                .buildActions(inventoryEntry, variousDraft, mock(TypeService.class));
+                .buildActions(inventoryEntry, variousDraft, mock(InventorySyncOptions.class));
 
         assertThat(actions).hasSize(4);
     }

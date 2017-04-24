@@ -13,6 +13,7 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
+//TODO delete this when SDK release their transformer.
 /**
  * This class provides static utility methods for converting objects of {@link InventoryEntry}
  * into {@link InventoryEntryDraft}.
@@ -54,7 +55,6 @@ public final class InventoryDraftTransformer {
                 .collect(toList());
     }
 
-    //TODO move this to some commons?
     /**
      * Returns new {@link CustomFieldsDraft} containing same data as {@code customFields}.
      *

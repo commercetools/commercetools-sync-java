@@ -1,6 +1,6 @@
 package com.commercetools.sync.inventory.utils;
 
-import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.inventory.helpers.InventorySyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -24,21 +24,21 @@ public final class InventorySyncUtils {
     @Nonnull
     public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldEntry,
                                                                   @Nonnull final InventoryEntry newEntry,
-                                                                  @Nonnull final TypeService typeService) {
+                                                                  @Nonnull final InventorySyncOptions syncOptions) {
         final InventoryEntryDraft newEntryDraft = transformToDraft(newEntry);
-        return buildActions(oldEntry, newEntryDraft, typeService);
+        return buildActions(oldEntry, newEntryDraft, syncOptions);
     }
 
     @Nonnull
     public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldEntry,
                                                                   @Nonnull final InventoryEntryDraft newEntry,
-                                                                  @Nonnull final TypeService typeService) {
+                                                                  @Nonnull final InventorySyncOptions syncOptions) {
         final List<UpdateAction<InventoryEntry>> actions = new LinkedList<>();
         actions.addAll(buildChangeQuantityAction(oldEntry, newEntry));
         actions.addAll(buildSetRestockableInDaysAction(oldEntry, newEntry));
         actions.addAll(buildSetExpectedDeliveryAction(oldEntry, newEntry));
         actions.addAll(buildSetSupplyChannelAction(oldEntry, newEntry));
-        actions.addAll(buildCustomUpdateActions(oldEntry, newEntry, typeService).getUpdateActions());
+        actions.addAll(buildCustomUpdateActions(oldEntry, newEntry, syncOptions));
         return actions;
     }
 }

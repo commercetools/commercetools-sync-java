@@ -1,10 +1,12 @@
 package com.commercetools.sync.inventory.impl;
 
+import com.commercetools.sync.commons.utils.ClientConfigurationUtils;
 import com.commercetools.sync.inventory.InventoryEntryMock;
 import com.commercetools.sync.inventory.InventorySync;
-import com.commercetools.sync.inventory.InventorySyncOptions;
+import com.commercetools.sync.inventory.helpers.InventorySyncOptions;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.models.Reference;
@@ -92,15 +94,18 @@ public class InventorySyncImplTest {
     public void syncInventoryDrafts_returnsWithoutExceptions_havingParallelOption() {
         final InventorySyncOptions options = mock(InventorySyncOptions.class);
         when(options.getParallelProcessing()).thenReturn(4);
+        when(options.getClientConfig()).thenReturn(SphereClientConfig.of("123","123","123"));
         final List<InventoryEntryDraft> moreDrafts = Stream.generate(() -> drafts)
                 .limit(20)
                 .flatMap(list -> list.stream())
                 .collect(Collectors.toList());
-        (new InventorySyncImpl(options, mockInventoryService(), mockTypeService())).syncInventoryDrafts(moreDrafts);
+        (new InventorySyncImpl(options, mockInventoryService())).syncInventoryDrafts(moreDrafts);
     }
 
     private InventorySync getInventorySyncer() {
-        return new InventorySyncImpl(mock(InventorySyncOptions.class), mockInventoryService(), mockTypeService());
+        final InventorySyncOptions options = mock(InventorySyncOptions.class);
+        when(options.getClientConfig()).thenReturn(SphereClientConfig.of("123","123","123"));
+        return new InventorySyncImpl(options, mockInventoryService());
     }
 
     private InventoryService mockInventoryService() {

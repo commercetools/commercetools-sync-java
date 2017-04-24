@@ -1,5 +1,6 @@
 package com.commercetools.sync.inventory;
 
+import com.commercetools.sync.inventory.helpers.InventorySyncStatistics;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 
@@ -13,5 +14,5 @@ public interface InventorySync {
 
     void syncInventory(@Nonnull final List<InventoryEntry> inventories);
 
-    String getSummary();
+    InventorySyncStatistics getStatistics();
 }
