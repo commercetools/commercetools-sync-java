@@ -7,6 +7,14 @@ import io.sphere.sdk.models.Resource;
 import javax.annotation.Nonnull;
 import java.util.List;
 
+/**
+ * Generic Sync interface
+ *
+ * @param <T> represents a CTP draft resource type for example: {@link io.sphere.sdk.categories.CategoryDraft},
+ *            {@link io.sphere.sdk.inventory.InventoryEntryDraft}, etc..
+ * @param <S> represents a CTP resource type for example: {@link io.sphere.sdk.categories.Category},
+ *            {@link io.sphere.sdk.inventory.InventoryEntry}, etc..
+ */
 public interface Sync<T, S extends Resource<S>> {
     /**
      * Given a list of resource (e.g. categories, products, etc..) drafts. This method compares each new resource in this
