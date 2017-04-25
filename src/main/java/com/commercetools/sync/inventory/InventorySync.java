@@ -33,7 +33,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
 
     /*
      * Holds threads for executing sync process in parallel. Should be instantiated when parallel processing is
-     * enabled via {@link InventorySyncOptions}.
+     * enabled via InventorySyncOptions.
      */
     private ExecutorService executorService = null;
 
@@ -78,8 +78,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
     public void syncDrafts(@Nonnull List<InventoryEntryDraft> inventories) {
         LOGGER.info(format("About to sync %d inventories into CTP project with key '%s'.",
                 inventories.size(), options.getClientConfig().getProjectKey()));
-        //TODO assert if time management in base statistics doesn't require to start timer here
-
+        statistics.startTimer();
         buildChannelMap();
         List<InventoryEntryDraft> accumulator = new LinkedList<>();
         for (InventoryEntryDraft entry : inventories) {
