@@ -1,6 +1,6 @@
 package com.commercetools.sync.inventory.impl;
 
-import com.commercetools.sync.inventory.InventorySync;
+import com.commercetools.sync.commons.Sync;
 import com.commercetools.sync.inventory.helpers.InventorySyncOptions;
 import com.commercetools.sync.inventory.helpers.InventorySyncStatistics;
 import com.commercetools.sync.inventory.utils.InventorySyncUtils;
@@ -24,11 +24,10 @@ import java.util.stream.Collectors;
 import static com.commercetools.sync.inventory.utils.InventoryDraftTransformer.transformToDrafts;
 import static java.lang.String.format;
 
-//TODO test
 /**
  * Default implementation of inventories sync process.
  */
-public final class InventorySyncImpl implements InventorySync {
+public final class InventorySyncImpl implements Sync<InventoryEntryDraft, InventoryEntry> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventorySyncImpl.class);
 
@@ -76,7 +75,7 @@ public final class InventorySyncImpl implements InventorySync {
      *                                CTP project.
      */
     @Override
-    public void syncInventoryDrafts(@Nonnull List<InventoryEntryDraft> inventories) {
+    public void syncDrafts(@Nonnull List<InventoryEntryDraft> inventories) {
         LOGGER.info(format("About to sync %d inventories into CTP project with key '%s'.",
                 inventories.size(), options.getClientConfig().getProjectKey()));
         //TODO assert if time management in base statistics doesn't require to start timer here
@@ -107,16 +106,16 @@ public final class InventorySyncImpl implements InventorySync {
 
     /**
      * Converts {@code inventories} to {@link InventoryEntryDraft} objects and perform full synchronisation process
-     * as described in {@link InventorySyncImpl#syncInventoryDrafts(List)}.
+     * as described in {@link InventorySyncImpl#syncDrafts(List)}.
      *
      * @param inventories  {@link List} of {@link InventoryEntry} that you would like to sync into your CTP project.
-     * @see InventorySyncImpl#syncInventoryDrafts(List)
+     * @see InventorySyncImpl#syncDrafts(List)
      */
     @Override
-    public void syncInventory(@Nonnull List<InventoryEntry> inventories) {
+    public void sync(@Nonnull List<InventoryEntry> inventories) {
         LOGGER.info(format("Converting inventory entries to InventoryEntryDraft objects."));
         final List<InventoryEntryDraft> drafts = transformToDrafts(inventories);
-        syncInventoryDrafts(drafts);
+        syncDrafts(drafts);
     }
 
     @Override

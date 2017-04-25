@@ -1,7 +1,6 @@
 package com.commercetools.sync.inventory.impl;
 
 import com.commercetools.sync.inventory.InventoryEntryMock;
-import com.commercetools.sync.inventory.InventorySync;
 import com.commercetools.sync.inventory.helpers.InventorySyncOptions;
 import com.commercetools.sync.inventory.helpers.InventorySyncStatistics;
 import com.commercetools.sync.services.TypeService;
@@ -92,23 +91,23 @@ public class InventorySyncImplTest {
 
 
     @Test
-    public void syncInventoryDrafts_returnsWithoutExceptions() {
-        getInventorySyncer(30, 1, false).syncInventoryDrafts(drafts);
+    public void syncDrafts_returnsWithoutExceptions() {
+        getInventorySyncer(30, 1, false).syncDrafts(drafts);
     }
 
     @Test
-    public void syncInventoryDrafts_returnsWithoutExceptions_havingParallelOption() {
+    public void syncDrafts_returnsWithoutExceptions_havingParallelOption() {
         final List<InventoryEntryDraft> moreDrafts = Stream.generate(() -> drafts)
                 .limit(20)
                 .flatMap(list -> list.stream())
                 .collect(Collectors.toList());
-        getInventorySyncer(10, 4, false).syncInventoryDrafts(moreDrafts);
+        getInventorySyncer(10, 4, false).syncDrafts(moreDrafts);
     }
 
     @Test
     public void getStatistics_returnsProperValues() {
-        final InventorySync inventorySync = getInventorySyncer(30, 1, false);
-        inventorySync.syncInventoryDrafts(drafts);
+        final InventorySyncImpl inventorySync = getInventorySyncer(30, 1, false);
+        inventorySync.syncDrafts(drafts);
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats).isNotNull();
         assertThat(stats.getProcessed()).isEqualTo(9);
@@ -118,54 +117,53 @@ public class InventorySyncImplTest {
     }
 
     @Test
-    public void syncInventoryDrafts_createsEntriesWithUnknownChannels_havingEnsuredChannels() {
+    public void syncDrafts_createsEntriesWithUnknownChannels_havingEnsuredChannels() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
-        final InventorySync inventorySync = getInventorySyncer(30, 1, true);
-        inventorySync.syncInventoryDrafts(asList(draftWithNewChannel));
+        final InventorySyncImpl inventorySync = getInventorySyncer(30, 1, true);
+        inventorySync.syncDrafts(asList(draftWithNewChannel));
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats.getProcessed()).isEqualTo(1);
         assertThat(stats.getCreated()).isEqualTo(1);
     }
 
     @Test
-    public void syncInventoryDrafts_notSyncEntriesWithUnknownChannels_havingNotEnsuredChannels() {
+    public void syncDrafts_notSyncEntriesWithUnknownChannels_havingNotEnsuredChannels() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
-        final InventorySync inventorySync = getInventorySyncer(30, 1, false);
-        inventorySync.syncInventoryDrafts(asList(draftWithNewChannel));
+        final InventorySyncImpl inventorySync = getInventorySyncer(30, 1, false);
+        inventorySync.syncDrafts(asList(draftWithNewChannel));
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats.getProcessed()).isEqualTo(1);
         assertThat(stats.getFailed()).isEqualTo(1);
     }
 
     @Test
-    public void syncInventoryDrafts_notSyncEntriesWithNullSku() {
+    public void syncDrafts_notSyncEntriesWithNullSku() {
         final InventoryEntryDraft draftWithNullSku = InventoryEntryDraft.of(null, 12);
-        final InventorySync inventorySync = getInventorySyncer(30, 1, false);
-        inventorySync.syncInventoryDrafts(asList(draftWithNullSku));
+        final InventorySyncImpl inventorySync = getInventorySyncer(30, 1, false);
+        inventorySync.syncDrafts(asList(draftWithNullSku));
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats.getProcessed()).isEqualTo(0);
         assertThat(stats.getUnprocessedDueToEmptySku()).isEqualTo(1);
     }
 
     @Test
-    public void syncInventoryDrafts_returnsWithoutException_havingProblemsEncountered() {
+    public void syncDrafts_returnsWithoutException_havingProblemsEncountered() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
         final List<InventoryEntryDraft> toProcess = new ArrayList<>(drafts);
         toProcess.add(draftWithNewChannel);
-        final InventorySync inventorySync = new InventorySyncImpl(mockInventorySyncOptions(30, 1, true),
+        final InventorySyncImpl inventorySync = new InventorySyncImpl(mockInventorySyncOptions(30, 1, true),
                 mockThrowingInventoryService());
 
-        inventorySync.syncInventoryDrafts(toProcess);
+        inventorySync.syncDrafts(toProcess);
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats.getProcessed()).isEqualTo(10);
         assertThat(stats.getFailed()).isEqualTo(7);
-
     }
 
-    private InventorySync getInventorySyncer(int batchSize, int parallelThreads, boolean ensureChannels) {
+    private InventorySyncImpl getInventorySyncer(int batchSize, int parallelThreads, boolean ensureChannels) {
         final InventorySyncOptions options = mockInventorySyncOptions(batchSize, parallelThreads, ensureChannels);
         return new InventorySyncImpl(options, mockInventoryService());
     }
