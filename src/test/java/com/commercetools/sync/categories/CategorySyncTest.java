@@ -3,7 +3,6 @@ package com.commercetools.sync.categories;
 
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.products.ProductVariantDraft;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -14,7 +13,6 @@ import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCat
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class CategorySyncTest {
@@ -29,21 +27,6 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(0);
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo("Summary: 0 categories were processed in total " +
                 "(0 created, 0 updated and 0 categories failed to sync).");
-    }
-
-    @Test
-    public void syncDrafts_WithAWrongListOfDrafts_ShouldFailSync() {
-        final CategorySync categorySync = getMockCategorySync();
-        final ArrayList<ProductVariantDraft> drafts = new ArrayList<>();
-        drafts.add(mock(ProductVariantDraft.class));
-
-        categorySync.syncDrafts(drafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo("Summary: 0 categories were processed in total " +
-                "(0 created, 0 updated and 1 categories failed to sync).");
     }
 
     @Test

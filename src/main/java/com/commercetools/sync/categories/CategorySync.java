@@ -18,7 +18,7 @@ import java.util.List;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public class CategorySync implements Sync {
+public class CategorySync implements Sync<CategoryDraft, Category> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategorySync.class);
     private final CategorySyncOptions syncOptions;
     private final CategorySyncStatistics statistics;
@@ -39,29 +39,23 @@ public class CategorySync implements Sync {
      * the optional error callback specified in the {@code syncOptions} is called.
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
-     * @param <T>            the type of the resource draft. In this case CategoryDraft.
      */
     @Override
-    public <T> void syncDrafts(@Nonnull final List<T> categoryDrafts) {
+    public void syncDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {
         LOGGER.info(format("About to sync %d category drafts into CTP project with key '%s'."
                 , categoryDrafts.size(), getSyncOptions().getClientConfig().getProjectKey()));
         for (int i = 0; i < categoryDrafts.size(); i++) {
-            try {
-                final CategoryDraft categoryDraft = (CategoryDraft) categoryDrafts.get(i);
-                if (categoryDraft != null) {
-                    getStatistics().incrementProcessed();
-                    final String externalId = categoryDraft.getExternalId();
-                    if (isNotBlank(externalId)) {
-                        createOrUpdateCategory(categoryDraft);
-                    } else {
-                        failSync(format("CategoryDraft with name: %s doesn't have an externalId.",
-                                categoryDraft.getName().toString()), null);
-                    }
+            final CategoryDraft categoryDraft = categoryDrafts.get(i);
+            if (categoryDraft != null) {
+                getStatistics().incrementProcessed();
+                final String externalId = categoryDraft.getExternalId();
+                if (isNotBlank(externalId)) {
+                    createOrUpdateCategory(categoryDraft);
+                } else {
+                    failSync(format("CategoryDraft with name: %s doesn't have an externalId.",
+                            categoryDraft.getName().toString()), null);
                 }
-            } catch (ClassCastException e) {
-                failSync(format("Element at position %d is not an instance of CategoryDraft.", i), e);
             }
-
         }
         getStatistics().calculateProcessingTime();
     }
@@ -180,7 +174,7 @@ public class CategorySync implements Sync {
     }
 
     @Override
-    public <T> void sync(@Nonnull final List<T> categories) {
+    public void sync(@Nonnull final List<Category> categories) {
         //TODO: SEE GITHUB ISSUE#12
     }
 
