@@ -1,6 +1,5 @@
-package com.commercetools.sync.inventory.impl;
+package com.commercetools.sync.inventory;
 
-import com.commercetools.sync.inventory.InventoryEntryMock;
 import com.commercetools.sync.inventory.helpers.InventorySyncOptions;
 import com.commercetools.sync.inventory.helpers.InventorySyncStatistics;
 import com.commercetools.sync.services.TypeService;
@@ -26,9 +25,9 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class InventorySyncImplTest {
+public class InventorySyncTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InventorySyncImplTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InventorySyncTest.class);
 
     private final static String SKU_1 = "1000";
     private final static String SKU_2 = "2000";
@@ -106,7 +105,7 @@ public class InventorySyncImplTest {
 
     @Test
     public void getStatistics_returnsProperValues() {
-        final InventorySyncImpl inventorySync = getInventorySyncer(30, 1, false);
+        final InventorySync inventorySync = getInventorySyncer(30, 1, false);
         inventorySync.syncDrafts(drafts);
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats).isNotNull();
@@ -120,7 +119,7 @@ public class InventorySyncImplTest {
     public void syncDrafts_createsEntriesWithUnknownChannels_havingEnsuredChannels() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
-        final InventorySyncImpl inventorySync = getInventorySyncer(30, 1, true);
+        final InventorySync inventorySync = getInventorySyncer(30, 1, true);
         inventorySync.syncDrafts(asList(draftWithNewChannel));
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats.getProcessed()).isEqualTo(1);
@@ -131,7 +130,7 @@ public class InventorySyncImplTest {
     public void syncDrafts_notSyncEntriesWithUnknownChannels_havingNotEnsuredChannels() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
-        final InventorySyncImpl inventorySync = getInventorySyncer(30, 1, false);
+        final InventorySync inventorySync = getInventorySyncer(30, 1, false);
         inventorySync.syncDrafts(asList(draftWithNewChannel));
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats.getProcessed()).isEqualTo(1);
@@ -141,7 +140,7 @@ public class InventorySyncImplTest {
     @Test
     public void syncDrafts_notSyncEntriesWithNullSku() {
         final InventoryEntryDraft draftWithNullSku = InventoryEntryDraft.of(null, 12);
-        final InventorySyncImpl inventorySync = getInventorySyncer(30, 1, false);
+        final InventorySync inventorySync = getInventorySyncer(30, 1, false);
         inventorySync.syncDrafts(asList(draftWithNullSku));
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats.getProcessed()).isEqualTo(0);
@@ -154,7 +153,7 @@ public class InventorySyncImplTest {
                 Channel.referenceOfId(KEY_3));
         final List<InventoryEntryDraft> toProcess = new ArrayList<>(drafts);
         toProcess.add(draftWithNewChannel);
-        final InventorySyncImpl inventorySync = new InventorySyncImpl(mockInventorySyncOptions(30, 1, true),
+        final InventorySync inventorySync = new InventorySync(mockInventorySyncOptions(30, 1, true),
                 mockThrowingInventoryService());
 
         inventorySync.syncDrafts(toProcess);
@@ -163,9 +162,9 @@ public class InventorySyncImplTest {
         assertThat(stats.getFailed()).isEqualTo(7);
     }
 
-    private InventorySyncImpl getInventorySyncer(int batchSize, int parallelThreads, boolean ensureChannels) {
+    private InventorySync getInventorySyncer(int batchSize, int parallelThreads, boolean ensureChannels) {
         final InventorySyncOptions options = mockInventorySyncOptions(batchSize, parallelThreads, ensureChannels);
-        return new InventorySyncImpl(options, mockInventoryService());
+        return new InventorySync(options, mockInventoryService());
     }
 
     private InventorySyncOptions mockInventorySyncOptions(int batchSize, int parallelThreads, boolean ensureChannels) {

@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventory.impl;
+package com.commercetools.sync.inventory;
 
 import com.commercetools.sync.commons.Sync;
 import com.commercetools.sync.inventory.helpers.InventorySyncOptions;
@@ -27,9 +27,9 @@ import static java.lang.String.format;
 /**
  * Default implementation of inventories sync process.
  */
-public final class InventorySyncImpl implements Sync<InventoryEntryDraft, InventoryEntry> {
+public final class InventorySync implements Sync<InventoryEntryDraft, InventoryEntry> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InventorySyncImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InventorySync.class);
 
     /*
      * Holds threads for executing sync process in parallel. Should be instantiated when parallel processing is
@@ -45,11 +45,11 @@ public final class InventorySyncImpl implements Sync<InventoryEntryDraft, Invent
     private InventorySyncStatistics statistics;
     private InventorySyncOptions options;
 
-    public InventorySyncImpl(@Nonnull final InventorySyncOptions options) {
+    public InventorySync(@Nonnull final InventorySyncOptions options) {
         this(options, new InventoryServiceImpl(options.getCtpClient()));
     }
 
-    InventorySyncImpl(final InventorySyncOptions options, final InventoryService inventoryService) {
+    InventorySync(final InventorySyncOptions options, final InventoryService inventoryService) {
         this.options = options;
         this.inventoryService = inventoryService;
         this.statistics = new InventorySyncStatistics();
@@ -67,8 +67,8 @@ public final class InventorySyncImpl implements Sync<InventoryEntryDraft, Invent
      *     <li>Actually <strong>performing</strong> changes in a target CTP project by sphere calls</li>
      * </ul>
      * The process is customized according to {@link InventorySyncOptions} passed to constructor of this object.
-     * After the process finishes you can obtain its summary by calling {@link InventorySyncImpl#getStatistics()}.</p>
-     * <p><strong>This method is meant to be called once. For new sync process please create new {@link InventorySyncImpl}
+     * After the process finishes you can obtain its summary by calling {@link InventorySync#getStatistics()}.</p>
+     * <p><strong>This method is meant to be called once. For new sync process please create new {@link InventorySync}
      * instance!</strong></p>
      *
      * @param inventories {@link List} of {@link InventoryEntryDraft} containing data that would be synced into
@@ -106,10 +106,10 @@ public final class InventorySyncImpl implements Sync<InventoryEntryDraft, Invent
 
     /**
      * Converts {@code inventories} to {@link InventoryEntryDraft} objects and perform full synchronisation process
-     * as described in {@link InventorySyncImpl#syncDrafts(List)}.
+     * as described in {@link InventorySync#syncDrafts(List)}.
      *
      * @param inventories  {@link List} of {@link InventoryEntry} that you would like to sync into your CTP project.
-     * @see InventorySyncImpl#syncDrafts(List)
+     * @see InventorySync#syncDrafts(List)
      */
     @Override
     public void sync(@Nonnull List<InventoryEntry> inventories) {

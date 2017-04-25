@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventory.impl;
+package com.commercetools.sync.inventory;
 
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
@@ -11,7 +11,7 @@ import java.util.Set;
 
 /**
  * Interface contains methods to perform sphere queries/commands related to Inventory topic.
- * Listed operations are used in {@link InventorySyncImpl}.
+ * Listed operations are used in {@link InventorySync}.
  */
 interface InventoryService {
 

@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventory.impl;
+package com.commercetools.sync.inventory;
 
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;

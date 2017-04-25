@@ -1,6 +1,5 @@
 package com.commercetools.sync.inventory.utils;
 
-import com.commercetools.sync.inventory.utils.InventoryDraftTransformer;
 import com.commercetools.sync.inventory.InventoryEntryMock;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
