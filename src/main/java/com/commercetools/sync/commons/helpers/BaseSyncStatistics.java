@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 
-public class BaseSyncStatistics {
+public abstract class BaseSyncStatistics {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseSyncStatistics.class);
 
     private String reportMessage;
@@ -27,15 +27,18 @@ public class BaseSyncStatistics {
     private long processingTimeInMillis;
     private String humanReadableProcessingTime;
 
-    /**
-     * Creates a new instance of {@link BaseSyncStatistics} which stores the current time of instantiation in the
-     * {@code startTime} instance variable that will be used later when {@link BaseSyncStatistics#calculateProcessingTime()}
-     * is called to calculate the total time of processing.
-     */
+
     public BaseSyncStatistics() {
-        startTime = System.currentTimeMillis();
         reportMessage = StringUtil.EMPTY_STRING;
         humanReadableProcessingTime = StringUtil.EMPTY_STRING;
+    }
+
+    /**
+     * Stores the current time of instantiation in the {@code startTime} instance variable that will be used later
+     * when {@link BaseSyncStatistics#calculateProcessingTime()} is called to calculate the total time of processing.
+     */
+    public void startTimer() {
+        startTime = System.currentTimeMillis();
     }
 
     /**
@@ -103,8 +106,8 @@ public class BaseSyncStatistics {
     }
 
     /**
-     * Calculates the processing time taken by the subtracting the time when this {@link BaseSyncStatistics} instance
-     * was instantiated from the current time in Milliseconds. It also sets the processing time in all the units
+     * Calculates the processing time taken by the subtracting the time, when the {@link BaseSyncStatistics#startTimer()}
+     * method of this instance was called, from the current time in Milliseconds. It also sets the processing time in all the units
      * {@code processingTimeInDays}, {@code processingTimeInHours}, {@code processingTimeInMinutes},
      * {@code processingTimeInSeconds} and {@code processingTimeInMillis}. It also builds a human readable processing
      * time, as string, in the following format @{code "0d, 0h, 0m, 2s, 545ms"} and stores it in the publicly exposed
@@ -212,9 +215,7 @@ public class BaseSyncStatistics {
      *
      * @return a summary message of the statistics report.
      */
-    public String getReportMessage() {
-        return reportMessage;
-    }
+    public abstract String getReportMessage();
 
     /**
      * Builds a JSON String that represents the fields of the supplied instance of {@link BaseSyncStatistics}.

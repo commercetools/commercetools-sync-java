@@ -17,6 +17,7 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
      *
      * @return a summary message of the category sync statistics instance.
      */
+    @Override
     public String getReportMessage() {
         return format("Summary: %s categories were processed in total " +
                         "(%s created, %s updated and %s categories failed to sync).",

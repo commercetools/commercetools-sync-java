@@ -1,5 +1,6 @@
 package com.commercetools.sync.commons.helpers;
 
+import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import io.netty.util.internal.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +16,7 @@ public class BaseSyncStatisticsTest {
 
     @Before
     public void setup() {
-        BASE_SYNC_STATISTICS = new BaseSyncStatistics();
+        BASE_SYNC_STATISTICS = new CategorySyncStatistics();
     }
 
     @Test
@@ -95,7 +96,8 @@ public class BaseSyncStatisticsTest {
 
         final String statisticsAsJsonString = getStatisticsAsJSONString(BASE_SYNC_STATISTICS);
         assertThat(statisticsAsJsonString)
-                .isEqualTo("{\"reportMessage\":\"\",\"" +
+                .isEqualTo("{\"reportMessage\":\"Summary: 3 categories were processed in total (1 created, 1 updated and" +
+                        " 1 categories failed to sync).\",\"" +
                         "updated\":1,\"" +
                         "created\":1,\"" +
                         "failed\":1,\"" +
@@ -123,7 +125,8 @@ public class BaseSyncStatisticsTest {
 
         final String statisticsAsJsonString = getStatisticsAsJSONString(BASE_SYNC_STATISTICS);
         assertThat(statisticsAsJsonString)
-                .isEqualTo("{\"reportMessage\":\"\",\"" +
+                .isEqualTo("{\"reportMessage\":\"Summary: 3 categories were processed in total (1 created, 1 updated and" +
+                        " 1 categories failed to sync).\",\"" +
                         "updated\":1,\"" +
                         "created\":1,\"" +
                         "failed\":1,\"" +
