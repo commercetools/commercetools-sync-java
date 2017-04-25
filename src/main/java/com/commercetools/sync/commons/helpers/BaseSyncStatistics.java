@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 
-public class BaseSyncStatistics {
+public abstract class BaseSyncStatistics {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseSyncStatistics.class);
 
     private String reportMessage;
@@ -212,9 +212,7 @@ public class BaseSyncStatistics {
      *
      * @return a summary message of the statistics report.
      */
-    public String getReportMessage() {
-        return reportMessage;
-    }
+    public abstract String getReportMessage();
 
     /**
      * Builds a JSON String that represents the fields of the supplied instance of {@link BaseSyncStatistics}.
