@@ -2,6 +2,9 @@ package com.commercetools.sync.inventory.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
+/**
+ * Statistics of inventory synchronisation process
+ */
 public class InventorySyncStatistics extends BaseSyncStatistics {
 
     private int unprocessedDueToEmptySku;
