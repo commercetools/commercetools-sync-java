@@ -25,28 +25,24 @@ import static com.commercetools.sync.inventory.utils.InventoryDraftTransformer.t
 import static java.lang.String.format;
 
 //TODO test
-//TODO document
-
 /**
  * Default implementation of inventories sync process.
  */
 public final class InventorySyncImpl implements InventorySync {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventorySyncImpl.class);
-    private static final int BATCH_SIZE = 30;
 
-    /**
+    /*
      * Holds threads for executing sync process in parallel. Should be instantiated when parallel processing is
      * enabled via {@link InventorySyncOptions}.
      */
     private ExecutorService executorService = null;
 
-    /**
-     * Cache that maps supply channel key to supply channel Id for supply channels existing in database.
-     */
+    //Cache that maps supply channel key to supply channel Id for supply channels existing in database.
     private Map<String, String> supplyChannelKeyToId;
 
     private InventoryService inventoryService;
+    //TODO assert that counters from BaseStatistics became thread safe
     private InventorySyncStatistics statistics;
     private InventorySyncOptions options;
 
@@ -76,13 +72,14 @@ public final class InventorySyncImpl implements InventorySync {
      * <p><strong>This method is meant to be called once. For new sync process please create new {@link InventorySyncImpl}
      * instance!</strong></p>
      *
-     * @param inventories {@link List} of {@link InventoryEntryDraft} containing data that you would like to sync into
-     *                                your CTP project.
+     * @param inventories {@link List} of {@link InventoryEntryDraft} containing data that would be synced into
+     *                                CTP project.
      */
     @Override
     public void syncInventoryDrafts(@Nonnull List<InventoryEntryDraft> inventories) {
         LOGGER.info(format("About to sync %d inventories into CTP project with key '%s'.",
                 inventories.size(), options.getClientConfig().getProjectKey()));
+        //TODO assert if time management in base statistics doesn't require to start timer here
 
         buildChannelMap();
         List<InventoryEntryDraft> accumulator = new LinkedList<>();
@@ -90,7 +87,7 @@ public final class InventorySyncImpl implements InventorySync {
             if (entry != null) {
                 if (entry.getSku() != null) {
                     accumulator.add(entry);
-                    if (accumulator.size() == BATCH_SIZE) {
+                    if (accumulator.size() == options.getBatchSize()) {
                         runDraftsProcessing(accumulator);
                         accumulator = new LinkedList<>();
                     }

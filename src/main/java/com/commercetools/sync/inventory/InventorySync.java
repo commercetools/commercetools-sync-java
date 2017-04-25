@@ -7,7 +7,7 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-//TODO document
+//TODO probably delete and use Sync from commons when released to "develop"
 public interface InventorySync {
 
     void syncInventoryDrafts(@Nonnull final List<InventoryEntryDraft> inventories);
