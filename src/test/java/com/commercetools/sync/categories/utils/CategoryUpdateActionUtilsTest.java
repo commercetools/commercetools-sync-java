@@ -64,6 +64,19 @@ public class CategoryUpdateActionUtilsTest {
     }
 
     @Test
+    public void buildChangeNameUpdateAction_WithNullValues_ShouldBuildUpdateAction() {
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        when(newCategoryDraft.getName()).thenReturn(null);
+
+        final UpdateAction<Category> changeNameUpdateAction =
+                buildChangeNameUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft).orElse(null);
+
+        assertThat(changeNameUpdateAction).isNotNull();
+        assertThat(changeNameUpdateAction.getAction()).isEqualTo("changeName");
+        assertThat(((ChangeName) changeNameUpdateAction).getName()).isNull();
+    }
+
+    @Test
     public void buildChangeNameUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameName = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameName.getName())
@@ -87,6 +100,19 @@ public class CategoryUpdateActionUtilsTest {
         assertThat(changeSlugUpdateAction).isNotNull();
         assertThat(changeSlugUpdateAction.getAction()).isEqualTo("changeSlug");
         assertThat(((ChangeSlug) changeSlugUpdateAction).getSlug()).isEqualTo(LocalizedString.of(LOCALE, "newSlug"));
+    }
+
+    @Test
+    public void buildChangeSlugUpdateAction_WithNullValues_ShouldBuildUpdateAction() {
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        when(newCategoryDraft.getSlug()).thenReturn(null);
+
+        final UpdateAction<Category> changeSlugUpdateAction =
+                buildChangeSlugUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft).orElse(null);
+
+        assertThat(changeSlugUpdateAction).isNotNull();
+        assertThat(changeSlugUpdateAction.getAction()).isEqualTo("changeSlug");
+        assertThat(((ChangeSlug) changeSlugUpdateAction).getSlug()).isNull();
     }
 
     @Test
@@ -272,6 +298,20 @@ public class CategoryUpdateActionUtilsTest {
     }
 
     @Test
+    public void buildSetMetaTitleUpdateAction_WithNullValues_ShouldBuildUpdateAction() {
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        when(newCategoryDraft.getMetaTitle()).thenReturn(null);
+
+        final UpdateAction<Category> setMetaTitleUpdateAction =
+                buildSetMetaTitleUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft).orElse(null);
+
+        assertThat(setMetaTitleUpdateAction).isNotNull();
+        assertThat(setMetaTitleUpdateAction.getAction()).isEqualTo("setMetaTitle");
+        assertThat(((SetMetaTitle) setMetaTitleUpdateAction).getMetaTitle())
+                .isEqualTo(null);
+    }
+
+    @Test
     public void buildSetMetaTitleUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameTitle = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameTitle.getMetaTitle())
@@ -299,6 +339,19 @@ public class CategoryUpdateActionUtilsTest {
     }
 
     @Test
+    public void buildSetMetaKeywordsUpdateAction_WithNullValues_ShouldBuildUpdateAction() {
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        when(newCategoryDraft.getMetaKeywords()).thenReturn(null);
+
+        final UpdateAction<Category> setMetaKeywordsUpdateAction =
+                buildSetMetaKeywordsUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft).orElse(null);
+
+        assertThat(setMetaKeywordsUpdateAction).isNotNull();
+        assertThat(setMetaKeywordsUpdateAction.getAction()).isEqualTo("setMetaKeywords");
+        assertThat(((SetMetaKeywords) setMetaKeywordsUpdateAction).getMetaKeywords()).isNull();
+    }
+
+    @Test
     public void buildSetMetaKeywordsUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameMetaKeywords = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameMetaKeywords.getMetaKeywords())
@@ -323,6 +376,19 @@ public class CategoryUpdateActionUtilsTest {
         assertThat(setMetaDescriptionUpdateAction.getAction()).isEqualTo("setMetaDescription");
         assertThat(((SetMetaDescription) setMetaDescriptionUpdateAction).getMetaDescription())
                 .isEqualTo(LocalizedString.of(LOCALE, "newMetaDesc"));
+    }
+
+    @Test
+    public void buildSetMetaDescriptionUpdateAction_WithNullValues_ShouldBuildUpdateAction() {
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        when(newCategoryDraft.getMetaDescription()).thenReturn(null);
+
+        final UpdateAction<Category> setMetaDescriptionUpdateAction =
+                buildSetMetaDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft).orElse(null);
+
+        assertThat(setMetaDescriptionUpdateAction).isNotNull();
+        assertThat(setMetaDescriptionUpdateAction.getAction()).isEqualTo("setMetaDescription");
+        assertThat(((SetMetaDescription) setMetaDescriptionUpdateAction).getMetaDescription()).isNull();
     }
 
     @Test
