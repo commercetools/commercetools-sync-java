@@ -13,14 +13,26 @@ import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.build
 import static com.commercetools.sync.inventory.utils.InventoryDraftTransformer.transformToDraft;
 import static com.commercetools.sync.inventory.utils.InventoryUpdateActionUtils.*;
 
-//TODO document
 //TODO test
+/**
+ * This class provides static utility methods for synchronising inventory entries.
+ */
 public final class InventorySyncUtils {
 
     private InventorySyncUtils() {
         throw new AssertionError();
     }
 
+    /**
+     * This method returns list of {@link UpdateAction} that needs to be performed on {@code oldEntry} resource so
+     * that it will be synced with {@code newEntry} resource.
+     *
+     * @param oldEntry entry which data should be updated
+     * @param newEntry entry that contain current data (that should be applied to {@code oldEntry}
+     * @param syncOptions synchronisation process options
+     * @return list containing {@link UpdateAction} that need to be performed on {@code oldEntry} resource so
+     * that it will be synced with {@code newEntry} or empty list when both entries are already synced.
+     */
     @Nonnull
     public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldEntry,
                                                                   @Nonnull final InventoryEntry newEntry,
@@ -29,6 +41,16 @@ public final class InventorySyncUtils {
         return buildActions(oldEntry, newEntryDraft, syncOptions);
     }
 
+    /**
+     * This method returns list of {@link UpdateAction} that needs to be performed on {@code oldEntry} resource so
+     * that it will be synced with {@code newEntry} draft.
+     *
+     * @param oldEntry entry which data should be updated
+     * @param newEntry draft that contain current data (that should be applied to {@code oldEntry}
+     * @param syncOptions synchronisation process options
+     * @return list containing {@link UpdateAction} that need to be performed on {@code oldEntry} resource so
+     * that it will be synced with {@code newEntry} or empty list when both entries are already synced.
+     */
     @Nonnull
     public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldEntry,
                                                                   @Nonnull final InventoryEntryDraft newEntry,
