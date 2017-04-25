@@ -18,7 +18,7 @@ import java.util.Optional;
 import static com.commercetools.sync.commons.constants.UpdateActions.*;
 import static java.lang.String.format;
 
-class GenericUpdateActionUtils {
+final class GenericUpdateActionUtils {
 
     /**
      * Creates a CTP "setCustomType" update action on the given resource {@link T} (which currently could either

@@ -16,7 +16,7 @@ import static com.commercetools.sync.commons.constants.SyncMessages.*;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.lang.String.format;
 
-public class CategoryUpdateActionUtils {
+public final class CategoryUpdateActionUtils {
 
     /**
      * Compares the {@link LocalizedString} names of a {@link Category} and a {@link CategoryDraft} and returns an

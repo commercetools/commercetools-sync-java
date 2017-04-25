@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-public class CommonTypeUpdateActionUtils {
+public final class CommonTypeUpdateActionUtils {
 
     /**
      * Compares two {@link Object} and returns a supplied {@link UpdateAction} as a result in an
