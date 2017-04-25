@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.*;
 import static java.lang.String.format;
 
-public class CustomUpdateActionUtils {
+public final class CustomUpdateActionUtils {
 
     /**
      * Compares the {@link CustomFields} of an old resource {@link T} (for example {@link Category},

@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.*;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
 
-public class CategorySyncUtils {
+public final class CategorySyncUtils {
 
     /**
      * TODO: SEE GITHUB ISSUE#12
