@@ -1,6 +1,7 @@
 package com.commercetools.sync.categories;
 
 
+import com.commercetools.sync.categories.helpers.CategorySyncOptions;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.models.SphereException;
 import org.junit.Test;
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
-import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategorySync;
+import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategorySyncOptions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -18,7 +19,7 @@ import static org.mockito.Mockito.when;
 public class CategorySyncTest {
     @Test
     public void syncDrafts_WithEmptyListOfDrafts_ShouldNotProcessAnyCategories() {
-        final CategorySync categorySync = getMockCategorySync();
+        final CategorySync categorySync = new CategorySync(getMockCategorySyncOptions());
         categorySync.syncDrafts(new ArrayList<>());
 
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
@@ -31,7 +32,7 @@ public class CategorySyncTest {
 
     @Test
     public void syncDrafts_WithANullDraft_ShouldSkipIt() {
-        final CategorySync categorySync = getMockCategorySync();
+        final CategorySync categorySync = new CategorySync(getMockCategorySyncOptions());
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(null);
 
@@ -46,7 +47,7 @@ public class CategorySyncTest {
 
     @Test
     public void syncDrafts_WithADraftWithNoSetExternalID_ShouldFailSync() {
-        final CategorySync categorySync = getMockCategorySync();
+        final CategorySync categorySync = new CategorySync(getMockCategorySyncOptions());
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH,
                 "noExternalIdDraft",
@@ -64,9 +65,10 @@ public class CategorySyncTest {
 
     @Test
     public void syncDrafts_WithNoExistingCategory_ShouldCreateCategory() {
-        final CategorySync categorySync = getMockCategorySync();
-        when(categorySync.getSyncOptions().getCategoryService().fetchCategoryByExternalId(anyString())).thenReturn(null);
+        final CategorySyncOptions mockCategorySyncOptions = getMockCategorySyncOptions();
+        when(mockCategorySyncOptions.getCategoryService().fetchCategoryByExternalId(anyString())).thenReturn(null);
 
+        final CategorySync categorySync = new CategorySync(mockCategorySyncOptions);
 
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH,
@@ -86,7 +88,7 @@ public class CategorySyncTest {
 
     @Test
     public void syncDrafts_WithExistingCategory_ShouldUpdateCategory() {
-        final CategorySync categorySync = getMockCategorySync();
+        final CategorySync categorySync = new CategorySync(getMockCategorySyncOptions());
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH,
                 "name",
@@ -105,8 +107,10 @@ public class CategorySyncTest {
 
     @Test
     public void syncDrafts_WithExistingCategoryButExceptionOnFetch_ShouldFailSync() {
-        final CategorySync categorySync = getMockCategorySync();
-        when(categorySync.getSyncOptions().getCategoryService().fetchCategoryByExternalId(anyString())).thenThrow(new SphereException());
+        final CategorySyncOptions mockCategorySyncOptions = getMockCategorySyncOptions();
+        when(mockCategorySyncOptions.getCategoryService().fetchCategoryByExternalId(anyString())).thenThrow(new SphereException());
+
+        final CategorySync categorySync = new CategorySync(mockCategorySyncOptions);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH,
                 "name",
@@ -125,9 +129,11 @@ public class CategorySyncTest {
 
     @Test
     public void syncDrafts_WithNoExistingCategoryButExceptionOnCreate_ShouldFailSync() {
-        final CategorySync categorySync = getMockCategorySync();
-        when(categorySync.getSyncOptions().getCategoryService().fetchCategoryByExternalId(anyString())).thenReturn(null);
-        when(categorySync.getSyncOptions().getCategoryService().createCategory(any())).thenThrow(new SphereException());
+        final CategorySyncOptions mockCategorySyncOptions = getMockCategorySyncOptions();
+        when(mockCategorySyncOptions.getCategoryService().fetchCategoryByExternalId(anyString())).thenReturn(null);
+        when(mockCategorySyncOptions.getCategoryService().createCategory(any())).thenThrow(new SphereException());
+
+        final CategorySync categorySync = new CategorySync(mockCategorySyncOptions);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH,
                 "name",
@@ -146,8 +152,10 @@ public class CategorySyncTest {
 
     @Test
     public void syncDrafts_WithExistingCategoryButExceptionOnUpdate_ShouldFailSync() {
-        final CategorySync categorySync = getMockCategorySync();
-        when(categorySync.getSyncOptions().getCategoryService().updateCategory(any(), any())).thenThrow(new SphereException());
+        final CategorySyncOptions mockCategorySyncOptions = getMockCategorySyncOptions();
+        when(mockCategorySyncOptions.getCategoryService().updateCategory(any(), any())).thenThrow(new SphereException());
+
+        final CategorySync categorySync = new CategorySync(mockCategorySyncOptions);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH,
                 "name",

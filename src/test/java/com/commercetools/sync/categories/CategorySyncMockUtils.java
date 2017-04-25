@@ -2,7 +2,6 @@ package com.commercetools.sync.categories;
 
 
 import com.commercetools.sync.categories.helpers.CategorySyncOptions;
-import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -19,7 +18,6 @@ import java.util.Locale;
 import static com.commercetools.sync.commons.MockUtils.getMockCustomFieldsDraft;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -89,20 +87,6 @@ public class CategorySyncMockUtils {
         when(mockCategoryDraft.getExternalId()).thenReturn(externalId);
         when(mockCategoryDraft.getCustom()).thenReturn(getMockCustomFieldsDraft());
         return mockCategoryDraft;
-    }
-
-    public static CategorySync getMockCategorySync() {
-        final CategorySyncOptions categorySyncOptions = getMockCategorySyncOptions();
-        final CategorySyncStatistics categorySyncStatistics = new CategorySyncStatistics();
-
-        final CategorySync categorySync = mock(CategorySync.class);
-        when(categorySync.getSyncOptions()).thenReturn(categorySyncOptions);
-        when(categorySync.getStatistics()).thenReturn(categorySyncStatistics);
-        doCallRealMethod().when(categorySync).syncDrafts(any());
-        doCallRealMethod().when(categorySync).createOrUpdateCategory(any());
-        doCallRealMethod().when(categorySync).updateCategory(any(), any());
-
-        return categorySync;
     }
 
     public static CategorySyncOptions getMockCategorySyncOptions() {
