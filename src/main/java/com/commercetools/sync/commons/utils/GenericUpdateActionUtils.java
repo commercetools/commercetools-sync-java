@@ -1,7 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
 
-import com.commercetools.sync.commons.helpers.BaseSyncOptions;
+import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
@@ -40,7 +40,7 @@ final class GenericUpdateActionUtils {
         try {
             return buildTypedUpdateAction(customTypeKey, customFieldsJsonMap, resource, SET_CUSTOM_TYPE);
         } catch (BuildUpdateActionException e) {
-            syncOptions.callUpdateActionErrorCallBack(format("Failed to build 'setCustomType' update action on " +
+            syncOptions.applyErrorCallback(format("Failed to build 'setCustomType' update action on " +
                     "the %s with id '%s'. Reason: %s", resource.toReference().getTypeId(), resource.getId(), e.getMessage()), e);
             return Optional.empty();
         }
@@ -61,7 +61,7 @@ final class GenericUpdateActionUtils {
         try {
             return buildTypedUpdateAction(resource, SET_CUSTOM_TYPE_REMOVE);
         } catch (BuildUpdateActionException e) {
-            syncOptions.callUpdateActionErrorCallBack(format("Failed to build 'setCustomType' update action to" +
+            syncOptions.applyErrorCallback(format("Failed to build 'setCustomType' update action to" +
                             " remove the custom type on the %s with id '%s'. Reason: %s",
                     resource.toReference().getTypeId(), resource.getId(), e.getMessage()), e);
             return Optional.empty();
@@ -90,7 +90,7 @@ final class GenericUpdateActionUtils {
         try {
             return buildTypedUpdateAction(customFieldName, customFieldValue, resource, SET_CUSTOM_FIELD);
         } catch (BuildUpdateActionException e) {
-            syncOptions.callUpdateActionErrorCallBack(format("Failed to build 'setCustomField' update action on " +
+            syncOptions.applyErrorCallback(format("Failed to build 'setCustomField' update action on " +
                             "the custom field with the name '%s' on the %s with id '%s'. Reason: %s", customFieldName,
                     resource.toReference().getTypeId(), resource.getId(), e.getMessage()), e);
             return Optional.empty();

@@ -1,6 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.commons.helpers.BaseSyncOptions;
+import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -77,7 +77,7 @@ public final class CustomUpdateActionUtils {
                 return buildNonNullCustomFieldsUpdateActions(oldResourceCustomFields, newResourceCustomFields,
                         oldResource, syncOptions);
             } catch (BuildUpdateActionException e) {
-                syncOptions.callUpdateActionErrorCallBack(format("Failed to build custom fields update actions on the " +
+                syncOptions.applyErrorCallback(format("Failed to build custom fields update actions on the " +
                                 "%s with id '%s'. Reason: %s", oldResource.toReference().getTypeId(), oldResource.getId(),
                         e.getMessage()), e);
             }
