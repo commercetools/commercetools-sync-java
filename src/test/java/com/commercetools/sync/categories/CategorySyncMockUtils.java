@@ -1,11 +1,9 @@
 package com.commercetools.sync.categories;
 
 
-import com.commercetools.sync.categories.helpers.CategorySyncOptions;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 
@@ -87,18 +85,6 @@ public class CategorySyncMockUtils {
         when(mockCategoryDraft.getExternalId()).thenReturn(externalId);
         when(mockCategoryDraft.getCustom()).thenReturn(getMockCustomFieldsDraft());
         return mockCategoryDraft;
-    }
-
-    public static CategorySyncOptions getMockCategorySyncOptions() {
-        final CategoryService categoryService = getMockCategoryService();
-        final SphereClientConfig sphereClientConfig = SphereClientConfig
-                .of("testProjectKey", "testCliendId", "testClientSecret");
-
-        final CategorySyncOptions categorySyncOptions = mock(CategorySyncOptions.class);
-        when(categorySyncOptions.getCategoryService()).thenReturn(categoryService);
-        when(categorySyncOptions.getClientConfig()).thenReturn(sphereClientConfig);
-
-        return categorySyncOptions;
     }
 
     public static CategoryService getMockCategoryService() {

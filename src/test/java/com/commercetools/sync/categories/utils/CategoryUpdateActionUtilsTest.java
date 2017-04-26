@@ -1,7 +1,9 @@
 package com.commercetools.sync.categories.utils;
 
 
-import com.commercetools.sync.categories.helpers.CategorySyncOptions;
+import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
+import com.commercetools.sync.commons.helpers.CtpClient;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.*;
@@ -19,8 +21,8 @@ import java.util.function.Consumer;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class CategoryUpdateActionUtilsTest {
     private static Category MOCK_OLD_CATEGORY;
@@ -166,9 +168,9 @@ public class CategoryUpdateActionUtilsTest {
         final ArrayList<Object> callBackResponse = new ArrayList<>();
         final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
 
-        final CategorySyncOptions categorySyncOptions = mock(CategorySyncOptions.class);
-        when(categorySyncOptions.getUpdateActionWarningCallBack()).thenReturn(updateActionWarningCallBack);
-        doCallRealMethod().when(categorySyncOptions).callUpdateActionWarningCallBack(anyString());
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
+                .setWarningCallBack(updateActionWarningCallBack)
+                .build();
 
         final Optional<UpdateAction<Category>> setDescriptionUpdateAction =
                 buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategory,
@@ -218,9 +220,9 @@ public class CategoryUpdateActionUtilsTest {
         final ArrayList<Object> callBackResponse = new ArrayList<>();
         final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
 
-        final CategorySyncOptions categorySyncOptions = mock(CategorySyncOptions.class);
-        when(categorySyncOptions.getUpdateActionWarningCallBack()).thenReturn(updateActionWarningCallBack);
-        doCallRealMethod().when(categorySyncOptions).callUpdateActionWarningCallBack(anyString());
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
+                .setWarningCallBack(updateActionWarningCallBack)
+                .build();
 
         final Optional<UpdateAction<Category>> changeParentUpdateAction =
                 buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategory,
@@ -269,9 +271,9 @@ public class CategoryUpdateActionUtilsTest {
         final ArrayList<Object> callBackResponse = new ArrayList<>();
         final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
 
-        final CategorySyncOptions categorySyncOptions = mock(CategorySyncOptions.class);
-        when(categorySyncOptions.getUpdateActionWarningCallBack()).thenReturn(updateActionWarningCallBack);
-        doCallRealMethod().when(categorySyncOptions).callUpdateActionWarningCallBack(anyString());
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
+                .setWarningCallBack(updateActionWarningCallBack)
+                .build();
 
         final Optional<UpdateAction<Category>> changeOrderHintUpdateAction =
                 buildChangeOrderHintUpdateAction(MOCK_OLD_CATEGORY, newCategory,
