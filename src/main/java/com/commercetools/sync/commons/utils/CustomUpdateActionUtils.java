@@ -14,9 +14,11 @@ import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.*;
 import static java.lang.String.format;
@@ -203,13 +205,12 @@ public final class CustomUpdateActionUtils {
             @Nonnull final Map<String, JsonNode> newCustomFields,
             @Nonnull final T resource,
             @Nonnull final BaseSyncOptions syncOptions) {
-        final List<UpdateAction<T>> newOrModifiedCustomFieldsActions =
+        final List<UpdateAction<T>> customFieldsUpdateActions =
                 buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource, syncOptions);
         final List<UpdateAction<T>> removedCustomFieldsActions =
                 buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource, syncOptions);
-        return Stream.concat(newOrModifiedCustomFieldsActions.stream(),
-                removedCustomFieldsActions.stream())
-                .collect(Collectors.toList());
+        customFieldsUpdateActions.addAll(removedCustomFieldsActions);
+        return customFieldsUpdateActions;
     }
 
     /**
