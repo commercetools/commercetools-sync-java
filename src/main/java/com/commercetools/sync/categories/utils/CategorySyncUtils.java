@@ -12,8 +12,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.*;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
@@ -37,10 +35,8 @@ public final class CategorySyncUtils {
                                                              @Nonnull final CategorySyncOptions syncOptions) {
         final List<UpdateAction<Category>> updateActions = buildCoreActions(oldCategory, newCategory, syncOptions);
         final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(oldCategory, newCategory, syncOptions);
-        final List<UpdateAction<Category>> allUpdateActions = Stream.concat(updateActions.stream(),
-                assetUpdateActions.stream())
-                .collect(Collectors.toList());
-        return filterUpdateActions(allUpdateActions, syncOptions.getUpdateActionsFilter());
+        updateActions.addAll(assetUpdateActions);
+        return filterUpdateActions(updateActions, syncOptions.getUpdateActionsFilter());
     }
 
     /**
@@ -117,12 +113,10 @@ public final class CategorySyncUtils {
                                                             @Nonnull final CategoryDraft newCategory,
                                                             @Nonnull final CategorySyncOptions syncOptions,
                                                             @Nonnull final TypeService typeService) {
-        final List<UpdateAction<Category>> coreActions = buildCoreActions(oldCategory, newCategory, syncOptions, typeService);
+        final List<UpdateAction<Category>> updateActions = buildCoreActions(oldCategory, newCategory, syncOptions, typeService);
         final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(oldCategory, newCategory, syncOptions);
-        final List<UpdateAction<Category>> allUpdateActions = Stream.concat(coreActions.stream(),
-                assetUpdateActions.stream())
-                .collect(Collectors.toList());
-        return filterUpdateActions(allUpdateActions, syncOptions.getUpdateActionsFilter());
+        updateActions.addAll(assetUpdateActions);
+        return filterUpdateActions(updateActions, syncOptions.getUpdateActionsFilter());
     }
 
     /**
@@ -173,9 +167,9 @@ public final class CategorySyncUtils {
 
         final List<UpdateAction<Category>> categoryCustomUpdateActions =
                 buildCustomUpdateActions(oldCategory, newCategory, syncOptions, typeService);
-        return Stream.concat(updateActions.stream(),
-                categoryCustomUpdateActions.stream())
-                .collect(Collectors.toList());
+
+        updateActions.addAll(categoryCustomUpdateActions);
+        return updateActions;
     }
 
     /**
