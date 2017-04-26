@@ -30,10 +30,10 @@ public final class CustomUpdateActionUtils {
      * etc..), and returns a {@link List<UpdateAction>} as a result. If no update action is needed,
      * for example in the case where both the {@link CustomFields} and the {@link CustomFieldsDraft} are null, an empty
      * {@link List<UpdateAction>} is returned. A {@link BaseSyncOptions} instance is injected into the
-     * method which is responsible for supplying the sync options to the sync utility method. For example, the callbacks for errors,
-     * services like the {@link TypeService} instance which is responsible for fetching the key of the old resource type
+     * method which is responsible for supplying the sync options to the sync utility method. For example, custom error
+     * callbacks for errors. The {@link TypeService} is injected also for fetching the key of the old resource type
      * from it's cache (see {@link CustomUpdateActionUtils#buildNonNullCustomFieldsUpdateActions(CustomFields,
-     * CustomFieldsDraft, Custom, BaseSyncOptions)}).
+     * CustomFieldsDraft, Custom, BaseSyncOptions, TypeService)}).
      * <p>
      * <p>
      * An update action will be added to the result list in the following cases:-
@@ -63,19 +63,21 @@ public final class CustomUpdateActionUtils {
      * @param oldResource the resource which should be updated.
      * @param newResource the resource draft where we get the new custom fields.
      * @param syncOptions responsible for supplying the sync options to the sync utility method.
+     * @param typeService responsible for fetching the key of the old resource type from it's cache.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
     public static <T extends Custom & Resource<T>, S extends CustomDraft> List<UpdateAction<T>> buildCustomUpdateActions(
             @Nonnull final T oldResource,
             @Nonnull final S newResource,
-            @Nonnull final BaseSyncOptions syncOptions) {
+            @Nonnull final BaseSyncOptions syncOptions,
+            @Nonnull final TypeService typeService) {
         final CustomFields oldResourceCustomFields = oldResource.getCustom();
         final CustomFieldsDraft newResourceCustomFields = newResource.getCustom();
         if (oldResourceCustomFields != null && newResourceCustomFields != null) {
             try {
                 return buildNonNullCustomFieldsUpdateActions(oldResourceCustomFields, newResourceCustomFields,
-                        oldResource, syncOptions);
+                        oldResource, syncOptions, typeService);
             } catch (BuildUpdateActionException e) {
                 syncOptions.applyErrorCallback(format("Failed to build custom fields update actions on the " +
                                 "%s with id '%s'. Reason: %s", oldResource.toReference().getTypeId(), oldResource.getId(),
@@ -106,8 +108,8 @@ public final class CustomUpdateActionUtils {
     /**
      * Compares a non null {@link CustomFields} to a non null {@link CustomFieldsDraft} and returns a
      * {@link List<UpdateAction>} as a result. The keys are used to compare the custom types. The key of the old
-     * resource custom type is fetched from the caching mechanism of the {@link TypeService} instance in the injected
-     * {@link BaseSyncOptions} instance. The key of the new resource custom type is expected to be set on the type.
+     * resource custom type is fetched from the caching mechanism of the {@link TypeService} instance supplied as
+     * a param to the method. The key of the new resource custom type is expected to be set on the type.
      * If no update action is needed an empty {@link List<UpdateAction>} is returned.
      * <p>
      * An update action will be added to the result list in the following cases:-
@@ -131,6 +133,7 @@ public final class CustomUpdateActionUtils {
      * @param resource        the resource that the custom fields are on. It is used to identify the type of the resource, to
      *                        call the corresponding update actions.
      * @param syncOptions     responsible for supplying the sync options to the sync utility method.
+     * @param typeService     responsible for fetching the key of the old resource type from it's cache.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are needed.
      */
     @Nonnull
@@ -139,8 +142,9 @@ public final class CustomUpdateActionUtils {
             @Nonnull final CustomFields oldCustomFields,
             @Nonnull final CustomFieldsDraft newCustomFields,
             @Nonnull final T resource,
-            @Nonnull final BaseSyncOptions syncOptions) throws BuildUpdateActionException {
-        final String oldCustomFieldsTypeKey = syncOptions.getTypeService().getCachedTypeKeyById(oldCustomFields.getType().getId());
+            @Nonnull final BaseSyncOptions syncOptions,
+            @Nonnull final TypeService typeService) throws BuildUpdateActionException {
+        final String oldCustomFieldsTypeKey = typeService.getCachedTypeKeyById(oldCustomFields.getType().getId());
         final Map<String, JsonNode> oldCustomFieldsJsonMap = oldCustomFields.getFieldsJsonMap();
         final String newCustomFieldsTypeKey = newCustomFields.getType().getKey();
         final Map<String, JsonNode> newCustomFieldsJsonMap = newCustomFields.getFields();

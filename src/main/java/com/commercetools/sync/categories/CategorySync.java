@@ -3,7 +3,10 @@ package com.commercetools.sync.categories;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.categories.utils.CategorySyncUtils;
 import com.commercetools.sync.commons.Sync;
-import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.services.CategoryService;
+import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.impl.CategoryServiceImpl;
+import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -23,9 +26,23 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
     private final CategorySyncOptions syncOptions;
     private final CategorySyncStatistics statistics;
 
+    private final TypeService typeService;
+    private final CategoryService categoryService;
+
     public CategorySync(@Nonnull final CategorySyncOptions syncOptions) {
         this.syncOptions = syncOptions;
         this.statistics = new CategorySyncStatistics();
+        this.typeService = new TypeServiceImpl(syncOptions.getCtpClient().getClient());
+        this.categoryService = new CategoryServiceImpl(syncOptions.getCtpClient().getClient());
+    }
+
+    CategorySync(@Nonnull final CategorySyncOptions syncOptions,
+                 @Nonnull final TypeService typeService,
+                 @Nonnull final CategoryService categoryService) {
+        this.syncOptions = syncOptions;
+        this.statistics = new CategorySyncStatistics();
+        this.typeService = typeService;
+        this.categoryService = categoryService;
     }
 
     /**
@@ -75,7 +92,7 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
     void createOrUpdateCategory(@Nonnull final CategoryDraft categoryDraft) {
         final String externalId = categoryDraft.getExternalId();
         try {
-            final Category oldCategory = this.syncOptions.getCategoryService().fetchCategoryByExternalId(externalId);
+            final Category oldCategory = this.categoryService.fetchCategoryByExternalId(externalId);
             if (oldCategory != null) {
                 syncCategories(oldCategory, categoryDraft);
             } else {
@@ -101,7 +118,7 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
      */
     private void createCategory(@Nonnull final CategoryDraft categoryDraft) {
         try {
-            this.syncOptions.getCategoryService().createCategory(categoryDraft);
+            this.categoryService.createCategory(categoryDraft);
             this.statistics.incrementCreated();
         } catch (SphereException e) {
             failSync(format("Failed to create category with external id" +
@@ -118,9 +135,10 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new data.
      */
-    private void syncCategories(@Nonnull final Category oldCategory, @Nonnull final CategoryDraft newCategory) {
+    private void syncCategories(@Nonnull final Category oldCategory,
+                                @Nonnull final CategoryDraft newCategory) {
         final List<UpdateAction<Category>> updateActions =
-                CategorySyncUtils.buildActions(oldCategory, newCategory, this.syncOptions);
+                CategorySyncUtils.buildActions(oldCategory, newCategory, this.syncOptions, this.typeService);
         if (!updateActions.isEmpty()) {
             updateCategory(oldCategory, updateActions);
         }
@@ -141,7 +159,7 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
     void updateCategory(@Nonnull final Category category,
                         @Nonnull final List<UpdateAction<Category>> updateActions) {
         try {
-            this.syncOptions.getCategoryService().updateCategory(category, updateActions);
+            this.categoryService.updateCategory(category, updateActions);
             this.statistics.incrementUpdated();
         } catch (SphereException e) {
             failSync(format("Failed to update category with id" +

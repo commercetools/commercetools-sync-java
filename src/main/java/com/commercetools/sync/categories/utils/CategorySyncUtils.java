@@ -2,6 +2,7 @@ package com.commercetools.sync.categories.utils;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -108,13 +109,15 @@ public final class CategorySyncUtils {
      *                    For example, custom callbacks to call in case of warnings or errors occurring on the build
      *                    update action process. And other options (See {@link BaseSyncOptions}
      *                    for more info.
+     * @param typeService responsible for fetching the key of the old resource type from it's cache.
      * @return A list of category-specific update actions.
      */
     @Nonnull
     public static List<UpdateAction<Category>> buildActions(@Nonnull final Category oldCategory,
                                                             @Nonnull final CategoryDraft newCategory,
-                                                            @Nonnull final CategorySyncOptions syncOptions) {
-        final List<UpdateAction<Category>> coreActions = buildCoreActions(oldCategory, newCategory, syncOptions);
+                                                            @Nonnull final CategorySyncOptions syncOptions,
+                                                            @Nonnull final TypeService typeService) {
+        final List<UpdateAction<Category>> coreActions = buildCoreActions(oldCategory, newCategory, syncOptions, typeService);
         final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(oldCategory, newCategory, syncOptions);
         final List<UpdateAction<Category>> allUpdateActions = Stream.concat(coreActions.stream(),
                 assetUpdateActions.stream())
@@ -135,12 +138,14 @@ public final class CategorySyncUtils {
      *                    For example, custom callbacks to call in case of warnings or errors occurring on the build
      *                    update action process. And other options (See {@link BaseSyncOptions}
      *                    for more info.
+     * @param typeService responsible for fetching the key of the old resource type from it's cache.
      * @return A list of category-specific update actions.
      */
     @Nonnull
     public static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category oldCategory,
                                                                 @Nonnull final CategoryDraft newCategory,
-                                                                @Nonnull final CategorySyncOptions syncOptions) {
+                                                                @Nonnull final CategorySyncOptions syncOptions,
+                                                                @Nonnull final TypeService typeService) {
         final List<UpdateAction<Category>> updateActions = new ArrayList<>();
         buildChangeNameUpdateAction(oldCategory, newCategory)
                 .map(updateActions::add);
@@ -167,7 +172,7 @@ public final class CategorySyncUtils {
                 .map(updateActions::add);
 
         final List<UpdateAction<Category>> categoryCustomUpdateActions =
-                buildCustomUpdateActions(oldCategory, newCategory, syncOptions);
+                buildCustomUpdateActions(oldCategory, newCategory, syncOptions, typeService);
         return Stream.concat(updateActions.stream(),
                 categoryCustomUpdateActions.stream())
                 .collect(Collectors.toList());
