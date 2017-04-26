@@ -141,29 +141,30 @@ public final class CategorySyncUtils {
                                                                 @Nonnull final CategorySyncOptions syncOptions,
                                                                 @Nonnull final TypeService typeService) {
         final List<UpdateAction<Category>> updateActions = new ArrayList<>();
+
         buildChangeNameUpdateAction(oldCategory, newCategory)
-                .map(updateActions::add);
+                .ifPresent(updateActions::add);
 
         buildChangeSlugUpdateAction(oldCategory, newCategory)
-                .map(updateActions::add);
+                .ifPresent(updateActions::add);
 
         buildSetDescriptionUpdateAction(oldCategory, newCategory, syncOptions)
-                .map(updateActions::add);
+                .ifPresent(updateActions::add);
 
         buildChangeParentUpdateAction(oldCategory, newCategory, syncOptions)
-                .map(updateActions::add);
+                .ifPresent(updateActions::add);
 
         buildChangeOrderHintUpdateAction(oldCategory, newCategory, syncOptions)
-                .map(updateActions::add);
+                .ifPresent(updateActions::add);
 
         buildSetMetaTitleUpdateAction(oldCategory, newCategory)
-                .map(updateActions::add);
+                .ifPresent(updateActions::add);
 
         buildSetMetaDescriptionUpdateAction(oldCategory, newCategory)
-                .map(updateActions::add);
+                .ifPresent(updateActions::add);
 
         buildSetMetaKeywordsUpdateAction(oldCategory, newCategory)
-                .map(updateActions::add);
+                .ifPresent(updateActions::add);
 
         final List<UpdateAction<Category>> categoryCustomUpdateActions =
                 buildCustomUpdateActions(oldCategory, newCategory, syncOptions, typeService);
