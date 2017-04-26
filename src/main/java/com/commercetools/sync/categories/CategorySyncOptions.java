@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class CategorySyncOptions extends BaseSyncOptions {
-    private Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter;
+    private final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter;
 
     public CategorySyncOptions(@Nonnull final CtpClient ctpClient,
                                final BiConsumer<String, Throwable> updateActionErrorCallBack,

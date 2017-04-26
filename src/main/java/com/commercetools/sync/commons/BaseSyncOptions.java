@@ -8,9 +8,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class BaseSyncOptions {
-    private CtpClient ctpClient;
-    private BiConsumer<String, Throwable> errorCallBack;
-    private Consumer<String> warningCallBack;
+    private final CtpClient ctpClient;
+    private final BiConsumer<String, Throwable> errorCallBack;
+    private final Consumer<String> warningCallBack;
     private boolean removeOtherLocales = true;
     private boolean removeOtherSetEntries = true;
     private boolean removeOtherCollectionEntries = true;
