@@ -15,12 +15,13 @@ import java.util.concurrent.TimeUnit;
 
 public class ClientConfigurationUtils {
     private static BlockingSphereClient ctpClient;
+    private final static long DEFAULT_TIMEOUT = 30;
+    private final static TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
 
     /**
+     * Creates a {@link BlockingSphereClient} with a custom {@code timeout} with a custom {@link TimeUnit}.
      *
-     * TODO: think about wrapping it to {@link io.sphere.sdk.client.QueueSphereClientDecorator}
-     *
-     * @return {@link BlockingSphereClient}
+     * @return the instanted {@link BlockingSphereClient}.
      */
     public static BlockingSphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
                                                     final long timeout,
@@ -32,6 +33,15 @@ public class ClientConfigurationUtils {
             ctpClient = BlockingSphereClient.of(underlying, timeout, timeUnit);
         }
         return ctpClient;
+    }
+
+    /**
+     * Creates a {@link BlockingSphereClient} with a default {@code timeout} value of 30 seconds.
+     *
+     * @return the instanted {@link BlockingSphereClient}.
+     */
+    public static BlockingSphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
+        return createClient(clientConfig, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
     }
 
     /**
