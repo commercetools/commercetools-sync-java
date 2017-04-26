@@ -35,7 +35,7 @@ public final class CategoryUpdateActionUtils {
         final LocalizedString newCategoryName = newCategory.getName();
         return buildUpdateAction(oldCategory.getName(),
                 newCategoryName,
-                ChangeName.of(newCategoryName));
+                () -> ChangeName.of(newCategoryName));
     }
 
     /**
@@ -55,7 +55,7 @@ public final class CategoryUpdateActionUtils {
         final LocalizedString newCategorySlug = newCategory.getSlug();
         return buildUpdateAction(oldCategory.getSlug(),
                 newCategorySlug,
-                ChangeSlug.of(newCategorySlug));
+                () -> ChangeSlug.of(newCategorySlug));
     }
 
     /**
@@ -84,7 +84,7 @@ public final class CategoryUpdateActionUtils {
         }
         return buildUpdateAction(oldCategory.getDescription(),
                 newCategoryDescription,
-                SetDescription.of(newCategoryDescription));
+                () -> SetDescription.of(newCategoryDescription));
     }
 
     /**
@@ -114,7 +114,7 @@ public final class CategoryUpdateActionUtils {
         }
         return buildUpdateAction(oldCategory.getParent(),
                 newCategoryParentReference,
-                ChangeParent.of(newCategoryParentReference));
+                () -> ChangeParent.of(newCategoryParentReference));
     }
 
     /**
@@ -143,7 +143,7 @@ public final class CategoryUpdateActionUtils {
         }
         return buildUpdateAction(oldCategory.getOrderHint(),
                 newCategoryOrderHint,
-                ChangeOrderHint.of(newCategoryOrderHint));
+                () -> ChangeOrderHint.of(newCategoryOrderHint));
     }
 
     /**
@@ -163,7 +163,7 @@ public final class CategoryUpdateActionUtils {
         final LocalizedString newCategoryMetaTitle = newCategory.getMetaTitle();
         return buildUpdateAction(oldCategory.getMetaTitle(),
                 newCategoryMetaTitle,
-                SetMetaTitle.of(newCategoryMetaTitle));
+                () -> SetMetaTitle.of(newCategoryMetaTitle));
     }
 
     /**
@@ -183,7 +183,7 @@ public final class CategoryUpdateActionUtils {
         final LocalizedString newCategoryMetaKeywords = newCategory.getMetaKeywords();
         return buildUpdateAction(oldCategory.getMetaKeywords(),
                 newCategoryMetaKeywords,
-                SetMetaKeywords.of(newCategoryMetaKeywords));
+                () -> SetMetaKeywords.of(newCategoryMetaKeywords));
     }
 
     /**
@@ -203,6 +203,6 @@ public final class CategoryUpdateActionUtils {
         final LocalizedString newCategoryMetaDescription = newCategory.getMetaDescription();
         return buildUpdateAction(oldCategory.getMetaDescription(),
                 newCategoryMetaDescription,
-                SetMetaDescription.of(newCategoryMetaDescription));
+                () -> SetMetaDescription.of(newCategoryMetaDescription));
     }
 }
