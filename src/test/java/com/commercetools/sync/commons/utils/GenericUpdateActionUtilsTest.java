@@ -243,8 +243,7 @@ public class GenericUpdateActionUtilsTest {
     public void buildTypedUpdateAction_WithNonHandledCategoryUpdateAction_ShouldThrowBuildUpdateActionException()
             throws BuildUpdateActionException {
         final Category category = mock(Category.class);
-        final String nonHandledUpdateActionName = "someUpdateActionName";
-        final UpdateAction<Category> updateAction = buildTypedUpdateAction(category, nonHandledUpdateActionName)
+        final UpdateAction<Category> updateAction = buildTypedUpdateAction(category, NON_IMPLEMENTED_ACTION)
                 .orElse(null);
 
         assertThat(updateAction).isNull();
@@ -254,8 +253,7 @@ public class GenericUpdateActionUtilsTest {
     public void buildTypedUpdateAction_WithNonHandledChannelUpdateAction_ShouldThrowBuildUpdateActionException()
             throws BuildUpdateActionException {
         final Channel channel = mock(Channel.class);
-        final String nonHandledUpdateActionName = "someUpdateActionName";
-        final UpdateAction<Channel> updateAction = buildTypedUpdateAction(channel, nonHandledUpdateActionName)
+        final UpdateAction<Channel> updateAction = buildTypedUpdateAction(channel, NON_IMPLEMENTED_ACTION)
                 .orElse(null);
 
         assertThat(updateAction).isNull();

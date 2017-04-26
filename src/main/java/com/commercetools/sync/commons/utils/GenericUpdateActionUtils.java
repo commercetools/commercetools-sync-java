@@ -2,6 +2,7 @@ package com.commercetools.sync.commons.utils;
 
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.constants.UpdateActions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
@@ -15,7 +16,9 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.constants.UpdateActions.*;
+import static com.commercetools.sync.commons.constants.UpdateActions.UpdateAction.SET_CUSTOM_FIELD;
+import static com.commercetools.sync.commons.constants.UpdateActions.UpdateAction.SET_CUSTOM_TYPE;
+import static com.commercetools.sync.commons.constants.UpdateActions.UpdateAction.SET_CUSTOM_TYPE_REMOVE;
 import static java.lang.String.format;
 
 final class GenericUpdateActionUtils {
@@ -102,18 +105,18 @@ final class GenericUpdateActionUtils {
             @Nullable final String customTypeKey,
             @Nullable final Map<String, JsonNode> customFieldsJsonMap,
             @Nonnull final T resource,
-            @Nonnull final String updateActionName) throws BuildUpdateActionException {
+            @Nonnull final UpdateActions.UpdateAction updateAction) throws BuildUpdateActionException {
         return buildTypedUpdateAction(customTypeKey, customFieldsJsonMap, null, null,
-                resource, updateActionName);
+                resource, updateAction);
     }
 
     // This method is not private since it is used by one of the unit tests.
     @Nonnull
     static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedUpdateAction(
             @Nonnull final T resource,
-            @Nonnull final String updateActionName) throws BuildUpdateActionException {
+            @Nonnull final UpdateActions.UpdateAction updateAction) throws BuildUpdateActionException {
         return buildTypedUpdateAction(null, null, null, null,
-                resource, updateActionName);
+                resource, updateAction);
     }
 
     @Nonnull
@@ -121,16 +124,16 @@ final class GenericUpdateActionUtils {
             @Nullable final String customFieldName,
             @Nullable final JsonNode customFieldValue,
             @Nonnull final T resource,
-            @Nonnull final String updateActionName) throws BuildUpdateActionException {
+            @Nonnull final UpdateActions.UpdateAction updateAction) throws BuildUpdateActionException {
         return buildTypedUpdateAction(null, null, customFieldName, customFieldValue,
-                resource, updateActionName);
+                resource, updateAction);
 
     }
 
     /**
      * Creates a CTP update action on the given resource {@link T} (which currently could either be a {@link Category}
-     * or a {@link Channel}) according to the {@code updateActionName} flag. According to this flag value, the required
-     * update action is built:
+     * or a {@link Channel}) according to the {@code updateAction} enum flag. According to this flag value, the required
+     * update action is built.
      * <ol>
      * <li>SET_CUSTOM_TYPE_REMOVE -> creates a "setCustomType" update action that removes a custom type from the resource.</li>
      * <li>SET_CUSTOM_TYPE -> creates a "setCustomType" update action that changes the custom type set on the resource.</li>
@@ -142,7 +145,7 @@ final class GenericUpdateActionUtils {
      * @param customFieldName     the name of the custom field to update, only if the flag is SET_CUSTOM_FIELD.
      * @param customFieldValue    the new JSON value of the custom field, only if the flag is SET_CUSTOM_FIELD.
      * @param resource            the resource to do the update action on.
-     * @param updateActionName    the flag value that decided which update action to do.
+     * @param updateAction        the enum flag value that decided which update action to do.
      * @param <T>                 the type of the resource to do the update action on.
      * @return an update action that depends on the provided flag on the resource it's requested on.
      */
@@ -154,9 +157,9 @@ final class GenericUpdateActionUtils {
             @Nullable final String customFieldName,
             @Nullable final JsonNode customFieldValue,
             @Nonnull final T resource,
-            @Nonnull final String updateActionName) throws BuildUpdateActionException {
+            final UpdateActions.UpdateAction updateAction) throws BuildUpdateActionException {
         if (resource instanceof Category) {
-            switch (updateActionName) {
+            switch (updateAction) {
                 case SET_CUSTOM_TYPE_REMOVE:
                     return Optional.of((UpdateAction<T>)
                             io.sphere.sdk.categories.commands.updateactions.SetCustomType.ofRemoveType());
@@ -169,11 +172,11 @@ final class GenericUpdateActionUtils {
                             .SetCustomField.ofJson(customFieldName, customFieldValue));
                 default:
                     throw new BuildUpdateActionException(format("Update action '%s' for Categories is not implemented.",
-                            updateActionName));
+                            updateAction));
             }
         }
         if (resource instanceof Channel) {
-            switch (updateActionName) {
+            switch (updateAction) {
                 case SET_CUSTOM_TYPE_REMOVE:
                     return Optional.of((UpdateAction<T>) io.sphere.sdk.channels.commands.updateactions
                             .SetCustomType.ofRemoveType());
@@ -185,7 +188,7 @@ final class GenericUpdateActionUtils {
                             .SetCustomField.ofJson(customFieldName, customFieldValue));
                 default:
                     throw new BuildUpdateActionException(format("Update action '%s' for Channels is not implemented.",
-                            updateActionName));
+                            updateAction));
             }
         }
         throw new BuildUpdateActionException(format("Update actions for resource: '%s' is not implemented.",
