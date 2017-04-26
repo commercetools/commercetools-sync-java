@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import static com.commercetools.sync.commons.constants.UpdateActions.UpdateAction.NON_IMPLEMENTED_ACTION;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -92,7 +93,7 @@ public class GenericUpdateActionUtilsTest {
         assertThat(callBackResponses).hasSize(2);
         assertThat(callBackResponses.get(0)).isEqualTo("Failed to build 'setCustomType' update action on the cart with " +
                 "id 'cartId'. Reason: Update actions for resource: 'cart' is not implemented.");
-        assertThat((Exception)callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
+        assertThat((Exception) callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
     }
 
     @Test
@@ -160,7 +161,7 @@ public class GenericUpdateActionUtilsTest {
         assertThat(callBackResponses.get(0)).isEqualTo("Failed to build 'setCustomType' update action to remove the" +
                 " custom type on the cart with id 'cartId'. Reason: Update actions for " +
                 "resource: 'cart' is not implemented.");
-        assertThat((Exception)callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
+        assertThat((Exception) callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
     }
 
     @Test
@@ -236,7 +237,7 @@ public class GenericUpdateActionUtilsTest {
         assertThat(callBackResponses.get(0)).isEqualTo("Failed to build 'setCustomField' update action on the custom " +
                 "field with the name 'name' on the cart with id 'cartId'. Reason: Update actions for resource:" +
                 " 'cart' is not implemented.");
-        assertThat((Exception)callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
+        assertThat((Exception) callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
     }
 
     @Test(expected = BuildUpdateActionException.class)
