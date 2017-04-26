@@ -69,7 +69,7 @@ public final class CategoryUpdateActionUtils {
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new description.
-     * @param syncOptions     the sync syncOptions with which a custom callback function is called in case the description is null.
+     * @param syncOptions the sync syncOptions with which a custom callback function is called in case the description is null.
      * @return A filled optional with the update action or an empty optional if the descriptions are identical.
      */
     @Nonnull
@@ -99,7 +99,7 @@ public final class CategoryUpdateActionUtils {
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new parent.
-     * @param syncOptions     the sync syncOptions with which a custom callback function is called in case the parent is null.
+     * @param syncOptions the sync syncOptions with which a custom callback function is called in case the parent is null.
      * @return A filled optional with the update action or an empty optional if the parent references are identical.
      */
     @Nonnull
@@ -128,7 +128,7 @@ public final class CategoryUpdateActionUtils {
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new orderHint.
-     * @param syncOptions     the sync syncOptions with which a custom callback function is called in case the orderHint is null.
+     * @param syncOptions the sync syncOptions with which a custom callback function is called in case the orderHint is null.
      * @return A filled optional with the update action or an empty optional if the orderHint values are identical.
      */
     @Nonnull
