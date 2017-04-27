@@ -2,17 +2,34 @@ package com.commercetools.sync.inventory.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
+import javax.annotation.Nonnull;
+
 import static java.lang.String.format;
 
 /**
- * Statistics of inventory synchronisation process
+ * Statistics of inventory synchronisation process. Class is immutable.
  */
 public class InventorySyncStatistics extends BaseSyncStatistics {
 
     private int unprocessedDueToEmptySku;
 
-    public InventorySyncStatistics() {
-        super();
+    InventorySyncStatistics(@Nonnull BaseSyncStatistics baseSyncStatistics, int unprocessedDueToEmptySku) {
+        super(baseSyncStatistics);
+        this.unprocessedDueToEmptySku = unprocessedDueToEmptySku;
+    }
+
+    /**
+     * Returns new {@link InventorySyncStatistics} instance that contains statistics values summed up from
+     * {@code statistics1} and {@code statistics2}
+     *
+     * @param statistics1 first element
+     * @param statistics2 second element
+     * @return new {@link InventorySyncStatistics} instance that contains summed up statistics
+     */
+    public static InventorySyncStatistics merge(@Nonnull final InventorySyncStatistics statistics1,
+                                                @Nonnull final InventorySyncStatistics statistics2) {
+        return new InventorySyncStatistics(BaseSyncStatistics.merge(statistics1, statistics2),
+                statistics1.getUnprocessedDueToEmptySku() + statistics2.getUnprocessedDueToEmptySku());
     }
 
     /**
@@ -22,13 +39,6 @@ public class InventorySyncStatistics extends BaseSyncStatistics {
      */
     public int getUnprocessedDueToEmptySku() {
         return unprocessedDueToEmptySku;
-    }
-
-    /**
-     * Increment the total number of resources that weren't processed because they had empty sku.
-     */
-    public void incrementUnprocessedDueToEmptySku() {
-        this.unprocessedDueToEmptySku++;
     }
 
     /**
