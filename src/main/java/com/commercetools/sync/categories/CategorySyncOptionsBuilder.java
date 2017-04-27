@@ -49,8 +49,14 @@ public class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder {
      */
     @Override
     public CategorySyncOptions build() {
-        return new CategorySyncOptions(this.ctpClient, this.errorCallBack, this.warningCallBack, this.removeOtherLocales,
-                this.removeOtherSetEntries, this.removeOtherCollectionEntries, this.removeOtherProperties,
+        return new CategorySyncOptions(
+                this.ctpClient,
+                this.errorCallBack,
+                this.warningCallBack,
+                this.removeOtherLocales,
+                this.removeOtherSetEntries,
+                this.removeOtherCollectionEntries,
+                this.removeOtherProperties,
                 this.updateActionsFilter);
     }
 }

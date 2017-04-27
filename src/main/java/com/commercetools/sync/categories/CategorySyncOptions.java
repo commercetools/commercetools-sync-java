@@ -14,16 +14,21 @@ import java.util.function.Function;
 public class CategorySyncOptions extends BaseSyncOptions {
     private final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter;
 
-    public CategorySyncOptions(@Nonnull final CtpClient ctpClient,
-                               final BiConsumer<String, Throwable> updateActionErrorCallBack,
-                               final Consumer<String> updateActionWarningCallBack,
-                               final boolean removeOtherLocales,
-                               final boolean removeOtherSetEntries,
-                               final boolean removeOtherCollectionEntries,
-                               final boolean removeOtherProperties,
-                               final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter) {
-        super(ctpClient, updateActionErrorCallBack, updateActionWarningCallBack, removeOtherLocales,
-                removeOtherSetEntries, removeOtherCollectionEntries, removeOtherProperties);
+    CategorySyncOptions(@Nonnull final CtpClient ctpClient,
+                        final BiConsumer<String, Throwable> updateActionErrorCallBack,
+                        final Consumer<String> updateActionWarningCallBack,
+                        final boolean removeOtherLocales,
+                        final boolean removeOtherSetEntries,
+                        final boolean removeOtherCollectionEntries,
+                        final boolean removeOtherProperties,
+                        final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter) {
+        super(ctpClient,
+                updateActionErrorCallBack,
+                updateActionWarningCallBack,
+                removeOtherLocales,
+                removeOtherSetEntries,
+                removeOtherCollectionEntries,
+                removeOtherProperties);
         this.updateActionsFilter = updateActionsFilter;
     }
 
