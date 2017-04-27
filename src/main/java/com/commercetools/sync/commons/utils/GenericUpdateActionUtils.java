@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.GenericUpdateAction.*;
+import static com.commercetools.sync.commons.enums.Error.*;
 import static java.lang.String.format;
 
 @SuppressWarnings("unchecked")
@@ -44,8 +44,8 @@ final class GenericUpdateActionUtils {
                     .of(resource)
                     .buildSetCustomTypeAction(customTypeKey, customFieldsJsonMap);
         } catch (BuildUpdateActionException e) {
-            syncOptions.applyErrorCallback(format("Failed to build 'setCustomType' update action on " +
-                    "the %s with id '%s'. Reason: %s", resource.toReference().getTypeId(), resource.getId(), e.getMessage()), e);
+            syncOptions.applyErrorCallback(format(SET_CUSTOM_TYPE_BUILD_FAILED.getDescription()
+                    , resource.toReference().getTypeId(), resource.getId(), e.getMessage()), e);
             return Optional.empty();
         }
     }
@@ -63,10 +63,11 @@ final class GenericUpdateActionUtils {
     static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedRemoveCustomTypeUpdateAction(
             @Nonnull final T resource, @Nonnull final BaseSyncOptions syncOptions) {
         try {
-            return buildTypedUpdateAction(resource, SET_CUSTOM_TYPE_REMOVE);
+            return GenericCustomActionBuilderFactory
+                    .of(resource)
+                    .buildRemoveCustomTypeAction();
         } catch (BuildUpdateActionException e) {
-            syncOptions.applyErrorCallback(format("Failed to build 'setCustomType' update action to" +
-                            " remove the custom type on the %s with id '%s'. Reason: %s",
+            syncOptions.applyErrorCallback(format(REMOVE_CUSTOM_TYPE_BUILD_FAILED.getDescription(),
                     resource.toReference().getTypeId(), resource.getId(), e.getMessage()), e);
             return Optional.empty();
         }
