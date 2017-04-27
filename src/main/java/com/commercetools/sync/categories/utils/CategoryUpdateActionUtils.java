@@ -12,9 +12,8 @@ import io.sphere.sdk.models.Reference;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.constants.SyncMessages.*;
+import static com.commercetools.sync.commons.enums.Warning.*;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static java.lang.String.format;
 
 public final class CategoryUpdateActionUtils {
 
@@ -79,7 +78,7 @@ public final class CategoryUpdateActionUtils {
             @Nonnull final CategorySyncOptions syncOptions) {
         final LocalizedString newCategoryDescription = newCategory.getDescription();
         if (newCategoryDescription == null) {
-            syncOptions.applyWarningCallback(format(CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION, oldCategory.getId()));
+            syncOptions.applyWarningCallback(CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION.getDescription(oldCategory.getId()));
             return Optional.empty();
         }
         return buildUpdateAction(oldCategory.getDescription(),
@@ -109,7 +108,7 @@ public final class CategoryUpdateActionUtils {
             @Nonnull final CategorySyncOptions syncOptions) {
         final Reference<Category> newCategoryParentReference = newCategory.getParent();
         if (newCategoryParentReference == null) {
-            syncOptions.applyWarningCallback(format(CATEGORY_CHANGE_PARENT_EMPTY_PARENT, oldCategory.getId()));
+            syncOptions.applyWarningCallback(CATEGORY_CHANGE_PARENT_EMPTY_PARENT.getDescription(oldCategory.getId()));
             return Optional.empty();
         }
         return buildUpdateAction(oldCategory.getParent(),
@@ -138,7 +137,7 @@ public final class CategoryUpdateActionUtils {
             @Nonnull final CategorySyncOptions syncOptions) {
         final String newCategoryOrderHint = newCategory.getOrderHint();
         if (newCategoryOrderHint == null) {
-            syncOptions.applyWarningCallback(format(CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT, oldCategory.getId()));
+            syncOptions.applyWarningCallback(CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT.getDescription(oldCategory.getId()));
             return Optional.empty();
         }
         return buildUpdateAction(oldCategory.getOrderHint(),

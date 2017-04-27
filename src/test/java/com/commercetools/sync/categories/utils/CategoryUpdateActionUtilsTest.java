@@ -179,7 +179,7 @@ public class CategoryUpdateActionUtilsTest {
         assertThat(setDescriptionUpdateAction).isNotNull();
         assertThat(setDescriptionUpdateAction).isNotPresent();
         assertThat(callBackResponse).hasSize(1);
-        assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset description field of category with id 'oldCatId'.");
+        assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset 'description' field of category with id 'oldCatId'.");
     }
 
     @Test
@@ -231,7 +231,7 @@ public class CategoryUpdateActionUtilsTest {
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction).isNotPresent();
         assertThat(callBackResponse).hasSize(1);
-        assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset parent field of category with id 'oldCatId'.");
+        assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset 'parent' field of category with id 'oldCatId'.");
     }
 
     @Test
@@ -282,7 +282,7 @@ public class CategoryUpdateActionUtilsTest {
         assertThat(changeOrderHintUpdateAction).isNotNull();
         assertThat(changeOrderHintUpdateAction).isNotPresent();
         assertThat(callBackResponse).hasSize(1);
-        assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset orderHint field of category with id 'oldCatId'.");
+        assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset 'orderHint' field of category with id 'oldCatId'.");
     }
 
     @Test
