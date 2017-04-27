@@ -2,8 +2,8 @@ package com.commercetools.sync.commons.utils;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
-import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.helpers.CtpClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.carts.Cart;
@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import static com.commercetools.sync.commons.constants.UpdateActions.UpdateAction.NON_IMPLEMENTED_ACTION;
+import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.GenericUpdateAction.NON_IMPLEMENTED_ACTION;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;

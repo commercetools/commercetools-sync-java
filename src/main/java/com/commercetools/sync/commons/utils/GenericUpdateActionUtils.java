@@ -2,7 +2,6 @@ package com.commercetools.sync.commons.utils;
 
 
 import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.commons.constants.UpdateActions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
@@ -16,12 +15,27 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.constants.UpdateActions.UpdateAction.SET_CUSTOM_FIELD;
-import static com.commercetools.sync.commons.constants.UpdateActions.UpdateAction.SET_CUSTOM_TYPE;
-import static com.commercetools.sync.commons.constants.UpdateActions.UpdateAction.SET_CUSTOM_TYPE_REMOVE;
+import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.GenericUpdateAction.*;
 import static java.lang.String.format;
 
 final class GenericUpdateActionUtils {
+    /**
+     * /**
+     * Constants that are used as flags to trigger the needed update action for
+     * {@link com.commercetools.sync.commons.utils.GenericUpdateActionUtils#buildTypedUpdateAction(String, Map, String,
+     * JsonNode, Custom, GenericUpdateAction)}
+     * <ol>
+     * <li>SET_CUSTOM_TYPE_REMOVE -> signal for a "setCustomType" update action that removes a custom type from the
+     * resource.</li>
+     * <li>SET_CUSTOM_TYPE -> signal for a "setCustomType" update action that changes the custom type set on the
+     * resource.</li>
+     * <li>SET_CUSTOM_FIELD -> signal for a "setCustomField" update action that changes the value of a custom
+     * field.</li>
+     * </ol>
+     */
+    enum GenericUpdateAction {
+        SET_CUSTOM_TYPE_REMOVE, SET_CUSTOM_TYPE, SET_CUSTOM_FIELD, NON_IMPLEMENTED_ACTION
+    }
 
     /**
      * Creates a CTP "setCustomType" update action on the given resource {@link T} (which currently could either
@@ -105,7 +119,7 @@ final class GenericUpdateActionUtils {
             @Nullable final String customTypeKey,
             @Nullable final Map<String, JsonNode> customFieldsJsonMap,
             @Nonnull final T resource,
-            @Nonnull final UpdateActions.UpdateAction updateAction) throws BuildUpdateActionException {
+            @Nonnull final GenericUpdateAction updateAction) throws BuildUpdateActionException {
         return buildTypedUpdateAction(customTypeKey, customFieldsJsonMap, null, null,
                 resource, updateAction);
     }
@@ -114,7 +128,7 @@ final class GenericUpdateActionUtils {
     @Nonnull
     static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedUpdateAction(
             @Nonnull final T resource,
-            @Nonnull final UpdateActions.UpdateAction updateAction) throws BuildUpdateActionException {
+            @Nonnull final GenericUpdateAction updateAction) throws BuildUpdateActionException {
         return buildTypedUpdateAction(null, null, null, null,
                 resource, updateAction);
     }
@@ -124,9 +138,9 @@ final class GenericUpdateActionUtils {
             @Nullable final String customFieldName,
             @Nullable final JsonNode customFieldValue,
             @Nonnull final T resource,
-            @Nonnull final UpdateActions.UpdateAction updateAction) throws BuildUpdateActionException {
+            @Nonnull final GenericUpdateAction genericUpdateAction) throws BuildUpdateActionException {
         return buildTypedUpdateAction(null, null, customFieldName, customFieldValue,
-                resource, updateAction);
+                resource, genericUpdateAction);
 
     }
 
@@ -157,7 +171,7 @@ final class GenericUpdateActionUtils {
             @Nullable final String customFieldName,
             @Nullable final JsonNode customFieldValue,
             @Nonnull final T resource,
-            final UpdateActions.UpdateAction updateAction) throws BuildUpdateActionException {
+            final GenericUpdateAction updateAction) throws BuildUpdateActionException {
         if (resource instanceof Category) {
             switch (updateAction) {
                 case SET_CUSTOM_TYPE_REMOVE:
