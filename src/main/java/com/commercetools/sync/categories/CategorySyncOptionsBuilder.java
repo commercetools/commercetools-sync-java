@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.function.Function;
 
-public class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder {
+public class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<CategorySyncOptionsBuilder, CategorySyncOptions> {
     private Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter;
 
     private CategorySyncOptionsBuilder(@Nonnull final CtpClient ctpClient) {
@@ -58,5 +58,16 @@ public class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder {
                 this.removeOtherCollectionEntries,
                 this.removeOtherProperties,
                 this.updateActionsFilter);
+    }
+
+    /**
+     * Creates an instance of this class to be used in the super class generic methods. Please see the JavaDoc in the
+     * overriden method for further details.
+     *
+     * @return an instance of this class.
+     */
+    @Override
+    protected CategorySyncOptionsBuilder getThis() {
+        return this;
     }
 }

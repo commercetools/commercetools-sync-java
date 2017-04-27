@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public abstract class BaseSyncOptionsBuilder {
+public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T, S>, S extends BaseSyncOptions> {
     protected CtpClient ctpClient;
     protected BiConsumer<String, Throwable> errorCallBack;
     protected Consumer<String> warningCallBack;
@@ -22,9 +22,9 @@ public abstract class BaseSyncOptionsBuilder {
      * @param errorCallBack the new value to set to the error callback.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public BaseSyncOptionsBuilder setErrorCallBack(@Nonnull final BiConsumer<String, Throwable> errorCallBack) {
+    public T setErrorCallBack(@Nonnull final BiConsumer<String, Throwable> errorCallBack) {
         this.errorCallBack = errorCallBack;
-        return this;
+        return getThis();
     }
 
     /**
@@ -34,9 +34,9 @@ public abstract class BaseSyncOptionsBuilder {
      * @param warningCallBack the new value to set to the warning callback.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public BaseSyncOptionsBuilder setWarningCallBack(@Nonnull final Consumer<String> warningCallBack) {
+    public T setWarningCallBack(@Nonnull final Consumer<String> warningCallBack) {
         this.warningCallBack = warningCallBack;
-        return this;
+        return getThis();
     }
 
     /**
@@ -47,9 +47,9 @@ public abstract class BaseSyncOptionsBuilder {
      * @param removeOtherLocales new value to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public BaseSyncOptionsBuilder setRemoveOtherLocales(final boolean removeOtherLocales) {
+    public T setRemoveOtherLocales(final boolean removeOtherLocales) {
         this.removeOtherLocales = removeOtherLocales;
-        return this;
+        return getThis();
     }
 
     /**
@@ -60,9 +60,9 @@ public abstract class BaseSyncOptionsBuilder {
      * @param removeOtherSetEntries new value to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public BaseSyncOptionsBuilder setRemoveOtherSetEntries(final boolean removeOtherSetEntries) {
+    public T setRemoveOtherSetEntries(final boolean removeOtherSetEntries) {
         this.removeOtherSetEntries = removeOtherSetEntries;
-        return this;
+        return getThis();
     }
 
     /**
@@ -73,9 +73,9 @@ public abstract class BaseSyncOptionsBuilder {
      * @param removeOtherCollectionEntries new value to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public BaseSyncOptionsBuilder setRemoveOtherCollectionEntries(final boolean removeOtherCollectionEntries) {
+    public T setRemoveOtherCollectionEntries(final boolean removeOtherCollectionEntries) {
         this.removeOtherCollectionEntries = removeOtherCollectionEntries;
-        return this;
+        return getThis();
     }
 
     /**
@@ -86,16 +86,26 @@ public abstract class BaseSyncOptionsBuilder {
      * @param removeOtherProperties new value to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public BaseSyncOptionsBuilder setRemoveOtherProperties(final boolean removeOtherProperties) {
+    public T setRemoveOtherProperties(final boolean removeOtherProperties) {
         this.removeOtherProperties = removeOtherProperties;
-        return this;
+        return getThis();
     }
 
     /***
-     * Creates new instance of T which extends {@link BaseSyncOptionsBuilder} enriched with all attributes provided to
+     * Creates new instance of {@code S} which extends {@link BaseSyncOptions} enriched with all attributes provided to
      * {@code this} builder.
      *
-     * @return new instance of T which extends {@link BaseSyncOptionsBuilder}
+     * @return new instance of S which extends {@link BaseSyncOptions}
      */
-    public abstract <T extends BaseSyncOptions> T build();
+    protected abstract S build();
+
+    /**
+     * Returns {@code this} instance of {@code T}, which extends {@link BaseSyncOptionsBuilder}. The purpose of this
+     * method is to make sure that {@code this} is an instance of a class which extends {@link BaseSyncOptionsBuilder}
+     * in order to be used in the generic methods of the class. Otherwise, without this method, the methods above would
+     * need to cast {@code this to T} which could lead to a runtime error of the class was extended in a wrong way.
+     *
+     * @return an instance of the class that overrides this method.
+     */
+    protected abstract T getThis();
 }
