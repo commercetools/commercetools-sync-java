@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.GenericUpdateAction.NON_IMPLEMENTED_ACTION;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -238,25 +237,5 @@ public class GenericUpdateActionUtilsTest {
                 "field with the name 'name' on the cart with id 'cartId'. Reason: Update actions for resource:" +
                 " 'cart' is not implemented.");
         assertThat((Exception) callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
-    }
-
-    @Test(expected = BuildUpdateActionException.class)
-    public void buildTypedUpdateAction_WithNonHandledCategoryUpdateAction_ShouldThrowBuildUpdateActionException()
-            throws BuildUpdateActionException {
-        final Category category = mock(Category.class);
-        final UpdateAction<Category> updateAction = buildTypedUpdateAction(category, NON_IMPLEMENTED_ACTION)
-                .orElse(null);
-
-        assertThat(updateAction).isNull();
-    }
-
-    @Test(expected = BuildUpdateActionException.class)
-    public void buildTypedUpdateAction_WithNonHandledChannelUpdateAction_ShouldThrowBuildUpdateActionException()
-            throws BuildUpdateActionException {
-        final Channel channel = mock(Channel.class);
-        final UpdateAction<Channel> updateAction = buildTypedUpdateAction(channel, NON_IMPLEMENTED_ACTION)
-                .orElse(null);
-
-        assertThat(updateAction).isNull();
     }
 }

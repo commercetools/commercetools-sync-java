@@ -3,6 +3,7 @@ package com.commercetools.sync.commons.utils;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.helpers.GenericCustomActionBuilderFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
@@ -18,24 +19,8 @@ import java.util.Optional;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.GenericUpdateAction.*;
 import static java.lang.String.format;
 
+@SuppressWarnings("unchecked")
 final class GenericUpdateActionUtils {
-    /**
-     * /**
-     * Constants that are used as flags to trigger the needed update action for
-     * {@link com.commercetools.sync.commons.utils.GenericUpdateActionUtils#buildTypedUpdateAction(String, Map, String,
-     * JsonNode, Custom, GenericUpdateAction)}
-     * <ol>
-     * <li>SET_CUSTOM_TYPE_REMOVE -> signal for a "setCustomType" update action that removes a custom type from the
-     * resource.</li>
-     * <li>SET_CUSTOM_TYPE -> signal for a "setCustomType" update action that changes the custom type set on the
-     * resource.</li>
-     * <li>SET_CUSTOM_FIELD -> signal for a "setCustomField" update action that changes the value of a custom
-     * field.</li>
-     * </ol>
-     */
-    enum GenericUpdateAction {
-        SET_CUSTOM_TYPE_REMOVE, SET_CUSTOM_TYPE, SET_CUSTOM_FIELD, NON_IMPLEMENTED_ACTION
-    }
 
     /**
      * Creates a CTP "setCustomType" update action on the given resource {@link T} (which currently could either
@@ -55,7 +40,9 @@ final class GenericUpdateActionUtils {
             @Nonnull final T resource,
             @Nonnull final BaseSyncOptions syncOptions) {
         try {
-            return buildTypedUpdateAction(customTypeKey, customFieldsJsonMap, resource, SET_CUSTOM_TYPE);
+            return GenericCustomActionBuilderFactory
+                    .of(resource)
+                    .buildSetCustomTypeAction(customTypeKey, customFieldsJsonMap);
         } catch (BuildUpdateActionException e) {
             syncOptions.applyErrorCallback(format("Failed to build 'setCustomType' update action on " +
                     "the %s with id '%s'. Reason: %s", resource.toReference().getTypeId(), resource.getId(), e.getMessage()), e);
@@ -105,107 +92,13 @@ final class GenericUpdateActionUtils {
             @Nonnull final T resource,
             @Nonnull final BaseSyncOptions syncOptions) {
         try {
-            return buildTypedUpdateAction(customFieldName, customFieldValue, resource, SET_CUSTOM_FIELD);
+            return GenericCustomActionBuilderFactory
+                    .of(resource)
+                    .buildSetCustomFieldAction(customFieldName, customFieldValue);
         } catch (BuildUpdateActionException e) {
-            syncOptions.applyErrorCallback(format("Failed to build 'setCustomField' update action on " +
-                            "the custom field with the name '%s' on the %s with id '%s'. Reason: %s", customFieldName,
+            syncOptions.applyErrorCallback(format(SET_CUSTOM_FIELD_BUILD_FAILED.getDescription(), customFieldName,
                     resource.toReference().getTypeId(), resource.getId(), e.getMessage()), e);
             return Optional.empty();
         }
-    }
-
-    @Nonnull
-    private static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedUpdateAction(
-            @Nullable final String customTypeKey,
-            @Nullable final Map<String, JsonNode> customFieldsJsonMap,
-            @Nonnull final T resource,
-            @Nonnull final GenericUpdateAction updateAction) throws BuildUpdateActionException {
-        return buildTypedUpdateAction(customTypeKey, customFieldsJsonMap, null, null,
-                resource, updateAction);
-    }
-
-    // This method is not private since it is used by one of the unit tests.
-    @Nonnull
-    static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedUpdateAction(
-            @Nonnull final T resource,
-            @Nonnull final GenericUpdateAction updateAction) throws BuildUpdateActionException {
-        return buildTypedUpdateAction(null, null, null, null,
-                resource, updateAction);
-    }
-
-    @Nonnull
-    private static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedUpdateAction(
-            @Nullable final String customFieldName,
-            @Nullable final JsonNode customFieldValue,
-            @Nonnull final T resource,
-            @Nonnull final GenericUpdateAction genericUpdateAction) throws BuildUpdateActionException {
-        return buildTypedUpdateAction(null, null, customFieldName, customFieldValue,
-                resource, genericUpdateAction);
-
-    }
-
-    /**
-     * Creates a CTP update action on the given resource {@link T} (which currently could either be a {@link Category}
-     * or a {@link Channel}) according to the {@code updateAction} enum flag. According to this flag value, the required
-     * update action is built.
-     * <ol>
-     * <li>SET_CUSTOM_TYPE_REMOVE -> creates a "setCustomType" update action that removes a custom type from the resource.</li>
-     * <li>SET_CUSTOM_TYPE -> creates a "setCustomType" update action that changes the custom type set on the resource.</li>
-     * <li>SET_CUSTOM_FIELD -> creates a "setCustomField" update action that changes the value of a custom field.</li>
-     * </ol>
-     *
-     * @param customTypeKey       the key of the new custom type, only if the flag is SET_CUSTOM_TYPE.
-     * @param customFieldsJsonMap the custom fields map of JSON values, only if the flag is SET_CUSTOM_TYPE.
-     * @param customFieldName     the name of the custom field to update, only if the flag is SET_CUSTOM_FIELD.
-     * @param customFieldValue    the new JSON value of the custom field, only if the flag is SET_CUSTOM_FIELD.
-     * @param resource            the resource to do the update action on.
-     * @param updateAction        the enum flag value that decided which update action to do.
-     * @param <T>                 the type of the resource to do the update action on.
-     * @return an update action that depends on the provided flag on the resource it's requested on.
-     */
-    @Nonnull
-    @SuppressWarnings("unchecked")
-    private static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedUpdateAction(
-            @Nullable final String customTypeKey,
-            @Nullable final Map<String, JsonNode> customFieldsJsonMap,
-            @Nullable final String customFieldName,
-            @Nullable final JsonNode customFieldValue,
-            @Nonnull final T resource,
-            final GenericUpdateAction updateAction) throws BuildUpdateActionException {
-        if (resource instanceof Category) {
-            switch (updateAction) {
-                case SET_CUSTOM_TYPE_REMOVE:
-                    return Optional.of((UpdateAction<T>)
-                            io.sphere.sdk.categories.commands.updateactions.SetCustomType.ofRemoveType());
-                case SET_CUSTOM_TYPE:
-                    return Optional.of((UpdateAction<T>)
-                            io.sphere.sdk.categories.commands.updateactions.
-                                    SetCustomType.ofTypeKeyAndJson(customTypeKey, customFieldsJsonMap));
-                case SET_CUSTOM_FIELD:
-                    return Optional.of((UpdateAction<T>) io.sphere.sdk.categories.commands.updateactions
-                            .SetCustomField.ofJson(customFieldName, customFieldValue));
-                default:
-                    throw new BuildUpdateActionException(format("Update action '%s' for Categories is not implemented.",
-                            updateAction));
-            }
-        }
-        if (resource instanceof Channel) {
-            switch (updateAction) {
-                case SET_CUSTOM_TYPE_REMOVE:
-                    return Optional.of((UpdateAction<T>) io.sphere.sdk.channels.commands.updateactions
-                            .SetCustomType.ofRemoveType());
-                case SET_CUSTOM_TYPE:
-                    return Optional.of((UpdateAction<T>) io.sphere.sdk.channels.commands.updateactions
-                            .SetCustomType.ofTypeKeyAndJson(customTypeKey, customFieldsJsonMap));
-                case SET_CUSTOM_FIELD:
-                    return Optional.of((UpdateAction<T>) io.sphere.sdk.channels.commands.updateactions
-                            .SetCustomField.ofJson(customFieldName, customFieldValue));
-                default:
-                    throw new BuildUpdateActionException(format("Update action '%s' for Channels is not implemented.",
-                            updateAction));
-            }
-        }
-        throw new BuildUpdateActionException(format("Update actions for resource: '%s' is not implemented.",
-                resource.toReference().getTypeId()));
     }
 }
