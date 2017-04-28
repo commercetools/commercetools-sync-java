@@ -1,7 +1,6 @@
 package com.commercetools.sync.inventory;
 
 import com.commercetools.sync.commons.Sync;
-import com.commercetools.sync.inventory.helpers.InventorySyncOptions;
 import com.commercetools.sync.inventory.helpers.InventorySyncStatistics;
 import com.commercetools.sync.inventory.helpers.InventorySyncStatisticsCreator;
 import com.commercetools.sync.inventory.utils.InventorySyncUtils;

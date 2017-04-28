@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventory.helpers;
+package com.commercetools.sync.inventory;
 
 import com.commercetools.sync.commons.helpers.CtpClient;
 import org.junit.Test;

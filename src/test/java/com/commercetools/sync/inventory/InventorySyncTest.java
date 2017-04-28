@@ -1,6 +1,5 @@
 package com.commercetools.sync.inventory;
 
-import com.commercetools.sync.inventory.helpers.InventorySyncOptions;
 import com.commercetools.sync.inventory.helpers.InventorySyncStatistics;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;

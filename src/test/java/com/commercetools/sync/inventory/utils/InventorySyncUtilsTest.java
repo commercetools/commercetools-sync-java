@@ -1,8 +1,7 @@
 package com.commercetools.sync.inventory.utils;
 
 import com.commercetools.sync.inventory.InventoryEntryMock;
-import com.commercetools.sync.inventory.helpers.InventorySyncOptions;
-import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.inventory.InventorySyncOptions;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
