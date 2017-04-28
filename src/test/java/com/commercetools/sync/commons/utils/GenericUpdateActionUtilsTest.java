@@ -9,8 +9,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -24,13 +26,23 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class GenericUpdateActionUtilsTest {
+    private CategorySyncOptions categorySyncOptions;
+    private final CtpClient ctpClient = mock(CtpClient.class);
+
+    @Before
+    public void setup() {
+        final SphereClientConfig clientConfig = SphereClientConfig.of("testPK", "testCI", "testCS");
+        when(ctpClient.getClientConfig()).thenReturn(clientConfig);
+        categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
+                .build();
+    }
 
     @Test
     public void buildTypedSetCustomTypeUpdateAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
         final Category category = mock(Category.class);
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
         final UpdateAction<Category> updateAction = buildTypedSetCustomTypeUpdateAction("key",
-                fieldsJsonMap, category, mock(CategorySyncOptions.class)).orElse(null);
+                fieldsJsonMap, category, categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomType");
@@ -43,7 +55,7 @@ public class GenericUpdateActionUtilsTest {
         final Channel channel = mock(Channel.class);
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
         final UpdateAction<Channel> updateAction = buildTypedSetCustomTypeUpdateAction("key",
-                fieldsJsonMap, channel, mock(CategorySyncOptions.class)).orElse(null);
+                fieldsJsonMap, channel, categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomType");
@@ -59,7 +71,7 @@ public class GenericUpdateActionUtilsTest {
 
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
         final UpdateAction<Cart> updateAction = buildTypedSetCustomTypeUpdateAction("key", fieldsJsonMap,
-                cart, mock(CategorySyncOptions.class)).orElse(null);
+                cart, categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNull();
     }
@@ -99,7 +111,7 @@ public class GenericUpdateActionUtilsTest {
     public void buildTypedRemoveCustomTypeUpdateAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
         final Category category = mock(Category.class);
         final UpdateAction<Category> updateAction = buildTypedRemoveCustomTypeUpdateAction(category,
-                mock(CategorySyncOptions.class)).orElse(null);
+                categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomType");
@@ -111,7 +123,7 @@ public class GenericUpdateActionUtilsTest {
     public void buildTypedRemoveCustomTypeUpdateAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
         final Channel channel = mock(Channel.class);
         final UpdateAction<Channel> updateAction = buildTypedRemoveCustomTypeUpdateAction(channel,
-                mock(CategorySyncOptions.class)).orElse(null);
+                categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomType");
@@ -126,7 +138,7 @@ public class GenericUpdateActionUtilsTest {
         when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
 
         final UpdateAction<Cart> updateAction = buildTypedRemoveCustomTypeUpdateAction(cart,
-                mock(CategorySyncOptions.class)).orElse(null);
+                categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNull();
     }
@@ -169,7 +181,7 @@ public class GenericUpdateActionUtilsTest {
         final JsonNode customFieldValue = mock(JsonNode.class);
         final String customFieldName = "name";
         final UpdateAction<Category> updateAction = buildTypedSetCustomFieldUpdateAction(customFieldName,
-                customFieldValue, category, mock(CategorySyncOptions.class)).orElse(null);
+                customFieldValue, category, categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomField");
@@ -183,7 +195,7 @@ public class GenericUpdateActionUtilsTest {
         final JsonNode customFieldValue = mock(JsonNode.class);
         final String customFieldName = "name";
         final UpdateAction<Channel> updateAction = buildTypedSetCustomFieldUpdateAction(customFieldName,
-                customFieldValue, channel, mock(CategorySyncOptions.class)).orElse(null);
+                customFieldValue, channel, categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomField");

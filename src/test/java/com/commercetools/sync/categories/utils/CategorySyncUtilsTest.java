@@ -2,13 +2,16 @@ package com.commercetools.sync.categories.utils;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
+import com.commercetools.sync.commons.helpers.CtpClient;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.*;
+import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -23,62 +26,69 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class CategorySyncUtilsTest {
-    private static Category MOCK_OLD_CATEGORY;
-    private final static Locale LOCALE = Locale.GERMAN;
-    private final static String MOCK_OLD_CATEGORY_PARENT_ID = "1";
-    private final static String MOCK_OLD_CATEGORY_NAME = "categoryName";
-    private final static String MOCK_OLD_CATEGORY_SLUG = "categorySlug";
-    private final static String MOCK_OLD_CATEGORY_EXTERNAL_ID = "externalId";
-    private final static String MOCK_OLD_CATEGORY_DESCRIPTION = "categoryDesc";
-    private final static String MOCK_OLD_CATEGORY_META_DESCRIPTION = "categoryMetaDesc";
-    private final static String MOCK_OLD_CATEGORY_META_TITLE = "categoryMetaTitle";
-    private final static String MOCK_OLD_CATEGORY_META_KEYWORDS = "categoryKeywords";
-    private final static String MOCK_OLD_CATEGORY_ORDERHINT = "123";
+    private Category mockOldCategory;
+    private CategorySyncOptions categorySyncOptions;
+    private final CtpClient ctpClient = mock(CtpClient.class);
+    private final Locale locale = Locale.GERMAN;
+    private final String categoryParentId = "1";
+    private final String categoryName = "categoryName";
+    private final String categorySlug = "categorySlug";
+    private final String categoryExternalId = "externalId";
+    private final String categoryDesc = "categoryDesc";
+    private final String categoryMetaDesc = "categoryMetaDesc";
+    private final String categoryMetaTitle = "categoryMetaTitle";
+    private final String categoryKeywords = "categoryKeywords";
+    private final String categoryOrderHint = "123";
 
-    @BeforeClass
-    public static void setup() {
-        MOCK_OLD_CATEGORY = getMockCategory(LOCALE,
-                MOCK_OLD_CATEGORY_NAME,
-                MOCK_OLD_CATEGORY_SLUG,
-                MOCK_OLD_CATEGORY_EXTERNAL_ID,
-                MOCK_OLD_CATEGORY_DESCRIPTION,
-                MOCK_OLD_CATEGORY_META_DESCRIPTION,
-                MOCK_OLD_CATEGORY_META_TITLE,
-                MOCK_OLD_CATEGORY_META_KEYWORDS,
-                MOCK_OLD_CATEGORY_ORDERHINT,
-                MOCK_OLD_CATEGORY_PARENT_ID);
+    @Before
+    public void setup() {
+        final SphereClientConfig clientConfig = SphereClientConfig.of("testPK", "testCI", "testCS");
+        when(ctpClient.getClientConfig()).thenReturn(clientConfig);
+        categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
+                .build();
+
+        mockOldCategory = getMockCategory(locale,
+                categoryName,
+                categorySlug,
+                categoryExternalId,
+                categoryDesc,
+                categoryMetaDesc,
+                categoryMetaTitle,
+                categoryKeywords,
+                categoryOrderHint,
+                categoryParentId);
     }
 
     @Test
     public void buildActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
-        final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
+        final CategoryDraft newCategoryDraft = getMockCategoryDraft(locale,
                 "differentName",
-                MOCK_OLD_CATEGORY_SLUG,
-                MOCK_OLD_CATEGORY_EXTERNAL_ID,
-                MOCK_OLD_CATEGORY_DESCRIPTION,
-                MOCK_OLD_CATEGORY_META_DESCRIPTION,
-                MOCK_OLD_CATEGORY_META_TITLE,
-                MOCK_OLD_CATEGORY_META_KEYWORDS,
-                MOCK_OLD_CATEGORY_ORDERHINT,
-                MOCK_OLD_CATEGORY_PARENT_ID);
+                categorySlug,
+                categoryExternalId,
+                categoryDesc,
+                categoryMetaDesc,
+                categoryMetaTitle,
+                categoryKeywords,
+                categoryOrderHint,
+                categoryParentId);
 
         final List<UpdateAction<Category>> updateActions =
-                CategorySyncUtils.buildActions(MOCK_OLD_CATEGORY, newCategoryDraft, mock(CategorySyncOptions.class),
+                CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions,
                         mock(TypeService.class));
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
 
         final UpdateAction<Category> updateAction = updateActions.get(0);
         assertThat(updateAction.getAction()).isEqualTo("changeName");
-        assertThat(((ChangeName) updateAction).getName()).isEqualTo(LocalizedString.of(LOCALE, "differentName"));
+        assertThat(((ChangeName) updateAction).getName()).isEqualTo(LocalizedString.of(locale, "differentName"));
     }
 
     @Test
     public void buildActions_FromDraftsWithMultipleDifferentValues_ShouldBuildUpdateActions() {
-        final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
+        final CategoryDraft newCategoryDraft = getMockCategoryDraft(locale,
                 "differentName",
                 "differentSlug",
-                MOCK_OLD_CATEGORY_EXTERNAL_ID,
+                categoryExternalId,
                 "differentDescription",
                 "differentMetaDescription",
                 "differentMetaTitle",
@@ -87,23 +97,23 @@ public class CategorySyncUtilsTest {
                 "differentParentId");
 
         final List<UpdateAction<Category>> updateActions =
-                CategorySyncUtils.buildActions(MOCK_OLD_CATEGORY, newCategoryDraft, mock(CategorySyncOptions.class),
+                CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions,
                         mock(TypeService.class));
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(8);
 
         final UpdateAction<Category> nameUpdateAction = updateActions.get(0);
         assertThat(nameUpdateAction.getAction()).isEqualTo("changeName");
-        assertThat(((ChangeName) nameUpdateAction).getName()).isEqualTo(LocalizedString.of(LOCALE, "differentName"));
+        assertThat(((ChangeName) nameUpdateAction).getName()).isEqualTo(LocalizedString.of(locale, "differentName"));
 
         final UpdateAction<Category> slugUpdateAction = updateActions.get(1);
         assertThat(slugUpdateAction.getAction()).isEqualTo("changeSlug");
-        assertThat(((ChangeSlug) slugUpdateAction).getSlug()).isEqualTo(LocalizedString.of(LOCALE, "differentSlug"));
+        assertThat(((ChangeSlug) slugUpdateAction).getSlug()).isEqualTo(LocalizedString.of(locale, "differentSlug"));
 
         final UpdateAction<Category> descriptionUpdateAction = updateActions.get(2);
         assertThat(descriptionUpdateAction.getAction()).isEqualTo("setDescription");
         assertThat(((SetDescription) descriptionUpdateAction).getDescription())
-                .isEqualTo(LocalizedString.of(LOCALE, "differentDescription"));
+                .isEqualTo(LocalizedString.of(locale, "differentDescription"));
 
         final UpdateAction<Category> parentUpdateAction = updateActions.get(3);
         assertThat(parentUpdateAction.getAction()).isEqualTo("changeParent");
@@ -116,25 +126,25 @@ public class CategorySyncUtilsTest {
         final UpdateAction<Category> metaTitleUpdateAction = updateActions.get(5);
         assertThat(metaTitleUpdateAction.getAction()).isEqualTo("setMetaTitle");
         assertThat(((SetMetaTitle) metaTitleUpdateAction).getMetaTitle())
-                .isEqualTo(LocalizedString.of(LOCALE, "differentMetaTitle"));
+                .isEqualTo(LocalizedString.of(locale, "differentMetaTitle"));
 
         final UpdateAction<Category> metaDescriptionUpdateAction = updateActions.get(6);
         assertThat(metaDescriptionUpdateAction.getAction()).isEqualTo("setMetaDescription");
         assertThat(((SetMetaDescription) metaDescriptionUpdateAction).getMetaDescription())
-                .isEqualTo(LocalizedString.of(LOCALE, "differentMetaDescription"));
+                .isEqualTo(LocalizedString.of(locale, "differentMetaDescription"));
 
         final UpdateAction<Category> metaKeywordsUpdateAction = updateActions.get(7);
         assertThat(metaKeywordsUpdateAction.getAction()).isEqualTo("setMetaKeywords");
         assertThat(((SetMetaKeywords) metaKeywordsUpdateAction).getMetaKeywords())
-                .isEqualTo(LocalizedString.of(LOCALE, "differentMetaKeywords"));
+                .isEqualTo(LocalizedString.of(locale, "differentMetaKeywords"));
     }
 
     @Test
     public void buildActions_FromDraftsWithMultipleDifferentValuesWithFilterFunction_ShouldBuildFilteredUpdateActions() {
-        final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
+        final CategoryDraft newCategoryDraft = getMockCategoryDraft(locale,
                 "differentName",
                 "differentSlug",
-                MOCK_OLD_CATEGORY_EXTERNAL_ID,
+                categoryExternalId,
                 "differentDescription",
                 "differentMetaDescription",
                 "differentMetaTitle",
@@ -142,16 +152,17 @@ public class CategorySyncUtilsTest {
                 "differentOrderHint",
                 "differentParentId");
 
-        final CategorySyncOptions categorySyncOptions = mock(CategorySyncOptions.class);
         final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> reverseOrderFilter = (unfilteredList) -> {
             Collections.reverse(unfilteredList);
             return unfilteredList;
         };
-        when(categorySyncOptions.getUpdateActionsFilter()).thenReturn(reverseOrderFilter);
 
+        categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
+                .setUpdateActionsFilter(reverseOrderFilter)
+                .build();
 
         final List<UpdateAction<Category>> updateActions =
-                CategorySyncUtils.buildActions(MOCK_OLD_CATEGORY, newCategoryDraft, categorySyncOptions,
+                CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions,
                         mock(TypeService.class));
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(8);
@@ -159,17 +170,17 @@ public class CategorySyncUtilsTest {
         final UpdateAction<Category> metaKeywordsUpdateAction = updateActions.get(0);
         assertThat(metaKeywordsUpdateAction.getAction()).isEqualTo("setMetaKeywords");
         assertThat(((SetMetaKeywords) metaKeywordsUpdateAction).getMetaKeywords())
-                .isEqualTo(LocalizedString.of(LOCALE, "differentMetaKeywords"));
+                .isEqualTo(LocalizedString.of(locale, "differentMetaKeywords"));
 
         final UpdateAction<Category> metaDescriptionUpdateAction = updateActions.get(1);
         assertThat(metaDescriptionUpdateAction.getAction()).isEqualTo("setMetaDescription");
         assertThat(((SetMetaDescription) metaDescriptionUpdateAction).getMetaDescription())
-                .isEqualTo(LocalizedString.of(LOCALE, "differentMetaDescription"));
+                .isEqualTo(LocalizedString.of(locale, "differentMetaDescription"));
 
         final UpdateAction<Category> metaTitleUpdateAction = updateActions.get(2);
         assertThat(metaTitleUpdateAction.getAction()).isEqualTo("setMetaTitle");
         assertThat(((SetMetaTitle) metaTitleUpdateAction).getMetaTitle())
-                .isEqualTo(LocalizedString.of(LOCALE, "differentMetaTitle"));
+                .isEqualTo(LocalizedString.of(locale, "differentMetaTitle"));
 
         final UpdateAction<Category> orderHintUpdateAction = updateActions.get(3);
         assertThat(orderHintUpdateAction.getAction()).isEqualTo("changeOrderHint");
@@ -182,47 +193,47 @@ public class CategorySyncUtilsTest {
         final UpdateAction<Category> descriptionUpdateAction = updateActions.get(5);
         assertThat(descriptionUpdateAction.getAction()).isEqualTo("setDescription");
         assertThat(((SetDescription) descriptionUpdateAction).getDescription())
-                .isEqualTo(LocalizedString.of(LOCALE, "differentDescription"));
+                .isEqualTo(LocalizedString.of(locale, "differentDescription"));
 
         final UpdateAction<Category> slugUpdateAction = updateActions.get(6);
         assertThat(slugUpdateAction.getAction()).isEqualTo("changeSlug");
-        assertThat(((ChangeSlug) slugUpdateAction).getSlug()).isEqualTo(LocalizedString.of(LOCALE, "differentSlug"));
+        assertThat(((ChangeSlug) slugUpdateAction).getSlug()).isEqualTo(LocalizedString.of(locale, "differentSlug"));
 
         final UpdateAction<Category> nameUpdateAction = updateActions.get(7);
         assertThat(nameUpdateAction.getAction()).isEqualTo("changeName");
-        assertThat(((ChangeName) nameUpdateAction).getName()).isEqualTo(LocalizedString.of(LOCALE, "differentName"));
+        assertThat(((ChangeName) nameUpdateAction).getName()).isEqualTo(LocalizedString.of(locale, "differentName"));
     }
 
     @Test
     public void buildCoreActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
-        final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
+        final CategoryDraft newCategoryDraft = getMockCategoryDraft(locale,
                 "differentName",
-                MOCK_OLD_CATEGORY_SLUG,
-                MOCK_OLD_CATEGORY_EXTERNAL_ID,
-                MOCK_OLD_CATEGORY_DESCRIPTION,
-                MOCK_OLD_CATEGORY_META_DESCRIPTION,
-                MOCK_OLD_CATEGORY_META_TITLE,
-                MOCK_OLD_CATEGORY_META_KEYWORDS,
-                MOCK_OLD_CATEGORY_ORDERHINT,
-                MOCK_OLD_CATEGORY_PARENT_ID);
+                categorySlug,
+                categoryExternalId,
+                categoryDesc,
+                categoryMetaDesc,
+                categoryMetaTitle,
+                categoryKeywords,
+                categoryOrderHint,
+                categoryParentId);
 
         final List<UpdateAction<Category>> updateActions =
-                CategorySyncUtils.buildCoreActions(MOCK_OLD_CATEGORY, newCategoryDraft, mock(CategorySyncOptions.class),
+                CategorySyncUtils.buildCoreActions(mockOldCategory, newCategoryDraft, categorySyncOptions,
                         mock(TypeService.class));
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
 
         final UpdateAction<Category> updateAction = updateActions.get(0);
         assertThat(updateAction.getAction()).isEqualTo("changeName");
-        assertThat(((ChangeName) updateAction).getName()).isEqualTo(LocalizedString.of(LOCALE, "differentName"));
+        assertThat(((ChangeName) updateAction).getName()).isEqualTo(LocalizedString.of(locale, "differentName"));
     }
 
     @Test
     public void buildCoreActions_FromDraftsWithMultipleDifferentValues_ShouldBuildUpdateActions() {
-        final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
+        final CategoryDraft newCategoryDraft = getMockCategoryDraft(locale,
                 "differentName",
                 "differentSlug",
-                MOCK_OLD_CATEGORY_EXTERNAL_ID,
+                categoryExternalId,
                 "differentDescription",
                 "differentMetaDescription",
                 "differentMetaTitle",
@@ -231,23 +242,23 @@ public class CategorySyncUtilsTest {
                 "differentParentId");
 
         final List<UpdateAction<Category>> updateActions =
-                CategorySyncUtils.buildCoreActions(MOCK_OLD_CATEGORY, newCategoryDraft, mock(CategorySyncOptions.class),
+                CategorySyncUtils.buildCoreActions(mockOldCategory, newCategoryDraft, categorySyncOptions,
                         mock(TypeService.class));
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(8);
 
         final UpdateAction<Category> nameUpdateAction = updateActions.get(0);
         assertThat(nameUpdateAction.getAction()).isEqualTo("changeName");
-        assertThat(((ChangeName) nameUpdateAction).getName()).isEqualTo(LocalizedString.of(LOCALE, "differentName"));
+        assertThat(((ChangeName) nameUpdateAction).getName()).isEqualTo(LocalizedString.of(locale, "differentName"));
 
         final UpdateAction<Category> slugUpdateAction = updateActions.get(1);
         assertThat(slugUpdateAction.getAction()).isEqualTo("changeSlug");
-        assertThat(((ChangeSlug) slugUpdateAction).getSlug()).isEqualTo(LocalizedString.of(LOCALE, "differentSlug"));
+        assertThat(((ChangeSlug) slugUpdateAction).getSlug()).isEqualTo(LocalizedString.of(locale, "differentSlug"));
 
         final UpdateAction<Category> descriptionUpdateAction = updateActions.get(2);
         assertThat(descriptionUpdateAction.getAction()).isEqualTo("setDescription");
         assertThat(((SetDescription) descriptionUpdateAction).getDescription())
-                .isEqualTo(LocalizedString.of(LOCALE, "differentDescription"));
+                .isEqualTo(LocalizedString.of(locale, "differentDescription"));
 
         final UpdateAction<Category> parentUpdateAction = updateActions.get(3);
         assertThat(parentUpdateAction.getAction()).isEqualTo("changeParent");
@@ -260,34 +271,34 @@ public class CategorySyncUtilsTest {
         final UpdateAction<Category> metaTitleUpdateAction = updateActions.get(5);
         assertThat(metaTitleUpdateAction.getAction()).isEqualTo("setMetaTitle");
         assertThat(((SetMetaTitle) metaTitleUpdateAction).getMetaTitle())
-                .isEqualTo(LocalizedString.of(LOCALE, "differentMetaTitle"));
+                .isEqualTo(LocalizedString.of(locale, "differentMetaTitle"));
 
         final UpdateAction<Category> metaDescriptionUpdateAction = updateActions.get(6);
         assertThat(metaDescriptionUpdateAction.getAction()).isEqualTo("setMetaDescription");
         assertThat(((SetMetaDescription) metaDescriptionUpdateAction).getMetaDescription())
-                .isEqualTo(LocalizedString.of(LOCALE, "differentMetaDescription"));
+                .isEqualTo(LocalizedString.of(locale, "differentMetaDescription"));
 
         final UpdateAction<Category> metaKeywordsUpdateAction = updateActions.get(7);
         assertThat(metaKeywordsUpdateAction.getAction()).isEqualTo("setMetaKeywords");
         assertThat(((SetMetaKeywords) metaKeywordsUpdateAction).getMetaKeywords())
-                .isEqualTo(LocalizedString.of(LOCALE, "differentMetaKeywords"));
+                .isEqualTo(LocalizedString.of(locale, "differentMetaKeywords"));
     }
 
     @Test
     public void buildCoreActions_FromDraftsWithSameValues_ShouldNotBuildUpdateActions() {
-        final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
-                MOCK_OLD_CATEGORY_NAME,
-                MOCK_OLD_CATEGORY_SLUG,
-                MOCK_OLD_CATEGORY_EXTERNAL_ID,
-                MOCK_OLD_CATEGORY_DESCRIPTION,
-                MOCK_OLD_CATEGORY_META_DESCRIPTION,
-                MOCK_OLD_CATEGORY_META_TITLE,
-                MOCK_OLD_CATEGORY_META_KEYWORDS,
-                MOCK_OLD_CATEGORY_ORDERHINT,
-                MOCK_OLD_CATEGORY_PARENT_ID);
+        final CategoryDraft newCategoryDraft = getMockCategoryDraft(locale,
+                categoryName,
+                categorySlug,
+                categoryExternalId,
+                categoryDesc,
+                categoryMetaDesc,
+                categoryMetaTitle,
+                categoryKeywords,
+                categoryOrderHint,
+                categoryParentId);
 
         final List<UpdateAction<Category>> updateActions =
-                CategorySyncUtils.buildCoreActions(MOCK_OLD_CATEGORY, newCategoryDraft, mock(CategorySyncOptions.class),
+                CategorySyncUtils.buildCoreActions(mockOldCategory, newCategoryDraft, categorySyncOptions,
                         mock(TypeService.class));
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(0);
