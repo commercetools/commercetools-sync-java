@@ -1,8 +1,10 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.categories.helpers.CategorySyncOptions;
-import com.commercetools.sync.commons.helpers.BaseSyncOptions;
+import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
+import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.helpers.CtpClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.categories.Category;
@@ -18,9 +20,6 @@ import java.util.function.BiConsumer;
 
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -82,9 +81,9 @@ public class GenericUpdateActionUtilsTest {
         };
 
         // Mock sync options
-        final CategorySyncOptions syncOptions = mock(CategorySyncOptions.class);
-        when(syncOptions.getUpdateActionErrorCallBack()).thenReturn(updateActionErrorCallBack);
-        doCallRealMethod().when(syncOptions).callUpdateActionErrorCallBack(anyString(), any(Throwable.class));
+        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
+                .setErrorCallBack(updateActionErrorCallBack)
+                .build();
 
         final UpdateAction<Cart> updateAction = buildTypedSetCustomTypeUpdateAction("key", fieldsJsonMap,
                 cart, syncOptions).orElse(null);
@@ -93,7 +92,7 @@ public class GenericUpdateActionUtilsTest {
         assertThat(callBackResponses).hasSize(2);
         assertThat(callBackResponses.get(0)).isEqualTo("Failed to build 'setCustomType' update action on the cart with " +
                 "id 'cartId'. Reason: Update actions for resource: 'cart' is not implemented.");
-        assertThat((Exception)callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
+        assertThat((Exception) callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
     }
 
     @Test
@@ -149,9 +148,9 @@ public class GenericUpdateActionUtilsTest {
         };
 
         // Mock sync options
-        final CategorySyncOptions syncOptions = mock(CategorySyncOptions.class);
-        when(syncOptions.getUpdateActionErrorCallBack()).thenReturn(updateActionErrorCallBack);
-        doCallRealMethod().when(syncOptions).callUpdateActionErrorCallBack(anyString(), any(Throwable.class));
+        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
+                .setErrorCallBack(updateActionErrorCallBack)
+                .build();
 
         final UpdateAction<Cart> updateAction = buildTypedRemoveCustomTypeUpdateAction(cart,
                 syncOptions).orElse(null);
@@ -161,7 +160,7 @@ public class GenericUpdateActionUtilsTest {
         assertThat(callBackResponses.get(0)).isEqualTo("Failed to build 'setCustomType' update action to remove the" +
                 " custom type on the cart with id 'cartId'. Reason: Update actions for " +
                 "resource: 'cart' is not implemented.");
-        assertThat((Exception)callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
+        assertThat((Exception) callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
     }
 
     @Test
@@ -224,9 +223,9 @@ public class GenericUpdateActionUtilsTest {
             callBackResponses.add(exception);
         };
 
-        final BaseSyncOptions baseSyncOptions = mock(BaseSyncOptions.class);
-        when(baseSyncOptions.getUpdateActionErrorCallBack()).thenReturn(updateActionErrorCallBack);
-        doCallRealMethod().when(baseSyncOptions).callUpdateActionErrorCallBack(anyString(), any(Throwable.class));
+        final BaseSyncOptions baseSyncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
+                .setErrorCallBack(updateActionErrorCallBack)
+                .build();
 
         final UpdateAction<Cart> updateAction =
                 buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart,
@@ -237,28 +236,6 @@ public class GenericUpdateActionUtilsTest {
         assertThat(callBackResponses.get(0)).isEqualTo("Failed to build 'setCustomField' update action on the custom " +
                 "field with the name 'name' on the cart with id 'cartId'. Reason: Update actions for resource:" +
                 " 'cart' is not implemented.");
-        assertThat((Exception)callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
-    }
-
-    @Test(expected = BuildUpdateActionException.class)
-    public void buildTypedUpdateAction_WithNonHandledCategoryUpdateAction_ShouldThrowBuildUpdateActionException()
-            throws BuildUpdateActionException {
-        final Category category = mock(Category.class);
-        final String nonHandledUpdateActionName = "someUpdateActionName";
-        final UpdateAction<Category> updateAction = buildTypedUpdateAction(category, nonHandledUpdateActionName)
-                .orElse(null);
-
-        assertThat(updateAction).isNull();
-    }
-
-    @Test(expected = BuildUpdateActionException.class)
-    public void buildTypedUpdateAction_WithNonHandledChannelUpdateAction_ShouldThrowBuildUpdateActionException()
-            throws BuildUpdateActionException {
-        final Channel channel = mock(Channel.class);
-        final String nonHandledUpdateActionName = "someUpdateActionName";
-        final UpdateAction<Channel> updateAction = buildTypedUpdateAction(channel, nonHandledUpdateActionName)
-                .orElse(null);
-
-        assertThat(updateAction).isNull();
+        assertThat((Exception) callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
     }
 }

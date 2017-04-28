@@ -38,7 +38,7 @@ public class CommonTypeUpdateActionUtilsTest {
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
-                buildUpdateAction(oldLocalisedString, newLocalisedString, mockUpdateAction);
+                buildUpdateAction(oldLocalisedString, newLocalisedString, () -> mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForLocalizedStrings.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -53,7 +53,7 @@ public class CommonTypeUpdateActionUtilsTest {
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
-                buildUpdateAction(oldLocalisedString, newLocalisedString, mockUpdateAction);
+                buildUpdateAction(oldLocalisedString, newLocalisedString, () -> mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForLocalizedStrings.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -66,7 +66,7 @@ public class CommonTypeUpdateActionUtilsTest {
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
                 buildUpdateAction(LocalizedString.of(new HashMap<>()),
-                        LocalizedString.of(new HashMap<>()), mockUpdateAction);
+                        LocalizedString.of(new HashMap<>()), () -> mockUpdateAction);
 
         assertThat(updateActionForLocalizedStrings).isNotNull();
         assertThat(updateActionForLocalizedStrings).isNotPresent();
@@ -80,7 +80,7 @@ public class CommonTypeUpdateActionUtilsTest {
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
-                buildUpdateAction(oldLocalisedString, newLocalisedString, mockUpdateAction);
+                buildUpdateAction(oldLocalisedString, newLocalisedString, () -> mockUpdateAction);
 
         assertThat(updateActionForLocalizedStrings).isNotNull();
         assertThat(updateActionForLocalizedStrings).isNotPresent();
@@ -100,7 +100,7 @@ public class CommonTypeUpdateActionUtilsTest {
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateAction(oldLocalisedString, newLocalisedString, mockUpdateAction);
+                buildUpdateAction(oldLocalisedString, newLocalisedString, () -> mockUpdateAction);
 
         assertThat(updateActionForReferences).isNotNull();
         assertThat(updateActionForReferences).isNotPresent();
@@ -111,7 +111,16 @@ public class CommonTypeUpdateActionUtilsTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateAction(null, null, mockUpdateAction);
+                buildUpdateAction(null, null, () -> mockUpdateAction);
+
+        assertThat(updateActionForReferences).isNotNull();
+        assertThat(updateActionForReferences).isNotPresent();
+    }
+
+    @Test
+    public void buildUpdateActionForLocalizedStrings_WithNullUpdateAction_ShouldNotBuildUpdateAction() {
+        final Optional<UpdateAction<Category>> updateActionForReferences =
+                buildUpdateAction(null, null, () -> null);
 
         assertThat(updateActionForReferences).isNotNull();
         assertThat(updateActionForReferences).isNotPresent();
@@ -125,7 +134,7 @@ public class CommonTypeUpdateActionUtilsTest {
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateAction(oldCategoryReference, newCategoryReference, mockUpdateAction);
+                buildUpdateAction(oldCategoryReference, newCategoryReference, () -> mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForReferences.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -139,7 +148,7 @@ public class CommonTypeUpdateActionUtilsTest {
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateAction(null, categoryReference, mockUpdateAction);
+                buildUpdateAction(null, categoryReference, () -> mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForReferences.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -153,7 +162,7 @@ public class CommonTypeUpdateActionUtilsTest {
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateAction(categoryReference, categoryReference, mockUpdateAction);
+                buildUpdateAction(categoryReference, categoryReference, () -> mockUpdateAction);
 
         assertThat(updateActionForReferences).isNotNull();
         assertThat(updateActionForReferences).isNotPresent();
@@ -164,7 +173,16 @@ public class CommonTypeUpdateActionUtilsTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForReferences =
-                buildUpdateAction(null, null, mockUpdateAction);
+                buildUpdateAction(null, null, () -> mockUpdateAction);
+
+        assertThat(updateActionForReferences).isNotNull();
+        assertThat(updateActionForReferences).isNotPresent();
+    }
+
+    @Test
+    public void buildUpdateActionForReferences_WithNullUpdateAction_ShouldNotBuildUpdateAction() {
+        final Optional<UpdateAction<Category>> updateActionForReferences =
+                buildUpdateAction(null, null, () -> null);
 
         assertThat(updateActionForReferences).isNotNull();
         assertThat(updateActionForReferences).isNotPresent();
@@ -176,7 +194,7 @@ public class CommonTypeUpdateActionUtilsTest {
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForStrings =
-                buildUpdateAction("1", "2", mockUpdateAction);
+                buildUpdateAction("1", "2", () -> mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForStrings.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -189,7 +207,7 @@ public class CommonTypeUpdateActionUtilsTest {
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForStrings =
-                buildUpdateAction(null, "2", mockUpdateAction);
+                buildUpdateAction(null, "2", () -> mockUpdateAction);
 
         UpdateAction<Category> categoryUpdateAction = updateActionForStrings.orElse(null);
         assertThat(categoryUpdateAction).isNotNull();
@@ -202,7 +220,7 @@ public class CommonTypeUpdateActionUtilsTest {
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
         final Optional<UpdateAction<Category>> updateActionForStrings =
-                buildUpdateAction("1", "1", mockUpdateAction);
+                buildUpdateAction("1", "1", () -> mockUpdateAction);
 
         assertThat(updateActionForStrings).isNotNull();
         assertThat(updateActionForStrings).isNotPresent();
@@ -213,7 +231,16 @@ public class CommonTypeUpdateActionUtilsTest {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
                 LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForStrings =
-                buildUpdateAction(null, null, mockUpdateAction);
+                buildUpdateAction(null, null, () -> mockUpdateAction);
+
+        assertThat(updateActionForStrings).isNotNull();
+        assertThat(updateActionForStrings).isNotPresent();
+    }
+
+    @Test
+    public void buildUpdateActionForStrings_WithNullUpdateAction_ShouldNotBuildUpdateAction() {
+        final Optional<UpdateAction<Category>> updateActionForStrings =
+                buildUpdateAction(null, null, () -> null);
 
         assertThat(updateActionForStrings).isNotNull();
         assertThat(updateActionForStrings).isNotPresent();

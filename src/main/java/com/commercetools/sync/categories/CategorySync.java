@@ -1,9 +1,12 @@
 package com.commercetools.sync.categories;
 
-import com.commercetools.sync.categories.helpers.CategorySyncOptions;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.categories.utils.CategorySyncUtils;
 import com.commercetools.sync.commons.Sync;
+import com.commercetools.sync.services.CategoryService;
+import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.impl.CategoryServiceImpl;
+import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -23,9 +26,23 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
     private final CategorySyncOptions syncOptions;
     private final CategorySyncStatistics statistics;
 
+    private final TypeService typeService;
+    private final CategoryService categoryService;
+
     public CategorySync(@Nonnull final CategorySyncOptions syncOptions) {
         this.syncOptions = syncOptions;
         this.statistics = new CategorySyncStatistics();
+        this.typeService = new TypeServiceImpl(syncOptions.getCtpClient().getClient());
+        this.categoryService = new CategoryServiceImpl(syncOptions.getCtpClient().getClient());
+    }
+
+    CategorySync(@Nonnull final CategorySyncOptions syncOptions,
+                 @Nonnull final TypeService typeService,
+                 @Nonnull final CategoryService categoryService) {
+        this.syncOptions = syncOptions;
+        this.statistics = new CategorySyncStatistics();
+        this.typeService = typeService;
+        this.categoryService = categoryService;
     }
 
     /**
@@ -43,7 +60,7 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
     @Override
     public void syncDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {
         LOGGER.info(format("About to sync %d category drafts into CTP project with key '%s'."
-                , categoryDrafts.size(), this.syncOptions.getClientConfig().getProjectKey()));
+                , categoryDrafts.size(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
         this.statistics.startTimer();
         for (int i = 0; i < categoryDrafts.size(); i++) {
             final CategoryDraft categoryDraft = categoryDrafts.get(i);
@@ -75,7 +92,7 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
     void createOrUpdateCategory(@Nonnull final CategoryDraft categoryDraft) {
         final String externalId = categoryDraft.getExternalId();
         try {
-            final Category oldCategory = this.syncOptions.getCategoryService().fetchCategoryByExternalId(externalId);
+            final Category oldCategory = this.categoryService.fetchCategoryByExternalId(externalId);
             if (oldCategory != null) {
                 syncCategories(oldCategory, categoryDraft);
             } else {
@@ -84,7 +101,7 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
         } catch (SphereException e) {
             failSync(format("Failed to fetch category with external id" +
                             " '%s' in CTP project with key '%s",
-                    externalId, this.syncOptions.getClientConfig().getProjectKey()), e);
+                    externalId, this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), e);
         }
     }
 
@@ -101,12 +118,12 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
      */
     private void createCategory(@Nonnull final CategoryDraft categoryDraft) {
         try {
-            this.syncOptions.getCategoryService().createCategory(categoryDraft);
+            this.categoryService.createCategory(categoryDraft);
             this.statistics.incrementCreated();
         } catch (SphereException e) {
             failSync(format("Failed to create category with external id" +
                             " '%s' in CTP project with key '%s",
-                    categoryDraft.getExternalId(), this.syncOptions.getClientConfig().getProjectKey()), e);
+                    categoryDraft.getExternalId(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), e);
         }
     }
 
@@ -118,9 +135,10 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new data.
      */
-    private void syncCategories(@Nonnull final Category oldCategory, @Nonnull final CategoryDraft newCategory) {
+    private void syncCategories(@Nonnull final Category oldCategory,
+                                @Nonnull final CategoryDraft newCategory) {
         final List<UpdateAction<Category>> updateActions =
-                CategorySyncUtils.buildActions(oldCategory, newCategory, this.syncOptions);
+                CategorySyncUtils.buildActions(oldCategory, newCategory, this.syncOptions, this.typeService);
         if (!updateActions.isEmpty()) {
             updateCategory(oldCategory, updateActions);
         }
@@ -141,12 +159,12 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
     void updateCategory(@Nonnull final Category category,
                         @Nonnull final List<UpdateAction<Category>> updateActions) {
         try {
-            this.syncOptions.getCategoryService().updateCategory(category, updateActions);
+            this.categoryService.updateCategory(category, updateActions);
             this.statistics.incrementUpdated();
         } catch (SphereException e) {
             failSync(format("Failed to update category with id" +
                             " '%s' in CTP project with key '%s",
-                    category.getId(), this.syncOptions.getClientConfig().getProjectKey()), e);
+                    category.getId(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), e);
         }
     }
 
@@ -159,7 +177,7 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
      * @param exception the exception that occurred, if any.
      */
     private void failSync(@Nonnull final String reason, @Nullable final Throwable exception) {
-        this.syncOptions.callUpdateActionErrorCallBack(reason, exception);
+        this.syncOptions.applyErrorCallback(reason, exception);
         this.statistics.incrementFailed();
     }
 

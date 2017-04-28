@@ -1,7 +1,7 @@
 package com.commercetools.sync.categories.utils;
 
 
-import com.commercetools.sync.categories.helpers.CategorySyncOptions;
+import com.commercetools.sync.categories.CategorySyncOptions;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.*;
@@ -12,9 +12,8 @@ import io.sphere.sdk.models.Reference;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.constants.SyncMessages.*;
+import static com.commercetools.sync.commons.enums.Warning.*;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static java.lang.String.format;
 
 public final class CategoryUpdateActionUtils {
 
@@ -35,7 +34,7 @@ public final class CategoryUpdateActionUtils {
         final LocalizedString newCategoryName = newCategory.getName();
         return buildUpdateAction(oldCategory.getName(),
                 newCategoryName,
-                ChangeName.of(newCategoryName));
+                () -> ChangeName.of(newCategoryName));
     }
 
     /**
@@ -55,7 +54,7 @@ public final class CategoryUpdateActionUtils {
         final LocalizedString newCategorySlug = newCategory.getSlug();
         return buildUpdateAction(oldCategory.getSlug(),
                 newCategorySlug,
-                ChangeSlug.of(newCategorySlug));
+                () -> ChangeSlug.of(newCategorySlug));
     }
 
     /**
@@ -69,7 +68,7 @@ public final class CategoryUpdateActionUtils {
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new description.
-     * @param syncOptions     the sync syncOptions with which a custom callback function is called in case the description is null.
+     * @param syncOptions the sync syncOptions with which a custom callback function is called in case the description is null.
      * @return A filled optional with the update action or an empty optional if the descriptions are identical.
      */
     @Nonnull
@@ -79,13 +78,12 @@ public final class CategoryUpdateActionUtils {
             @Nonnull final CategorySyncOptions syncOptions) {
         final LocalizedString newCategoryDescription = newCategory.getDescription();
         if (newCategoryDescription == null) {
-            syncOptions.callUpdateActionWarningCallBack(
-                    format(CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION, oldCategory.getId()));
+            syncOptions.applyWarningCallback(CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION.getDescription(oldCategory.getId()));
             return Optional.empty();
         }
         return buildUpdateAction(oldCategory.getDescription(),
                 newCategoryDescription,
-                SetDescription.of(newCategoryDescription));
+                () -> SetDescription.of(newCategoryDescription));
     }
 
     /**
@@ -100,7 +98,7 @@ public final class CategoryUpdateActionUtils {
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new parent.
-     * @param syncOptions     the sync syncOptions with which a custom callback function is called in case the parent is null.
+     * @param syncOptions the sync syncOptions with which a custom callback function is called in case the parent is null.
      * @return A filled optional with the update action or an empty optional if the parent references are identical.
      */
     @Nonnull
@@ -110,13 +108,12 @@ public final class CategoryUpdateActionUtils {
             @Nonnull final CategorySyncOptions syncOptions) {
         final Reference<Category> newCategoryParentReference = newCategory.getParent();
         if (newCategoryParentReference == null) {
-            syncOptions.callUpdateActionWarningCallBack(
-                    format(CATEGORY_CHANGE_PARENT_EMPTY_PARENT, oldCategory.getId()));
+            syncOptions.applyWarningCallback(CATEGORY_CHANGE_PARENT_EMPTY_PARENT.getDescription(oldCategory.getId()));
             return Optional.empty();
         }
         return buildUpdateAction(oldCategory.getParent(),
                 newCategoryParentReference,
-                ChangeParent.of(newCategoryParentReference));
+                () -> ChangeParent.of(newCategoryParentReference));
     }
 
     /**
@@ -130,7 +127,7 @@ public final class CategoryUpdateActionUtils {
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new orderHint.
-     * @param syncOptions     the sync syncOptions with which a custom callback function is called in case the orderHint is null.
+     * @param syncOptions the sync syncOptions with which a custom callback function is called in case the orderHint is null.
      * @return A filled optional with the update action or an empty optional if the orderHint values are identical.
      */
     @Nonnull
@@ -140,13 +137,12 @@ public final class CategoryUpdateActionUtils {
             @Nonnull final CategorySyncOptions syncOptions) {
         final String newCategoryOrderHint = newCategory.getOrderHint();
         if (newCategoryOrderHint == null) {
-            syncOptions.callUpdateActionWarningCallBack(
-                    format(CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT, oldCategory.getId()));
+            syncOptions.applyWarningCallback(CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT.getDescription(oldCategory.getId()));
             return Optional.empty();
         }
         return buildUpdateAction(oldCategory.getOrderHint(),
                 newCategoryOrderHint,
-                ChangeOrderHint.of(newCategoryOrderHint));
+                () -> ChangeOrderHint.of(newCategoryOrderHint));
     }
 
     /**
@@ -166,7 +162,7 @@ public final class CategoryUpdateActionUtils {
         final LocalizedString newCategoryMetaTitle = newCategory.getMetaTitle();
         return buildUpdateAction(oldCategory.getMetaTitle(),
                 newCategoryMetaTitle,
-                SetMetaTitle.of(newCategoryMetaTitle));
+                () -> SetMetaTitle.of(newCategoryMetaTitle));
     }
 
     /**
@@ -186,7 +182,7 @@ public final class CategoryUpdateActionUtils {
         final LocalizedString newCategoryMetaKeywords = newCategory.getMetaKeywords();
         return buildUpdateAction(oldCategory.getMetaKeywords(),
                 newCategoryMetaKeywords,
-                SetMetaKeywords.of(newCategoryMetaKeywords));
+                () -> SetMetaKeywords.of(newCategoryMetaKeywords));
     }
 
     /**
@@ -206,6 +202,6 @@ public final class CategoryUpdateActionUtils {
         final LocalizedString newCategoryMetaDescription = newCategory.getMetaDescription();
         return buildUpdateAction(oldCategory.getMetaDescription(),
                 newCategoryMetaDescription,
-                SetMetaDescription.of(newCategoryMetaDescription));
+                () -> SetMetaDescription.of(newCategoryMetaDescription));
     }
 }
