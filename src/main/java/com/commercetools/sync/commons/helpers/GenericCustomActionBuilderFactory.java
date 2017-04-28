@@ -3,8 +3,10 @@ package com.commercetools.sync.commons.helpers;
 import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.commercetools.sync.channels.helpers.ChannelCustomActionBuilder;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.inventory.helpers.InventoryCustomActionBuilder;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.types.Custom;
 
@@ -27,6 +29,9 @@ public class GenericCustomActionBuilderFactory<T extends Custom & Resource<T>, S
         }
         if (resource instanceof Channel) {
             return (S) new ChannelCustomActionBuilder();
+        }
+        if (resource instanceof InventoryEntry) {
+            return (S) new InventoryCustomActionBuilder();
         }
         throw new BuildUpdateActionException(format(UPDATE_ACTION_NOT_IMPLEMENTED.getDescription(),
                 resource.toReference().getTypeId()));

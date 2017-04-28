@@ -25,6 +25,7 @@ public class InventoryDraftTransformerTest {
     private static final String CUSTOM_TYPE_ID= "222222";
     private static final String CUSTOM_TYPE_KEY = "testTypeName";
     private static final String CUSTOM_FIELD_NAME = "testField";
+    private static final String CUSTOM_FIELD_VALUE = "testValue";
 
     @Test
     public void transformToDraft_returnsDraft_havingNoChannelNeitherCustomType() {
@@ -55,7 +56,7 @@ public class InventoryDraftTransformerTest {
     @Test
     public void transformToDraft_returnsDraft_havingCustomTypeWithoutKey() {
         final InventoryEntry entry = InventoryEntryMock.of(SKU)
-                .withCustomField(CUSTOM_TYPE_ID, CUSTOM_FIELD_NAME).build();
+                .withCustomField(CUSTOM_TYPE_ID, CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE).build();
 
         final InventoryEntryDraft draft = InventoryDraftTransformer.transformToDraft(entry);
 
@@ -63,14 +64,13 @@ public class InventoryDraftTransformerTest {
         assertThat(draft.getCustom().getType()).isNotNull();
         assertThat(draft.getCustom().getType().getId()).isEqualTo(CUSTOM_TYPE_ID);
         assertThat(draft.getCustom().getFields()).isNotNull();
-        assertThat(draft.getCustom().getFields().get(CUSTOM_FIELD_NAME)).isNotNull();
-
+        assertThat(draft.getCustom().getFields().containsKey(CUSTOM_FIELD_NAME)).isTrue();
     }
 
     @Test
     public void transformToDraft_returnsDraft_havingCustomTypeWithKey () {
         final InventoryEntry entry = InventoryEntryMock.of(SKU)
-                .withCustomFieldExpanded(CUSTOM_TYPE_ID, CUSTOM_TYPE_KEY, CUSTOM_FIELD_NAME)
+                .withCustomFieldExpanded(CUSTOM_TYPE_ID, CUSTOM_TYPE_KEY, CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE)
                 .build();
 
         final InventoryEntryDraft draft = InventoryDraftTransformer.transformToDraft(entry);
@@ -79,7 +79,7 @@ public class InventoryDraftTransformerTest {
         assertThat(draft.getCustom().getType()).isNotNull();
         assertThat(draft.getCustom().getType().getKey()).isEqualTo(CUSTOM_TYPE_KEY);
         assertThat(draft.getCustom().getFields()).isNotNull();
-        assertThat(draft.getCustom().getFields().get(CUSTOM_FIELD_NAME)).isNotNull();
+        assertThat(draft.getCustom().getFields().containsKey(CUSTOM_FIELD_NAME)).isTrue();
     }
 
     @Test

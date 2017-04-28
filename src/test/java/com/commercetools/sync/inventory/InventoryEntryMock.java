@@ -6,6 +6,8 @@ import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
+import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
@@ -86,28 +88,28 @@ public class InventoryEntryMock {
      * Adds mock of {@link CustomFields}.
      * Mock has stubbed {@link CustomFields#getType()} to return {@link Reference} object to {@code typeId}.
      * It has also stubbed {@link CustomFields#getFieldsJsonMap()} to return {@link Map} with one entry
-     * of {@code field} to mocked {@link JsonNode}.
+     * of {@code fieldName} to a {@link JsonNode} of {@code fieldValue}.
      */
-    public InventoryEntryMock withCustomField(String typeId, String field) {
+    public InventoryEntryMock withCustomField(String typeId, String fieldName, Object fieldValue) {
         final CustomFields customFields = mock(CustomFields.class);
-        final Map<String, JsonNode> fields = singletonMap(field, mock(JsonNode.class));
         when(customFields.getType()).thenReturn(Type.referenceOfId(typeId));
-        when(customFields.getFieldsJsonMap()).thenReturn(fields);
+        when(customFields.getFieldsJsonMap()).thenReturn(mockFields(fieldName, fieldValue));
         this.customFields = customFields;
         return this;
     }
 
     /**
-     * Works same as {@link InventoryEntryMock#withCustomField(String, String)} except for the fact, that type's
+     * Works same as {@link InventoryEntryMock#withCustomField(String, String, Object)} except for the fact, that type's
      * {@link Reference} also returns mocked {@link Type} object with stubbed methods: {@link Type#getId()}
      * and {@link Type#getKey()}
      */
-    public InventoryEntryMock withCustomFieldExpanded(String typeId, String typeKey, String field) {
+    public InventoryEntryMock withCustomFieldExpanded(String typeId, String typeKey, String fieldName,
+                                                      Object fieldValue) {
         final CustomFields customFields = mock(CustomFields.class);
         final Type type = mock(Type.class);
         when(type.getKey()).thenReturn(typeKey);
         when(type.getId()).thenReturn(typeId);
-        when(customFields.getFieldsJsonMap()).thenReturn(singletonMap(field, mock(JsonNode.class)));
+        when(customFields.getFieldsJsonMap()).thenReturn(mockFields(fieldName, fieldValue));
         when(customFields.getType()).thenReturn(Type.referenceOfId(typeId).filled(type));
         this.customFields = customFields;
         return this;
@@ -122,5 +124,12 @@ public class InventoryEntryMock {
         when(inventoryEntry.getCustom()).thenReturn(customFields);
         when(inventoryEntry.getSku()).thenReturn(sku);
         return inventoryEntry;
+    }
+
+    private Map<String, JsonNode> mockFields(String name, Object obj) {
+        return CustomFieldsDraftBuilder.ofTypeKey("123")
+                .addObject(name, obj)
+                .build()
+                .getFields();
     }
 }
