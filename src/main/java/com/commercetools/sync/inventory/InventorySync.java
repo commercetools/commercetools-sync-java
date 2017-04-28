@@ -4,7 +4,10 @@ import com.commercetools.sync.commons.Sync;
 import com.commercetools.sync.inventory.helpers.InventorySyncStatistics;
 import com.commercetools.sync.inventory.helpers.InventorySyncStatisticsCreator;
 import com.commercetools.sync.inventory.utils.InventorySyncUtils;
+import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -41,16 +44,20 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
     private Collection<InventorySyncStatistics> statisticsOfProcessedBatches;
 
     private InventoryService inventoryService;
+    private TypeService typeService;
     private InventorySyncStatistics statistics;
     private InventorySyncOptions options;
 
     public InventorySync(@Nonnull final InventorySyncOptions options) {
-        this(options, new InventoryServiceImpl(options.getCtpClient()));
+        this(options, new InventoryServiceImpl(options.getCtpClient().getClient()),
+                new TypeServiceImpl(options.getCtpClient().getClient()));
     }
 
-    InventorySync(final InventorySyncOptions options, final InventoryService inventoryService) {
+    InventorySync(final InventorySyncOptions options, final InventoryService inventoryService,
+                  final TypeService typeService) {
         this.options = options;
         this.inventoryService = inventoryService;
+        this.typeService = typeService;
         this.statistics = new InventorySyncStatisticsCreator().create();
         if (options.getParallelProcessing() > 1) {
             executorService = Executors.newFixedThreadPool(options.getParallelProcessing());
@@ -79,7 +86,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
     @Override
     public void syncDrafts(@Nonnull List<InventoryEntryDraft> inventories) {
         LOGGER.info(format("About to sync %d inventories into CTP project with key '%s'.",
-                inventories.size(), options.getClientConfig().getProjectKey()));
+                inventories.size(), options.getCtpClient().getClientConfig().getProjectKey()));
         final InventorySyncStatisticsCreator statisticsCreator = new InventorySyncStatisticsCreator();
         statisticsCreator.startTimer();
         buildChannelMap();
@@ -104,7 +111,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
         statisticsCreator.stopTimer();
         buildStatistics(statisticsCreator);
         LOGGER.info(format("Inventories sync for CTP project with key '%s' ended successfully!",
-                options.getClientConfig().getProjectKey()));
+                options.getCtpClient().getClientConfig().getProjectKey()));
     }
 
     /**
@@ -265,7 +272,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
         final Optional<InventoryEntryDraft> fixedDraft = replaceChannelReference(draft);
         if (fixedDraft.isPresent()) {
             final List<UpdateAction<InventoryEntry>> updateActions =
-                    InventorySyncUtils.buildActions(entry, fixedDraft.get(), options);
+                    InventorySyncUtils.buildActions(entry, fixedDraft.get(), options, typeService);
 
             if (!updateActions.isEmpty()) {
                 try {
