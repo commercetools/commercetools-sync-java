@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -87,8 +88,8 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
     public void syncDrafts(@Nonnull List<InventoryEntryDraft> inventories) {
         LOGGER.info(format("About to sync %d inventories into CTP project with key '%s'.",
                 inventories.size(), options.getCtpClient().getClientConfig().getProjectKey()));
-        final InventorySyncStatisticsCreator statisticsCreator = new InventorySyncStatisticsCreator();
-        statisticsCreator.startTimer();
+        final InventorySyncStatisticsCreator timeStatisticsCreator = new InventorySyncStatisticsCreator();
+        timeStatisticsCreator.startTimer();
         buildChannelMap();
         List<InventoryEntryDraft> accumulator = new LinkedList<>();
         for (InventoryEntryDraft entry : inventories) {
@@ -100,7 +101,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
                         accumulator = new LinkedList<>();
                     }
                 } else {
-                    statisticsCreator.incrementUnprocessedDueToEmptySku();
+                    timeStatisticsCreator.incrementUnprocessedDueToEmptySku();
                 }
             }
         }
@@ -108,8 +109,8 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
             runDraftsProcessing(accumulator);
         }
         awaitDraftsProcessingFinished();
-        statisticsCreator.stopTimer();
-        buildStatistics(statisticsCreator);
+        timeStatisticsCreator.stopTimer();
+        buildStatistics(timeStatisticsCreator);
         LOGGER.info(format("Inventories sync for CTP project with key '%s' ended successfully!",
                 options.getCtpClient().getClientConfig().getProjectKey()));
     }
@@ -123,7 +124,6 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
      */
     @Override
     public void sync(@Nonnull List<InventoryEntry> inventories) {
-        LOGGER.info(format("Converting inventory entries to InventoryEntryDraft objects."));
         final List<InventoryEntryDraft> drafts = transformToDrafts(inventories);
         syncDrafts(drafts);
     }
@@ -278,9 +278,9 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
                 try {
                     inventoryService.updateInventoryEntry(entry, updateActions);
                     statisticsCreator.incrementUpdated();
-                } catch (Exception e) {
-                    LOGGER.error(format("Failed to update inventory entry ['%s'] with data from draft ['%s'].",
-                            entry.toString(), fixedDraft.get().toString()), e);
+                } catch (Exception ex) {
+                    failSync(format("Failed to update inventory entry of sku '%s' and supply channel key '%s'",
+                            draft.getSku(), SkuKeyTuple.of(draft).getKey()), ex);
                     statisticsCreator.incrementFailed();
                 }
             }
@@ -305,9 +305,9 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
             try {
                 inventoryService.createInventoryEntry(fixedDraft.get());
                 statisticsCreator.incrementCreated();
-            } catch (Exception e) {
-                LOGGER.error(format("Failed to create inventory entry from draft ['%s'].",
-                        fixedDraft.get().toString()), e);
+            } catch (Exception ex) {
+                failSync(format("Failed to create inventory entry of sku '%s' and supply channel key '%s'",
+                        draft.getSku(), SkuKeyTuple.of(draft).getKey()), ex);
                 statisticsCreator.incrementFailed();
             }
         } else {
@@ -341,7 +341,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
                     return createMissingSupplyChannel(supplyChannelKey)
                             .map(id -> ofEntryDraftPlusRefToSupplyChannel(draft, id));
                 } else {
-                    LOGGER.error(format("Supply channel of key '%s' wasn't found in target system", supplyChannelKey));
+                    failSync(format("Failed to find supply channel of key '%s'", supplyChannelKey), new Exception());
                     return Optional.empty();
                 }
             }
@@ -384,9 +384,25 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
                     return Optional.of(newChannel.getId());
                 }
             } catch (Exception ex) {
-                LOGGER.error(format("Failed to create new supply channel of key '%s'", key), ex);
+                failSync(format("Failed to create new supply channel of key '%s'", key), ex);
             }
             return Optional.empty();
         }
+    }
+
+    /**
+     * Given a reason message as {@link String} and {@link Throwable} exception, this method calls the optional error
+     * callback specified in the {@code options}. <br/>
+     * <strong>Note</strong> to the end of {@code message} following phrase will be joined:
+     * <pre> " in CTP project with key '_KEY_'"</pre>
+     * where _KEY_ is replaced by CTP project key, taken from CTP client configuration.
+     *
+     * @param message the reason of failure
+     * @param exception the exception that occurred, if any
+     */
+    private void failSync(@Nonnull final String message, @Nullable final Throwable exception) {
+        final String finalMessage = message + format(" in CTP project with key '%s.'",
+                this.options.getCtpClient().getClientConfig().getProjectKey());
+        options.applyErrorCallback(finalMessage, exception);
     }
 }
