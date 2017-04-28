@@ -2,7 +2,6 @@ package com.commercetools.sync.inventory;
 
 import com.commercetools.sync.commons.Sync;
 import com.commercetools.sync.inventory.helpers.InventorySyncStatistics;
-import com.commercetools.sync.inventory.helpers.InventorySyncStatisticsCreator;
 import com.commercetools.sync.inventory.utils.InventorySyncUtils;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
@@ -18,7 +17,10 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.inventory.utils.InventoryDraftTransformer.transformToDrafts;
@@ -40,11 +42,11 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
     //Cache that maps supply channel key to supply channel Id for supply channels existing in database.
     private Map<String, String> supplyChannelKeyToId;
 
-    //Collects statistics produced by processing of single batches
-    private Collection<InventorySyncStatistics> statisticsOfProcessedBatches;
-
     private InventoryService inventoryService;
+
     private TypeService typeService;
+
+    //TODO assert that counters from BaseStatistics became thread safe
     private InventorySyncStatistics statistics;
     private InventorySyncOptions options;
 
@@ -58,12 +60,9 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
         this.options = options;
         this.inventoryService = inventoryService;
         this.typeService = typeService;
-        this.statistics = new InventorySyncStatisticsCreator().create();
+        this.statistics = new InventorySyncStatistics();
         if (options.getParallelProcessing() > 1) {
             executorService = Executors.newFixedThreadPool(options.getParallelProcessing());
-            statisticsOfProcessedBatches = new ConcurrentLinkedQueue<>();
-        } else {
-            statisticsOfProcessedBatches = new LinkedList<>();
         }
     }
 
@@ -87,8 +86,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
     public void syncDrafts(@Nonnull List<InventoryEntryDraft> inventories) {
         LOGGER.info(format("About to sync %d inventories into CTP project with key '%s'.",
                 inventories.size(), options.getCtpClient().getClientConfig().getProjectKey()));
-        final InventorySyncStatisticsCreator timeStatisticsCreator = new InventorySyncStatisticsCreator();
-        timeStatisticsCreator.startTimer();
+        statistics.startTimer();
         buildChannelMap();
         List<InventoryEntryDraft> accumulator = new LinkedList<>();
         for (InventoryEntryDraft entry : inventories) {
@@ -100,7 +98,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
                         accumulator = new LinkedList<>();
                     }
                 } else {
-                    timeStatisticsCreator.incrementUnprocessedDueToEmptySku();
+                    statistics.incrementUnprocessedDueToEmptySku();
                 }
             }
         }
@@ -108,8 +106,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
             runDraftsProcessing(accumulator);
         }
         awaitDraftsProcessingFinished();
-        timeStatisticsCreator.stopTimer();
-        buildStatistics(timeStatisticsCreator);
+        statistics.calculateProcessingTime();
         LOGGER.info(format("Inventories sync for CTP project with key '%s' ended successfully!",
                 options.getCtpClient().getClientConfig().getProjectKey()));
     }
@@ -175,19 +172,6 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
     }
 
     /**
-     * Set statistics of the entire sync process. It sum up statistics created during batch processing.
-     * Merged statistics are set to {@code statistics} instance variable.
-     *
-     * @param timedStatistics base creator for future merging. Should have start and end time set.
-     */
-    private void buildStatistics(@Nonnull final InventorySyncStatisticsCreator timedStatistics) {
-        this.statistics = timedStatistics.create();
-        for (InventorySyncStatistics s : statisticsOfProcessedBatches) {
-            this.statistics = InventorySyncStatistics.merge(this.statistics, s);
-        }
-    }
-
-    /**
      * Method process batch of {@link InventoryEntryDraft}. The processing means:
      * <ol>
      *     <li>Fetching existing {@link InventoryEntry} that correspond to passed {@code drafts}</li>
@@ -198,19 +182,17 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
      * @param drafts batch of drafts that need to be synced
      */
     private void processBatch(final List<InventoryEntryDraft> drafts) {
-        final InventorySyncStatisticsCreator batchStatisticsCreator = new InventorySyncStatisticsCreator();
         final Map<SkuKeyTuple, InventoryEntry> existingInventories = fetchExistingInventories(drafts);
         drafts.forEach(draft -> {
             final SkuKeyTuple skuKeyOfDraft = SkuKeyTuple.of(draft);
             if (existingInventories.containsKey(skuKeyOfDraft)) {
                 final InventoryEntry existingEntry = existingInventories.get(skuKeyOfDraft);
-                attemptUpdate(existingEntry, draft, batchStatisticsCreator);
+                attemptUpdate(existingEntry, draft);
             } else {
-                attemptCreate(draft, batchStatisticsCreator);
+                attemptCreate(draft);
             }
-            batchStatisticsCreator.incrementProcessed();
+            statistics.incrementProcessed();
         });
-        statisticsOfProcessedBatches.add(batchStatisticsCreator.create());
     }
 
     /**
@@ -259,15 +241,14 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
      * It calculates list of {@link UpdateAction} and calls API only when there is a need.
      * Before calculate differences, the channel reference from {@code draft} is replaced, so it points to
      * proper channel ID in target system.
-     * It either updates inventory entry and increments "updated" counter in {@code statisticsCreator} instance,
-     * or increments "failed" counter and log error in case of any exception.
+     * It either updates inventory entry and increments "updated" counter in statistics, or increments "failed" counter
+     * and log error in case of any exception.
      *
      * @param entry entry from existing system that could be updated.
      * @param draft draft containing data that could differ from data in {@code entry}.
      *              <strong>Sku isn't compared</strong>
      */
-    private void attemptUpdate(final InventoryEntry entry, final InventoryEntryDraft draft,
-                                  final InventorySyncStatisticsCreator statisticsCreator) {
+    private void attemptUpdate(final InventoryEntry entry, final InventoryEntryDraft draft) {
         final Optional<InventoryEntryDraft> fixedDraft = replaceChannelReference(draft);
         if (fixedDraft.isPresent()) {
             final List<UpdateAction<InventoryEntry>> updateActions =
@@ -276,15 +257,15 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
             if (!updateActions.isEmpty()) {
                 try {
                     inventoryService.updateInventoryEntry(entry, updateActions);
-                    statisticsCreator.incrementUpdated();
+                    statistics.incrementUpdated();
                 } catch (Exception ex) {
                     failSync(format("Failed to update inventory entry of sku '%s' and supply channel key '%s'",
                             draft.getSku(), SkuKeyTuple.of(draft).getKey()), ex);
-                    statisticsCreator.incrementFailed();
+                    statistics.incrementFailed();
                 }
             }
         } else {
-            statisticsCreator.incrementFailed();
+            statistics.incrementFailed();
         }
     }
 
@@ -292,25 +273,24 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
      * Tries to create Inventory Entry in database, using {@code draft}.
      * Before calls API, the channel reference from {@code draft} is replaced, so it points to proper channel ID
      * in target system.
-     * It either creates inventory entry and increments "created" counter in {@code statisticsCreator} instance,
-     * or increments "failed" counter and log error in case of any exception.
+     * It either creates inventory entry and increments "created" counter in statistics, or increments "failed" counter
+     * and log error in case of any exception.
      *
      * @param draft draft of new inventory entry.
      */
-    private void attemptCreate(final InventoryEntryDraft draft,
-                                  final InventorySyncStatisticsCreator statisticsCreator) {
+    private void attemptCreate(final InventoryEntryDraft draft) {
         final Optional<InventoryEntryDraft> fixedDraft = replaceChannelReference(draft);
         if (fixedDraft.isPresent()) {
             try {
                 inventoryService.createInventoryEntry(fixedDraft.get());
-                statisticsCreator.incrementCreated();
+                statistics.incrementCreated();
             } catch (Exception ex) {
                 failSync(format("Failed to create inventory entry of sku '%s' and supply channel key '%s'",
                         draft.getSku(), SkuKeyTuple.of(draft).getKey()), ex);
-                statisticsCreator.incrementFailed();
+                statistics.incrementFailed();
             }
         } else {
-            statisticsCreator.incrementFailed();
+            statistics.incrementFailed();
         }
     }
 
