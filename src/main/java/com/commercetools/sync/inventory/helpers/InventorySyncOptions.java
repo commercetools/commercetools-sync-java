@@ -1,7 +1,7 @@
 package com.commercetools.sync.inventory.helpers;
 
-import com.commercetools.sync.commons.helpers.BaseSyncOptions;
-import io.sphere.sdk.client.SphereClientConfig;
+import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.helpers.CtpClient;
 
 import javax.annotation.Nonnull;
 import java.util.function.BiConsumer;
@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 /**
  * Options for customization of inventory synchronisation process
  */
-public class InventorySyncOptions extends BaseSyncOptions {
+public final class InventorySyncOptions extends BaseSyncOptions {
 
     //Indicates whether create supply channel if it doesn't exists in system for key from draft.
     private boolean ensureChannels = false;
@@ -21,11 +21,23 @@ public class InventorySyncOptions extends BaseSyncOptions {
     //Indicates capacity of batch of processed inventory entries (also limit of sku, that can be query in single API call)
     private int batchSize = 30;
 
-    protected InventorySyncOptions(@Nonnull final SphereClientConfig clientConfig,
-                                   BiConsumer<String, Throwable> updateActionErrorCallBack,
-                                   Consumer<String> updateActionWarningCallBack,
-                                   boolean ensureChannels, int parallelProcessing, int batchSize) {
-        super(clientConfig, updateActionErrorCallBack, updateActionWarningCallBack);
+    InventorySyncOptions(@Nonnull final CtpClient ctpClient,
+                                   final BiConsumer<String, Throwable> updateActionErrorCallBack,
+                                   final Consumer<String> updateActionWarningCallBack,
+                                   final boolean removeOtherLocales,
+                                   final boolean removeOtherSetEntries,
+                                   final boolean removeOtherCollectionEntries,
+                                   final boolean removeOtherProperties,
+                                   boolean ensureChannels,
+                                   int parallelProcessing,
+                                   int batchSize) {
+        super(ctpClient,
+                updateActionErrorCallBack,
+                updateActionWarningCallBack,
+                removeOtherLocales,
+                removeOtherSetEntries,
+                removeOtherCollectionEntries,
+                removeOtherProperties);
         this.ensureChannels = ensureChannels;
         this.parallelProcessing = parallelProcessing;
         this.batchSize = batchSize;
@@ -52,7 +64,7 @@ public class InventorySyncOptions extends BaseSyncOptions {
     /**
      *
      * @return option that indicates capacity of batch of processed inventory entries.
-     * @see InventorySyncOptionsBuilder#batchSize(int)
+     * @see InventorySyncOptionsBuilder#setBatchSize(int)
      */
     public int getBatchSize() {
         return batchSize;

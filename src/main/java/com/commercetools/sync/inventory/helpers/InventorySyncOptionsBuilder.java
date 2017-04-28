@@ -1,63 +1,34 @@
 package com.commercetools.sync.inventory.helpers;
 
-import io.sphere.sdk.client.SphereClientConfig;
+import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
+import com.commercetools.sync.commons.helpers.CtpClient;
 
 import javax.annotation.Nonnull;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
-//TODO check if some "base" buider is released, adopt if so, implement if not (?).
 /**
  * Builder for creation of {@link InventorySyncOptions}
  */
-public class InventorySyncOptionsBuilder {
+public final class InventorySyncOptionsBuilder extends
+        BaseSyncOptionsBuilder<InventorySyncOptionsBuilder, InventorySyncOptions> {
 
-    private SphereClientConfig clientConfig;
-    private BiConsumer<String, Throwable> updateActionErrorCallBack = (s,t) -> {};
-    private Consumer<String> updateActionWarningCallBack = s -> {};
     private boolean ensureChannels = false;
     private int parallelProcessing = 1;
     private int batchSize = 30;
 
-    private InventorySyncOptionsBuilder(@Nonnull final SphereClientConfig clientConfig) {
-        this.clientConfig = clientConfig;
+    private InventorySyncOptionsBuilder(@Nonnull final CtpClient ctpClient) {
+        this.ctpClient = ctpClient;
     }
 
     /**
-     * Returns new instance of {@link InventorySyncOptionsBuilder}. Takes as params configuration needed for
-     * creation of SphereClient.
+     * Creates a new instance of {@link InventorySyncOptionsBuilder} given a {@link CtpClient}, as a param, that contains
+     * all the configuration of the CTP client.
      *
-     * @param ctpProjectKey
-     * @param ctpClientId
-     * @param ctpClientSecret
+     * @param ctpClient wrapper that contains instance of the {@link io.sphere.sdk.client.SphereClientConfig} and
+     *                  {@link io.sphere.sdk.client.BlockingSphereClient}
      * @return new instance of {@link InventorySyncOptionsBuilder}
      */
-    public static InventorySyncOptionsBuilder of(@Nonnull final String ctpProjectKey,
-                                                 @Nonnull final String ctpClientId,
-                                                 @Nonnull final String ctpClientSecret) {
-        return new InventorySyncOptionsBuilder(SphereClientConfig.of(ctpProjectKey, ctpClientId, ctpClientSecret));
-    }
-
-    /**
-     * Returns new instance of {@link InventorySyncOptionsBuilder}
-     *
-     * @param clientConfig configuration needed for creation of SphereClient
-     * @return new instance of {@link InventorySyncOptionsBuilder}
-     */
-    public static InventorySyncOptionsBuilder of(@Nonnull final SphereClientConfig clientConfig) {
-        return new InventorySyncOptionsBuilder(clientConfig);
-    }
-
-    //TODO delete if BaseSyncOptionsBuilder with analogue method is published, document and test otherwise
-    public InventorySyncOptionsBuilder setUpdateActionErrorCallBack(BiConsumer<String, Throwable> updateActionErrorCallBack) {
-        this.updateActionErrorCallBack = updateActionErrorCallBack;
-        return this;
-    }
-
-    //TODO delete if BaseSyncOptionsBuilder with analogue method is published, document and test otherwise
-    public InventorySyncOptionsBuilder setUpdateActionWarningCallBack(Consumer<String> updateActionWarningCallBack) {
-        this.updateActionWarningCallBack = updateActionWarningCallBack;
-        return this;
+    public static InventorySyncOptionsBuilder of(@Nonnull final CtpClient ctpClient) {
+        return new InventorySyncOptionsBuilder(ctpClient);
     }
 
     /**
@@ -74,7 +45,7 @@ public class InventorySyncOptionsBuilder {
      *                  or else will be ignored.
      * @return {@code this} instance of {@link InventorySyncOptionsBuilder}
      */
-    public InventorySyncOptionsBuilder batchSize(int batchSize) {
+    public InventorySyncOptionsBuilder setBatchSize(int batchSize) {
         if (batchSize > 0) {
             this.batchSize = batchSize;
         }
@@ -106,7 +77,7 @@ public class InventorySyncOptionsBuilder {
      * @param parallelProcessing int that indicates parallel factor. Have to be positive or else will be ignored.
      * @return {@code this} instance of {@link InventorySyncOptionsBuilder}
      */
-    public InventorySyncOptionsBuilder parallelProcessing(int parallelProcessing) {
+    public InventorySyncOptionsBuilder setParallelProcessing(int parallelProcessing) {
         if (parallelProcessing > 0) {
             this.parallelProcessing = parallelProcessing;
         }
@@ -114,12 +85,34 @@ public class InventorySyncOptionsBuilder {
     }
 
     /**
-     * Returns new instance of {@link InventorySyncOptions}, fulfilled with data provided to {@code this} builder.
+     * Returns new instance of {@link InventorySyncOptions}, enriched with all attributes provided to {@code this} builder.
      *
      * @return new instance of {@link InventorySyncOptions}
      */
+    @Override
     public InventorySyncOptions build() {
-        return new InventorySyncOptions(clientConfig, updateActionErrorCallBack, updateActionWarningCallBack,
-                ensureChannels, parallelProcessing, batchSize);
+        return new InventorySyncOptions(
+                this.ctpClient,
+                this.errorCallBack,
+                this.warningCallBack,
+                this.removeOtherLocales,
+                this.removeOtherSetEntries,
+                this.removeOtherCollectionEntries,
+                this.removeOtherProperties,
+                this.ensureChannels,
+                this.parallelProcessing,
+                this.batchSize);
+    }
+
+    /**
+     * Returns {@code this} instance of {@link InventorySyncOptionsBuilder}
+     * <p>
+     *      <strong>Inherited doc:</strong><br/>
+     *      {@inheritDoc}
+     * </p>
+     */
+    @Override
+    protected InventorySyncOptionsBuilder getThis() {
+        return this;
     }
 }
