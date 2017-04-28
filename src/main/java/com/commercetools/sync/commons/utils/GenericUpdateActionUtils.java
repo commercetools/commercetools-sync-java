@@ -43,7 +43,7 @@ final class GenericUpdateActionUtils {
             return GenericCustomActionBuilderFactory
                     .of(resource)
                     .buildSetCustomTypeAction(customTypeKey, customFieldsJsonMap);
-        } catch (BuildUpdateActionException e) {
+        } catch (BuildUpdateActionException | IllegalAccessException | InstantiationException e) {
             syncOptions.applyErrorCallback(format(SET_CUSTOM_TYPE_BUILD_FAILED.getDescription()
                     , resource.toReference().getTypeId(), resource.getId(), e.getMessage()), e);
             return Optional.empty();
@@ -66,7 +66,7 @@ final class GenericUpdateActionUtils {
             return GenericCustomActionBuilderFactory
                     .of(resource)
                     .buildRemoveCustomTypeAction();
-        } catch (BuildUpdateActionException e) {
+        } catch (BuildUpdateActionException | IllegalAccessException | InstantiationException e) {
             syncOptions.applyErrorCallback(format(REMOVE_CUSTOM_TYPE_BUILD_FAILED.getDescription(),
                     resource.toReference().getTypeId(), resource.getId(), e.getMessage()), e);
             return Optional.empty();
@@ -96,7 +96,7 @@ final class GenericUpdateActionUtils {
             return GenericCustomActionBuilderFactory
                     .of(resource)
                     .buildSetCustomFieldAction(customFieldName, customFieldValue);
-        } catch (BuildUpdateActionException e) {
+        } catch (BuildUpdateActionException | IllegalAccessException | InstantiationException e) {
             syncOptions.applyErrorCallback(format(SET_CUSTOM_FIELD_BUILD_FAILED.getDescription(), customFieldName,
                     resource.toReference().getTypeId(), resource.getId(), e.getMessage()), e);
             return Optional.empty();
