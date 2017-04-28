@@ -11,7 +11,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class CategorySyncOptions extends BaseSyncOptions {
+public final class CategorySyncOptions extends BaseSyncOptions {
     private final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter;
 
     CategorySyncOptions(@Nonnull final CtpClient ctpClient,
