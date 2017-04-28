@@ -31,8 +31,8 @@ public class CategorySyncTest {
         final CtpClient ctpClient = mock(CtpClient.class);
         when(ctpClient.getClientConfig()).thenReturn(clientConfig);
 
-        categorySyncOptions = mock(CategorySyncOptions.class);
-        when(categorySyncOptions.getCtpClient()).thenReturn(ctpClient);
+        categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
+                .build();
 
         categorySync = new CategorySync(categorySyncOptions, mock(TypeService.class),
                 getMockCategoryService());

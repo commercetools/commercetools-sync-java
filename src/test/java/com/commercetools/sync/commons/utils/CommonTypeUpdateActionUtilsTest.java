@@ -5,30 +5,19 @@ import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.*;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class CommonTypeUpdateActionUtilsTest {
-    private final static Category MOCK_OLD_CATEGORY = mock(Category.class);
-    private final static Locale LOCALE = Locale.GERMAN;
-    private final static String MOCK_CATEGORY_REFERENCE_TYPE = "type";
-    private final static String MOCK_OLD_CATEGORY_PARENT_ID = "1";
-    private final static String MOCK_OLD_CATEGORY_NAME = "categoryName";
-
-    @BeforeClass
-    public static void setup() {
-        when(MOCK_OLD_CATEGORY.getName()).thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
-        when(MOCK_OLD_CATEGORY.getParent()).thenReturn(Reference.of(MOCK_CATEGORY_REFERENCE_TYPE, MOCK_OLD_CATEGORY_PARENT_ID));
-    }
+    private final Locale LOCALE = Locale.GERMAN;
+    private final String MOCK_CATEGORY_REFERENCE_TYPE = "type";
+    private final String MOCK_OLD_CATEGORY_NAME = "categoryName";
 
     @Test
     public void buildUpdateActionForLocalizedStrings_WithDifferentFieldValues_ShouldBuildUpdateAction() {
