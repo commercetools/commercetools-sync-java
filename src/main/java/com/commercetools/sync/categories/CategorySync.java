@@ -63,8 +63,7 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
         LOGGER.info(format("About to sync %d category drafts into CTP project with key '%s'."
                 , categoryDrafts.size(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
         this.statistics.startTimer();
-        for (int i = 0; i < categoryDrafts.size(); i++) {
-            final CategoryDraft categoryDraft = categoryDrafts.get(i);
+        for (CategoryDraft categoryDraft : categoryDrafts) {
             if (categoryDraft != null) {
                 this.statistics.incrementProcessed();
                 final String externalId = categoryDraft.getExternalId();
