@@ -10,8 +10,11 @@ import io.sphere.sdk.commands.UpdateAction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.*;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
@@ -140,37 +143,31 @@ public final class CategorySyncUtils {
                                                                 @Nonnull final CategoryDraft newCategory,
                                                                 @Nonnull final CategorySyncOptions syncOptions,
                                                                 @Nonnull final TypeService typeService) {
-        final List<UpdateAction<Category>> updateActions = new ArrayList<>();
 
-        buildChangeNameUpdateAction(oldCategory, newCategory)
-                .ifPresent(updateActions::add);
-
-        buildChangeSlugUpdateAction(oldCategory, newCategory)
-                .ifPresent(updateActions::add);
-
-        buildSetDescriptionUpdateAction(oldCategory, newCategory, syncOptions)
-                .ifPresent(updateActions::add);
-
-        buildChangeParentUpdateAction(oldCategory, newCategory, syncOptions)
-                .ifPresent(updateActions::add);
-
-        buildChangeOrderHintUpdateAction(oldCategory, newCategory, syncOptions)
-                .ifPresent(updateActions::add);
-
-        buildSetMetaTitleUpdateAction(oldCategory, newCategory)
-                .ifPresent(updateActions::add);
-
-        buildSetMetaDescriptionUpdateAction(oldCategory, newCategory)
-                .ifPresent(updateActions::add);
-
-        buildSetMetaKeywordsUpdateAction(oldCategory, newCategory)
-                .ifPresent(updateActions::add);
+        List<UpdateAction<Category>> categoryUpdateActions = buildUpdateActionsList(Arrays.asList(
+                buildChangeNameUpdateAction          (oldCategory, newCategory),
+                buildChangeSlugUpdateAction          (oldCategory, newCategory),
+                buildSetDescriptionUpdateAction      (oldCategory, newCategory, syncOptions),
+                buildChangeParentUpdateAction        (oldCategory, newCategory, syncOptions),
+                buildChangeOrderHintUpdateAction     (oldCategory, newCategory, syncOptions),
+                buildSetMetaTitleUpdateAction        (oldCategory, newCategory),
+                buildSetMetaDescriptionUpdateAction  (oldCategory, newCategory),
+                buildSetMetaKeywordsUpdateAction     (oldCategory, newCategory)
+        ));
 
         final List<UpdateAction<Category>> categoryCustomUpdateActions =
                 buildCustomUpdateActions(oldCategory, newCategory, syncOptions, typeService);
 
-        updateActions.addAll(categoryCustomUpdateActions);
-        return updateActions;
+        categoryUpdateActions.addAll(categoryCustomUpdateActions);
+        return categoryUpdateActions;
+    }
+
+    @Nonnull
+    private static List<UpdateAction<Category>> buildUpdateActionsList(@Nonnull List<Optional<UpdateAction<Category>>> optionalUpdateActions) {
+        return optionalUpdateActions.stream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
     }
 
     /**
