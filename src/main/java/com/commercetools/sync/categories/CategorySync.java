@@ -30,10 +30,9 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
     private final CategoryService categoryService;
 
     public CategorySync(@Nonnull final CategorySyncOptions syncOptions) {
-        this.syncOptions = syncOptions;
-        this.statistics = new CategorySyncStatistics();
-        this.typeService = new TypeServiceImpl(syncOptions.getCtpClient().getClient());
-        this.categoryService = new CategoryServiceImpl(syncOptions.getCtpClient().getClient());
+        this(syncOptions,
+                new TypeServiceImpl(syncOptions.getCtpClient().getClient()),
+                new CategoryServiceImpl(syncOptions.getCtpClient().getClient()));
     }
 
     CategorySync(@Nonnull final CategorySyncOptions syncOptions,
