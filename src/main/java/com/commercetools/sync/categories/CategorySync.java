@@ -54,6 +54,8 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
      * If an exception was thrown on executing the request to CTP,
      * the optional error callback specified in the {@code syncOptions} is called.
      *
+     * NOTE: This method is <b>not</b> thread-safe and shouldn't be use in a parallel execution.
+     *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
      */
     @Override
