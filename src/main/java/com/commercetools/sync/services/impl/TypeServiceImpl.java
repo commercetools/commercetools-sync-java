@@ -8,7 +8,6 @@ import io.sphere.sdk.types.queries.TypeQuery;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
@@ -20,7 +19,7 @@ import java.util.concurrent.CompletionStage;
  */
 public class TypeServiceImpl implements TypeService {
     private final BlockingSphereClient ctpClient;
-    private final Map<String, String> cache = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, String> cache = new HashMap<>();
 
     public TypeServiceImpl(@Nonnull final BlockingSphereClient ctpClient) {
         this.ctpClient = ctpClient;
