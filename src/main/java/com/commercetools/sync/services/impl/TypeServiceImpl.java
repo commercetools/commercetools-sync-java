@@ -13,9 +13,9 @@ import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 /**
- *TODO: USE graphQL to get only keys
- *TODO: UNIT TEST
- *TODO: JAVA DOC
+ * TODO: USE graphQL to get only keys
+ * TODO: UNIT TEST
+ * TODO: JAVA DOC
  */
 public class TypeServiceImpl implements TypeService {
     private final BlockingSphereClient ctpClient;
@@ -35,11 +35,8 @@ public class TypeServiceImpl implements TypeService {
     }
 
     @Nonnull
-    private CompletionStage<Integer> fetchAllTypesKeysIntoCache() {
+    private CompletionStage<Void> fetchAllTypesKeysIntoCache() {
         return QueryExecutionUtils.queryAll(ctpClient, TypeQuery.of())
-                .thenApplyAsync(types -> {
-                    types.forEach(type -> cache.put(type.getId(), type.getKey()));
-                    return cache.size();
-                });
+                .thenAccept(types -> types.forEach(type -> cache.put(type.getId(), type.getKey())));
     }
 }
