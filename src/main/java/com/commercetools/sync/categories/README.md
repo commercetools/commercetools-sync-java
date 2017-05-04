@@ -78,6 +78,10 @@ In order to use the category sync an instance of
   Used to get an object  containing all the stats of the sync process; which includes a report message, the total number
    of update, created, failed, processed categories and the processing time of the sync in different time units and in a
     human readable format.
+    <!--- TODO Add code snippets of getStatistics -->
+    
+    
+  <!--- TODO Also add code snippets for building update actions utils! -->
   
   
   Additional configuration for the sync can be configured on the `CategorySyncOptions` instance, according to the need 

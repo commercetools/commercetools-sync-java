@@ -6,7 +6,7 @@ commercetools project.
 
 
 - [What is the commercetools sync?](#what-is-the-commercetools-sync)
-- [How does it work?](#how-does-it-work)
+- [How to use it?](#how-to-use-it)
 - [Short-term roadmap](#short-term-roadmap)
 - [Contributing](#contributing)
 
@@ -27,19 +27,25 @@ Currently this library supports synchronising the following commercetools resour
 - [Category](https://github.com/commercetools/commercetools-sync-java/tree/setup-ci-build/src/main/java/com/commercetools/sync/categories#how-to-use-it)
 - InventoryEntry
 
-## How does it work?
+## How to use it?
 
-### Prerequisites 
+### Prerequisites
+ 
+ install [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
 
+<!--- TODO 
 ### Installation
 
 #### Maven 
 
 #### SBT 
 
-#### Gradle 
+#### Gradle -->
 
 ### Using the library
+Please check the README of the specific module to see examples of how to use it:
+- [Category](https://github.com/commercetools/commercetools-sync-java/tree/setup-ci-build/src/main/java/com/commercetools/sync/categories#how-to-use-it)
+- InventoryEntry
 
 ## Short-term roadmap
 https://github.com/commercetools/commercetools-sync-java/milestones
@@ -48,4 +54,4 @@ https://github.com/commercetools/commercetools-sync-java/milestones
 
 ### Development
 
-### Executing integration tests
+<!--- TODO ### Executing integration tests -->
