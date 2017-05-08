@@ -12,11 +12,9 @@ import io.sphere.sdk.models.Reference;
 
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 
 /**
  * This class provides static utility methods for building update actions related to inventories.
@@ -29,81 +27,80 @@ public final class InventoryUpdateActionUtils {
 
     /**
      * Compares the {@code quantityOnStock} values of a {@link InventoryEntry} and {@link InventoryEntryDraft}
-     * and returns a {@link List} of update actions, which would contain the {@code "changeQuantity"}
+     * and returns a {@link Optional} of update action, which would contain the {@code "changeQuantity"}
      * {@link UpdateAction}. If quantity on stock from {@code newEntry} is {@code null} or no update action is needed,
      * for example in case where both the {@link InventoryEntry} and the {@link InventoryEntryDraft} have the same
-     * {@code quantityOnStock} values, the empty list would be returned.
+     * {@code quantityOnStock} values, the empty optional would be returned.
      *
      * @param oldEntry the inventory entry that should be updated
      * @param newEntry the inventory entry draft which contains new quantity on stock.
-     * @return list containing update action or empty list if quantities on stock are indentical or quantity on stock
+     * @return optional containing update action or empty optional if quantities on stock are indentical or quantity on stock
      * from {@code newEntry} is null.
      */
     @Nonnull
-    public static List<UpdateAction<InventoryEntry>> buildChangeQuantityAction(@Nonnull final InventoryEntry oldEntry,
-                                                                               @Nonnull final InventoryEntryDraft newEntry) {
-        final Long oldValue = oldEntry.getQuantityOnStock();
-        final Long newValue = newEntry.getQuantityOnStock();
-        return newValue == null || Objects.equals(oldValue, newValue)
-                ? emptyList() : asList(ChangeQuantity.of(newValue));
+    public static Optional<UpdateAction<InventoryEntry>> buildChangeQuantityAction(@Nonnull final InventoryEntry oldEntry,
+                                                                                   @Nonnull final InventoryEntryDraft newEntry) {
+        final Long newQuantityOnStock = newEntry.getQuantityOnStock();
+        if (newQuantityOnStock == null) {
+            return Optional.empty();
+        }
+        return buildUpdateAction(oldEntry.getQuantityOnStock(), newQuantityOnStock,
+                () -> ChangeQuantity.of(newQuantityOnStock));
     }
 
     /**
      * Compares the {@code restockableInDays} values of a {@link InventoryEntry} and {@link InventoryEntryDraft}
-     * and returns a {@link List} of update actions, which would contain the {@code "setRestockableInDays"}
+     * and returns a {@link Optional} of update actions, which would contain the {@code "setRestockableInDays"}
      * {@link UpdateAction}. If no update action is needed, for example in case where both the
      * {@link InventoryEntry} and the {@link InventoryEntryDraft} have the same {@code restockableInDays} values,
-     * the empty list would be returned.
+     * the empty optional would be returned.
      *
      * @param oldEntry the inventory entry that should be updated
      * @param newEntry the inventory entry draft which contains new restockable in days.
-     * @return list containing update action or empty list if restockable in days are indentical.
+     * @return optional containing update action or empty optional if restockable in days are indentical.
      */
     @Nonnull
-    public static List<UpdateAction<InventoryEntry>> buildSetRestockableInDaysAction(@Nonnull final InventoryEntry oldEntry,
+    public static Optional<UpdateAction<InventoryEntry>> buildSetRestockableInDaysAction(@Nonnull final InventoryEntry oldEntry,
                                                                                      @Nonnull final InventoryEntryDraft newEntry) {
-        final Integer oldValue = oldEntry.getRestockableInDays();
-        final Integer newValue = newEntry.getRestockableInDays();
-        return Objects.equals(oldValue, newValue)
-                ? emptyList() : asList(SetRestockableInDays.of(newValue));
+        final Integer newRestockableInDays = newEntry.getRestockableInDays();
+        return buildUpdateAction(oldEntry.getRestockableInDays(), newRestockableInDays,
+                () -> SetRestockableInDays.of(newRestockableInDays));
     }
 
     /**
      * Compares the {@code expectedDelivery} values of a {@link InventoryEntry} and {@link InventoryEntryDraft}
-     * and returns a {@link List} of update actions, which would contain the {@code "setExpectedDelivery"}
+     * and returns a {@link Optional} of update actions, which would contain the {@code "setExpectedDelivery"}
      * {@link UpdateAction}. If no update action is needed, for example in case where both the
      * {@link InventoryEntry} and the {@link InventoryEntryDraft} have the same {@code expectedDelivery} values,
-     * the empty list would be returned.
+     * the empty optional would be returned.
      *
      * @param oldEntry the inventory entry that should be updated
      * @param newEntry the inventory entry draft which contains new expected delivery.
-     * @return list containing update action or empty list if expected deliveries are indentical.
+     * @return optional containing update action or empty optional if expected deliveries are indentical.
      */
     @Nonnull
-    public static List<UpdateAction<InventoryEntry>> buildSetExpectedDeliveryAction(@Nonnull final InventoryEntry oldEntry,
+    public static Optional<UpdateAction<InventoryEntry>> buildSetExpectedDeliveryAction(@Nonnull final InventoryEntry oldEntry,
                                                                                     @Nonnull final InventoryEntryDraft newEntry) {
-        final ZonedDateTime oldValue = oldEntry.getExpectedDelivery();
-        final ZonedDateTime newValue = newEntry.getExpectedDelivery();
-        return Objects.equals(oldValue, newValue)
-                ? emptyList() : asList(SetExpectedDelivery.of(newValue));
+        final ZonedDateTime newExpectedDelivery = newEntry.getExpectedDelivery();
+        return buildUpdateAction(oldEntry.getExpectedDelivery(), newExpectedDelivery,
+                () -> SetExpectedDelivery.of(newExpectedDelivery));
     }
 
     /**
      * Compares the {@code supplyChannel} references of a {@link InventoryEntry} and {@link InventoryEntryDraft}
-     * and returns a {@link List} of update actions, which would contain the {@code "setSupplyChannel"}
+     * and returns a {@link Optional} of update actions, which would contain the {@code "setSupplyChannel"}
      * {@link UpdateAction}. If no update action is needed, for example in case where both the {@link InventoryEntry}
-     * and the {@link InventoryEntryDraft} have the same supply channel, the empty list would be returned.
+     * and the {@link InventoryEntryDraft} have the same supply channel, the empty optional would be returned.
      *
      * @param oldEntry the inventory entry that should be updated
      * @param newEntry the inventory entry draft which contains new supply channel.
-     * @return list containing update action or empty list if supply channels are indentical.
+     * @return optional containing update action or empty optional if supply channels are indentical.
      */
     @Nonnull
-    public static List<UpdateAction<InventoryEntry>> buildSetSupplyChannelAction(@Nonnull final InventoryEntry oldEntry,
+    public static Optional<UpdateAction<InventoryEntry>> buildSetSupplyChannelAction(@Nonnull final InventoryEntry oldEntry,
                                                                                  @Nonnull final InventoryEntryDraft newEntry) {
-        final Reference<Channel> oldValue = oldEntry.getSupplyChannel();
-        final Reference<Channel> newValue = newEntry.getSupplyChannel();
-        return Objects.equals(oldValue, newValue)
-                ? emptyList() : asList(SetSupplyChannel.of(newEntry.getSupplyChannel()));
+        final Reference<Channel> newSupplyChannel = newEntry.getSupplyChannel();
+        return buildUpdateAction(oldEntry.getSupplyChannel(), newSupplyChannel,
+                () -> SetSupplyChannel.of(newSupplyChannel));
     }
 }

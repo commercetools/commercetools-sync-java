@@ -8,12 +8,14 @@ import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 
 import javax.annotation.Nonnull;
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
 import static com.commercetools.sync.inventory.utils.InventoryDraftTransformer.transformToDraft;
 import static com.commercetools.sync.inventory.utils.InventoryUpdateActionUtils.*;
+import static java.util.stream.Collectors.toList;
 
 /**
  * This class provides static utility methods for synchronising inventory entries.
@@ -66,11 +68,16 @@ public final class InventorySyncUtils {
                                                                   @Nonnull final InventoryEntryDraft newEntry,
                                                                   @Nonnull final InventorySyncOptions syncOptions,
                                                                   @Nonnull final TypeService typeService) {
-        final List<UpdateAction<InventoryEntry>> actions = new LinkedList<>();
-        actions.addAll(buildChangeQuantityAction(oldEntry, newEntry));
-        actions.addAll(buildSetRestockableInDaysAction(oldEntry, newEntry));
-        actions.addAll(buildSetExpectedDeliveryAction(oldEntry, newEntry));
-        actions.addAll(buildSetSupplyChannelAction(oldEntry, newEntry));
+        final List<UpdateAction<InventoryEntry>> actions = Arrays
+                .asList(
+                        buildChangeQuantityAction(oldEntry, newEntry),
+                        buildSetRestockableInDaysAction(oldEntry, newEntry),
+                        buildSetExpectedDeliveryAction(oldEntry, newEntry),
+                        buildSetSupplyChannelAction(oldEntry, newEntry))
+                .stream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toList());
         actions.addAll(buildCustomUpdateActions(oldEntry, newEntry, syncOptions, typeService));
         return actions;
     }

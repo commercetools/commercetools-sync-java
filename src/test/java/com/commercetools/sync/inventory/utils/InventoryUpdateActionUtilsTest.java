@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 import static com.commercetools.sync.inventory.utils.InventoryUpdateActionUtils.*;
@@ -51,20 +51,20 @@ public class InventoryUpdateActionUtilsTest {
 
     @Test
     public void buildChangeQuantityAction_returnsAction_havingDifferentValues() {
-        final List<UpdateAction<InventoryEntry>> result = buildChangeQuantityAction(old, newDifferent);
+        final Optional<UpdateAction<InventoryEntry>> result = buildChangeQuantityAction(old, newDifferent);
         assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isExactlyInstanceOf(ChangeQuantity.class);
-        assertThat(((ChangeQuantity) result.get(0)).getQuantity()).isEqualTo(newDifferent.getQuantityOnStock());
+        assertThat(result.isPresent()).isTrue();
+        assertThat(result.get()).isExactlyInstanceOf(ChangeQuantity.class);
+        assertThat(((ChangeQuantity) result.get()).getQuantity()).isEqualTo(newDifferent.getQuantityOnStock());
     }
 
     @Test
     public void buildChangeQuantityAction_returnsEmptyList_havingNewNullValue() {
         final InventoryEntryDraft draft = mock(InventoryEntryDraft.class);
         when(draft.getQuantityOnStock()).thenReturn(null);
-        final List<UpdateAction<InventoryEntry>> result = buildChangeQuantityAction(old, draft);
+        final Optional<UpdateAction<InventoryEntry>> result = buildChangeQuantityAction(old, draft);
         assertThat(result).isNotNull();
-        assertThat(result).isEmpty();
+        assertThat(result.isPresent()).isFalse();
     }
 
     @Test
@@ -74,21 +74,21 @@ public class InventoryUpdateActionUtilsTest {
 
     @Test
     public void buildSetRestockableInDaysAction_returnsAction_havingDifferentValues() {
-        final List<UpdateAction<InventoryEntry>> result = buildSetRestockableInDaysAction(old, newDifferent);
+        final Optional<UpdateAction<InventoryEntry>> result = buildSetRestockableInDaysAction(old, newDifferent);
         assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isExactlyInstanceOf(SetRestockableInDays.class);
-        assertThat(((SetRestockableInDays) result.get(0)).getRestockableInDays())
+        assertThat(result.isPresent()).isTrue();
+        assertThat(result.get()).isExactlyInstanceOf(SetRestockableInDays.class);
+        assertThat(((SetRestockableInDays) result.get()).getRestockableInDays())
                 .isEqualTo(newDifferent.getRestockableInDays());
     }
 
     @Test
     public void buildSetRestockableInDaysAction_returnsAction_havingNewNullValue() {
-        final List<UpdateAction<InventoryEntry>> result = buildSetRestockableInDaysAction(old, newWithNullValues);
+        final Optional<UpdateAction<InventoryEntry>> result = buildSetRestockableInDaysAction(old, newWithNullValues);
         assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isExactlyInstanceOf(SetRestockableInDays.class);
-        assertThat(((SetRestockableInDays) result.get(0)).getRestockableInDays()).isNull();
+        assertThat(result.isPresent()).isTrue();
+        assertThat(result.get()).isExactlyInstanceOf(SetRestockableInDays.class);
+        assertThat(((SetRestockableInDays) result.get()).getRestockableInDays()).isNull();
     }
 
     @Test
@@ -98,21 +98,21 @@ public class InventoryUpdateActionUtilsTest {
 
     @Test
     public void buildSetExpectedDeliveryAction_returnsAction_havingDifferentValues() {
-        final List<UpdateAction<InventoryEntry>> result = buildSetExpectedDeliveryAction(old, newDifferent);
+        final Optional<UpdateAction<InventoryEntry>> result = buildSetExpectedDeliveryAction(old, newDifferent);
         assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isExactlyInstanceOf(SetExpectedDelivery.class);
-        assertThat(((SetExpectedDelivery) result.get(0)).getExpectedDelivery())
+        assertThat(result.isPresent()).isTrue();
+        assertThat(result.get()).isExactlyInstanceOf(SetExpectedDelivery.class);
+        assertThat(((SetExpectedDelivery) result.get()).getExpectedDelivery())
                 .isEqualTo(newDifferent.getExpectedDelivery());
     }
 
     @Test
     public void buildSetExpectedDeliveryAction_returnsAction_havingNewNullValue() {
-        final List<UpdateAction<InventoryEntry>> result = buildSetExpectedDeliveryAction(old, newWithNullValues);
+        final Optional<UpdateAction<InventoryEntry>> result = buildSetExpectedDeliveryAction(old, newWithNullValues);
         assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isExactlyInstanceOf(SetExpectedDelivery.class);
-        assertThat(((SetExpectedDelivery) result.get(0)).getExpectedDelivery()).isNull();
+        assertThat(result.isPresent()).isTrue();
+        assertThat(result.get()).isExactlyInstanceOf(SetExpectedDelivery.class);
+        assertThat(((SetExpectedDelivery) result.get()).getExpectedDelivery()).isNull();
     }
 
     @Test
@@ -122,21 +122,21 @@ public class InventoryUpdateActionUtilsTest {
 
     @Test
     public void buildSetSupplyChannelAction_returnsAction_havingDifferentValues() {
-        final List<UpdateAction<InventoryEntry>> result = buildSetSupplyChannelAction(old, newDifferent);
+        final Optional<UpdateAction<InventoryEntry>> result = buildSetSupplyChannelAction(old, newDifferent);
         assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isExactlyInstanceOf(SetSupplyChannel.class);
-        assertThat(((SetSupplyChannel) result.get(0)).getSupplyChannel())
+        assertThat(result.isPresent()).isTrue();
+        assertThat(result.get()).isExactlyInstanceOf(SetSupplyChannel.class);
+        assertThat(((SetSupplyChannel) result.get()).getSupplyChannel())
                 .isEqualTo(newDifferent.getSupplyChannel());
     }
 
     @Test
     public void buildSetSupplyChannelAction_returnsAction_havingNewNullValue() {
-        final List<UpdateAction<InventoryEntry>> result = buildSetSupplyChannelAction(old, newWithNullValues);
+        final Optional<UpdateAction<InventoryEntry>> result = buildSetSupplyChannelAction(old, newWithNullValues);
         assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isExactlyInstanceOf(SetSupplyChannel.class);
-        assertThat(((SetSupplyChannel) result.get(0)).getSupplyChannel()).isNull();
+        assertThat(result.isPresent()).isTrue();
+        assertThat(result.get()).isExactlyInstanceOf(SetSupplyChannel.class);
+        assertThat(((SetSupplyChannel) result.get()).getSupplyChannel()).isNull();
     }
 
     @Test
@@ -145,9 +145,9 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     private void assertNoUpdatesForSameValues
-            (BiFunction<InventoryEntry, InventoryEntryDraft, List<UpdateAction<InventoryEntry>>> buildFunction) {
-        final List<UpdateAction<InventoryEntry>> result = buildFunction.apply(old, newSame);
+            (BiFunction<InventoryEntry, InventoryEntryDraft, Optional<UpdateAction<InventoryEntry>>> buildFunction) {
+        final Optional<UpdateAction<InventoryEntry>> result = buildFunction.apply(old, newSame);
         assertThat(result).isNotNull();
-        assertThat(result).isEmpty();
+        assertThat(result.isPresent()).isFalse();
     }
 }
