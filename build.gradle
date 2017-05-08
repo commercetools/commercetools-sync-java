@@ -69,6 +69,7 @@ jacocoTestCoverageVerification {
 jacocoTestReport {
     reports {
         html.enabled = true
+        xml.enabled = true
     }
 }
 check.dependsOn jacocoTestCoverageVerification // Build should fail if jacocoTestCoverageVerification task rules are not fulfilled.
