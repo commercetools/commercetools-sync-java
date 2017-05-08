@@ -41,8 +41,10 @@ dependencies {
 
 checkstyle {
     toolVersion = checkstyleVersion
-    maxWarnings = 0
+    config = rootProject.resources.text.fromFile('config/checkstyle/checkstyle.xml')
+    maxWarnings = 1000 // If warnings exceed this number, build should fail.
 }
+
 pmd {
     toolVersion = pmdVersion
     ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/pmd.xml')
