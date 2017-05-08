@@ -43,13 +43,13 @@ dependencies {
 checkstyle {
     toolVersion = checkstyleVersion
     config = rootProject.resources.text.fromFile('config/checkstyle/checkstyle.xml')
-    maxWarnings = 1000 // If warnings exceed this number, build should fail.
+    maxWarnings = 150 // If warnings exceed this number, build should fail.
 }
 
 pmd {
     toolVersion = pmdVersion
     ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/pmd.xml')
-    rulePriority = 1 // If a rule priority, with a level greater than or equal this number, is violated; the build should fail.
+    rulePriority = 2 // If a rule priority, with a level greater than or equal this number, is violated; the build should fail.
 }
 
 jacoco {
