@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.commercetools.sync.commons.helpers.BaseSyncStatistics.getStatisticsAsJSONString;
+import static com.commercetools.sync.commons.helpers.BaseSyncStatistics.getStatisticsAsJsonString;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -95,7 +95,7 @@ public class CategorySyncStatisticsTest {
         categorySyncStatistics.incrementUpdated();
         categorySyncStatistics.incrementProcessed();
 
-        final String statisticsAsJsonString = getStatisticsAsJSONString(categorySyncStatistics);
+        final String statisticsAsJsonString = getStatisticsAsJsonString(categorySyncStatistics);
         assertThat(statisticsAsJsonString)
                 .isEqualTo("{\"reportMessage\":\"Summary: 3 categories were processed in total (1 created, 1 updated and 1 categories failed to sync).\",\"" +
                         "updated\":1,\"" +
@@ -123,7 +123,7 @@ public class CategorySyncStatisticsTest {
 
         categorySyncStatistics.calculateProcessingTime();
 
-        final String statisticsAsJsonString = getStatisticsAsJSONString(categorySyncStatistics);
+        final String statisticsAsJsonString = getStatisticsAsJsonString(categorySyncStatistics);
         assertThat(statisticsAsJsonString)
                 .isEqualTo("{\"reportMessage\":\"Summary: 3 categories were processed in total (1 created, 1 updated and 1 categories failed to sync).\",\"" +
                         "updated\":1,\"" +
