@@ -24,20 +24,24 @@ public final class CategorySyncUtils {
     /**
      * TODO: SEE GITHUB ISSUE#12
      * Should transform Category TO CategoryDraft using new generated factory methods mentioned in GH issue #12,
-     * <p>
-     * Change to {@code public} once implemented.
      *
-     * @param oldCategory
-     * @param newCategory
-     * @param syncOptions
-     * @return
+     * <p>Change to {@code public} once implemented.
+     *
+     * @param oldCategory the category which should be updated.
+     * @param newCategory the category draft where we get the new data.
+     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by the
+     *                    user. For example, custom callbacks to call in case of warnings or errors occurring on the
+     *                    build update action process. And other options (See {@link BaseSyncOptions}
+     *                    for more info.
+     * @return A list of category-specific update actions.
      */
     @Nonnull
     private static List<UpdateAction<Category>> buildActions(@Nonnull final Category oldCategory,
                                                              @Nonnull final Category newCategory,
                                                              @Nonnull final CategorySyncOptions syncOptions) {
         final List<UpdateAction<Category>> updateActions = buildCoreActions(oldCategory, newCategory, syncOptions);
-        final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(oldCategory, newCategory, syncOptions);
+        final List<UpdateAction<Category>> assetUpdateActions =
+          buildAssetActions(oldCategory, newCategory, syncOptions);
         updateActions.addAll(assetUpdateActions);
         return filterUpdateActions(updateActions, syncOptions.getUpdateActionsFilter());
     }
@@ -46,13 +50,16 @@ public final class CategorySyncUtils {
      * TODO: SEE GITHUB ISSUE#12
      * Should transform Category TO CategoryDraft using new generated factory methods mentioned in GH issue #12,
      * then call {@link CategorySyncUtils#buildCoreActions(Category, Category, CategorySyncOptions)}.
-     * <p>
-     * Change to {@code public} once implemented.
      *
-     * @param oldCategory
-     * @param newCategory
-     * @param syncOptions
-     * @return
+     * <p>Change to {@code public} once implemented.
+     *
+     * @param oldCategory the category which should be updated.
+     * @param newCategory the category draft where we get the new data.
+     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by
+     *                    the user. For example, custom callbacks to call in case of warnings or errors occurring
+     *                    on the build update action process. And other options (See {@link BaseSyncOptions} for
+     *                    more info.
+     * @return A list of category-specific update actions.
      */
     @Nonnull
     private static List<UpdateAction<Category>> buildCoreActions(@Nonnull final Category oldCategory,
@@ -67,10 +74,13 @@ public final class CategorySyncUtils {
      * then call {@link CategorySyncUtils#buildAssetActions(Category, Category, CategorySyncOptions)}.
      * Change to {@code public} once implemented.
      *
-     * @param oldCategory
-     * @param newCategory
-     * @param syncOptions
-     * @return
+     * @param oldCategory the category which should be updated.
+     * @param newCategory the category draft where we get the new data.
+     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by
+     *                    the user. For example, custom callbacks to call in case of warnings or errors occurring
+     *                    on the build update action process. And other options (See {@link BaseSyncOptions} for
+     *                    more info.
+     * @return A list of category-specific update actions.
      */
     @Nonnull
     private static List<UpdateAction<Category>> buildAssetActions(@Nonnull final Category oldCategory,
@@ -89,24 +99,24 @@ public final class CategorySyncUtils {
      * function supplied was null, the same supplied list is returned as is.
      */
     @Nonnull
-    private static List<UpdateAction<Category>> filterUpdateActions(@Nonnull final List<UpdateAction<Category>> updateActions,
-                                                                    @Nullable final Function<List<UpdateAction<Category>>
-                                                                            , List<UpdateAction<Category>>> updateActionsFilter) {
+    private static List<UpdateAction<Category>> filterUpdateActions(
+      @Nonnull final List<UpdateAction<Category>> updateActions,
+      @Nullable final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter) {
         return updateActionsFilter != null ? updateActionsFilter.apply(updateActions) : updateActions;
     }
 
     /**
      * Compares the Name, Slug, Description, Parent, OrderHint, MetaTitle, MetaDescription, MetaKeywords and Custom
      * fields/ type fields and assets of a {@link Category} and a {@link CategoryDraft}. It returns a {@link List} of
-     * {@link UpdateAction<Category>} as a result. If no update action is needed, for example in
+     * {@link UpdateAction&lt;Category&gt;} as a result. If no update action is needed, for example in
      * case where both the {@link Category} and the {@link CategoryDraft} have the same parents, an empty
      * {@link List} is returned.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new data.
-     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by the user.
-     *                    For example, custom callbacks to call in case of warnings or errors occurring on the build
-     *                    update action process. And other options (See {@link BaseSyncOptions}
+     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by
+     *                    the user. For example, custom callbacks to call in case of warnings or errors occurring
+     *                    on the build update action process. And other options (See {@link BaseSyncOptions}
      *                    for more info.
      * @param typeService responsible for fetching the key of the old resource type from it's cache.
      * @return A list of category-specific update actions.
@@ -116,8 +126,10 @@ public final class CategorySyncUtils {
                                                             @Nonnull final CategoryDraft newCategory,
                                                             @Nonnull final CategorySyncOptions syncOptions,
                                                             @Nonnull final TypeService typeService) {
-        final List<UpdateAction<Category>> updateActions = buildCoreActions(oldCategory, newCategory, syncOptions, typeService);
-        final List<UpdateAction<Category>> assetUpdateActions = buildAssetActions(oldCategory, newCategory, syncOptions);
+        final List<UpdateAction<Category>> updateActions =
+          buildCoreActions(oldCategory, newCategory, syncOptions, typeService);
+        final List<UpdateAction<Category>> assetUpdateActions =
+          buildAssetActions(oldCategory, newCategory, syncOptions);
         updateActions.addAll(assetUpdateActions);
         return filterUpdateActions(updateActions, syncOptions.getUpdateActionsFilter());
     }
@@ -125,15 +137,15 @@ public final class CategorySyncUtils {
     /**
      * Compares the Name, Slug, Description, Parent, OrderHint, MetaTitle, MetaDescription, MetaKeywords and Custom
      * fields/ type fields of a {@link Category} and a {@link CategoryDraft}. It returns a {@link List} of
-     * {@link UpdateAction<Category>} as a result. If no update action is needed, for example in
+     * {@link UpdateAction&lt;Category&gt;} as a result. If no update action is needed, for example in
      * case where both the {@link Category} and the {@link CategoryDraft} have the same parents, an empty
      * {@link List} is returned.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new data.
-     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by the user.
-     *                    For example, custom callbacks to call in case of warnings or errors occurring on the build
-     *                    update action process. And other options (See {@link BaseSyncOptions}
+     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied
+     *                    by the user. For example, custom callbacks to call in case of warnings or errors occurring
+     *                    on the build update action process. And other options (See {@link BaseSyncOptions}
      *                    for more info.
      * @param typeService responsible for fetching the key of the old resource type from it's cache.
      * @return A list of category-specific update actions.
@@ -144,17 +156,17 @@ public final class CategorySyncUtils {
                                                                 @Nonnull final CategorySyncOptions syncOptions,
                                                                 @Nonnull final TypeService typeService) {
         final List<UpdateAction<Category>> updateActions = buildUpdateActionsFromOptionals(Arrays.asList(
-                buildChangeNameUpdateAction(oldCategory, newCategory),
-                buildChangeSlugUpdateAction(oldCategory, newCategory),
-                buildSetDescriptionUpdateAction(oldCategory, newCategory, syncOptions),
-                buildChangeParentUpdateAction(oldCategory, newCategory, syncOptions),
-                buildChangeOrderHintUpdateAction(oldCategory, newCategory, syncOptions),
-                buildSetMetaTitleUpdateAction(oldCategory, newCategory),
-                buildSetMetaDescriptionUpdateAction(oldCategory, newCategory),
-                buildSetMetaKeywordsUpdateAction(oldCategory, newCategory)
+          buildChangeNameUpdateAction(oldCategory, newCategory),
+          buildChangeSlugUpdateAction(oldCategory, newCategory),
+          buildSetDescriptionUpdateAction(oldCategory, newCategory, syncOptions),
+          buildChangeParentUpdateAction(oldCategory, newCategory, syncOptions),
+          buildChangeOrderHintUpdateAction(oldCategory, newCategory, syncOptions),
+          buildSetMetaTitleUpdateAction(oldCategory, newCategory),
+          buildSetMetaDescriptionUpdateAction(oldCategory, newCategory),
+          buildSetMetaKeywordsUpdateAction(oldCategory, newCategory)
         ));
         final List<UpdateAction<Category>> categoryCustomUpdateActions =
-                buildCustomUpdateActions(oldCategory, newCategory, syncOptions, typeService);
+          buildCustomUpdateActions(oldCategory, newCategory, syncOptions, typeService);
         updateActions.addAll(categoryCustomUpdateActions);
         return updateActions;
     }
@@ -170,22 +182,25 @@ public final class CategorySyncUtils {
      * {@code optionalUpdateActions} list parameter.
      */
     @Nonnull
-    private static List<UpdateAction<Category>> buildUpdateActionsFromOptionals
-    (@Nonnull final List<Optional<UpdateAction<Category>>> optionalUpdateActions) {
+    private static List<UpdateAction<Category>> buildUpdateActionsFromOptionals(
+      @Nonnull final List<Optional<UpdateAction<Category>>> optionalUpdateActions) {
         return optionalUpdateActions.stream()
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .collect(Collectors.toList());
     }
 
     /**
      * TODO: SEE GITHUB ISSUE#3
      * Change to {@code public} once implemented.
      *
-     * @param oldCategory
-     * @param newCategory
-     * @param syncOptions
-     * @return
+     * @param oldCategory the category which should be updated.
+     * @param newCategory the category draft where we get the new data.
+     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied
+     *                    by the user. For example, custom callbacks to call in case of warnings or errors occurring
+     *                    on the build update action process. And other options (See {@link BaseSyncOptions}
+     *                    for more info.
+     * @return A list of category-specific update actions.
      */
     @Nonnull
     private static List<UpdateAction<Category>> buildAssetActions(@Nonnull final Category oldCategory,
