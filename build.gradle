@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'checkstyle'
 
 group = 'com.commercetools'
 version = '1.0-SNAPSHOT'
@@ -32,4 +33,9 @@ dependencies {
     runtime group: 'org.slf4j', name: 'slf4j-simple', version: slf4jVersion
     testCompile group: 'junit', name: 'junit', version: jUnitVersion
     testCompile group: 'org.assertj', name: 'assertj-core', version: assertjVersion
+}
+
+checkstyle {
+    toolVersion = checkstyleVersion
+    maxWarnings = 0
 }
