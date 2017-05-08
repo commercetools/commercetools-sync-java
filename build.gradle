@@ -69,7 +69,9 @@ jacocoTestCoverageVerification {
 jacocoTestReport {
     reports {
         xml.enabled = true
+        xml.destination = "${buildDir}/reports/jacoco/report.xml"
         html.enabled = false
+        csv.enabled = false
     }
 }
 check.dependsOn jacocoTestCoverageVerification // Build should fail if jacocoTestCoverageVerification task rules are not fulfilled.
