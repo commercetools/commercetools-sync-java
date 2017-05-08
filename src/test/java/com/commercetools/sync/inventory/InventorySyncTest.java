@@ -91,12 +91,12 @@ public class InventorySyncTest {
 
 
     @Test
-    public void syncDrafts_returnsWithoutExceptions() {
+    public void syncDrafts_ShouldEndWithoutExceptions() {
         getInventorySyncer(30, 1, false).syncDrafts(drafts);
     }
 
     @Test
-    public void syncDrafts_returnsWithoutExceptions_havingParallelOption() {
+    public void syncDrafts_WithParallelOption_ShouldEndWithoutExceptions() {
         final List<InventoryEntryDraft> moreDrafts = Stream.generate(() -> drafts)
                 .limit(20)
                 .flatMap(list -> list.stream())
@@ -105,7 +105,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void getStatistics_returnsProperValues() {
+    public void getStatistics_ShouldReturnProperValues() {
         final InventorySync inventorySync = getInventorySyncer(30, 1, false);
         inventorySync.syncDrafts(drafts);
         final InventorySyncStatistics stats = inventorySync.getStatistics();
@@ -117,7 +117,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void syncDrafts_createsEntriesWithUnknownChannels_havingEnsuredChannels() {
+    public void syncDrafts_WithEnsuredChannels_ShouldCreateEntriesWithUnknownChannels() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
         final InventorySync inventorySync = getInventorySyncer(30, 1, true);
@@ -128,7 +128,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void syncDrafts_notSyncEntriesWithUnknownChannels_havingNotEnsuredChannels() {
+    public void syncDrafts_WithNotEnsuredChannels_ShouldNotSyncEntriesWithUnknownChannels() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
         final InventorySync inventorySync = getInventorySyncer(30, 1, false);
@@ -139,7 +139,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void syncDrafts_notSyncEntriesWithNullSku() {
+    public void syncDrafts_WithDraftsWithNullSku_ShouldNotSync() {
         final InventoryEntryDraft draftWithNullSku = InventoryEntryDraft.of(null, 12);
         final InventorySync inventorySync = getInventorySyncer(30, 1, false);
         inventorySync.syncDrafts(asList(draftWithNullSku));
@@ -149,7 +149,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void syncDrafts_returnsWithoutException_havingProblemsEncountered() {
+    public void syncDrafts_WithProblemsEncountered_ShouldEndWithoutException() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
         final List<InventoryEntryDraft> toProcess = new ArrayList<>(drafts);

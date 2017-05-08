@@ -50,7 +50,7 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeQuantityAction_returnsAction_havingDifferentValues() {
+    public void buildChangeQuantityAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<InventoryEntry>> result = buildChangeQuantityAction(old, newDifferent);
         assertThat(result).isNotNull();
         assertThat(result.isPresent()).isTrue();
@@ -59,7 +59,7 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeQuantityAction_returnsEmptyList_havingNewNullValue() {
+    public void buildChangeQuantityAction_WithNewNullValue_ShouldReturnEmptyOptional() {
         final InventoryEntryDraft draft = mock(InventoryEntryDraft.class);
         when(draft.getQuantityOnStock()).thenReturn(null);
         final Optional<UpdateAction<InventoryEntry>> result = buildChangeQuantityAction(old, draft);
@@ -68,12 +68,12 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeQuantityAction_returnsEmptyList_havingSameValues() {
+    public void buildChangeQuantityAction_WithSameValues_ShouldReturnEmptyOptional() {
         assertNoUpdatesForSameValues(InventoryUpdateActionUtils::buildChangeQuantityAction);
     }
 
     @Test
-    public void buildSetRestockableInDaysAction_returnsAction_havingDifferentValues() {
+    public void buildSetRestockableInDaysAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<InventoryEntry>> result = buildSetRestockableInDaysAction(old, newDifferent);
         assertThat(result).isNotNull();
         assertThat(result.isPresent()).isTrue();
@@ -83,7 +83,7 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetRestockableInDaysAction_returnsAction_havingNewNullValue() {
+    public void buildSetRestockableInDaysAction_WithNewNullValue_ShouldReturnAction() {
         final Optional<UpdateAction<InventoryEntry>> result = buildSetRestockableInDaysAction(old, newWithNullValues);
         assertThat(result).isNotNull();
         assertThat(result.isPresent()).isTrue();
@@ -92,12 +92,12 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetRestockableInDaysAction_returnsEmptyList_havingSameValues() {
+    public void buildSetRestockableInDaysAction_WithSameValues_ShouldReturnEmptyOptional() {
         assertNoUpdatesForSameValues(InventoryUpdateActionUtils::buildSetRestockableInDaysAction);
     }
 
     @Test
-    public void buildSetExpectedDeliveryAction_returnsAction_havingDifferentValues() {
+    public void buildSetExpectedDeliveryAction_WithDifferentValue_ShouldReturnActions() {
         final Optional<UpdateAction<InventoryEntry>> result = buildSetExpectedDeliveryAction(old, newDifferent);
         assertThat(result).isNotNull();
         assertThat(result.isPresent()).isTrue();
@@ -107,7 +107,7 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetExpectedDeliveryAction_returnsAction_havingNewNullValue() {
+    public void buildSetExpectedDeliveryAction_WithNewNullValue_ShouldReturnAction() {
         final Optional<UpdateAction<InventoryEntry>> result = buildSetExpectedDeliveryAction(old, newWithNullValues);
         assertThat(result).isNotNull();
         assertThat(result.isPresent()).isTrue();
@@ -116,12 +116,12 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetExpectedDeliveryAction_returnsEmptyList_havingSameValues() {
+    public void buildSetExpectedDeliveryAction_WithSameValues_ShouldReturnEmptyOptional() {
         assertNoUpdatesForSameValues(InventoryUpdateActionUtils::buildSetExpectedDeliveryAction);
     }
 
     @Test
-    public void buildSetSupplyChannelAction_returnsAction_havingDifferentValues() {
+    public void buildSetSupplyChannelAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<InventoryEntry>> result = buildSetSupplyChannelAction(old, newDifferent);
         assertThat(result).isNotNull();
         assertThat(result.isPresent()).isTrue();
@@ -131,7 +131,7 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetSupplyChannelAction_returnsAction_havingNewNullValue() {
+    public void buildSetSupplyChannelAction_WithNewNullValue_ShouldReturnAction() {
         final Optional<UpdateAction<InventoryEntry>> result = buildSetSupplyChannelAction(old, newWithNullValues);
         assertThat(result).isNotNull();
         assertThat(result.isPresent()).isTrue();
@@ -140,7 +140,7 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetSupplyChannelAction_returnsEmptyList_havingSameValues() {
+    public void buildSetSupplyChannelAction_WithSameValues_ShouldReturnEmptyOptional() {
         assertNoUpdatesForSameValues(InventoryUpdateActionUtils::buildSetSupplyChannelAction);
     }
 

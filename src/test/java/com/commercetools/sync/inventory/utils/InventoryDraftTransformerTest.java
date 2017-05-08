@@ -28,7 +28,7 @@ public class InventoryDraftTransformerTest {
     private static final String CUSTOM_FIELD_VALUE = "testValue";
 
     @Test
-    public void transformToDraft_returnsDraft_havingNoChannelNeitherCustomType() {
+    public void transformToDraft_WithNoChannelNeitherCustomType_ShouldReturnDraft() {
         final InventoryEntry entry = InventoryEntryMock
                 .of(SKU, QUANTITY_ON_STCK, RESTOCKABLE_IN_DAYS, EXPECTED_DELIVERY).build();
         final InventoryEntryDraft draft = InventoryDraftTransformer.transformToDraft(entry);
@@ -42,7 +42,7 @@ public class InventoryDraftTransformerTest {
     }
 
     @Test
-    public void transformToDraft_returnsDraft_havingSupplyChannel() {
+    public void transformToDraft_WithSupplyChannel_ShouldReturnDraft() {
         final InventoryEntry entry = InventoryEntryMock.of(SKU)
                 .withChannelRefExpanded(CHANNEL_ID, CHANNEL_KEY).build();
         final InventoryEntryDraft draft = InventoryDraftTransformer.transformToDraft(entry);
@@ -54,7 +54,7 @@ public class InventoryDraftTransformerTest {
     }
 
     @Test
-    public void transformToDraft_returnsDraft_havingCustomTypeWithoutKey() {
+    public void transformToDraft_WithCustomTypeWithoutKey_ShouldReturnDraft() {
         final InventoryEntry entry = InventoryEntryMock.of(SKU)
                 .withCustomField(CUSTOM_TYPE_ID, CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE).build();
 
@@ -68,7 +68,7 @@ public class InventoryDraftTransformerTest {
     }
 
     @Test
-    public void transformToDraft_returnsDraft_havingCustomTypeWithKey () {
+    public void transformToDraft_WithCustomTypeWithKey_ShouldReturnDraft () {
         final InventoryEntry entry = InventoryEntryMock.of(SKU)
                 .withCustomFieldExpanded(CUSTOM_TYPE_ID, CUSTOM_TYPE_KEY, CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE)
                 .build();
@@ -83,7 +83,7 @@ public class InventoryDraftTransformerTest {
     }
 
     @Test
-    public void transformToDrafts_returnsDrafts() {
+    public void transformToDrafts_ShouldReturnDrafts() {
         final InventoryEntry entry = InventoryEntryMock.of(SKU).build();
         final List<InventoryEntryDraft> drafts = InventoryDraftTransformer.transformToDrafts(asList(entry, entry));
 

@@ -52,7 +52,7 @@ public class InventorySyncUtilsTest {
     }
 
     @Test
-    public void buildActions_returnsEmptyList_havingSimilarEntries() {
+    public void buildActions_WithSimilarEntries_ShouldReturnEmptyList() {
         List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
                 .buildActions(inventoryEntry, similarDraft, InventorySyncOptionsBuilder.of(mock(CtpClient.class))
                         .build(), mockTypeService());
@@ -61,7 +61,7 @@ public class InventorySyncUtilsTest {
     }
 
     @Test
-    public void buildActions_returnsActions_havingVariousEntries() {
+    public void buildActions_WithVariousEntries_ShouldReturnActions() {
         List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
                 .buildActions(inventoryEntry, variousDraft, InventorySyncOptionsBuilder.of(mock(CtpClient.class))
                         .build(), mockTypeService());
@@ -70,7 +70,7 @@ public class InventorySyncUtilsTest {
     }
 
     @Test
-    public void buildActions_returnsEmptyList_havingSimilarEntriesAndSameCustomFields() {
+    public void buildActions_WithSimilarEntriesAndSameCustomFields_ShouldReturnEmptyList() {
         final InventoryEntryDraft draft = InventoryEntryDraftBuilder.of(similarDraft)
                 .custom(getDraftOfCustomField(CUSTOM_FIELD_1_NAME, CUSTOM_FIELD_1_VALUE))
                 .build();
@@ -84,7 +84,7 @@ public class InventorySyncUtilsTest {
     }
 
     @Test
-    public void buildActions_returnsActions_havingSimilarEntriesAndNewCustomTypeSet() {
+    public void buildActions_WithSimilarEntriesAndNewCustomTypeSet_ShouldReturnActions() {
         final InventoryEntryDraft draft = InventoryEntryDraftBuilder.of(similarDraft)
                 .custom(getDraftOfCustomField(CUSTOM_FIELD_2_NAME, CUSTOM_FIELD_2_VALUE))
                 .build();
@@ -96,7 +96,7 @@ public class InventorySyncUtilsTest {
     }
 
     @Test
-    public void buildActions_returnsActions_havingSimilarEntriesAndRemovedExistingCustomType() {
+    public void buildActions_WithSimilarEntriesAndRemovedExistingCustomType_ShouldReturnActions() {
         List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
                 .buildActions(inventoryEntryWithCustomField1, similarDraft,InventorySyncOptionsBuilder
                                 .of(mock(CtpClient.class))
@@ -107,7 +107,7 @@ public class InventorySyncUtilsTest {
     }
 
     @Test
-    public void buildActions_returnsActions_havingSimilarEntriesButDifferentCustomFields() {
+    public void buildActions_WithSimilarEntriesButDifferentCustomFields_ShouldReturnActions() {
         final InventoryEntryDraft draft = InventoryEntryDraftBuilder.of(similarDraft)
                 .custom(getDraftOfCustomField(CUSTOM_FIELD_2_NAME, CUSTOM_FIELD_2_VALUE))
                 .build();
@@ -121,7 +121,7 @@ public class InventorySyncUtilsTest {
     }
 
     @Test
-    public void buildActions_returnsActions_havingSimilarEntriesButDifferentCustomFieldValues() {
+    public void buildActions_WithSimilarEntriesButDifferentCustomFieldValues_ShouldReturnActions() {
         final InventoryEntryDraft draft = InventoryEntryDraftBuilder.of(similarDraft)
                 .custom(getDraftOfCustomField(CUSTOM_FIELD_1_NAME, CUSTOM_FIELD_2_VALUE))
                 .build();

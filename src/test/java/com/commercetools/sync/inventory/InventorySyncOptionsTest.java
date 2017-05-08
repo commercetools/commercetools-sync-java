@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mock;
 public class InventorySyncOptionsTest {
 
     @Test
-    public void inventorySyncOptionsBuilder_returnsProperOptionsInstance_havingOnlyRequiredFieldsSet() {
+    public void build_WithOnlyRequiredFieldsSet_ShouldReturnProperOptionsInstance() {
         final InventorySyncOptions options = InventorySyncOptionsBuilder.of(mock(CtpClient.class)).build();
         assertThat(options).isNotNull();
         assertThat(options.getBatchSize()).isEqualTo(30);
@@ -18,7 +18,7 @@ public class InventorySyncOptionsTest {
     }
 
     @Test
-    public void inventorySyncOptionsBuilder_returnsProperOptionsInstance_havingAllFieldsSet() {
+    public void build_WithAllFieldsSet_ShouldReturnProperOptionsInstance() {
         final InventorySyncOptions options = InventorySyncOptionsBuilder.of(mock(CtpClient.class))
                 .setBatchSize(10)
                 .ensureChannels(true)
@@ -31,7 +31,7 @@ public class InventorySyncOptionsTest {
     }
 
     @Test
-    public void inventorySyncOptionsBuilder_wontSetParallelProcessing_havingZeroOrNegativePassed() {
+    public void setParallelProcessing_WithZeroOrNegativeArgument_ShouldNotSetParallelProcessing() {
         final InventorySyncOptionsBuilder builder = InventorySyncOptionsBuilder.of(mock(CtpClient.class));
         final InventorySyncOptions optionsWithZero = builder.setParallelProcessing(0).build();
         final InventorySyncOptions optionsWithNegative = builder.setParallelProcessing(-1).build();
@@ -40,7 +40,7 @@ public class InventorySyncOptionsTest {
     }
 
     @Test
-    public void inventorySyncOptionsBuilder_wontSetBatchSize_havingZeroOrNegativePassed() {
+    public void setBatchSize_WithZeroOrNegativePassed_ShouldNotSetBatchSize() {
         final InventorySyncOptionsBuilder builder = InventorySyncOptionsBuilder.of(mock(CtpClient.class));
         final InventorySyncOptions optionsWithZero = builder.setBatchSize(0).build();
         final InventorySyncOptions optionsWithNegative = builder.setBatchSize(-1).build();
