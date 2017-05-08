@@ -16,7 +16,14 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.*;
+import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeNameUpdateAction;
+import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeSlugUpdateAction;
+import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetDescriptionUpdateAction;
+import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeParentUpdateAction;
+import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeOrderHintUpdateAction;
+import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction;
+import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaDescriptionUpdateAction;
+import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
 
 public final class CategorySyncUtils {
@@ -96,7 +103,7 @@ public final class CategorySyncUtils {
      * @param updateActions       the list of update actions to apply the filter on.
      * @param updateActionsFilter the filter functions to apply on the list of update actions
      * @return a new resultant list from applying the filter function, if not null, on the supplied list. If the filter
-     * function supplied was null, the same supplied list is returned as is.
+     *      function supplied was null, the same supplied list is returned as is.
      */
     @Nonnull
     private static List<UpdateAction<Category>> filterUpdateActions(
