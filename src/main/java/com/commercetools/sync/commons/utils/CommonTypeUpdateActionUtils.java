@@ -25,7 +25,8 @@ public final class CommonTypeUpdateActionUtils {
     public static <T> Optional<UpdateAction<T>> buildUpdateAction(@Nullable final Object oldObject,
                                                                   @Nullable final Object newObject,
                                                                   @Nonnull final Supplier<UpdateAction<T>>
-                                                                          updateActionSupplier) {
-        return !Objects.equals(oldObject, newObject) ? Optional.ofNullable(updateActionSupplier.get()) : Optional.empty();
+                                                                    updateActionSupplier) {
+        return !Objects.equals(oldObject, newObject)
+            ? Optional.ofNullable(updateActionSupplier.get()) : Optional.empty();
     }
 }
