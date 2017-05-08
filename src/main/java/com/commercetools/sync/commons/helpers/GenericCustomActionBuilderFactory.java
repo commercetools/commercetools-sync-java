@@ -31,7 +31,8 @@ public class GenericCustomActionBuilderFactory<T extends Custom & Resource<T>, S
      */
     enum ConcreteBuilder {
         CATEGORY(CategoryCustomActionBuilder.class, Category.class),
-        CHANNEL(ChannelCustomActionBuilder.class, Channel.class);
+        CHANNEL(ChannelCustomActionBuilder.class, Channel.class),
+        INVENTORY(InventoryCustomActionBuilder.class, InventoryEntry.class);
 
         private final Class<? extends GenericCustomActionBuilder> builderClass;
         private final Class<? extends Resource> resourceClass;
@@ -86,9 +87,6 @@ public class GenericCustomActionBuilderFactory<T extends Custom & Resource<T>, S
             if (resourceClass.isInstance(resource)) {
                 return (S) builderClass.newInstance();
             }
-        }
-        if (resource instanceof InventoryEntry) {
-            return (S) new InventoryCustomActionBuilder();
         }
         throw new BuildUpdateActionException(format(UPDATE_ACTION_NOT_IMPLEMENTED.getDescription(),
                 resource.toReference().getTypeId()));
