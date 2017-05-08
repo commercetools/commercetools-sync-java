@@ -5,12 +5,4 @@ language: java
 jdk:
   - oraclejdk8
 
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
-      - oracle-java8-set-default
-
-install: true # skip default `mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V` call
-
 script: gradle clean build
