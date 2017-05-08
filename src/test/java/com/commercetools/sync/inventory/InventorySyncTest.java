@@ -7,8 +7,6 @@ import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.models.Reference;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -18,15 +16,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.MockUtils.getMockCtpClient;
+import static com.commercetools.sync.inventory.InventorySyncMockUtils.*;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class InventorySyncTest {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(InventorySyncTest.class);
 
     private final static String SKU_1 = "1000";
     private final static String SKU_2 = "2000";
@@ -54,9 +49,8 @@ public class InventorySyncTest {
     private List<Channel> channelsDB;
 
     {
-        Channel channel1 = mockChannel(REF_1, KEY_1);
-        Channel channel2 = mockChannel(REF_2, KEY_2);
-        Channel channel3 = mockChannel(REF_3, KEY_3);
+        Channel channel1 = getMockChannel(REF_1, KEY_1);
+        Channel channel2 = getMockChannel(REF_2, KEY_2);
 
         Reference<Channel> reference1 = Channel.referenceOfId(REF_1).filled(channel1);
 
@@ -148,8 +142,9 @@ public class InventorySyncTest {
                 Channel.referenceOfId(KEY_3));
         final List<InventoryEntryDraft> toProcess = new ArrayList<>(drafts);
         toProcess.add(draftWithNewChannel);
+        final InventoryService service = getMockThrowingInventoryService(channelsDB, inventoriesDB);
         final InventorySync inventorySync = new InventorySync(InventorySyncOptionsBuilder.of(getMockCtpClient())
-                .build(), mockThrowingInventoryService(), mock(TypeService.class));
+                .build(), service, mock(TypeService.class));
 
         inventorySync.syncDrafts(toProcess);
         final InventorySyncStatistics stats = inventorySync.getStatistics();
@@ -163,38 +158,8 @@ public class InventorySyncTest {
                 .setParallelProcessing(parallelThreads)
                 .ensureChannels(ensureChannels)
                 .build();
-        return new InventorySync(options, mockInventoryService(), mock(TypeService.class));
-    }
-
-    private InventoryService mockInventoryService() {
-        final Channel mockedChannel = mockChannel(KEY_3, REF_3);
-        final InventoryService inventoryService = mock(InventoryService.class);
-        when(inventoryService.fetchAllSupplyChannels()).thenReturn(channelsDB);
-        when(inventoryService.fetchInventoryEntriesBySkus(any())).thenReturn(inventoriesDB);
-        when(inventoryService.createSupplyChannel(any())).thenReturn(mockedChannel);
-        when(inventoryService.createInventoryEntry(any())).thenReturn(null);
-        when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(null);
-        return inventoryService;
-    }
-
-    /**
-     *
-     * @return mock of {@link InventoryService} that throws {@link RuntimeException} on creating and updating calls
-     */
-    private InventoryService mockThrowingInventoryService() {
-        final InventoryService inventoryService = mock(InventoryService.class);
-        when(inventoryService.fetchAllSupplyChannels()).thenReturn(channelsDB);
-        when(inventoryService.fetchInventoryEntriesBySkus(any())).thenReturn(inventoriesDB);
-        when(inventoryService.createSupplyChannel(any())).thenThrow(new RuntimeException());
-        when(inventoryService.createInventoryEntry(any())).thenThrow(new RuntimeException());
-        when(inventoryService.updateInventoryEntry(any(), any())).thenThrow(new RuntimeException());
-        return inventoryService;
-    }
-
-    private Channel mockChannel(String id, String key) {
-        Channel channel = mock(Channel.class);
-        when(channel.getId()).thenReturn(id);
-        when(channel.getKey()).thenReturn(key);
-        return channel;
+        final InventoryService service = getMockInventoryService(channelsDB, inventoriesDB,
+                getMockChannel(KEY_3, REF_3), null, null);
+        return new InventorySync(options, service, mock(TypeService.class));
     }
 }
