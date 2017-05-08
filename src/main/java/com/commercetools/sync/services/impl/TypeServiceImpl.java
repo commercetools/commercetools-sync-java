@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 /**
+ * Implementation of TypeService interface.
  * TODO: USE graphQL to get only keys
  * TODO: UNIT TEST
  * TODO: JAVA DOC
@@ -37,6 +38,6 @@ public class TypeServiceImpl implements TypeService {
     @Nonnull
     private CompletionStage<Void> fetchAllTypesKeysIntoCache() {
         return QueryExecutionUtils.queryAll(ctpClient, TypeQuery.of())
-                .thenAccept(types -> types.forEach(type -> cache.put(type.getId(), type.getKey())));
+          .thenAccept(types -> types.forEach(type -> cache.put(type.getId(), type.getKey())));
     }
 }
