@@ -1,11 +1,8 @@
 package com.commercetools.sync.inventory;
 
-import com.commercetools.sync.commons.helpers.CtpClient;
 import com.commercetools.sync.inventory.helpers.InventorySyncStatistics;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.client.BlockingSphereClient;
-import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.models.Reference;
@@ -20,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.commercetools.sync.commons.MockUtils.getMockCtpClient;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -41,10 +39,6 @@ public class InventorySyncTest {
     private final static String REF_1 = "111";
     private final static String REF_2 = "222";
     private final static String REF_3 = "333";
-
-    private static final String CTP_KEY = "testKey";
-    private static final String CTP_ID = "testId";
-    private static final String CTP_SECRET = "testSecret";
 
     private final Long QUANTITY_1 = 10l;
     private final Long QUANTITY_2 = 30l;
@@ -154,7 +148,7 @@ public class InventorySyncTest {
                 Channel.referenceOfId(KEY_3));
         final List<InventoryEntryDraft> toProcess = new ArrayList<>(drafts);
         toProcess.add(draftWithNewChannel);
-        final InventorySync inventorySync = new InventorySync(InventorySyncOptionsBuilder.of(mockCtpClient())
+        final InventorySync inventorySync = new InventorySync(InventorySyncOptionsBuilder.of(getMockCtpClient())
                 .build(), mockThrowingInventoryService(), mock(TypeService.class));
 
         inventorySync.syncDrafts(toProcess);
@@ -164,20 +158,12 @@ public class InventorySyncTest {
     }
 
     private InventorySync getInventorySyncer(int batchSize, int parallelThreads, boolean ensureChannels) {
-        final InventorySyncOptions options = InventorySyncOptionsBuilder.of(mockCtpClient())
+        final InventorySyncOptions options = InventorySyncOptionsBuilder.of(getMockCtpClient())
                 .setBatchSize(batchSize)
                 .setParallelProcessing(parallelThreads)
                 .ensureChannels(ensureChannels)
                 .build();
         return new InventorySync(options, mockInventoryService(), mock(TypeService.class));
-    }
-
-    private CtpClient mockCtpClient() {
-        final CtpClient ctpClient = mock(CtpClient.class);
-        final BlockingSphereClient client = mock(BlockingSphereClient.class);
-        when(ctpClient.getClientConfig()).thenReturn(SphereClientConfig.of(CTP_KEY, CTP_ID, CTP_SECRET));
-        when(ctpClient.getClient()).thenReturn(client);
-        return ctpClient;
     }
 
     private InventoryService mockInventoryService() {
