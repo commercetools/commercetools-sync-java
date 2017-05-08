@@ -15,8 +15,8 @@ import java.util.concurrent.TimeUnit;
 
 public class ClientConfigurationUtils {
     private static BlockingSphereClient ctpClient;
-    private final static long DEFAULT_TIMEOUT = 30;
-    private final static TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
+    private static final long DEFAULT_TIMEOUT = 30;
+    private static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
 
     /**
      * Creates a {@link BlockingSphereClient} with a custom {@code timeout} with a custom {@link TimeUnit}.
@@ -28,7 +28,8 @@ public class ClientConfigurationUtils {
                                                     @Nonnull final TimeUnit timeUnit) {
         if (ctpClient == null) {
             final HttpClient httpClient = newHttpClient();
-            final SphereAccessTokenSupplier tokenSupplier = SphereAccessTokenSupplier.ofAutoRefresh(clientConfig, httpClient, false);
+            final SphereAccessTokenSupplier tokenSupplier =
+              SphereAccessTokenSupplier.ofAutoRefresh(clientConfig, httpClient, false);
             final SphereClient underlying = SphereClient.of(clientConfig, httpClient, tokenSupplier);
             ctpClient = BlockingSphereClient.of(underlying, timeout, timeUnit);
         }
@@ -50,7 +51,8 @@ public class ClientConfigurationUtils {
      * @return {@link HttpClient}
      */
     private static HttpClient newHttpClient() {
-        final AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setAcceptAnyCertificate(true).build());
+        final AsyncHttpClient asyncHttpClient =
+          new DefaultAsyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setAcceptAnyCertificate(true).build());
         return AsyncHttpClientAdapter.of(asyncHttpClient);
     }
 }
