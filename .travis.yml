@@ -13,4 +13,4 @@ addons:
 
 install: true # skip default `mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V` call
 
-script: mvn clean verify
+script: gradle clean build
