@@ -63,6 +63,31 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * <p>
+     *     <strong>Note:</strong> resource drafts are compared with existing resources by {@code sku} and
+     *     {@code supplyChannel} key. Every {@link InventoryEntryDraft} that contatins {@code supplyChannel} should
+     *     either:
+     *     <ul>
+     *         <li>have {@code supplyChannel} expanded, that means
+     *         {@code inventoryEntryDraft.getSupplyChannel().getObj()} should return {@link Channel} object,
+     *         that contains channel key</li>
+     *         <li>or have {@code supplyChannel} not expanded and {@code supplyChannel} key should be provided in
+     *         place of reference id, that means {@code inventoryEntryDraft.getSupplyChannel().getObj()} should
+     *         return {@code null} and {@code inventoryEntryDraft.getSupplyChannel().getId()} should
+     *         return {@code supplyChannel} key</li>
+     *     </ul>
+     *     This is important for proper resources comparision.
+     * </p>
+     * @param resourceDrafts the list of new resources as drafts.
+     */
+    @Override
+    public void syncDrafts(@Nonnull final List<InventoryEntryDraft> resourceDrafts) {
+        super.syncDrafts(resourceDrafts);
+    }
+
+    /**
      * <p>Performs full process of synchronisation between inventory entries present in a system
      * and passed {@code inventories}. This is accomplished by:
      * <ul>
