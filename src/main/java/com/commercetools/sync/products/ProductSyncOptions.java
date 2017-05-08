@@ -39,10 +39,10 @@ public class ProductSyncOptions extends BaseSyncOptions {
                               final boolean removeOtherVariants,
                               @Nonnull final List<String> whiteList,
                               @Nonnull final List<String> blackList,
-                              @Nonnull final Function<List<UpdateAction<Product>>
-                                      , List<UpdateAction<Product>>> filterActions) {
+                              @Nonnull final Function<List<UpdateAction<Product>>,
+                                List<UpdateAction<Product>>> filterActions) {
         super(ctpClient, errorCallBack, warningCallBack, removeOtherLocales, removeOtherSetEntries,
-                removeOtherCollectionEntries, removeOtherProperties);
+          removeOtherCollectionEntries, removeOtherProperties);
         this.compareStaged = compareStaged;
         this.publish = publish;
         this.removeOtherVariants = removeOtherVariants;
