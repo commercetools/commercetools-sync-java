@@ -28,8 +28,8 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     }
 
     /**
-     * Sets the {@code warningCallBack} function of the sync module. This callback will be called whenever an event occurs
-     * that leads to a warning alert from the sync process.
+     * Sets the {@code warningCallBack} function of the sync module. This callback will be called whenever an event
+     * occurs that leads to a warning alert from the sync process.
      *
      * @param warningCallBack the new value to set to the warning callback.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
@@ -80,8 +80,8 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
 
     /**
      * Sets the {@code removeOtherProperties} boolean flag which adds additional object properties (e.g. custom fields,
-     * product attributes, etc..) without deleting existing ones. If set to true, which is the default value of the option,
-     * it deletes the existing object properties. If set to false, it doesn't delete the existing ones.
+     * product attributes, etc..) without deleting existing ones. If set to true, which is the default value of the
+     * option, it deletes the existing object properties. If set to false, it doesn't delete the existing ones.
      *
      * @param removeOtherProperties new value to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
@@ -91,7 +91,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
         return getThis();
     }
 
-    /***
+    /**
      * Creates new instance of {@code S} which extends {@link BaseSyncOptions} enriched with all attributes provided to
      * {@code this} builder.
      *
