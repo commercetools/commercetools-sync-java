@@ -10,7 +10,8 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.function.Function;
 
-public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<CategorySyncOptionsBuilder, CategorySyncOptions> {
+public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<CategorySyncOptionsBuilder,
+  CategorySyncOptions> {
     private Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter;
 
     private CategorySyncOptionsBuilder(@Nonnull final CtpClient ctpClient) {
@@ -37,27 +38,28 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
      * @return {@code this} instance of {@link CategorySyncOptionsBuilder}
      */
     public CategorySyncOptionsBuilder setUpdateActionsFilter(@Nonnull final Function<List<UpdateAction<Category>>,
-            List<UpdateAction<Category>>> updateActionsFilter) {
+      List<UpdateAction<Category>>> updateActionsFilter) {
         this.updateActionsFilter = updateActionsFilter;
         return this;
     }
 
-    /***
-     * Creates new instance of {@link CategorySyncOptions} enriched with all attributes provided to {@code this} builder.
+    /**
+     * Creates new instance of {@link CategorySyncOptions} enriched with all attributes provided to {@code this}
+     * builder.
      *
      * @return new instance of {@link CategorySyncOptions}
      */
     @Override
     public CategorySyncOptions build() {
         return new CategorySyncOptions(
-                this.ctpClient,
-                this.errorCallBack,
-                this.warningCallBack,
-                this.removeOtherLocales,
-                this.removeOtherSetEntries,
-                this.removeOtherCollectionEntries,
-                this.removeOtherProperties,
-                this.updateActionsFilter);
+          this.ctpClient,
+          this.errorCallBack,
+          this.warningCallBack,
+          this.removeOtherLocales,
+          this.removeOtherSetEntries,
+          this.removeOtherCollectionEntries,
+          this.removeOtherProperties,
+          this.updateActionsFilter);
     }
 
     /**
