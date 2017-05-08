@@ -2,7 +2,7 @@ package com.commercetools.sync.categories;
 
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.categories.utils.CategorySyncUtils;
-import com.commercetools.sync.commons.Sync;
+import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
@@ -21,26 +21,44 @@ import java.util.List;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public class CategorySync implements Sync<CategoryDraft, Category> {
+public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySyncStatistics, CategorySyncOptions> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategorySync.class);
-    private final CategorySyncOptions syncOptions;
-    private final CategorySyncStatistics statistics;
-
     private final TypeService typeService;
     private final CategoryService categoryService;
 
+    /**
+     * Takes a {@link CategorySyncOptions} instance to instantiate a new {@link CategorySync} instance that could be
+     * used to sync categories or category drafts with the given categories in the CTP project specified in the
+     * injected {@link CategorySyncOptions} instance.
+     *
+     * @param syncOptions the container of all the options of the sync process including the CTP project client and/or
+     *                    configuration and other sync-specific options.
+     */
     public CategorySync(@Nonnull final CategorySyncOptions syncOptions) {
-        this.syncOptions = syncOptions;
-        this.statistics = new CategorySyncStatistics();
-        this.typeService = new TypeServiceImpl(syncOptions.getCtpClient().getClient());
-        this.categoryService = new CategoryServiceImpl(syncOptions.getCtpClient().getClient());
+        this(syncOptions,
+                new TypeServiceImpl(syncOptions.getCtpClient().getClient()),
+                new CategoryServiceImpl(syncOptions.getCtpClient().getClient()));
     }
 
+    /**
+     * Takes a {@link CategorySyncOptions}, a {@link TypeService} and {@link CategoryService} instances to instantiate
+     * a new {@link CategorySync} instance that could be used to sync categories or category drafts with the given categories
+     * in the CTP project specified in the injected {@link CategorySyncOptions} instance.
+     * <p>
+     * NOTE: This constructor is mainly to be used for tests where the services can be mocked and passed to.
+     *
+     * @param syncOptions     the container of all the options of the sync process including the CTP project client and/or
+     *                        configuration and other sync-specific options.
+     * @param typeService     the type service which is responsible for fetching/caching the Types from the CTP project.
+     * @param categoryService the category service which is responsible for fetching, creating and updating categories
+     *                        from and to the CTP project.
+     */
     CategorySync(@Nonnull final CategorySyncOptions syncOptions,
                  @Nonnull final TypeService typeService,
                  @Nonnull final CategoryService categoryService) {
-        this.syncOptions = syncOptions;
-        this.statistics = new CategorySyncStatistics();
+        super(new CategorySyncStatistics(),
+                syncOptions,
+                LOGGER);
         this.typeService = typeService;
         this.categoryService = categoryService;
     }
@@ -58,12 +76,8 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
      */
     @Override
-    public void syncDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {
-        LOGGER.info(format("About to sync %d category drafts into CTP project with key '%s'."
-                , categoryDrafts.size(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
-        this.statistics.startTimer();
-        for (int i = 0; i < categoryDrafts.size(); i++) {
-            final CategoryDraft categoryDraft = categoryDrafts.get(i);
+    protected void processDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {
+        for (CategoryDraft categoryDraft : categoryDrafts) {
             if (categoryDraft != null) {
                 this.statistics.incrementProcessed();
                 final String externalId = categoryDraft.getExternalId();
@@ -75,7 +89,12 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
                 }
             }
         }
-        this.statistics.calculateProcessingTime();
+    }
+
+    @Override
+    protected void process(@Nonnull final List<Category> resources) {
+        //TODO: SEE GITHUB ISSUE#12
+
     }
 
     /**
@@ -179,21 +198,5 @@ public class CategorySync implements Sync<CategoryDraft, Category> {
     private void failSync(@Nonnull final String reason, @Nullable final Throwable exception) {
         this.syncOptions.applyErrorCallback(reason, exception);
         this.statistics.incrementFailed();
-    }
-
-    /**
-     * Builds a JSON String that represents the fields of the {@code statistics} instance.
-     *
-     * @return a JSON String that represents the fields of the {@code statistics} instance.
-     */
-    @Override
-    @Nonnull
-    public CategorySyncStatistics getStatistics() {
-        return this.statistics;
-    }
-
-    @Override
-    public void sync(@Nonnull final List<Category> categories) {
-        //TODO: SEE GITHUB ISSUE#12
     }
 }

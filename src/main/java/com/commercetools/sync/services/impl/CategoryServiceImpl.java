@@ -22,7 +22,7 @@ public class CategoryServiceImpl implements CategoryService {
         this.ctpClient = ctpClient;
     }
 
-    @Nonnull
+    @Nullable
     @Override
     public Category fetchCategoryByExternalId(@Nonnull final String externalId)
             throws SphereException {
