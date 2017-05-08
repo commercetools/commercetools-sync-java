@@ -1,5 +1,6 @@
 # commercetools sync
 [![Build Status](https://travis-ci.com/commercetools/commercetools-sync-java.svg?token=g8WsNzbMTq7LVae4BoPF&branch=master)](https://travis-ci.com/commercetools/commercetools-sync-java)
+[![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
 
 Java library that provides different modules to synchronise your new commercetools project data to your existing 
 commercetools project.
