@@ -7,7 +7,8 @@ apply plugin: 'jacoco'
 group = 'com.commercetools'
 version = '1.0-SNAPSHOT'
 
-description = """"""
+description = "Java library that provides different modules to synchronise your new commercetools project data to your " +
+        "existing commercetools project."
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
