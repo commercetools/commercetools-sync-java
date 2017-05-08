@@ -1,6 +1,6 @@
 package com.commercetools.sync.inventory;
 
-import com.commercetools.sync.commons.Sync;
+import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.inventory.helpers.InventorySyncStatistics;
 import com.commercetools.sync.inventory.utils.InventorySyncUtils;
 import com.commercetools.sync.services.TypeService;
@@ -29,7 +29,8 @@ import static java.lang.String.format;
 /**
  * Default implementation of inventories sync process.
  */
-public final class InventorySync implements Sync<InventoryEntryDraft, InventoryEntry> {
+public final class InventorySync extends BaseSync<InventoryEntryDraft, InventoryEntry, InventorySyncStatistics,
+        InventorySyncOptions> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventorySync.class);
 
@@ -46,23 +47,18 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
 
     private TypeService typeService;
 
-    //TODO assert that counters from BaseStatistics became thread safe
-    private InventorySyncStatistics statistics;
-    private InventorySyncOptions options;
-
-    public InventorySync(@Nonnull final InventorySyncOptions options) {
-        this(options, new InventoryServiceImpl(options.getCtpClient().getClient()),
-                new TypeServiceImpl(options.getCtpClient().getClient()));
+    public InventorySync(@Nonnull final InventorySyncOptions syncOptions) {
+        this(syncOptions, new InventoryServiceImpl(syncOptions.getCtpClient().getClient()),
+                new TypeServiceImpl(syncOptions.getCtpClient().getClient()));
     }
 
-    InventorySync(final InventorySyncOptions options, final InventoryService inventoryService,
+    InventorySync(final InventorySyncOptions syncOptions, final InventoryService inventoryService,
                   final TypeService typeService) {
-        this.options = options;
+        super(new InventorySyncStatistics(), syncOptions, LOGGER);
         this.inventoryService = inventoryService;
         this.typeService = typeService;
-        this.statistics = new InventorySyncStatistics();
-        if (options.getParallelProcessing() > 1) {
-            executorService = Executors.newFixedThreadPool(options.getParallelProcessing());
+        if (syncOptions.getParallelProcessing() > 1) {
+            executorService = Executors.newFixedThreadPool(syncOptions.getParallelProcessing());
         }
     }
 
@@ -83,17 +79,14 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
      *                                CTP project.
      */
     @Override
-    public void syncDrafts(@Nonnull List<InventoryEntryDraft> inventories) {
-        LOGGER.info(format("About to sync %d inventories into CTP project with key '%s'.",
-                inventories.size(), options.getCtpClient().getClientConfig().getProjectKey()));
-        statistics.startTimer();
+    protected void processDrafts(@Nonnull List<InventoryEntryDraft> inventories) {
         buildChannelMap();
         List<InventoryEntryDraft> accumulator = new LinkedList<>();
         for (InventoryEntryDraft entry : inventories) {
             if (entry != null) {
                 if (entry.getSku() != null) {
                     accumulator.add(entry);
-                    if (accumulator.size() == options.getBatchSize()) {
+                    if (accumulator.size() == syncOptions.getBatchSize()) {
                         runDraftsProcessing(accumulator);
                         accumulator = new LinkedList<>();
                     }
@@ -108,7 +101,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
         awaitDraftsProcessingFinished();
         statistics.calculateProcessingTime();
         LOGGER.info(format("Inventories sync for CTP project with key '%s' ended successfully!",
-                options.getCtpClient().getClientConfig().getProjectKey()));
+                syncOptions.getCtpClient().getClientConfig().getProjectKey()));
     }
 
     /**
@@ -119,9 +112,9 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
      * @see InventorySync#syncDrafts(List)
      */
     @Override
-    public void sync(@Nonnull List<InventoryEntry> inventories) {
+    protected void process(@Nonnull List<InventoryEntry> inventories) {
         final List<InventoryEntryDraft> drafts = transformToDrafts(inventories);
-        syncDrafts(drafts);
+        processDrafts(drafts);
     }
 
     @Override
@@ -134,7 +127,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
      * Instantiate and fill {@code supplyChannelKeyToId} with values fetched from API.
      */
     private void buildChannelMap() {
-        if (options.getParallelProcessing() > 1) {
+        if (syncOptions.getParallelProcessing() > 1) {
             supplyChannelKeyToId = new ConcurrentHashMap<>();
         } else {
             supplyChannelKeyToId = new HashMap<>();
@@ -252,7 +245,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
         final Optional<InventoryEntryDraft> fixedDraft = replaceChannelReference(draft);
         if (fixedDraft.isPresent()) {
             final List<UpdateAction<InventoryEntry>> updateActions =
-                    InventorySyncUtils.buildActions(entry, fixedDraft.get(), options, typeService);
+                    InventorySyncUtils.buildActions(entry, fixedDraft.get(), syncOptions, typeService);
 
             if (!updateActions.isEmpty()) {
                 try {
@@ -302,7 +295,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
      *     New instance would have same values as {@code draft} except for supply channel reference. Reference
      *     will be replaced with reference that points to ID of existing channel for key given in draft.</li>
      *     <li>Empty if supply channel for key wasn't found or operation of creating new supply channel fails.
-     *     (depending on sync options)</li>
+     *     (depending on sync syncOptions)</li>
      * </ul>
      *
      * @param draft inventory entry draft from processed list
@@ -316,7 +309,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
                 return Optional.of(
                         ofEntryDraftPlusRefToSupplyChannel(draft, supplyChannelKeyToId.get(supplyChannelKey)));
             } else {
-                if (options.isEnsureChannels()) {
+                if (syncOptions.isEnsureChannels()) {
                     return createMissingSupplyChannel(supplyChannelKey)
                             .map(id -> ofEntryDraftPlusRefToSupplyChannel(draft, id));
                 } else {
@@ -371,7 +364,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
 
     /**
      * Given a reason message as {@link String} and {@link Throwable} exception, this method calls the optional error
-     * callback specified in the {@code options}. <br/>
+     * callback specified in the {@code syncOptions}. <br/>
      * <strong>Note</strong> to the end of {@code message} following phrase will be joined:
      * <pre> " in CTP project with key '_KEY_'"</pre>
      * where _KEY_ is replaced by CTP project key, taken from CTP client configuration.
@@ -381,7 +374,7 @@ public final class InventorySync implements Sync<InventoryEntryDraft, InventoryE
      */
     private void failSync(@Nonnull final String message, @Nullable final Throwable exception) {
         final String finalMessage = message + format(" in CTP project with key '%s.'",
-                this.options.getCtpClient().getClientConfig().getProjectKey());
-        options.applyErrorCallback(finalMessage, exception);
+                this.syncOptions.getCtpClient().getClientConfig().getProjectKey());
+        syncOptions.applyErrorCallback(finalMessage, exception);
     }
 }
