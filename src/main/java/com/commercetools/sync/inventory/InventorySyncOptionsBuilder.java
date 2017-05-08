@@ -41,11 +41,11 @@ public final class InventorySyncOptionsBuilder extends
      *
      * This property is {@code 30} by default.
      *
-     * @param batchSize int that indicates capacity of batch of processed inventory entries. Have to be positive
+     * @param batchSize int that indicates capacity of batch of processed inventory entries. Has to be positive
      *                  or else will be ignored.
      * @return {@code this} instance of {@link InventorySyncOptionsBuilder}
      */
-    public InventorySyncOptionsBuilder setBatchSize(int batchSize) {
+    public InventorySyncOptionsBuilder setBatchSize(final int batchSize) {
         if (batchSize > 0) {
             this.batchSize = batchSize;
         }
@@ -63,7 +63,7 @@ public final class InventorySyncOptionsBuilder extends
      *                       it doesn't exists in a target system yet
      * @return {@code this} instance of {@link InventorySyncOptionsBuilder}
      */
-    public InventorySyncOptionsBuilder ensureChannels(boolean ensureChannels) {
+    public InventorySyncOptionsBuilder ensureChannels(final boolean ensureChannels) {
         this.ensureChannels = ensureChannels;
         return this;
     }
@@ -74,10 +74,10 @@ public final class InventorySyncOptionsBuilder extends
      *
      * This property is {@code 1} by default.
      *
-     * @param parallelProcessing int that indicates parallel factor. Have to be positive or else will be ignored.
+     * @param parallelProcessing int that indicates parallel factor. Has to be positive or else will be ignored.
      * @return {@code this} instance of {@link InventorySyncOptionsBuilder}
      */
-    public InventorySyncOptionsBuilder setParallelProcessing(int parallelProcessing) {
+    public InventorySyncOptionsBuilder setParallelProcessing(final int parallelProcessing) {
         if (parallelProcessing > 0) {
             this.parallelProcessing = parallelProcessing;
         }
