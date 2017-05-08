@@ -65,7 +65,8 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void calculateProcessingTime_ShouldSetProcessingTimeInAllUnitsAndHumanReadableString() throws InterruptedException {
+    public void calculateProcessingTime_ShouldSetProcessingTimeInAllUnitsAndHumanReadableString() throws
+        InterruptedException {
         assertThat(categorySyncStatistics.getProcessingTimeInMillis()).isEqualTo(0);
         assertThat(categorySyncStatistics.getHumanReadableProcessingTime()).isEqualTo(StringUtil.EMPTY_STRING);
 
@@ -76,16 +77,17 @@ public class CategorySyncStatisticsTest {
         assertThat(categorySyncStatistics.getProcessingTimeInDays()).isGreaterThanOrEqualTo(0);
         assertThat(categorySyncStatistics.getProcessingTimeInHours()).isGreaterThanOrEqualTo(0);
         assertThat(categorySyncStatistics.getProcessingTimeInMinutes()).isGreaterThanOrEqualTo(0);
-        assertThat(categorySyncStatistics.getProcessingTimeInSeconds()).isGreaterThanOrEqualTo(waitingTimeInMillis / 1000);
+        assertThat(categorySyncStatistics.getProcessingTimeInSeconds()).isGreaterThanOrEqualTo(waitingTimeInMillis
+            / 1000);
         assertThat(categorySyncStatistics.getProcessingTimeInMillis()).isGreaterThanOrEqualTo(waitingTimeInMillis);
 
-        final long remainingMillis = categorySyncStatistics.getProcessingTimeInMillis() -
-                TimeUnit.SECONDS.toMillis(categorySyncStatistics.getProcessingTimeInSeconds());
+        final long remainingMillis = categorySyncStatistics.getProcessingTimeInMillis()
+          - TimeUnit.SECONDS.toMillis(categorySyncStatistics.getProcessingTimeInSeconds());
         assertThat(categorySyncStatistics.getHumanReadableProcessingTime()).contains(format(", %dms", remainingMillis));
     }
 
     @Test
-    public void getStatisticsAsJSONString_WithoutCalculatingProcessingTime_ShouldGetCorrectJSONString() {
+    public void getStatisticsAsJsonString_WithoutCalculatingProcessingTime_ShouldGetCorrectJsonString() {
         categorySyncStatistics.incrementCreated();
         categorySyncStatistics.incrementProcessed();
 
@@ -97,21 +99,23 @@ public class CategorySyncStatisticsTest {
 
         final String statisticsAsJsonString = getStatisticsAsJsonString(categorySyncStatistics);
         assertThat(statisticsAsJsonString)
-                .isEqualTo("{\"reportMessage\":\"Summary: 3 categories were processed in total (1 created, 1 updated and 1 categories failed to sync).\",\"" +
-                        "updated\":1,\"" +
-                        "created\":1,\"" +
-                        "failed\":1,\"" +
-                        "processed\":3,\"" +
-                        "processingTimeInDays\":" + categorySyncStatistics.getProcessingTimeInDays() + ",\"" +
-                        "processingTimeInHours\":" + categorySyncStatistics.getProcessingTimeInHours() + ",\"" +
-                        "processingTimeInMinutes\":" + categorySyncStatistics.getProcessingTimeInMinutes() + ",\"" +
-                        "processingTimeInSeconds\":" + categorySyncStatistics.getProcessingTimeInSeconds() + ",\"" +
-                        "processingTimeInMillis\":" + categorySyncStatistics.getProcessingTimeInMillis() + ",\"" +
-                        "humanReadableProcessingTime\":\"" + categorySyncStatistics.getHumanReadableProcessingTime() + "\"}");
+                .isEqualTo("{\"reportMessage\":\"Summary: 3 categories were processed in total (1 created, 1 updated "
+                  + "and 1 categories failed to sync).\",\""
+                  + "updated\":1,\""
+                  + "created\":1,\""
+                  + "failed\":1,\""
+                  + "processed\":3,\""
+                  + "processingTimeInDays\":" + categorySyncStatistics.getProcessingTimeInDays() + ",\""
+                  + "processingTimeInHours\":" + categorySyncStatistics.getProcessingTimeInHours() + ",\""
+                  + "processingTimeInMinutes\":" + categorySyncStatistics.getProcessingTimeInMinutes() + ",\""
+                  + "processingTimeInSeconds\":" + categorySyncStatistics.getProcessingTimeInSeconds() + ",\""
+                  + "processingTimeInMillis\":" + categorySyncStatistics.getProcessingTimeInMillis() + ",\""
+                  + "humanReadableProcessingTime\":\"" + categorySyncStatistics.getHumanReadableProcessingTime()
+                  + "\"}");
     }
 
     @Test
-    public void getStatisticsAsJSONString_WithCalculatingProcessingTime_ShouldGetCorrectJSONString() {
+    public void getStatisticsAsJsonString_WithCalculatingProcessingTime_ShouldGetCorrectJsonString() {
         categorySyncStatistics.incrementCreated();
         categorySyncStatistics.incrementProcessed();
 
@@ -125,16 +129,17 @@ public class CategorySyncStatisticsTest {
 
         final String statisticsAsJsonString = getStatisticsAsJsonString(categorySyncStatistics);
         assertThat(statisticsAsJsonString)
-                .isEqualTo("{\"reportMessage\":\"Summary: 3 categories were processed in total (1 created, 1 updated and 1 categories failed to sync).\",\"" +
-                        "updated\":1,\"" +
-                        "created\":1,\"" +
-                        "failed\":1,\"" +
-                        "processed\":3,\"" +
-                        "processingTimeInDays\":" + categorySyncStatistics.getProcessingTimeInDays() + ",\"" +
-                        "processingTimeInHours\":" + categorySyncStatistics.getProcessingTimeInHours() + ",\"" +
-                        "processingTimeInMinutes\":" + categorySyncStatistics.getProcessingTimeInMinutes() + ",\"" +
-                        "processingTimeInSeconds\":" + categorySyncStatistics.getProcessingTimeInSeconds() + ",\"" +
-                        "processingTimeInMillis\":" + categorySyncStatistics.getProcessingTimeInMillis() + ",\"" +
-                        "humanReadableProcessingTime\":\"" + categorySyncStatistics.getHumanReadableProcessingTime() + "\"}");
+            .isEqualTo("{\"reportMessage\":\"Summary: 3 categories were processed in total (1 created, 1 updated "
+                + "and 1 categories failed to sync).\",\""
+                + "updated\":1,\""
+                + "created\":1,\""
+                + "failed\":1,\""
+                + "processed\":3,\""
+                + "processingTimeInDays\":" + categorySyncStatistics.getProcessingTimeInDays() + ",\""
+                + "processingTimeInHours\":" + categorySyncStatistics.getProcessingTimeInHours() + ",\""
+                + "processingTimeInMinutes\":" + categorySyncStatistics.getProcessingTimeInMinutes() + ",\""
+                + "processingTimeInSeconds\":" + categorySyncStatistics.getProcessingTimeInSeconds() + ",\""
+                + "processingTimeInMillis\":" + categorySyncStatistics.getProcessingTimeInMillis() + ",\""
+                + "humanReadableProcessingTime\":\"" + categorySyncStatistics.getHumanReadableProcessingTime() + "\"}");
     }
 }
