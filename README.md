@@ -54,5 +54,14 @@ https://github.com/commercetools/commercetools-sync-java/milestones
 ## Contributing
 
 ### Development
+##### Run unit tests
+````bash
+./gradlew test
+````
+
+##### Compile project, run unit tests and assemble main classes into a jar archive
+````bash
+./gradlew clean build
+````
 
 <!--- TODO ### Executing integration tests -->
