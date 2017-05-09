@@ -9,10 +9,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -28,20 +26,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class GenericUpdateActionUtilsTest {
-    private CategorySyncOptions categorySyncOptions;
-    private final CtpClient ctpClient = mock(CtpClient.class);
-
-    /**
-     * Initializes an instance of the {@link CategorySyncOptions} and sets a mock {@code clientConfig} for the instance
-     * of the {@link CtpClient} to be used across all the unit tests.
-     */
-    @Before
-    public void setup() {
-        final SphereClientConfig clientConfig = SphereClientConfig.of("testPK", "testCI", "testCS");
-        when(ctpClient.getClientConfig()).thenReturn(clientConfig);
-        categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
-                                                        .build();
-    }
+    private static final CtpClient CTP_CLIENT = mock(CtpClient.class);
+    private CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
 
     @Test
     public void buildTypedSetCustomTypeUpdateAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
@@ -156,8 +142,6 @@ public class GenericUpdateActionUtilsTest {
         final Cart cart = mock(Cart.class);
         when(cart.getId()).thenReturn("cartId");
         when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
-
-        final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
 
         // Mock custom options error callback
         final ArrayList<Object> callBackResponses = new ArrayList<>();
