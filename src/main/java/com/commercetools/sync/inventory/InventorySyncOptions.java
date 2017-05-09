@@ -13,13 +13,13 @@ import java.util.function.Consumer;
 public final class InventorySyncOptions extends BaseSyncOptions {
 
     //Indicates whether create supply channel if it doesn't exists in system for key from draft.
-    private boolean ensureChannels = false;
+    private final boolean ensureChannels;
 
     //Indicates number of threads in a pool of executorService, that will process batches. (number of batches processed in parallel)
-    private int parallelProcessing = 1;
+    private final int parallelProcessing;
 
     //Indicates capacity of batch of processed inventory entries (also limit of sku, that can be query in single API call)
-    private int batchSize = 30;
+    private final int batchSize;
 
     InventorySyncOptions(@Nonnull final CtpClient ctpClient,
                                    final BiConsumer<String, Throwable> updateActionErrorCallBack,
