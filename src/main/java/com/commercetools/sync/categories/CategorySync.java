@@ -22,7 +22,6 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySyncStatistics, CategorySyncOptions> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CategorySync.class);
     private final TypeService typeService;
     private final CategoryService categoryService;
 
@@ -56,9 +55,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
     CategorySync(@Nonnull final CategorySyncOptions syncOptions,
                  @Nonnull final TypeService typeService,
                  @Nonnull final CategoryService categoryService) {
-        super(new CategorySyncStatistics(),
-                syncOptions,
-                LOGGER);
+        super(new CategorySyncStatistics(), syncOptions);
         this.typeService = typeService;
         this.categoryService = categoryService;
     }

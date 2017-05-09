@@ -1,8 +1,10 @@
 package com.commercetools.sync.commons;
 
+import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import io.sphere.sdk.models.Resource;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -11,16 +13,13 @@ import static java.lang.String.format;
 
 
 public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStatistics, V extends BaseSyncOptions> {
-    protected final Logger logger;
+    private static final Logger LOGGER = LoggerFactory.getLogger(CategorySync.class);
     protected final U statistics;
     protected final V syncOptions;
 
-    protected BaseSync(@Nonnull final U statistics,
-                       @Nonnull final V syncOptions,
-                       @Nonnull final Logger logger) {
+    protected BaseSync(@Nonnull final U statistics, @Nonnull final V syncOptions) {
         this.statistics = statistics;
         this.syncOptions = syncOptions;
-        this.logger = logger;
     }
 
     /**
@@ -44,7 +43,7 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      * @param resourceDrafts the list of new resources as drafts.
      */
     public void syncDrafts(@Nonnull final List<T> resourceDrafts) {
-        logger.info(format("About to sync %d drafts into CTP project with key '%s'.", resourceDrafts.size(),
+        LOGGER.info(format("About to sync %d drafts into CTP project with key '%s'.", resourceDrafts.size(),
             this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
         this.statistics.startTimer();
         this.processDrafts(resourceDrafts);
@@ -62,7 +61,7 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      * @param resources the list of new resources.
      */
     public void sync(@Nonnull final List<S> resources) {
-        logger.info(format("About to sync %d resources into CTP project with key '%s'.", resources.size(),
+        LOGGER.info(format("About to sync %d resources into CTP project with key '%s'.", resources.size(),
             this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
         this.statistics.startTimer();
         this.process(resources);
