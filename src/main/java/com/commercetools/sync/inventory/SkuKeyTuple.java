@@ -16,6 +16,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
  */
 final class SkuKeyTuple {
 
+    static final String SKU_NOT_SET_MESSAGE = "Sku is not set";
+
     private final String sku;
 
     @Nullable
@@ -37,7 +39,7 @@ final class SkuKeyTuple {
     static SkuKeyTuple of(@Nonnull InventoryEntry existingEntry) {
         final String sku = existingEntry.getSku();
         if (isEmpty(sku)) {
-            throw new IllegalArgumentException("Sku is not set");
+            throw new IllegalArgumentException(SKU_NOT_SET_MESSAGE);
         }
         if (existingEntry.getSupplyChannel() != null && existingEntry.getSupplyChannel().getObj() != null) {
             return new SkuKeyTuple(sku, existingEntry.getSupplyChannel().getObj().getKey());
@@ -60,7 +62,7 @@ final class SkuKeyTuple {
     static SkuKeyTuple of(@Nonnull InventoryEntryDraft newEntryDraft) {
         final String sku = newEntryDraft.getSku();
         if (isEmpty(sku)) {
-            throw new IllegalArgumentException("Sku is not set");
+            throw new IllegalArgumentException(SKU_NOT_SET_MESSAGE);
         }
         String key = null;
         if (newEntryDraft.getSupplyChannel() != null) {

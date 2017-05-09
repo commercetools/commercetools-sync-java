@@ -1,10 +1,16 @@
 package com.commercetools.sync.inventory;
 
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.commercetools.sync.inventory.SkuKeyTuple.SKU_NOT_SET_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -15,6 +21,8 @@ public class SkuKeyTupleTest {
     private static final String KEY = "testKey";
     private static final String KEY_2 = "differentKey";
     private static final String REF_ID = "456";
+    private static final String VALUE_1 = "testValue";
+    private static final String VALUE_2 = "otherValue";
 
     @Test
     public void build_WithDraftWithoutSupplyChannel_ShouldReturnTuple() {
@@ -73,6 +81,39 @@ public class SkuKeyTupleTest {
     }
 
     @Test
+    public void build_WithDraftWithNullSku_ShouldThrowIllegallArgumentException() {
+        InventoryEntryDraft mockDraft = mock(InventoryEntryDraft.class);
+        when(mockDraft.getSku()).thenReturn(null);
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> SkuKeyTuple.of(mockDraft))
+                .withMessage(SKU_NOT_SET_MESSAGE);
+    }
+
+    @Test
+    public void build_WithDraftWithEmptySku_ShouldThrowIllegallArgumentException() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> SkuKeyTuple.of(InventoryEntryDraft.of("", 1l)))
+                .withMessage(SKU_NOT_SET_MESSAGE);
+    }
+
+    @Test
+    public void build_WithEntryWithNullSku_ShouldThrowIllegallArgumentException() {
+        InventoryEntry mockEntry = mock(InventoryEntry.class);
+        when(mockEntry.getSku()).thenReturn(null);
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> SkuKeyTuple.of(mockEntry))
+                .withMessage(SKU_NOT_SET_MESSAGE);
+    }
+
+    @Test
+    public void build_WithEntryWithEmptySku_ShouldThrowIllegallArgumentException() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> SkuKeyTuple.of(InventoryEntryMock.of("").build()))
+                .withMessage(SKU_NOT_SET_MESSAGE);
+    }
+
+
+    @Test
     public void skuKeyTuplesCreatedFromSimilarDraftAndEntry_ShouldBeEqual() {
         final SkuKeyTuple entryTuple = SkuKeyTuple
                 .of(InventoryEntryMock.of(SKU).withChannelRefExpanded(REF_ID, KEY).build());
@@ -80,7 +121,6 @@ public class SkuKeyTupleTest {
                 .of(InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
 
         assertThat(entryTuple).isEqualTo(draftTuple);
-        assertThat(entryTuple.hashCode()).isEqualTo(draftTuple.hashCode());
     }
 
     @Test
@@ -91,5 +131,43 @@ public class SkuKeyTupleTest {
                 .of(InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
 
         assertThat(entryTuple).isNotEqualTo(draftTuple);
+    }
+
+    @Test
+    public void skuKeyTuplesCreatedFromSimilarDraftAndEntry_ShouldHaveSameHashCodes() {
+        final SkuKeyTuple entryTuple = SkuKeyTuple
+                .of(InventoryEntryMock.of(SKU).withChannelRefExpanded(REF_ID, KEY).build());
+        final SkuKeyTuple draftTuple = SkuKeyTuple
+                .of(InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
+
+        assertThat(entryTuple.hashCode()).isEqualTo(draftTuple.hashCode());
+    }
+
+    @Test
+    public void skuKeyTuple_ShouldWorksAsHashMapKey() {
+        final SkuKeyTuple tuple = SkuKeyTuple.of(
+                InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
+        final Map<SkuKeyTuple, String> map = new HashMap<>();
+        map.put(tuple, VALUE_1);
+
+        assertThat(map.containsKey(tuple)).isTrue();
+        assertThat(map.get(tuple)).isEqualTo(VALUE_1);
+    }
+
+    @Test
+    public void skuKeyTuplesWithNullKeyAndEmptyKey_ShouldBeDistinctedInHashMap() {
+        final SkuKeyTuple tuple1 = SkuKeyTuple.of(InventoryEntryDraft.of(SKU, 1l));
+        final SkuKeyTuple tuple2 = SkuKeyTuple.of(
+                InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId("")));
+        final Map<SkuKeyTuple, String> map = new HashMap<>();
+        map.put(tuple1, VALUE_1);
+        map.put(tuple2, VALUE_2);
+
+        assertThat(tuple1.getKey()).isNull();
+        assertThat(tuple2.getKey()).isEmpty();
+        assertThat(map.containsKey(tuple1)).isTrue();
+        assertThat(map.containsKey(tuple2)).isTrue();
+        assertThat(map.get(tuple1)).isEqualTo(VALUE_1);
+        assertThat(map.get(tuple2)).isEqualTo(VALUE_2);
     }
 }
