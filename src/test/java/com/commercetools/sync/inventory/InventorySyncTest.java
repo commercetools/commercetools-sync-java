@@ -6,6 +6,7 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.models.Reference;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.time.ZoneId;
@@ -35,20 +36,21 @@ public class InventorySyncTest {
     private final static String REF_2 = "222";
     private final static String REF_3 = "333";
 
-    private final Long QUANTITY_1 = 10l;
-    private final Long QUANTITY_2 = 30l;
+    private final static Long QUANTITY_1 = 10l;
+    private final static Long QUANTITY_2 = 30l;
 
-    private final Integer RESTOCKABLE_1 = 10;
-    private final Integer RESTOCKABLE_2 = 10;
+    private final static Integer RESTOCKABLE_1 = 10;
+    private final static Integer RESTOCKABLE_2 = 10;
 
-    private final ZonedDateTime DATE_1 = ZonedDateTime.of(2017, 4, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
-    private final ZonedDateTime DATE_2 = ZonedDateTime.of(2017, 5, 1, 20, 0, 0, 0, ZoneId.of("UTC"));
+    private final static ZonedDateTime DATE_1 = ZonedDateTime.of(2017, 4, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
+    private final static ZonedDateTime DATE_2 = ZonedDateTime.of(2017, 5, 1, 20, 0, 0, 0, ZoneId.of("UTC"));
 
     private List<InventoryEntryDraft> drafts;
     private List<InventoryEntry> inventoriesDB;
     private List<Channel> channelsDB;
 
-    {
+    @Before
+    public void setup() {
         Channel channel1 = getMockChannel(REF_1, KEY_1);
         Channel channel2 = getMockChannel(REF_2, KEY_2);
 

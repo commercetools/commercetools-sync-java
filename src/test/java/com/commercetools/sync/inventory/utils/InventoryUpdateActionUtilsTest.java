@@ -9,6 +9,7 @@ import io.sphere.sdk.inventory.commands.updateactions.SetExpectedDelivery;
 import io.sphere.sdk.inventory.commands.updateactions.SetRestockableInDays;
 import io.sphere.sdk.inventory.commands.updateactions.SetSupplyChannel;
 import io.sphere.sdk.models.Reference;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.time.ZoneId;
@@ -28,7 +29,8 @@ public class InventoryUpdateActionUtilsTest {
     private InventoryEntryDraft newDifferent;
     private InventoryEntryDraft newWithNullValues;
 
-    {
+    @Before
+    public void setup() {
         final ZonedDateTime date1 = ZonedDateTime.of(2017, 5, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
         final ZonedDateTime date2 = ZonedDateTime.of(2017, 4, 1, 12, 0, 0, 0, ZoneId.of("UTC"));
         

@@ -11,6 +11,7 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.time.ZoneId;
@@ -33,12 +34,13 @@ public class InventorySyncUtilsTest {
     private static final ZonedDateTime DATE_1 = ZonedDateTime.of(2017, 4, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
     private static final ZonedDateTime DATE_2 = ZonedDateTime.of(2017, 5, 1, 20, 0, 0, 0, ZoneId.of("UTC"));
 
-    private final InventoryEntry inventoryEntry;
-    private final InventoryEntry inventoryEntryWithCustomField1;
-    private final InventoryEntryDraft similarDraft;
-    private final InventoryEntryDraft variousDraft;
+    private InventoryEntry inventoryEntry;
+    private InventoryEntry inventoryEntryWithCustomField1;
+    private InventoryEntryDraft similarDraft;
+    private InventoryEntryDraft variousDraft;
 
-    {
+    @Before
+    public void setup() {
         inventoryEntry = InventoryEntryMock.of("123", 10l, 10, DATE_1)
                 .withChannelRefExpanded("111", "key1")
                 .build();
