@@ -42,7 +42,7 @@ public class CustomUpdateActionUtilsTest {
     private CategorySyncOptions categorySyncOptions;
 
     /**
-     * Initializes the instance of the {@link CategorySyncOptions} to be used across all the unit tests.
+     * Initializes an instance of the {@link CategorySyncOptions} to be used across all the unit tests.
      */
     @Before
     public void setup() {

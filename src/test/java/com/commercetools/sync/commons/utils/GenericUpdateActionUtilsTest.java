@@ -20,7 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.*;
+import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedRemoveCustomTypeUpdateAction;
+import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomFieldUpdateAction;
+import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -29,12 +31,16 @@ public class GenericUpdateActionUtilsTest {
     private CategorySyncOptions categorySyncOptions;
     private final CtpClient ctpClient = mock(CtpClient.class);
 
+    /**
+     * Initializes an instance of the {@link CategorySyncOptions} and sets a mock {@code clientConfig} for the instance
+     * of the {@link CtpClient} to be used across all the unit tests.
+     */
     @Before
     public void setup() {
         final SphereClientConfig clientConfig = SphereClientConfig.of("testPK", "testCI", "testCS");
         when(ctpClient.getClientConfig()).thenReturn(clientConfig);
         categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
-                .build();
+                                                        .build();
     }
 
     @Test
@@ -42,12 +48,12 @@ public class GenericUpdateActionUtilsTest {
         final Category category = mock(Category.class);
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
         final UpdateAction<Category> updateAction = buildTypedSetCustomTypeUpdateAction("key",
-                fieldsJsonMap, category, categorySyncOptions).orElse(null);
+            fieldsJsonMap, category, categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomType");
         assertThat(updateAction.getClass().getName())
-                .isEqualTo("io.sphere.sdk.categories.commands.updateactions.SetCustomType");
+            .isEqualTo("io.sphere.sdk.categories.commands.updateactions.SetCustomType");
     }
 
     @Test
@@ -55,12 +61,12 @@ public class GenericUpdateActionUtilsTest {
         final Channel channel = mock(Channel.class);
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
         final UpdateAction<Channel> updateAction = buildTypedSetCustomTypeUpdateAction("key",
-                fieldsJsonMap, channel, categorySyncOptions).orElse(null);
+            fieldsJsonMap, channel, categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomType");
         assertThat(updateAction.getClass().getName())
-                .isEqualTo("io.sphere.sdk.channels.commands.updateactions.SetCustomType");
+            .isEqualTo("io.sphere.sdk.channels.commands.updateactions.SetCustomType");
     }
 
     @Test
@@ -71,7 +77,7 @@ public class GenericUpdateActionUtilsTest {
 
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
         final UpdateAction<Cart> updateAction = buildTypedSetCustomTypeUpdateAction("key", fieldsJsonMap,
-                cart, categorySyncOptions).orElse(null);
+            cart, categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNull();
     }
@@ -94,16 +100,17 @@ public class GenericUpdateActionUtilsTest {
 
         // Mock sync options
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
-                .setErrorCallBack(updateActionErrorCallBack)
-                .build();
+                                                                          .setErrorCallBack(updateActionErrorCallBack)
+                                                                          .build();
 
         final UpdateAction<Cart> updateAction = buildTypedSetCustomTypeUpdateAction("key", fieldsJsonMap,
-                cart, syncOptions).orElse(null);
+            cart, syncOptions).orElse(null);
 
         assertThat(updateAction).isNull();
         assertThat(callBackResponses).hasSize(2);
-        assertThat(callBackResponses.get(0)).isEqualTo("Failed to build 'setCustomType' update action on the cart with " +
-                "id 'cartId'. Reason: Update actions for resource: 'cart' is not implemented.");
+        assertThat(callBackResponses.get(0)).isEqualTo(
+            "Failed to build 'setCustomType' update action on the cart with "
+                + "id 'cartId'. Reason: Update actions for resource: 'cart' is not implemented.");
         assertThat((Exception) callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
     }
 
@@ -111,24 +118,24 @@ public class GenericUpdateActionUtilsTest {
     public void buildTypedRemoveCustomTypeUpdateAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
         final Category category = mock(Category.class);
         final UpdateAction<Category> updateAction = buildTypedRemoveCustomTypeUpdateAction(category,
-                categorySyncOptions).orElse(null);
+            categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomType");
         assertThat(updateAction.getClass().getName())
-                .isEqualTo("io.sphere.sdk.categories.commands.updateactions.SetCustomType");
+            .isEqualTo("io.sphere.sdk.categories.commands.updateactions.SetCustomType");
     }
 
     @Test
     public void buildTypedRemoveCustomTypeUpdateAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
         final Channel channel = mock(Channel.class);
         final UpdateAction<Channel> updateAction = buildTypedRemoveCustomTypeUpdateAction(channel,
-                categorySyncOptions).orElse(null);
+            categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomType");
         assertThat(updateAction.getClass().getName())
-                .isEqualTo("io.sphere.sdk.channels.commands.updateactions.SetCustomType");
+            .isEqualTo("io.sphere.sdk.channels.commands.updateactions.SetCustomType");
     }
 
     @Test
@@ -137,8 +144,8 @@ public class GenericUpdateActionUtilsTest {
         final Cart cart = mock(Cart.class);
         when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
 
-        final UpdateAction<Cart> updateAction = buildTypedRemoveCustomTypeUpdateAction(cart,
-                categorySyncOptions).orElse(null);
+        final UpdateAction<Cart> updateAction = buildTypedRemoveCustomTypeUpdateAction(cart, categorySyncOptions)
+            .orElse(null);
 
         assertThat(updateAction).isNull();
     }
@@ -161,17 +168,17 @@ public class GenericUpdateActionUtilsTest {
 
         // Mock sync options
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
-                .setErrorCallBack(updateActionErrorCallBack)
-                .build();
+                                                                          .setErrorCallBack(updateActionErrorCallBack)
+                                                                          .build();
 
-        final UpdateAction<Cart> updateAction = buildTypedRemoveCustomTypeUpdateAction(cart,
-                syncOptions).orElse(null);
+        final UpdateAction<Cart> updateAction = buildTypedRemoveCustomTypeUpdateAction(cart, syncOptions)
+            .orElse(null);
 
         assertThat(updateAction).isNull();
         assertThat(callBackResponses).hasSize(2);
-        assertThat(callBackResponses.get(0)).isEqualTo("Failed to build 'setCustomType' update action to remove the" +
-                " custom type on the cart with id 'cartId'. Reason: Update actions for " +
-                "resource: 'cart' is not implemented.");
+        assertThat(callBackResponses.get(0)).isEqualTo("Failed to build 'setCustomType' update action to remove the"
+            + " custom type on the cart with id 'cartId'. Reason: Update actions for "
+            + "resource: 'cart' is not implemented.");
         assertThat((Exception) callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
     }
 
@@ -181,12 +188,12 @@ public class GenericUpdateActionUtilsTest {
         final JsonNode customFieldValue = mock(JsonNode.class);
         final String customFieldName = "name";
         final UpdateAction<Category> updateAction = buildTypedSetCustomFieldUpdateAction(customFieldName,
-                customFieldValue, category, categorySyncOptions).orElse(null);
+            customFieldValue, category, categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomField");
         assertThat(updateAction.getClass().getName())
-                .isEqualTo("io.sphere.sdk.categories.commands.updateactions.SetCustomField");
+            .isEqualTo("io.sphere.sdk.categories.commands.updateactions.SetCustomField");
     }
 
     @Test
@@ -195,12 +202,12 @@ public class GenericUpdateActionUtilsTest {
         final JsonNode customFieldValue = mock(JsonNode.class);
         final String customFieldName = "name";
         final UpdateAction<Channel> updateAction = buildTypedSetCustomFieldUpdateAction(customFieldName,
-                customFieldValue, channel, categorySyncOptions).orElse(null);
+            customFieldValue, channel, categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("setCustomField");
         assertThat(updateAction.getClass().getName())
-                .isEqualTo("io.sphere.sdk.channels.commands.updateactions.SetCustomField");
+            .isEqualTo("io.sphere.sdk.channels.commands.updateactions.SetCustomField");
     }
 
     @Test
@@ -214,8 +221,8 @@ public class GenericUpdateActionUtilsTest {
         final String customFieldName = "name";
 
         final UpdateAction<Cart> updateAction =
-                buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart,
-                        mock(BaseSyncOptions.class)).orElse(null);
+            buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart, mock(BaseSyncOptions.class))
+                .orElse(null);
 
         assertThat(updateAction).isNull();
     }
@@ -236,18 +243,18 @@ public class GenericUpdateActionUtilsTest {
         };
 
         final BaseSyncOptions baseSyncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
-                .setErrorCallBack(updateActionErrorCallBack)
-                .build();
+                                                                          .setErrorCallBack(updateActionErrorCallBack)
+                                                                          .build();
 
         final UpdateAction<Cart> updateAction =
-                buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart,
-                        baseSyncOptions).orElse(null);
+            buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart, baseSyncOptions)
+                .orElse(null);
 
         assertThat(updateAction).isNull();
         assertThat(callBackResponses).hasSize(2);
-        assertThat(callBackResponses.get(0)).isEqualTo("Failed to build 'setCustomField' update action on the custom " +
-                "field with the name 'name' on the cart with id 'cartId'. Reason: Update actions for resource:" +
-                " 'cart' is not implemented.");
+        assertThat(callBackResponses.get(0)).isEqualTo("Failed to build 'setCustomField' update action on the custom "
+            + "field with the name 'name' on the cart with id 'cartId'. Reason: Update actions for resource:"
+            + " 'cart' is not implemented.");
         assertThat((Exception) callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
     }
 }
