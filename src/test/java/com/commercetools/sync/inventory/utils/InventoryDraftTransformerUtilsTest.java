@@ -12,7 +12,7 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class InventoryDraftTransformerTest {
+public class InventoryDraftTransformerUtilsTest {
 
     private static final String SKU = "10000";
     private static final Long QUANTITY_ON_STCK = 100l;
@@ -31,7 +31,7 @@ public class InventoryDraftTransformerTest {
     public void transformToDraft_WithNoChannelNeitherCustomType_ShouldReturnDraft() {
         final InventoryEntry entry = InventoryEntryMock
                 .of(SKU, QUANTITY_ON_STCK, RESTOCKABLE_IN_DAYS, EXPECTED_DELIVERY).build();
-        final InventoryEntryDraft draft = InventoryDraftTransformer.transformToDraft(entry);
+        final InventoryEntryDraft draft = InventoryDraftTransformerUtils.transformToDraft(entry);
 
         assertThat(draft.getSku()).isEqualTo(SKU);
         assertThat(draft.getQuantityOnStock()).isEqualTo(QUANTITY_ON_STCK);
@@ -45,7 +45,7 @@ public class InventoryDraftTransformerTest {
     public void transformToDraft_WithSupplyChannel_ShouldReturnDraft() {
         final InventoryEntry entry = InventoryEntryMock.of(SKU)
                 .withChannelRefExpanded(CHANNEL_ID, CHANNEL_KEY).build();
-        final InventoryEntryDraft draft = InventoryDraftTransformer.transformToDraft(entry);
+        final InventoryEntryDraft draft = InventoryDraftTransformerUtils.transformToDraft(entry);
 
         assertThat(draft.getSupplyChannel()).isNotNull();
         assertThat(draft.getSupplyChannel().getId()).isEqualTo(CHANNEL_ID);
@@ -58,7 +58,7 @@ public class InventoryDraftTransformerTest {
         final InventoryEntry entry = InventoryEntryMock.of(SKU)
                 .withCustomField(CUSTOM_TYPE_ID, CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE).build();
 
-        final InventoryEntryDraft draft = InventoryDraftTransformer.transformToDraft(entry);
+        final InventoryEntryDraft draft = InventoryDraftTransformerUtils.transformToDraft(entry);
 
         assertThat(draft.getCustom()).isNotNull();
         assertThat(draft.getCustom().getType()).isNotNull();
@@ -73,7 +73,7 @@ public class InventoryDraftTransformerTest {
                 .withCustomFieldExpanded(CUSTOM_TYPE_ID, CUSTOM_TYPE_KEY, CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE)
                 .build();
 
-        final InventoryEntryDraft draft = InventoryDraftTransformer.transformToDraft(entry);
+        final InventoryEntryDraft draft = InventoryDraftTransformerUtils.transformToDraft(entry);
 
         assertThat(draft.getCustom()).isNotNull();
         assertThat(draft.getCustom().getType()).isNotNull();
@@ -85,7 +85,7 @@ public class InventoryDraftTransformerTest {
     @Test
     public void transformToDrafts_ShouldReturnDrafts() {
         final InventoryEntry entry = InventoryEntryMock.of(SKU).build();
-        final List<InventoryEntryDraft> drafts = InventoryDraftTransformer.transformToDrafts(asList(entry, entry));
+        final List<InventoryEntryDraft> drafts = InventoryDraftTransformerUtils.transformToDrafts(asList(entry, entry));
 
         assertThat(drafts).isNotNull();
         assertThat(drafts).hasSize(2);

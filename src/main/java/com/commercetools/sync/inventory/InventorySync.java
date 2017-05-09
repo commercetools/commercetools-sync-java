@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.inventory.utils.InventoryDraftTransformer.transformToDrafts;
+import static com.commercetools.sync.inventory.utils.InventoryDraftTransformerUtils.transformToDrafts;
 import static java.lang.String.format;
 
 /**

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
-import static com.commercetools.sync.inventory.utils.InventoryDraftTransformer.transformToDraft;
+import static com.commercetools.sync.inventory.utils.InventoryDraftTransformerUtils.transformToDraft;
 import static com.commercetools.sync.inventory.utils.InventoryUpdateActionUtils.*;
 import static java.util.stream.Collectors.toList;
 
