@@ -6,11 +6,12 @@ import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
+import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
 import static com.commercetools.sync.inventory.utils.InventoryDraftTransformerUtils.transformToDraft;
@@ -68,13 +69,12 @@ public final class InventorySyncUtils {
                                                                   @Nonnull final InventoryEntryDraft newEntry,
                                                                   @Nonnull final InventorySyncOptions syncOptions,
                                                                   @Nonnull final TypeService typeService) {
-        final List<UpdateAction<InventoryEntry>> actions = Arrays
-                .asList(
+        final List<UpdateAction<InventoryEntry>> actions =
+                Stream.of(
                         buildChangeQuantityAction(oldEntry, newEntry),
                         buildSetRestockableInDaysAction(oldEntry, newEntry),
                         buildSetExpectedDeliveryAction(oldEntry, newEntry),
                         buildSetSupplyChannelAction(oldEntry, newEntry))
-                .stream()
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(toList());
