@@ -40,12 +40,12 @@ public final class InventoryUpdateActionUtils {
     @Nonnull
     public static Optional<UpdateAction<InventoryEntry>> buildChangeQuantityAction(@Nonnull final InventoryEntry oldEntry,
                                                                                    @Nonnull final InventoryEntryDraft newEntry) {
+        final Long oldQuantityOnStock = oldEntry.getQuantityOnStock();
         final Long newQuantityOnStock = newEntry.getQuantityOnStock();
         if (newQuantityOnStock == null) {
             return Optional.empty();
         }
-        return buildUpdateAction(oldEntry.getQuantityOnStock(), newQuantityOnStock,
-                () -> ChangeQuantity.of(newQuantityOnStock));
+        return buildUpdateAction(oldQuantityOnStock, newQuantityOnStock, () -> ChangeQuantity.of(newQuantityOnStock));
     }
 
     /**
@@ -61,9 +61,10 @@ public final class InventoryUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<InventoryEntry>> buildSetRestockableInDaysAction(@Nonnull final InventoryEntry oldEntry,
-                                                                                     @Nonnull final InventoryEntryDraft newEntry) {
+                                                                                         @Nonnull final InventoryEntryDraft newEntry) {
+        final Integer oldRestockableInDays = oldEntry.getRestockableInDays();
         final Integer newRestockableInDays = newEntry.getRestockableInDays();
-        return buildUpdateAction(oldEntry.getRestockableInDays(), newRestockableInDays,
+        return buildUpdateAction(oldRestockableInDays, newRestockableInDays,
                 () -> SetRestockableInDays.of(newRestockableInDays));
     }
 
@@ -80,9 +81,10 @@ public final class InventoryUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<InventoryEntry>> buildSetExpectedDeliveryAction(@Nonnull final InventoryEntry oldEntry,
-                                                                                    @Nonnull final InventoryEntryDraft newEntry) {
+                                                                                        @Nonnull final InventoryEntryDraft newEntry) {
+        final ZonedDateTime oldExpectedDelivery = oldEntry.getExpectedDelivery();
         final ZonedDateTime newExpectedDelivery = newEntry.getExpectedDelivery();
-        return buildUpdateAction(oldEntry.getExpectedDelivery(), newExpectedDelivery,
+        return buildUpdateAction(oldExpectedDelivery, newExpectedDelivery,
                 () -> SetExpectedDelivery.of(newExpectedDelivery));
     }
 
@@ -99,8 +101,9 @@ public final class InventoryUpdateActionUtils {
     @Nonnull
     public static Optional<UpdateAction<InventoryEntry>> buildSetSupplyChannelAction(@Nonnull final InventoryEntry oldEntry,
                                                                                  @Nonnull final InventoryEntryDraft newEntry) {
+        final Reference<Channel> oldSupplyChannel = oldEntry.getSupplyChannel();
         final Reference<Channel> newSupplyChannel = newEntry.getSupplyChannel();
-        return buildUpdateAction(oldEntry.getSupplyChannel(), newSupplyChannel,
+        return buildUpdateAction(oldSupplyChannel, newSupplyChannel,
                 () -> SetSupplyChannel.of(newSupplyChannel));
     }
 }
