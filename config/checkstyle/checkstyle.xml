@@ -205,5 +205,8 @@
             <property name="exceptionVariableName" value="expected" />
         </module>
         <module name="CommentsIndentation" />
+        <module name="FinalParameters">
+            <property name="ignorePrimitiveTypes" value="true"/>
+        </module>
     </module>
 </module>
