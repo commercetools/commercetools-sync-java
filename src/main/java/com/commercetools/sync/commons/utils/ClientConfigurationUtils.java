@@ -23,7 +23,7 @@ public class ClientConfigurationUtils {
      *
      * @return the instanted {@link BlockingSphereClient}.
      */
-    public static BlockingSphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
+    public static synchronized BlockingSphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
                                                     final long timeout,
                                                     @Nonnull final TimeUnit timeUnit) {
         if (ctpClient == null) {
