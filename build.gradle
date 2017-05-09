@@ -36,8 +36,8 @@ dependencies {
     compile group: 'com.commercetools.sdk.jvm.core', name: 'commercetools-models', version: commercetoolsJvmSdkVersion
     compile group: 'com.commercetools.sdk.jvm.core', name: 'commercetools-java-client', version: commercetoolsJvmSdkVersion
     compile group: 'com.commercetools.sdk.jvm.core', name: 'commercetools-convenience', version: commercetoolsJvmSdkVersion
-    compile group: 'org.mockito', name: 'mockito-all', version: mockitoVersion
     runtime group: 'org.slf4j', name: 'slf4j-simple', version: slf4jVersion
+    testCompile group: 'org.mockito', name: 'mockito-all', version: mockitoVersion
     testCompile group: 'junit', name: 'junit', version: jUnitVersion
     testCompile group: 'org.assertj', name: 'assertj-core', version: assertjVersion
 }
