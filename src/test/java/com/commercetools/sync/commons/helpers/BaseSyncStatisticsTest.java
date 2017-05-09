@@ -80,7 +80,7 @@ public class BaseSyncStatisticsTest {
         assertThat(baseSyncStatistics.getProcessingTimeInMillis()).isGreaterThanOrEqualTo(waitingTimeInMillis);
 
         final long remainingMillis = baseSyncStatistics.getProcessingTimeInMillis()
-          - TimeUnit.SECONDS.toMillis(baseSyncStatistics.getProcessingTimeInSeconds());
+            - TimeUnit.SECONDS.toMillis(baseSyncStatistics.getProcessingTimeInSeconds());
         assertThat(baseSyncStatistics.getHumanReadableProcessingTime()).contains(format(", %dms", remainingMillis));
     }
 
