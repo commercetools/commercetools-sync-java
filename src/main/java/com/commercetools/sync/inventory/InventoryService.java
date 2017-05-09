@@ -6,6 +6,7 @@ import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 
@@ -42,7 +43,8 @@ interface InventoryService {
      * @param key key of supply channel
      * @return created {@link Channel}
      */
-    Channel createSupplyChannel(String key);
+    @Nullable
+    Channel createSupplyChannel(@Nonnull final String key);
 
     /**
      * Creates new inventory entry from {@code inventoryEntryDraft}.
@@ -50,6 +52,7 @@ interface InventoryService {
      * @param inventoryEntryDraft draft with data for new inventory entry
      * @return created {@link InventoryEntry}
      */
+    @Nullable
     InventoryEntry createInventoryEntry(@Nonnull final InventoryEntryDraft inventoryEntryDraft);
 
     /**
@@ -59,6 +62,7 @@ interface InventoryService {
      * @param updateActions {@link List} of actions that should be applied to {@code inventoryEntry}
      * @return updated {@link InventoryEntry}
      */
+    @Nullable
     InventoryEntry updateInventoryEntry(@Nonnull final InventoryEntry inventoryEntry,
                                         @Nonnull final List<UpdateAction<InventoryEntry>> updateActions);
 }

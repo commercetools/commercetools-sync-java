@@ -57,24 +57,25 @@ final class InventoryServiceImpl implements InventoryService {
                 .join();
     }
 
+    @Nullable
     @Override
-    public Channel createSupplyChannel(String key) {
+    public Channel createSupplyChannel(@Nonnull final String key) {
         final ChannelDraft draft = ChannelDraftBuilder.of(key)
                 .roles(singleton(ChannelRole.INVENTORY_SUPPLY))
                 .build();
         return ctpClient.executeBlocking(ChannelCreateCommand.of(draft));
     }
 
-    @Override
     @Nullable
-    public InventoryEntry createInventoryEntry(@Nonnull InventoryEntryDraft inventoryEntryDraft) {
+    @Override
+    public InventoryEntry createInventoryEntry(@Nonnull final InventoryEntryDraft inventoryEntryDraft) {
         return ctpClient.executeBlocking(InventoryEntryCreateCommand.of(inventoryEntryDraft));
     }
 
-    @Override
     @Nullable
-    public InventoryEntry updateInventoryEntry(@Nonnull InventoryEntry inventoryEntry,
-                                               @Nonnull List<UpdateAction<InventoryEntry>> updateActions) {
+    @Override
+    public InventoryEntry updateInventoryEntry(@Nonnull final InventoryEntry inventoryEntry,
+                                               @Nonnull final List<UpdateAction<InventoryEntry>> updateActions) {
         return ctpClient.executeBlocking(InventoryEntryUpdateCommand.of(inventoryEntry, updateActions));
     }
 }
