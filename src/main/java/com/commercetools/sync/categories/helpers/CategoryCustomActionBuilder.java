@@ -20,7 +20,8 @@ public class CategoryCustomActionBuilder extends GenericCustomActionBuilder<Cate
 
     @Override
     public Optional<UpdateAction<Category>> buildSetCustomTypeAction(@Nullable final String customTypeKey,
-                                                                     @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
+                                                                     @Nullable final Map<String, JsonNode>
+                                                                         customFieldsJsonMap) {
         return Optional.of(SetCustomType.ofTypeKeyAndJson(customTypeKey, customFieldsJsonMap));
     }
 

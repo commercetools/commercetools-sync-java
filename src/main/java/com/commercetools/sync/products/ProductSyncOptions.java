@@ -27,7 +27,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
     // optional filter which can be applied on generated list of update actions
     private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> filterActions;
 
-    public ProductSyncOptions(@Nonnull final CtpClient ctpClient,
+    ProductSyncOptions(@Nonnull final CtpClient ctpClient,
                               @Nonnull final BiConsumer<String, Throwable> errorCallBack,
                               @Nonnull final Consumer<String> warningCallBack,
                               final boolean removeOtherLocales,

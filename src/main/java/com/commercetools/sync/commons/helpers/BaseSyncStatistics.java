@@ -224,7 +224,7 @@ public abstract class BaseSyncStatistics {
      * class.
      *
      * @param statistics the instance of {@link BaseSyncStatistics} from which to create a JSON String.
-     * @return a JSON representation of the given {@code statistics) as a String.
+     * @return a JSON representation of the given {@code statistics} as a String.
      */
     public static String getStatisticsAsJsonString(@Nonnull final BaseSyncStatistics statistics) {
         String result = null;
