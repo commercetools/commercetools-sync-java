@@ -24,9 +24,9 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
     }
 
     /**
-     * Given a list of resource (e.g. categories, products, etc..) drafts. This method compares each new resource in this
-     * list with it's corresponding old resource in a given CTP project, and in turn it either issues update actions on
-     * the existing resource if it exists or create it if it doesn't.
+     * Given a list of resource (e.g. categories, products, etc..) drafts. This method compares each new resource in
+     * this list with it's corresponding old resource in a given CTP project, and in turn it either issues update
+     * actions on the existing resource if it exists or create it if it doesn't.
      *
      * @param resourceDrafts the list of new resources as drafts.
      */
@@ -34,19 +34,18 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
 
 
     /**
-     * Given a list of resource (e.g. categories, products, etc..) drafts. This method compares each new resource in this
-     * list with it's corresponding old resource in a given CTP project, and in turn it either issues update actions on
-     * the existing resource if it exists or create it if it doesn't.
+     * Given a list of resource (e.g. categories, products, etc..) drafts. This method compares each new resource in
+     * this list with it's corresponding old resource in a given CTP project, and in turn it either issues update
+     * actions on the existing resource if it exists or create it if it doesn't.
      *
-     * <p>
-     * The time before and after the actual sync process starts is recorded in the {@link BaseSyncStatistics} container
-     * so that the total processing time is computed in the statistics.
+     * <p>The time before and after the actual sync process starts is recorded in the {@link BaseSyncStatistics}
+     * container so that the total processing time is computed in the statistics.
      *
      * @param resourceDrafts the list of new resources as drafts.
      */
     public void syncDrafts(@Nonnull final List<T> resourceDrafts) {
-        logger.info(format("About to sync %d drafts into CTP project with key '%s'."
-                , resourceDrafts.size(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
+        logger.info(format("About to sync %d drafts into CTP project with key '%s'.", resourceDrafts.size(),
+            this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
         this.statistics.startTimer();
         this.processDrafts(resourceDrafts);
         this.statistics.calculateProcessingTime();
@@ -56,15 +55,15 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      * Given a list of resources (e.g. categories, products, etc..). This method compares each new resource in this
      * list with it's corresponding old resource in a given CTP project, and in turn it either issues update actions on
      * the existing resource if it exists or create it if it doesn't.
-     * <p>
-     * The time before and after the actual sync process starts is recorded in the {@link BaseSyncStatistics} container
-     * so that the total processing time is computed in the statistics.
+     *
+     * <p>The time before and after the actual sync process starts is recorded in the {@link BaseSyncStatistics}
+     * container so that the total processing time is computed in the statistics.
      *
      * @param resources the list of new resources.
      */
     public void sync(@Nonnull final List<S> resources) {
-        logger.info(format("About to sync %d resources into CTP project with key '%s'."
-                , resources.size(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
+        logger.info(format("About to sync %d resources into CTP project with key '%s'.", resources.size(),
+            this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
         this.statistics.startTimer();
         this.process(resources);
         this.statistics.calculateProcessingTime();
