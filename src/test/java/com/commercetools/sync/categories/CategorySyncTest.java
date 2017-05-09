@@ -26,7 +26,7 @@ public class CategorySyncTest {
     private CategorySyncOptions categorySyncOptions;
 
     /**
-     * Initializes the instances of the {@link CategorySyncOptions} and {@link CategorySync} which will be used by some
+     * Initializes instances of  {@link CategorySyncOptions} and {@link CategorySync} which will be used by some
      * of the unit test methods in this test class.
      */
     @Before

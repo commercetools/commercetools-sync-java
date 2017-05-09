@@ -18,10 +18,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class CategorySyncOptionsBuilderTest {
-    final private CtpClient ctpClient = mock(CtpClient.class);
+    private final CtpClient ctpClient = mock(CtpClient.class);
     final CategorySyncOptionsBuilder categorySyncOptionsBuilder = CategorySyncOptionsBuilder.of(ctpClient);
 
-
+    /**
+     * Sets a mock {@code clientConfig} for an instance of {@link CtpClient} to be used across all the unit tests.
+     */
     @Before
     public void setup() {
         final SphereClientConfig clientConfig = SphereClientConfig.of("testPK", "testCI", "testCS");
@@ -51,7 +53,7 @@ public class CategorySyncOptionsBuilderTest {
     @Test
     public void setUpdateActionsFilter_WithFilter_ShouldSetFilter() {
         final Function<List<UpdateAction<Category>>,
-                List<UpdateAction<Category>>> clearListFilter = (updateActions -> Collections.emptyList());
+            List<UpdateAction<Category>>> clearListFilter = (updateActions -> Collections.emptyList());
         categorySyncOptionsBuilder.setUpdateActionsFilter(clearListFilter);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
@@ -96,7 +98,7 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void setErrorCallBack_WithCallBack_ShouldSetCallBack() {
-        final BiConsumer<String, Throwable> mockErrorCallBack = (s, throwable) -> {
+        final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
         };
         categorySyncOptionsBuilder.setErrorCallBack(mockErrorCallBack);
 
@@ -106,7 +108,7 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void setWarningCallBack_WithCallBack_ShouldSetCallBack() {
-        final Consumer<String> mockWarningCallBack = (s) -> {
+        final Consumer<String> mockWarningCallBack = (warningMessage) -> {
         };
         categorySyncOptionsBuilder.setWarningCallBack(mockWarningCallBack);
 
@@ -125,9 +127,9 @@ public class CategorySyncOptionsBuilderTest {
     @Test
     public void categorySyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
         CategorySyncOptionsBuilder
-                .of(ctpClient)
-                .setRemoveOtherLocales(false)
-                .setUpdateActionsFilter(updateActions -> Collections.emptyList())
-                .build();
+            .of(ctpClient)
+            .setRemoveOtherLocales(false)
+            .setUpdateActionsFilter(updateActions -> Collections.emptyList())
+            .build();
     }
 }
