@@ -44,12 +44,12 @@ public class InventorySyncStatistics extends BaseSyncStatistics {
      */
     @Override
     public String getReportMessage() {
-        String report = "\nSummary of inventory synchronisation:\n";
-        if (unprocessedDueToEmptySku > 0) {
-            report += format("%d inventory entries weren't processed due to empty sku\n", unprocessedDueToEmptySku);
-        }
-        report += format("%d inventory entries were processed in total (%d created, %d updated, %d failed to sync\n\n",
+        String unprocessedReport =  unprocessedDueToEmptySku > 0
+                ? format("%d inventory entries weren't processed due to empty sku%n", unprocessedDueToEmptySku) : "";
+
+        String processedReport = format("%d inventory entries were processed in total (%d created, %d updated, %d failed to sync%n",
                 getProcessed(), getCreated(), getUpdated(), getFailed());
-        return report;
+
+        return format("%nSummary of inventory synchronisation:%n%s%s%n", unprocessedReport, processedReport);
     }
 }
