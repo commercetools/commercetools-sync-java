@@ -17,18 +17,23 @@ interface InventoryService {
 
     /**
      * Fetches all {@link InventoryEntry} objects whose sku is included in {@code skus}.
+     * For some {@code skus} there could be no matching entries in database, so for such skus no entries would be
+     * returned. Because of that result can contain inventory entries of skus, that are only subset of passed
+     * {@code skus}, or even in empty list when no matching entry is found.
      * Returned entries have an expanded reference to the {@code supplyChannel}.
      *
      * @param skus {@link Set} of sku values, used in search predicate
-     * @return {@link List} of matching entries
+     * @return {@link List} of matching entries or empty list when there was no entry of sku matching to {@code skus}.
      */
+    @Nonnull
     List<InventoryEntry> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus);
 
     /**
      * Fetches all {@link Channel} that contain role {@code "InventorySupply"}.
      *
-     * @return {@link List} of matching channels
+     * @return {@link List} of matching channels or empty list when no supply channel was found.
      */
+    @Nonnull
     List<Channel> fetchAllSupplyChannels();
 
     /**

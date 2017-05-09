@@ -33,8 +33,9 @@ final class InventoryServiceImpl implements InventoryService {
         this.ctpClient = ctpClient;
     }
 
+    @Nonnull
     @Override
-    public List<InventoryEntry> fetchInventoryEntriesBySkus(Set<String> skus) {
+    public List<InventoryEntry> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus) {
         final InventoryEntryQuery query = InventoryEntryQueryBuilder.of()
                 .plusPredicates(queryModel -> queryModel.sku().isIn(skus))
                 .plusExpansionPaths(expansionModel -> expansionModel.supplyChannel())
@@ -44,6 +45,7 @@ final class InventoryServiceImpl implements InventoryService {
                 .join();
     }
 
+    @Nonnull
     @Override
     public List<Channel> fetchAllSupplyChannels() {
         final ChannelQuery query = ChannelQueryBuilder.of()
