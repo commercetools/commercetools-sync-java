@@ -18,8 +18,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class CategorySyncOptionsBuilderTest {
-    private final CtpClient ctpClient = mock(CtpClient.class);
-    final CategorySyncOptionsBuilder categorySyncOptionsBuilder = CategorySyncOptionsBuilder.of(ctpClient);
+    private static final CtpClient CTP_CLIENT = mock(CtpClient.class);
+    private CategorySyncOptionsBuilder categorySyncOptionsBuilder = CategorySyncOptionsBuilder.of(CTP_CLIENT);
 
     /**
      * Sets a mock {@code clientConfig} for an instance of {@link CtpClient} to be used across all the unit tests.
@@ -27,12 +27,12 @@ public class CategorySyncOptionsBuilderTest {
     @Before
     public void setup() {
         final SphereClientConfig clientConfig = SphereClientConfig.of("testPK", "testCI", "testCS");
-        when(ctpClient.getClientConfig()).thenReturn(clientConfig);
+        when(CTP_CLIENT.getClientConfig()).thenReturn(clientConfig);
     }
 
     @Test
     public void of_WithClient_ShouldCreateCategorySyncOptionsBuilder() {
-        final CategorySyncOptionsBuilder builder = CategorySyncOptionsBuilder.of(ctpClient);
+        final CategorySyncOptionsBuilder builder = CategorySyncOptionsBuilder.of(CTP_CLIENT);
         assertThat(builder).isNotNull();
     }
 
@@ -47,7 +47,7 @@ public class CategorySyncOptionsBuilderTest {
         assertThat(categorySyncOptions.getUpdateActionsFilter()).isNull();
         assertThat(categorySyncOptions.getErrorCallBack()).isNull();
         assertThat(categorySyncOptions.getWarningCallBack()).isNull();
-        assertThat(categorySyncOptions.getCtpClient()).isEqualTo(ctpClient);
+        assertThat(categorySyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
     }
 
     @Test
@@ -118,7 +118,7 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void getThis_ShouldReturnCorrectInstance() {
-        CategorySyncOptionsBuilder instance = categorySyncOptionsBuilder.getThis();
+        final CategorySyncOptionsBuilder instance = categorySyncOptionsBuilder.getThis();
         assertThat(instance).isNotNull();
         assertThat(instance).isInstanceOf(CategorySyncOptionsBuilder.class);
         assertThat(instance).isEqualTo(categorySyncOptionsBuilder);
@@ -126,10 +126,11 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void categorySyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
-        CategorySyncOptionsBuilder
-            .of(ctpClient)
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
+            .of(CTP_CLIENT)
             .setRemoveOtherLocales(false)
             .setUpdateActionsFilter(updateActions -> Collections.emptyList())
             .build();
+        assertThat(categorySyncOptions).isNotNull();
     }
 }
