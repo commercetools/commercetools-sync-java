@@ -48,7 +48,7 @@ public final class InventoryDraftTransformerUtils {
      * @see InventoryDraftTransformerUtils#transformToDraft
      *
      * @param inventoryEntries list of {@link InventoryEntry} from which drafts will be created
-     * @return {@link List} of {@code}
+     * @return {@link List} of {@link InventoryEntryDraft} created from {@code inventoryEntries}
      */
     public static List<InventoryEntryDraft> transformToDrafts(@Nonnull final List<InventoryEntry> inventoryEntries) {
         return inventoryEntries.stream()

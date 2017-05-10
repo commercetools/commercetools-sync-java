@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Arrays.asList;
@@ -89,5 +90,17 @@ public class InventoryDraftTransformerUtilsTest {
 
         assertThat(drafts).isNotNull();
         assertThat(drafts).hasSize(2);
+        assertThat(drafts.get(0)).isNotNull();
+        assertThat(drafts.get(1)).isNotNull();
+        assertThat(drafts.get(0).getSku()).isEqualTo(SKU);
+        assertThat(drafts.get(1).getSku()).isEqualTo(SKU);
+    }
+
+    @Test
+    public void transformToDrafts_WithEmptyList_ShouldReturnEmptyList() {
+        final List<InventoryEntryDraft> drafts = InventoryDraftTransformerUtils.transformToDrafts(new ArrayList<>());
+
+        assertThat(drafts).isNotNull();
+        assertThat(drafts).isEmpty();
     }
 }
