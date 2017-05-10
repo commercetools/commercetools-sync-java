@@ -9,6 +9,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
+import io.sphere.sdk.inventory.commands.updateactions.*;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import org.junit.Before;
@@ -69,6 +70,14 @@ public class InventorySyncUtilsTest {
                         .build(), mockTypeService());
 
         assertThat(actions).hasSize(4);
+        assertThat(actions.get(0)).isNotNull();
+        assertThat(actions.get(1)).isNotNull();
+        assertThat(actions.get(2)).isNotNull();
+        assertThat(actions.get(3)).isNotNull();
+        assertThat(actions.get(0)).isInstanceOf(ChangeQuantity.class);
+        assertThat(actions.get(1)).isInstanceOf(SetRestockableInDays.class);
+        assertThat(actions.get(2)).isInstanceOf(SetExpectedDelivery.class);
+        assertThat(actions.get(3)).isInstanceOfAny(SetSupplyChannel.class);
     }
 
     @Test
@@ -95,6 +104,8 @@ public class InventorySyncUtilsTest {
                         mockTypeService());
 
         assertThat(actions).hasSize(1);
+        assertThat(actions.get(0)).isNotNull();
+        assertThat(actions.get(0)).isInstanceOf(SetCustomType.class);
     }
 
     @Test
@@ -106,6 +117,8 @@ public class InventorySyncUtilsTest {
                         mockTypeService());
 
         assertThat(actions).hasSize(1);
+        assertThat(actions.get(0)).isNotNull();
+        assertThat(actions.get(0)).isInstanceOf(SetCustomType.class);
     }
 
     @Test
@@ -120,6 +133,10 @@ public class InventorySyncUtilsTest {
                         mockTypeService());
 
         assertThat(actions).hasSize(2);
+        assertThat(actions.get(0)).isNotNull();
+        assertThat(actions.get(1)).isNotNull();
+        assertThat(actions.get(0)).isInstanceOf(SetCustomField.class);
+        assertThat(actions.get(1)).isInstanceOf(SetCustomField.class);
     }
 
     @Test
@@ -134,6 +151,8 @@ public class InventorySyncUtilsTest {
                         mockTypeService());
 
         assertThat(actions).hasSize(1);
+        assertThat(actions.get(0)).isNotNull();
+        assertThat(actions.get(0)).isInstanceOf(SetCustomField.class);
     }
 
     private CustomFieldsDraft getDraftOfCustomField(String fieldName, String fieldValue) {
