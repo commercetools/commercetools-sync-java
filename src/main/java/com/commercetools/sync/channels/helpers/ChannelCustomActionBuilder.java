@@ -7,6 +7,7 @@ import io.sphere.sdk.channels.commands.updateactions.SetCustomField;
 import io.sphere.sdk.channels.commands.updateactions.SetCustomType;
 import io.sphere.sdk.commands.UpdateAction;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
@@ -14,21 +15,24 @@ import java.util.Optional;
 
 public class ChannelCustomActionBuilder extends GenericCustomActionBuilder<Channel> {
 
+    @Nonnull
     @Override
-    public Optional<UpdateAction<Channel>> buildRemoveCustomTypeAction() {
-        return Optional.of(SetCustomType.ofRemoveType());
+    public UpdateAction<Channel> buildRemoveCustomTypeAction() {
+        return SetCustomType.ofRemoveType();
     }
 
+    @Nonnull
     @Override
-    public Optional<UpdateAction<Channel>> buildSetCustomTypeAction(@Nullable final String customTypeKey,
-                                                                    @Nullable final Map<String, JsonNode>
-                                                                      customFieldsJsonMap) {
-        return Optional.of(SetCustomType.ofTypeKeyAndJson(customTypeKey, customFieldsJsonMap));
+
+    public UpdateAction<Channel> buildSetCustomTypeAction(@Nullable final String customTypeKey,
+                                                          @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
+        return SetCustomType.ofTypeKeyAndJson(customTypeKey, customFieldsJsonMap);
     }
 
+    @Nonnull
     @Override
-    public Optional<UpdateAction<Channel>> buildSetCustomFieldAction(@Nullable final String customFieldName,
-                                                                     @Nullable final JsonNode customFieldValue) {
-        return Optional.of(SetCustomField.ofJson(customFieldName, customFieldValue));
+    public UpdateAction<Channel> buildSetCustomFieldAction(@Nullable final String customFieldName,
+                                                           @Nullable final JsonNode customFieldValue) {
+        return SetCustomField.ofJson(customFieldName, customFieldValue);
     }
 }

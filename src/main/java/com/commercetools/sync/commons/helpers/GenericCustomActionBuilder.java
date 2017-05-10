@@ -8,6 +8,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.types.Custom;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +28,8 @@ public abstract class GenericCustomActionBuilder<T extends Custom & Resource<T>>
      *
      * @return a setCustomType update action that removes the custom type from the resource it's requested on.
      */
-    public abstract Optional<UpdateAction<T>> buildRemoveCustomTypeAction();
+    @Nonnull
+    public abstract UpdateAction<T> buildRemoveCustomTypeAction();
 
     /**
      * Creates a CTP "setCustomType" update action on the given resource {@link T} (which currently could either
@@ -37,9 +39,9 @@ public abstract class GenericCustomActionBuilder<T extends Custom & Resource<T>>
      * @param customFieldsJsonMap the custom fields map of JSON values.
      * @return a setCustomType update action of the type of the resource it's requested on.
      */
-    public abstract Optional<UpdateAction<T>> buildSetCustomTypeAction(@Nullable final String customTypeKey,
-                                                                       @Nullable final Map<String, JsonNode>
-                                                                         customFieldsJsonMap);
+    @Nonnull
+    public abstract UpdateAction<T> buildSetCustomTypeAction(@Nullable final String customTypeKey,
+                                                             @Nullable final Map<String, JsonNode> customFieldsJsonMap);
 
     /**
      * Creates a CTP "setCustomField" update action on the given resource {@link T} that updates a custom field with
@@ -51,6 +53,7 @@ public abstract class GenericCustomActionBuilder<T extends Custom & Resource<T>>
      * @return a setCustomField update action on the provided field name, with the provided value
      *      on the resource it's requested on.
      */
-    public abstract Optional<UpdateAction<T>> buildSetCustomFieldAction(@Nullable final String customFieldName,
-                                                                        @Nullable final JsonNode customFieldValue);
+    @Nonnull
+    public abstract UpdateAction<T> buildSetCustomFieldAction(@Nullable final String customFieldName,
+                                                              @Nullable final JsonNode customFieldValue);
 }

@@ -42,8 +42,9 @@ final class GenericUpdateActionUtils {
         @Nonnull final T resource,
         @Nonnull final BaseSyncOptions syncOptions) {
         try {
-            return GenericCustomActionBuilderFactory.of(resource)
-                                                    .buildSetCustomTypeAction(customTypeKey, customFieldsJsonMap);
+            return Optional.of(GenericCustomActionBuilderFactory.of(resource)
+                                                                .buildSetCustomTypeAction(customTypeKey,
+                                                                    customFieldsJsonMap));
         } catch (BuildUpdateActionException | IllegalAccessException | InstantiationException exception) {
             syncOptions.applyErrorCallback(format(SET_CUSTOM_TYPE_BUILD_FAILED.getDescription(),
                 resource.toReference().getTypeId(), resource.getId(), exception.getMessage()), exception);
@@ -64,7 +65,7 @@ final class GenericUpdateActionUtils {
     static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedRemoveCustomTypeUpdateAction(
         @Nonnull final T resource, @Nonnull final BaseSyncOptions syncOptions) {
         try {
-            return GenericCustomActionBuilderFactory.of(resource).buildRemoveCustomTypeAction();
+            return Optional.of(GenericCustomActionBuilderFactory.of(resource).buildRemoveCustomTypeAction());
         } catch (BuildUpdateActionException | IllegalAccessException | InstantiationException exception) {
             syncOptions.applyErrorCallback(format(REMOVE_CUSTOM_TYPE_BUILD_FAILED.getDescription(),
                 resource.toReference().getTypeId(), resource.getId(), exception.getMessage()), exception);
@@ -92,8 +93,9 @@ final class GenericUpdateActionUtils {
         @Nonnull final T resource,
         @Nonnull final BaseSyncOptions syncOptions) {
         try {
-            return GenericCustomActionBuilderFactory.of(resource)
-                                                    .buildSetCustomFieldAction(customFieldName, customFieldValue);
+            return Optional.of(GenericCustomActionBuilderFactory.of(resource)
+                                                                .buildSetCustomFieldAction(customFieldName,
+                                                                    customFieldValue));
         } catch (BuildUpdateActionException | IllegalAccessException | InstantiationException exception) {
             syncOptions.applyErrorCallback(format(SET_CUSTOM_FIELD_BUILD_FAILED.getDescription(), customFieldName,
                 resource.toReference().getTypeId(), resource.getId(), exception.getMessage()), exception);
