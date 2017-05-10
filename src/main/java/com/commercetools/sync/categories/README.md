@@ -6,6 +6,7 @@ commercetools project.
 - [What it offers?](#what-it-offers)
 - [How to use it?](#how-to-use-it)
 - [How does it work?](#how-does-it-work)
+- [FAQ](#faq)
 
 
 ## What it offers?
@@ -198,4 +199,23 @@ Only if there are update actions needed, they will be issued to the CTP platform
 2. If no matching category with the same `externalId` is found, the tool will create a new one. 
 
 The sync, however, will never delete a category.
+ 
+## FAQ
+#### What does the number of processed categories actually refer to in the statistics of the sync process?
+It refers to the total number of categories which were required to be updated/created. A category that failed to be 
+updated/created will still be counted as processed. Only a category which wasn't required to be updated/created will not
+be counted as processed. 
+
+#### Why is the `externalId` used for matching categories instead of another field e.g. `slug`?
+Even though the `externalId` is an `optional` field on a category on CTP, it is still used as the main identifier for a
+category in the sync library. The main reason why an `externalId` is an `optional` field is due to the fact that a category
+can be created through the CTP [Admin Center](admin.sphere.io) or the [Merchant Center](mc.commercetools.com) and thus
+an `externalId` is insignificant in such case. However, external PIM systems must have some kind of identifier
+that they use to uniquely identify their categories. This unique identifier is exactly what is used for an `externalId` 
+for the CTP Categories and is what is used for matching new categories with old categories. Therefore, it made sense to 
+use it for it's purpose of identifying categories as opposed to using fields like `slug`, which is a localised field 
+that has another purpose of storing the part of URL for accessing the category on a shopfront. However, this could be 
+changed due to [Issue #36](https://github.com/commercetools/commercetools-sync-java/issues/36).
+
+
  
