@@ -8,25 +8,29 @@ import io.sphere.sdk.categories.commands.updateactions.SetCustomField;
 import io.sphere.sdk.categories.commands.updateactions.SetCustomType;
 import io.sphere.sdk.commands.UpdateAction;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 
 public class CategoryCustomActionBuilder extends GenericCustomActionBuilder<Category> {
+    @Nonnull
     @Override
-    public Optional<UpdateAction<Category>> buildRemoveCustomTypeAction() {
-        return Optional.of(SetCustomType.ofRemoveType());
+    public UpdateAction<Category> buildRemoveCustomTypeAction() {
+        return SetCustomType.ofRemoveType();
     }
 
+    @Nonnull
     @Override
-    public Optional<UpdateAction<Category>> buildSetCustomTypeAction(@Nullable final String customTypeKey,
+    public UpdateAction<Category> buildSetCustomTypeAction(@Nullable final String customTypeKey,
                                                                      @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
-        return Optional.of(SetCustomType.ofTypeKeyAndJson(customTypeKey, customFieldsJsonMap));
+        return SetCustomType.ofTypeKeyAndJson(customTypeKey, customFieldsJsonMap);
     }
 
+    @Nonnull
     @Override
-    public Optional<UpdateAction<Category>> buildSetCustomFieldAction(@Nullable final String customFieldName,
+    public UpdateAction<Category> buildSetCustomFieldAction(@Nullable final String customFieldName,
                                                                       @Nullable final JsonNode customFieldValue) {
-        return Optional.of(SetCustomField.ofJson(customFieldName, customFieldValue));
+        return SetCustomField.ofJson(customFieldName, customFieldValue);
     }
 }
