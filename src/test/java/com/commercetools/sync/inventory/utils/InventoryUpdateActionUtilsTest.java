@@ -61,10 +61,23 @@ public class InventoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeQuantityAction_WithNewNullValue_ShouldReturnEmptyOptional() {
+    public void buildChangeQuantityAction_WithNewNullValue_ShouldReturnAction() {
         final InventoryEntryDraft draft = mock(InventoryEntryDraft.class);
         when(draft.getQuantityOnStock()).thenReturn(null);
         final Optional<UpdateAction<InventoryEntry>> result = buildChangeQuantityAction(old, draft);
+        assertThat(result).isNotNull();
+        assertThat(result.isPresent()).isTrue();
+        assertThat(result.get()).isExactlyInstanceOf(ChangeQuantity.class);
+        assertThat(((ChangeQuantity) result.get()).getQuantity()).isEqualTo(0l);
+    }
+
+    @Test
+    public void buildChangeQuantityAction_WithNewNullValueAndOldZeroValue_ShouldReturnEmptyOptional() {
+        final InventoryEntryDraft draft = mock(InventoryEntryDraft.class);
+        when(draft.getQuantityOnStock()).thenReturn(null);
+        final InventoryEntry entry = mock(InventoryEntry.class);
+        when(draft.getQuantityOnStock()).thenReturn(0l);
+        final Optional<UpdateAction<InventoryEntry>> result = buildChangeQuantityAction(entry, draft);
         assertThat(result).isNotNull();
         assertThat(result.isPresent()).isFalse();
     }
