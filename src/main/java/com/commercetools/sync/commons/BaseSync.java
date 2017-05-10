@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
 
@@ -30,7 +32,7 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      *
      * @param resourceDrafts the list of new resources as drafts.
      */
-    protected abstract void processDrafts(@Nonnull final List<T> resourceDrafts);
+    protected abstract CompletionStage<U> processDrafts(@Nonnull final List<T> resourceDrafts);
 
 
     /**
@@ -44,12 +46,14 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      *
      * @param resourceDrafts the list of new resources as drafts.
      */
-    public void syncDrafts(@Nonnull final List<T> resourceDrafts) {
+    public CompletionStage<U> syncDrafts(@Nonnull final List<T> resourceDrafts) {
         logger.info(format("About to sync %d drafts into CTP project with key '%s'."
                 , resourceDrafts.size(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
         this.statistics.startTimer();
-        this.processDrafts(resourceDrafts);
-        this.statistics.calculateProcessingTime();
+        return this.processDrafts(resourceDrafts).thenApply(resultingStatistics -> {
+            resultingStatistics.calculateProcessingTime();
+            return resultingStatistics;
+        });
     }
 
     /**
@@ -62,12 +66,14 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      *
      * @param resources the list of new resources.
      */
-    public void sync(@Nonnull final List<S> resources) {
+    public CompletionStage<U> sync(@Nonnull final List<S> resources) {
         logger.info(format("About to sync %d resources into CTP project with key '%s'."
                 , resources.size(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
         this.statistics.startTimer();
-        this.process(resources);
-        this.statistics.calculateProcessingTime();
+        return this.process(resources).thenApply(resultingStatistics -> {
+            resultingStatistics.calculateProcessingTime();
+            return resultingStatistics;
+        });
     }
 
     /**
@@ -77,7 +83,7 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      *
      * @param resources the list of new resources.
      */
-    protected abstract void process(@Nonnull final List<S> resources);
+    protected abstract CompletionStage<U> process(@Nonnull final List<S> resources);
 
     /**
      * Returns an instance of type U which is a subclass of {@link BaseSyncStatistics} containing all the stats of the
