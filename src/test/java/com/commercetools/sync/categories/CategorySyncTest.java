@@ -12,6 +12,8 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryService;
@@ -84,7 +86,8 @@ public class CategorySyncTest {
     @Test
     public void syncDrafts_WithNoExistingCategory_ShouldCreateCategory() {
         final CategoryService categoryService = getMockCategoryService();
-        when(categoryService.fetchCategoryByExternalId(anyString())).thenReturn(null);
+        when(categoryService.fetchCategoryByExternalId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
         final CategorySync categorySync = new CategorySync(categorySyncOptions, mock(TypeService.class),
                 categoryService);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
@@ -146,8 +149,10 @@ public class CategorySyncTest {
     @Test
     public void syncDrafts_WithNoExistingCategoryButExceptionOnCreate_ShouldFailSync() {
         final CategoryService categoryService = getMockCategoryService();
-        when(categoryService.fetchCategoryByExternalId(anyString())).thenReturn(null);
+        when(categoryService.fetchCategoryByExternalId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
         when(categoryService.createCategory(any())).thenThrow(new SphereException());
+
         final CategorySync categorySync = new CategorySync(categorySyncOptions, mock(TypeService.class),
                 categoryService);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();

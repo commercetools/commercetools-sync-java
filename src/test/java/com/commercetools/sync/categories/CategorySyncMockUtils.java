@@ -12,6 +12,9 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.MockUtils.getMockCustomFieldsDraft;
 import static org.mockito.Matchers.any;
@@ -87,7 +90,7 @@ public class CategorySyncMockUtils {
         return mockCategoryDraft;
     }
 
-    public static CategoryService getMockCategoryService() {
+    static CategoryService getMockCategoryService() {
         final Category category = getMockCategory(Locale.ENGLISH,
                 "name",
                 "slug",
@@ -99,10 +102,15 @@ public class CategorySyncMockUtils {
                 "orderHint",
                 "parentId");
 
+
         final CategoryService categoryService = mock(CategoryService.class);
-        when(categoryService.fetchCategoryByExternalId(anyString())).thenReturn(category);
-        when(categoryService.updateCategory(any(), any())).thenReturn(category);
-        when(categoryService.createCategory(any())).thenReturn(category);
+        when(categoryService.fetchCategoryByExternalId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of(category)));
+        when(categoryService.updateCategory(any(), any()))
+            .thenReturn(CompletableFuture.completedFuture(category));
+        when(categoryService.createCategory(any()))
+            .thenReturn(CompletableFuture.completedFuture(category));
+
 
         return categoryService;
     }
