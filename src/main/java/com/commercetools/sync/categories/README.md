@@ -76,13 +76,19 @@ In order to use the category sync an instance of
   ````
   ##### getStatistics
   Used to get an object  containing all the stats of the sync process; which includes a report message, the total number
-   of update, created, failed, processed categories and the processing time of the sync in different time units and in a
-    human readable format.
-    <!--- TODO Add code snippets of getStatistics -->
-    
+  of updated, created, failed, processed categories and the processing time of the sync in different time units and in a
+  human readable format.
+  ````java
+  categorySync.syncDrafts(categoryDrafts);
+  categorySync.getStatistics().getCreated(); // 1000
+  categorySync.getStatistics().getFailed(); // 5
+  categorySync.getStatistics().getUpdated(); // 995
+  categorySync.getStatistics().getProcessed(); // 2000
+  categorySync.getStatistics().getReportMessage(); 
+  /*"Summary: 2000 categories were processed in total (1000 created, 995 updated and 5 categories failed to sync).");*/
+   ````
     
   <!--- TODO Also add code snippets for building update actions utils! -->
-  
   
   Additional configuration for the sync can be configured on the `CategorySyncOptions` instance, according to the need 
   of the user of the sync:
