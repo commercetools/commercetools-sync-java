@@ -191,11 +191,11 @@ In order to use the category sync an instance of
 
 ## How does it work?
 
-The category sync uses the `externalId` to match new categories to existing ones. If a category with the same 
-`externalId` is found we will call it an update as the tool will then update the existing category properties - like name
- etc. - to those values defined in the category. If no matching category is found the tool will create a new one. The 
- sync, however, will never delete a category.
+The category sync uses the `externalId` to match new categories to existing ones. 
+1. If a category exists with the same `externalId`, it means that this category already exists on the CTP project. Therefore, 
+the tool calculates update actions that should be done to update the old category with the new category's fields.
+Only if there are update actions needed, they will be issued to the CTP platform.
+2. If no matching category with the same `externalId` is found, the tool will create a new one. 
+
+The sync, however, will never delete a category.
  
- When two categories are matched, the sync will compute a list of update actions that are needed for existing category to
- be exactly the same as the new one. This list of update actions will then be issued to the commercetools platform, eventually
- updating the category.
