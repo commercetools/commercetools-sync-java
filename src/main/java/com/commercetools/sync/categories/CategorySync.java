@@ -17,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -108,10 +111,10 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      *
      * @param categoryDraft the category draft where we get the new data.
      */
-    void createOrUpdateCategory(@Nonnull final CategoryDraft categoryDraft) {
+    private void createOrUpdateCategory(@Nonnull final CategoryDraft categoryDraft) {
         final String externalId = categoryDraft.getExternalId();
         try {
-            final Category oldCategory = this.categoryService.fetchCategoryByExternalId(externalId);
+            final Category oldCategory = fetchOldCategoryByExternalId(externalId);
             if (oldCategory != null) {
                 syncCategories(oldCategory, categoryDraft);
             } else {
@@ -122,6 +125,24 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                             " '%s' in CTP project with key '%s",
                     externalId, this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), e);
         }
+    }
+
+    /**
+     * Given an {@code externalId} this method uses {@code this} instance's injected {@link CategoryService} to fetch
+     * a Category with this {@code externalId} from CTP. The service returns a
+     * {@link CompletionStage&lt;Optional&lt;Category&gt;&gt;}, which this method blocks the execution of the code to
+     * complete this completion stage and return the resultant {@link Category} wrapped in the {@link Optional}, if one
+     * exists. If no {@link Category} exists with such {@code externalId}, this method returns {@code null}.
+     *
+     * @param externalId the externalId by which a {@link Category} should be fetched from the CTP project.
+     * @return {@link Category} with the {@code externalId} specified if exists, or {@code null} otherwise.
+     */
+    @Nullable
+    private Category fetchOldCategoryByExternalId(@Nullable final String externalId) {
+        final CompletionStage<Optional<Category>> oldCategoryOptionalStage =
+            this.categoryService.fetchCategoryByExternalId(externalId);
+        final Optional<Category> oldCategoryOptional = oldCategoryOptionalStage.toCompletableFuture().join();
+        return oldCategoryOptional.orElse(null);
     }
 
     /**
@@ -137,7 +158,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      */
     private void createCategory(@Nonnull final CategoryDraft categoryDraft) {
         try {
-            this.categoryService.createCategory(categoryDraft);
+            this.categoryService.createCategory(categoryDraft).toCompletableFuture().join();
             this.statistics.incrementCreated();
         } catch (SphereException e) {
             failSync(format("Failed to create category with external id" +
@@ -175,10 +196,10 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      * @param category      the category to update.
      * @param updateActions the list of update actions to update the category with.
      */
-    void updateCategory(@Nonnull final Category category,
-                        @Nonnull final List<UpdateAction<Category>> updateActions) {
+    private void updateCategory(@Nonnull final Category category,
+                                @Nonnull final List<UpdateAction<Category>> updateActions) {
         try {
-            this.categoryService.updateCategory(category, updateActions);
+            this.categoryService.updateCategory(category, updateActions).toCompletableFuture().join();
             this.statistics.incrementUpdated();
         } catch (SphereException e) {
             failSync(format("Failed to update category with id" +
