@@ -37,7 +37,7 @@ public final class InventorySyncUtils {
      *                    For example, custom callbacks to call in case of warnings or errors occurring on the build
      *                    update action process. And other options (See {@link BaseSyncOptions}
      *                    for more info.
-     * @param typeService responsible for fetching the key of the old resource type from it's cache.
+     * @param typeService responsible for fetching the key of the old resource type from its cache.
      * @return list containing {@link UpdateAction} that need to be performed on {@code oldEntry} resource so
      * that it will be synced with {@code newEntry} or empty list when both entries are already synced.
      */
@@ -60,7 +60,7 @@ public final class InventorySyncUtils {
      *                    For example, custom callbacks to call in case of warnings or errors occurring on the build
      *                    update action process. And other options (See {@link BaseSyncOptions}
      *                    for more info.
-     * @param typeService responsible for fetching the key of the old resource type from it's cache.
+     * @param typeService responsible for fetching the key of the old resource type from its cache.
      * @return list containing {@link UpdateAction} that need to be performed on {@code oldEntry} resource so
      * that it will be synced with {@code newEntry} or empty list when both entries are already synced.
      */

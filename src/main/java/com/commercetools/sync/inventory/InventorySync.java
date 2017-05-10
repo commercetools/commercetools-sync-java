@@ -35,7 +35,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InventorySync.class);
 
-    //Cache that maps supply channel key to supply channel Id for supply channels existing in database.
+    //Cache that maps supply channel key to supply channel Id for supply channels existing in CT platform.
     private Map<String, String> supplyChannelKeyToId;
 
     @Nonnull
@@ -61,7 +61,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *
      * <p>
      *     <strong>Note:</strong> resource drafts are compared with existing resources by {@code sku} and
-     *     {@code supplyChannel} key. Every {@link InventoryEntryDraft} that contatins {@code supplyChannel} should
+     *     {@code supplyChannel} key. Every {@link InventoryEntryDraft} that contains {@code supplyChannel} should
      *     either:
      *     <ul>
      *         <li>have {@code supplyChannel} expanded, that means
@@ -87,7 +87,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * <ul>
      *     <li>Comparing entries and drafts by {@code sku} and {@code supplyChannel} key</li>
      *     <li>Calculating of necessary updates and creation commands</li>
-     *     <li>Actually <strong>performing</strong> changes in a target CTP project by sphere calls</li>
+     *     <li>Actually <strong>performing</strong> changes in a target CTP project</li>
      * </ul>
      * The process is customized according to {@link InventorySyncOptions} passed to constructor of this object.
      * After the process finishes you can obtain its summary by calling {@link InventorySync#getStatistics()}.</p>
@@ -216,7 +216,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * Tries to update {@code entry} in database with data from {@code draft}.
+     * Tries to update {@code entry} in CT platform with data from {@code draft}.
      * It calculates list of {@link UpdateAction} and calls API only when there is a need.
      * Before calculate differences, the channel reference from {@code draft} is replaced, so it points to
      * proper channel ID in target system.
@@ -254,8 +254,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * Tries to create Inventory Entry in database, using {@code draft}.
-     * Before calls API, the channel reference from {@code draft} is replaced, so it points to proper channel ID
+     * Tries to create Inventory Entry in CT platform, using {@code draft}.
+     * Before calling API, the channel reference from {@code draft} is replaced, so it points to proper channel ID
      * in target system.
      * It either creates inventory entry and increments "created" counter in statistics, or increments "failed" counter
      * and log error in case of any exception.
@@ -316,7 +316,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * Returns new {@link InventoryEntryDraft} containing same data as {@code draft} except for
      * supply channel reference that is replaced by reference pointing to {@code supplyChannelId}
      * @param draft draft where reference should be replaced
-     * @param supplyChannelId ID of supply channel existing in target system
+     * @param supplyChannelId ID of supply channel existing in target project
      * @return {@link InventoryEntryDraft} with supply channel reference pointing to {@code supplyChannelId}
      * and other data same as in {@code draft}
      */
