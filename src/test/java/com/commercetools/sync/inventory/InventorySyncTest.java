@@ -50,19 +50,20 @@ public class InventorySyncTest {
 
     @Before
     public void setup() {
-        Channel channel1 = getMockChannel(REF_1, KEY_1);
-        Channel channel2 = getMockChannel(REF_2, KEY_2);
+        final Channel channel1 = getMockSupplyChannel(REF_1, KEY_1);
+        final Channel channel2 = getMockSupplyChannel(REF_2, KEY_2);
 
-        Reference<Channel> reference1 = Channel.referenceOfId(REF_1).filled(channel1);
+        final Reference<Channel> reference1 = Channel.referenceOfId(REF_1).filled(channel1);
+        final Reference<Channel> reference2 = Channel.referenceOfId(REF_2).filled(channel2);
 
         channelsDB = asList(channel1, channel2);
         inventoriesDB = asList(
-                InventoryEntryMock.of(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1).build(),
-                InventoryEntryMock.of(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1).withChannelRefExpanded(REF_1, KEY_1).build(),
-                InventoryEntryMock.of(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1).withChannelRefExpanded(REF_2, KEY_2).build(),
-                InventoryEntryMock.of(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1).build(),
-                InventoryEntryMock.of(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1).withChannelRefExpanded(REF_1, KEY_1).build(),
-                InventoryEntryMock.of(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1).withChannelRefExpanded(REF_2, KEY_2).build()
+                getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, null, null),
+                getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, reference1, null),
+                getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, reference2, null),
+                getMockInventoryEntry(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1, null, null),
+                getMockInventoryEntry(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1, reference1, null),
+                getMockInventoryEntry(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1, reference2, null)
         );
 
         drafts = asList(
@@ -144,7 +145,7 @@ public class InventorySyncTest {
                 .ensureChannels(ensureChannels)
                 .build();
         final InventoryService service = getMockInventoryService(channelsDB, inventoriesDB,
-                getMockChannel(REF_3, KEY_3), null, null);
+                getMockSupplyChannel(REF_3, KEY_3), null, null);
         return new InventorySync(options, service, mock(TypeService.class));
     }
 }

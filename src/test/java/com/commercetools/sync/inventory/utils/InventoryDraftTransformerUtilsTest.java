@@ -1,8 +1,10 @@
 package com.commercetools.sync.inventory.utils;
 
-import com.commercetools.sync.inventory.InventoryEntryMock;
+import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
+import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.types.CustomFields;
 import org.junit.Test;
 
 import java.time.ZoneId;
@@ -10,6 +12,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.commercetools.sync.inventory.InventorySyncMockUtils.*;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,8 +33,7 @@ public class InventoryDraftTransformerUtilsTest {
 
     @Test
     public void transformToDraft_WithNoChannelNeitherCustomType_ShouldReturnDraft() {
-        final InventoryEntry entry = InventoryEntryMock
-                .of(SKU, QUANTITY_ON_STCK, RESTOCKABLE_IN_DAYS, EXPECTED_DELIVERY).build();
+        final InventoryEntry entry = getMockInventoryEntry(SKU, QUANTITY_ON_STCK, RESTOCKABLE_IN_DAYS, EXPECTED_DELIVERY, null, null);
         final InventoryEntryDraft draft = InventoryDraftTransformerUtils.transformToDraft(entry);
 
         assertThat(draft.getSku()).isEqualTo(SKU);
@@ -44,8 +46,9 @@ public class InventoryDraftTransformerUtilsTest {
 
     @Test
     public void transformToDraft_WithSupplyChannel_ShouldReturnDraft() {
-        final InventoryEntry entry = InventoryEntryMock.of(SKU)
-                .withChannelRefExpanded(CHANNEL_ID, CHANNEL_KEY).build();
+        final Channel channel = getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY);
+        final Reference<Channel> reference = Channel.referenceOfId(CHANNEL_ID).filled(channel);
+        final InventoryEntry entry = getMockInventoryEntry(SKU, null, null, null, reference, null);
         final InventoryEntryDraft draft = InventoryDraftTransformerUtils.transformToDraft(entry);
 
         assertThat(draft.getSupplyChannel()).isNotNull();
@@ -56,8 +59,9 @@ public class InventoryDraftTransformerUtilsTest {
 
     @Test
     public void transformToDraft_WithCustomTypeWithoutKey_ShouldReturnDraft() {
-        final InventoryEntry entry = InventoryEntryMock.of(SKU)
-                .withCustomField(CUSTOM_TYPE_ID, CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE).build();
+        final CustomFields customFields = getMockCustomFields(CUSTOM_TYPE_ID, null, CUSTOM_FIELD_NAME,
+                CUSTOM_FIELD_VALUE);
+        final InventoryEntry entry = getMockInventoryEntry(SKU, null, null, null, null, customFields);
 
         final InventoryEntryDraft draft = InventoryDraftTransformerUtils.transformToDraft(entry);
 
@@ -70,9 +74,9 @@ public class InventoryDraftTransformerUtilsTest {
 
     @Test
     public void transformToDraft_WithCustomTypeWithKey_ShouldReturnDraft () {
-        final InventoryEntry entry = InventoryEntryMock.of(SKU)
-                .withCustomFieldExpanded(CUSTOM_TYPE_ID, CUSTOM_TYPE_KEY, CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE)
-                .build();
+        final CustomFields customFields = getMockCustomFields(CUSTOM_TYPE_ID, CUSTOM_TYPE_KEY, CUSTOM_FIELD_NAME,
+                CUSTOM_FIELD_VALUE);
+        final InventoryEntry entry = getMockInventoryEntry(SKU, null, null, null, null, customFields);
 
         final InventoryEntryDraft draft = InventoryDraftTransformerUtils.transformToDraft(entry);
 
@@ -85,7 +89,7 @@ public class InventoryDraftTransformerUtilsTest {
 
     @Test
     public void transformToDrafts_ShouldReturnDrafts() {
-        final InventoryEntry entry = InventoryEntryMock.of(SKU).build();
+        final InventoryEntry entry = getMockInventoryEntry(SKU, null, null, null, null, null);
         final List<InventoryEntryDraft> drafts = InventoryDraftTransformerUtils.transformToDrafts(asList(entry, entry));
 
         assertThat(drafts).isNotNull();

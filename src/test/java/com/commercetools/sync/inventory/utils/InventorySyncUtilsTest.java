@@ -1,7 +1,6 @@
 package com.commercetools.sync.inventory.utils;
 
 import com.commercetools.sync.commons.helpers.CtpClient;
-import com.commercetools.sync.inventory.InventoryEntryMock;
 import com.commercetools.sync.inventory.InventorySyncOptionsBuilder;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
@@ -10,6 +9,8 @@ import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.inventory.commands.updateactions.*;
+import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import org.junit.Before;
@@ -19,6 +20,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static com.commercetools.sync.inventory.InventorySyncMockUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -42,13 +44,14 @@ public class InventorySyncUtilsTest {
 
     @Before
     public void setup() {
-        inventoryEntry = InventoryEntryMock.of("123", 10l, 10, DATE_1)
-                .withChannelRefExpanded("111", "key1")
-                .build();
-        inventoryEntryWithCustomField1 = InventoryEntryMock.of("123", 10l, 10, DATE_1)
-                .withChannelRefExpanded("111", "key1")
-                .withCustomFieldExpanded(CUSTOM_TYPE_ID, CUSTOM_TYPE_KEY, CUSTOM_FIELD_1_NAME, CUSTOM_FIELD_1_VALUE)
-                .build();
+        final Channel channel = getMockSupplyChannel("111", "key1");
+        final Reference<Channel> reference = Channel.referenceOfId("111").filled(channel);
+        final CustomFields customFields= getMockCustomFields(CUSTOM_TYPE_ID, CUSTOM_TYPE_KEY, CUSTOM_FIELD_1_NAME,
+                CUSTOM_FIELD_1_VALUE);
+
+        inventoryEntry = getMockInventoryEntry("123", 10l, 10, DATE_1, reference, null);
+        inventoryEntryWithCustomField1 = getMockInventoryEntry("123", 10l, 10, DATE_1, reference, customFields);
+
 
         similarDraft = InventoryEntryDraftBuilder.of("123", 10l, DATE_1, 10, Channel.referenceOfId("111")).build();
         variousDraft = InventoryEntryDraftBuilder.of("321", 20l, DATE_2, 20, Channel.referenceOfId("222")).build();

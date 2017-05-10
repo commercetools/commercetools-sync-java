@@ -3,14 +3,18 @@ package com.commercetools.sync.inventory;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
+import io.sphere.sdk.models.Reference;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.commercetools.sync.inventory.InventorySyncMockUtils.getMockInventoryEntry;
+import static com.commercetools.sync.inventory.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.inventory.SkuKeyTuple.SKU_NOT_SET_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.in;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -57,7 +61,8 @@ public class SkuKeyTupleTest {
 
     @Test
     public void build_WithEntryWithoutReference_ShouldReturnTuple() {
-        final SkuKeyTuple tuple = SkuKeyTuple.of(InventoryEntryMock.of(SKU).build());
+        final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null, null, null);
+        final SkuKeyTuple tuple = SkuKeyTuple.of(inventoryEntry);
         assertThat(tuple).isNotNull();
         assertThat(tuple.getSku()).isEqualTo(SKU);
         assertThat(tuple.getKey()).isNull();
@@ -65,7 +70,9 @@ public class SkuKeyTupleTest {
 
     @Test
     public void build_WithEntryWithNotExpandedReference_ShouldReturnTuple() {
-        final SkuKeyTuple tuple = SkuKeyTuple.of(InventoryEntryMock.of(SKU).withChannelRef(REF_ID).build());
+        final Reference<Channel> reference = Channel.referenceOfId(REF_ID);
+        final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null, reference, null);
+        final SkuKeyTuple tuple = SkuKeyTuple.of(inventoryEntry);
         assertThat(tuple).isNotNull();
         assertThat(tuple.getSku()).isEqualTo(SKU);
         assertThat(tuple.getKey()).isNull();
@@ -73,8 +80,10 @@ public class SkuKeyTupleTest {
 
     @Test
     public void build_WithEntryWithExpandedReference_ShouldReturnTuple() {
-        final SkuKeyTuple tuple = SkuKeyTuple
-                .of(InventoryEntryMock.of(SKU).withChannelRefExpanded(REF_ID, KEY).build());
+        final Channel channel = getMockSupplyChannel(REF_ID, KEY);
+        final Reference<Channel> reference = Channel.referenceOfId(REF_ID).filled(channel);
+        final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null, reference, null);
+        final SkuKeyTuple tuple = SkuKeyTuple.of(inventoryEntry);
         assertThat(tuple).isNotNull();
         assertThat(tuple.getSku()).isEqualTo(SKU);
         assertThat(tuple.getKey()).isEqualTo(KEY);
@@ -107,16 +116,19 @@ public class SkuKeyTupleTest {
 
     @Test
     public void build_WithEntryWithEmptySku_ShouldThrowIllegallArgumentException() {
+        final InventoryEntry inventoryEntry = getMockInventoryEntry("", null, null, null, null, null);
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> SkuKeyTuple.of(InventoryEntryMock.of("").build()))
+                .isThrownBy(() -> SkuKeyTuple.of(inventoryEntry))
                 .withMessage(SKU_NOT_SET_MESSAGE);
     }
 
 
     @Test
     public void skuKeyTuplesCreatedFromSimilarDraftAndEntry_ShouldBeEqual() {
-        final SkuKeyTuple entryTuple = SkuKeyTuple
-                .of(InventoryEntryMock.of(SKU).withChannelRefExpanded(REF_ID, KEY).build());
+        final Channel channel = getMockSupplyChannel(REF_ID, KEY);
+        final Reference<Channel> reference = Channel.referenceOfId(REF_ID).filled(channel);
+        final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null, reference, null);
+        final SkuKeyTuple entryTuple = SkuKeyTuple.of(inventoryEntry);
         final SkuKeyTuple draftTuple = SkuKeyTuple
                 .of(InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
 
@@ -125,8 +137,10 @@ public class SkuKeyTupleTest {
 
     @Test
     public void skuKeyTuplesCreatedFromVariousDraftAndEntry_ShouldNotBeEqual() {
-        final SkuKeyTuple entryTuple = SkuKeyTuple
-                .of(InventoryEntryMock.of(SKU_2).withChannelRefExpanded(REF_ID, KEY_2).build());
+        final Channel channel = getMockSupplyChannel(REF_ID, KEY_2);
+        final Reference<Channel> reference = Channel.referenceOfId(REF_ID).filled(channel);
+        final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU_2, null, null, null, reference, null);
+        final SkuKeyTuple entryTuple = SkuKeyTuple.of(inventoryEntry);
         final SkuKeyTuple draftTuple = SkuKeyTuple
                 .of(InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
 
@@ -135,8 +149,10 @@ public class SkuKeyTupleTest {
 
     @Test
     public void skuKeyTuplesCreatedFromSimilarDraftAndEntry_ShouldHaveSameHashCodes() {
-        final SkuKeyTuple entryTuple = SkuKeyTuple
-                .of(InventoryEntryMock.of(SKU).withChannelRefExpanded(REF_ID, KEY).build());
+        final Channel channel = getMockSupplyChannel(REF_ID, KEY);
+        final Reference<Channel> reference = Channel.referenceOfId(REF_ID).filled(channel);
+        final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null, reference, null);
+        final SkuKeyTuple entryTuple = SkuKeyTuple.of(inventoryEntry);
         final SkuKeyTuple draftTuple = SkuKeyTuple
                 .of(InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
 
