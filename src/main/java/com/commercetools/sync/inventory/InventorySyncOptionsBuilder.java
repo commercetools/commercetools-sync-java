@@ -12,7 +12,6 @@ public final class InventorySyncOptionsBuilder extends
         BaseSyncOptionsBuilder<InventorySyncOptionsBuilder, InventorySyncOptions> {
 
     private boolean ensureChannels = false;
-    private int parallelProcessing = 1;
     private int batchSize = 30;
 
     private InventorySyncOptionsBuilder(@Nonnull final CtpClient ctpClient) {
@@ -69,22 +68,6 @@ public final class InventorySyncOptionsBuilder extends
     }
 
     /**
-     * Set option that indicates parallel factor. Parallel factor means number of threads in a pool,
-     * that will process batches of inventories that would be synced.
-     *
-     * This property is {@code 1} by default.
-     *
-     * @param parallelProcessing int that indicates parallel factor. Has to be positive or else will be ignored.
-     * @return {@code this} instance of {@link InventorySyncOptionsBuilder}
-     */
-    public InventorySyncOptionsBuilder setParallelProcessing(final int parallelProcessing) {
-        if (parallelProcessing > 0) {
-            this.parallelProcessing = parallelProcessing;
-        }
-        return this;
-    }
-
-    /**
      * Returns new instance of {@link InventorySyncOptions}, enriched with all attributes provided to {@code this} builder.
      *
      * @return new instance of {@link InventorySyncOptions}
@@ -100,7 +83,6 @@ public final class InventorySyncOptionsBuilder extends
                 this.removeOtherCollectionEntries,
                 this.removeOtherProperties,
                 this.ensureChannels,
-                this.parallelProcessing,
                 this.batchSize);
     }
 

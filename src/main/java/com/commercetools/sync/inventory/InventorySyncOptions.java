@@ -15,9 +15,6 @@ public final class InventorySyncOptions extends BaseSyncOptions {
     //Indicates whether create supply channel if it doesn't exists in system for key from draft.
     private final boolean ensureChannels;
 
-    //Indicates number of threads in a pool of executorService, that will process batches. (number of batches processed in parallel)
-    private final int parallelProcessing;
-
     //Indicates capacity of batch of processed inventory entries (also limit of sku, that can be query in single API call)
     private final int batchSize;
 
@@ -29,7 +26,6 @@ public final class InventorySyncOptions extends BaseSyncOptions {
                                    final boolean removeOtherCollectionEntries,
                                    final boolean removeOtherProperties,
                                    boolean ensureChannels,
-                                   int parallelProcessing,
                                    int batchSize) {
         super(ctpClient,
                 updateActionErrorCallBack,
@@ -39,7 +35,6 @@ public final class InventorySyncOptions extends BaseSyncOptions {
                 removeOtherCollectionEntries,
                 removeOtherProperties);
         this.ensureChannels = ensureChannels;
-        this.parallelProcessing = parallelProcessing;
         this.batchSize = batchSize;
     }
 
@@ -50,15 +45,6 @@ public final class InventorySyncOptions extends BaseSyncOptions {
      */
     public boolean isEnsureChannels() {
         return ensureChannels;
-    }
-
-    /**
-     *
-     * @return option that indicates parallel factor. Parallel factor means number of threads in a pool,
-     * that will process batches of drafts that would be synced.
-     */
-    public int getParallelProcessing() {
-        return parallelProcessing;
     }
 
     /**

@@ -14,7 +14,6 @@ public class InventorySyncOptionsTest {
         assertThat(options).isNotNull();
         assertThat(options.getBatchSize()).isEqualTo(30);
         assertThat(options.isEnsureChannels()).isFalse();
-        assertThat(options.getParallelProcessing()).isEqualTo(1);
     }
 
     @Test
@@ -22,21 +21,10 @@ public class InventorySyncOptionsTest {
         final InventorySyncOptions options = InventorySyncOptionsBuilder.of(mock(CtpClient.class))
                 .setBatchSize(10)
                 .ensureChannels(true)
-                .setParallelProcessing(10)
                 .build();
         assertThat(options).isNotNull();
         assertThat(options.getBatchSize()).isEqualTo(10);
         assertThat(options.isEnsureChannels()).isTrue();
-        assertThat(options.getParallelProcessing()).isEqualTo(10);
-    }
-
-    @Test
-    public void setParallelProcessing_WithZeroOrNegativeArgument_ShouldNotSetParallelProcessing() {
-        final InventorySyncOptionsBuilder builder = InventorySyncOptionsBuilder.of(mock(CtpClient.class));
-        final InventorySyncOptions optionsWithZero = builder.setParallelProcessing(0).build();
-        final InventorySyncOptions optionsWithNegative = builder.setParallelProcessing(-1).build();
-        assertThat(optionsWithZero.getParallelProcessing()).isEqualTo(1);
-        assertThat(optionsWithNegative.getParallelProcessing()).isEqualTo(1);
     }
 
     @Test

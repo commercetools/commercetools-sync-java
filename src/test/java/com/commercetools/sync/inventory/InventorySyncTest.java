@@ -13,12 +13,11 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.MockUtils.getMockCtpClient;
 import static com.commercetools.sync.inventory.InventorySyncMockUtils.*;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -79,24 +78,9 @@ public class InventorySyncTest {
         );
     }
 
-
-    @Test
-    public void syncDrafts_ShouldEndWithoutExceptions() {
-        getInventorySyncer(30, 1, false).syncDrafts(drafts);
-    }
-
-    @Test
-    public void syncDrafts_WithParallelOption_ShouldEndWithoutExceptions() {
-        final List<InventoryEntryDraft> moreDrafts = Stream.generate(() -> drafts)
-                .limit(20)
-                .flatMap(list -> list.stream())
-                .collect(Collectors.toList());
-        getInventorySyncer(10, 4, false).syncDrafts(moreDrafts);
-    }
-
     @Test
     public void getStatistics_ShouldReturnProperValues() {
-        final InventorySync inventorySync = getInventorySyncer(30, 1, false);
+        final InventorySync inventorySync = getInventorySyncer(30, false);
         inventorySync.syncDrafts(drafts);
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats).isNotNull();
@@ -110,8 +94,8 @@ public class InventorySyncTest {
     public void syncDrafts_WithEnsuredChannels_ShouldCreateEntriesWithUnknownChannels() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
-        final InventorySync inventorySync = getInventorySyncer(30, 1, true);
-        inventorySync.syncDrafts(asList(draftWithNewChannel));
+        final InventorySync inventorySync = getInventorySyncer(30, true);
+        inventorySync.syncDrafts(singletonList(draftWithNewChannel));
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats.getProcessed()).isEqualTo(1);
         assertThat(stats.getCreated()).isEqualTo(1);
@@ -121,8 +105,8 @@ public class InventorySyncTest {
     public void syncDrafts_WithNotEnsuredChannels_ShouldNotSyncEntriesWithUnknownChannels() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
-        final InventorySync inventorySync = getInventorySyncer(30, 1, false);
-        inventorySync.syncDrafts(asList(draftWithNewChannel));
+        final InventorySync inventorySync = getInventorySyncer(30, false);
+        inventorySync.syncDrafts(singletonList(draftWithNewChannel));
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats.getProcessed()).isEqualTo(1);
         assertThat(stats.getFailed()).isEqualTo(1);
@@ -131,8 +115,8 @@ public class InventorySyncTest {
     @Test
     public void syncDrafts_WithDraftsWithNullSku_ShouldNotSync() {
         final InventoryEntryDraft draftWithNullSku = InventoryEntryDraft.of(null, 12);
-        final InventorySync inventorySync = getInventorySyncer(30, 1, false);
-        inventorySync.syncDrafts(asList(draftWithNullSku));
+        final InventorySync inventorySync = getInventorySyncer(30, false);
+        inventorySync.syncDrafts(singletonList(draftWithNullSku));
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats.getProcessed()).isEqualTo(0);
         assertThat(stats.getUnprocessedDueToEmptySku()).isEqualTo(1);
@@ -154,14 +138,13 @@ public class InventorySyncTest {
         assertThat(stats.getFailed()).isEqualTo(7);
     }
 
-    private InventorySync getInventorySyncer(int batchSize, int parallelThreads, boolean ensureChannels) {
+    private InventorySync getInventorySyncer(int batchSize, boolean ensureChannels) {
         final InventorySyncOptions options = InventorySyncOptionsBuilder.of(getMockCtpClient())
                 .setBatchSize(batchSize)
-                .setParallelProcessing(parallelThreads)
                 .ensureChannels(ensureChannels)
                 .build();
         final InventoryService service = getMockInventoryService(channelsDB, inventoriesDB,
-                getMockChannel(KEY_3, REF_3), null, null);
+                getMockChannel(REF_3, KEY_3), null, null);
         return new InventorySync(options, service, mock(TypeService.class));
     }
 }

@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
 
 /**
  * Interface contains methods to perform sphere queries/commands related to Inventory topic.
@@ -50,19 +51,17 @@ interface InventoryService {
      * Creates new inventory entry from {@code inventoryEntryDraft}.
      *
      * @param inventoryEntryDraft draft with data for new inventory entry
-     * @return created {@link InventoryEntry}
+     * @return {@link CompletionStage} with created {@link InventoryEntry} or an exception
      */
-    @Nullable
-    InventoryEntry createInventoryEntry(@Nonnull final InventoryEntryDraft inventoryEntryDraft);
+    CompletionStage<InventoryEntry> createInventoryEntry(@Nonnull final InventoryEntryDraft inventoryEntryDraft);
 
     /**
      * Updates existing inventory entry with {@code updateActions}.
      *
      * @param inventoryEntry entry that should be updated
      * @param updateActions {@link List} of actions that should be applied to {@code inventoryEntry}
-     * @return updated {@link InventoryEntry}
+     * @return {@link CompletionStage} with updated {@link InventoryEntry} or an exception
      */
-    @Nullable
-    InventoryEntry updateInventoryEntry(@Nonnull final InventoryEntry inventoryEntry,
-                                        @Nonnull final List<UpdateAction<InventoryEntry>> updateActions);
+    CompletionStage<InventoryEntry> updateInventoryEntry(@Nonnull final InventoryEntry inventoryEntry,
+                                                         @Nonnull final List<UpdateAction<InventoryEntry>> updateActions);
 }

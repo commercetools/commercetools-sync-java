@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
 
 import static java.util.Collections.singleton;
 
@@ -66,16 +67,14 @@ final class InventoryServiceImpl implements InventoryService {
         return ctpClient.executeBlocking(ChannelCreateCommand.of(draft));
     }
 
-    @Nullable
     @Override
-    public InventoryEntry createInventoryEntry(@Nonnull final InventoryEntryDraft inventoryEntryDraft) {
-        return ctpClient.executeBlocking(InventoryEntryCreateCommand.of(inventoryEntryDraft));
+    public CompletionStage<InventoryEntry> createInventoryEntry(@Nonnull final InventoryEntryDraft inventoryEntryDraft) {
+        return ctpClient.execute(InventoryEntryCreateCommand.of(inventoryEntryDraft));
     }
 
-    @Nullable
     @Override
-    public InventoryEntry updateInventoryEntry(@Nonnull final InventoryEntry inventoryEntry,
-                                               @Nonnull final List<UpdateAction<InventoryEntry>> updateActions) {
-        return ctpClient.executeBlocking(InventoryEntryUpdateCommand.of(inventoryEntry, updateActions));
+    public CompletionStage<InventoryEntry> updateInventoryEntry(@Nonnull final InventoryEntry inventoryEntry,
+                                                                @Nonnull final List<UpdateAction<InventoryEntry>> updateActions) {
+        return ctpClient.execute(InventoryEntryUpdateCommand.of(inventoryEntry, updateActions));
     }
 }

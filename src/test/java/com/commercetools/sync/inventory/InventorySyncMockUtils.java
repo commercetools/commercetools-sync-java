@@ -4,7 +4,10 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntry;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -27,8 +30,8 @@ public class InventorySyncMockUtils {
         when(inventoryService.fetchAllSupplyChannels()).thenReturn(supplyChannels);
         when(inventoryService.fetchInventoryEntriesBySkus(any())).thenReturn(inventoryEntries);
         when(inventoryService.createSupplyChannel(any())).thenReturn(createdSupplyChannel);
-        when(inventoryService.createInventoryEntry(any())).thenReturn(createdInventoryEntry);
-        when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(updatedInventoryEntry);
+        when(inventoryService.createInventoryEntry(any())).thenReturn(completedFuture(createdInventoryEntry));
+        when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(completedFuture(updatedInventoryEntry));
         return inventoryService;
     }
 
@@ -38,11 +41,13 @@ public class InventorySyncMockUtils {
      */
     public static InventoryService getMockThrowingInventoryService(final List<Channel> supplyChannels,
                                                              final List<InventoryEntry> inventoryEntries) {
+        final CompletableFuture<InventoryEntry> exceptionallyStage = new CompletableFuture<>();
+        exceptionallyStage.completeExceptionally(new RuntimeException());
         final InventoryService inventoryService = getMockInventoryService(supplyChannels, inventoryEntries,
                 null, null, null);
         when(inventoryService.createSupplyChannel(any())).thenThrow(new RuntimeException());
-        when(inventoryService.createInventoryEntry(any())).thenThrow(new RuntimeException());
-        when(inventoryService.updateInventoryEntry(any(), any())).thenThrow(new RuntimeException());
+        when(inventoryService.createInventoryEntry(any())).thenReturn(exceptionallyStage);
+        when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(exceptionallyStage);
         return inventoryService;
     }
 }
