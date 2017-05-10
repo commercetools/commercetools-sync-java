@@ -70,7 +70,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      * Traverses a {@link List} of {@link CategoryDraft} objects and tries to fetch a category, from the CTP project with
      * the configuration stored in the {@code syncOptions} instance of this class, using the external id. If a category exists,
      * this category is synced to be the same as the new category draft in this list. If no category exist with such external id,
-     * a new category, identical to this new category draft  is created.
+     * a new category, identical to this new category draft is created.
      * <p>
      * The {@code statistics} instance is updated accordingly to whether the CTP request was carried out successfully or not.
      * If an exception was thrown on executing the request to CTP,
@@ -79,7 +79,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
      */
     @Override
-    protected void processDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {
+    protected CompletionStage<CategorySyncStatistics> processDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {
         for (CategoryDraft categoryDraft : categoryDrafts) {
             if (categoryDraft != null) {
                 this.statistics.incrementProcessed();
@@ -92,12 +92,13 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                 }
             }
         }
+        return CompletableFuture.completedFuture(this.statistics);
     }
 
     @Override
-    protected void process(@Nonnull final List<Category> resources) {
+    protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<Category> resources) {
         //TODO: SEE GITHUB ISSUE#12
-
+        return CompletableFuture.completedFuture(this.statistics);
     }
 
     /**
