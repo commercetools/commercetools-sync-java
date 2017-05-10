@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.inventory.utils.InventoryDraftTransformerUtils.transformToDrafts;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * Default implementation of inventories sync process.
@@ -226,7 +227,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     private Map<SkuKeyTuple, InventoryEntry> fetchExistingInventories(final List<InventoryEntryDraft> drafts) {
         final Set<String> skus = extractSkus(drafts);
         final List<InventoryEntry> existingEntries = inventoryService.fetchInventoryEntriesBySkus(skus);
-        return mapSkuAndKeyToInventoryEntry(existingEntries);
+        return existingEntries.stream()
+                .collect(toMap(SkuKeyTuple::of, entry -> entry));
     }
 
     /**
@@ -238,22 +240,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         return inventories.stream()
                 .map(InventoryEntryDraft::getSku)
                 .collect(Collectors.toSet());
-    }
-
-    /**
-     * Creates map of {@link SkuKeyTuple} to {@link InventoryEntry}, so that all distinct tuples of sku and supply
-     * channel key from {@code inventories} are mapped to entry instance. For use in comparision with
-     * {@link InventoryEntryDraft} i.e. create mapping from existing entries and then decide if specific draft
-     * should be used for creation of new entry or for building update actions for existing entry (by checking if
-     * sku-key tuple of draft is present in returned mapping)
-     *
-     * @param inventories list of {@link InventoryEntry}
-     * @return {@link Map} of {@link SkuKeyTuple} to {@link InventoryEntry}
-     */
-    private Map<SkuKeyTuple, InventoryEntry> mapSkuAndKeyToInventoryEntry(final List<InventoryEntry> inventories) {
-        final Map<SkuKeyTuple, InventoryEntry> skuKeyToInventory = new HashMap<>();
-        inventories.forEach(entry -> skuKeyToInventory.put(SkuKeyTuple.of(entry), entry));
-        return skuKeyToInventory;
     }
 
     /**
