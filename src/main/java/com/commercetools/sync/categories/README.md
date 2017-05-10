@@ -86,7 +86,7 @@ In order to use the category sync an instance of
   categorySync.getStatistics().getUpdated(); // 995
   categorySync.getStatistics().getProcessed(); // 2000
   categorySync.getStatistics().getReportMessage(); 
-  /*"Summary: 2000 categories were processed in total (1000 created, 995 updated and 5 categories failed to sync).");*/
+  /*"Summary: 2000 categories were processed in total (1000 created, 995 updated and 5 categories failed to sync)."*/
    ````
     
   <!--- TODO Also add code snippets for building update actions utils! -->
