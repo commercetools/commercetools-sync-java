@@ -53,13 +53,13 @@ public final class InventorySyncOptionsBuilder extends
 
     /**
      * Set option that indicates whether sync process should create supply channel of given key when it doesn't exists
-     * in a target system yet. If set to {@code true} sync process would try to create new supply channel of given key,
+     * in a target project yet. If set to {@code true} sync process would try to create new supply channel of given key,
      * otherwise sync process would log error and fail to process draft with given supply channel key.
      *
      * This property is {@code false} by default.
      *
      * @param ensureChannels boolean that indicates whether sync process should create supply channel of given key when
-     *                       it doesn't exists in a target system yet
+     *                       it doesn't exists in a target project yet
      * @return {@code this} instance of {@link InventorySyncOptionsBuilder}
      */
     public InventorySyncOptionsBuilder ensureChannels(final boolean ensureChannels) {
