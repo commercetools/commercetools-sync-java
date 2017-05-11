@@ -13,8 +13,8 @@ public final class CommonTypeUpdateActionUtils {
 
     /**
      * Compares two {@link Object} and returns a supplied {@link UpdateAction} as a result in an
-     * {@link Optional}. If no update action is needed, for example in case where both the {@link Object}
-     * have the same values, an empty {@link Optional} is returned.
+     * {@link Optional}. If both the {@link Object}s have the same values, then no update action is needed and hence an
+     * empty {@link Optional} is returned.
      *
      * @param oldObject            the object which should be updated.
      * @param newObject            the object with the new information.
