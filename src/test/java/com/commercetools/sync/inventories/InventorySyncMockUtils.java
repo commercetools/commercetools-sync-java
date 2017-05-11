@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventory;
+package com.commercetools.sync.inventories;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.channels.Channel;
@@ -13,7 +13,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import static java.util.Collections.singleton;
 import static java.util.concurrent.CompletableFuture.completedFuture;

@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventory.utils;
+package com.commercetools.sync.inventories.utils;
 
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;

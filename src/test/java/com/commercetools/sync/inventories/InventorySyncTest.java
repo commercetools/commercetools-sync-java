@@ -1,6 +1,6 @@
-package com.commercetools.sync.inventory;
+package com.commercetools.sync.inventories;
 
-import com.commercetools.sync.inventory.helpers.InventorySyncStatistics;
+import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntry;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.commercetools.sync.commons.MockUtils.getMockCtpClient;
-import static com.commercetools.sync.inventory.InventorySyncMockUtils.*;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;

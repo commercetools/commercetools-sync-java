@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventory.utils;
+package com.commercetools.sync.inventories.utils;
 
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntry;
@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.commercetools.sync.inventory.InventorySyncMockUtils.*;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.*;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 

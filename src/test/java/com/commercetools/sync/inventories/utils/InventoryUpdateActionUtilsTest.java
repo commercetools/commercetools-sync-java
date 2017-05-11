@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventory.utils;
+package com.commercetools.sync.inventories.utils;
 
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
@@ -17,7 +17,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
-import static com.commercetools.sync.inventory.utils.InventoryUpdateActionUtils.*;
+import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

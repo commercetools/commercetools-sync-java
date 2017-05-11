@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventory.utils;
+package com.commercetools.sync.inventories.utils;
 
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;

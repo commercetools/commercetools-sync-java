@@ -1,12 +1,11 @@
-package com.commercetools.sync.inventory.utils;
+package com.commercetools.sync.inventories.utils;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.inventory.InventorySyncOptions;
+import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -14,8 +13,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
-import static com.commercetools.sync.inventory.utils.InventoryDraftTransformerUtils.transformToDraft;
-import static com.commercetools.sync.inventory.utils.InventoryUpdateActionUtils.*;
+import static com.commercetools.sync.inventories.utils.InventoryDraftTransformerUtils.transformToDraft;
+import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.*;
 import static java.util.stream.Collectors.toList;
 
 /**

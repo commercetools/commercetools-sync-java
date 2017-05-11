@@ -3,7 +3,7 @@ package com.commercetools.sync.commons.helpers;
 import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.commercetools.sync.channels.helpers.ChannelCustomActionBuilder;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
-import com.commercetools.sync.inventory.helpers.InventoryCustomActionBuilder;
+import com.commercetools.sync.inventories.helpers.InventoryCustomActionBuilder;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntry;

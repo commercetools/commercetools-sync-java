@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventory;
+package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.helpers.CtpClient;

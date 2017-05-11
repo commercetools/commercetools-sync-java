@@ -1,7 +1,7 @@
-package com.commercetools.sync.inventory.utils;
+package com.commercetools.sync.inventories.utils;
 
 import com.commercetools.sync.commons.helpers.CtpClient;
-import com.commercetools.sync.inventory.InventorySyncOptionsBuilder;
+import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
@@ -20,7 +20,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static com.commercetools.sync.inventory.InventorySyncMockUtils.*;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

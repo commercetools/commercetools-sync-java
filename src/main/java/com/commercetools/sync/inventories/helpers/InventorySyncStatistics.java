@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventory.helpers;
+package com.commercetools.sync.inventories.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 

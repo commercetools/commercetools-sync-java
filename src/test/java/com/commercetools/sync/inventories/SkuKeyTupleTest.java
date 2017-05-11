@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventory;
+package com.commercetools.sync.inventories;
 
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntry;
@@ -9,12 +9,11 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.commercetools.sync.inventory.InventorySyncMockUtils.getMockInventoryEntry;
-import static com.commercetools.sync.inventory.InventorySyncMockUtils.getMockSupplyChannel;
-import static com.commercetools.sync.inventory.SkuKeyTuple.SKU_NOT_SET_MESSAGE;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
+import static com.commercetools.sync.inventories.SkuKeyTuple.SKU_NOT_SET_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.assertj.core.api.Assertions.in;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

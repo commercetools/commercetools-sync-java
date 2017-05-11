@@ -1,8 +1,8 @@
-package com.commercetools.sync.inventory;
+package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSync;
-import com.commercetools.sync.inventory.helpers.InventorySyncStatistics;
-import com.commercetools.sync.inventory.utils.InventorySyncUtils;
+import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
+import com.commercetools.sync.inventories.utils.InventorySyncUtils;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.channels.Channel;
@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.inventory.utils.InventoryDraftTransformerUtils.transformToDrafts;
+import static com.commercetools.sync.inventories.utils.InventoryDraftTransformerUtils.transformToDrafts;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;

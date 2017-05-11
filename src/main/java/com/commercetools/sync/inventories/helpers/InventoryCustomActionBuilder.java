@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventory.helpers;
+package com.commercetools.sync.inventories.helpers;
 
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,7 +9,6 @@ import io.sphere.sdk.inventory.commands.updateactions.SetCustomType;
 
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.Optional;
 
 public class InventoryCustomActionBuilder extends GenericCustomActionBuilder<InventoryEntry> {
 
