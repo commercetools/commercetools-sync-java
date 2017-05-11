@@ -66,16 +66,16 @@ public class CategorySyncMockUtils {
     /**
      * Creates a list of 2 {@link CategoryDraft}s; the first category draft has the following fields:
      * <ul>
-     * <li>name: {"de": "draft1}</li>
-     * <li>slug: {"de": "slug1}</li>
-     * <li>externalId: SH663881</li>
+     * <li>name: {"de": "draft1"}</li>
+     * <li>slug: {"de": "slug1"}</li>
+     * <li>externalId: "SH663881"</li>
      * </ul>
      *
      * <p>and the other category draft has the following fields:
      * <ul>
-     * <li>name: {"de": "draft2}</li>
-     * <li>slug: {"de": "slug2}</li>
-     * <li>externalId: SH604972</li>
+     * <li>name: {"de": "draft2"}</li>
+     * <li>slug: {"de": "slug2"}</li>
+     * <li>externalId: "SH604972"</li>
      * </ul>
      *
      * @return a list of the of the 2 mocked category drafts.
