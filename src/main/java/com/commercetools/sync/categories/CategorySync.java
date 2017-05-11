@@ -3,6 +3,7 @@ package com.commercetools.sync.categories;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.categories.utils.CategorySyncUtils;
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
@@ -77,6 +78,9 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      * the optional error callback specified in the {@code syncOptions} is called.
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
+     * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of
+     *      {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
+     *      {@link this} {@link CategorySync}.
      */
     @Override
     protected CompletionStage<CategorySyncStatistics> processDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {

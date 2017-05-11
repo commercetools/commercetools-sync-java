@@ -31,6 +31,9 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      * the existing resource if it exists or create it if it doesn't.
      *
      * @param resourceDrafts the list of new resources as drafts.
+     * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of {@link U} which
+     *      is a subclass of {@link BaseSyncStatistics} representing the {@code statistics} instance attribute of
+     *      {@link this} {@link BaseSync}.
      */
     protected abstract CompletionStage<U> processDrafts(@Nonnull final List<T> resourceDrafts);
 
@@ -45,6 +48,9 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      * so that the total processing time is computed in the statistics.
      *
      * @param resourceDrafts the list of new resources as drafts.
+     * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of {@link U} which
+     *      is a subclass of {@link BaseSyncStatistics} representing the {@code statistics} instance attribute of
+     *      {@link this} {@link BaseSync}.
      */
     public CompletionStage<U> syncDrafts(@Nonnull final List<T> resourceDrafts) {
         logger.info(format("About to sync %d drafts into CTP project with key '%s'."
@@ -65,6 +71,9 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      * so that the total processing time is computed in the statistics.
      *
      * @param resources the list of new resources.
+     * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of {@link U} which
+     *      is a subclass of {@link BaseSyncStatistics} representing the {@code statistics} instance attribute of
+     *      {@link this} {@link BaseSync}.
      */
     public CompletionStage<U> sync(@Nonnull final List<S> resources) {
         logger.info(format("About to sync %d resources into CTP project with key '%s'."
@@ -82,6 +91,9 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      * the existing resource if it exists or create it if it doesn't.
      *
      * @param resources the list of new resources.
+     * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of {@link U} which
+     *      is a subclass of {@link BaseSyncStatistics} representing the {@code statistics} instance attribute of
+     *      {@link this} {@link BaseSync}.
      */
     protected abstract CompletionStage<U> process(@Nonnull final List<S> resources);
 
