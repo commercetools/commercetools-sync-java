@@ -190,7 +190,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * Returns mapping of {@link SkuKeyTuple} to {@link InventoryEntry} of instances existing in a database.
+     * Returns mapping of {@link SkuKeyTuple} to {@link InventoryEntry} of instances existing in a CT platform.
      * Instances are fetched from API by skus, that corresponds to skus present in {@code drafts}.
      *
      * @param drafts {@link List} of drafts

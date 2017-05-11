@@ -19,7 +19,7 @@ interface InventoryService {
 
     /**
      * Fetches all {@link InventoryEntry} objects whose sku is included in {@code skus}.
-     * For some {@code skus} there could be no matching entries in database, so for such skus no entries would be
+     * For some {@code skus} there could be no matching entries in CT platform, so for such skus no entries would be
      * returned. Because of that result can contain inventory entries of skus, that are only subset of passed
      * {@code skus}, or even in empty list when no matching entry is found.
      * Returned entries have an expanded reference to the {@code supplyChannel}.
