@@ -13,7 +13,7 @@ import static java.lang.String.format;
 
 
 public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStatistics, V extends BaseSyncOptions> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CategorySync.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseSync.class);
     protected final U statistics;
     protected final V syncOptions;
 
