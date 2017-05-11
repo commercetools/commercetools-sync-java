@@ -100,6 +100,8 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats.getProcessed()).isEqualTo(1);
         assertThat(stats.getCreated()).isEqualTo(1);
+        assertThat(stats.getFailed()).isEqualTo(0);
+        assertThat(stats.getUpdated()).isEqualTo(0);
     }
 
     @Test
@@ -111,6 +113,8 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats.getProcessed()).isEqualTo(1);
         assertThat(stats.getFailed()).isEqualTo(1);
+        assertThat(stats.getCreated()).isEqualTo(0);
+        assertThat(stats.getUpdated()).isEqualTo(0);
     }
 
     @Test
@@ -119,8 +123,10 @@ public class InventorySyncTest {
         final InventorySync inventorySync = getInventorySyncer(30, false);
         inventorySync.syncDrafts(singletonList(draftWithNullSku));
         final InventorySyncStatistics stats = inventorySync.getStatistics();
-        assertThat(stats.getProcessed()).isEqualTo(0);
-        assertThat(stats.getUnprocessedDueToEmptySku()).isEqualTo(1);
+        assertThat(stats.getProcessed()).isEqualTo(1);
+        assertThat(stats.getFailed()).isEqualTo(1);
+        assertThat(stats.getCreated()).isEqualTo(0);
+        assertThat(stats.getUpdated()).isEqualTo(0);
     }
 
     @Test
@@ -137,6 +143,8 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats.getProcessed()).isEqualTo(10);
         assertThat(stats.getFailed()).isEqualTo(7);
+        assertThat(stats.getCreated()).isEqualTo(0);
+        assertThat(stats.getUpdated()).isEqualTo(0);
     }
 
     private InventorySync getInventorySyncer(int batchSize, boolean ensureChannels) {

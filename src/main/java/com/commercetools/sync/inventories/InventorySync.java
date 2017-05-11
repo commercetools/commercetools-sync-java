@@ -108,8 +108,14 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                         accumulator.clear();
                     }
                 } else {
-                    statistics.incrementUnprocessedDueToEmptySku();
+                    statistics.incrementProcessed();
+                    statistics.incrementFailed();
+                    failSync("Failed to process inventory entry without sku", null);
                 }
+            } else {
+                statistics.incrementProcessed();
+                statistics.incrementFailed();
+                failSync("Failed to process null object", null);
             }
         }
         if (!accumulator.isEmpty()) {
