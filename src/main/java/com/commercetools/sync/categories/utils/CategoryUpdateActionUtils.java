@@ -40,10 +40,8 @@ public final class CategoryUpdateActionUtils {
     public static Optional<UpdateAction<Category>> buildChangeNameUpdateAction(
       @Nonnull final Category oldCategory,
       @Nonnull final CategoryDraft newCategory) {
-        final LocalizedString newCategoryName = newCategory.getName();
         return buildUpdateAction(oldCategory.getName(),
-          newCategoryName,
-          () -> ChangeName.of(newCategoryName));
+            newCategory.getName(), () -> ChangeName.of(newCategory.getName()));
     }
 
     /**
@@ -60,10 +58,8 @@ public final class CategoryUpdateActionUtils {
     public static Optional<UpdateAction<Category>> buildChangeSlugUpdateAction(
       @Nonnull final Category oldCategory,
       @Nonnull final CategoryDraft newCategory) {
-        final LocalizedString newCategorySlug = newCategory.getSlug();
         return buildUpdateAction(oldCategory.getSlug(),
-          newCategorySlug,
-          () -> ChangeSlug.of(newCategorySlug));
+            newCategory.getSlug(), () -> ChangeSlug.of(newCategory.getSlug()));
     }
 
     /**
@@ -86,15 +82,13 @@ public final class CategoryUpdateActionUtils {
       @Nonnull final Category oldCategory,
       @Nonnull final CategoryDraft newCategory,
       @Nonnull final CategorySyncOptions syncOptions) {
-        final LocalizedString newCategoryDescription = newCategory.getDescription();
-        if (newCategoryDescription == null) {
+        if (newCategory.getDescription() == null) {
             syncOptions.applyWarningCallback(
               CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION.getDescription(oldCategory.getId()));
             return Optional.empty();
         }
         return buildUpdateAction(oldCategory.getDescription(),
-          newCategoryDescription,
-          () -> SetDescription.of(newCategoryDescription));
+            newCategory.getDescription(), () -> SetDescription.of(newCategory.getDescription()));
     }
 
     /**
@@ -118,14 +112,12 @@ public final class CategoryUpdateActionUtils {
       @Nonnull final Category oldCategory,
       @Nonnull final CategoryDraft newCategory,
       @Nonnull final CategorySyncOptions syncOptions) {
-        final Reference<Category> newCategoryParentReference = newCategory.getParent();
-        if (newCategoryParentReference == null) {
+        if (newCategory.getParent() == null) {
             syncOptions.applyWarningCallback(CATEGORY_CHANGE_PARENT_EMPTY_PARENT.getDescription(oldCategory.getId()));
             return Optional.empty();
         }
         return buildUpdateAction(oldCategory.getParent(),
-          newCategoryParentReference,
-          () -> ChangeParent.of(newCategoryParentReference));
+            newCategory.getParent(), () -> ChangeParent.of(newCategory.getParent()));
     }
 
     /**
@@ -148,15 +140,13 @@ public final class CategoryUpdateActionUtils {
       @Nonnull final Category oldCategory,
       @Nonnull final CategoryDraft newCategory,
       @Nonnull final CategorySyncOptions syncOptions) {
-        final String newCategoryOrderHint = newCategory.getOrderHint();
-        if (newCategoryOrderHint == null) {
+        if (newCategory.getOrderHint() == null) {
             syncOptions.applyWarningCallback(
               CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT.getDescription(oldCategory.getId()));
             return Optional.empty();
         }
         return buildUpdateAction(oldCategory.getOrderHint(),
-          newCategoryOrderHint,
-          () -> ChangeOrderHint.of(newCategoryOrderHint));
+            newCategory.getOrderHint(), () -> ChangeOrderHint.of(newCategory.getOrderHint()));
     }
 
     /**
@@ -173,10 +163,8 @@ public final class CategoryUpdateActionUtils {
     public static Optional<UpdateAction<Category>> buildSetMetaTitleUpdateAction(
       @Nonnull final Category oldCategory,
       @Nonnull final CategoryDraft newCategory) {
-        final LocalizedString newCategoryMetaTitle = newCategory.getMetaTitle();
         return buildUpdateAction(oldCategory.getMetaTitle(),
-          newCategoryMetaTitle,
-          () -> SetMetaTitle.of(newCategoryMetaTitle));
+            newCategory.getMetaTitle(), () -> SetMetaTitle.of(newCategory.getMetaTitle()));
     }
 
     /**
@@ -193,10 +181,8 @@ public final class CategoryUpdateActionUtils {
     public static Optional<UpdateAction<Category>> buildSetMetaKeywordsUpdateAction(
       @Nonnull final Category oldCategory,
       @Nonnull final CategoryDraft newCategory) {
-        final LocalizedString newCategoryMetaKeywords = newCategory.getMetaKeywords();
         return buildUpdateAction(oldCategory.getMetaKeywords(),
-          newCategoryMetaKeywords,
-          () -> SetMetaKeywords.of(newCategoryMetaKeywords));
+            newCategory.getMetaKeywords(), () -> SetMetaKeywords.of(newCategory.getMetaKeywords()));
     }
 
     /**
@@ -214,9 +200,7 @@ public final class CategoryUpdateActionUtils {
     public static Optional<UpdateAction<Category>> buildSetMetaDescriptionUpdateAction(
       @Nonnull final Category oldCategory,
       @Nonnull final CategoryDraft newCategory) {
-        final LocalizedString newCategoryMetaDescription = newCategory.getMetaDescription();
         return buildUpdateAction(oldCategory.getMetaDescription(),
-          newCategoryMetaDescription,
-          () -> SetMetaDescription.of(newCategoryMetaDescription));
+            newCategory.getMetaDescription(), () -> SetMetaDescription.of(newCategory.getMetaDescription()));
     }
 }
