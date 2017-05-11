@@ -33,8 +33,8 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      */
     public CategorySync(@Nonnull final CategorySyncOptions syncOptions) {
         this(syncOptions,
-          new TypeServiceImpl(syncOptions.getCtpClient().getClient()),
-          new CategoryServiceImpl(syncOptions.getCtpClient().getClient()));
+            new TypeServiceImpl(syncOptions.getCtpClient().getClient()),
+            new CategoryServiceImpl(syncOptions.getCtpClient().getClient()));
     }
 
     /**
@@ -80,7 +80,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                     createOrUpdateCategory(categoryDraft);
                 } else {
                     failSync(format("CategoryDraft with name: %s doesn't have an externalId.",
-                      categoryDraft.getName().toString()), null);
+                        categoryDraft.getName().toString()), null);
                 }
             }
         }
@@ -113,9 +113,8 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                 createCategory(categoryDraft);
             }
         } catch (SphereException sphereException) {
-            failSync(format("Failed to fetch category with external id"
-                + " '%s' in CTP project with key '%s", externalId,
-              this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), sphereException);
+            failSync(format("Failed to fetch category with external id '%s' in CTP project with key '%s", externalId,
+                this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), sphereException);
         }
     }
 
@@ -136,8 +135,8 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
             this.statistics.incrementCreated();
         } catch (SphereException sphereException) {
             failSync(format("Failed to create category with external id"
-                + " '%s' in CTP project with key '%s", categoryDraft.getExternalId(),
-              this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), sphereException);
+                    + " '%s' in CTP project with key '%s", categoryDraft.getExternalId(),
+                this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), sphereException);
         }
     }
 
@@ -152,7 +151,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
     private void syncCategories(@Nonnull final Category oldCategory,
                                 @Nonnull final CategoryDraft newCategory) {
         final List<UpdateAction<Category>> updateActions =
-          CategorySyncUtils.buildActions(oldCategory, newCategory, this.syncOptions, this.typeService);
+            CategorySyncUtils.buildActions(oldCategory, newCategory, this.syncOptions, this.typeService);
         if (!updateActions.isEmpty()) {
             updateCategory(oldCategory, updateActions);
         }
@@ -177,8 +176,8 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
             this.statistics.incrementUpdated();
         } catch (SphereException sphereException) {
             failSync(format("Failed to update category with id"
-                + " '%s' in CTP project with key '%s",
-              category.getId(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), sphereException);
+                    + " '%s' in CTP project with key '%s",
+                category.getId(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), sphereException);
         }
     }
 

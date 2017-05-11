@@ -29,7 +29,7 @@ public class ClientConfigurationUtils {
         if (ctpClient == null) {
             final HttpClient httpClient = newHttpClient();
             final SphereAccessTokenSupplier tokenSupplier =
-              SphereAccessTokenSupplier.ofAutoRefresh(clientConfig, httpClient, false);
+                SphereAccessTokenSupplier.ofAutoRefresh(clientConfig, httpClient, false);
             final SphereClient underlying = SphereClient.of(clientConfig, httpClient, tokenSupplier);
             ctpClient = BlockingSphereClient.of(underlying, timeout, timeUnit);
         }
@@ -52,7 +52,8 @@ public class ClientConfigurationUtils {
      */
     private static HttpClient newHttpClient() {
         final AsyncHttpClient asyncHttpClient =
-          new DefaultAsyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().setAcceptAnyCertificate(true).build());
+            new DefaultAsyncHttpClient(
+                new DefaultAsyncHttpClientConfig.Builder().setAcceptAnyCertificate(true).build());
         return AsyncHttpClientAdapter.of(asyncHttpClient);
     }
 }
