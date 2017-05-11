@@ -1,6 +1,5 @@
 package com.commercetools.sync.commons;
 
-import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import io.sphere.sdk.models.Resource;
 import org.slf4j.Logger;

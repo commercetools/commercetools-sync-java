@@ -11,7 +11,6 @@ import io.sphere.sdk.types.Custom;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * A Generic Custom update action builder that creates update actions that are of the same type as the Generic type T
