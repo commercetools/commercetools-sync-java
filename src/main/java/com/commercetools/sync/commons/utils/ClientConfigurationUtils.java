@@ -24,8 +24,8 @@ public class ClientConfigurationUtils {
      * @return the instanted {@link BlockingSphereClient}.
      */
     public static synchronized BlockingSphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
-                                                    final long timeout,
-                                                    @Nonnull final TimeUnit timeUnit) {
+                                                                 final long timeout,
+                                                                 @Nonnull final TimeUnit timeUnit) {
         if (ctpClient == null) {
             final HttpClient httpClient = newHttpClient();
             final SphereAccessTokenSupplier tokenSupplier =
