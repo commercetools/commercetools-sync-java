@@ -14,19 +14,19 @@ import java.util.Optional;
 public class InventoryCustomActionBuilder extends GenericCustomActionBuilder<InventoryEntry> {
 
     @Override
-    public Optional<UpdateAction<InventoryEntry>> buildRemoveCustomTypeAction() {
-        return Optional.of(SetCustomType.ofRemoveType());
+    public UpdateAction<InventoryEntry> buildRemoveCustomTypeAction() {
+        return SetCustomType.ofRemoveType();
     }
 
     @Override
-    public Optional<UpdateAction<InventoryEntry>> buildSetCustomTypeAction(@Nullable final String customTypeKey,
+    public UpdateAction<InventoryEntry> buildSetCustomTypeAction(@Nullable final String customTypeKey,
                                                                            @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
-        return Optional.of(SetCustomType.ofTypeKeyAndJson(customTypeKey, customFieldsJsonMap));
+        return SetCustomType.ofTypeKeyAndJson(customTypeKey, customFieldsJsonMap);
     }
 
     @Override
-    public Optional<UpdateAction<InventoryEntry>> buildSetCustomFieldAction(@Nullable final String customFieldName,
+    public UpdateAction<InventoryEntry> buildSetCustomFieldAction(@Nullable final String customFieldName,
                                                                             @Nullable final JsonNode customFieldValue) {
-        return Optional.of(SetCustomField.ofJson(customFieldName, customFieldValue));
+        return SetCustomField.ofJson(customFieldName, customFieldValue);
     }
 }
