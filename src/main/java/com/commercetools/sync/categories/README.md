@@ -202,9 +202,15 @@ The sync, however, will never delete a category.
  
 ## FAQ
 #### What does the number of processed categories actually refer to in the statistics of the sync process?
-It refers to the total number of categories which were required to be updated/created. A category that failed to be 
-updated/created will still be counted as processed. Only a category which wasn't required to be updated/created will not
-be counted as processed. 
+It refers to the total number of categories input to the sync. Under all the following cases a category is to be counted
+as processed:
+- new category causes the old one to be updated.
+- new category should be created.
+- new category is the same as the old one and requires no action.
+- new category failed to process.
+
+The only case where a category would not be processed is if the entire sync process fails and stops, before reaching this
+category in the input list.
 
 #### Why is the `externalId` used for matching categories instead of another field e.g. `slug`?
 Even though the `externalId` is an `optional` field on a category on CTP, it is still used as the main identifier for a
