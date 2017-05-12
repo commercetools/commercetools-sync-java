@@ -19,6 +19,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import static com.commercetools.sync.commons.enums.Error.CTP_CATEGORY_CREATE_FAILED;
+import static com.commercetools.sync.commons.enums.Error.CTP_CATEGORY_FETCH_FAILED;
+import static com.commercetools.sync.commons.enums.Error.CTP_CATEGORY_UPDATE_FAILED;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -120,8 +123,9 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                 createCategory(categoryDraft);
             }
         } catch (SphereException sphereException) {
-            failSync(format("Failed to fetch category with external id '%s' in CTP project with key '%s", externalId,
-                this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), sphereException);
+            failSync(format(CTP_CATEGORY_FETCH_FAILED.getDescription(), externalId,
+                this.syncOptions.getCtpClient().getClientConfig().getProjectKey(), sphereException.getMessage()),
+                sphereException);
         }
     }
 
@@ -159,9 +163,9 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
             this.categoryService.createCategory(categoryDraft).toCompletableFuture().join();
             this.statistics.incrementCreated();
         } catch (SphereException sphereException) {
-            failSync(format("Failed to create category with external id"
-                    + " '%s' in CTP project with key '%s", categoryDraft.getExternalId(),
-                this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), sphereException);
+            failSync(format(CTP_CATEGORY_CREATE_FAILED.getDescription(), categoryDraft.getExternalId(),
+                this.syncOptions.getCtpClient().getClientConfig().getProjectKey(), sphereException.getMessage()),
+                sphereException);
         }
     }
 
@@ -200,9 +204,9 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
             this.categoryService.updateCategory(category, updateActions).toCompletableFuture().join();
             this.statistics.incrementUpdated();
         } catch (SphereException sphereException) {
-            failSync(format("Failed to update category with id"
-                    + " '%s' in CTP project with key '%s",
-                category.getId(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), sphereException);
+            failSync(format(CTP_CATEGORY_UPDATE_FAILED.getDescription(), category.getId(),
+                this.syncOptions.getCtpClient().getClientConfig().getProjectKey(), sphereException.getMessage()),
+                sphereException);
         }
     }
 
