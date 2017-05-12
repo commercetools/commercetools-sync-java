@@ -11,6 +11,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
@@ -170,6 +171,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      * @param newCategory the category draft where we get the new data.
      * @return a future monad which can contain an empty result.
      */
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> syncCategories(@Nonnull final Category oldCategory,
                                                  @Nonnull final CategoryDraft newCategory) {
         final List<UpdateAction<Category>> updateActions =
