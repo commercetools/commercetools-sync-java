@@ -10,7 +10,6 @@ import io.sphere.sdk.commands.UpdateAction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.Optional;
 
 
 public class ChannelCustomActionBuilder extends GenericCustomActionBuilder<Channel> {
@@ -23,15 +22,16 @@ public class ChannelCustomActionBuilder extends GenericCustomActionBuilder<Chann
 
     @Nonnull
     @Override
+
     public UpdateAction<Channel> buildSetCustomTypeAction(@Nullable final String customTypeKey,
-                                                                    @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
+                                                          @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
         return SetCustomType.ofTypeKeyAndJson(customTypeKey, customFieldsJsonMap);
     }
 
     @Nonnull
     @Override
     public UpdateAction<Channel> buildSetCustomFieldAction(@Nullable final String customFieldName,
-                                                                     @Nullable final JsonNode customFieldValue) {
+                                                           @Nullable final JsonNode customFieldValue) {
         return SetCustomField.ofJson(customFieldName, customFieldValue);
     }
 }
