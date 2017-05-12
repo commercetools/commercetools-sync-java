@@ -17,7 +17,9 @@ public enum Error {
     CTP_CATEGORY_FETCH_FAILED("Failed to fetch category with external id '%s' in CTP project with key '%s."
         + " Reason: %s"),
     CTP_CATEGORY_CREATE_FAILED("Failed to create category with external id '%s' in CTP project with key '%s."
-        + " Reason: %s");
+        + " Reason: %s"),
+    CTP_CATEGORY_SYNC_FAILED("Failed to sync category with external id '%s' in CTP project with key '%s."
+                                   + " Reason: %s");
 
 
     private final String description;
