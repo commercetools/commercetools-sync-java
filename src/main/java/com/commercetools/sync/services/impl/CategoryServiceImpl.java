@@ -42,7 +42,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Nonnull
     @Override
     public CompletionStage<Category> updateCategory(@Nonnull final Category category,
-                                   @Nonnull final List<UpdateAction<Category>> updateActions) {
+                                                    @Nonnull final List<UpdateAction<Category>> updateActions) {
         final CategoryUpdateCommand categoryUpdateCommand = CategoryUpdateCommand.of(category, updateActions);
         return ctpClient.execute(categoryUpdateCommand);
     }
