@@ -4,6 +4,7 @@ package com.commercetools.sync.categories;
 import com.commercetools.sync.commons.helpers.CtpClient;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
+import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.models.SphereException;
@@ -124,8 +125,11 @@ public class CategorySyncTest {
 
     @Test
     public void syncDrafts_WithExistingCategoryButExceptionOnFetch_ShouldFailSync() {
+        CompletableFuture<Optional<Category>> futureThrowingSphereException = CompletableFuture.supplyAsync(() -> {
+            throw new SphereException();
+        });
         final CategoryService categoryService = getMockCategoryService();
-        when(categoryService.fetchCategoryByExternalId(anyString())).thenThrow(new SphereException());
+        when(categoryService.fetchCategoryByExternalId(anyString())).thenReturn(futureThrowingSphereException);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, mock(TypeService.class),
                                                            categoryService);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
@@ -144,10 +148,13 @@ public class CategorySyncTest {
 
     @Test
     public void syncDrafts_WithNoExistingCategoryButExceptionOnCreate_ShouldFailSync() {
+        final CompletableFuture<Category> futureThrowingSphereException = CompletableFuture.supplyAsync(() -> {
+            throw new SphereException();
+        });
         final CategoryService categoryService = getMockCategoryService();
         when(categoryService.fetchCategoryByExternalId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
-        when(categoryService.createCategory(any())).thenThrow(new SphereException());
+        when(categoryService.createCategory(any())).thenReturn(futureThrowingSphereException);
 
         final CategorySync categorySync = new CategorySync(categorySyncOptions, mock(TypeService.class),
                                                            categoryService);
@@ -167,8 +174,11 @@ public class CategorySyncTest {
 
     @Test
     public void syncDrafts_WithExistingCategoryButExceptionOnUpdate_ShouldFailSync() {
+        final CompletableFuture<Category> futureThrowingSphereException = CompletableFuture.supplyAsync(() -> {
+            throw new SphereException();
+        });
         final CategoryService categoryService = getMockCategoryService();
-        when(categoryService.updateCategory(any(), any())).thenThrow(new SphereException());
+        when(categoryService.updateCategory(any(), any())).thenReturn(futureThrowingSphereException);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, mock(TypeService.class),
                                                            categoryService);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
