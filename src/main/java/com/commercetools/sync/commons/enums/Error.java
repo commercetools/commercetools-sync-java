@@ -19,7 +19,10 @@ public enum Error {
     CTP_CATEGORY_CREATE_FAILED("Failed to create category with external id '%s' in CTP project with key '%s."
         + " Reason: %s"),
     CTP_CATEGORY_SYNC_FAILED("Failed to sync category with external id '%s' in CTP project with key '%s."
-                                   + " Reason: %s");
+                                   + " Reason: %s"),
+    CUSTOM_TYPE_KEYS_NOT_SET("Custom type keys are not set for both the old and new %s."),
+    CUSTOM_FIELDS_UPDATE_ACTIONS_BUILD_FAILED("Failed to build custom fields update actions on the %s with id '%s'."
+        + " Reason: %s");
 
 
     private final String description;

@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.enums.Error.CUSTOM_FIELDS_UPDATE_ACTIONS_BUILD_FAILED;
+import static com.commercetools.sync.commons.enums.Error.CUSTOM_TYPE_KEYS_NOT_SET;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedRemoveCustomTypeUpdateAction;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomFieldUpdateAction;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction;
@@ -84,9 +86,8 @@ public final class CustomUpdateActionUtils {
                 return buildNonNullCustomFieldsUpdateActions(oldResourceCustomFields, newResourceCustomFields,
                     oldResource, syncOptions, typeService);
             } catch (BuildUpdateActionException exception) {
-                syncOptions.applyErrorCallback(format("Failed to build custom fields update actions on the "
-                        + "%s with id '%s'. Reason: %s", oldResource.toReference().getTypeId(), oldResource.getId(),
-                    exception.getMessage()), exception);
+                syncOptions.applyErrorCallback(format(CUSTOM_FIELDS_UPDATE_ACTIONS_BUILD_FAILED.getDescription(),
+                    oldResource.toReference().getTypeId(), oldResource.getId(), exception.getMessage()), exception);
             }
         } else {
             if (oldResourceCustomFields == null) {
@@ -156,7 +157,7 @@ public final class CustomUpdateActionUtils {
 
         if (Objects.equals(oldCustomFieldsTypeKey, newCustomFieldsTypeKey)) {
             if (oldCustomFieldsTypeKey == null && newCustomFieldsTypeKey == null) {
-                throw new BuildUpdateActionException(format("Custom type keys are not set for both the old and new %s.",
+                throw new BuildUpdateActionException(format(CUSTOM_TYPE_KEYS_NOT_SET.getDescription(),
                     resource.toReference().getTypeId()));
             }
             if (newCustomFieldsJsonMap == null) {
