@@ -7,5 +7,15 @@ jdk:
 
 script: ./gradlew clean build
 
+# The before_cache and the cache steps cache the gradle installation on travis.
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)
