@@ -5,6 +5,8 @@ language: java
 jdk:
   - oraclejdk8
 
+install: true # skips travis' default installation step which executes gradle assemble.
+
 script: ./gradlew clean build
 
 # The before_cache and the cache steps cache the gradle installation on travis.
