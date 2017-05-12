@@ -106,11 +106,12 @@ public abstract class BaseSyncStatistics {
     }
 
     /**
-     * Calculates the processing time taken by the subtracting the time, when the {@link BaseSyncStatistics#startTimer()}
-     * method of this instance was called, from the current time in Milliseconds. It also sets the processing time in all the units
-     * {@code processingTimeInDays}, {@code processingTimeInHours}, {@code processingTimeInMinutes},
-     * {@code processingTimeInSeconds} and {@code processingTimeInMillis}. It also builds a human readable processing
-     * time, as string, in the following format @{code "0d, 0h, 0m, 2s, 545ms"} and stores it in the publicly exposed
+     * Calculates the processing time taken by the subtracting the time, when the
+     * {@link BaseSyncStatistics#startTimer()} method of this instance was called, from the current time in
+     * Milliseconds. It also sets the processing time in all the units {@code processingTimeInDays},
+     * {@code processingTimeInHours}, {@code processingTimeInMinutes}, {@code processingTimeInSeconds} and
+     * {@code processingTimeInMillis}. It also builds a human readable processing time, as string, in the following
+     * format @{code "0d, 0h, 0m, 2s, 545ms"} and stores it in the publicly exposed
      * variable {@code humanReadableProcessingTime}.
      */
     public void calculateProcessingTime() {
@@ -148,11 +149,11 @@ public abstract class BaseSyncStatistics {
         final long remainingMillis = processingTimeInMillis - completeSecondsInMillis;
 
         humanReadableProcessingTime = format("%dd, %dh, %dm, %ds, %dms",
-                processingTimeInDays,
-                remainingHours,
-                remainingMinutes,
-                remainingSeconds,
-                remainingMillis
+          processingTimeInDays,
+          remainingHours,
+          remainingMinutes,
+          remainingSeconds,
+          remainingMillis
         );
     }
 
@@ -223,15 +224,15 @@ public abstract class BaseSyncStatistics {
      * class.
      *
      * @param statistics the instance of {@link BaseSyncStatistics} from which to create a JSON String.
-     * @return
+     * @return a JSON representation of the given {@code statistics} as a String.
      */
-    public static String getStatisticsAsJSONString(@Nonnull final BaseSyncStatistics statistics) {
+    public static String getStatisticsAsJsonString(@Nonnull final BaseSyncStatistics statistics) {
         String result = null;
         final ObjectMapper mapper = new ObjectMapper();
         try {
             result = mapper.writeValueAsString(statistics);
-        } catch (JsonProcessingException e) {
-            LOGGER.error("Failed to build JSON String of summary.", e);
+        } catch (JsonProcessingException processingException) {
+            LOGGER.error("Failed to build JSON String of summary.", processingException);
         }
         return result;
     }

@@ -27,22 +27,22 @@ public class ProductSyncOptions extends BaseSyncOptions {
     // optional filter which can be applied on generated list of update actions
     private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> filterActions;
 
-    public ProductSyncOptions(@Nonnull final CtpClient ctpClient,
-                              @Nonnull final BiConsumer<String, Throwable> errorCallBack,
-                              @Nonnull final Consumer<String> warningCallBack,
-                              final boolean removeOtherLocales,
-                              final boolean removeOtherSetEntries,
-                              final boolean removeOtherCollectionEntries,
-                              final boolean removeOtherProperties,
-                              final boolean compareStaged,
-                              final boolean publish,
-                              final boolean removeOtherVariants,
-                              @Nonnull final List<String> whiteList,
-                              @Nonnull final List<String> blackList,
-                              @Nonnull final Function<List<UpdateAction<Product>>
-                                      , List<UpdateAction<Product>>> filterActions) {
+    ProductSyncOptions(@Nonnull final CtpClient ctpClient,
+                       @Nonnull final BiConsumer<String, Throwable> errorCallBack,
+                       @Nonnull final Consumer<String> warningCallBack,
+                       final boolean removeOtherLocales,
+                       final boolean removeOtherSetEntries,
+                       final boolean removeOtherCollectionEntries,
+                       final boolean removeOtherProperties,
+                       final boolean compareStaged,
+                       final boolean publish,
+                       final boolean removeOtherVariants,
+                       @Nonnull final List<String> whiteList,
+                       @Nonnull final List<String> blackList,
+                       @Nonnull final Function<List<UpdateAction<Product>>,
+                           List<UpdateAction<Product>>> filterActions) {
         super(ctpClient, errorCallBack, warningCallBack, removeOtherLocales, removeOtherSetEntries,
-                removeOtherCollectionEntries, removeOtherProperties);
+            removeOtherCollectionEntries, removeOtherProperties);
         this.compareStaged = compareStaged;
         this.publish = publish;
         this.removeOtherVariants = removeOtherVariants;
@@ -51,4 +51,36 @@ public class ProductSyncOptions extends BaseSyncOptions {
         this.filterActions = filterActions;
     }
 
+    /**
+     * This getter and all the getters below should be removed. They are only added to use these fields
+     * to supress FindBugs from throwing the alert:
+     *
+     * <p>"This field is never read.  Consider removing it from the class."
+     * TODO: Remove these getters when implementing the Product Sync module.
+     *
+     * @return {@code this} instance's {@code compareStaged} boolean value.
+     */
+    boolean isCompareStaged() {
+        return compareStaged;
+    }
+
+    boolean isPublish() {
+        return publish;
+    }
+
+    boolean isRemoveOtherVariants() {
+        return removeOtherVariants;
+    }
+
+    List<String> getWhiteList() {
+        return whiteList;
+    }
+
+    List<String> getBlackList() {
+        return blackList;
+    }
+
+    Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> getFilterActions() {
+        return filterActions;
+    }
 }

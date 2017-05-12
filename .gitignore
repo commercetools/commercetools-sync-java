@@ -1,3 +1,7 @@
 /target
 /.idea
 .DS_Store
+
+# gradle specific
+.gradle/
+build/
