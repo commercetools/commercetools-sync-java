@@ -22,7 +22,7 @@ public interface CategoryService {
      * @param externalId the externalId by which a {@link Category} should be fetched from the CTP project.
      * @return {@link CompletionStage&lt;Optional&lt;Category&gt;&gt;} containing as a result of it's completion an
      *      {@link Optional} with the {@link Category} inside of it or an empty {@link Optional} if no {@link Category}
-     *      was found in the CTP project.
+     *      was found in the CTP project, or a {@link io.sphere.sdk.models.SphereException}.
      */
     @Nonnull
     CompletionStage<Optional<Category>> fetchCategoryByExternalId(@Nullable final String externalId);
@@ -35,7 +35,7 @@ public interface CategoryService {
      *
      * @param categoryDraft the {@link CategoryDraft} to create a {@link Category} based off of.
      * @return {@link CompletionStage&lt;Category&gt;}containing as a result of it's completion an instance of the
-     *      {@link Category} which was created in the CTP project.
+     *      {@link Category} which was created in the CTP project or a {@link io.sphere.sdk.models.SphereException}.
      */
     @Nonnull
     CompletionStage<Category> createCategory(@Nonnull final CategoryDraft categoryDraft);
@@ -49,7 +49,7 @@ public interface CategoryService {
      * @param category      the {@link Category} to update.
      * @param updateActions the update actions to update the {@link Category} with.
      * @return {@link CompletionStage&lt;Category&gt;}containing as a result of it's completion an instance of the
-     *      {@link Category} which was updated in the CTP project.
+     *      {@link Category} which was updated in the CTP project or a {@link io.sphere.sdk.models.SphereException}.
      */
     @Nonnull
     CompletionStage<Category> updateCategory(@Nonnull final Category category,
