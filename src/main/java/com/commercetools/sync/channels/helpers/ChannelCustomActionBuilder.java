@@ -10,7 +10,6 @@ import io.sphere.sdk.commands.UpdateAction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.Optional;
 
 
 public class ChannelCustomActionBuilder extends GenericCustomActionBuilder<Channel> {

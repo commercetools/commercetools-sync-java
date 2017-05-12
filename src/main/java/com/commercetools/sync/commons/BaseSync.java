@@ -1,6 +1,5 @@
 package com.commercetools.sync.commons;
 
-import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import io.sphere.sdk.models.Resource;
 import org.slf4j.Logger;
@@ -13,7 +12,7 @@ import static java.lang.String.format;
 
 
 public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStatistics, V extends BaseSyncOptions> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CategorySync.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseSync.class);
     protected final U statistics;
     protected final V syncOptions;
 

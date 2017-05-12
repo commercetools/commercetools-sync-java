@@ -71,22 +71,22 @@ public final class CustomUpdateActionUtils {
      *      empty list if no update actions are needed.
      */
     @Nonnull
-    public static <T extends Custom & Resource<T>, S extends CustomDraft>
-        List<UpdateAction<T>> buildCustomUpdateActions(
-      @Nonnull final T oldResource,
-      @Nonnull final S newResource,
-      @Nonnull final BaseSyncOptions syncOptions,
-      @Nonnull final TypeService typeService) {
+    public static <T extends Custom & Resource<T>, S extends CustomDraft> List<UpdateAction<T>>
+        buildCustomUpdateActions(
+        @Nonnull final T oldResource,
+        @Nonnull final S newResource,
+        @Nonnull final BaseSyncOptions syncOptions,
+        @Nonnull final TypeService typeService) {
         final CustomFields oldResourceCustomFields = oldResource.getCustom();
         final CustomFieldsDraft newResourceCustomFields = newResource.getCustom();
         if (oldResourceCustomFields != null && newResourceCustomFields != null) {
             try {
                 return buildNonNullCustomFieldsUpdateActions(oldResourceCustomFields, newResourceCustomFields,
-                  oldResource, syncOptions, typeService);
+                    oldResource, syncOptions, typeService);
             } catch (BuildUpdateActionException exception) {
                 syncOptions.applyErrorCallback(format("Failed to build custom fields update actions on the "
-                    + "%s with id '%s'. Reason: %s", oldResource.toReference().getTypeId(), oldResource.getId(),
-                  exception.getMessage()), exception);
+                        + "%s with id '%s'. Reason: %s", oldResource.toReference().getTypeId(), oldResource.getId(),
+                    exception.getMessage()), exception);
             }
         } else {
             if (oldResourceCustomFields == null) {
@@ -96,14 +96,14 @@ public final class CustomUpdateActionUtils {
                     final String newCustomFieldsTypeKey = newResourceCustomFields.getType().getKey();
                     final Map<String, JsonNode> newCustomFieldsJsonMap = newResourceCustomFields.getFields();
                     final UpdateAction<T> updateAction = buildTypedSetCustomTypeUpdateAction(
-                      newCustomFieldsTypeKey, newCustomFieldsJsonMap, oldResource, syncOptions).orElse(null);
+                        newCustomFieldsTypeKey, newCustomFieldsJsonMap, oldResource, syncOptions).orElse(null);
                     return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
                 }
             } else {
                 // New resource's custom fields are not set, but old resource's custom fields are set. So we
                 // should remove the custom type from the old resource.
                 final UpdateAction<T> updateAction = buildTypedRemoveCustomTypeUpdateAction(oldResource, syncOptions)
-                  .orElse(null);
+                    .orElse(null);
                 return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
             }
         }
@@ -143,13 +143,12 @@ public final class CustomUpdateActionUtils {
      *      actions are needed.
      */
     @Nonnull
-    static <T extends Custom & Resource<T>> List<UpdateAction<T>>
-        buildNonNullCustomFieldsUpdateActions(
-      @Nonnull final CustomFields oldCustomFields,
-      @Nonnull final CustomFieldsDraft newCustomFields,
-      @Nonnull final T resource,
-      @Nonnull final BaseSyncOptions syncOptions,
-      @Nonnull final TypeService typeService) throws BuildUpdateActionException {
+    static <T extends Custom & Resource<T>> List<UpdateAction<T>> buildNonNullCustomFieldsUpdateActions(
+        @Nonnull final CustomFields oldCustomFields,
+        @Nonnull final CustomFieldsDraft newCustomFields,
+        @Nonnull final T resource,
+        @Nonnull final BaseSyncOptions syncOptions,
+        @Nonnull final TypeService typeService) throws BuildUpdateActionException {
         final String oldCustomFieldsTypeKey = typeService.getCachedTypeKeyById(oldCustomFields.getType().getId());
         final Map<String, JsonNode> oldCustomFieldsJsonMap = oldCustomFields.getFieldsJsonMap();
         final String newCustomFieldsTypeKey = newCustomFields.getType().getKey();
@@ -158,23 +157,23 @@ public final class CustomUpdateActionUtils {
         if (Objects.equals(oldCustomFieldsTypeKey, newCustomFieldsTypeKey)) {
             if (oldCustomFieldsTypeKey == null && newCustomFieldsTypeKey == null) {
                 throw new BuildUpdateActionException(format("Custom type keys are not set for both the old and new %s.",
-                  resource.toReference().getTypeId()));
+                    resource.toReference().getTypeId()));
             }
             if (newCustomFieldsJsonMap == null) {
                 // New resource's custom fields are null/not set. So we should unset old custom fields.
                 final UpdateAction<T> updateAction = buildTypedSetCustomTypeUpdateAction(
-                  newCustomFieldsTypeKey, null, resource, syncOptions).orElse(null);
+                    newCustomFieldsTypeKey, null, resource, syncOptions).orElse(null);
                 return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
             }
             // old and new resource's custom fields are set. So we should calculate update actions for the
             // the fields of both.
             return buildSetCustomFieldsUpdateActions(oldCustomFieldsJsonMap, newCustomFieldsJsonMap, resource,
-              syncOptions);
+                syncOptions);
         } else {
             final UpdateAction<T> updateAction =
-              buildTypedSetCustomTypeUpdateAction(
-                newCustomFieldsTypeKey, newCustomFieldsJsonMap, resource, syncOptions)
-                .orElse(null);
+                buildTypedSetCustomTypeUpdateAction(
+                    newCustomFieldsTypeKey, newCustomFieldsJsonMap, resource, syncOptions)
+                    .orElse(null);
             return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
         }
     }
@@ -197,6 +196,7 @@ public final class CustomUpdateActionUtils {
      * <li>Custom field JSON values have different ordering.</li>
      * <li>Custom field values are identical.</li>
      * </ol>
+     *
      * @param oldCustomFields the old resource's custom fields map of JSON values.
      * @param newCustomFields the new resource's custom fields map of JSON values.
      * @param resource        the resource that the custom fields are on. It is used to identify the type of
@@ -207,14 +207,14 @@ public final class CustomUpdateActionUtils {
      */
     @Nonnull
     static <T extends Custom & Resource<T>> List<UpdateAction<T>> buildSetCustomFieldsUpdateActions(
-      @Nonnull final Map<String, JsonNode> oldCustomFields,
-      @Nonnull final Map<String, JsonNode> newCustomFields,
-      @Nonnull final T resource,
-      @Nonnull final BaseSyncOptions syncOptions) {
+        @Nonnull final Map<String, JsonNode> oldCustomFields,
+        @Nonnull final Map<String, JsonNode> newCustomFields,
+        @Nonnull final T resource,
+        @Nonnull final BaseSyncOptions syncOptions) {
         final List<UpdateAction<T>> customFieldsUpdateActions =
-          buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource, syncOptions);
+            buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource, syncOptions);
         final List<UpdateAction<T>> removedCustomFieldsActions =
-          buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource, syncOptions);
+            buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, resource, syncOptions);
         customFieldsUpdateActions.addAll(removedCustomFieldsActions);
         return customFieldsUpdateActions;
     }
@@ -235,17 +235,18 @@ public final class CustomUpdateActionUtils {
      */
     @Nonnull
     static <T extends Custom & Resource<T>> List<UpdateAction<T>> buildNewOrModifiedCustomFieldsUpdateActions(
-      @Nonnull final Map<String, JsonNode> oldCustomFields,
-      @Nonnull final Map<String, JsonNode> newCustomFields,
-      @Nonnull final T resource,
-      @Nonnull final BaseSyncOptions syncOptions) {
+        @Nonnull final Map<String, JsonNode> oldCustomFields,
+        @Nonnull final Map<String, JsonNode> newCustomFields,
+        @Nonnull final T resource,
+        @Nonnull final BaseSyncOptions syncOptions) {
         return newCustomFields.keySet().stream()
-          .filter(newCustomFieldName -> !Objects.equals(
-            newCustomFields.get(newCustomFieldName), oldCustomFields.get(newCustomFieldName)))
-          .map(newCustomFieldName -> buildTypedSetCustomFieldUpdateAction(
-            newCustomFieldName, newCustomFields.get(newCustomFieldName), resource, syncOptions).orElse(null))
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
+                              .filter(newCustomFieldName -> !Objects.equals(
+                                  newCustomFields.get(newCustomFieldName), oldCustomFields.get(newCustomFieldName)))
+                              .map(newCustomFieldName -> buildTypedSetCustomFieldUpdateAction(
+                                  newCustomFieldName, newCustomFields.get(newCustomFieldName), resource, syncOptions)
+                                  .orElse(null))
+                              .filter(Objects::nonNull)
+                              .collect(Collectors.toList());
     }
 
     /**
@@ -264,16 +265,16 @@ public final class CustomUpdateActionUtils {
      */
     @Nonnull
     static <T extends Custom & Resource<T>> List<UpdateAction<T>> buildRemovedCustomFieldsUpdateActions(
-      @Nonnull final Map<String, JsonNode> oldCustomFields,
-      @Nonnull final Map<String, JsonNode> newCustomFields,
-      @Nonnull final T resource,
-      @Nonnull final BaseSyncOptions syncOptions) {
+        @Nonnull final Map<String, JsonNode> oldCustomFields,
+        @Nonnull final Map<String, JsonNode> newCustomFields,
+        @Nonnull final T resource,
+        @Nonnull final BaseSyncOptions syncOptions) {
         return oldCustomFields.keySet().stream()
-          .filter(oldCustomFieldsName -> Objects.isNull(newCustomFields.get(oldCustomFieldsName)))
-          .map(oldCustomFieldsName -> buildTypedSetCustomFieldUpdateAction(
-            oldCustomFieldsName, null, resource, syncOptions).orElse(null))
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
+                              .filter(oldCustomFieldsName -> Objects.isNull(newCustomFields.get(oldCustomFieldsName)))
+                              .map(oldCustomFieldsName -> buildTypedSetCustomFieldUpdateAction(
+                                  oldCustomFieldsName, null, resource, syncOptions).orElse(null))
+                              .filter(Objects::nonNull)
+                              .collect(Collectors.toList());
     }
 }
 

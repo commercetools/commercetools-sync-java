@@ -82,7 +82,7 @@ public class CategorySyncStatisticsTest {
         assertThat(categorySyncStatistics.getProcessingTimeInMillis()).isGreaterThanOrEqualTo(waitingTimeInMillis);
 
         final long remainingMillis = categorySyncStatistics.getProcessingTimeInMillis()
-          - TimeUnit.SECONDS.toMillis(categorySyncStatistics.getProcessingTimeInSeconds());
+            - TimeUnit.SECONDS.toMillis(categorySyncStatistics.getProcessingTimeInSeconds());
         assertThat(categorySyncStatistics.getHumanReadableProcessingTime()).contains(format(", %dms", remainingMillis));
     }
 

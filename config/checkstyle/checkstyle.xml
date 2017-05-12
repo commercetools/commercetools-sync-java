@@ -41,6 +41,7 @@
                       value="^package.*|^import.*|a href|href|http://|https://|ftp://" />
         </module>
         <module name="AvoidStarImport" />
+        <module name="UnusedImports"/>
         <module name="OneTopLevelClass" />
         <module name="NoLineWrap" />
         <module name="EmptyBlock">
@@ -143,7 +144,7 @@
             <property name="braceAdjustment" value="0" />
             <property name="caseIndent" value="4" />
             <property name="throwsIndent" value="4" />
-            <property name="lineWrappingIndentation" value="2" />
+            <property name="lineWrappingIndentation" value="4" />
             <property name="arrayInitIndent" value="2" />
         </module>
         <module name="AbbreviationAsWordInName">

@@ -20,7 +20,7 @@ import static java.lang.String.format;
  */
 @SuppressWarnings("unchecked")
 public class GenericCustomActionBuilderFactory<T extends Custom & Resource<T>,
-  S extends GenericCustomActionBuilder<T>> {
+    S extends GenericCustomActionBuilder<T>> {
     /**
      * Container of enums that provide mapping between the CTP resource and it's adjacent concrete custom action builder
      * class. For example, the {@link Category} resources point to the {@link CategoryCustomActionBuilder}
@@ -72,7 +72,7 @@ public class GenericCustomActionBuilderFactory<T extends Custom & Resource<T>,
      *
      * @param resource the resource from which a  concrete custom builder should be created, according to it's type.
      * @return an instance of the concrete implementation of the {@link GenericCustomActionBuilder} responsible for
-     *          building custom update actions according to the type of the {@code resource} instance provided.
+     *      building custom update actions according to the type of the {@code resource} instance provided.
      * @throws BuildUpdateActionException thrown if no concrete implementation of {@link GenericCustomActionBuilder}
      *                                    exists yet.
      * @throws IllegalAccessException     if the {@code resource} class or its nullary constructor is not accessible.
@@ -91,7 +91,7 @@ public class GenericCustomActionBuilderFactory<T extends Custom & Resource<T>,
             }
         }
         throw new BuildUpdateActionException(format(UPDATE_ACTION_NOT_IMPLEMENTED.getDescription(),
-          resource.toReference().getTypeId()));
+            resource.toReference().getTypeId()));
     }
 
     /**
