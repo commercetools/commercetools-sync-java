@@ -20,23 +20,24 @@ public class GenericCustomActionBuilderFactoryTest {
 
     @Test
     public void of_WithImplementedResource_ShouldCreateConcreteBuilder() throws BuildUpdateActionException,
-            IllegalAccessException, InstantiationException {
-        final GenericCustomActionBuilder categoryCustomActionBuilder = GenericCustomActionBuilderFactory.of(mock(Category.class));
+        IllegalAccessException, InstantiationException {
+        final GenericCustomActionBuilder categoryCustomActionBuilder = GenericCustomActionBuilderFactory
+            .of(mock(Category.class));
         assertThat(categoryCustomActionBuilder).isInstanceOf(CategoryCustomActionBuilder.class);
 
-        final GenericCustomActionBuilder channelCustomActionBuilder = GenericCustomActionBuilderFactory.of(mock(Channel.class));
+        final GenericCustomActionBuilder channelCustomActionBuilder = GenericCustomActionBuilderFactory
+            .of(mock(Channel.class));
         assertThat(channelCustomActionBuilder).isInstanceOf(ChannelCustomActionBuilder.class);
     }
 
     @Test
     public void of_WithNonImplementedResource_ShouldThrowBuildUpdateActionException() throws BuildUpdateActionException,
-            IllegalAccessException, InstantiationException {
+        IllegalAccessException, InstantiationException {
         assertThatThrownBy(() -> {
             final Cart cart = mock(Cart.class);
             when(cart.toReference()).thenReturn(Reference.of("cart", "cartId"));
             GenericCustomActionBuilderFactory.of(cart);
-        })
-                .isInstanceOf(BuildUpdateActionException.class);
+        }).isInstanceOf(BuildUpdateActionException.class);
     }
 
 }

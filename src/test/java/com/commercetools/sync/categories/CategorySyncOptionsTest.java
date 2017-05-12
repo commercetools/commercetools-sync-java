@@ -23,20 +23,22 @@ import static org.mockito.Mockito.when;
 public class CategorySyncOptionsTest {
     private CategorySyncOptionsBuilder categorySyncOptionsBuilder;
 
+    /**
+     * Initializes an instance of {@link CategorySyncOptionsBuilder} to be used in the unit test methods of this test
+     * class.
+     */
     @Before
     public void setup() {
         final SphereClientConfig clientConfig = SphereClientConfig.of("testPK", "testCI", "testCS");
-
         final CtpClient ctpClient = mock(CtpClient.class);
         when(ctpClient.getClientConfig()).thenReturn(clientConfig);
-
         categorySyncOptionsBuilder = CategorySyncOptionsBuilder.of(ctpClient);
     }
 
     @Test
     public void getUpdateActionsFilter_WithFilter_ShouldApplyFilterOnList() {
         final Function<List<UpdateAction<Category>>,
-                List<UpdateAction<Category>>> clearListFilter = (updateActions -> Collections.emptyList());
+            List<UpdateAction<Category>>> clearListFilter = (updateActions -> Collections.emptyList());
         categorySyncOptionsBuilder.setUpdateActionsFilter(clearListFilter);
         final CategorySyncOptions syncOptions = categorySyncOptionsBuilder.build();
 

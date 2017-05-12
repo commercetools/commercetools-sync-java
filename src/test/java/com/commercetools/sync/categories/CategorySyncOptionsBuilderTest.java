@@ -18,19 +18,21 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class CategorySyncOptionsBuilderTest {
-    final private CtpClient ctpClient = mock(CtpClient.class);
-    final CategorySyncOptionsBuilder categorySyncOptionsBuilder = CategorySyncOptionsBuilder.of(ctpClient);
+    private static final CtpClient CTP_CLIENT = mock(CtpClient.class);
+    private CategorySyncOptionsBuilder categorySyncOptionsBuilder = CategorySyncOptionsBuilder.of(CTP_CLIENT);
 
-
+    /**
+     * Sets a mock {@code clientConfig} for an instance of {@link CtpClient} to be used across all the unit tests.
+     */
     @Before
     public void setup() {
         final SphereClientConfig clientConfig = SphereClientConfig.of("testPK", "testCI", "testCS");
-        when(ctpClient.getClientConfig()).thenReturn(clientConfig);
+        when(CTP_CLIENT.getClientConfig()).thenReturn(clientConfig);
     }
 
     @Test
     public void of_WithClient_ShouldCreateCategorySyncOptionsBuilder() {
-        final CategorySyncOptionsBuilder builder = CategorySyncOptionsBuilder.of(ctpClient);
+        final CategorySyncOptionsBuilder builder = CategorySyncOptionsBuilder.of(CTP_CLIENT);
         assertThat(builder).isNotNull();
     }
 
@@ -45,13 +47,13 @@ public class CategorySyncOptionsBuilderTest {
         assertThat(categorySyncOptions.getUpdateActionsFilter()).isNull();
         assertThat(categorySyncOptions.getErrorCallBack()).isNull();
         assertThat(categorySyncOptions.getWarningCallBack()).isNull();
-        assertThat(categorySyncOptions.getCtpClient()).isEqualTo(ctpClient);
+        assertThat(categorySyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
     }
 
     @Test
     public void setUpdateActionsFilter_WithFilter_ShouldSetFilter() {
         final Function<List<UpdateAction<Category>>,
-                List<UpdateAction<Category>>> clearListFilter = (updateActions -> Collections.emptyList());
+            List<UpdateAction<Category>>> clearListFilter = (updateActions -> Collections.emptyList());
         categorySyncOptionsBuilder.setUpdateActionsFilter(clearListFilter);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
@@ -96,7 +98,7 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void setErrorCallBack_WithCallBack_ShouldSetCallBack() {
-        final BiConsumer<String, Throwable> mockErrorCallBack = (s, throwable) -> {
+        final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
         };
         categorySyncOptionsBuilder.setErrorCallBack(mockErrorCallBack);
 
@@ -106,7 +108,7 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void setWarningCallBack_WithCallBack_ShouldSetCallBack() {
-        final Consumer<String> mockWarningCallBack = (s) -> {
+        final Consumer<String> mockWarningCallBack = (warningMessage) -> {
         };
         categorySyncOptionsBuilder.setWarningCallBack(mockWarningCallBack);
 
@@ -116,7 +118,7 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void getThis_ShouldReturnCorrectInstance() {
-        CategorySyncOptionsBuilder instance = categorySyncOptionsBuilder.getThis();
+        final CategorySyncOptionsBuilder instance = categorySyncOptionsBuilder.getThis();
         assertThat(instance).isNotNull();
         assertThat(instance).isInstanceOf(CategorySyncOptionsBuilder.class);
         assertThat(instance).isEqualTo(categorySyncOptionsBuilder);
@@ -124,10 +126,11 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void categorySyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
-        CategorySyncOptionsBuilder
-                .of(ctpClient)
-                .setRemoveOtherLocales(false)
-                .setUpdateActionsFilter(updateActions -> Collections.emptyList())
-                .build();
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
+            .of(CTP_CLIENT)
+            .setRemoveOtherLocales(false)
+            .setUpdateActionsFilter(updateActions -> Collections.emptyList())
+            .build();
+        assertThat(categorySyncOptions).isNotNull();
     }
 }

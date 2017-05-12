@@ -11,12 +11,12 @@ import io.sphere.sdk.types.Custom;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * A Generic Custom update action builder that creates update actions that are of the same type as the Generic type T
- * provided by the subclass of this abstract class. For example, if the subclass has T as {@link io.sphere.sdk.categories.Category}
- * then all the methods would build custom update actions of the type {@link io.sphere.sdk.categories.Category}
+ * provided by the subclass of this abstract class. For example, if the subclass has T as
+ * {@link io.sphere.sdk.categories.Category} then all the methods would build custom update actions
+ * of the type {@link io.sphere.sdk.categories.Category}
  *
  * @param <T> the type of the resource to create update actions for.
  */
@@ -40,7 +40,7 @@ public abstract class GenericCustomActionBuilder<T extends Custom & Resource<T>>
      */
     @Nonnull
     public abstract UpdateAction<T> buildSetCustomTypeAction(@Nullable final String customTypeKey,
-                                                                       @Nullable final Map<String, JsonNode> customFieldsJsonMap);
+                                                             @Nullable final Map<String, JsonNode> customFieldsJsonMap);
 
     /**
      * Creates a CTP "setCustomField" update action on the given resource {@link T} that updates a custom field with
@@ -50,9 +50,9 @@ public abstract class GenericCustomActionBuilder<T extends Custom & Resource<T>>
      * @param customFieldName  the name of the custom field to update.
      * @param customFieldValue the new JSON value of the custom field.
      * @return a setCustomField update action on the provided field name, with the provided value
-     * on the resource it's requested on.
+     *      on the resource it's requested on.
      */
     @Nonnull
     public abstract UpdateAction<T> buildSetCustomFieldAction(@Nullable final String customFieldName,
-                                                                        @Nullable final JsonNode customFieldValue);
+                                                              @Nullable final JsonNode customFieldValue);
 }

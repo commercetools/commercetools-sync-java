@@ -37,31 +37,31 @@ public class BaseSyncOptions {
      * {@link io.sphere.sdk.client.SphereClientConfig} and {@link io.sphere.sdk.client.BlockingSphereClient}.
      *
      * @return the {@link CtpClient} instance set to {@code this} {@link BaseSyncOptions} that contains instance of the
-     * {@link io.sphere.sdk.client.SphereClientConfig} and {@link io.sphere.sdk.client.BlockingSphereClient}.
+     *      {@link io.sphere.sdk.client.SphereClientConfig} and {@link io.sphere.sdk.client.BlockingSphereClient}.
      */
     public CtpClient getCtpClient() {
         return ctpClient;
     }
 
     /**
-     * Returns the {@code errorCallBack} {@link BiConsumer<String, Throwable>} function set to {@code this}
+     * Returns the {@code errorCallBack} {@link BiConsumer&lt;String, Throwable&gt;} function set to {@code this}
      * {@link BaseSyncOptions}. It represents the callback that is called whenever an event occurs during the sync
      * process that represents an error.
      *
-     * @return the {@code errorCallBack} {@link BiConsumer<String, Throwable>} function set to {@code this}
-     * {@link BaseSyncOptions}
+     * @return the {@code errorCallBack} {@link BiConsumer&lt;String, Throwable&gt;} function set to {@code this}
+     *      {@link BaseSyncOptions}
      */
     public BiConsumer<String, Throwable> getErrorCallBack() {
         return errorCallBack;
     }
 
     /**
-     * Returns the {@code warningCallBack} {@link Consumer<String>} function set to {@code this}
+     * Returns the {@code warningCallBack} {@link Consumer&lt;String&gt;} function set to {@code this}
      * {@link BaseSyncOptions}. It represents the callback that is called whenever an event occurs
      * during the sync process that represents a warning.
      *
-     * @return the {@code warningCallBack} {@link Consumer<String>} function set to {@code this}
-     * {@link BaseSyncOptions}
+     * @return the {@code warningCallBack} {@link Consumer&lt;String&gt;} function set to {@code this}
+     *      {@link BaseSyncOptions}
      */
     public Consumer<String> getWarningCallBack() {
         return warningCallBack;
@@ -73,8 +73,8 @@ public class BaseSyncOptions {
      * it deletes the existing object properties.
      *
      * @return a {@code boolean} flag which enables the sync module to add additional localizations without deleting
-     * existing ones, if set to {@code false}. If set to true, which is the default value of the option,
-     * it deletes the existing object properties.
+     *      existing ones, if set to {@code false}. If set to true, which is the default value of the option,
+     *      it deletes the existing object properties.
      */
     public boolean shouldRemoveOtherLocales() {
         return removeOtherLocales;
@@ -84,10 +84,10 @@ public class BaseSyncOptions {
      * Returns a {@code boolean} flag which enables the sync module to add additional Set entries without deleting
      * existing ones, if set to {@code false}. If set to true, which is the default value of the option,
      * it deletes the existing Set entries.
-     * <p>
-     * Returns a {@code boolean} flag which enables the sync module to add additional Set entries without deleting
-     * existing ones, if set to {@code false}. If set to true, which is the default value of the option,
-     * it deletes the existing Set entries.
+     *
+     * @return a {@code boolean} flag which enables the sync module to add additional Set entries without deleting
+     *      existing ones, if set to {@code false}. If set to true, which is the default value of the option,
+     *      it deletes the existing Set entries.
      */
     public boolean shouldRemoveOtherSetEntries() {
         return removeOtherSetEntries;
@@ -95,25 +95,25 @@ public class BaseSyncOptions {
 
     /**
      * Returns a {@code boolean} flag which enables the sync module to add collection (e.g. Assets, Images etc.) entries
-     * without deleting existing ones, if set to {@code false}. If set to true, which is the default value of the option,
-     * it deletes the existing collection entries.
+     * without deleting existing ones, if set to {@code false}. If set to true, which is the default value of the
+     * option, it deletes the existing collection entries.
      *
      * @return a {@code boolean} flag which enables the sync module to add collection (e.g. Assets, Images etc.) entries
-     * without deleting existing ones, if set to {@code false}. If set to true, which is the default value of the option,
-     * it deletes the existing collection entries.
+     *      without deleting existing ones, if set to {@code false}. If set to true, which is the default value of the
+     *      option, it deletes the existing collection entries.
      */
     public boolean shouldRemoveOtherCollectionEntries() {
         return removeOtherCollectionEntries;
     }
 
     /**
-     * Returns a {@code boolean} flag which enables the sync module to add additional object properties (e.g. custom fields,
-     * product attributes, etc..) without deleting existing ones, if set to {@code false}. If set to true, which is the
-     * default value of the option, it deletes the existing object properties.
+     * Returns a {@code boolean} flag which enables the sync module to add additional object properties (e.g. custom
+     * fields, product attributes, etc..) without deleting existing ones, if set to {@code false}. If set to true,
+     * which is the default value of the option, it deletes the existing object properties.
      *
-     * @return a {@code boolean} flag which enables the sync module to add additional object properties (e.g. custom fields,
-     * product attributes, etc..) without deleting existing ones, if set to {@code false}. If set to true, which is the
-     * default value of the option, it deletes the existing object properties.
+     * @return a {@code boolean} flag which enables the sync module to add additional object properties (e.g. custom
+     *      fields, product attributes, etc..) without deleting existing ones, if set to {@code false}. If set to true,
+     *      which is the default value of the option, it deletes the existing object properties.
      */
     public boolean shouldRemoveOtherProperties() {
         return removeOtherProperties;
@@ -134,8 +134,8 @@ public class BaseSyncOptions {
 
     /**
      * Given an {@code errorMessage} and an {@code exception}, this method calls the {@code errorCallBack} function
-     * which is set to {@code this} instance of the {@link BaseSyncOptions}. If there {@code errorCallBack} is null, this
-     * method does nothing.
+     * which is set to {@code this} instance of the {@link BaseSyncOptions}. If there {@code errorCallBack} is null,
+     * this method does nothing.
      *
      * @param errorMessage the error message to supply as first param to the {@code errorCallBack} function.
      * @param exception    the {@link Throwable} instance to supply to the {@code errorCallBack} function as a

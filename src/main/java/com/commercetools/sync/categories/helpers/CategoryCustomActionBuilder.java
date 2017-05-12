@@ -11,7 +11,6 @@ import io.sphere.sdk.commands.UpdateAction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.Optional;
 
 public class CategoryCustomActionBuilder extends GenericCustomActionBuilder<Category> {
     @Nonnull
@@ -23,14 +22,15 @@ public class CategoryCustomActionBuilder extends GenericCustomActionBuilder<Cate
     @Nonnull
     @Override
     public UpdateAction<Category> buildSetCustomTypeAction(@Nullable final String customTypeKey,
-                                                                     @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
+                                                           @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
         return SetCustomType.ofTypeKeyAndJson(customTypeKey, customFieldsJsonMap);
+
     }
 
     @Nonnull
     @Override
     public UpdateAction<Category> buildSetCustomFieldAction(@Nullable final String customFieldName,
-                                                                      @Nullable final JsonNode customFieldValue) {
+                                                            @Nullable final JsonNode customFieldValue) {
         return SetCustomField.ofJson(customFieldName, customFieldValue);
     }
 }
