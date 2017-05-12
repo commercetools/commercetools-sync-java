@@ -33,8 +33,6 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 public final class InventorySync extends BaseSync<InventoryEntryDraft, InventoryEntry, InventorySyncStatistics,
         InventorySyncOptions> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InventorySync.class);
-
     //Cache that maps supply channel key to supply channel Id for supply channels existing in CT platform.
     private Map<String, String> supplyChannelKeyToId;
 
@@ -51,7 +49,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
 
     InventorySync(final InventorySyncOptions syncOptions, final InventoryService inventoryService,
                   final TypeService typeService) {
-        super(new InventorySyncStatistics(), syncOptions, LOGGER);
+        super(new InventorySyncStatistics(), syncOptions);
         this.inventoryService = inventoryService;
         this.typeService = typeService;
     }
