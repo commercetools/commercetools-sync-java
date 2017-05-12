@@ -88,7 +88,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                 if (isNotBlank(externalId)) {
                     createOrUpdateCategory(categoryDraft);
                 } else {
-                    failSync(format("CategoryDraft with name: %s doesn't have an externalId.",
+                    handleSyncFailure(format("CategoryDraft with name: %s doesn't have an externalId.",
                         categoryDraft.getName().toString()), null);
                 }
             }
@@ -123,7 +123,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                 createCategory(categoryDraft);
             }
         } catch (SphereException sphereException) {
-            failSync(format(CTP_CATEGORY_FETCH_FAILED.getDescription(), externalId,
+            handleSyncFailure(format(CTP_CATEGORY_FETCH_FAILED.getDescription(), externalId,
                 this.syncOptions.getCtpClient().getClientConfig().getProjectKey(), sphereException.getMessage()),
                 sphereException);
         }
@@ -163,7 +163,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
             this.categoryService.createCategory(categoryDraft).toCompletableFuture().join();
             this.statistics.incrementCreated();
         } catch (SphereException sphereException) {
-            failSync(format(CTP_CATEGORY_CREATE_FAILED.getDescription(), categoryDraft.getExternalId(),
+            handleSyncFailure(format(CTP_CATEGORY_CREATE_FAILED.getDescription(), categoryDraft.getExternalId(),
                 this.syncOptions.getCtpClient().getClientConfig().getProjectKey(), sphereException.getMessage()),
                 sphereException);
         }
@@ -204,7 +204,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
             this.categoryService.updateCategory(category, updateActions).toCompletableFuture().join();
             this.statistics.incrementUpdated();
         } catch (SphereException sphereException) {
-            failSync(format(CTP_CATEGORY_UPDATE_FAILED.getDescription(), category.getId(),
+            handleSyncFailure(format(CTP_CATEGORY_UPDATE_FAILED.getDescription(), category.getId(),
                 this.syncOptions.getCtpClient().getClientConfig().getProjectKey(), sphereException.getMessage()),
                 sphereException);
         }
@@ -218,7 +218,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      * @param reason    the reason of failure.
      * @param exception the exception that occurred, if any.
      */
-    private void failSync(@Nonnull final String reason, @Nullable final Throwable exception) {
+    private void handleSyncFailure(@Nonnull final String reason, @Nullable final Throwable exception) {
         this.syncOptions.applyErrorCallback(reason, exception);
         this.statistics.incrementFailed();
     }
