@@ -3,7 +3,6 @@ package com.commercetools.sync.categories;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.categories.utils.CategorySyncUtils;
 import com.commercetools.sync.commons.BaseSync;
-import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
@@ -12,8 +11,6 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.SphereException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,7 +23,6 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySyncStatistics, CategorySyncOptions> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CategorySync.class);
     private final TypeService typeService;
     private final CategoryService categoryService;
 
@@ -40,19 +36,19 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      */
     public CategorySync(@Nonnull final CategorySyncOptions syncOptions) {
         this(syncOptions,
-                new TypeServiceImpl(syncOptions.getCtpClient().getClient()),
-                new CategoryServiceImpl(syncOptions.getCtpClient().getClient()));
+            new TypeServiceImpl(syncOptions.getCtpClient().getClient()),
+            new CategoryServiceImpl(syncOptions.getCtpClient().getClient()));
     }
 
     /**
      * Takes a {@link CategorySyncOptions}, a {@link TypeService} and {@link CategoryService} instances to instantiate
-     * a new {@link CategorySync} instance that could be used to sync categories or category drafts with the given categories
-     * in the CTP project specified in the injected {@link CategorySyncOptions} instance.
-     * <p>
-     * NOTE: This constructor is mainly to be used for tests where the services can be mocked and passed to.
+     * a new {@link CategorySync} instance that could be used to sync categories or category drafts with the given
+     * categories in the CTP project specified in the injected {@link CategorySyncOptions} instance.
      *
-     * @param syncOptions     the container of all the options of the sync process including the CTP project client and/or
-     *                        configuration and other sync-specific options.
+     * <p>NOTE: This constructor is mainly to be used for tests where the services can be mocked and passed to.
+     *
+     * @param syncOptions     the container of all the options of the sync process including the CTP project
+     *                        client and/or configuration and other sync-specific options.
      * @param typeService     the type service which is responsible for fetching/caching the Types from the CTP project.
      * @param categoryService the category service which is responsible for fetching, creating and updating categories
      *                        from and to the CTP project.
@@ -60,22 +56,20 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
     CategorySync(@Nonnull final CategorySyncOptions syncOptions,
                  @Nonnull final TypeService typeService,
                  @Nonnull final CategoryService categoryService) {
-        super(new CategorySyncStatistics(),
-                syncOptions,
-                LOGGER);
+        super(new CategorySyncStatistics(), syncOptions);
         this.typeService = typeService;
         this.categoryService = categoryService;
     }
 
     /**
-     * Traverses a {@link List} of {@link CategoryDraft} objects and tries to fetch a category, from the CTP project with
-     * the configuration stored in the {@code syncOptions} instance of this class, using the external id. If a category exists,
-     * this category is synced to be the same as the new category draft in this list. If no category exist with such external id,
-     * a new category, identical to this new category draft is created.
-     * <p>
-     * The {@code statistics} instance is updated accordingly to whether the CTP request was carried out successfully or not.
-     * If an exception was thrown on executing the request to CTP,
-     * the optional error callback specified in the {@code syncOptions} is called.
+     * Traverses a {@link List} of {@link CategoryDraft} objects and tries to fetch a category, from the CTP
+     * project with the configuration stored in the {@code syncOptions} instance of this class, using the external id.
+     * If a category exists, this category is synced to be the same as the new category draft in this list. If no
+     * category exist with such external id, a new category, identical to this new category draft  is created.
+     *
+     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried out
+     * successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
+     * specified in the {@code syncOptions} is called.
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
      * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of
@@ -92,7 +86,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                     createOrUpdateCategory(categoryDraft);
                 } else {
                     failSync(format("CategoryDraft with name: %s doesn't have an externalId.",
-                            categoryDraft.getName().toString()), null);
+                        categoryDraft.getName().toString()), null);
                 }
             }
         }
@@ -109,10 +103,10 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      * Given a category draft {@link CategoryDraft} with an externalId, this method tries to fetch the existing category
      * from CTP project stored in the {@code syncOptions} instance of this class. It then either creates a new category,
      * if none exist with the same external id, or update the existing category.
-     * <p>
-     * The {@code statistics} instance is updated accordingly to whether the CTP request was carried out successfully or not.
-     * If an exception was thrown on executing the request to CTP,
-     * the optional error callback specified in the {@code syncOptions} is called.
+     *
+     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried out
+     * successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
+     * specified in the {@code syncOptions} is called.
      *
      * @param categoryDraft the category draft where we get the new data.
      */
@@ -125,10 +119,9 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
             } else {
                 createCategory(categoryDraft);
             }
-        } catch (SphereException e) {
-            failSync(format("Failed to fetch category with external id" +
-                            " '%s' in CTP project with key '%s",
-                    externalId, this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), e);
+        } catch (SphereException sphereException) {
+            failSync(format("Failed to fetch category with external id '%s' in CTP project with key '%s", externalId,
+                this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), sphereException);
         }
     }
 
@@ -152,12 +145,12 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
 
     /**
      * Given a {@link CategoryDraft}, this method issues a blocking request to the CTP project defined by the client
-     * configuration stored in the {@code syncOptions} instance of this class to create a category with the same fields as
-     * this category draft.
-     * <p>
-     * The {@code statistics} instance is updated accordingly to whether the CTP request was carried out successfully or not.
-     * If an exception was thrown on executing the request to CTP,
-     * the optional error callback specified in the {@code syncOptions} is called.
+     * configuration stored in the {@code syncOptions} instance of this class to create a category with the same
+     * fields as this category draft.
+     *
+     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
+     * out successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
+     * specified in the {@code syncOptions} is called.
      *
      * @param categoryDraft the category draft to create the category from.
      */
@@ -165,10 +158,10 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
         try {
             this.categoryService.createCategory(categoryDraft).toCompletableFuture().join();
             this.statistics.incrementCreated();
-        } catch (SphereException e) {
-            failSync(format("Failed to create category with external id" +
-                            " '%s' in CTP project with key '%s",
-                    categoryDraft.getExternalId(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), e);
+        } catch (SphereException sphereException) {
+            failSync(format("Failed to create category with external id"
+                    + " '%s' in CTP project with key '%s", categoryDraft.getExternalId(),
+                this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), sphereException);
         }
     }
 
@@ -183,19 +176,19 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
     private void syncCategories(@Nonnull final Category oldCategory,
                                 @Nonnull final CategoryDraft newCategory) {
         final List<UpdateAction<Category>> updateActions =
-                CategorySyncUtils.buildActions(oldCategory, newCategory, this.syncOptions, this.typeService);
+            CategorySyncUtils.buildActions(oldCategory, newCategory, this.syncOptions, this.typeService);
         if (!updateActions.isEmpty()) {
             updateCategory(oldCategory, updateActions);
         }
     }
 
     /**
-     * Given a {@link Category} and a {@link List} of {@link UpdateAction} elements, this method issues a blocking request
-     * to the CTP project defined by the client configuration stored in the {@code syncOptions} instance of this class to
-     * update the specified category with this list of update actions.
-     * <p>
-     * The {@code statistics} instance is updated accordingly to whether the CTP request was carried out successfully or not.
-     * If an exception was thrown on executing the request to CTP,
+     * Given a {@link Category} and a {@link List} of {@link UpdateAction} elements, this method issues a blocking
+     * request to the CTP project defined by the client configuration stored in the {@code syncOptions} instance
+     * of this class to update the specified category with this list of update actions.
+     *
+     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
+     * out successfully or not. If an exception was thrown on executing the request to CTP,
      * the optional error callback specified in the {@code syncOptions} is called.
      *
      * @param category      the category to update.
@@ -206,10 +199,10 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
         try {
             this.categoryService.updateCategory(category, updateActions).toCompletableFuture().join();
             this.statistics.incrementUpdated();
-        } catch (SphereException e) {
-            failSync(format("Failed to update category with id" +
-                            " '%s' in CTP project with key '%s",
-                    category.getId(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), e);
+        } catch (SphereException sphereException) {
+            failSync(format("Failed to update category with id"
+                    + " '%s' in CTP project with key '%s",
+                category.getId(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()), sphereException);
         }
     }
 

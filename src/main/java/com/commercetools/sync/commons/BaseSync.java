@@ -3,32 +3,29 @@ package com.commercetools.sync.commons;
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import io.sphere.sdk.models.Resource;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
 
 
 public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStatistics, V extends BaseSyncOptions> {
-    protected final Logger logger;
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseSync.class);
     protected final U statistics;
     protected final V syncOptions;
 
-    protected BaseSync(@Nonnull final U statistics,
-                       @Nonnull final V syncOptions,
-                       @Nonnull final Logger logger) {
+    protected BaseSync(@Nonnull final U statistics, @Nonnull final V syncOptions) {
         this.statistics = statistics;
         this.syncOptions = syncOptions;
-        this.logger = logger;
     }
 
     /**
-     * Given a list of resource (e.g. categories, products, etc..) drafts. This method compares each new resource in this
-     * list with it's corresponding old resource in a given CTP project, and in turn it either issues update actions on
-     * the existing resource if it exists or create it if it doesn't.
+     * Given a list of resource (e.g. categories, products, etc..) drafts. This method compares each new resource in
+     * this list with it's corresponding old resource in a given CTP project, and in turn it either issues update
+     * actions on the existing resource if it exists or create it if it doesn't.
      *
      * @param resourceDrafts the list of new resources as drafts.
      * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of {@link U} which
@@ -39,13 +36,12 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
 
 
     /**
-     * Given a list of resource (e.g. categories, products, etc..) drafts. This method compares each new resource in this
-     * list with it's corresponding old resource in a given CTP project, and in turn it either issues update actions on
-     * the existing resource if it exists or create it if it doesn't.
+     * Given a list of resource (e.g. categories, products, etc..) drafts. This method compares each new resource in
+     * this list with it's corresponding old resource in a given CTP project, and in turn it either issues update
+     * actions on the existing resource if it exists or create it if it doesn't.
      *
-     * <p>
-     * The time before and after the actual sync process starts is recorded in the {@link BaseSyncStatistics} container
-     * so that the total processing time is computed in the statistics.
+     * <p>The time before and after the actual sync process starts is recorded in the {@link BaseSyncStatistics}
+     * container so that the total processing time is computed in the statistics.
      *
      * @param resourceDrafts the list of new resources as drafts.
      * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of {@link U} which
@@ -53,8 +49,8 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      *      {@link this} {@link BaseSync}.
      */
     public CompletionStage<U> syncDrafts(@Nonnull final List<T> resourceDrafts) {
-        logger.info(format("About to sync %d drafts into CTP project with key '%s'."
-                , resourceDrafts.size(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
+        LOGGER.info(format("About to sync %d drafts into CTP project with key '%s'.", resourceDrafts.size(),
+            this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
         this.statistics.startTimer();
         return this.processDrafts(resourceDrafts).thenApply(resultingStatistics -> {
             resultingStatistics.calculateProcessingTime();
@@ -66,9 +62,9 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      * Given a list of resources (e.g. categories, products, etc..). This method compares each new resource in this
      * list with it's corresponding old resource in a given CTP project, and in turn it either issues update actions on
      * the existing resource if it exists or create it if it doesn't.
-     * <p>
-     * The time before and after the actual sync process starts is recorded in the {@link BaseSyncStatistics} container
-     * so that the total processing time is computed in the statistics.
+     *
+     * <p>The time before and after the actual sync process starts is recorded in the {@link BaseSyncStatistics}
+     * container so that the total processing time is computed in the statistics.
      *
      * @param resources the list of new resources.
      * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of {@link U} which
@@ -76,8 +72,8 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      *      {@link this} {@link BaseSync}.
      */
     public CompletionStage<U> sync(@Nonnull final List<S> resources) {
-        logger.info(format("About to sync %d resources into CTP project with key '%s'."
-                , resources.size(), this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
+        LOGGER.info(format("About to sync %d resources into CTP project with key '%s'.", resources.size(),
+            this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
         this.statistics.startTimer();
         return this.process(resources).thenApply(resultingStatistics -> {
             resultingStatistics.calculateProcessingTime();
