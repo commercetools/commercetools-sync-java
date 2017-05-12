@@ -37,7 +37,7 @@ and a new category, represented by a [CategoryDraft](https://github.com/commerce
 
 ## How to use it?
 In order to use the category sync an instance of
- [CategorySyncOptions](https://github.com/commercetools/commercetools-sync-java/blob/develop/src/main/java/com/commercetools/sync/categories/CategorySyncOptions.java) have to be injected.
+ [CategorySyncOptions](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/categories/CategorySyncOptions.java) have to be injected.
  
  In order to instantiate a `CategorySyncOptions`, a `ctpClient` is required:
   #### `ctpClient` [Required]
