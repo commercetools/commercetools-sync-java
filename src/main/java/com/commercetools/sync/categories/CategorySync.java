@@ -10,18 +10,18 @@ import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.SphereException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 
 import static com.commercetools.sync.commons.enums.Error.CTP_CATEGORY_CREATE_FAILED;
-import static com.commercetools.sync.commons.enums.Error.CTP_CATEGORY_FETCH_FAILED;
 import static com.commercetools.sync.commons.enums.Error.CTP_CATEGORY_UPDATE_FAILED;
+import static com.commercetools.sync.commons.enums.Error.CTP_CATEGORY_FETCH_FAILED;
+import static com.commercetools.sync.commons.enums.Error.CTP_CATEGORY_SYNC_FAILED;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -103,9 +103,10 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
     }
 
     /**
-     * Given a category draft {@link CategoryDraft} with an externalId, this method tries to fetch the existing category
-     * from CTP project stored in the {@code syncOptions} instance of this class. It then either creates a new category,
-     * if none exist with the same external id, or update the existing category.
+     * Given a category draft {@link CategoryDraft} with an externalId, this method blocks execution to try to fetch the
+     * existing category from CTP project stored in the {@code syncOptions} instance of this class. If successful, It
+     * either blocks to create a new category, if none exist with the same external id, or blocks to update the
+     * existing category.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried out
      * successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
@@ -116,57 +117,48 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
     private void createOrUpdateCategory(@Nonnull final CategoryDraft categoryDraft) {
         final String externalId = categoryDraft.getExternalId();
         try {
-            final Category oldCategory = fetchOldCategoryByExternalId(externalId);
-            if (oldCategory != null) {
-                syncCategories(oldCategory, categoryDraft);
-            } else {
-                createCategory(categoryDraft);
-            }
-        } catch (SphereException sphereException) {
-            handleSyncFailure(format(CTP_CATEGORY_FETCH_FAILED.getDescription(), externalId,
-                this.syncOptions.getCtpClient().getClientConfig().getProjectKey(), sphereException.getMessage()),
-                sphereException);
+            this.categoryService.fetchCategoryByExternalId(externalId)
+                                .thenCompose(oldCategoryOptional -> {
+                                    if (oldCategoryOptional.isPresent()) {
+                                        return syncCategories(oldCategoryOptional.get(), categoryDraft);
+                                    } else {
+                                        return createCategory(categoryDraft);
+                                    }
+                                })
+                                .exceptionally(sphereException -> {
+                                    handleSyncFailure(format(CTP_CATEGORY_FETCH_FAILED.getDescription(), externalId,
+                                        this.syncOptions.getCtpClient().getClientConfig().getProjectKey(),
+                                        sphereException.getMessage()), sphereException);
+                                    return null;
+                                })
+                                .toCompletableFuture().get();
+        } catch (InterruptedException | ExecutionException exception) {
+            handleSyncFailure(format(CTP_CATEGORY_SYNC_FAILED.getDescription(), externalId,
+                this.syncOptions.getCtpClient().getClientConfig().getProjectKey(), exception.getMessage()), exception);
         }
     }
 
     /**
-     * Given an {@code externalId} this method uses {@code this} instance's injected {@link CategoryService} to fetch
-     * a Category with this {@code externalId} from CTP. The service returns a
-     * {@link CompletionStage&lt;Optional&lt;Category&gt;&gt;}, which this method blocks the execution of the code to
-     * complete this completion stage and return the resultant {@link Category} wrapped in the {@link Optional}, if one
-     * exists. If no {@link Category} exists with such {@code externalId}, this method returns {@code null}.
-     *
-     * @param externalId the externalId by which a {@link Category} should be fetched from the CTP project.
-     * @return {@link Category} with the {@code externalId} specified if exists, or {@code null} otherwise.
-     */
-    @Nullable
-    private Category fetchOldCategoryByExternalId(@Nullable final String externalId) {
-        final CompletionStage<Optional<Category>> oldCategoryOptionalStage =
-            this.categoryService.fetchCategoryByExternalId(externalId);
-        final Optional<Category> oldCategoryOptional = oldCategoryOptionalStage.toCompletableFuture().join();
-        return oldCategoryOptional.orElse(null);
-    }
-
-    /**
-     * Given a {@link CategoryDraft}, this method issues a blocking request to the CTP project defined by the client
-     * configuration stored in the {@code syncOptions} instance of this class to create a category with the same
-     * fields as this category draft.
+     * Given a {@link CategoryDraft}, issues a request to the CTP project defined by the client configuration stored in
+     * the {@code syncOptions} instance of this class to create a category with the same fields as this category draft.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
      * out successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
      * specified in the {@code syncOptions} is called.
      *
      * @param categoryDraft the category draft to create the category from.
+     * @return a future monad which can contain an empty result.
      */
-    private void createCategory(@Nonnull final CategoryDraft categoryDraft) {
-        try {
-            this.categoryService.createCategory(categoryDraft).toCompletableFuture().join();
-            this.statistics.incrementCreated();
-        } catch (SphereException sphereException) {
-            handleSyncFailure(format(CTP_CATEGORY_CREATE_FAILED.getDescription(), categoryDraft.getExternalId(),
-                this.syncOptions.getCtpClient().getClientConfig().getProjectKey(), sphereException.getMessage()),
-                sphereException);
-        }
+    private CompletionStage<Void> createCategory(@Nonnull final CategoryDraft categoryDraft) {
+        return this.categoryService.createCategory(categoryDraft)
+                                   .thenAccept(createdCategory -> this.statistics.incrementCreated())
+                                   .exceptionally(sphereException -> {
+                                       handleSyncFailure(format(CTP_CATEGORY_CREATE_FAILED.getDescription(),
+                                           categoryDraft.getExternalId(),
+                                           this.syncOptions.getCtpClient().getClientConfig().getProjectKey(),
+                                           sphereException.getMessage()), sphereException);
+                                       return null;
+                                   });
     }
 
     /**
@@ -176,19 +168,21 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new data.
+     * @return a future monad which can contain an empty result.
      */
-    private void syncCategories(@Nonnull final Category oldCategory,
-                                @Nonnull final CategoryDraft newCategory) {
+    private CompletionStage<Void> syncCategories(@Nonnull final Category oldCategory,
+                                                 @Nonnull final CategoryDraft newCategory) {
         final List<UpdateAction<Category>> updateActions =
             CategorySyncUtils.buildActions(oldCategory, newCategory, this.syncOptions, this.typeService);
         if (!updateActions.isEmpty()) {
-            updateCategory(oldCategory, updateActions);
+            return updateCategory(oldCategory, updateActions);
         }
+        return CompletableFuture.completedFuture(null);
     }
 
     /**
-     * Given a {@link Category} and a {@link List} of {@link UpdateAction} elements, this method issues a blocking
-     * request to the CTP project defined by the client configuration stored in the {@code syncOptions} instance
+     * Given a {@link Category} and a {@link List} of {@link UpdateAction} elements, this method issues a request to
+     * the CTP project defined by the client configuration stored in the {@code syncOptions} instance
      * of this class to update the specified category with this list of update actions.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
@@ -197,17 +191,19 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      *
      * @param category      the category to update.
      * @param updateActions the list of update actions to update the category with.
+     * @return a future monad which can contain an empty result.
      */
-    private void updateCategory(@Nonnull final Category category,
-                                @Nonnull final List<UpdateAction<Category>> updateActions) {
-        try {
-            this.categoryService.updateCategory(category, updateActions).toCompletableFuture().join();
-            this.statistics.incrementUpdated();
-        } catch (SphereException sphereException) {
-            handleSyncFailure(format(CTP_CATEGORY_UPDATE_FAILED.getDescription(), category.getId(),
-                this.syncOptions.getCtpClient().getClientConfig().getProjectKey(), sphereException.getMessage()),
-                sphereException);
-        }
+    private CompletionStage<Void> updateCategory(@Nonnull final Category category,
+                                                 @Nonnull final List<UpdateAction<Category>> updateActions) {
+        return this.categoryService.updateCategory(category, updateActions)
+                                   .thenAccept(updatedCategory -> this.statistics.incrementUpdated())
+                                   .exceptionally(sphereException -> {
+                                       handleSyncFailure(format(CTP_CATEGORY_UPDATE_FAILED.getDescription(),
+                                           category.getId(),
+                                           this.syncOptions.getCtpClient().getClientConfig().getProjectKey(),
+                                           sphereException.getMessage()), sphereException);
+                                       return null;
+                                   });
     }
 
     /**
