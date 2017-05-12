@@ -18,7 +18,6 @@ import io.sphere.sdk.inventory.queries.InventoryEntryQueryBuilder;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -36,42 +35,40 @@ final class InventoryServiceImpl implements InventoryService {
 
     @Nonnull
     @Override
-    public List<InventoryEntry> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus) {
+    public CompletionStage<List<InventoryEntry>> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus) {
         final InventoryEntryQuery query = InventoryEntryQueryBuilder.of()
                 .plusPredicates(queryModel -> queryModel.sku().isIn(skus))
                 .plusExpansionPaths(expansionModel -> expansionModel.supplyChannel())
                 .build();
-        return QueryExecutionUtils.queryAll(ctpClient, query)
-                .toCompletableFuture()
-                .join();
+        return QueryExecutionUtils.queryAll(ctpClient, query);
     }
 
     @Nonnull
     @Override
-    public List<Channel> fetchAllSupplyChannels() {
+    public CompletionStage<List<Channel>> fetchAllSupplyChannels() {
         final ChannelQuery query = ChannelQueryBuilder.of()
                 .plusPredicates(channelQueryModel -> channelQueryModel.roles()
                         .containsAny(Collections.singletonList(ChannelRole.INVENTORY_SUPPLY)))
                 .build();
-        return QueryExecutionUtils.queryAll(ctpClient, query)
-                .toCompletableFuture()
-                .join();
+        return QueryExecutionUtils.queryAll(ctpClient, query);
     }
 
-    @Nullable
+    @Nonnull
     @Override
-    public Channel createSupplyChannel(@Nonnull final String key) {
+    public CompletionStage<Channel> createSupplyChannel(@Nonnull final String key) {
         final ChannelDraft draft = ChannelDraftBuilder.of(key)
                 .roles(singleton(ChannelRole.INVENTORY_SUPPLY))
                 .build();
-        return ctpClient.executeBlocking(ChannelCreateCommand.of(draft));
+        return ctpClient.execute(ChannelCreateCommand.of(draft));
     }
 
+    @Nonnull
     @Override
     public CompletionStage<InventoryEntry> createInventoryEntry(@Nonnull final InventoryEntryDraft inventoryEntryDraft) {
         return ctpClient.execute(InventoryEntryCreateCommand.of(inventoryEntryDraft));
     }
 
+    @Nonnull
     @Override
     public CompletionStage<InventoryEntry> updateInventoryEntry(@Nonnull final InventoryEntry inventoryEntry,
                                                                 @Nonnull final List<UpdateAction<InventoryEntry>> updateActions) {
