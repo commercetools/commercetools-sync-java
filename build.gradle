@@ -31,7 +31,8 @@ ext {
 }
 
 repositories {
-    maven { url "http://repo.maven.apache.org/maven2" }
+    mavenCentral()
+    jcenter()
 }
 dependencies {
     compile group: 'com.commercetools.sdk.jvm.core', name: 'commercetools-models', version: commercetoolsJvmSdkVersion
