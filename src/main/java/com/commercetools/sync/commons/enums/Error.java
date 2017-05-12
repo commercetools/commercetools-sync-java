@@ -12,7 +12,9 @@ public enum Error {
     REMOVE_CUSTOM_TYPE_BUILD_FAILED("Failed to build 'setCustomType' update action to remove the custom type on the "
       + "%s with id '%s'. Reason: %s"),
     SET_CUSTOM_FIELD_BUILD_FAILED("Failed to build 'setCustomField' update action on "
-      + "the custom field with the name '%s' on the %s with id '%s'. Reason: %s");
+      + "the custom field with the name '%s' on the %s with id '%s'. Reason: %s"),
+    CATEGORY_DRAFT_IS_NULL("CategoryDraft is null."),
+    CATEGORY_DRAFT_HAS_NO_EXTERNAL_ID("CategoryDraft with name: %s doesn't have an externalId.");
 
     private final String description;
 

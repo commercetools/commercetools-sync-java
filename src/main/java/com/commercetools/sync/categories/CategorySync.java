@@ -16,6 +16,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
+import static com.commercetools.sync.commons.enums.Error.CATEGORY_DRAFT_HAS_NO_EXTERNAL_ID;
+import static com.commercetools.sync.commons.enums.Error.CATEGORY_DRAFT_IS_NULL;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -74,15 +76,17 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
     protected void processDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {
         for (CategoryDraft categoryDraft : categoryDrafts) {
             if (categoryDraft != null) {
-                this.statistics.incrementProcessed();
                 final String externalId = categoryDraft.getExternalId();
                 if (isNotBlank(externalId)) {
                     createOrUpdateCategory(categoryDraft);
                 } else {
-                    failSync(format("CategoryDraft with name: %s doesn't have an externalId.",
+                    failSync(format(CATEGORY_DRAFT_HAS_NO_EXTERNAL_ID.getDescription(),
                         categoryDraft.getName().toString()), null);
                 }
+            } else {
+                failSync(CATEGORY_DRAFT_IS_NULL.getDescription(), null);
             }
+            this.statistics.incrementProcessed();
         }
     }
 
