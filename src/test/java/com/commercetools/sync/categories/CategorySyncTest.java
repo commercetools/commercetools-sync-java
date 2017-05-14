@@ -16,6 +16,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryService;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -121,6 +122,32 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 1 updated and 0 categories failed to sync).");
+    }
+
+    @Test
+    public void syncDrafts_WithIdenticalExistingCategory_ShouldUpdateCategory() {
+        final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH,
+            "name",
+            "slug",
+            "externalId",
+            "description",
+            "metaDescription",
+            "metaTitle",
+            "metaKeywords",
+            "orderHint",
+            "parentId");
+        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
+        categoryDrafts.add(categoryDraft);
+
+
+        categorySync.syncDrafts(categoryDrafts);
+        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
+        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
+        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
+        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
+        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+            "Summary: 1 categories were processed in total "
+                + "(0 created, 0 updated and 0 categories failed to sync).");
     }
 
     @Test
