@@ -92,7 +92,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
     protected CompletionStage<CategorySyncStatistics> processDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {
         for (CategoryDraft categoryDraft : categoryDrafts) {
             if (categoryDraft != null) {
-                this.statistics.incrementProcessed();
+                statistics.incrementProcessed();
                 final String externalId = categoryDraft.getExternalId();
                 if (isNotBlank(externalId)) {
                     createOrUpdateCategory(categoryDraft);
@@ -102,13 +102,13 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                 }
             }
         }
-        return CompletableFuture.completedFuture(this.statistics);
+        return CompletableFuture.completedFuture(statistics);
     }
 
     @Override
     protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<Category> resources) {
         //TODO: SEE GITHUB ISSUE#12
-        return CompletableFuture.completedFuture(this.statistics);
+        return CompletableFuture.completedFuture(statistics);
     }
 
     /**
@@ -126,7 +126,6 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
     private void createOrUpdateCategory(@Nonnull final CategoryDraft categoryDraft) {
         final String externalId = categoryDraft.getExternalId();
         try {
-            this.categoryService.fetchCategoryByExternalId(externalId)
                                 .thenCompose(oldCategoryOptional -> {
                                     if (oldCategoryOptional.isPresent()) {
                                         return syncCategories(oldCategoryOptional.get(), categoryDraft);
@@ -141,6 +140,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                                     return null;
                                 })
                                 .toCompletableFuture().get();
+            categoryService.fetchCategoryByExternalId(externalId)
         } catch (InterruptedException | ExecutionException exception) {
             handleSyncFailure(format(CTP_CATEGORY_SYNC_FAILED.getDescription(), externalId,
                 this.syncOptions.getCtpClient().getClientConfig().getProjectKey(), exception.getMessage()), exception);
@@ -183,7 +183,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
     private CompletionStage<Void> syncCategories(@Nonnull final Category oldCategory,
                                                  @Nonnull final CategoryDraft newCategory) {
         final List<UpdateAction<Category>> updateActions =
-            CategorySyncUtils.buildActions(oldCategory, newCategory, this.syncOptions, this.typeService);
+            CategorySyncUtils.buildActions(oldCategory, newCategory, syncOptions, typeService);
         if (!updateActions.isEmpty()) {
             return updateCategory(oldCategory, updateActions);
         }
@@ -225,7 +225,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      * @param exception the exception that occurred, if any.
      */
     private void handleSyncFailure(@Nonnull final String reason, @Nullable final Throwable exception) {
-        this.syncOptions.applyErrorCallback(reason, exception);
-        this.statistics.incrementFailed();
+        syncOptions.applyErrorCallback(errorMessage, exception);
+        statistics.incrementFailed();
     }
 }
