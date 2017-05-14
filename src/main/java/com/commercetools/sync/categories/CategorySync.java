@@ -127,14 +127,11 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
     private void createOrUpdateCategory(@Nonnull final CategoryDraft categoryDraft) {
         final String externalId = categoryDraft.getExternalId();
         try {
-                                .thenCompose(oldCategoryOptional -> {
-                                    if (oldCategoryOptional.isPresent()) {
-                                        return syncCategories(oldCategoryOptional.get(), categoryDraft);
-                                    } else {
-                                        return createCategory(categoryDraft);
-                                    }
-                                })
             categoryService.fetchCategoryByExternalId(externalId)
+                           .thenCompose(fetchedCategoryOptional ->
+                               fetchedCategoryOptional
+                                   .map(category -> syncCategories(fetchedCategoryOptional.get(), categoryDraft))
+                                   .orElseGet(() -> createCategory(categoryDraft)))
                            .exceptionally(exception -> {
                                final String errorMessage = format(CTP_CATEGORY_FETCH_FAILED,
                                    categoryDraft.getExternalId(), syncOptions.getProjectKey(),
