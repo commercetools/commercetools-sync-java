@@ -20,7 +20,6 @@ import static java.lang.String.format;
 
 @SuppressWarnings("unchecked")
 final class GenericUpdateActionUtils {
-
     private static final String SET_CUSTOM_FIELD_BUILD_FAILED = "Failed to build 'setCustomField' update action on "
         + "the custom field with the name '%s' on the %s with id '%s'. Reason: %s";
     private static final String SET_CUSTOM_TYPE_BUILD_FAILED = "Failed to build 'setCustomType' update action on the "

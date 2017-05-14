@@ -20,7 +20,7 @@ import static java.lang.String.format;
 @SuppressWarnings("unchecked")
 public class GenericCustomActionBuilderFactory<T extends Custom & Resource<T>,
     S extends GenericCustomActionBuilder<T>> {
-    private final static String UPDATE_ACTION_NOT_IMPLEMENTED = "Update actions for resource: '%s' is not implemented.";
+    private static final String UPDATE_ACTION_NOT_IMPLEMENTED = "Update actions for resource: '%s' is not implemented.";
 
     /**
      * Container of enums that provide mapping between the CTP resource and it's adjacent concrete custom action builder
