@@ -77,7 +77,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      * Traverses a {@link List} of {@link CategoryDraft} objects and tries to fetch a category, from the CTP
      * project with the configuration stored in the {@code syncOptions} instance of this class, using the external id.
      * If a category exists, this category is synced to be the same as the new category draft in this list. If no
-     * category exist with such external id, a new category, identical to this new category draft  is created.
+     * category exist with such external id, a new category, identical to this new category draft is created.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried out
      * successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
