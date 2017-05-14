@@ -20,14 +20,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.enums.Error.CUSTOM_FIELDS_UPDATE_ACTIONS_BUILD_FAILED;
-import static com.commercetools.sync.commons.enums.Error.CUSTOM_TYPE_KEYS_NOT_SET;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedRemoveCustomTypeUpdateAction;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomFieldUpdateAction;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction;
 import static java.lang.String.format;
 
 public final class CustomUpdateActionUtils {
+    private static final String CUSTOM_TYPE_KEYS_NOT_SET = "Custom type keys are not set for both the old and new %s.";
+    private static final String CUSTOM_FIELDS_UPDATE_ACTIONS_BUILD_FAILED = "Failed to build custom fields update "
+        + "actions on the %s with id '%s'. Reason: %s";
 
     /**
      * Compares the {@link CustomFields} of an old resource {@link T} (for example {@link Category},
@@ -86,7 +87,7 @@ public final class CustomUpdateActionUtils {
                 return buildNonNullCustomFieldsUpdateActions(oldResourceCustomFields, newResourceCustomFields,
                     oldResource, syncOptions, typeService);
             } catch (BuildUpdateActionException exception) {
-                syncOptions.applyErrorCallback(format(CUSTOM_FIELDS_UPDATE_ACTIONS_BUILD_FAILED.getDescription(),
+                syncOptions.applyErrorCallback(format(CUSTOM_FIELDS_UPDATE_ACTIONS_BUILD_FAILED,
                     oldResource.toReference().getTypeId(), oldResource.getId(), exception.getMessage()), exception);
             }
         } else {
@@ -157,7 +158,7 @@ public final class CustomUpdateActionUtils {
 
         if (Objects.equals(oldCustomFieldsTypeKey, newCustomFieldsTypeKey)) {
             if (oldCustomFieldsTypeKey == null && newCustomFieldsTypeKey == null) {
-                throw new BuildUpdateActionException(format(CUSTOM_TYPE_KEYS_NOT_SET.getDescription(),
+                throw new BuildUpdateActionException(format(CUSTOM_TYPE_KEYS_NOT_SET,
                     resource.toReference().getTypeId()));
             }
             if (newCustomFieldsJsonMap == null) {

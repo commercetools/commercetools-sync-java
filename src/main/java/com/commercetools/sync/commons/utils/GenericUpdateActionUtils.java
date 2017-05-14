@@ -16,13 +16,17 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.enums.Error.SET_CUSTOM_FIELD_BUILD_FAILED;
-import static com.commercetools.sync.commons.enums.Error.SET_CUSTOM_TYPE_BUILD_FAILED;
-import static com.commercetools.sync.commons.enums.Error.REMOVE_CUSTOM_TYPE_BUILD_FAILED;
 import static java.lang.String.format;
 
 @SuppressWarnings("unchecked")
 final class GenericUpdateActionUtils {
+
+    private static final String SET_CUSTOM_FIELD_BUILD_FAILED = "Failed to build 'setCustomField' update action on "
+        + "the custom field with the name '%s' on the %s with id '%s'. Reason: %s";
+    private static final String SET_CUSTOM_TYPE_BUILD_FAILED = "Failed to build 'setCustomType' update action on the "
+        + "%s with id '%s'. Reason: %s";
+    private static final String REMOVE_CUSTOM_TYPE_BUILD_FAILED = "Failed to build 'setCustomType' update action to "
+        + "remove the custom type on the %s with id '%s'. Reason: %s";
 
     /**
      * Creates a CTP "setCustomType" update action on the given resource {@link T} (which currently could either
@@ -46,8 +50,8 @@ final class GenericUpdateActionUtils {
                                                                 .buildSetCustomTypeAction(customTypeKey,
                                                                     customFieldsJsonMap));
         } catch (BuildUpdateActionException | IllegalAccessException | InstantiationException exception) {
-            syncOptions.applyErrorCallback(format(SET_CUSTOM_TYPE_BUILD_FAILED.getDescription(),
-                resource.toReference().getTypeId(), resource.getId(), exception.getMessage()), exception);
+            syncOptions.applyErrorCallback(format(SET_CUSTOM_TYPE_BUILD_FAILED, resource.toReference().getTypeId(),
+                resource.getId(), exception.getMessage()), exception);
             return Optional.empty();
         }
     }
@@ -67,8 +71,8 @@ final class GenericUpdateActionUtils {
         try {
             return Optional.of(GenericCustomActionBuilderFactory.of(resource).buildRemoveCustomTypeAction());
         } catch (BuildUpdateActionException | IllegalAccessException | InstantiationException exception) {
-            syncOptions.applyErrorCallback(format(REMOVE_CUSTOM_TYPE_BUILD_FAILED.getDescription(),
-                resource.toReference().getTypeId(), resource.getId(), exception.getMessage()), exception);
+            syncOptions.applyErrorCallback(format(REMOVE_CUSTOM_TYPE_BUILD_FAILED, resource.toReference().getTypeId(),
+                resource.getId(), exception.getMessage()), exception);
             return Optional.empty();
         }
     }
@@ -97,7 +101,7 @@ final class GenericUpdateActionUtils {
                                                                 .buildSetCustomFieldAction(customFieldName,
                                                                     customFieldValue));
         } catch (BuildUpdateActionException | IllegalAccessException | InstantiationException exception) {
-            syncOptions.applyErrorCallback(format(SET_CUSTOM_FIELD_BUILD_FAILED.getDescription(), customFieldName,
+            syncOptions.applyErrorCallback(format(SET_CUSTOM_FIELD_BUILD_FAILED, customFieldName,
                 resource.toReference().getTypeId(), resource.getId(), exception.getMessage()), exception);
             return Optional.empty();
         }

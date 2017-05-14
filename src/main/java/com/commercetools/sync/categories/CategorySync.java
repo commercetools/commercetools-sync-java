@@ -19,14 +19,22 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
-import static com.commercetools.sync.commons.enums.Error.CTP_CATEGORY_CREATE_FAILED;
-import static com.commercetools.sync.commons.enums.Error.CTP_CATEGORY_UPDATE_FAILED;
-import static com.commercetools.sync.commons.enums.Error.CTP_CATEGORY_FETCH_FAILED;
-import static com.commercetools.sync.commons.enums.Error.CTP_CATEGORY_SYNC_FAILED;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySyncStatistics, CategorySyncOptions> {
+    private static final String CTP_CATEGORY_UPDATE_FAILED = "Failed to update category with externalId:'%s' in CTP"
+        + " project with key '%s. Reason: %s";
+    private static final String CTP_CATEGORY_FETCH_FAILED = "Failed to fetch category with externalId:'%s' in CTP"
+        + " project with key '%s. Reason: %s";
+    private static final String CTP_CATEGORY_CREATE_FAILED = "Failed to create category with externalId:'%s' in CTP"
+        + " project with key '%s. Reason: %s";
+    private static final String CTP_CATEGORY_SYNC_FAILED = "Failed to sync category with externalId:'%s' in CTP"
+        + " project with key '%s. Reason: %s";
+    private static final String CATEGORY_DRAFT_EXTERNAL_ID_NOT_SET = "CategoryDraft with name: %s doesn't have an"
+        + " externalId in CTP project with key '%s'.";
+
+
     private final TypeService typeService;
     private final CategoryService categoryService;
 
