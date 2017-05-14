@@ -114,7 +114,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
 
     /**
      * Given a category draft {@link CategoryDraft} with an externalId, this method blocks execution to try to fetch the
-     * existing category from CTP project stored in the {@code syncOptions} instance of this class. If successful, It
+     * existing category from CTP project stored in the {@code syncOptions} instance of this class. If successful, it
      * either blocks to create a new category, if none exist with the same external id, or blocks to update the
      * existing category.
      *
@@ -216,14 +216,14 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
     }
 
     /**
-     * Given a reason message as {@link String} and {@link Throwable} exception, this method calls the optional error
-     * callback specified in the {@code syncOptions} and updates the {@code statistics} instance by incrementing the
-     * total number of failed resources to sync.
+     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
+     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
+     * incrementing the total number of failed categories to sync.
      *
-     * @param reason    the reason of failure.
-     * @param exception the exception that occurred, if any.
+     * @param errorMessage The error message describing the reason(s) of failure.
+     * @param exception    The exception that called caused the failure, if any.
      */
-    private void handleSyncFailure(@Nonnull final String reason, @Nullable final Throwable exception) {
+    private void handleSyncFailure(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
         syncOptions.applyErrorCallback(errorMessage, exception);
         statistics.incrementFailed();
     }
