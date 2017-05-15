@@ -130,7 +130,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
             categoryService.fetchCategoryByExternalId(externalId)
                            .thenCompose(fetchedCategoryOptional ->
                                fetchedCategoryOptional
-                                   .map(category -> syncCategories(fetchedCategoryOptional.get(), categoryDraft))
+                                   .map(category -> syncCategories(category, categoryDraft))
                                    .orElseGet(() -> createCategory(categoryDraft)))
                            .exceptionally(exception -> {
                                final String errorMessage = format(CTP_CATEGORY_FETCH_FAILED,
