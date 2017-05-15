@@ -36,7 +36,6 @@ public class CategoryServiceImpl implements CategoryService {
     public CompletionStage<Category> createCategory(@Nonnull final CategoryDraft categoryDraft) {
         final CategoryCreateCommand categoryCreateCommand = CategoryCreateCommand.of(categoryDraft);
         return ctpClient.execute(categoryCreateCommand);
-
     }
 
     @Nonnull
