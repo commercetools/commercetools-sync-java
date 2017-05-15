@@ -12,28 +12,31 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.*;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockCustomFields;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class InventoryDraftTransformerUtilsTest {
 
     private static final String SKU = "10000";
-    private static final Long QUANTITY_ON_STCK = 100l;
+    private static final Long QUANTITY_ON_STCK = 100L;
     private static final Integer RESTOCKABLE_IN_DAYS = 10;
     private static final ZonedDateTime EXPECTED_DELIVERY = ZonedDateTime.of(2017, 5, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
 
     private static final String CHANNEL_ID = "11111";
     private static final String CHANNEL_KEY = "testKey";
 
-    private static final String CUSTOM_TYPE_ID= "222222";
+    private static final String CUSTOM_TYPE_ID = "222222";
     private static final String CUSTOM_TYPE_KEY = "testTypeName";
     private static final String CUSTOM_FIELD_NAME = "testField";
     private static final String CUSTOM_FIELD_VALUE = "testValue";
 
     @Test
     public void transformToDraft_WithNoChannelNeitherCustomType_ShouldReturnDraft() {
-        final InventoryEntry entry = getMockInventoryEntry(SKU, QUANTITY_ON_STCK, RESTOCKABLE_IN_DAYS, EXPECTED_DELIVERY, null, null);
+        final InventoryEntry entry = getMockInventoryEntry(SKU, QUANTITY_ON_STCK, RESTOCKABLE_IN_DAYS,
+            EXPECTED_DELIVERY, null, null);
         final InventoryEntryDraft draft = InventoryDraftTransformerUtils.transformToDraft(entry);
 
         assertThat(draft.getSku()).isEqualTo(SKU);
@@ -73,7 +76,7 @@ public class InventoryDraftTransformerUtilsTest {
     }
 
     @Test
-    public void transformToDraft_WithCustomTypeWithKey_ShouldReturnDraft () {
+    public void transformToDraft_WithCustomTypeWithKey_ShouldReturnDraft() {
         final CustomFields customFields = getMockCustomFields(CUSTOM_TYPE_ID, CUSTOM_TYPE_KEY, CUSTOM_FIELD_NAME,
                 CUSTOM_FIELD_VALUE);
         final InventoryEntry entry = getMockInventoryEntry(SKU, null, null, null, null, customFields);

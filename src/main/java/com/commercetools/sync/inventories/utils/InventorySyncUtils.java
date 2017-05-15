@@ -14,7 +14,10 @@ import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
 import static com.commercetools.sync.inventories.utils.InventoryDraftTransformerUtils.transformToDraft;
-import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.*;
+import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildChangeQuantityAction;
+import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetExpectedDeliveryAction;
+import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetRestockableInDaysAction;
+import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetSupplyChannelAction;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -27,18 +30,16 @@ public final class InventorySyncUtils {
     }
 
     /**
-     * This method returns list of {@link UpdateAction} that needs to be performed on {@code oldEntry} resource so
-     * that it will be synced with {@code newEntry} resource.
+     * Returns list of {@link UpdateAction} that needs to be performed on {@code oldEntry} resource so that it will be
+     * synced with {@code newEntry} resource.
      *
      * @param oldEntry entry which data should be updated
      * @param newEntry entry that contain current data (that should be applied to {@code oldEntry}
-     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by the user.
-     *                    For example, custom callbacks to call in case of warnings or errors occurring on the build
-     *                    update action process. And other options (See {@link BaseSyncOptions}
-     *                    for more info.
+     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by the
+     *                    user (see {@link BaseSyncOptions} for more info)
      * @param typeService responsible for fetching the key of the old resource type from its cache.
      * @return list containing {@link UpdateAction} that need to be performed on {@code oldEntry} resource so
-     * that it will be synced with {@code newEntry} or empty list when both entries are already synced.
+     *      that it will be synced with {@code newEntry} or empty list when both entries are already synced.
      */
     @Nonnull
     public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldEntry,
@@ -50,18 +51,16 @@ public final class InventorySyncUtils {
     }
 
     /**
-     * This method returns list of {@link UpdateAction} that needs to be performed on {@code oldEntry} resource so
-     * that it will be synced with {@code newEntry} draft.
+     * Returns list of {@link UpdateAction} that needs to be performed on {@code oldEntry} resource so that it will
+     * be synced with {@code newEntry} draft.
      *
      * @param oldEntry entry which data should be updated
      * @param newEntry draft that contain current data (that should be applied to {@code oldEntry}
-     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by the user.
-     *                    For example, custom callbacks to call in case of warnings or errors occurring on the build
-     *                    update action process. And other options (See {@link BaseSyncOptions}
-     *                    for more info.
-     * @param typeService responsible for fetching the key of the old resource type from its cache.
+     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by the
+     *                    user (see {@link BaseSyncOptions} for more info)
+     * @param typeService responsible for fetching the key of the old resource type from its cache
      * @return list containing {@link UpdateAction} that need to be performed on {@code oldEntry} resource so
-     * that it will be synced with {@code newEntry} or empty list when both entries are already synced.
+     *      that it will be synced with {@code newEntry} or empty list when both entries are already synced
      */
     @Nonnull
     public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldEntry,

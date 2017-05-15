@@ -36,6 +36,12 @@ public class MockUtils {
         return CustomFieldsDraft.ofTypeKeyAndJson("StepCategoryTypeKey", customFieldsJsons);
     }
 
+    /**
+     * Creates a mock instance of {@link  CtpClient} with mock instance of {@link BlockingSphereClient} and
+     * {@link SphereClientConfig} of "testKey" project key, "testId" project id and "testSecret" project secret.
+     *
+     * @return a mock instance of {@link CtpClient}
+     */
     public static CtpClient getMockCtpClient() {
         final CtpClient ctpClient = mock(CtpClient.class);
         final BlockingSphereClient client = mock(BlockingSphereClient.class);

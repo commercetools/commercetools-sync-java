@@ -23,7 +23,7 @@ final class SkuKeyTuple {
     @Nullable
     private final String key;
 
-    private SkuKeyTuple(String sku, String key) {
+    private SkuKeyTuple(final String sku, final String key) {
         this.sku = sku;
         this.key = key;
     }
@@ -36,7 +36,7 @@ final class SkuKeyTuple {
      * @return new instance of {@link SkuKeyTuple}
      * @throws IllegalArgumentException when sku of {@code existingEntry} is null or empty string
      */
-    static SkuKeyTuple of(@Nonnull InventoryEntry existingEntry) {
+    static SkuKeyTuple of(@Nonnull final InventoryEntry existingEntry) {
         final String sku = existingEntry.getSku();
         if (isEmpty(sku)) {
             throw new IllegalArgumentException(SKU_NOT_SET_MESSAGE);
@@ -51,15 +51,20 @@ final class SkuKeyTuple {
     /**
      * Returns new {@link SkuKeyTuple} of given {@link InventoryEntryDraft}. Key value would result in:
      * <ul>
-     *     <li>referenced id - when supply channel {@link io.sphere.sdk.models.Reference} is present but not expanded</li>
-     *     <li>referenced object's key - when supply channel {@link io.sphere.sdk.models.Reference} is present and expanded</li>
+     *     <li>
+     *         referenced id - when supply channel {@link io.sphere.sdk.models.Reference} is present but not expanded
+     *     </li>
+     *     <li>
+     *         referenced object's key - when supply channel {@link io.sphere.sdk.models.Reference} is present and
+     *         expanded
+     *     </li>
      *     <li>{@code null} - otherwise</li>
      * </ul>
      * @param newEntryDraft must have sku set and not empty
      * @return new instance of {@link SkuKeyTuple}
      * @throws IllegalArgumentException when sku of {@code existingEntry} is null or empty string
      */
-    static SkuKeyTuple of(@Nonnull InventoryEntryDraft newEntryDraft) {
+    static SkuKeyTuple of(@Nonnull final InventoryEntryDraft newEntryDraft) {
         final String sku = newEntryDraft.getSku();
         if (isEmpty(sku)) {
             throw new IllegalArgumentException(SKU_NOT_SET_MESSAGE);
@@ -86,13 +91,19 @@ final class SkuKeyTuple {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
 
-        SkuKeyTuple that = (SkuKeyTuple) o;
+        SkuKeyTuple that = (SkuKeyTuple) obj;
 
-        if (!getSku().equals(that.getSku())) return false;
+        if (!getSku().equals(that.getSku())) {
+            return false;
+        }
         return getKey() != null ? getKey().equals(that.getKey()) : that.getKey() == null;
     }
 

@@ -34,15 +34,18 @@ public final class InventoryUpdateActionUtils {
      * (like it would be 0L value).
      *
      * @param oldEntry the inventory entry that should be updated
-     * @param newEntry the inventory entry draft which contains new quantity on stock.
-     * @return optional containing update action or empty optional if quantities on stock are indentical or quantity on stock
-     * from {@code newEntry} is null.
+     * @param newEntry the inventory entry draft which contains new quantity on stock
+     * @return optional containing update action or empty optional if quantities on stock are indentical or quantity
+     *      on stock from {@code newEntry} is null
      */
     @Nonnull
-    public static Optional<UpdateAction<InventoryEntry>> buildChangeQuantityAction(@Nonnull final InventoryEntry oldEntry,
-                                                                                   @Nonnull final InventoryEntryDraft newEntry) {
+    public static Optional<UpdateAction<InventoryEntry>> buildChangeQuantityAction(@Nonnull final InventoryEntry
+                                                                                           oldEntry,
+                                                                                   @Nonnull final InventoryEntryDraft
+                                                                                       newEntry) {
         final Long oldQuantityOnStock = oldEntry.getQuantityOnStock();
-        final Long newQuantityOnStock = newEntry.getQuantityOnStock() == null ? 0L : newEntry.getQuantityOnStock();
+        final Long newQuantityOnStock = newEntry.getQuantityOnStock() == null ? Long.valueOf(0L) : newEntry
+            .getQuantityOnStock();
         return buildUpdateAction(oldQuantityOnStock, newQuantityOnStock, () -> ChangeQuantity.of(newQuantityOnStock));
     }
 
@@ -53,16 +56,18 @@ public final class InventoryUpdateActionUtils {
      * {@code restockableInDays} values, then no update action is needed and empty optional will be returned.
      *
      * @param oldEntry the inventory entry that should be updated
-     * @param newEntry the inventory entry draft which contains new restockable in days.
-     * @return optional containing update action or empty optional if restockable in days are indentical.
+     * @param newEntry the inventory entry draft which contains new restockable in days
+     * @return optional containing update action or empty optional if restockable in days are indentical
      */
     @Nonnull
-    public static Optional<UpdateAction<InventoryEntry>> buildSetRestockableInDaysAction(@Nonnull final InventoryEntry oldEntry,
-                                                                                         @Nonnull final InventoryEntryDraft newEntry) {
+    public static Optional<UpdateAction<InventoryEntry>> buildSetRestockableInDaysAction(@Nonnull final
+                                                                                             InventoryEntry oldEntry,
+                                                                                         @Nonnull final
+                                                                                         InventoryEntryDraft newEntry) {
         final Integer oldRestockableInDays = oldEntry.getRestockableInDays();
         final Integer newRestockableInDays = newEntry.getRestockableInDays();
         return buildUpdateAction(oldRestockableInDays, newRestockableInDays,
-                () -> SetRestockableInDays.of(newRestockableInDays));
+            () -> SetRestockableInDays.of(newRestockableInDays));
     }
 
     /**
@@ -72,34 +77,37 @@ public final class InventoryUpdateActionUtils {
      * {@code expectedDelivery} values, then no update action is needed and empty optional will be returned.
      *
      * @param oldEntry the inventory entry that should be updated
-     * @param newEntry the inventory entry draft which contains new expected delivery.
-     * @return optional containing update action or empty optional if expected deliveries are identical.
+     * @param newEntry the inventory entry draft which contains new expected delivery
+     * @return optional containing update action or empty optional if expected deliveries are identical
      */
     @Nonnull
-    public static Optional<UpdateAction<InventoryEntry>> buildSetExpectedDeliveryAction(@Nonnull final InventoryEntry oldEntry,
-                                                                                        @Nonnull final InventoryEntryDraft newEntry) {
+    public static Optional<UpdateAction<InventoryEntry>> buildSetExpectedDeliveryAction(@Nonnull final InventoryEntry
+                                                                                            oldEntry,
+                                                                                        @Nonnull final
+                                                                                        InventoryEntryDraft newEntry) {
         final ZonedDateTime oldExpectedDelivery = oldEntry.getExpectedDelivery();
         final ZonedDateTime newExpectedDelivery = newEntry.getExpectedDelivery();
         return buildUpdateAction(oldExpectedDelivery, newExpectedDelivery,
-                () -> SetExpectedDelivery.of(newExpectedDelivery));
+            () -> SetExpectedDelivery.of(newExpectedDelivery));
     }
 
     /**
      * Compares the {@code supplyChannel} references of a {@link InventoryEntry} and {@link InventoryEntryDraft}
      * and returns a {@link Optional} of update action, which would contain the {@code "setSupplyChannel"}
-     * {@link UpdateAction}. If both {@link InventoryEntry} and {@link InventoryEntryDraft} have the same supply channel,
-     * then no update action is needed and empty optional will be returned.
+     * {@link UpdateAction}. If both {@link InventoryEntry} and {@link InventoryEntryDraft} have the same supply
+     * channel, then no update action is needed and empty optional will be returned.
      *
      * @param oldEntry the inventory entry that should be updated
-     * @param newEntry the inventory entry draft which contains new supply channel.
-     * @return optional containing update action or empty optional if supply channels are indentical.
+     * @param newEntry the inventory entry draft which contains new supply channel
+     * @return optional containing update action or empty optional if supply channels are indentical
      */
     @Nonnull
-    public static Optional<UpdateAction<InventoryEntry>> buildSetSupplyChannelAction(@Nonnull final InventoryEntry oldEntry,
-                                                                                     @Nonnull final InventoryEntryDraft newEntry) {
+    public static Optional<UpdateAction<InventoryEntry>> buildSetSupplyChannelAction(@Nonnull final InventoryEntry
+                                                                                         oldEntry,
+                                                                                     @Nonnull final InventoryEntryDraft
+                                                                                         newEntry) {
         final Reference<Channel> oldSupplyChannel = oldEntry.getSupplyChannel();
         final Reference<Channel> newSupplyChannel = newEntry.getSupplyChannel();
-        return buildUpdateAction(oldSupplyChannel, newSupplyChannel,
-                () -> SetSupplyChannel.of(newSupplyChannel));
+        return buildUpdateAction(oldSupplyChannel, newSupplyChannel, () -> SetSupplyChannel.of(newSupplyChannel));
     }
 }

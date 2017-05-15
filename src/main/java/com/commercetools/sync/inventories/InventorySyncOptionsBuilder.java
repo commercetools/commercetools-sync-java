@@ -6,7 +6,7 @@ import com.commercetools.sync.commons.helpers.CtpClient;
 import javax.annotation.Nonnull;
 
 /**
- * Builder for creation of {@link InventorySyncOptions}
+ * Builder for creation of {@link InventorySyncOptions}.
  */
 public final class InventorySyncOptionsBuilder extends
         BaseSyncOptionsBuilder<InventorySyncOptionsBuilder, InventorySyncOptions> {
@@ -19,8 +19,8 @@ public final class InventorySyncOptionsBuilder extends
     }
 
     /**
-     * Creates a new instance of {@link InventorySyncOptionsBuilder} given a {@link CtpClient}, as a param, that contains
-     * all the configuration of the CTP client.
+     * Creates a new instance of {@link InventorySyncOptionsBuilder} given a {@link CtpClient}, as a param, that
+     * contains all the configuration of the CTP client.
      *
      * @param ctpClient wrapper that contains instance of the {@link io.sphere.sdk.client.SphereClientConfig} and
      *                  {@link io.sphere.sdk.client.BlockingSphereClient}
@@ -38,7 +38,7 @@ public final class InventorySyncOptionsBuilder extends
      * E.g. value of 30 means that 30 entries from input list would be accumulated and one API call will be performed
      * for fetching entries responding to them. Then comparision and sync are performed.
      *
-     * This property is {@code 30} by default.
+     * <p>This property is {@code 30} by default.
      *
      * @param batchSize int that indicates capacity of batch of processed inventory entries. Has to be positive
      *                  or else will be ignored.
@@ -56,7 +56,7 @@ public final class InventorySyncOptionsBuilder extends
      * in a target project yet. If set to {@code true} sync process would try to create new supply channel of given key,
      * otherwise sync process would log error and fail to process draft with given supply channel key.
      *
-     * This property is {@code false} by default.
+     * <p>This property is {@code false} by default.
      *
      * @param ensureChannels boolean that indicates whether sync process should create supply channel of given key when
      *                       it doesn't exists in a target project yet
@@ -68,7 +68,8 @@ public final class InventorySyncOptionsBuilder extends
     }
 
     /**
-     * Returns new instance of {@link InventorySyncOptions}, enriched with all attributes provided to {@code this} builder.
+     * Returns new instance of {@link InventorySyncOptions}, enriched with all attributes provided to {@code this}
+     * builder.
      *
      * @return new instance of {@link InventorySyncOptions}
      */
@@ -87,11 +88,10 @@ public final class InventorySyncOptionsBuilder extends
     }
 
     /**
-     * Returns {@code this} instance of {@link InventorySyncOptionsBuilder}
-     * <p>
-     *      <strong>Inherited doc:</strong><br/>
+     * Returns {@code this} instance of {@link InventorySyncOptionsBuilder}.
+     *
+     * <p><strong>Inherited doc:</strong><br/>
      *      {@inheritDoc}
-     * </p>
      */
     @Override
     protected InventorySyncOptionsBuilder getThis() {

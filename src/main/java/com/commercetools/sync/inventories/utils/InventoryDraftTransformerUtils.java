@@ -68,7 +68,8 @@ public final class InventoryDraftTransformerUtils {
             if (type != null && type.getKey() != null) {
                 return CustomFieldsDraft.ofTypeKeyAndJson(type.getKey(), customFields.getFieldsJsonMap());
             } else {
-                return CustomFieldsDraft.ofTypeIdAndJson(customFields.getType().getId(), customFields.getFieldsJsonMap());
+                return CustomFieldsDraft.ofTypeIdAndJson(customFields.getType().getId(), customFields
+                    .getFieldsJsonMap());
             }
         } else {
             return null;

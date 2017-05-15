@@ -29,7 +29,7 @@ public class SkuKeyTupleTest {
 
     @Test
     public void build_WithDraftWithoutSupplyChannel_ShouldReturnTuple() {
-        final InventoryEntryDraft draft = InventoryEntryDraft.of(SKU, 1l);
+        final InventoryEntryDraft draft = InventoryEntryDraft.of(SKU, 1L);
         final SkuKeyTuple tuple = SkuKeyTuple.of(draft);
         assertThat(tuple).isNotNull();
         assertThat(tuple.getSku()).isEqualTo(SKU);
@@ -38,7 +38,7 @@ public class SkuKeyTupleTest {
 
     @Test
     public void build_WithDraftWithNotExpandedReference_ShouldReturnTuple() {
-        final InventoryEntryDraft draft = InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY));
+        final InventoryEntryDraft draft = InventoryEntryDraft.of(SKU, 1L, null, null, Channel.referenceOfId(KEY));
         final SkuKeyTuple tuple = SkuKeyTuple.of(draft);
         assertThat(tuple).isNotNull();
         assertThat(tuple.getSku()).isEqualTo(SKU);
@@ -49,7 +49,7 @@ public class SkuKeyTupleTest {
     public void build_WithDraftWithExpandedReference_ShouldReturnTuple() {
         final Channel channel = mock(Channel.class);
         when(channel.getKey()).thenReturn(KEY);
-        final InventoryEntryDraft draft = InventoryEntryDraft.of(SKU, 1l, null, null,
+        final InventoryEntryDraft draft = InventoryEntryDraft.of(SKU, 1L, null, null,
                 Channel.referenceOfId(REF_ID).filled(channel));
         final SkuKeyTuple tuple = SkuKeyTuple.of(draft);
 
@@ -100,7 +100,7 @@ public class SkuKeyTupleTest {
     @Test
     public void build_WithDraftWithEmptySku_ShouldThrowIllegallArgumentException() {
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> SkuKeyTuple.of(InventoryEntryDraft.of("", 1l)))
+                .isThrownBy(() -> SkuKeyTuple.of(InventoryEntryDraft.of("", 1L)))
                 .withMessage(SKU_NOT_SET_MESSAGE);
     }
 
@@ -129,7 +129,7 @@ public class SkuKeyTupleTest {
         final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null, reference, null);
         final SkuKeyTuple entryTuple = SkuKeyTuple.of(inventoryEntry);
         final SkuKeyTuple draftTuple = SkuKeyTuple
-                .of(InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
+                .of(InventoryEntryDraft.of(SKU, 1L, null, null, Channel.referenceOfId(KEY)));
 
         assertThat(entryTuple).isEqualTo(draftTuple);
     }
@@ -141,7 +141,7 @@ public class SkuKeyTupleTest {
         final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU_2, null, null, null, reference, null);
         final SkuKeyTuple entryTuple = SkuKeyTuple.of(inventoryEntry);
         final SkuKeyTuple draftTuple = SkuKeyTuple
-                .of(InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
+                .of(InventoryEntryDraft.of(SKU, 1L, null, null, Channel.referenceOfId(KEY)));
 
         assertThat(entryTuple).isNotEqualTo(draftTuple);
     }
@@ -153,7 +153,7 @@ public class SkuKeyTupleTest {
         final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null, reference, null);
         final SkuKeyTuple entryTuple = SkuKeyTuple.of(inventoryEntry);
         final SkuKeyTuple draftTuple = SkuKeyTuple
-                .of(InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
+                .of(InventoryEntryDraft.of(SKU, 1L, null, null, Channel.referenceOfId(KEY)));
 
         assertThat(entryTuple.hashCode()).isEqualTo(draftTuple.hashCode());
     }
@@ -161,7 +161,7 @@ public class SkuKeyTupleTest {
     @Test
     public void skuKeyTuple_ShouldWorksAsHashMapKey() {
         final SkuKeyTuple tuple = SkuKeyTuple.of(
-                InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId(KEY)));
+                InventoryEntryDraft.of(SKU, 1L, null, null, Channel.referenceOfId(KEY)));
         final Map<SkuKeyTuple, String> map = new HashMap<>();
         map.put(tuple, VALUE_1);
 
@@ -171,9 +171,9 @@ public class SkuKeyTupleTest {
 
     @Test
     public void skuKeyTuplesWithNullKeyAndEmptyKey_ShouldBeDistinctedInHashMap() {
-        final SkuKeyTuple tuple1 = SkuKeyTuple.of(InventoryEntryDraft.of(SKU, 1l));
+        final SkuKeyTuple tuple1 = SkuKeyTuple.of(InventoryEntryDraft.of(SKU, 1L));
         final SkuKeyTuple tuple2 = SkuKeyTuple.of(
-                InventoryEntryDraft.of(SKU, 1l, null, null, Channel.referenceOfId("")));
+                InventoryEntryDraft.of(SKU, 1L, null, null, Channel.referenceOfId("")));
         final Map<SkuKeyTuple, String> map = new HashMap<>();
         map.put(tuple1, VALUE_1);
         map.put(tuple2, VALUE_2);

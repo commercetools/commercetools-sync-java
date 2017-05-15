@@ -14,7 +14,10 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static com.commercetools.sync.commons.MockUtils.getMockCtpClient;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.*;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryService;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
@@ -26,31 +29,34 @@ import static org.mockito.Mockito.when;
 
 public class InventorySyncTest {
 
-    private final static String SKU_1 = "1000";
-    private final static String SKU_2 = "2000";
-    private final static String SKU_3 = "3000";
+    private static final String SKU_1 = "1000";
+    private static final String SKU_2 = "2000";
+    private static final String SKU_3 = "3000";
 
-    private final static String KEY_1 = "channel-key_1";
-    private final static String KEY_2 = "channel-key_2";
-    private final static String KEY_3 = "channel-key_3";
+    private static final String KEY_1 = "channel-key_1";
+    private static final String KEY_2 = "channel-key_2";
+    private static final String KEY_3 = "channel-key_3";
 
-    private final static String REF_1 = "111";
-    private final static String REF_2 = "222";
-    private final static String REF_3 = "333";
+    private static final String REF_1 = "111";
+    private static final String REF_2 = "222";
+    private static final String REF_3 = "333";
 
-    private final static Long QUANTITY_1 = 10l;
-    private final static Long QUANTITY_2 = 30l;
+    private static final Long QUANTITY_1 = 10L;
+    private static final Long QUANTITY_2 = 30L;
 
-    private final static Integer RESTOCKABLE_1 = 10;
-    private final static Integer RESTOCKABLE_2 = 10;
+    private static final Integer RESTOCKABLE_1 = 10;
+    private static final Integer RESTOCKABLE_2 = 10;
 
-    private final static ZonedDateTime DATE_1 = ZonedDateTime.of(2017, 4, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
-    private final static ZonedDateTime DATE_2 = ZonedDateTime.of(2017, 5, 1, 20, 0, 0, 0, ZoneId.of("UTC"));
+    private static final ZonedDateTime DATE_1 = ZonedDateTime.of(2017, 4, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
+    private static final ZonedDateTime DATE_2 = ZonedDateTime.of(2017, 5, 1, 20, 0, 0, 0, ZoneId.of("UTC"));
 
     private List<InventoryEntryDraft> drafts;
-    private List<InventoryEntry> inventoriesDB;
-    private List<Channel> channelsDB;
+    private List<InventoryEntry> existingInventories;
+    private List<Channel> existingSupplyChannels;
 
+    /**
+     * Initialises test data.
+     */
     @Before
     public void setup() {
         final Channel channel1 = getMockSupplyChannel(REF_1, KEY_1);
@@ -59,8 +65,8 @@ public class InventorySyncTest {
         final Reference<Channel> reference1 = Channel.referenceOfId(REF_1).filled(channel1);
         final Reference<Channel> reference2 = Channel.referenceOfId(REF_2).filled(channel2);
 
-        channelsDB = asList(channel1, channel2);
-        inventoriesDB = asList(
+        existingSupplyChannels = asList(channel1, channel2);
+        existingInventories = asList(
                 getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, null, null),
                 getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, reference1, null),
                 getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, reference2, null),
@@ -179,8 +185,8 @@ public class InventorySyncTest {
     @Test
     public void syncDrafts_WithExceptionWhenFetchingAllChannels_ShouldNotProcessAnything() {
         final InventorySyncOptions options = getInventorySyncOptions(30, false);
-        final InventoryService service = getMockInventoryService(channelsDB, inventoriesDB,
-                getMockSupplyChannel(REF_3, KEY_3), null, null);
+        final InventoryService service = getMockInventoryService(existingSupplyChannels, existingInventories,
+                getMockSupplyChannel(REF_3, KEY_3), mock(InventoryEntry.class), mock(InventoryEntry.class));
         when(service.fetchAllSupplyChannels()).thenReturn(getCompletionStageWithException());
         final InventorySync inventorySync = new InventorySync(options, service, mock(TypeService.class));
         final InventorySyncStatistics stats = inventorySync.syncDrafts(drafts)
@@ -195,8 +201,8 @@ public class InventorySyncTest {
     @Test
     public void syncDrafts_WithExceptionWhenFetchingExistingInventoriesBatch_ShouldNotProcessThatBatch() {
         final InventorySyncOptions options = getInventorySyncOptions(1, false);
-        final InventoryService service = getMockInventoryService(channelsDB, inventoriesDB,
-                getMockSupplyChannel(REF_3, KEY_3), null, null);
+        final InventoryService service = getMockInventoryService(existingSupplyChannels, existingInventories,
+                getMockSupplyChannel(REF_3, KEY_3), mock(InventoryEntry.class), mock(InventoryEntry.class));
         when(service.fetchInventoryEntriesBySkus(singleton(SKU_1))).thenReturn(getCompletionStageWithException());
         final InventorySync inventorySync = new InventorySync(options, service, mock(TypeService.class));
         final InventorySyncStatistics stats = inventorySync.syncDrafts(drafts)
@@ -212,8 +218,8 @@ public class InventorySyncTest {
     @Test
     public void syncDrafts_WithExceptionWhenCreatingOrUpdatingEntries_ShouldNotSync() {
         final InventorySyncOptions options = getInventorySyncOptions(3, false);
-        final InventoryService service = getMockInventoryService(channelsDB, inventoriesDB,
-                getMockSupplyChannel(REF_3, KEY_3), null, null);
+        final InventoryService service = getMockInventoryService(existingSupplyChannels, existingInventories,
+                getMockSupplyChannel(REF_3, KEY_3), mock(InventoryEntry.class), mock(InventoryEntry.class));
         when(service.createInventoryEntry(any())).thenReturn(getCompletionStageWithException());
         when(service.updateInventoryEntry(any(), any())).thenReturn(getCompletionStageWithException());
         final InventorySync inventorySync = new InventorySync(options, service, mock(TypeService.class));
@@ -229,8 +235,8 @@ public class InventorySyncTest {
 
     private InventorySync getInventorySyncer(int batchSize, boolean ensureChannels) {
         final InventorySyncOptions options = getInventorySyncOptions(batchSize, ensureChannels);
-        final InventoryService service = getMockInventoryService(channelsDB, inventoriesDB,
-                getMockSupplyChannel(REF_3, KEY_3), null, null);
+        final InventoryService service = getMockInventoryService(existingSupplyChannels, existingInventories,
+                getMockSupplyChannel(REF_3, KEY_3), mock(InventoryEntry.class), mock(InventoryEntry.class));
         return new InventorySync(options, service, mock(TypeService.class));
     }
 

@@ -17,7 +17,10 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
-import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.*;
+import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildChangeQuantityAction;
+import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetExpectedDeliveryAction;
+import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetRestockableInDaysAction;
+import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetSupplyChannelAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -29,6 +32,9 @@ public class InventoryUpdateActionUtilsTest {
     private InventoryEntryDraft newDifferent;
     private InventoryEntryDraft newWithNullValues;
 
+    /**
+     * Initialises test data.
+     */
     @Before
     public void setup() {
         final ZonedDateTime date1 = ZonedDateTime.of(2017, 5, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
@@ -41,14 +47,14 @@ public class InventoryUpdateActionUtilsTest {
 
         old = mock(InventoryEntry.class);
         when(old.getSku()).thenReturn("123");
-        when(old.getQuantityOnStock()).thenReturn(10l);
+        when(old.getQuantityOnStock()).thenReturn(10L);
         when(old.getRestockableInDays()).thenReturn(10);
         when(old.getExpectedDelivery()).thenReturn(date1);
         when(old.getSupplyChannel()).thenReturn(supplyChannel1WithObject);
 
-        newSame = InventoryEntryDraft.of("123", 10l, date1, 10, supplyChannel1);
-        newDifferent = InventoryEntryDraft.of("123", 20l, date2, 20, supplyChannel2);
-        newWithNullValues = InventoryEntryDraft.of("123", 20l, null, null, null);
+        newSame = InventoryEntryDraft.of("123", 10L, date1, 10, supplyChannel1);
+        newDifferent = InventoryEntryDraft.of("123", 20L, date2, 20, supplyChannel2);
+        newWithNullValues = InventoryEntryDraft.of("123", 20L, null, null, null);
     }
 
     @Test
@@ -68,7 +74,7 @@ public class InventoryUpdateActionUtilsTest {
         assertThat(result).isNotNull();
         assertThat(result.isPresent()).isTrue();
         assertThat(result.get()).isExactlyInstanceOf(ChangeQuantity.class);
-        assertThat(((ChangeQuantity) result.get()).getQuantity()).isEqualTo(0l);
+        assertThat(((ChangeQuantity) result.get()).getQuantity()).isEqualTo(0L);
     }
 
     @Test
@@ -76,7 +82,7 @@ public class InventoryUpdateActionUtilsTest {
         final InventoryEntryDraft draft = mock(InventoryEntryDraft.class);
         when(draft.getQuantityOnStock()).thenReturn(null);
         final InventoryEntry entry = mock(InventoryEntry.class);
-        when(draft.getQuantityOnStock()).thenReturn(0l);
+        when(draft.getQuantityOnStock()).thenReturn(0L);
         final Optional<UpdateAction<InventoryEntry>> result = buildChangeQuantityAction(entry, draft);
         assertThat(result).isNotNull();
         assertThat(result.isPresent()).isFalse();
@@ -159,8 +165,8 @@ public class InventoryUpdateActionUtilsTest {
         assertNoUpdatesForSameValues(InventoryUpdateActionUtils::buildSetSupplyChannelAction);
     }
 
-    private void assertNoUpdatesForSameValues
-            (BiFunction<InventoryEntry, InventoryEntryDraft, Optional<UpdateAction<InventoryEntry>>> buildFunction) {
+    private void assertNoUpdatesForSameValues(final BiFunction<InventoryEntry, InventoryEntryDraft,
+        Optional<UpdateAction<InventoryEntry>>> buildFunction) {
         final Optional<UpdateAction<InventoryEntry>> result = buildFunction.apply(old, newSame);
         assertThat(result).isNotNull();
         assertThat(result.isPresent()).isFalse();

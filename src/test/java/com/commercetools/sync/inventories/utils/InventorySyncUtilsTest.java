@@ -8,7 +8,12 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
-import io.sphere.sdk.inventory.commands.updateactions.*;
+import io.sphere.sdk.inventory.commands.updateactions.ChangeQuantity;
+import io.sphere.sdk.inventory.commands.updateactions.SetCustomField;
+import io.sphere.sdk.inventory.commands.updateactions.SetCustomType;
+import io.sphere.sdk.inventory.commands.updateactions.SetExpectedDelivery;
+import io.sphere.sdk.inventory.commands.updateactions.SetRestockableInDays;
+import io.sphere.sdk.inventory.commands.updateactions.SetSupplyChannel;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
@@ -20,7 +25,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.*;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockCustomFields;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -42,19 +49,22 @@ public class InventorySyncUtilsTest {
     private InventoryEntryDraft similarDraft;
     private InventoryEntryDraft variousDraft;
 
+    /**
+     * Initialises test data.
+     */
     @Before
     public void setup() {
         final Channel channel = getMockSupplyChannel("111", "key1");
         final Reference<Channel> reference = Channel.referenceOfId("111").filled(channel);
-        final CustomFields customFields= getMockCustomFields(CUSTOM_TYPE_ID, CUSTOM_TYPE_KEY, CUSTOM_FIELD_1_NAME,
+        final CustomFields customFields = getMockCustomFields(CUSTOM_TYPE_ID, CUSTOM_TYPE_KEY, CUSTOM_FIELD_1_NAME,
                 CUSTOM_FIELD_1_VALUE);
 
-        inventoryEntry = getMockInventoryEntry("123", 10l, 10, DATE_1, reference, null);
-        inventoryEntryWithCustomField1 = getMockInventoryEntry("123", 10l, 10, DATE_1, reference, customFields);
+        inventoryEntry = getMockInventoryEntry("123", 10L, 10, DATE_1, reference, null);
+        inventoryEntryWithCustomField1 = getMockInventoryEntry("123", 10L, 10, DATE_1, reference, customFields);
 
 
-        similarDraft = InventoryEntryDraftBuilder.of("123", 10l, DATE_1, 10, Channel.referenceOfId("111")).build();
-        variousDraft = InventoryEntryDraftBuilder.of("321", 20l, DATE_2, 20, Channel.referenceOfId("222")).build();
+        similarDraft = InventoryEntryDraftBuilder.of("123", 10L, DATE_1, 10, Channel.referenceOfId("111")).build();
+        variousDraft = InventoryEntryDraftBuilder.of("321", 20L, DATE_2, 20, Channel.referenceOfId("222")).build();
     }
 
     @Test
@@ -158,7 +168,7 @@ public class InventorySyncUtilsTest {
         assertThat(actions.get(0)).isInstanceOf(SetCustomField.class);
     }
 
-    private CustomFieldsDraft getDraftOfCustomField(String fieldName, String fieldValue) {
+    private CustomFieldsDraft getDraftOfCustomField(final String fieldName, final String fieldValue) {
         return CustomFieldsDraftBuilder.ofTypeKey(CUSTOM_TYPE_KEY)
                 .addObject(fieldName, fieldValue)
                 .build();

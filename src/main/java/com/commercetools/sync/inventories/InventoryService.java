@@ -64,5 +64,6 @@ interface InventoryService {
      */
     @Nonnull
     CompletionStage<InventoryEntry> updateInventoryEntry(@Nonnull final InventoryEntry inventoryEntry,
-                                                         @Nonnull final List<UpdateAction<InventoryEntry>> updateActions);
+                                                         @Nonnull final List<UpdateAction<InventoryEntry>>
+                                                             updateActions);
 }

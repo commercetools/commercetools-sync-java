@@ -5,7 +5,7 @@ import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import static java.lang.String.format;
 
 /**
- * Statistics of inventory synchronisation process
+ * Statistics of inventory synchronisation process.
  */
 public class InventorySyncStatistics extends BaseSyncStatistics {
 
