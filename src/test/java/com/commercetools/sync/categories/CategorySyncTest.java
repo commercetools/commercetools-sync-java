@@ -16,7 +16,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryService;
 import static org.assertj.core.api.Assertions.assertThat;
