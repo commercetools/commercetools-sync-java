@@ -172,7 +172,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * Method returns {@link CompletionStage} of {@link Void} that indicates method progress. It may contain exception
      * occurred during fetching supply channels.
      *
-     * @param drafts
+     * @param drafts {@link List} containing {@link InventoryEntryDraft} objects where missing supply channels can occur
      * @return {@link CompletionStage} of {@link Void} that indicates method progress. It may contain exception
      * occurred during fetching supply channels
      */
@@ -191,7 +191,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * but occurs in {@code drafts} list. Method returns {@link CompletionStage} of {@link Void} that indicates all
      * possible creation attempts progress.
      *
-     * @param drafts
+     * @param drafts {@link List} containing {@link InventoryEntryDraft} objects where missing supply channels can occur
      * @return {@link CompletionStage} of {@link Void} that indicates all possible creation attempts progress
      */
     private CompletionStage<Void> createMissingSupplyChannels(@Nonnull final List<InventoryEntryDraft> drafts) {
@@ -200,7 +200,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                     .map(SkuKeyTuple::of)
                     .map(SkuKeyTuple::getKey)
                     .distinct()
-                    .filter(key -> key != null)
+                    .filter(Objects::nonNull)
                     .filter(key -> !supplyChannelKeyToId.containsKey(key))
                     .collect(toList());
             List<CompletableFuture<Void>> creationStages = missingChannelsKeys.stream()
@@ -214,7 +214,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * Fetches existing {@link InventoryEntry} objects from CT project that correspond to passed {@code batchOfDrafts}.
+     * Fetches existing {@link InventoryEntry} objects from CTP project that correspond to passed {@code batchOfDrafts}.
      * Having existing inventory entries fetched, {@code batchOfDrafts} is compared and synced with fetched objects by
      * {@link InventorySync#compareAndSync(Map, List)} function. When fetching existing inventory entries results in
      * exception then error callback is executed and {@code batchOfDrafts} isn't processed.

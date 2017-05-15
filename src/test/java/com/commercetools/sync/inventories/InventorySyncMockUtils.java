@@ -13,6 +13,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import static java.util.Collections.singleton;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -70,28 +71,17 @@ public class InventorySyncMockUtils {
                                                            final InventoryEntry createdInventoryEntry,
                                                            final InventoryEntry updatedInventoryEntry) {
         final InventoryService inventoryService = mock(InventoryService.class);
-        when(inventoryService.fetchAllSupplyChannels()).thenReturn(supplyChannels);
-        when(inventoryService.fetchInventoryEntriesBySkus(any())).thenReturn(inventoryEntries);
-        when(inventoryService.createSupplyChannel(any())).thenReturn(createdSupplyChannel);
+        when(inventoryService.fetchAllSupplyChannels()).thenReturn(completedFuture(supplyChannels));
+        when(inventoryService.fetchInventoryEntriesBySkus(any())).thenReturn(completedFuture(inventoryEntries));
+        when(inventoryService.createSupplyChannel(any())).thenReturn(completedFuture(createdSupplyChannel));
         when(inventoryService.createInventoryEntry(any())).thenReturn(completedFuture(createdInventoryEntry));
         when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(completedFuture(updatedInventoryEntry));
         return inventoryService;
     }
 
-    /**
-     *
-     * @return mock of {@link InventoryService} that throws {@link RuntimeException} on blocking creating and updating
-     * calls, and returns future monad with {@link RuntimeException} on non blocking creating and updating calls.
-     */
-    public static InventoryService getMockThrowingInventoryService(final List<Channel> supplyChannels,
-                                                             final List<InventoryEntry> inventoryEntries) {
-        final CompletableFuture<InventoryEntry> exceptionallyStage = new CompletableFuture<>();
-        exceptionallyStage.completeExceptionally(new RuntimeException());
-        final InventoryService inventoryService = getMockInventoryService(supplyChannels, inventoryEntries,
-                null, null, null);
-        when(inventoryService.createSupplyChannel(any())).thenThrow(new RuntimeException());
-        when(inventoryService.createInventoryEntry(any())).thenReturn(exceptionallyStage);
-        when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(exceptionallyStage);
-        return inventoryService;
+    public static <T> CompletionStage<T> getCompletionStageWithException() {
+        final CompletableFuture<T> exceptionalStage = new CompletableFuture<>();
+        exceptionalStage.completeExceptionally(new RuntimeException());
+        return exceptionalStage;
     }
 }
