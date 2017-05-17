@@ -214,7 +214,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 .filter(Objects::nonNull)
                 .filter(key -> !supplyChannelKeyToId.containsKey(key))
                 .collect(toList());
-            List<CompletableFuture<Void>> creationStages = missingChannelsKeys.stream()
+            final List<CompletableFuture<Void>> creationStages = missingChannelsKeys.stream()
                 .map(this::createMissingSupplyChannel)
                 .map(CompletionStage::toCompletableFuture)
                 .collect(toList());
