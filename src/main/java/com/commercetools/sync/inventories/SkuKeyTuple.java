@@ -9,9 +9,10 @@ import javax.annotation.Nullable;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
- * Helper class that holds sku and supply channel key - values used for {@link io.sphere.sdk.inventory.InventoryEntry}
- * distinction. Presence of sku and key in created instance is similar as for inventory entry resource: supply channel
- * key can be {@code null} value since it is optional in inventory entry, but sku has to be not null neither not empty.
+ * Helper class that holds {@code sku} of {@link io.sphere.sdk.inventory.InventoryEntry} and the {@code key} of the
+ * {@link io.sphere.sdk.channels.Channel} it belongs to. Presence of sku and key in created instance is similar as for
+ * inventory entry resource: supply channel key can be {@code null} value since it is optional in inventory entry,
+ * but sku has to be not null neither not empty.
  * Can be used as key in Maps.
  */
 final class SkuKeyTuple {

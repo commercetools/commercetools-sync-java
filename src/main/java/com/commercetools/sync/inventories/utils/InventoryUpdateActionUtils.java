@@ -55,7 +55,7 @@ public final class InventoryUpdateActionUtils {
      * {@code restockableInDays} values, then no update action is needed and empty optional will be returned.
      *
      * @param oldEntry the inventory entry that should be updated
-     * @param newEntry the inventory entry draft which contains new restockable in days
+     * @param newEntry the inventory entry draft which contains a new {@code restockableInDays} value
      * @return optional containing update action or empty optional if restockable in days are identical
      */
     @Nonnull
