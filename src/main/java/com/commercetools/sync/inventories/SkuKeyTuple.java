@@ -17,7 +17,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
  */
 final class SkuKeyTuple {
 
-    static final String SKU_NOT_SET_MESSAGE = "Sku is not set";
+    static final String SKU_NOT_SET_MESSAGE = "Can't create SkuKeyTuple instance of inventory entry with no SKU";
 
     private final String sku;
 
