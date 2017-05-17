@@ -26,17 +26,16 @@ public final class InventoryUpdateActionUtils {
     }
 
     /**
-     * Compares the {@code quantityOnStock} values of a {@link InventoryEntry} and {@link InventoryEntryDraft}
-     * and returns a {@link Optional} of update action, which would contain the {@code "changeQuantity"}
+     * Compares the {@code quantityOnStock} values of an {@link InventoryEntry} and an {@link InventoryEntryDraft}
+     * and returns an {@link Optional} of update action, which would contain the {@code "changeQuantity"}
      * {@link UpdateAction}. If both {@link InventoryEntry} and {@link InventoryEntryDraft} have the same
      * {@code quantityOnStock} values, then no update action is needed and empty optional will be returned.
-     * If {@code quantityOnStock} from {@code newEntry} is {@code null} then it is assumed to represent empty stock
-     * (like it would be 0L value).
+     * If the {@code quantityOnStock} from the {@code newEntry} is {@code null}, the new {@code quantityOnStock} will
+     * have a value of 0L.
      *
      * @param oldEntry the inventory entry that should be updated
      * @param newEntry the inventory entry draft which contains new quantity on stock
-     * @return optional containing update action or empty optional if quantities on stock are indentical or quantity
-     *      on stock from {@code newEntry} is null
+     * @return optional containing update action or empty optional if quantities on stock are identical
      */
     @Nonnull
     public static Optional<UpdateAction<InventoryEntry>> buildChangeQuantityAction(@Nonnull final InventoryEntry
@@ -50,14 +49,14 @@ public final class InventoryUpdateActionUtils {
     }
 
     /**
-     * Compares the {@code restockableInDays} values of a {@link InventoryEntry} and {@link InventoryEntryDraft}
-     * and returns a {@link Optional} of update action, which would contain the {@code "setRestockableInDays"}
+     * Compares the {@code restockableInDays} values of an {@link InventoryEntry} and an {@link InventoryEntryDraft}
+     * and returns an {@link Optional} of update action, which would contain the {@code "setRestockableInDays"}
      * {@link UpdateAction}. If both {@link InventoryEntry} and the {@link InventoryEntryDraft} have the same
      * {@code restockableInDays} values, then no update action is needed and empty optional will be returned.
      *
      * @param oldEntry the inventory entry that should be updated
      * @param newEntry the inventory entry draft which contains new restockable in days
-     * @return optional containing update action or empty optional if restockable in days are indentical
+     * @return optional containing update action or empty optional if restockable in days are identical
      */
     @Nonnull
     public static Optional<UpdateAction<InventoryEntry>> buildSetRestockableInDaysAction(@Nonnull final
@@ -71,8 +70,8 @@ public final class InventoryUpdateActionUtils {
     }
 
     /**
-     * Compares the {@code expectedDelivery} values of a {@link InventoryEntry} and {@link InventoryEntryDraft}
-     * and returns a {@link Optional} of update action, which would contain the {@code "setExpectedDelivery"}
+     * Compares the {@code expectedDelivery} values of an {@link InventoryEntry} and an {@link InventoryEntryDraft}
+     * and returns an {@link Optional} of update action, which would contain the {@code "setExpectedDelivery"}
      * {@link UpdateAction}. If both {@link InventoryEntry} and {@link InventoryEntryDraft} have the same
      * {@code expectedDelivery} values, then no update action is needed and empty optional will be returned.
      *
@@ -92,14 +91,14 @@ public final class InventoryUpdateActionUtils {
     }
 
     /**
-     * Compares the {@code supplyChannel} references of a {@link InventoryEntry} and {@link InventoryEntryDraft}
-     * and returns a {@link Optional} of update action, which would contain the {@code "setSupplyChannel"}
+     * Compares the {@code supplyChannel} references of an {@link InventoryEntry} and an {@link InventoryEntryDraft}
+     * and returns an {@link Optional} of update action, which would contain the {@code "setSupplyChannel"}
      * {@link UpdateAction}. If both {@link InventoryEntry} and {@link InventoryEntryDraft} have the same supply
      * channel, then no update action is needed and empty optional will be returned.
      *
      * @param oldEntry the inventory entry that should be updated
      * @param newEntry the inventory entry draft which contains new supply channel
-     * @return optional containing update action or empty optional if supply channels are indentical
+     * @return optional containing update action or empty optional if supply channels are identical
      */
     @Nonnull
     public static Optional<UpdateAction<InventoryEntry>> buildSetSupplyChannelAction(@Nonnull final InventoryEntry
