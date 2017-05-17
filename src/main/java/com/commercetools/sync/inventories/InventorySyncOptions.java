@@ -43,7 +43,7 @@ public final class InventorySyncOptions extends BaseSyncOptions {
      * @return option that indicates whether sync process should create supply channel of given key when it doesn't
      *      exists in a target system yet.
      */
-    public boolean isEnsureChannels() {
+    public boolean shouldEnsureChannels() {
         return ensureChannels;
     }
 

@@ -206,7 +206,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> createMissingSupplyChannels(@Nonnull final List<InventoryEntryDraft> drafts) {
-        if (syncOptions.isEnsureChannels()) {
+        if (syncOptions.shouldEnsureChannels()) {
             final List<String> missingChannelsKeys = drafts.stream()
                 .map(SkuKeyTuple::of)
                 .map(SkuKeyTuple::getKey)

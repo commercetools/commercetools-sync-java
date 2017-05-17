@@ -13,7 +13,7 @@ public class InventorySyncOptionsTest {
         final InventorySyncOptions options = InventorySyncOptionsBuilder.of(mock(CtpClient.class)).build();
         assertThat(options).isNotNull();
         assertThat(options.getBatchSize()).isEqualTo(30);
-        assertThat(options.isEnsureChannels()).isFalse();
+        assertThat(options.shouldEnsureChannels()).isFalse();
     }
 
     @Test
@@ -24,7 +24,7 @@ public class InventorySyncOptionsTest {
                 .build();
         assertThat(options).isNotNull();
         assertThat(options.getBatchSize()).isEqualTo(10);
-        assertThat(options.isEnsureChannels()).isTrue();
+        assertThat(options.shouldEnsureChannels()).isTrue();
     }
 
     @Test
