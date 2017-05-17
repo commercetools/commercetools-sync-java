@@ -11,6 +11,7 @@ import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.inventory.commands.InventoryEntryCreateCommand;
+import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.models.Reference;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -20,6 +21,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.SphereClientUtils.getCtpClientOfSourceProject;
@@ -58,6 +60,7 @@ public class InventorySyncTest {
         this.sourceProjectClient = getCtpClientOfSourceProject().getClient();
         this.targetProjectClient = getCtpClientOfTargetProject().getClient();
         deleteInventoriesAndSupplyChannels();
+        populateSourceProject();
         populateTargetProject();
     }
 
@@ -80,9 +83,9 @@ public class InventorySyncTest {
             .build();
         final InventorySyncOptions options = InventorySyncOptionsBuilder.of(getCtpClientOfTargetProject())
             .build();
+        final InventorySync syncer = new InventorySync(options);
 
         //sync and assert sync result
-        final InventorySync syncer = new InventorySync(options);
         final InventorySyncStatistics syncResult = syncer.syncDrafts(singletonList(draftToSync))
             .toCompletableFuture()
             .join();
@@ -107,9 +110,9 @@ public class InventorySyncTest {
             .build();
         final InventorySyncOptions options = InventorySyncOptionsBuilder.of(getCtpClientOfTargetProject())
             .build();
+        final InventorySync syncer = new InventorySync(options);
 
         //sync and assert sync result
-        final InventorySync syncer = new InventorySync(options);
         final InventorySyncStatistics syncResult = syncer.syncDrafts(singletonList(draftToSync))
             .toCompletableFuture()
             .join();
@@ -137,9 +140,9 @@ public class InventorySyncTest {
         final InventorySyncOptions options = InventorySyncOptionsBuilder.of(getCtpClientOfTargetProject())
             .ensureChannels(true)
             .build();
+        final InventorySync syncer = new InventorySync(options);
 
         //sync and assert sync result
-        final InventorySync syncer = new InventorySync(options);
         final InventorySyncStatistics syncResult = syncer.syncDrafts(singletonList(draftToSync))
             .toCompletableFuture()
             .join();
@@ -153,6 +156,110 @@ public class InventorySyncTest {
         assertThat(existingChannel).isNotEmpty();
     }
 
+    @Test
+    public void sync_WithoutEnsureChannels_ShouldCreateOrUpdateEntriesWithExistingOrNoChannels() {
+        //assert ctp channel before sync
+        final List<InventoryEntry> sourceInventoryEntries = sourceProjectClient.executeBlocking(
+            InventoryEntryQuery.of().withExpansionPaths(model -> model.supplyChannel())
+        ).getResults();
+        assertThat(sourceInventoryEntries.size()).isEqualTo(3);
+
+        //prepare sync data
+        final InventorySyncOptions options = InventorySyncOptionsBuilder.of(getCtpClientOfTargetProject())
+            .build();
+        final InventorySync syncer = new InventorySync(options);
+
+        //sync and assert sync result
+        final InventorySyncStatistics syncResult = syncer.sync(sourceInventoryEntries)
+            .toCompletableFuture()
+            .join();
+        assertStatistics(syncResult, 3, 0, 1, 1);
+
+        //assert ctp state after sync
+        //assert there exists 2 inventory entries
+        final List<InventoryEntry> targetInventoryEntries = targetProjectClient.executeBlocking(
+            InventoryEntryQuery.of().withExpansionPaths(model -> model.supplyChannel())
+        ).getResults();
+        assertThat(targetInventoryEntries.size()).isEqualTo(2);
+
+        //assert inventory of SKU_1 wasn't changed
+        Optional<InventoryEntry> existingEntry = getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, null);
+        assertThat(existingEntry).isNotEmpty();
+        assertValues(existingEntry.get(), QUANTITY_ON_STOCK_1, EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1);
+
+        //assert channel of SUPPLY_CHANNEL_KEY_1 exists
+        Optional<Channel> existingChannel = getCtpClientOfTargetProject().getClient()
+            .executeBlocking(ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_1))
+            .head();
+        assertThat(existingChannel).isNotEmpty();
+
+        //assert inventory of SKU_1 and channel SUPPLY_CHANNEL_KEY_1 was updated
+        existingEntry = getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, Channel.referenceOfId(existingChannel.get().getId()));
+        assertThat(existingEntry).isNotEmpty();
+        assertValues(existingEntry.get(), QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2);
+
+        //assert channel of SUPPLY_CHANNEL_KEY_2 doesn't exist
+        existingChannel = getCtpClientOfTargetProject().getClient()
+            .executeBlocking(ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_2))
+            .head();
+        assertThat(existingChannel).isEmpty();
+    }
+
+    @Test
+    public void sync_WithEnsureChannels_ShouldCreateOrUpdateEntries() {
+        //assert ctp channel before sync
+        final List<InventoryEntry> sourceInventoryEntries = sourceProjectClient.executeBlocking(
+            InventoryEntryQuery.of().withExpansionPaths(model -> model.supplyChannel())
+        ).getResults();
+        assertThat(sourceInventoryEntries.size()).isEqualTo(3);
+
+        //prepare sync data
+        final InventorySyncOptions options = InventorySyncOptionsBuilder.of(getCtpClientOfTargetProject())
+            .ensureChannels(true)
+            .build();
+        final InventorySync syncer = new InventorySync(options);
+
+        //sync and assert sync result
+        final InventorySyncStatistics syncResult = syncer.sync(sourceInventoryEntries)
+            .toCompletableFuture()
+            .join();
+        assertStatistics(syncResult, 3, 1, 1, 0);
+
+        //assert ctp state after sync
+        //assert there exists 2 inventory entries
+        final List<InventoryEntry> targetInventoryEntries = targetProjectClient.executeBlocking(
+            InventoryEntryQuery.of().withExpansionPaths(model -> model.supplyChannel())
+        ).getResults();
+        assertThat(targetInventoryEntries.size()).isEqualTo(2);
+
+        //assert inventory of SKU_1 wasn't changed
+        Optional<InventoryEntry> existingEntry = getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, null);
+        assertThat(existingEntry).isNotEmpty();
+        assertValues(existingEntry.get(), QUANTITY_ON_STOCK_1, EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1);
+
+        //assert channel of SUPPLY_CHANNEL_KEY_1 exists
+        Optional<Channel> existingChannel = getCtpClientOfTargetProject().getClient()
+            .executeBlocking(ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_1))
+            .head();
+        assertThat(existingChannel).isNotEmpty();
+
+        //assert inventory of SKU_1 and channel SUPPLY_CHANNEL_KEY_1 was updated
+        existingEntry = getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, Channel.referenceOfId(existingChannel.get().getId()));
+        assertThat(existingEntry).isNotEmpty();
+        assertValues(existingEntry.get(), QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2);
+
+        //assert channel of SUPPLY_CHANNEL_KEY_2 exists
+        existingChannel = getCtpClientOfTargetProject().getClient()
+            .executeBlocking(ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_2))
+            .head();
+        assertThat(existingChannel).isNotEmpty();
+
+        //assert inventory of SKU_1 and channel SUPPLY_CHANNEL_KEY_2 was created
+        existingEntry = getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, Channel.referenceOfId(existingChannel.get().getId()));
+        assertThat(existingEntry).isNotEmpty();
+        assertValues(existingEntry.get(), QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2);
+    }
+
     /**
      * Deletes inventory entries and supply channels from both source and target projects.
      */
@@ -161,6 +268,43 @@ public class InventorySyncTest {
         cleanupSupplyChannels(getCtpClientOfSourceProject().getClient());
         cleanupInventoryEntries(getCtpClientOfTargetProject().getClient());
         cleanupSupplyChannels(getCtpClientOfTargetProject().getClient());
+    }
+
+    /**
+     * Populate source CTP project.
+     * Creates supply channel of key SUPPLY_CHANNEL_KEY_1.
+     * Creates supply channel of key SUPPLY_CHANNEL_KEY_2.
+     * Creates inventory entry of values: SKU_1, QUANTITY_ON_STOCK_1, EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1.
+     * Creates inventory entry of values: SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2 and
+     * reference to firstly created supply channel.
+     * Creates inventory entry of values: SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2 and
+     * reference to secondly created supply channel.
+     */
+    private void populateSourceProject() {
+        final ChannelDraft channelDraft1 = ChannelDraft.of(SUPPLY_CHANNEL_KEY_1)
+            .withRoles(ChannelRole.INVENTORY_SUPPLY);
+        final ChannelDraft channelDraft2 = ChannelDraft.of(SUPPLY_CHANNEL_KEY_2)
+            .withRoles(ChannelRole.INVENTORY_SUPPLY);
+
+        final String channelId1 = sourceProjectClient.executeBlocking(ChannelCreateCommand.of(channelDraft1))
+            .getId();
+        final String channelId2 = sourceProjectClient.executeBlocking(ChannelCreateCommand.of(channelDraft2))
+            .getId();
+
+        final Reference<Channel> supplyChannelReference1 = Channel.referenceOfId(channelId1);
+        final Reference<Channel> supplyChannelReference2 = Channel.referenceOfId(channelId2);
+
+        final InventoryEntryDraft draft1 = InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_ON_STOCK_1,
+            EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1, null).build();
+        final InventoryEntryDraft draft2 = InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_ON_STOCK_2,
+            EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, supplyChannelReference1).build();
+        final InventoryEntryDraft draft3 = InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_ON_STOCK_2,
+            EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, supplyChannelReference2).build();
+
+        sourceProjectClient.executeBlocking(InventoryEntryCreateCommand.of(draft1));
+        sourceProjectClient.executeBlocking(InventoryEntryCreateCommand.of(draft2));
+        sourceProjectClient.executeBlocking(InventoryEntryCreateCommand.of(draft3));
+
     }
 
     /**
@@ -173,18 +317,18 @@ public class InventorySyncTest {
     private void populateTargetProject() {
         final ChannelDraft channelDraft = ChannelDraft.of(SUPPLY_CHANNEL_KEY_1)
             .withRoles(ChannelRole.INVENTORY_SUPPLY);
-        final String channelId = getCtpClientOfTargetProject().getClient()
+        final String channelId = targetProjectClient
             .executeBlocking(ChannelCreateCommand.of(channelDraft))
             .getId();
         final Reference<Channel> supplyChannelReference = Channel.referenceOfId(channelId);
+
         final InventoryEntryDraft draft1 = InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_ON_STOCK_1,
             EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1, null).build();
         final InventoryEntryDraft draft2 = InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_ON_STOCK_1,
             EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1, supplyChannelReference).build();
-        getCtpClientOfTargetProject().getClient()
-            .executeBlocking(InventoryEntryCreateCommand.of(draft1));
-        getCtpClientOfTargetProject().getClient()
-            .executeBlocking(InventoryEntryCreateCommand.of(draft2));
+
+        targetProjectClient.executeBlocking(InventoryEntryCreateCommand.of(draft1));
+        targetProjectClient.executeBlocking(InventoryEntryCreateCommand.of(draft2));
     }
 
     private void assertStatistics(@Nullable final InventorySyncStatistics statistics,
