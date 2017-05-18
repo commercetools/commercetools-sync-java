@@ -33,19 +33,19 @@ public class SphereClientUtils {
     public static final Long QUERY_MAX_LIMIT = 500L;
 
     /**
-     * Fetches resources of {@link EntityType} using query provided by {@code querySupplier}.
+     * Fetches resources of {@link T} using query provided by {@code querySupplier}.
      * Then each resource from result list is deleted using command provided by {@code deleteFunction}.
      * Method blocks until above operations were done.
      *
      * @param client sphere client used to executing requests
      * @param querySupplier supplier of resources that need to be cleaned up
      * @param deleteFunction function that takes resource and returns its delete command
-     * @param <EntityType> type of resource to cleanup
+     * @param <T> type of resource to cleanup
      */
-    public static <EntityType> void cleanupTable(
+    public static <T> void cleanupTable(
         @Nonnull final BlockingSphereClient client,
-        @Nonnull final Supplier<SphereRequest<PagedQueryResult<EntityType>>> querySupplier,
-        @Nonnull final Function<EntityType, SphereRequest<EntityType>> deleteFunction) {
+        @Nonnull final Supplier<SphereRequest<PagedQueryResult<T>>> querySupplier,
+        @Nonnull final Function<T, SphereRequest<T>> deleteFunction) {
 
         client.executeBlocking(querySupplier.get())
             .getResults()
