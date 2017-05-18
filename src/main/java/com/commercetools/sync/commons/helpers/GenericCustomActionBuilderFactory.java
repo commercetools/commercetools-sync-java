@@ -12,7 +12,6 @@ import io.sphere.sdk.types.Custom;
 
 import javax.annotation.Nonnull;
 
-import static com.commercetools.sync.commons.enums.Error.UPDATE_ACTION_NOT_IMPLEMENTED;
 import static java.lang.String.format;
 
 /**
@@ -23,6 +22,8 @@ import static java.lang.String.format;
 @SuppressWarnings("unchecked")
 public class GenericCustomActionBuilderFactory<T extends Custom & Resource<T>,
     S extends GenericCustomActionBuilder<T>> {
+    private static final String UPDATE_ACTION_NOT_IMPLEMENTED = "Update actions for resource: '%s' is not implemented.";
+
     /**
      * Container of enums that provide mapping between the CTP resource and it's adjacent concrete custom action builder
      * class. For example, the {@link Category} resources point to the {@link CategoryCustomActionBuilder}
@@ -93,8 +94,7 @@ public class GenericCustomActionBuilderFactory<T extends Custom & Resource<T>,
                 return (S) builderClass.newInstance();
             }
         }
-        throw new BuildUpdateActionException(format(UPDATE_ACTION_NOT_IMPLEMENTED.getDescription(),
-            resource.toReference().getTypeId()));
+        throw new BuildUpdateActionException(format(UPDATE_ACTION_NOT_IMPLEMENTED, resource.toReference().getTypeId()));
     }
 
     /**

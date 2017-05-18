@@ -25,7 +25,7 @@ commercetools sync is a Java library that could be used to synchronise in any of
 
 
 Currently this library supports synchronising the following commercetools resources:-
-- [Category](https://github.com/commercetools/commercetools-sync-java/tree/setup-ci-build/src/main/java/com/commercetools/sync/categories#commercetools-category-sync)
+- [Category](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories#commercetools-category-sync)
 - InventoryEntry
 
 ## How to use it?
@@ -45,7 +45,7 @@ Currently this library supports synchronising the following commercetools resour
 
 ### Using the library
 Please check the README of the specific module to see examples of how to use it:
-- [Category](https://github.com/commercetools/commercetools-sync-java/tree/setup-ci-build/src/main/java/com/commercetools/sync/categories#how-to-use-it)
+- [Category](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories#how-to-use-it)
 - InventoryEntry
 
 ## Short-term roadmap
