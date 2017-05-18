@@ -99,7 +99,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                 } else {
                     final String errorMessage = format(CATEGORY_DRAFT_EXTERNAL_ID_NOT_SET, categoryDraft.getName(),
                         syncOptions.getProjectKey());
-                    handleSyncFailure(errorMessage, null);
+                    handleError(errorMessage, null);
                 }
             }
         }
@@ -136,14 +136,14 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                                final String errorMessage = format(CTP_CATEGORY_FETCH_FAILED,
                                    categoryDraft.getExternalId(), syncOptions.getProjectKey(),
                                    exception.getMessage());
-                               handleSyncFailure(errorMessage, exception);
+                               handleError(errorMessage, exception);
                                return null;
                            })
                            .toCompletableFuture().get();
         } catch (InterruptedException | ExecutionException exception) {
             final String errorMessage = format(CTP_CATEGORY_SYNC_FAILED, categoryDraft.getExternalId(),
                 syncOptions.getProjectKey(), exception.getMessage());
-            handleSyncFailure(errorMessage, exception);
+            handleError(errorMessage, exception);
         }
     }
 
@@ -165,7 +165,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                                   final String errorMessage = format(CTP_CATEGORY_CREATE_FAILED,
                                       categoryDraft.getExternalId(), syncOptions.getProjectKey(),
                                       exception.getMessage());
-                                  handleSyncFailure(errorMessage, exception);
+                                  handleError(errorMessage, exception);
                                   return null;
                               });
     }
@@ -210,7 +210,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                               .exceptionally(exception -> {
                                   final String errorMessage = format(CTP_CATEGORY_UPDATE_FAILED,
                                       category.getExternalId(), syncOptions.getProjectKey(), exception.getMessage());
-                                  handleSyncFailure(errorMessage, exception);
+                                  handleError(errorMessage, exception);
                                   return null;
                               });
     }
@@ -223,7 +223,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      * @param errorMessage The error message describing the reason(s) of failure.
      * @param exception    The exception that called caused the failure, if any.
      */
-    private void handleSyncFailure(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
+    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
         syncOptions.applyErrorCallback(errorMessage, exception);
         statistics.incrementFailed();
     }
