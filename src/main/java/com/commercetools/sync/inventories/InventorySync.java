@@ -98,7 +98,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *
      * @param inventories {@link List} of {@link InventoryEntryDraft} resources that would be synced into CTP project.
      * @return {@link CompletionStage} with {@link InventorySyncStatistics} holding statistics of all sync
-     *                                           processes performed by this syncer instance
+     *                                           processes performed by this sync instance
      */
     @Override
     protected CompletionStage<InventorySyncStatistics> processDrafts(@Nonnull final List<InventoryEntryDraft>
@@ -132,7 +132,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *
      * @param inventories {@link List} of {@link InventoryEntryDraft} resources that would be synced into CTP project.
      * @return {@link CompletionStage} with {@link InventorySyncStatistics} holding statistics of all sync
-     *                                           processes performed by this syncer instance
+     *                                           processes performed by this sync instance
      */
     @Nonnull
     private CompletionStage<InventorySyncStatistics> splitToBatchesAndProcess(@Nonnull final List<InventoryEntryDraft>

@@ -90,7 +90,7 @@ public class InventorySyncTest {
 
     @Test
     public void getStatistics_ShouldReturnProperStatistics() {
-        final InventorySync inventorySync = getInventorySyncer(30, false);
+        final InventorySync inventorySync = getInventorySync(30, false);
         inventorySync.syncDrafts(drafts)
                 .toCompletableFuture()
                 .join();
@@ -104,7 +104,7 @@ public class InventorySyncTest {
 
     @Test
     public void syncDrafts_ShouldReturnProperStatistics() {
-        final InventorySync inventorySync = getInventorySyncer(30, false);
+        final InventorySync inventorySync = getInventorySync(30, false);
         final InventorySyncStatistics stats = inventorySync.syncDrafts(drafts)
                 .toCompletableFuture()
                 .join();
@@ -117,7 +117,7 @@ public class InventorySyncTest {
 
     @Test
     public void syncDrafts_WithEmptyList_ShouldNotSync() {
-        final InventorySync inventorySync = getInventorySyncer(30, false);
+        final InventorySync inventorySync = getInventorySync(30, false);
         final InventorySyncStatistics stats = inventorySync.syncDrafts(emptyList())
                 .toCompletableFuture()
                 .join();
@@ -132,7 +132,7 @@ public class InventorySyncTest {
     public void syncDrafts_WithEnsuredChannels_ShouldCreateEntriesWithUnknownChannels() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
-        final InventorySync inventorySync = getInventorySyncer(30, true);
+        final InventorySync inventorySync = getInventorySync(30, true);
         final InventorySyncStatistics stats = inventorySync.syncDrafts(singletonList(draftWithNewChannel))
                 .toCompletableFuture()
                 .join();
@@ -146,7 +146,7 @@ public class InventorySyncTest {
     public void syncDrafts_WithNotEnsuredChannels_ShouldNotSyncEntriesWithUnknownChannels() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
-        final InventorySync inventorySync = getInventorySyncer(30, false);
+        final InventorySync inventorySync = getInventorySync(30, false);
         final InventorySyncStatistics stats = inventorySync.syncDrafts(singletonList(draftWithNewChannel))
                 .toCompletableFuture()
                 .join();
@@ -159,7 +159,7 @@ public class InventorySyncTest {
     @Test
     public void syncDrafts_WithDraftsWithNullSku_ShouldNotSync() {
         final InventoryEntryDraft draftWithNullSku = InventoryEntryDraft.of(null, 12);
-        final InventorySync inventorySync = getInventorySyncer(30, false);
+        final InventorySync inventorySync = getInventorySync(30, false);
         final InventorySyncStatistics stats = inventorySync.syncDrafts(singletonList(draftWithNullSku))
                 .toCompletableFuture()
                 .join();
@@ -172,7 +172,7 @@ public class InventorySyncTest {
     @Test
     public void syncDrafts_WithDraftsWithEmptySku_ShouldNotSync() {
         final InventoryEntryDraft draftWithEmptySku = InventoryEntryDraft.of("", 12);
-        final InventorySync inventorySync = getInventorySyncer(30, false);
+        final InventorySync inventorySync = getInventorySync(30, false);
         final InventorySyncStatistics stats = inventorySync.syncDrafts(singletonList(draftWithEmptySku))
                 .toCompletableFuture()
                 .join();
@@ -233,7 +233,7 @@ public class InventorySyncTest {
         assertThat(stats.getUpdated()).isEqualTo(0);
     }
 
-    private InventorySync getInventorySyncer(int batchSize, boolean ensureChannels) {
+    private InventorySync getInventorySync(int batchSize, boolean ensureChannels) {
         final InventorySyncOptions options = getInventorySyncOptions(batchSize, ensureChannels);
         final InventoryService service = getMockInventoryService(existingSupplyChannels, existingInventories,
                 getMockSupplyChannel(REF_3, KEY_3), mock(InventoryEntry.class), mock(InventoryEntry.class));
