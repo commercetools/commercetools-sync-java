@@ -76,11 +76,11 @@ final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder
 
 #### `batchSize` [Optional]
 
-Defines an optional field which represents a size of batch of processed inventory entries. The purpose of this option
-is to limit requests send to CTP. During sync process there is a need to fetch existing inventory entries so they can
-be compared with newly provided inventory entries. It is achieved by accumulating up to `batchSize` inventory entries
-from input list, then fetching corresponding inventory entries from target CTP project in a one call, and then
-performing sync actions on them. Playing with this option can slightly improve or reduce processing speed.
+Inventory entries are fetched and processed from the target CTP project in batches for better performance.
+This `batchSize` field is an optional field that could be used to set the batch size with which inventory entries are
+fetched and processed with. The algorithm accumulates up to `batchSize` inventory entries from input list, then fetches
+corresponding inventory entries from target CTP project in a single request, and then performs sync actions on them.
+Playing with this option can slightly improve or reduce processing speed.
 
 If not provided, it is set to `30` by default.
 
