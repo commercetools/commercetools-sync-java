@@ -17,42 +17,42 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
  * but sku has to be not null neither not empty.
  * Can be used as key in Maps.
  */
-final class SkuKeyTuple {
+final class SkuChannelKeyTuple {
 
-    static final String SKU_NOT_SET_MESSAGE = "Can't create SkuKeyTuple instance of inventory entry with no SKU";
+    static final String SKU_NOT_SET_MESSAGE = "Can't create SkuChannelKeyTuple instance of inventory entry with no SKU";
 
     private final String sku;
 
     @Nullable
     private final String key;
 
-    private SkuKeyTuple(final String sku, final String key) {
+    private SkuChannelKeyTuple(final String sku, final String key) {
         this.sku = sku;
         this.key = key;
     }
 
     /**
-     * Returns new {@link SkuKeyTuple} of given {@link InventoryEntry}. If contains
+     * Returns new {@link SkuChannelKeyTuple} of given {@link InventoryEntry}. If contains
      * {@link io.sphere.sdk.models.Reference} to supply channel, then reference should be expanded, so that key is
      * taken from it. If reference is null or is not expanded it results in {@code null} key value.
      * @param oldEntry must have sku set and not empty
-     * @return new instance of {@link SkuKeyTuple}
+     * @return new instance of {@link SkuChannelKeyTuple}
      * @throws IllegalArgumentException when sku of {@code oldEntry} is null or empty string
      */
-    static SkuKeyTuple of(@Nonnull final InventoryEntry oldEntry) {
+    static SkuChannelKeyTuple of(@Nonnull final InventoryEntry oldEntry) {
         final String sku = oldEntry.getSku();
         if (isEmpty(sku)) {
             throw new IllegalArgumentException(SKU_NOT_SET_MESSAGE);
         }
         if (oldEntry.getSupplyChannel() != null && oldEntry.getSupplyChannel().getObj() != null) {
-            return new SkuKeyTuple(sku, oldEntry.getSupplyChannel().getObj().getKey());
+            return new SkuChannelKeyTuple(sku, oldEntry.getSupplyChannel().getObj().getKey());
         } else {
-            return new SkuKeyTuple(sku, null);
+            return new SkuChannelKeyTuple(sku, null);
         }
     }
 
     /**
-     * Returns new {@link SkuKeyTuple} of given {@link InventoryEntryDraft}. Key value would result in:
+     * Returns new {@link SkuChannelKeyTuple} of given {@link InventoryEntryDraft}. Key value would result in:
      * <ul>
      *     <li>
      *         referenced id - when supply channel {@link io.sphere.sdk.models.Reference} is present but not expanded
@@ -64,10 +64,10 @@ final class SkuKeyTuple {
      *     <li>{@code null} - otherwise</li>
      * </ul>
      * @param newEntryDraft must have sku set and not empty
-     * @return new instance of {@link SkuKeyTuple}
+     * @return new instance of {@link SkuChannelKeyTuple}
      * @throws IllegalArgumentException when sku of {@code existingEntry} is null or empty string
      */
-    static SkuKeyTuple of(@Nonnull final InventoryEntryDraft newEntryDraft) {
+    static SkuChannelKeyTuple of(@Nonnull final InventoryEntryDraft newEntryDraft) {
         final String sku = newEntryDraft.getSku();
         if (isEmpty(sku)) {
             throw new IllegalArgumentException(SKU_NOT_SET_MESSAGE);
@@ -80,7 +80,7 @@ final class SkuKeyTuple {
                 key = newEntryDraft.getSupplyChannel().getId();
             }
         }
-        return new SkuKeyTuple(sku, key);
+        return new SkuChannelKeyTuple(sku, key);
     }
 
     @Nonnull
@@ -102,7 +102,7 @@ final class SkuKeyTuple {
             return false;
         }
 
-        SkuKeyTuple that = (SkuKeyTuple) obj;
+        SkuChannelKeyTuple that = (SkuChannelKeyTuple) obj;
 
         if (!getSku().equals(that.getSku())) {
             return false;
