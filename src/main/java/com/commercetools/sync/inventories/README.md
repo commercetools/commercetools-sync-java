@@ -58,13 +58,11 @@ of the user of the sync:
 
 #### `ensureChannels` [Optional]
 
-Defines an optional field which represents a strategy for handling with inventory entries of missing supply channels.
-By missing supply channels you could consider supply channels of keys that are referenced in provided inventory
-entries list but do not exists in a target CTP project. Having an inventory entry with missing supply channel
-referenced it could be processed in either ways:
- - If `ensureChannels` is set to `false` such inventory entry will fail to sync.
- - If `ensureChannels` is set to `true` there will be attempt to create supply channel of given key. If such attempt
- succeed then inventory entry would be created either, otherwise it fails to sync.
+Defines an optional field which represents a strategy to handle syncing inventory entries with missing supply channels.
+Having an inventory entry, with a missing supply channel reference, could be processed in either of the following ways:
+ - If `ensureChannels` is set to `false` such inventory entry won't sync and `errorCallback` will be triggered.
+ - If `ensureChannels` is set to `true` the sync will attempt to create the missing channel with the given key.
+ If it fails to create the supply channel, the inventory entry won't sync and `errorCallback` will be triggered.
 
 If not provided, it is set to `false` by default.
 
