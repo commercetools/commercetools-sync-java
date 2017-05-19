@@ -119,6 +119,116 @@ public class InventorySyncTest {
         assertValues(existingEntry.get(), QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2);
     }
 
+    /**
+     * This test is additionally a showcase of providing valid input to {@link InventorySync#syncDrafts(List)}.
+     * In this case it is attempted to update old inventory entry of SKU and supply channel.
+     * Draft given in input would have reference to an expected channel. Mentioned reference will be expanded.
+     */
+    @Test
+    public void syncDrafts_WithExpandedReferenceToExistingSupplyChannel_ShouldUpdateEntry() {
+        //Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project
+        final ChannelQuery channelQuery = ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_1);
+        final Optional<Channel> referencedChannelOptional = targetProjectClient
+            .executeBlocking(channelQuery)
+            .head();
+        assertThat(referencedChannelOptional).isNotEmpty();
+
+        //Make Reference from fetched Channel. Ensure that it is expanded.
+        final Reference<Channel> channelReference = referencedChannelOptional.get().toReference();
+        assertThat(channelReference.getObj()).isNotNull();
+        assertThat(channelReference.getObj().getKey()).isEqualTo(SUPPLY_CHANNEL_KEY_1);
+
+        //Prepare InventoryEntryDraft of sku SKU_1 and reference to above supply channel key.
+        final InventoryEntryDraft draftToSync = InventoryEntryDraftBuilder
+            .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, channelReference)
+            .build();
+
+        //Ensure old entry values before sync.
+        final Optional<InventoryEntry> oldEntryBeforeSync =
+            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, channelReference);
+        assertThat(oldEntryBeforeSync).isPresent();
+        assertThat(oldEntryBeforeSync.get().getQuantityOnStock()).isEqualTo(QUANTITY_ON_STOCK_1);
+        assertThat(oldEntryBeforeSync.get().getExpectedDelivery()).isEqualTo(EXPECTED_DELIVERY_1);
+        assertThat(oldEntryBeforeSync.get().getRestockableInDays()).isEqualTo(RESTOCKABLE_IN_DAYS_1);
+        assertThat(oldEntryBeforeSync.get().getSupplyChannel().getId()).isEqualTo(channelReference.getId());
+
+        //Prepare sync options and perform sync of draft to "target project
+        final InventorySyncOptions options = InventorySyncOptionsBuilder.of(getCtpClientOfTargetProject())
+            .build();
+        final InventorySync syncer = new InventorySync(options);
+        final InventorySyncStatistics syncResult = syncer.syncDrafts(singletonList(draftToSync))
+            .toCompletableFuture()
+            .join();
+        assertStatistics(syncResult, 1, 0, 1, 0);
+
+        //Ensure old entry values after sync.
+        final Optional<InventoryEntry> oldEntryAfterSync =
+            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, channelReference);
+        assertThat(oldEntryAfterSync).isPresent();
+        assertThat(oldEntryAfterSync.get().getQuantityOnStock()).isEqualTo(QUANTITY_ON_STOCK_2);
+        assertThat(oldEntryAfterSync.get().getExpectedDelivery()).isEqualTo(EXPECTED_DELIVERY_2);
+        assertThat(oldEntryAfterSync.get().getRestockableInDays()).isEqualTo(RESTOCKABLE_IN_DAYS_2);
+        assertThat(oldEntryAfterSync.get().getSupplyChannel().getId()).isEqualTo(channelReference.getId());
+    }
+
+    /**
+     * This test is additionally a showcase of providing valid input to {@link InventorySync#syncDrafts(List)}.
+     * In this case it is attempted to update old inventory entry of SKU and supply channel.
+     * Draft given in input would have reference to an expected channel. Mentioned reference won't be expanded, but it
+     * will hold channel `key` in place of referece `id`
+     */
+    @Test
+    public void syncDrafts_WithKeyToExistingSupplyChannelInPlaceOfReferenceId_ShouldUpdateEntry() {
+        /*
+         * Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
+         * This is done only for test assertion reasons, not necessary for sync.
+         */
+        final ChannelQuery channelQuery = ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_1);
+        final Optional<Channel> referencedChannelOptional = targetProjectClient
+            .executeBlocking(channelQuery)
+            .head();
+        assertThat(referencedChannelOptional).isNotEmpty();
+
+        /*
+         * Prepare InventoryEntryDraft of sku SKU_1 and reference to supply channel of key SUPPLY_CHANNEL_KEY_1.
+         * Please note that the key is provided in place of Referenced id.
+         */
+        final Reference<Channel> channelReference = Channel.referenceOfId(SUPPLY_CHANNEL_KEY_1);
+        assertThat(channelReference.getObj()).isNull();
+        assertThat(channelReference.getId()).isEqualTo(SUPPLY_CHANNEL_KEY_1);
+
+        final InventoryEntryDraft draftToSync = InventoryEntryDraftBuilder
+            .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, channelReference)
+            .build();
+
+        //Ensure old entry values before sync.
+        final Optional<InventoryEntry> oldEntryBeforeSync =
+            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1,
+                referencedChannelOptional.get().toReference());
+        assertThat(oldEntryBeforeSync).isPresent();
+        assertThat(oldEntryBeforeSync.get().getQuantityOnStock()).isEqualTo(QUANTITY_ON_STOCK_1);
+        assertThat(oldEntryBeforeSync.get().getExpectedDelivery()).isEqualTo(EXPECTED_DELIVERY_1);
+        assertThat(oldEntryBeforeSync.get().getRestockableInDays()).isEqualTo(RESTOCKABLE_IN_DAYS_1);
+
+        //Prepare sync options and perform sync of draft to target project
+        final InventorySyncOptions options = InventorySyncOptionsBuilder.of(getCtpClientOfTargetProject())
+            .build();
+        final InventorySync syncer = new InventorySync(options);
+        final InventorySyncStatistics syncResult = syncer.syncDrafts(singletonList(draftToSync))
+            .toCompletableFuture()
+            .join();
+        assertStatistics(syncResult, 1, 0, 1, 0);
+
+        //Ensure old entry values after sync.
+        final Optional<InventoryEntry> oldEntryAfterSync =
+            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1,
+                referencedChannelOptional.get().toReference());
+        assertThat(oldEntryAfterSync).isPresent();
+        assertThat(oldEntryAfterSync.get().getQuantityOnStock()).isEqualTo(QUANTITY_ON_STOCK_2);
+        assertThat(oldEntryAfterSync.get().getExpectedDelivery()).isEqualTo(EXPECTED_DELIVERY_2);
+        assertThat(oldEntryAfterSync.get().getRestockableInDays()).isEqualTo(RESTOCKABLE_IN_DAYS_2);
+    }
+
     @Test
     public void syncDrafts_WithNewSupplyChannelAndChannelsEnsured_ShouldCreateNewSupplyChannelInCtp() {
         //assert ctp channel before sync
