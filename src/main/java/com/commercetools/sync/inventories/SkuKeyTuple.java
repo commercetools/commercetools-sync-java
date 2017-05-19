@@ -32,18 +32,18 @@ final class SkuKeyTuple {
     /**
      * Returns new {@link SkuKeyTuple} of given {@link InventoryEntry}. If contains
      * {@link io.sphere.sdk.models.Reference} to supply channel, then reference should be expanded, so that key is
-     * taken from it. If reference is null or is not expanded it's result in {@code null} key value.
-     * @param existingEntry must have sku set and not empty
+     * taken from it. If reference is null or is not expanded it results in {@code null} key value.
+     * @param oldEntry must have sku set and not empty
      * @return new instance of {@link SkuKeyTuple}
-     * @throws IllegalArgumentException when sku of {@code existingEntry} is null or empty string
+     * @throws IllegalArgumentException when sku of {@code oldEntry} is null or empty string
      */
-    static SkuKeyTuple of(@Nonnull final InventoryEntry existingEntry) {
-        final String sku = existingEntry.getSku();
+    static SkuKeyTuple of(@Nonnull final InventoryEntry oldEntry) {
+        final String sku = oldEntry.getSku();
         if (isEmpty(sku)) {
             throw new IllegalArgumentException(SKU_NOT_SET_MESSAGE);
         }
-        if (existingEntry.getSupplyChannel() != null && existingEntry.getSupplyChannel().getObj() != null) {
-            return new SkuKeyTuple(sku, existingEntry.getSupplyChannel().getObj().getKey());
+        if (oldEntry.getSupplyChannel() != null && oldEntry.getSupplyChannel().getObj() != null) {
+            return new SkuKeyTuple(sku, oldEntry.getSupplyChannel().getObj().getKey());
         } else {
             return new SkuKeyTuple(sku, null);
         }
