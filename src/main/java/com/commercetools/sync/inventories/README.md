@@ -60,7 +60,7 @@ of the user of the sync:
 
 Defines an optional field which represents a strategy to handle syncing inventory entries with missing supply channels.
 Having an inventory entry, with a missing supply channel reference, could be processed in either of the following ways:
- - If `ensureChannels` is set to `false` such inventory entry won't sync and `errorCallback` will be triggered.
+ - If `ensureChannels` is set to `false` this inventory entry won't be synced and the `errorCallback` will be triggered.
  - If `ensureChannels` is set to `true` the sync will attempt to create the missing channel with the given key.
  If it fails to create the supply channel, the inventory entry won't sync and `errorCallback` will be triggered.
 
@@ -78,8 +78,8 @@ final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder
 
 Inventory entries are fetched and processed from the target CTP project in batches for better performance.
 This `batchSize` field is an optional field that could be used to set the batch size with which inventory entries are
-fetched and processed with. The algorithm accumulates up to `batchSize` inventory entries from input list, then fetches
-corresponding inventory entries from target CTP project in a single request, and then performs sync actions on them.
+fetched and processed with. The algorithm accumulates up to `batchSize` inventory entries from the input list, then fetches
+the corresponding inventory entries from the target CTP project in a single request, and then performs the update actions needed.
 Playing with this option can slightly improve or reduce processing speed.
 
 If not provided, it is set to `30` by default.
@@ -296,15 +296,15 @@ The only case where an inventory would not be processed is if the entire sync pr
 this inventory in the input list.
 
 #### Why is it important to provide extended supply channel references in entries from input lists of sync process?
-In CTP, an [inventory](http://dev.commercetools.com/http-api-projects-inventory.html) allows you to track stock quantity per SKU and optionally per supply channel, what makes that
-the sync uniquely identifies an inventory entry by its `sku` and supply channel `key`. It uses them for matching old and new inventory entries. In both the [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk)
+In CTP, an [inventory](http://dev.commercetools.com/http-api-projects-inventory.html) allows you to track stock quantity per SKU and optionally per supply channel, which makes
+the sync uniquely identify an inventory entry by both its `sku` and supply channel `key`. It uses them for matching old and new inventory entries. In both the [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk)
 [InventoryEntryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntryDraft.java)
 and the [InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntry.java)
 `sku` is provided directly as a `String`, but they just have a
 [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk)
 [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
 to the channel, not the `key` of the channel (unless [reference expanded](https://dev.commercetools.com/http-api.html#reference-expansion)).
-Therefore, make sure that you comply to the preconditions of syncing as mentioned in [How to use it?](#how-to-use-it) section. This is
+Therefore, make sure that you comply to the preconditions of syncing as mentioned in the [How to use it?](#how-to-use-it) section. This is
 important for proper comparision of new and old inventories that reference supply channels.
 
  
