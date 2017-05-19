@@ -182,10 +182,7 @@ Used for comparision of `quantityOnStock` values from provided entries. `Optiona
 action is returned.
 
 ````java
-/*
- * Having InventoryEntry instance with legacy data and InventoryEntryDraft with current data
- * attempt to build "change quantity" update action
- */
+//Having an old InventoryEntry attempts to build "change quantity" update action
 final Optional<UpdateAction<InventoryEntry>> updateAction =
     InventoryUpdateActionUtils.buildChangeQuantityAction(inventoryEntry, inventoryEntrydraft);
 
@@ -299,17 +296,15 @@ The only case where an inventory would not be processed is if the entire sync pr
 this inventory in the input list.
 
 #### Why is it important to provide extended supply channel references in entries from input lists of sync process?
-In CTP, an (inventory)[http://dev.commercetools.com/http-api-projects-inventory.html] allows you to track stock quantity per SKU and optionally per supply channel, what makes that
+In CTP, an [inventory](http://dev.commercetools.com/http-api-projects-inventory.html) allows you to track stock quantity per SKU and optionally per supply channel, what makes that
 the sync uniquely identifies an inventory entry by its `sku` and supply channel `key`. It uses them for matching old and new inventory entries. In both the [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk)
 [InventoryEntryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntryDraft.java)
 and the [InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntry.java)
-`sku` is provided directly as a `String` field but supply channel key is not. Supply channel is kept as a
+`sku` is provided directly as a `String`, but they just have a
 [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk)
 [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
-what makes the `supplyChannel` key [can't be simply extracted from this reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java#L98).
-Because of that you have to make sure that data you provide for sync process are valid (how valid data look like was
-mentioned near descriptions of `sync` and `syncDrafts` methods in [How to use it?](#how-to-use-it) section). This is
-important for proper comparision of new and old inventories that reference supply channels. Keep in mind that
-invalid input data may result in invalid sync output!
+to the channel, not the `key` of the channel (unless [reference expanded](https://dev.commercetools.com/http-api.html#reference-expansion)).
+Therefore, make sure that you comply to the preconditions of syncing as mentioned in [How to use it?](#how-to-use-it) section. This is
+important for proper comparision of new and old inventories that reference supply channels.
 
  
