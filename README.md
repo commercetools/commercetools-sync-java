@@ -2,8 +2,8 @@
 [![Build Status](https://travis-ci.org/commercetools/commercetools-sync-java.svg?branch=master)](https://travis-ci.org/commercetools/commercetools-sync-java)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
 
-Java library that provides different modules to synchronise your new commercetools project data to your existing 
-commercetools project.
+Java API which exposes utilities for building update actions and automatic syncing of CTP data from external sources 
+ such as CSV, XML, JSON, etc.. or an already existing CTP project into a target project.
 
 
 - [What is the commercetools sync?](#what-is-the-commercetools-sync)
