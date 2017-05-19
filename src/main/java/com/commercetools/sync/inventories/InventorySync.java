@@ -258,7 +258,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     private CompletionStage<Void> compareAndSync(final Map<SkuKeyTuple, InventoryEntry> existingInventories,
                                                  final List<InventoryEntryDraft> drafts) {
         final List<CompletableFuture<Void>> futures = new ArrayList<>(drafts.size());
-        for (InventoryEntryDraft draft : drafts) {
+        drafts.stream()
+            .forEach(draft -> {
             final SkuKeyTuple skuKeyOfDraft = SkuKeyTuple.of(draft);
             if (existingInventories.containsKey(skuKeyOfDraft)) {
                 final InventoryEntry existingEntry = existingInventories.get(skuKeyOfDraft);
@@ -267,7 +268,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 futures.add(attemptCreate(draft).toCompletableFuture());
             }
             statistics.incrementProcessed();
-        }
+        });
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
     }
 
@@ -383,7 +384,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         if (supplyChannelKey != null) {
             if (supplyChannelKeyToId.containsKey(supplyChannelKey)) {
                 return Optional.of(
-                    ofEntryDraftPlusRefToSupplyChannel(draft, supplyChannelKeyToId.get(supplyChannelKey)));
+                    withSupplyChannel(draft, supplyChannelKeyToId.get(supplyChannelKey)));
             } else {
                 handleFailure(format("Failed to find supply channel of key '%s'", supplyChannelKey), null);
                 return Optional.empty();
@@ -401,8 +402,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @return {@link InventoryEntryDraft} with supply channel reference pointing to {@code supplyChannelId}
      *      and other data same as in {@code draft}
      */
-    private InventoryEntryDraft ofEntryDraftPlusRefToSupplyChannel(@Nonnull final InventoryEntryDraft draft,
-                                                                   @Nonnull final String supplyChannelId) {
+    private InventoryEntryDraft withSupplyChannel(@Nonnull final InventoryEntryDraft draft,
+                                                  @Nonnull final String supplyChannelId) {
         final Reference<Channel> supplyChannelRef = Channel.referenceOfId(supplyChannelId);
         return InventoryEntryDraftBuilder.of(draft)
             .supplyChannel(supplyChannelRef)

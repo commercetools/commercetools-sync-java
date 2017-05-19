@@ -6,6 +6,8 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import java.util.Objects;
+
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
@@ -105,13 +107,11 @@ final class SkuKeyTuple {
         if (!getSku().equals(that.getSku())) {
             return false;
         }
-        return getKey() != null ? getKey().equals(that.getKey()) : that.getKey() == null;
+        return Objects.equals(getKey(), that.getKey());
     }
 
     @Override
     public int hashCode() {
-        int result = getSku().hashCode();
-        result = 31 * result ^ (getKey() != null ? getKey().hashCode() : 0);
-        return result;
+        return Objects.hash(getSku(), getKey());
     }
 }

@@ -7,15 +7,10 @@ import javax.annotation.Nonnull;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-/**
- * Options for customization of inventory synchronisation process.
- */
 public final class InventorySyncOptions extends BaseSyncOptions {
 
-    //Indicates whether create supply channel if it doesn't exists in system for key from draft.
     private final boolean ensureChannels;
 
-    //Indicates capacity of processed inventory entries batch (also limit of sku, that can be query in single API call)
     private final int batchSize;
 
     InventorySyncOptions(@Nonnull final CtpClient ctpClient,
