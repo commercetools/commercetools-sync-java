@@ -115,7 +115,7 @@ inventorySync.sync(inventoryEntries);
 ````
 
 **Important!**
-Before using `sync`, you should assert that every [InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntry.java)
+Before using `sync`, you should make sure that every [InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntry.java)
 in your input list which contains a [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
 to a supply channel has that reference expanded, that means when calling [getObj()](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java#L52)
 function on a reference's object a [Channel](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/channels/Channel.jav)
@@ -138,7 +138,7 @@ inventorySync.syncDrafts(inventoryEntriesDrafts);
 ````
 
 **Important!**
-Before using `syncDrafts`, you should assert that every [InventoryEntryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntryDraft.java)
+Before using `syncDrafts`, you should make sure that every [InventoryEntryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntryDraft.java)
 in your input list which contains a [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
 to a supply channel has either that reference expanded, or has that reference not expanded but instead has supply channel
 key provided in place of reference `id` (that means calling [getId()](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java#L26)
@@ -309,7 +309,7 @@ and the [InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/
 [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk)
 [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
 what makes the `supplyChannel` key [can't be simply extracted from this reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java#L98).
-Because of that you have to assert that data you provide for sync process are valid (how valid data look like was
+Because of that you have to make sure that data you provide for sync process are valid (how valid data look like was
 mentioned near descriptions of `sync` and `syncDrafts` methods in [How to use it?](#how-to-use-it) section). This is
 important for proper comparision of new and old inventories that reference supply channels. Keep in mind that
 invalid input data may result in invalid sync output!
