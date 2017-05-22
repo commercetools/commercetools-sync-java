@@ -21,8 +21,8 @@ objects to the desired commercetools project.
 objects to another commercetools project.
 
 3. Build any of the following commercetools [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) update action
-objects given an old inventory entry, represented by a [InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntry.java),
-and a new inventory entry, represented by a [InventoryEntryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntryDraft.java):
+objects given an old inventory entry, represented by an [InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntry.java),
+and a new inventory entry, represented by an [InventoryEntryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntryDraft.java):
     - ChangeQuantity
     - SetRestockableInDays
     - SetExpectedDelivery
@@ -37,8 +37,8 @@ and a new inventory entry, represented by a [InventoryEntryDraft](https://github
 
 In order to use the inventory sync an instance of
 [InventorySyncOptions](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/inventories/InventorySyncOptions.java)
-have to be injected. It can be created by using dedicated builder instance of
-[InventorySyncOptionsBuilder](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/inventories/InventorySyncOptionsBuilder.java)
+have to be injected. It can be created by using a dedicated builder instance of
+[InventorySyncOptionsBuilder](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/inventories/InventorySyncOptionsBuilder.java).
  
 In order to instantiate a `InventorySyncOptions`, a `ctpClient` is required:
 
@@ -49,7 +49,7 @@ Defines the configuration of the commercetools project that inventory entries ar
 final SphereClientConfig clientConfig = SphereClientConfig.of("project-key", "client-id", "client-secret");
 final CtpClient ctpClient = new CtpClient(clientConfig);
   
-// instantiating a InventorySyncOptions
+// instantiating an InventorySyncOptions
 final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(ctpClient).build();
 ````
 
@@ -58,18 +58,16 @@ of the user of the sync:
 
 #### `ensureChannels` [Optional]
 
-Defines an optional field which represents a strategy for handling with inventory entries of missing supply channels.
-By missing supply channels you could consider supply channels of keys that are referenced in provided inventory
-entries list but do not exists in a target CTP project. Having an inventory entry with missing supply channel
-referenced it could be processed in either ways:
- - If `ensureChannels` is set to `false` such inventory entry will fail to sync.
- - If `ensureChannels` is set to `true` there will be attempt to create supply channel of given key. If such attempt
- succeed then inventory entry would be created either, otherwise it fails to sync.
+Defines an optional field which represents a strategy to handle syncing inventory entries with missing supply channels.
+Having an inventory entry, with a missing supply channel reference, could be processed in either of the following ways:
+ - If `ensureChannels` is set to `false` this inventory entry won't be synced and the `errorCallback` will be triggered.
+ - If `ensureChannels` is set to `true` the sync will attempt to create the missing channel with the given key.
+ If it fails to create the supply channel, the inventory entry won't sync and `errorCallback` will be triggered.
 
 If not provided, it is set to `false` by default.
 
 ````java
-// instantiating a InventorySyncOptions
+// instantiating an InventorySyncOptions
 final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder
                                                     .of(ctpClient)
                                                     .ensureChannels(true)
@@ -78,16 +76,16 @@ final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder
 
 #### `batchSize` [Optional]
 
-Defines an optional field which represents a size of batch of processed inventory entries. The purpose of this option
-is to limit requests send to CTP. During sync process there is a need to fetch existing inventory entries so they can
-be compared with newly provided inventory entries. It is achieved by accumulating up to `batchSize` inventory entries
-from input list, then fetching corresponding inventory entries from target CTP project in a one call, and then
-performing sync actions on them. Playing with this option can slightly improve or reduce processing speed.
+Inventory entries are fetched and processed from the target CTP project in batches for better performance.
+This `batchSize` field is an optional field that could be used to set the batch size with which inventory entries are
+fetched and processed with. The algorithm accumulates up to `batchSize` inventory entries from the input list, then fetches
+the corresponding inventory entries from the target CTP project in a single request, and then performs the update actions needed.
+Playing with this option can slightly improve or reduce processing speed.
 
 If not provided, it is set to `30` by default.
 
 ````java
- // instantiating a InventorySyncOptions
+ // instantiating an InventorySyncOptions
  final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder
                                                       .of(ctpClient)
                                                       .setBatchSize(10)
@@ -115,11 +113,11 @@ inventorySync.sync(inventoryEntries);
 ````
 
 **Important!**
-Before using `sync` you should assert that every [InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntry.java)
-from input list which contains [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
+Before using `sync`, you should make sure that every [InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntry.java)
+in your input list which contains a [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
 to a supply channel has that reference expanded, that means when calling [getObj()](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java#L52)
 function on a reference's object a [Channel](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/channels/Channel.jav)
-object that contains its key would be obtained. More information about why it is important can be found in
+object that contains its key would be obtained. More information about why it is important can be found in the
 [FAQ](#why-is-it-important-to-provide-extended-supply-channel-references-in-entries-from-input-lists-of-sync-process)
 section.
 
@@ -138,14 +136,14 @@ inventorySync.syncDrafts(inventoryEntriesDrafts);
 ````
 
 **Important!**
-Before using `syncDrafts` you should assert that every [InventoryEntryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntryDraft.java)
-from input list which contains [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
+Before using `syncDrafts`, you should make sure that every [InventoryEntryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntryDraft.java)
+in your input list which contains a [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
 to a supply channel has either that reference expanded, or has that reference not expanded but instead has supply channel
 key provided in place of reference `id` (that means calling [getId()](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java#L26)
 function on a reference instance the `String` that represents supply channel key would be returned). By expanded reference
 we mean that calling [getObj()](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java#L52)
 function on a reference's instance a [Channel](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/channels/Channel.jav)
-object that contains its key would be returned. More information about why it is important can be found in
+object that contains its key would be returned. More information about why it is important can be found in the
 [FAQ](#why-is-it-important-to-provide-extended-supply-channel-references-in-entries-from-input-lists-of-sync-process)
 section.
 
@@ -184,14 +182,11 @@ Used for comparision of `quantityOnStock` values from provided entries. `Optiona
 action is returned.
 
 ````java
-/*
- * Having InventoryEntry instance with legacy data and InventoryEntryDraft with current data
- * attempt to build "change quantity" update action
- */
+//Having an old InventoryEntry attempts to build "change quantity" update action
 final Optional<UpdateAction<InventoryEntry>> updateAction =
     InventoryUpdateActionUtils.buildChangeQuantityAction(inventoryEntry, inventoryEntrydraft);
 
-// If update action is present, the legacy entry can be updated by SphereClient instance.
+// If update action is present, the old entry can be updated by the SphereClient instance.
 if (updateAction.isPresent()) {
     sphereClient.execute(InventoryEntryUpdateCommand.of(inventoryEntry, updateAction.get()));
 }
@@ -301,18 +296,15 @@ The only case where an inventory would not be processed is if the entire sync pr
 this inventory in the input list.
 
 #### Why is it important to provide extended supply channel references in entries from input lists of sync process?
-In CTP inventory allows you to track stock quantity per SKU and optionally per supply channel, what makes that
-both `sku` and `supplyChannel` key are used to inventory entry distinction. Distinction of inventory entries is then
-necessary for comparision of new and old resources during sync process. In both the [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk)
+In CTP, an [inventory](http://dev.commercetools.com/http-api-projects-inventory.html) allows you to track stock quantity per SKU and optionally per supply channel, which makes
+the sync uniquely identify an inventory entry by both its `sku` and supply channel `key`. It uses them for matching old and new inventory entries. In both the [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk)
 [InventoryEntryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntryDraft.java)
 and the [InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntry.java)
-`sku` is provided directly as a `String` field but supply channel key is not. Supply channel is kept as a
+`sku` is provided directly as a `String`, but they just have a
 [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk)
 [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
-what makes the `supplyChannel` key [can't be simply extracted from this reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java#L98).
-Because of that you have to assert that data you provide for sync process are valid (how valid data look like was
-mentioned near descriptions of `sync` and `syncDrafts` methods in [How to use it?](#how-to-use-it) section). This is
-important for proper comparision of new and old inventories that reference supply channels. Keep in mind that
-invalid input data may result in invalid sync output!
+to the channel, not the `key` of the channel (unless [reference expanded](https://dev.commercetools.com/http-api.html#reference-expansion)).
+Therefore, make sure that you comply to the preconditions of syncing as mentioned in the [How to use it?](#how-to-use-it) section. This is
+important for proper comparision of new and old inventories that reference supply channels.
 
  

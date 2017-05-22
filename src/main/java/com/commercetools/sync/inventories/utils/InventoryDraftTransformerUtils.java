@@ -62,6 +62,7 @@ public final class InventoryDraftTransformerUtils {
      * @param customFields {@link CustomFields} from which draft will be created
      * @return {@link CustomFieldsDraft} created from {@code customFields} or {@code null} for {@code null} parameter
      */
+    @Nullable
     private static CustomFieldsDraft getCustomFieldsDraft(@Nullable final CustomFields customFields) {
         if (customFields != null) {
             final Type type = customFields.getType().getObj();

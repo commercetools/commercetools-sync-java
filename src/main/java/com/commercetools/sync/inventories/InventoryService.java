@@ -11,16 +11,12 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 /**
- * Interface contains methods to perform sphere queries/commands related to Inventory topic.
- * Listed operations are used in {@link InventorySync}.
+ * Provides CRUD operations upon {@link InventoryEntry}.
  */
 interface InventoryService {
 
     /**
-     * Fetches all {@link InventoryEntry} objects whose sku is included in {@code skus}.
-     * For some {@code skus} there could be no matching entries in CT platform, so for such skus no entries would be
-     * returned. Because of that result can contain inventory entries of skus, that are only subset of passed
-     * {@code skus}, or even in empty list when no matching entry is found.
+     * Queries existing {@link InventoryEntry}'s against set of skus.
      * Returned entries have an expanded reference to the {@code supplyChannel}.
      *
      * @param skus {@link Set} of sku values, used in search predicate

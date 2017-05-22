@@ -21,7 +21,7 @@ import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtil
 import static java.util.stream.Collectors.toList;
 
 /**
- * This class provides static utility methods for synchronising inventory entries.
+ * This class provides factory methods for assembling update actions of inventory entries.
  */
 public final class InventorySyncUtils {
 
