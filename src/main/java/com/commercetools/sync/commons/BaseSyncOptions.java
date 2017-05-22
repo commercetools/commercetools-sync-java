@@ -68,16 +68,6 @@ public class BaseSyncOptions {
     }
 
     /**
-     * Returns the CTP project key set on the instance of the {@link CtpClient}.
-     *
-     * @return the CTP project key set on the instance of the {@link CtpClient}.
-     */
-    @Nonnull
-    public String getProjectKey() {
-        return ctpClient.getClientConfig().getProjectKey();
-    }
-
-    /**
      * Returns a {@code boolean} flag which enables the sync module to add additional localizations without deleting
      * existing ones, if set to {@code false}. If set to true, which is the default value of the option,
      * it deletes the existing object properties.
