@@ -30,7 +30,8 @@ Currently this library supports synchronising the following commercetools resour
 
 ### Prerequisites
  
- install [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+ - install Java 8
+ - a target CTP project to which your source of data would be synced to.
 
 <!--- TODO 
 ### Installation
