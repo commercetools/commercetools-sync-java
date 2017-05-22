@@ -19,7 +19,7 @@ import java.util.concurrent.CompletionStage;
 
 import static java.util.Collections.singleton;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
