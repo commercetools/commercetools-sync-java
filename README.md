@@ -47,6 +47,14 @@ https://github.com/commercetools/commercetools-sync-java/milestones
 
 ## Contributing
 
+- Every PR should address an issue on the repository. If the issue doesn't exist, please create it first.
+- Pull requests should always follow the following naming convention: 
+`[issue-number]-[pr-name]`. For example,
+to address issue #65 which refers to a style bug, the PR addressing it should have a name that looks something like
+ `65-fix-style-bug`.
+- Commit messages should always be prefixed with the number of the issue that they address. 
+For example, `#65: Remove redundant space.`
+
 ### Development
 ##### Run unit tests
 ````bash
