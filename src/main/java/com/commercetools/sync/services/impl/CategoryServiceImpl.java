@@ -7,7 +7,7 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
-import io.sphere.sdk.client.BlockingSphereClient;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.queries.PagedResult;
 
@@ -18,9 +18,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 public class CategoryServiceImpl implements CategoryService {
-    private final BlockingSphereClient ctpClient;
+    private final SphereClient ctpClient;
 
-    public CategoryServiceImpl(@Nonnull final BlockingSphereClient ctpClient) {
+    public CategoryServiceImpl(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
     }
 

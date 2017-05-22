@@ -2,8 +2,8 @@ package com.commercetools.sync.categories;
 
 
 import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
-import com.commercetools.sync.commons.helpers.CtpClient;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
@@ -14,19 +14,18 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
     CategorySyncOptions> {
     private Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter;
 
-    private CategorySyncOptionsBuilder(@Nonnull final CtpClient ctpClient) {
+    private CategorySyncOptionsBuilder(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
     }
 
     /**
-     * Creates a new instance of {@link CategorySyncOptionsBuilder} given a {@link CtpClient}, as a param, that contains
-     * all the configuration of the CTP client.
+     * Creates a new instance of {@link CategorySyncOptionsBuilder} given a {@link SphereClient} responsible for
+     * interaction with the target CTP project.
      *
-     * @param ctpClient wrapper that contains instance of the {@link io.sphere.sdk.client.SphereClientConfig} and
-     *                  {@link io.sphere.sdk.client.BlockingSphereClient}
+     * @param ctpClient instance of the {@link SphereClient} responsible for interaction with the target CTP project.
      * @return new instance of {@link CategorySyncOptionsBuilder}
      */
-    public static CategorySyncOptionsBuilder of(@Nonnull final CtpClient ctpClient) {
+    public static CategorySyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
         return new CategorySyncOptionsBuilder(ctpClient);
     }
 

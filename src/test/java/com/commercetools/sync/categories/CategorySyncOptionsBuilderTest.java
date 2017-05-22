@@ -1,10 +1,8 @@
 package com.commercetools.sync.categories;
 
-import com.commercetools.sync.commons.helpers.CtpClient;
 import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.client.SphereClientConfig;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -15,20 +13,10 @@ import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class CategorySyncOptionsBuilderTest {
-    private static final CtpClient CTP_CLIENT = mock(CtpClient.class);
+    private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private CategorySyncOptionsBuilder categorySyncOptionsBuilder = CategorySyncOptionsBuilder.of(CTP_CLIENT);
-
-    /**
-     * Sets a mock {@code clientConfig} for an instance of {@link CtpClient} to be used across all the unit tests.
-     */
-    @Before
-    public void setup() {
-        final SphereClientConfig clientConfig = SphereClientConfig.of("testPK", "testCI", "testCS");
-        when(CTP_CLIENT.getClientConfig()).thenReturn(clientConfig);
-    }
 
     @Test
     public void of_WithClient_ShouldCreateCategorySyncOptionsBuilder() {

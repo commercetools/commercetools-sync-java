@@ -56,8 +56,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     private final TypeService typeService;
 
     public InventorySync(@Nonnull final InventorySyncOptions syncOptions) {
-        this(syncOptions, new InventoryServiceImpl(syncOptions.getCtpClient().getClient()),
-                new TypeServiceImpl(syncOptions.getCtpClient().getClient()));
+        this(syncOptions, new InventoryServiceImpl(syncOptions.getCtpClient()),
+                new TypeServiceImpl(syncOptions.getCtpClient()));
     }
 
     InventorySync(final InventorySyncOptions syncOptions, final InventoryService inventoryService,

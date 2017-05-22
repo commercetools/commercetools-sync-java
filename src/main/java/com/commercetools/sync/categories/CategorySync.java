@@ -48,8 +48,8 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      */
     public CategorySync(@Nonnull final CategorySyncOptions syncOptions) {
         this(syncOptions,
-            new TypeServiceImpl(syncOptions.getCtpClient().getClient()),
-            new CategoryServiceImpl(syncOptions.getCtpClient().getClient()));
+            new TypeServiceImpl(syncOptions.getCtpClient()),
+            new CategoryServiceImpl(syncOptions.getCtpClient()));
     }
 
     /**
