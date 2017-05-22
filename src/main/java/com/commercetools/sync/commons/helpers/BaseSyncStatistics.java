@@ -1,20 +1,12 @@
 package com.commercetools.sync.commons.helpers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.util.internal.StringUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 
 public abstract class BaseSyncStatistics {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaseSyncStatistics.class);
-
-    private String reportMessage;
+    protected String reportMessage;
     private int updated;
     private int created;
     private int failed;
@@ -216,24 +208,7 @@ public abstract class BaseSyncStatistics {
      *
      * @return a summary message of the statistics report.
      */
-    public abstract String getReportMessage();
-
-    /**
-     * Builds a JSON String that represents the fields of the supplied instance of {@link BaseSyncStatistics}.
-     * Note: The order of the fields in the built JSON String depends on the order of the instance variables in this
-     * class.
-     *
-     * @param statistics the instance of {@link BaseSyncStatistics} from which to create a JSON String.
-     * @return a JSON representation of the given {@code statistics} as a String.
-     */
-    public static String getStatisticsAsJsonString(@Nonnull final BaseSyncStatistics statistics) {
-        String result = null;
-        final ObjectMapper mapper = new ObjectMapper();
-        try {
-            result = mapper.writeValueAsString(statistics);
-        } catch (JsonProcessingException processingException) {
-            LOGGER.error("Failed to build JSON String of summary.", processingException);
-        }
-        return result;
+    public String getReportMessage() {
+        return reportMessage;
     }
 }
