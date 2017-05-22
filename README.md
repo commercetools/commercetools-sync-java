@@ -12,7 +12,7 @@ Java API which exposes utilities for building update actions and automatic synci
 
 ## Usage
 
-commercetools sync is a Java library that could be used to synchronise in any of the following ways:
+commercetools sync is a Java library that could be used to synchronise CTP data in any of the following ways:
 
 1. Synchronise data coming from an external system in any form (CSV, XML, etc..) that has been already mapped to 
 [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
