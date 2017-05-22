@@ -6,12 +6,11 @@ Java API which exposes utilities for building update actions and automatic synci
  such as CSV, XML, JSON, etc.. or an already existing CTP project into a target project.
 
 
-- [What is the commercetools sync?](#what-is-the-commercetools-sync)
-- [How to use it?](#how-to-use-it)
 - [Short-term roadmap](#short-term-roadmap)
+- [Usage](#usage)
 - [Contributing](#contributing)
 
-## What is the commercetools sync?
+## Usage
 
 commercetools sync is a Java library that could be used to synchronise in any of the following ways:
 
@@ -28,7 +27,6 @@ Currently this library supports synchronising the following commercetools resour
 - [Category](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories#commercetools-category-sync)
 - [InventoryEntry](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/inventories#commercetools-inventory-sync)
 
-## How to use it?
 
 ### Prerequisites
  
@@ -42,11 +40,6 @@ Currently this library supports synchronising the following commercetools resour
 #### SBT 
 
 #### Gradle -->
-
-### Using the library
-Please check the README of the specific module to see examples of how to use it:
-- [Category](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories#how-to-use-it)
-- [InventoryEntry](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/inventories#commercetools-inventory-sync)
 
 ## Short-term roadmap
 https://github.com/commercetools/commercetools-sync-java/milestones
