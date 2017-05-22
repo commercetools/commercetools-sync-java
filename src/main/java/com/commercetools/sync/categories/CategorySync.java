@@ -19,8 +19,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
-import static com.commercetools.sync.commons.enums.Error.CATEGORY_DRAFT_HAS_NO_EXTERNAL_ID;
-import static com.commercetools.sync.commons.enums.Error.CATEGORY_DRAFT_IS_NULL;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
