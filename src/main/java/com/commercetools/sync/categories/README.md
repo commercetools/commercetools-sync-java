@@ -36,17 +36,11 @@ final CtpClient ctpClient = new CtpClient(clientConfig);
 final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient).build();
 ````
 
-The category sync uses the `externalId` to match new categories to existing ones. 
-1. If a category exists with the same `externalId`, it means that this category already exists on the CTP project. Therefore, 
-the tool calculates update actions that should be done to update the old category with the new category's fields.
-Only if there are update actions needed, they will be issued to the CTP platform.
-2. If no matching category with the same `externalId` is found, the tool will create a new one. 
 then to start the sync:
 ````java
 // instantiating a category sync
 final CategorySync categorySync = new CategorySync(categorySyncOptions);
 
-The sync, however, will never delete a category.
  
 ## FAQ
 #### What does the number of processed categories actually refer to in the statistics of the sync process?
@@ -92,6 +86,11 @@ need:
 - `removeOtherCollectionEntries`
 - `removeOtherProperties`
 - `updateActionsFilter`
+
+## Under the hood
+
+The tool matches categories by their `externalId`. Based on that categories are created or 
+updated. Currently the tool does not support category deletion.
 
 
  
