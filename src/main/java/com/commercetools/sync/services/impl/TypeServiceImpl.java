@@ -3,8 +3,6 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.queries.TypeQuery;
 
