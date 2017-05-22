@@ -1,7 +1,6 @@
 # commercetools category sync
 
-Java module that can be used to synchronise your new commercetools categories to your existing 
-commercetools project.
+Utility which provides API for building CTP category update actions and category synchronisation.
 
 - [What it offers?](#what-it-offers)
 - [How to use it?](#how-to-use-it)
