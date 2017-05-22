@@ -20,8 +20,9 @@ public class InventorySyncStatistics extends BaseSyncStatistics {
      */
     @Override
     public String getReportMessage() {
-        return format("Summary: %d inventory entries were processed in total "
-                        + "(%d created, %d updated, %d failed to sync)%n",
-                getProcessed(), getCreated(), getUpdated(), getFailed());
+        reportMessage = format("Summary: %d inventory entries were processed in total "
+                + "(%d created, %d updated, %d failed to sync)%n",
+            getProcessed(), getCreated(), getUpdated(), getFailed());
+        return reportMessage;
     }
 }
