@@ -116,7 +116,7 @@ inventorySync.sync(inventoryEntries);
 Before using `sync`, you should make sure that every [InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntry.java)
 in your input list which contains a [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
 to a supply channel has that reference expanded, that means when calling [getObj()](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java#L52)
-function on a reference's object a [Channel](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/channels/Channel.jav)
+function on a reference's object a [Channel](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/channels/Channel.java)
 object that contains its key would be obtained. More information about why it is important can be found in the
 [FAQ](#why-is-it-important-to-provide-extended-supply-channel-references-in-entries-from-input-lists-of-sync-process)
 section.
@@ -136,14 +136,18 @@ inventorySync.syncDrafts(inventoryEntriesDrafts);
 ````
 
 **Important!**
-Before using `syncDrafts`, you should make sure that every [InventoryEntryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntryDraft.java)
-in your input list which contains a [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
-to a supply channel has either that reference expanded, or has that reference not expanded but instead has supply channel
-key provided in place of reference `id` (that means calling [getId()](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java#L26)
-function on a reference instance the `String` that represents supply channel key would be returned). By expanded reference
-we mean that calling [getObj()](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java#L52)
-function on a reference's instance a [Channel](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/channels/Channel.jav)
-object that contains its key would be returned. More information about why it is important can be found in the
+Before using `syncDrafts` you should make sure that every `InventoryEntryDraft`, that belongs to a `Channel`, in your
+input list either:
+- Has the [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
+to the `supplyChannel` expanded. This means that calling `getObj()` on the reference would not
+return `null`, but returns the [Channel](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/channels/Channel.java)
+object, from which the sync can access its `key`. Example of sync performed that way can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncTest.java#L128).
+- If the reference is not expanded, then it is very important to provide the channel `key` in the `id` field of the
+reference. This means calling `getId()` on the channel reference would return it's `key`. Example of sync performed that
+way can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncTest.java#L181).
+
+Please note that this is a strict requirement of the sync, otherwise correct results are not guaranteed.
+More information about why it is important can be found in the
 [FAQ](#why-is-it-important-to-provide-extended-supply-channel-references-in-entries-from-input-lists-of-sync-process)
 section.
 
