@@ -2,18 +2,13 @@ package com.commercetools.sync.commons;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import io.sphere.sdk.models.Resource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 
-import static java.lang.String.format;
-
 
 public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStatistics, V extends BaseSyncOptions> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaseSync.class);
     protected final U statistics;
     protected final V syncOptions;
 
@@ -49,8 +44,6 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      *      {@link this} {@link BaseSync}.
      */
     public CompletionStage<U> syncDrafts(@Nonnull final List<T> resourceDrafts) {
-        LOGGER.info(format("About to sync %d drafts into CTP project with key '%s'.", resourceDrafts.size(),
-            this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
         this.statistics.startTimer();
         return this.processDrafts(resourceDrafts).thenApply(resultingStatistics -> {
             resultingStatistics.calculateProcessingTime();
@@ -72,8 +65,6 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      *      {@link this} {@link BaseSync}.
      */
     public CompletionStage<U> sync(@Nonnull final List<S> resources) {
-        LOGGER.info(format("About to sync %d resources into CTP project with key '%s'.", resources.size(),
-            this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
         this.statistics.startTimer();
         return this.process(resources).thenApply(resultingStatistics -> {
             resultingStatistics.calculateProcessingTime();
