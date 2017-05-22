@@ -38,6 +38,7 @@ dependencies {
     compile "com.commercetools.sdk.jvm.core:commercetools-models:${commercetoolsJvmSdkVersion}"
     compile "com.commercetools.sdk.jvm.core:commercetools-java-client:${commercetoolsJvmSdkVersion}"
     compile "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
+    compile "com.google.code.findbugs:annotations:${findbugsVersion}"
     runtime "org.slf4j:slf4j-simple:${slf4jVersion}"
     testCompile "org.mockito:mockito-all:${mockitoVersion}"
     testCompile "junit:junit:${jUnitVersion}"
