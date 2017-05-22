@@ -6,8 +6,8 @@ Java API which exposes utilities for building update actions and automatic synci
  such as CSV, XML, JSON, etc.. or an already existing CTP project into a target project.
 
 
-- [Short-term roadmap](#short-term-roadmap)
 - [Usage](#usage)
+- [Roadmap](#roadmap)
 - [Contributing](#contributing)
 
 ## Usage
@@ -41,7 +41,7 @@ Currently this library supports synchronising the following commercetools resour
 
 #### Gradle -->
 
-## Short-term roadmap
+## Roadmap
 https://github.com/commercetools/commercetools-sync-java/milestones
 
 ## Contributing
