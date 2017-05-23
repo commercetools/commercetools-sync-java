@@ -20,9 +20,7 @@ import static java.util.stream.Collectors.toList;
  */
 public final class InventoryDraftTransformerUtils {
 
-    private InventoryDraftTransformerUtils() {
-        throw new AssertionError();
-    }
+    private InventoryDraftTransformerUtils() { }
 
     /**
      * Returns new {@link InventoryEntryDraft} containing same data as {@code inventoryEntry}, including

@@ -21,9 +21,7 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
  */
 public final class InventoryUpdateActionUtils {
 
-    private InventoryUpdateActionUtils() {
-        throw new AssertionError();
-    }
+    private InventoryUpdateActionUtils() { }
 
     /**
      * Compares the {@code quantityOnStock} values of an {@link InventoryEntry} and an {@link InventoryEntryDraft}
