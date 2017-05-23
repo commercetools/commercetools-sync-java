@@ -18,7 +18,7 @@ import static java.util.stream.Collectors.toList;
  * This class provides static utility methods for converting objects of {@link InventoryEntry}
  * into {@link InventoryEntryDraft}.
  */
-public final class InventoryDraftTransformerUtils {
+final class InventoryDraftTransformerUtils {
 
     private InventoryDraftTransformerUtils() {
         throw new AssertionError();
@@ -31,7 +31,7 @@ public final class InventoryDraftTransformerUtils {
      * @param inventoryEntry {@link InventoryEntry} from which draft will be created
      * @return {@link InventoryEntryDraft} created for passed {@code inventoryEntry}
      */
-    public static InventoryEntryDraft transformToDraft(@Nonnull final InventoryEntry inventoryEntry) {
+    static InventoryEntryDraft transformToDraft(@Nonnull final InventoryEntry inventoryEntry) {
         return InventoryEntryDraftBuilder
                 .of(inventoryEntry.getSku(),
                     inventoryEntry.getQuantityOnStock(),
@@ -50,7 +50,7 @@ public final class InventoryDraftTransformerUtils {
      * @param inventoryEntries list of {@link InventoryEntry} from which drafts will be created
      * @return {@link List} of {@link InventoryEntryDraft} created from {@code inventoryEntries}
      */
-    public static List<InventoryEntryDraft> transformToDrafts(@Nonnull final List<InventoryEntry> inventoryEntries) {
+    static List<InventoryEntryDraft> transformToDrafts(@Nonnull final List<InventoryEntry> inventoryEntries) {
         return inventoryEntries.stream()
                 .map(InventoryDraftTransformerUtils::transformToDraft)
                 .collect(toList());
