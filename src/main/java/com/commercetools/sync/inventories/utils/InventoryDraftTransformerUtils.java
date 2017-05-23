@@ -64,7 +64,7 @@ public final class InventoryDraftTransformerUtils {
     private static CustomFieldsDraft getCustomFieldsDraft(@Nullable final CustomFields customFields) {
         if (customFields != null) {
             final Type type = customFields.getType().getObj();
-            if (type != null && type.getKey() != null) {
+            if (type != null) {
                 return CustomFieldsDraft.ofTypeKeyAndJson(type.getKey(), customFields.getFieldsJsonMap());
             } else {
                 return CustomFieldsDraft.ofTypeIdAndJson(customFields.getType().getId(), customFields
