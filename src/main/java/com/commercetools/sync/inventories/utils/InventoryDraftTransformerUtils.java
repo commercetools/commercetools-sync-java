@@ -42,7 +42,7 @@ public final class InventoryDraftTransformerUtils {
 
     /**
      * Returns new {@link List} of {@link InventoryEntryDraft} created from {@code inventoryEntries}.
-     * Returned list would have same size as {@code inventoryEntries} but the order of elements may differ.
+     * Returned list would have same size as {@code inventoryEntries}.
      * @see InventoryDraftTransformerUtils#transformToDraft
      *
      * @param inventoryEntries list of {@link InventoryEntry} from which drafts will be created
