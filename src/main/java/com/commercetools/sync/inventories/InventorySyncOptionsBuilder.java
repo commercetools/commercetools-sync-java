@@ -11,8 +11,11 @@ import javax.annotation.Nonnull;
 public final class InventorySyncOptionsBuilder extends
         BaseSyncOptionsBuilder<InventorySyncOptionsBuilder, InventorySyncOptions> {
 
-    private boolean ensureChannels = false;
-    private int batchSize = 30;
+    static final boolean ENSURE_CHANNELS_DEFAULT = false;
+    static final int BATCH_SIZE_DEFAULT = 30;
+
+    private boolean ensureChannels = ENSURE_CHANNELS_DEFAULT;
+    private int batchSize = BATCH_SIZE_DEFAULT;
 
     private InventorySyncOptionsBuilder(@Nonnull final CtpClient ctpClient) {
         this.ctpClient = ctpClient;
@@ -38,7 +41,7 @@ public final class InventorySyncOptionsBuilder extends
      * E.g. value of 30 means that 30 entries from input list would be accumulated and one API call will be performed
      * for fetching entries responding to them. Then comparision and sync are performed.
      *
-     * <p>This property is {@code 30} by default.
+     * <p>This property is {@link InventorySyncOptionsBuilder#BATCH_SIZE_DEFAULT} by default.
      *
      * @param batchSize int that indicates capacity of batch of processed inventory entries. Has to be positive
      *                  or else will be ignored.
@@ -56,7 +59,7 @@ public final class InventorySyncOptionsBuilder extends
      * in a target project yet. If set to {@code true} sync process would try to create new supply channel of given key,
      * otherwise sync process would log error and fail to process draft with given supply channel key.
      *
-     * <p>This property is {@code false} by default.
+     * <p>This property is {@link InventorySyncOptionsBuilder#ENSURE_CHANNELS_DEFAULT} by default.
      *
      * @param ensureChannels boolean that indicates whether sync process should create supply channel of given key when
      *                       it doesn't exists in a target project yet
