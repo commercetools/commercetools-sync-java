@@ -243,7 +243,7 @@ public class InventorySyncTest {
         final BiConsumer<String, Throwable> collectingErrorCallback = (msg, throwable) -> {
             callbackMessages.add(msg);
             if (throwable != null) {
-                callbackThrowables.add(throwable.getCause());
+                callbackThrowables.add(throwable);
             }
         };
 
