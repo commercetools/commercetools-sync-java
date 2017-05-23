@@ -61,21 +61,6 @@ public class InventoryDraftTransformerUtilsTest {
     }
 
     @Test
-    public void transformToDraft_WithCustomTypeWithoutKey_ShouldReturnDraft() {
-        final CustomFields customFields = getMockCustomFields(CUSTOM_TYPE_ID, null, CUSTOM_FIELD_NAME,
-                CUSTOM_FIELD_VALUE);
-        final InventoryEntry entry = getMockInventoryEntry(SKU, null, null, null, null, customFields);
-
-        final InventoryEntryDraft draft = InventoryDraftTransformerUtils.transformToDraft(entry);
-
-        assertThat(draft.getCustom()).isNotNull();
-        assertThat(draft.getCustom().getType()).isNotNull();
-        assertThat(draft.getCustom().getType().getId()).isEqualTo(CUSTOM_TYPE_ID);
-        assertThat(draft.getCustom().getFields()).isNotNull();
-        assertThat(draft.getCustom().getFields().containsKey(CUSTOM_FIELD_NAME)).isTrue();
-    }
-
-    @Test
     public void transformToDraft_WithCustomTypeWithKey_ShouldReturnDraft() {
         final CustomFields customFields = getMockCustomFields(CUSTOM_TYPE_ID, CUSTOM_TYPE_KEY, CUSTOM_FIELD_NAME,
                 CUSTOM_FIELD_VALUE);
