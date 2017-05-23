@@ -45,6 +45,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     private static final String CTP_CHANNEL_CREATE_FAILED = "Failed to create new supply channel of key '%s'.";
     private static final String CTP_INVENTORY_ENTRY_CREATE_FAILED = "Failed to create inventory entry of sku '%s' "
         + "and supply channel key '%s'.";
+    private static final String CHANNEL_KEY_MAPPING_DOESNT_EXIST = "Failed to find supply channel of key '%s'.";
 
     //Cache that maps supply channel key to supply channel Id for supply channels existing in CTP project.
     private Map<String, String> supplyChannelKeyToId;
@@ -395,7 +396,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 return Optional.of(
                     withSupplyChannel(draft, supplyChannelKeyToId.get(supplyChannelKey)));
             } else {
-                handleFailure(format("Failed to find supply channel of key '%s'", supplyChannelKey), null);
+                handleFailure(format(CHANNEL_KEY_MAPPING_DOESNT_EXIST, supplyChannelKey), null);
                 return Optional.empty();
             }
         }
