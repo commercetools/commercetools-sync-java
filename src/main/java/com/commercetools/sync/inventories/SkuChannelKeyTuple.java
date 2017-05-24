@@ -5,8 +5,8 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.Objects;
+import java.util.Optional;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -39,15 +39,20 @@ final class SkuChannelKeyTuple {
      * @return new instance of {@link SkuChannelKeyTuple}
      * @throws IllegalArgumentException when sku of {@code oldEntry} is null or empty string
      */
-    static SkuChannelKeyTuple of(@Nonnull final InventoryEntry oldEntry) {
+    @Nullable
+    static Optional<SkuChannelKeyTuple> of(@Nonnull final InventoryEntry oldEntry,
+                                           @Nonnull final ChannelsMap channelsMap) {
         final String sku = oldEntry.getSku();
-        if (isEmpty(sku)) {
-            throw new IllegalArgumentException(SKU_NOT_SET_MESSAGE);
-        }
-        if (oldEntry.getSupplyChannel() != null && oldEntry.getSupplyChannel().getObj() != null) {
-            return new SkuChannelKeyTuple(sku, oldEntry.getSupplyChannel().getObj().getKey());
+        if (oldEntry.getSupplyChannel() != null) {
+            final String supplyChannelId = oldEntry.getSupplyChannel().getId();
+            final Optional<String> keyOptional = channelsMap.getChannelKey(supplyChannelId);
+            if (keyOptional.isPresent()) {
+                return Optional.of(new SkuChannelKeyTuple(sku, keyOptional.get()));
+            } else {
+                return Optional.empty();
+            }
         } else {
-            return new SkuChannelKeyTuple(sku, null);
+            return Optional.of(new SkuChannelKeyTuple(sku, null));
         }
     }
 
