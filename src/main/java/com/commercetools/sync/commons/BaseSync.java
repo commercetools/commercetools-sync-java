@@ -1,14 +1,13 @@
 package com.commercetools.sync.commons;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
-import io.sphere.sdk.models.Resource;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 
-public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStatistics, V extends BaseSyncOptions> {
+public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSyncOptions> {
     protected final U statistics;
     protected final V syncOptions;
 

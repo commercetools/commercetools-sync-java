@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutionException;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySyncStatistics, CategorySyncOptions> {
+public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
     private static final String CTP_CATEGORY_UPDATE_FAILED = "Failed to update category with externalId:'%s'."
         + " Reason: %s";
     private static final String CTP_CATEGORY_FETCH_FAILED = "Failed to fetch category with externalId:'%s'."

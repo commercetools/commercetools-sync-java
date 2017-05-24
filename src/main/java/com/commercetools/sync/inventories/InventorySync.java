@@ -33,8 +33,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 /**
  * Default implementation of inventories sync process.
  */
-public final class InventorySync extends BaseSync<InventoryEntryDraft, InventoryEntry, InventorySyncStatistics,
-        InventorySyncOptions> {
+public final class InventorySync extends BaseSync<InventoryEntryDraft, InventorySyncStatistics, InventorySyncOptions> {
     private static final String CTP_INVENTORY_FETCH_FAILED = "Failed to fetch existing inventory entries of SKUs %s.";
     private static final String CTP_CHANNEL_FETCH_FAILED = "Failed to fetch supply channels.";
     private static final String CTP_INVENTORY_ENTRY_UPDATE_FAILED = "Failed to update inventory entry of sku '%s' and "
