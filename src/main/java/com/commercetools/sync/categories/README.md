@@ -38,6 +38,9 @@ final CategorySync categorySync = new CategorySync(categorySyncOptions);
 // execute the sync on your list of categories
 categorySync.sync(categoryDrafts);
 ````
+**Note**: The sync expects a list of non-null `CategoryDraft` objects that have their `externalId` fields set.
+
+
 In order to get the statistics of the sync process, use the `getStatistics()` method on the sync instance. It is used 
 to get an object containing all the stats of the sync process; which includes a report message, the total number of updated, created, 
 failed, processed categories and the processing time of the sync in different time units and in a
