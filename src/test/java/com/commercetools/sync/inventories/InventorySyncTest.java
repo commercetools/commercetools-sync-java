@@ -247,7 +247,7 @@ public class InventorySyncTest {
             }
         };
 
-        final InventorySyncOptions options = InventorySyncOptionsBuilder.of(getMockCtpClient())
+        final InventorySyncOptions options = InventorySyncOptionsBuilder.of(mock(SphereClient.class))
             .ensureChannels(true)
             .setErrorCallBack(collectingErrorCallback)
             .build();
@@ -266,8 +266,8 @@ public class InventorySyncTest {
         assertThat(stats.getFailed()).isEqualTo(1);
         assertThat(stats.getCreated()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
-        assertThat(callbackMessages.get(0)).isEqualTo(format("Failed to create new supply channel of key '%s' in CTP "
-               + "project with key '%s.'", KEY_3, getMockCtpClient().getClientConfig().getProjectKey()));
+        assertThat(callbackMessages.get(0)).isEqualTo(format("Failed to create new supply channel of key '%s'.",
+            KEY_3));
         assertThat(callbackThrowables.get(0)).isExactlyInstanceOf(RuntimeException.class);
     }
 
