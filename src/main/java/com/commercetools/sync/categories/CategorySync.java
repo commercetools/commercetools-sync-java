@@ -90,7 +90,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      *      {@link this} {@link CategorySync}.
      */
     @Override
-    protected CompletionStage<CategorySyncStatistics> processDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {
+    protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<CategoryDraft> categoryDrafts) {
         for (CategoryDraft categoryDraft : categoryDrafts) {
             if (categoryDraft != null) {
                 final String externalId = categoryDraft.getExternalId();
@@ -106,12 +106,6 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
             }
             statistics.incrementProcessed();
         }
-        return CompletableFuture.completedFuture(statistics);
-    }
-
-    @Override
-    protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<Category> resources) {
-        //TODO: SEE GITHUB ISSUE#12
         return CompletableFuture.completedFuture(statistics);
     }
 
