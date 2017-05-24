@@ -47,10 +47,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     //Cache that maps supply channel key to supply channel Id for supply channels existing in CTP project.
     private Map<String, String> supplyChannelKeyToId;
 
-    @Nonnull
     private final InventoryService inventoryService;
 
-    @Nonnull
     private final TypeService typeService;
 
     public InventorySync(@Nonnull final InventorySyncOptions syncOptions) {
@@ -58,8 +56,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 new TypeServiceImpl(syncOptions.getCtpClient()));
     }
 
-    InventorySync(final InventorySyncOptions syncOptions, final InventoryService inventoryService,
-                  final TypeService typeService) {
+    InventorySync(@Nonnull final InventorySyncOptions syncOptions, @Nonnull final InventoryService inventoryService,
+                  @Nonnull final TypeService typeService) {
         super(new InventorySyncStatistics(), syncOptions);
         this.inventoryService = inventoryService;
         this.typeService = typeService;
