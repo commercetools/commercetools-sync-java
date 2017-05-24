@@ -32,12 +32,13 @@ final class SkuChannelKeyTuple {
     }
 
     /**
-     * Returns new {@link SkuChannelKeyTuple} of given {@link InventoryEntry}. If contains
-     * {@link io.sphere.sdk.models.Reference} to supply channel, then reference should be expanded, so that key is
-     * taken from it. If reference is null or is not expanded it results in {@code null} key value.
-     * @param oldEntry must have sku set and not empty
-     * @return new instance of {@link SkuChannelKeyTuple}
-     * @throws IllegalArgumentException when sku of {@code oldEntry} is null or empty string
+     * Returns new {@link SkuChannelKeyTuple} of given {@link InventoryEntry}. If {@code oldEntry} contains
+     * {@link io.sphere.sdk.models.Reference} to supply channel, then {@code id} is taken from it, and {@code key} is
+     * obtained from the {@code channelsMap}. If there is no {@code key} for given {@code id} in a {@code channelsMap}
+     * then empty {@link Optional} is returned. If reference is {@code null} it results in {@code null} key value.
+     * @param oldEntry valid {@link InventoryEntry} object
+     * @param channelsMap cache of existing {@code supplyChannels}
+     * @return {@link Optional} that may contain new instance of {@link SkuChannelKeyTuple}
      */
     @Nullable
     static Optional<SkuChannelKeyTuple> of(@Nonnull final InventoryEntry oldEntry,

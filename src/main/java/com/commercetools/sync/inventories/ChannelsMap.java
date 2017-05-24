@@ -11,7 +11,7 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toMap;
 
 /**
- * Holds {@code id} and {@code keys} of {@code Channels} passed to the {@link ChannelsMap.Builder}.
+ * Helper class that holds {@code id} and {@code keys} of given {@code Channels}.
  */
 class ChannelsMap {
 
@@ -24,6 +24,13 @@ class ChannelsMap {
         this.channelIdToChannelKey = new HashMap<>(channelIdToChannelKey);
     }
 
+    /**
+     * Returns corresponding {@code id} for given {@code channelKey} if such tuple exists in a cache.
+     *
+     * @param channelKey channel's {@code key}
+     * @return {@link Optional} that contains corresponding {@code id} for given {@code channelKey} or empty
+     *      {@link Optional} if such tuple doesn't exists in a cache
+     */
     public Optional<String> getChannelId(@Nonnull final String channelKey) {
         if (channelKeyToChannelId.containsKey(channelKey)) {
             return Optional.of(channelKeyToChannelId.get(channelKey));
@@ -31,6 +38,13 @@ class ChannelsMap {
         return Optional.empty();
     }
 
+    /**
+     * Returns corresponding {@code key} for given {@code channelId} if such tuple exists in a cache.
+     *
+     * @param channelId channel's {@code id}
+     * @return {@link Optional} that contains corresponding {@code key} for given {@code channelId} or empty
+     *      {@link Optional} if such tuple doesn't exists in a cache
+     */
     public Optional<String> getChannelKey(@Nonnull final String channelId) {
         if (channelIdToChannelKey.containsKey(channelId)) {
             return Optional.of(channelIdToChannelKey.get(channelId));
