@@ -24,14 +24,10 @@ For other examples of update actions, please check [here](). <!-- TODO: Add link
 In order to use the category sync an instance of
 [CategorySyncOptions](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/categories/CategorySyncOptions.java) have to be injected.
 
-In order to instantiate a `CategorySyncOptions`, a `ctpClient` is required:
+In order to instantiate a `CategorySyncOptions`, a `sphereClient` is required:
 ````java
-// instantiating a ctpClient
-final SphereClientConfig clientConfig = SphereClientConfig.of("project-key", "client-id", "client-secret");
-final CtpClient ctpClient = new CtpClient(clientConfig);
-
 // instantiating a CategorySyncOptions
-final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient).build();
+final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(sphereClient).build();
 ````
 
 then to start the sync:
