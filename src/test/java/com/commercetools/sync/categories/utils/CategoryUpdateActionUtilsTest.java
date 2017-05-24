@@ -3,7 +3,6 @@ package com.commercetools.sync.categories.utils;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
-import com.commercetools.sync.commons.helpers.CtpClient;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
@@ -14,11 +13,10 @@ import io.sphere.sdk.categories.commands.updateactions.ChangeOrderHint;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaKeywords;
-import io.sphere.sdk.client.SphereClientConfig;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -40,7 +38,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class CategoryUpdateActionUtilsTest {
-    private static final CtpClient CTP_CLIENT = mock(CtpClient.class);
+    private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private static final CategorySyncOptions CATEGORY_SYNC_OPTIONS = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
     private static final Locale LOCALE = Locale.GERMAN;
     private static final String MOCK_CATEGORY_REFERENCE_TYPE = "type";
@@ -63,15 +61,6 @@ public class CategoryUpdateActionUtilsTest {
         MOCK_OLD_CATEGORY_META_KEYWORDS,
         MOCK_OLD_CATEGORY_ORDERHINT,
         MOCK_OLD_CATEGORY_PARENT_ID);
-
-    /**
-     * Sets a mock {@code clientConfig} for an instance of {@link CtpClient} to be used across all the unit tests.
-     */
-    @BeforeClass
-    public static void setup() {
-        final SphereClientConfig clientConfig = SphereClientConfig.of("testPK", "testCI", "testCS");
-        when(CTP_CLIENT.getClientConfig()).thenReturn(clientConfig);
-    }
 
     @Test
     public void buildChangeNameUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
@@ -189,7 +178,7 @@ public class CategoryUpdateActionUtilsTest {
         final ArrayList<Object> callBackResponse = new ArrayList<>();
         final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
 
-        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                                                   .setWarningCallBack(
                                                                                       updateActionWarningCallBack)
                                                                                   .build();
@@ -241,7 +230,7 @@ public class CategoryUpdateActionUtilsTest {
         final ArrayList<Object> callBackResponse = new ArrayList<>();
         final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
 
-        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                                                   .setWarningCallBack(
                                                                                       updateActionWarningCallBack)
                                                                                   .build();
@@ -292,7 +281,7 @@ public class CategoryUpdateActionUtilsTest {
         final ArrayList<Object> callBackResponse = new ArrayList<>();
         final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
 
-        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                                                   .setWarningCallBack(
                                                                                       updateActionWarningCallBack)
                                                                                   .build();

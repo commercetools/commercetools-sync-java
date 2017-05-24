@@ -1,7 +1,7 @@
 package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.commons.helpers.CtpClient;
+import io.sphere.sdk.client.SphereClient;
 
 import javax.annotation.Nonnull;
 import java.util.function.BiConsumer;
@@ -13,7 +13,7 @@ public final class InventorySyncOptions extends BaseSyncOptions {
 
     private final int batchSize;
 
-    InventorySyncOptions(@Nonnull final CtpClient ctpClient,
+    InventorySyncOptions(@Nonnull final SphereClient ctpClient,
                                    final BiConsumer<String, Throwable> updateActionErrorCallBack,
                                    final Consumer<String> updateActionWarningCallBack,
                                    final boolean removeOtherLocales,
