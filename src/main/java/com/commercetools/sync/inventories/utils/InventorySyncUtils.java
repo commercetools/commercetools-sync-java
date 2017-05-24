@@ -13,7 +13,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
-import static com.commercetools.sync.inventories.utils.InventoryDraftTransformerUtils.transformToDraft;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildChangeQuantityAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetExpectedDeliveryAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetRestockableInDaysAction;
@@ -26,27 +25,6 @@ import static java.util.stream.Collectors.toList;
 public final class InventorySyncUtils {
 
     private InventorySyncUtils() { }
-
-    /**
-     * Returns list of {@link UpdateAction} that needs to be performed on {@code oldEntry} resource so that it will be
-     * synced with {@code newEntry} resource.
-     *
-     * @param oldEntry entry which data should be updated
-     * @param newEntry entry that contain current data (that should be applied to {@code oldEntry}
-     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by the
-     *                    user (see {@link BaseSyncOptions} for more info)
-     * @param typeService responsible for fetching the key of the old resource type from its cache.
-     * @return list containing {@link UpdateAction} that need to be performed on {@code oldEntry} resource so
-     *      that it will be synced with {@code newEntry} or empty list when both entries are already synced.
-     */
-    @Nonnull
-    public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldEntry,
-                                                                  @Nonnull final InventoryEntry newEntry,
-                                                                  @Nonnull final InventorySyncOptions syncOptions,
-                                                                  @Nonnull final TypeService typeService) {
-        final InventoryEntryDraft newEntryDraft = transformToDraft(newEntry);
-        return buildActions(oldEntry, newEntryDraft, syncOptions, typeService);
-    }
 
     /**
      * Returns list of {@link UpdateAction} that needs to be performed on {@code oldEntry} resource so that it will
