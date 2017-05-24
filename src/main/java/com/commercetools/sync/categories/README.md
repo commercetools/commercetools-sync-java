@@ -23,7 +23,7 @@ For other examples of update actions, please check [here](). <!-- TODO: Add link
 
 In order to use the category sync an instance of
 [CategorySyncOptions](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/categories/CategorySyncOptions.java) have to be injected.
- 
+
 In order to instantiate a `CategorySyncOptions`, a `ctpClient` is required:
 ````java
 // instantiating a ctpClient
@@ -40,7 +40,7 @@ then to start the sync:
 final CategorySync categorySync = new CategorySync(categorySyncOptions);
 
 // execute the sync on your list of categories
-categorySync.syncDrafts(categoryDrafts);
+categorySync.sync(categoryDrafts);
 ````
 In order to get the statistics of the sync process, use the `getStatistics()` method on the sync instance. It is used 
 to get an object containing all the stats of the sync process; which includes a report message, the total number of updated, created, 
@@ -66,6 +66,3 @@ need:
 
 The tool matches categories by their `externalId`. Based on that categories are created or 
 updated. Currently the tool does not support category deletion.
-
-
- 
