@@ -4,11 +4,11 @@ import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
-import com.commercetools.sync.commons.helpers.CtpClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
 import org.junit.Test;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class GenericUpdateActionUtilsTest {
-    private static final CtpClient CTP_CLIENT = mock(CtpClient.class);
+    private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
 
     @Test
@@ -85,7 +85,7 @@ public class GenericUpdateActionUtilsTest {
         };
 
         // Mock sync options
-        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
+        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                                           .setErrorCallBack(updateActionErrorCallBack)
                                                                           .build();
 
@@ -151,7 +151,7 @@ public class GenericUpdateActionUtilsTest {
         };
 
         // Mock sync options
-        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
+        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                                           .setErrorCallBack(updateActionErrorCallBack)
                                                                           .build();
 
@@ -226,7 +226,7 @@ public class GenericUpdateActionUtilsTest {
             callBackResponses.add(exception);
         };
 
-        final BaseSyncOptions baseSyncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
+        final BaseSyncOptions baseSyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                                           .setErrorCallBack(updateActionErrorCallBack)
                                                                           .build();
 

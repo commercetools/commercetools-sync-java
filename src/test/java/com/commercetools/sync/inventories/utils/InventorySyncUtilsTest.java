@@ -1,9 +1,9 @@
 package com.commercetools.sync.inventories.utils;
 
-import com.commercetools.sync.commons.helpers.CtpClient;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -70,7 +70,7 @@ public class InventorySyncUtilsTest {
     @Test
     public void buildActions_WithSimilarEntries_ShouldReturnEmptyList() {
         List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
-                .buildActions(inventoryEntry, similarDraft, InventorySyncOptionsBuilder.of(mock(CtpClient.class))
+                .buildActions(inventoryEntry, similarDraft, InventorySyncOptionsBuilder.of(mock(SphereClient.class))
                         .build(), mockTypeService());
 
         assertThat(actions).isEmpty();
@@ -79,7 +79,7 @@ public class InventorySyncUtilsTest {
     @Test
     public void buildActions_WithVariousEntries_ShouldReturnActions() {
         List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
-                .buildActions(inventoryEntry, variousDraft, InventorySyncOptionsBuilder.of(mock(CtpClient.class))
+                .buildActions(inventoryEntry, variousDraft, InventorySyncOptionsBuilder.of(mock(SphereClient.class))
                         .build(), mockTypeService());
 
         assertThat(actions).hasSize(4);
@@ -100,7 +100,7 @@ public class InventorySyncUtilsTest {
                 .build();
         List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
                 .buildActions(inventoryEntryWithCustomField1, draft, InventorySyncOptionsBuilder
-                                .of(mock(CtpClient.class))
+                                .of(mock(SphereClient.class))
                                 .build(),
                         mockTypeService());
 
@@ -113,7 +113,7 @@ public class InventorySyncUtilsTest {
                 .custom(getDraftOfCustomField(CUSTOM_FIELD_2_NAME, CUSTOM_FIELD_2_VALUE))
                 .build();
         List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
-                .buildActions(inventoryEntry, draft, InventorySyncOptionsBuilder.of(mock(CtpClient.class)).build(),
+                .buildActions(inventoryEntry, draft, InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build(),
                         mockTypeService());
 
         assertThat(actions).hasSize(1);
@@ -125,7 +125,7 @@ public class InventorySyncUtilsTest {
     public void buildActions_WithSimilarEntriesAndRemovedExistingCustomType_ShouldReturnActions() {
         List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
                 .buildActions(inventoryEntryWithCustomField1, similarDraft,InventorySyncOptionsBuilder
-                                .of(mock(CtpClient.class))
+                                .of(mock(SphereClient.class))
                                 .build(),
                         mockTypeService());
 
@@ -141,7 +141,7 @@ public class InventorySyncUtilsTest {
                 .build();
         List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
                 .buildActions(inventoryEntryWithCustomField1, draft,InventorySyncOptionsBuilder
-                                .of(mock(CtpClient.class))
+                                .of(mock(SphereClient.class))
                                 .build(),
                         mockTypeService());
 
@@ -159,7 +159,7 @@ public class InventorySyncUtilsTest {
                 .build();
         List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
                 .buildActions(inventoryEntryWithCustomField1, draft,InventorySyncOptionsBuilder
-                                .of(mock(CtpClient.class))
+                                .of(mock(SphereClient.class))
                                 .build(),
                         mockTypeService());
 

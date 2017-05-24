@@ -3,7 +3,6 @@ package com.commercetools.sync.categories.utils;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
-import com.commercetools.sync.commons.helpers.CtpClient;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -15,7 +14,7 @@ import io.sphere.sdk.categories.commands.updateactions.ChangeOrderHint;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaKeywords;
-import io.sphere.sdk.client.SphereClientConfig;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import org.junit.Before;
@@ -30,12 +29,11 @@ import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCat
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class CategorySyncUtilsTest {
     private Category mockOldCategory;
     private CategorySyncOptions categorySyncOptions;
-    private static final CtpClient CTP_CLIENT = mock(CtpClient.class);
+    private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private static final Locale LOCALE = Locale.GERMAN;
     private static final String CATEGORY_PARENT_ID = "1";
     private static final String CATEGORY_NAME = "categoryName";
@@ -48,13 +46,10 @@ public class CategorySyncUtilsTest {
     private static final String CATEGORY_ORDER_HINT = "123";
 
     /**
-     * Initializes an instance of {@link CategorySyncOptions} and {@link Category}. It also sets a mock
-     * {@code clientConfig} for an instance of {@link CtpClient} to be used across all the unit tests.
+     * Initializes an instance of {@link CategorySyncOptions} and {@link Category}.
      */
     @Before
     public void setup() {
-        final SphereClientConfig clientConfig = SphereClientConfig.of("testPK", "testCI", "testCS");
-        when(CTP_CLIENT.getClientConfig()).thenReturn(clientConfig);
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                         .build();
 
