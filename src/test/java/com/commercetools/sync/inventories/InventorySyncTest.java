@@ -258,7 +258,7 @@ public class InventorySyncTest {
             .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_3));
         final InventorySync inventorySync = new InventorySync(options, service, mock(TypeService.class));
 
-        final InventorySyncStatistics stats = inventorySync.syncDrafts(singletonList(newInventoryDraft))
+        final InventorySyncStatistics stats = inventorySync.sync(singletonList(newInventoryDraft))
             .toCompletableFuture()
             .join();
         assertThat(stats).isNotNull();
@@ -278,7 +278,7 @@ public class InventorySyncTest {
         final InventorySyncOptions options = getInventorySyncOptions(3, false);
         final InventorySync inventorySync = new InventorySync(options, service, mock(TypeService.class));
 
-        final InventorySyncStatistics stats = inventorySync.syncDrafts(singletonList(null))
+        final InventorySyncStatistics stats = inventorySync.sync(singletonList(null))
             .toCompletableFuture()
             .join();
         assertThat(stats).isNotNull();
@@ -301,7 +301,7 @@ public class InventorySyncTest {
             .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_1));
         final InventorySync inventorySync = new InventorySync(options, service, mock(TypeService.class));
 
-        final InventorySyncStatistics stats = inventorySync.syncDrafts(singletonList(newInventoryDraft))
+        final InventorySyncStatistics stats = inventorySync.sync(singletonList(newInventoryDraft))
             .toCompletableFuture()
             .join();
         assertThat(stats).isNotNull();
