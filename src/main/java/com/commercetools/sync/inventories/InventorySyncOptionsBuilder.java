@@ -1,7 +1,7 @@
 package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
-import com.commercetools.sync.commons.helpers.CtpClient;
+import io.sphere.sdk.client.SphereClient;
 
 import javax.annotation.Nonnull;
 
@@ -17,19 +17,18 @@ public final class InventorySyncOptionsBuilder extends
     private boolean ensureChannels = ENSURE_CHANNELS_DEFAULT;
     private int batchSize = BATCH_SIZE_DEFAULT;
 
-    private InventorySyncOptionsBuilder(@Nonnull final CtpClient ctpClient) {
+    private InventorySyncOptionsBuilder(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
     }
 
     /**
-     * Creates a new instance of {@link InventorySyncOptionsBuilder} given a {@link CtpClient}, as a param, that
-     * contains all the configuration of the CTP client.
+     * Creates a new instance of {@link InventorySyncOptionsBuilder} given a {@link SphereClient} responsible for
+     * interaction with the target CTP project.
      *
-     * @param ctpClient wrapper that contains instance of the {@link io.sphere.sdk.client.SphereClientConfig} and
-     *                  {@link io.sphere.sdk.client.BlockingSphereClient}
+     * @param ctpClient {@link SphereClient} responsible for interaction with the target CTP project.
      * @return new instance of {@link InventorySyncOptionsBuilder}
      */
-    public static InventorySyncOptionsBuilder of(@Nonnull final CtpClient ctpClient) {
+    public static InventorySyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
         return new InventorySyncOptionsBuilder(ctpClient);
     }
 

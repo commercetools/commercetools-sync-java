@@ -3,6 +3,7 @@ package com.commercetools.sync.inventories;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.models.Reference;
@@ -15,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-import static com.commercetools.sync.commons.MockUtils.getMockCtpClient;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryService;
@@ -247,7 +247,7 @@ public class InventorySyncTest {
             }
         };
 
-        final InventorySyncOptions options = InventorySyncOptionsBuilder.of(getMockCtpClient())
+        final InventorySyncOptions options = InventorySyncOptionsBuilder.of(mock(SphereClient.class))
             .ensureChannels(true)
             .setErrorCallBack(collectingErrorCallback)
             .build();
@@ -266,8 +266,8 @@ public class InventorySyncTest {
         assertThat(stats.getFailed()).isEqualTo(1);
         assertThat(stats.getCreated()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
-        assertThat(callbackMessages.get(0)).isEqualTo(format("Failed to create new supply channel of key '%s' in CTP "
-               + "project with key '%s.'", KEY_3, getMockCtpClient().getClientConfig().getProjectKey()));
+        assertThat(callbackMessages.get(0)).isEqualTo(format("Failed to create new supply channel of key '%s'.",
+            KEY_3));
         assertThat(callbackThrowables.get(0)).isExactlyInstanceOf(RuntimeException.class);
     }
 
@@ -319,7 +319,7 @@ public class InventorySyncTest {
     }
 
     private InventorySyncOptions getInventorySyncOptions(int batchSize, boolean ensureChannels) {
-        return InventorySyncOptionsBuilder.of(getMockCtpClient())
+        return InventorySyncOptionsBuilder.of(mock(SphereClient.class))
                 .setBatchSize(batchSize)
                 .ensureChannels(ensureChannels)
                 .build();

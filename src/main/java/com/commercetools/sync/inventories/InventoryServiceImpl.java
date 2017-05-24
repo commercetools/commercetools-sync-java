@@ -7,7 +7,7 @@ import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.commands.ChannelCreateCommand;
 import io.sphere.sdk.channels.queries.ChannelQuery;
 import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
-import io.sphere.sdk.client.BlockingSphereClient;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -27,9 +27,9 @@ import static java.util.Collections.singleton;
 
 final class InventoryServiceImpl implements InventoryService {
 
-    private final BlockingSphereClient ctpClient;
+    private final SphereClient ctpClient;
 
-    public InventoryServiceImpl(@Nonnull final BlockingSphereClient ctpClient) {
+    public InventoryServiceImpl(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
     }
 

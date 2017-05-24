@@ -14,7 +14,6 @@ import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,16 +32,25 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 /**
  * Default implementation of inventories sync process.
  */
-public final class InventorySync extends BaseSync<InventoryEntryDraft, InventoryEntry, InventorySyncStatistics,
-        InventorySyncOptions> {
+public final class InventorySync extends BaseSync<InventoryEntryDraft, InventorySyncStatistics, InventorySyncOptions> {
+    private static final String CTP_INVENTORY_FETCH_FAILED = "Failed to fetch existing inventory entries of SKUs %s.";
+    private static final String CTP_CHANNEL_FETCH_FAILED = "Failed to fetch supply channels.";
+    private static final String CTP_INVENTORY_ENTRY_UPDATE_FAILED = "Failed to update inventory entry of sku '%s' and "
+        + "supply channel key '%s'.";
+    private static final String INVENTORY_DRAFT_HAS_NO_SKU = "Failed to process inventory entry without sku.";
+    private static final String INVENTORY_DRAFT_IS_NULL = "Failed to process null inventory draft.";
+    private static final String CTP_CHANNEL_CREATE_FAILED = "Failed to create new supply channel of key '%s'.";
+    private static final String CTP_INVENTORY_ENTRY_CREATE_FAILED = "Failed to create inventory entry of sku '%s' "
+        + "and supply channel key '%s'.";
+    private static final String CHANNEL_KEY_MAPPING_DOESNT_EXIST = "Failed to find supply channel of key '%s'.";
 
     private final InventoryService inventoryService;
 
     private final TypeService typeService;
 
     public InventorySync(@Nonnull final InventorySyncOptions syncOptions) {
-        this(syncOptions, new InventoryServiceImpl(syncOptions.getCtpClient().getClient()),
-                new TypeServiceImpl(syncOptions.getCtpClient().getClient()));
+        this(syncOptions, new InventoryServiceImpl(syncOptions.getCtpClient()),
+                new TypeServiceImpl(syncOptions.getCtpClient()));
     }
 
     InventorySync(@Nonnull final InventorySyncOptions syncOptions, @Nonnull final InventoryService inventoryService,
@@ -99,7 +107,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                                                                              inventories) {
         return getExpectedSupplyChannels(inventories)
             .thenCompose(channelsMap -> splitToBatchesAndProcess(inventories, channelsMap))
-            .exceptionally(ex -> statistics);
+            .exceptionally(exception -> statistics);
     }
 
     /**
@@ -127,7 +135,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                     if (accumulator.size() == syncOptions.getBatchSize()) {
                         final CompletableFuture<Void> batchProcessingFuture =
                             processBatch(accumulator, channelsMap)
-                                .exceptionally(ex -> null)
+                                .exceptionally(exception -> null)
                                 .toCompletableFuture();
                         completableFutures.add(batchProcessingFuture);
                         accumulator = new ArrayList<>(syncOptions.getBatchSize());
@@ -135,18 +143,18 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 } else {
                     statistics.incrementProcessed();
                     statistics.incrementFailed();
-                    handleFailure("Failed to process inventory entry without sku", null);
+                    syncOptions.applyErrorCallback(INVENTORY_DRAFT_HAS_NO_SKU, null);
                 }
             } else {
                 statistics.incrementProcessed();
                 statistics.incrementFailed();
-                handleFailure("Failed to process null object", null);
+                syncOptions.applyErrorCallback(INVENTORY_DRAFT_IS_NULL, null);
             }
         }
         if (!accumulator.isEmpty()) {
             final CompletableFuture<Void> batchProcessingFuture =
                 processBatch(accumulator, channelsMap)
-                    .exceptionally(ex -> null)
+                    .exceptionally(exception -> null)
                     .toCompletableFuture();
             completableFutures.add(batchProcessingFuture);
         }
@@ -180,8 +188,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     private CompletionStage<ChannelsMap> getExpectedSupplyChannels(@Nonnull final List<InventoryEntryDraft>
                                                                                drafts) {
         return inventoryService.fetchAllSupplyChannels()
-                .exceptionally(ex -> {
-                    handleFailure("Failed to find supply channels", ex);
+                .exceptionally(exception -> {
+                    syncOptions.applyErrorCallback(CTP_CHANNEL_FETCH_FAILED, exception);
                     throw new SyncProblemException();
                 })
                 .thenApply(existingSupplyChannels -> ChannelsMap.Builder.of(existingSupplyChannels))
@@ -246,9 +254,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     private CompletionStage<Void> processBatch(@Nonnull final List<InventoryEntryDraft> batchOfDrafts,
                                                @Nonnull final ChannelsMap channelsMap) {
         return fetchExistingInventories(batchOfDrafts, channelsMap)
-            .exceptionally(ex -> {
-                handleFailure(format("Failed to find existing inventory entries of SKUs %s",
-                    extractSkus(batchOfDrafts)), ex);
+            .exceptionally(exception -> {
+                syncOptions.applyErrorCallback(format(CTP_INVENTORY_FETCH_FAILED, extractSkus(batchOfDrafts)),
+                    exception);
                 throw new SyncProblemException();
             })
             .thenCompose(existingInventories -> compareAndSync(existingInventories, batchOfDrafts, channelsMap));
@@ -285,22 +293,20 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                                 statistics.incrementUpdated();
                             }
                         })
-                        .exceptionally(ex -> {
+                        .exceptionally(exception -> {
                             statistics.incrementFailed();
-                            handleFailure(format("Failed to update inventory entry of sku '%s' and supply channel key "
-                                    + "'%s'",
-                                draft.getSku(), SkuChannelKeyTuple.of(draft).getKey()), ex);
+                            syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
+                                SkuChannelKeyTuple.of(draft).getKey()), exception);
                             return null;
                         })
                         .toCompletableFuture());
                 } else {
                     futures.add(inventoryService.createInventoryEntry(fixedDraft.get())
                         .thenAccept(createdEntry -> statistics.incrementCreated())
-                        .exceptionally(ex -> {
+                        .exceptionally(exception -> {
                             statistics.incrementFailed();
-                            handleFailure(format("Failed to create inventory entry of sku '%s' and supply channel key "
-                                    + "'%s'",
-                                draft.getSku(), SkuChannelKeyTuple.of(draft).getKey()), ex);
+                            syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_CREATE_FAILED, draft.getSku(),
+                                SkuChannelKeyTuple.of(draft).getKey()), exception);
                             return null;
                         })
                         .toCompletableFuture());
@@ -402,7 +408,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             if (channelsMap.getChannelId(supplyChannelKey).isPresent()) {
                 return Optional.of(withSupplyChannel(draft, channelsMap.getChannelId(supplyChannelKey).get()));
             } else {
-                handleFailure(format("Failed to find supply channel of key '%s'", supplyChannelKey), null);
+                syncOptions.applyErrorCallback(format(CHANNEL_KEY_MAPPING_DOESNT_EXIST, supplyChannelKey), null);
                 return Optional.empty();
             }
         }
@@ -437,25 +443,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     private CompletionStage<Channel> createMissingSupplyChannel(@Nonnull final String supplyChannelKey) {
         return inventoryService.createSupplyChannel(supplyChannelKey)
-            .exceptionally(ex -> {
-                handleFailure(format("Failed to create new supply channel of key '%s'", supplyChannelKey), ex);
+            .exceptionally(exception -> {
+                syncOptions.applyErrorCallback(format(CTP_CHANNEL_CREATE_FAILED, supplyChannelKey), exception);
                 throw new SyncProblemException();
             });
-    }
-
-    /**
-     * Given a reason message as {@link String} and {@link Throwable} exception, this method calls the optional error
-     * callback specified in the {@code syncOptions}. <br/>
-     * <strong>NOTE:</strong> to the end of {@code message} following phrase will be joined:
-     * <pre> " in CTP project with key '_KEY_'"</pre>
-     * where _KEY_ is replaced by CTP project key, taken from CTP client configuration.
-     *
-     * @param message the reason of failure
-     * @param exception the exception that occurred, if any
-     */
-    private void handleFailure(@Nonnull final String message, @Nullable final Throwable exception) {
-        final String finalMessage = message + format(" in CTP project with key '%s.'",
-            syncOptions.getCtpClient().getClientConfig().getProjectKey());
-        syncOptions.applyErrorCallback(finalMessage, exception);
     }
 }
