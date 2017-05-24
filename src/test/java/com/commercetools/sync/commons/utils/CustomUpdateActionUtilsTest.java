@@ -3,7 +3,6 @@ package com.commercetools.sync.commons.utils;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
-import com.commercetools.sync.commons.helpers.CtpClient;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,6 +10,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
@@ -38,7 +38,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class CustomUpdateActionUtilsTest {
-    private static final CtpClient CTP_CLIENT = mock(CtpClient.class);
+    private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private static final CategorySyncOptions CATEGORY_SYNC_OPTIONS = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
 
     @Test
@@ -141,7 +141,7 @@ public class CustomUpdateActionUtilsTest {
         };
 
         // Mock sync options
-        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(mock(CtpClient.class))
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                                                   .setErrorCallBack(
                                                                                       updateActionErrorCallBack)
                                                                                   .build();
