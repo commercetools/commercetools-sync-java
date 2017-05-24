@@ -55,9 +55,9 @@ to address issue #65 which refers to a style bug, the PR addressing it should ha
 - Commit messages should always be prefixed with the number of the issue that they address. 
 For example, `#65: Remove redundant space.`
 - After your PR is merged to master:
-    - Delete the branch
+    - Delete the branch.
     - Mark the issue it addresses with the `merged-to-master` label.
-    - Only if the change was released, then the issue can be closed.
+    - Close the issue **only** if the change was released.
 
 ### Development
 ##### Run unit tests
