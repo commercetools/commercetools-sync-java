@@ -51,12 +51,29 @@ categorySync.getStatistics().getReportMessage();
 Additional optional configuration for the sync can be set on the `CategorySyncOptions` instance, according to your 
 need:
 - `errorCallBack`
-- `warningCallBack`
+a callback that is called whenever an event occurs during the sync process that represents an error. Currently, these 
+events.
+
+- `warningCallBack` 
+a callback that is called whenever an event occurs during the sync process that represents a warning. Currently, these 
+events.
 - `removeOtherLocales`
+a flag which enables the sync module to add additional localizations without deleting existing ones, if set to `false`. 
+If set to `true`, which is the default value of the option, it deletes the existing object properties.
 - `removeOtherSetEntries`
+a flag which enables the sync module to add additional Set entries without deleting existing ones, if set to `false`. 
+If set to `true`, which is the default value of the option, it deletes the existing Set entries.
 - `removeOtherCollectionEntries`
+a flag which enables the sync module to add collection (e.g. Assets, Images etc.) entries without deleting existing 
+ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing collection 
+entries.
 - `removeOtherProperties`
+a flag which enables the sync module to add additional object properties (e.g. custom fields, etc..) without deleting 
+existing ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing 
+object properties.
 - `updateActionsFilter`
+a filter function which can be applied on generated list of update actions to produce a resultant list after the filter 
+function has been applied.
 
 ## Under the hood
 
