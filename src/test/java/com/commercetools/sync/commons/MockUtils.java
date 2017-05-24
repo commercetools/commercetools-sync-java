@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MockUtils {
-
     /**
      * Creates a mock instance of {@link CustomFieldsDraft} with the key 'StepCategoryTypeKey' and two custom fields
      * 'invisibleInShop' and'backgroundColor'.
@@ -25,6 +24,4 @@ public class MockUtils {
             .put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
         return CustomFieldsDraft.ofTypeKeyAndJson("StepCategoryTypeKey", customFieldsJsons);
     }
-
-
 }

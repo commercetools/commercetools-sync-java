@@ -1,6 +1,7 @@
 /target
 /.idea
 .DS_Store
+*.iml
 
 # gradle specific
 .gradle/

@@ -20,13 +20,13 @@ commercetools sync is a Java library that could be used to synchronise in any of
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
 2. Synchronise data coming from an already-existing commercetools project in the form of 
-[JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) resource objects 
-(e.g. [Category](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/Category.java)).
+[JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
+(e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
 
 Currently this library supports synchronising the following commercetools resources:-
-- [Category](https://github.com/commercetools/commercetools-sync-java/tree/setup-ci-build/src/main/java/com/commercetools/sync/categories#commercetools-category-sync)
-- InventoryEntry
+- [Category](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories#commercetools-category-sync)
+- [InventoryEntry](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/inventories#commercetools-inventory-sync)
 
 ## How to use it?
 
@@ -45,8 +45,8 @@ Currently this library supports synchronising the following commercetools resour
 
 ### Using the library
 Please check the README of the specific module to see examples of how to use it:
-- [Category](https://github.com/commercetools/commercetools-sync-java/tree/setup-ci-build/src/main/java/com/commercetools/sync/categories#how-to-use-it)
-- InventoryEntry
+- [Category](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories#how-to-use-it)
+- [InventoryEntry](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/inventories#commercetools-inventory-sync)
 
 ## Short-term roadmap
 https://github.com/commercetools/commercetools-sync-java/milestones

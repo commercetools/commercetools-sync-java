@@ -17,7 +17,7 @@ commercetools project.
 objects to the desired commercetools project.
 2. Synchronise categories coming from an already-existing commercetools project in the form of 
 [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) 
-[Category](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/Category.java)
+[CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)
 objects to another commercetools project.
 
 3. Build any of the following commercetools [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) update action
@@ -37,7 +37,7 @@ and a new category, represented by a [CategoryDraft](https://github.com/commerce
 
 ## How to use it?
 In order to use the category sync an instance of
- [CategorySyncOptions](https://github.com/commercetools/commercetools-sync-java/blob/develop/src/main/java/com/commercetools/sync/categories/CategorySyncOptions.java) have to be injected.
+ [CategorySyncOptions](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/categories/CategorySyncOptions.java) have to be injected.
  
  In order to instantiate a `CategorySyncOptions`, a `ctpClient` is required:
   #### `ctpClient` [Required]
@@ -51,20 +51,8 @@ In order to use the category sync an instance of
   final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient).build();
   ````
   
-  The category sync can then do any of the following:
+  The category sync can then do the following:
   ##### sync
-  Used to sync a list of [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) 
-  [Category](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/Category.java)
-  objects.
-  ````java
-  // instantiating a category sync
-  final CategorySync categorySync = new CategorySync(categorySyncOptions);
-  
-  // execute the sync on your list of categories
-  categorySync.sync(categories);
-  ````
-  
-  ##### syncDrafts
   Used to sync a list of [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) 
   [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java) 
   objects.
@@ -73,14 +61,14 @@ In order to use the category sync an instance of
   final CategorySync categorySync = new CategorySync(categorySyncOptions);
   
   // execute the sync on your list of categories
-  categorySync.syncDrafts(categoryDrafts);
+  categorySync.sync(categoryDrafts);
   ````
   ##### getStatistics
   Used to get an object  containing all the stats of the sync process; which includes a report message, the total number
   of updated, created, failed, processed categories and the processing time of the sync in different time units and in a
   human readable format.
   ````java
-  categorySync.syncDrafts(categoryDrafts);
+  categorySync.sync(categoryDrafts);
   categorySync.getStatistics().getCreated(); // 1000
   categorySync.getStatistics().getFailed(); // 5
   categorySync.getStatistics().getUpdated(); // 995

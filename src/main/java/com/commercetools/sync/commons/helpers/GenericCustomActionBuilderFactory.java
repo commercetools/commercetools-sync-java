@@ -3,14 +3,15 @@ package com.commercetools.sync.commons.helpers;
 import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.commercetools.sync.channels.helpers.ChannelCustomActionBuilder;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.inventories.helpers.InventoryCustomActionBuilder;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.types.Custom;
 
 import javax.annotation.Nonnull;
 
-import static com.commercetools.sync.commons.enums.Error.UPDATE_ACTION_NOT_IMPLEMENTED;
 import static java.lang.String.format;
 
 /**
@@ -21,6 +22,8 @@ import static java.lang.String.format;
 @SuppressWarnings("unchecked")
 public class GenericCustomActionBuilderFactory<T extends Custom & Resource<T>,
     S extends GenericCustomActionBuilder<T>> {
+    private static final String UPDATE_ACTION_NOT_IMPLEMENTED = "Update actions for resource: '%s' is not implemented.";
+
     /**
      * Container of enums that provide mapping between the CTP resource and it's adjacent concrete custom action builder
      * class. For example, the {@link Category} resources point to the {@link CategoryCustomActionBuilder}
@@ -30,7 +33,8 @@ public class GenericCustomActionBuilderFactory<T extends Custom & Resource<T>,
      */
     enum ConcreteBuilder {
         CATEGORY(CategoryCustomActionBuilder.class, Category.class),
-        CHANNEL(ChannelCustomActionBuilder.class, Channel.class);
+        CHANNEL(ChannelCustomActionBuilder.class, Channel.class),
+        INVENTORY(InventoryCustomActionBuilder.class, InventoryEntry.class);
 
         private final Class<? extends GenericCustomActionBuilder> builderClass;
         private final Class<? extends Resource> resourceClass;
@@ -90,8 +94,7 @@ public class GenericCustomActionBuilderFactory<T extends Custom & Resource<T>,
                 return (S) builderClass.newInstance();
             }
         }
-        throw new BuildUpdateActionException(format(UPDATE_ACTION_NOT_IMPLEMENTED.getDescription(),
-            resource.toReference().getTypeId()));
+        throw new BuildUpdateActionException(format(UPDATE_ACTION_NOT_IMPLEMENTED, resource.toReference().getTypeId()));
     }
 
     /**

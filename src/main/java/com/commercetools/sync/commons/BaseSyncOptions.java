@@ -1,6 +1,6 @@
 package com.commercetools.sync.commons;
 
-import com.commercetools.sync.commons.helpers.CtpClient;
+import io.sphere.sdk.client.SphereClient;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -8,7 +8,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class BaseSyncOptions {
-    private final CtpClient ctpClient;
+    private final SphereClient ctpClient;
     private final BiConsumer<String, Throwable> errorCallBack;
     private final Consumer<String> warningCallBack;
     private boolean removeOtherLocales = true;
@@ -16,7 +16,7 @@ public class BaseSyncOptions {
     private boolean removeOtherCollectionEntries = true;
     private boolean removeOtherProperties = true;
 
-    protected BaseSyncOptions(@Nonnull final CtpClient ctpClient,
+    protected BaseSyncOptions(@Nonnull final SphereClient ctpClient,
                               final BiConsumer<String, Throwable> errorCallBack,
                               final Consumer<String> warningCallBack,
                               final boolean removeOtherLocales,
@@ -33,13 +33,11 @@ public class BaseSyncOptions {
     }
 
     /**
-     * Returns the {@link CtpClient} instance set to {@code this} {@link BaseSyncOptions} that contains instance of the
-     * {@link io.sphere.sdk.client.SphereClientConfig} and {@link io.sphere.sdk.client.BlockingSphereClient}.
+     * Returns the {@link SphereClient} responsible for interaction with the target CTP project.
      *
-     * @return the {@link CtpClient} instance set to {@code this} {@link BaseSyncOptions} that contains instance of the
-     *      {@link io.sphere.sdk.client.SphereClientConfig} and {@link io.sphere.sdk.client.BlockingSphereClient}.
+     * @return the {@link SphereClient} responsible for interaction with the target CTP project.
      */
-    public CtpClient getCtpClient() {
+    public SphereClient getCtpClient() {
         return ctpClient;
     }
 

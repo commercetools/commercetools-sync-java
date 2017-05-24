@@ -19,12 +19,16 @@ import io.sphere.sdk.models.Reference;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.enums.Warning.CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT;
-import static com.commercetools.sync.commons.enums.Warning.CATEGORY_CHANGE_PARENT_EMPTY_PARENT;
-import static com.commercetools.sync.commons.enums.Warning.CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static java.lang.String.format;
 
 public final class CategoryUpdateActionUtils {
+    private static final String CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION = "Cannot unset 'description' field of "
+        + "category with id '%s'.";
+    private static final String CATEGORY_CHANGE_PARENT_EMPTY_PARENT = "Cannot unset 'parent' field of category with id"
+        + " '%s'.";
+    private static final String CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT = "Cannot unset 'orderHint' field of "
+        + "category with id '%s'.";
 
     /**
      * Compares the {@link LocalizedString} names of a {@link Category} and a {@link CategoryDraft} and returns an
@@ -84,7 +88,7 @@ public final class CategoryUpdateActionUtils {
         @Nonnull final CategorySyncOptions syncOptions) {
         if (newCategory.getDescription() == null) {
             syncOptions.applyWarningCallback(
-                CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION.getDescription(oldCategory.getId()));
+                format(CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION, (oldCategory.getId())));
             return Optional.empty();
         }
         return buildUpdateAction(oldCategory.getDescription(),
@@ -113,7 +117,7 @@ public final class CategoryUpdateActionUtils {
         @Nonnull final CategoryDraft newCategory,
         @Nonnull final CategorySyncOptions syncOptions) {
         if (newCategory.getParent() == null) {
-            syncOptions.applyWarningCallback(CATEGORY_CHANGE_PARENT_EMPTY_PARENT.getDescription(oldCategory.getId()));
+            syncOptions.applyWarningCallback(format(CATEGORY_CHANGE_PARENT_EMPTY_PARENT, oldCategory.getId()));
             return Optional.empty();
         }
         return buildUpdateAction(oldCategory.getParent(),
@@ -142,7 +146,7 @@ public final class CategoryUpdateActionUtils {
         @Nonnull final CategorySyncOptions syncOptions) {
         if (newCategory.getOrderHint() == null) {
             syncOptions.applyWarningCallback(
-                CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT.getDescription(oldCategory.getId()));
+                format(CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT, oldCategory.getId()));
             return Optional.empty();
         }
         return buildUpdateAction(oldCategory.getOrderHint(),

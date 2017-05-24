@@ -1,8 +1,8 @@
 package com.commercetools.sync.categories;
 
-import com.commercetools.sync.commons.helpers.CtpClient;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
@@ -14,7 +14,7 @@ import java.util.function.Function;
 public final class CategorySyncOptions extends BaseSyncOptions {
     private final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter;
 
-    CategorySyncOptions(@Nonnull final CtpClient ctpClient,
+    CategorySyncOptions(@Nonnull final SphereClient ctpClient,
                         final BiConsumer<String, Throwable> updateActionErrorCallBack,
                         final Consumer<String> updateActionWarningCallBack,
                         final boolean removeOtherLocales,

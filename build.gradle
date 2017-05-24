@@ -19,7 +19,7 @@ tasks.withType(JavaCompile) {
 }
 
 ext {
-    commercetoolsJvmSdkVersion =  '1.12.0'
+    commercetoolsJvmSdkVersion =  '1.18.0'
     mockitoVersion = '1.10.19'
     slf4jVersion = '1.6.2'
     jUnitVersion = '4.12'
@@ -68,6 +68,7 @@ dependencies {
     compile "com.commercetools.sdk.jvm.core:commercetools-models:${commercetoolsJvmSdkVersion}"
     compile "com.commercetools.sdk.jvm.core:commercetools-java-client:${commercetoolsJvmSdkVersion}"
     compile "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
+    compile "com.google.code.findbugs:annotations:${findbugsVersion}"
     runtime "org.slf4j:slf4j-simple:${slf4jVersion}"
     testCompile "org.mockito:mockito-all:${mockitoVersion}"
     testCompile "junit:junit:${jUnitVersion}"
