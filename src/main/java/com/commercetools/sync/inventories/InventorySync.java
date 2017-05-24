@@ -113,8 +113,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                                                                              inventories) {
         return populateSupplyChannels(inventories)
                 .thenCompose(v -> splitToBatchesAndProcess(inventories))
-                .exceptionally(ex -> {
-                    handleFailure(CTP_CHANNEL_FETCH_FAILED, ex);
+                .exceptionally(exception -> {
+                    syncOptions.applyErrorCallback(CTP_CHANNEL_FETCH_FAILED, exception);
                     return statistics;
                 });
     }
@@ -145,12 +145,12 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 } else {
                     statistics.incrementProcessed();
                     statistics.incrementFailed();
-                    handleFailure(INVENTORY_DRAFT_HAS_NO_SKU, null);
+                    syncOptions.applyErrorCallback(INVENTORY_DRAFT_HAS_NO_SKU, null);
                 }
             } else {
                 statistics.incrementProcessed();
                 statistics.incrementFailed();
-                handleFailure(INVENTORY_DRAFT_IS_NULL, null);
+                syncOptions.applyErrorCallback(INVENTORY_DRAFT_IS_NULL, null);
             }
         }
         if (!accumulator.isEmpty()) {
@@ -231,8 +231,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     private CompletionStage<Void> processBatch(final List<InventoryEntryDraft> batchOfDrafts) {
         return fetchExistingInventories(batchOfDrafts)
                 .thenCompose(existingInventories -> compareAndSync(existingInventories, batchOfDrafts))
-                .exceptionally(ex -> {
-                    handleFailure(format(CTP_INVENTORY_FETCH_FAILED, extractSkus(batchOfDrafts)), ex);
+                .exceptionally(exception -> {
+                    syncOptions.applyErrorCallback(format(CTP_INVENTORY_FETCH_FAILED, extractSkus(batchOfDrafts)),
+                        exception);
                     return null;
                 });
     }
@@ -319,10 +320,10 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             if (!updateActions.isEmpty()) {
                 return inventoryService.updateInventoryEntry(entry, updateActions)
                     .thenAccept(updatedEntry -> statistics.incrementUpdated())
-                    .exceptionally(ex -> {
+                    .exceptionally(exception -> {
                         statistics.incrementFailed();
-                        handleFailure(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
-                            SkuChannelKeyTuple.of(draft).getKey()), ex);
+                        syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
+                            SkuChannelKeyTuple.of(draft).getKey()), exception);
                         return null;
                     });
             }
@@ -348,10 +349,10 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         if (fixedDraft.isPresent()) {
             return inventoryService.createInventoryEntry(fixedDraft.get())
                 .thenAccept(createdEntry -> statistics.incrementCreated())
-                .exceptionally(ex -> {
+                .exceptionally(exception -> {
                     statistics.incrementFailed();
-                    handleFailure(format(CTP_INVENTORY_ENTRY_CREATE_FAILED, draft.getSku(),
-                        SkuChannelKeyTuple.of(draft).getKey()), ex);
+                    syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_CREATE_FAILED, draft.getSku(),
+                        SkuChannelKeyTuple.of(draft).getKey()), exception);
                     return null;
                 });
         } else {
@@ -381,7 +382,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 return Optional.of(
                     withSupplyChannel(draft, supplyChannelKeyToId.get(supplyChannelKey)));
             } else {
-                handleFailure(format(CHANNEL_KEY_MAPPING_DOESNT_EXIST, supplyChannelKey), null);
+                syncOptions.applyErrorCallback(format(CHANNEL_KEY_MAPPING_DOESNT_EXIST, supplyChannelKey), null);
                 return Optional.empty();
             }
         }
@@ -416,20 +417,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     private CompletionStage<Void> createMissingSupplyChannel(@Nonnull final String supplyChannelKey) {
         return inventoryService.createSupplyChannel(supplyChannelKey)
             .thenAccept(channel -> supplyChannelKeyToId.put(channel.getKey(), channel.getId()))
-            .exceptionally(ex -> {
-                handleFailure(format(CTP_CHANNEL_CREATE_FAILED, supplyChannelKey), ex);
+            .exceptionally(exception -> {
+                syncOptions.applyErrorCallback(format(CTP_CHANNEL_CREATE_FAILED, supplyChannelKey), exception);
                 return null;
             });
-    }
-
-    /**
-     * Given a reason message as {@link String} and {@link Throwable} exception, this method calls the optional error
-     * callback specified in the {@code syncOptions}.
-     *
-     * @param message the reason of failure
-     * @param exception the exception that occurred, if any
-     */
-    private void handleFailure(@Nonnull final String message, @Nullable final Throwable exception) {
-        syncOptions.applyErrorCallback(message, exception);
     }
 }
