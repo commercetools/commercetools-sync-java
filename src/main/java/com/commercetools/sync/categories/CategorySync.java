@@ -22,18 +22,18 @@ import java.util.concurrent.ExecutionException;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySyncStatistics, CategorySyncOptions> {
-    private static final String CTP_CATEGORY_UPDATE_FAILED = "Failed to update category with externalId:'%s' in CTP"
-        + " project with key '%s. Reason: %s";
-    private static final String CTP_CATEGORY_FETCH_FAILED = "Failed to fetch category with externalId:'%s' in CTP"
-        + " project with key '%s. Reason: %s";
-    private static final String CTP_CATEGORY_CREATE_FAILED = "Failed to create category with externalId:'%s' in CTP"
-        + " project with key '%s. Reason: %s";
-    private static final String CTP_CATEGORY_SYNC_FAILED = "Failed to sync category with externalId:'%s' in CTP"
-        + " project with key '%s. Reason: %s";
+public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
+    private static final String CTP_CATEGORY_UPDATE_FAILED = "Failed to update category with externalId:'%s'."
+        + " Reason: %s";
+    private static final String CTP_CATEGORY_FETCH_FAILED = "Failed to fetch category with externalId:'%s'."
+        + " Reason: %s";
+    private static final String CTP_CATEGORY_CREATE_FAILED = "Failed to create category with externalId:'%s'."
+        + " Reason: %s";
+    private static final String CTP_CATEGORY_SYNC_FAILED = "Failed to sync category with externalId:'%s'."
+        + " Reason: %s";
     private static final String CATEGORY_DRAFT_EXTERNAL_ID_NOT_SET = "CategoryDraft with name: %s doesn't have an"
-        + " externalId in CTP project with key '%s'.";
-
+        + " externalId.";
+    private static final String CATEGORY_DRAFT_IS_NULL = "CategoryDraft is null.";
 
     private final TypeService typeService;
     private final CategoryService categoryService;
@@ -48,8 +48,8 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
      */
     public CategorySync(@Nonnull final CategorySyncOptions syncOptions) {
         this(syncOptions,
-            new TypeServiceImpl(syncOptions.getCtpClient().getClient()),
-            new CategoryServiceImpl(syncOptions.getCtpClient().getClient()));
+            new TypeServiceImpl(syncOptions.getCtpClient()),
+            new CategoryServiceImpl(syncOptions.getCtpClient()));
     }
 
     /**
@@ -92,16 +92,17 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
     protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<CategoryDraft> categoryDrafts) {
         for (CategoryDraft categoryDraft : categoryDrafts) {
             if (categoryDraft != null) {
-                statistics.incrementProcessed();
                 final String externalId = categoryDraft.getExternalId();
                 if (isNotBlank(externalId)) {
                     createOrUpdateCategory(categoryDraft);
                 } else {
-                    final String errorMessage = format(CATEGORY_DRAFT_EXTERNAL_ID_NOT_SET, categoryDraft.getName(),
-                        syncOptions.getProjectKey());
+                    final String errorMessage = format(CATEGORY_DRAFT_EXTERNAL_ID_NOT_SET, categoryDraft.getName());
                     handleError(errorMessage, null);
                 }
+            } else {
+                handleError(CATEGORY_DRAFT_IS_NULL, null);
             }
+            statistics.incrementProcessed();
         }
         return CompletableFuture.completedFuture(statistics);
     }
@@ -128,15 +129,14 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                                    .orElseGet(() -> createCategory(categoryDraft)))
                            .exceptionally(exception -> {
                                final String errorMessage = format(CTP_CATEGORY_FETCH_FAILED,
-                                   categoryDraft.getExternalId(), syncOptions.getProjectKey(),
-                                   exception.getMessage());
+                                   categoryDraft.getExternalId(), exception.getMessage());
                                handleError(errorMessage, exception);
                                return null;
                            })
                            .toCompletableFuture().get();
         } catch (InterruptedException | ExecutionException exception) {
             final String errorMessage = format(CTP_CATEGORY_SYNC_FAILED, categoryDraft.getExternalId(),
-                syncOptions.getProjectKey(), exception.getMessage());
+                exception.getMessage());
             handleError(errorMessage, exception);
         }
     }
@@ -157,8 +157,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                               .thenAccept(createdCategory -> statistics.incrementCreated())
                               .exceptionally(exception -> {
                                   final String errorMessage = format(CTP_CATEGORY_CREATE_FAILED,
-                                      categoryDraft.getExternalId(), syncOptions.getProjectKey(),
-                                      exception.getMessage());
+                                      categoryDraft.getExternalId(), exception.getMessage());
                                   handleError(errorMessage, exception);
                                   return null;
                               });
@@ -203,7 +202,7 @@ public class CategorySync extends BaseSync<CategoryDraft, Category, CategorySync
                               .thenAccept(updatedCategory -> statistics.incrementUpdated())
                               .exceptionally(exception -> {
                                   final String errorMessage = format(CTP_CATEGORY_UPDATE_FAILED,
-                                      category.getExternalId(), syncOptions.getProjectKey(), exception.getMessage());
+                                      category.getExternalId(), exception.getMessage());
                                   handleError(errorMessage, exception);
                                   return null;
                               });

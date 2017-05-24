@@ -1,18 +1,13 @@
 package com.commercetools.sync.commons;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
-import io.sphere.sdk.models.Resource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 
-import static java.lang.String.format;
 
-public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStatistics, V extends BaseSyncOptions> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaseSync.class);
+public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSyncOptions> {
     protected final U statistics;
     protected final V syncOptions;
 
@@ -48,14 +43,13 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      *      {@link this} {@link BaseSync}.
      */
     public CompletionStage<U> sync(@Nonnull final List<T> resourceDrafts) {
-        LOGGER.info(format("About to sync %d drafts into CTP project with key '%s'.", resourceDrafts.size(),
-            this.syncOptions.getCtpClient().getClientConfig().getProjectKey()));
-        this.statistics.startTimer();
-        return this.process(resourceDrafts).thenApply(resultingStatistics -> {
+        statistics.startTimer();
+        return process(resourceDrafts).thenApply(resultingStatistics -> {
             resultingStatistics.calculateProcessingTime();
             return resultingStatistics;
         });
     }
+
 
     /**
      * Returns an instance of type U which is a subclass of {@link BaseSyncStatistics} containing all the stats of the
@@ -66,6 +60,6 @@ public abstract class BaseSync<T, S extends Resource<S>, U extends BaseSyncStati
      */
     @Nonnull
     public U getStatistics() {
-        return this.statistics;
+        return statistics;
     }
 }

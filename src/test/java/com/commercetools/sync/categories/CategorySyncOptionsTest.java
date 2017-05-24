@@ -1,10 +1,8 @@
 package com.commercetools.sync.categories;
 
-
-import com.commercetools.sync.commons.helpers.CtpClient;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
-import io.sphere.sdk.client.SphereClientConfig;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import org.junit.Before;
@@ -18,7 +16,6 @@ import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class CategorySyncOptionsTest {
     private CategorySyncOptionsBuilder categorySyncOptionsBuilder;
@@ -29,10 +26,7 @@ public class CategorySyncOptionsTest {
      */
     @Before
     public void setup() {
-        final SphereClientConfig clientConfig = SphereClientConfig.of("testPK", "testCI", "testCS");
-        final CtpClient ctpClient = mock(CtpClient.class);
-        when(ctpClient.getClientConfig()).thenReturn(clientConfig);
-        categorySyncOptionsBuilder = CategorySyncOptionsBuilder.of(ctpClient);
+        categorySyncOptionsBuilder = CategorySyncOptionsBuilder.of(mock(SphereClient.class));
     }
 
     @Test

@@ -1,11 +1,10 @@
 package com.commercetools.sync.categories;
 
-import com.commercetools.sync.commons.helpers.CtpClient;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.client.SphereClientConfig;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.SphereException;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,9 +32,7 @@ public class CategorySyncTest {
      */
     @Before
     public void setup() {
-        final SphereClientConfig clientConfig = SphereClientConfig.of("testPK", "testCI", "testCS");
-        final CtpClient ctpClient = mock(CtpClient.class);
-        when(ctpClient.getClientConfig()).thenReturn(clientConfig);
+        final SphereClient ctpClient = mock(SphereClient.class);
         categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
             .build();
         categorySync = new CategorySync(categorySyncOptions, mock(TypeService.class),
@@ -56,18 +53,18 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithANullDraft_ShouldSkipIt() {
+    public void sync_WithANullDraft_ShouldBeCountedAsFailed() {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(null);
 
         categorySync.sync(categoryDrafts);
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
+        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(0);
+        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 0 categories were processed in total "
-                + "(0 created, 0 updated and 0 categories failed to sync).");
+            "Summary: 1 categories were processed in total "
+                + "(0 created, 0 updated and 1 categories failed to sync).");
     }
 
     @Test
