@@ -1,13 +1,13 @@
 package com.commercetools.sync.commons;
 
-import com.commercetools.sync.commons.helpers.CtpClient;
+import io.sphere.sdk.client.SphereClient;
 
 import javax.annotation.Nonnull;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T, S>, S extends BaseSyncOptions> {
-    protected CtpClient ctpClient;
+    protected SphereClient ctpClient;
     protected BiConsumer<String, Throwable> errorCallBack;
     protected Consumer<String> warningCallBack;
     protected boolean removeOtherLocales = true;

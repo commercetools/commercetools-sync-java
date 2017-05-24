@@ -1,7 +1,7 @@
 package com.commercetools.sync.products;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.commons.helpers.CtpClient;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 
@@ -27,7 +27,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
     // optional filter which can be applied on generated list of update actions
     private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> filterActions;
 
-    ProductSyncOptions(@Nonnull final CtpClient ctpClient,
+    ProductSyncOptions(@Nonnull final SphereClient ctpClient,
                        @Nonnull final BiConsumer<String, Throwable> errorCallBack,
                        @Nonnull final Consumer<String> warningCallBack,
                        final boolean removeOtherLocales,

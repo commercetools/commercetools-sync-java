@@ -1,11 +1,10 @@
 package com.commercetools.sync.categories;
 
-import com.commercetools.sync.commons.helpers.CtpClient;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.client.SphereClientConfig;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.SphereException;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,9 +32,7 @@ public class CategorySyncTest {
      */
     @Before
     public void setup() {
-        final SphereClientConfig clientConfig = SphereClientConfig.of("testPK", "testCI", "testCS");
-        final CtpClient ctpClient = mock(CtpClient.class);
-        when(ctpClient.getClientConfig()).thenReturn(clientConfig);
+        final SphereClient ctpClient = mock(SphereClient.class);
         categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
             .build();
         categorySync = new CategorySync(categorySyncOptions, mock(TypeService.class),

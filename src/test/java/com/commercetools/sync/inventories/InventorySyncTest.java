@@ -3,6 +3,7 @@ package com.commercetools.sync.inventories;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.models.Reference;
@@ -13,7 +14,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static com.commercetools.sync.commons.MockUtils.getMockCtpClient;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryService;
@@ -241,7 +241,7 @@ public class InventorySyncTest {
     }
 
     private InventorySyncOptions getInventorySyncOptions(int batchSize, boolean ensureChannels) {
-        return InventorySyncOptionsBuilder.of(getMockCtpClient())
+        return InventorySyncOptionsBuilder.of(mock(SphereClient.class))
                 .setBatchSize(batchSize)
                 .ensureChannels(ensureChannels)
                 .build();
