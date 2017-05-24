@@ -12,18 +12,14 @@ import java.util.function.Supplier;
 
 public class SphereClientUtils {
 
-    private static final String CTP_SOURCE_PROJECT_KEY = System.getenv("SOURCE_PROJECT_KEY");
-    private static final String CTP_SOURCE_CLIENT_ID = System.getenv("SOURCE_CLIENT_ID");
-    private static final String CTP_SOURCE_CLIENT_SECRET = System.getenv("SOURCE_CLIENT_SECRET");
-
-    private static final String CTP_TARGET_PROJECT_KEY = System.getenv("TARGET_PROJECT_KEY");
-    private static final String CTP_TARGET_CLIENT_ID = System.getenv("TARGET_CLIENT_ID");
-    private static final String CTP_TARGET_CLIENT_SECRET = System.getenv("TARGET_CLIENT_SECRET");
-
     private static final CtpClient CTP_SOURCE_CLIENT = new CtpClient(SphereClientConfig.of(
-        CTP_SOURCE_PROJECT_KEY, CTP_SOURCE_CLIENT_ID, CTP_SOURCE_CLIENT_SECRET));
+        System.getenv("SOURCE_PROJECT_KEY"),
+        System.getenv("SOURCE_CLIENT_ID"),
+        System.getenv("SOURCE_CLIENT_SECRET")));
     private static final CtpClient CTP_TARGET_CLIENT = new CtpClient(SphereClientConfig.of(
-        CTP_TARGET_PROJECT_KEY, CTP_TARGET_CLIENT_ID, CTP_TARGET_CLIENT_SECRET));
+        System.getenv("TARGET_PROJECT_KEY"),
+        System.getenv("TARGET_CLIENT_ID"),
+        System.getenv("TARGET_CLIENT_SECRET")));
 
     /**
      * Max limit that can be applied to a query in CTP.
