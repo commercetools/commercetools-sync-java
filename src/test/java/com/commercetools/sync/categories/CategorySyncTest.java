@@ -1,6 +1,5 @@
 package com.commercetools.sync.categories;
 
-
 import com.commercetools.sync.commons.helpers.CtpClient;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
@@ -44,8 +43,8 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void syncDrafts_WithEmptyListOfDrafts_ShouldNotProcessAnyCategories() {
-        categorySync.syncDrafts(new ArrayList<>());
+    public void sync_WithEmptyListOfDrafts_ShouldNotProcessAnyCategories() {
+        categorySync.sync(new ArrayList<>());
 
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
         assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
@@ -57,11 +56,11 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void syncDrafts_WithANullDraft_ShouldSkipIt() {
+    public void sync_WithANullDraft_ShouldSkipIt() {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(null);
 
-        categorySync.syncDrafts(categoryDrafts);
+        categorySync.sync(categoryDrafts);
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
         assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
         assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
@@ -72,11 +71,11 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void syncDrafts_WithADraftWithNoSetExternalID_ShouldFailSync() {
+    public void sync_WithADraftWithNoSetExternalID_ShouldFailSync() {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "noExternalIdDraft", "no-external-id-draft", null));
 
-        categorySync.syncDrafts(categoryDrafts);
+        categorySync.sync(categoryDrafts);
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
         assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
@@ -87,7 +86,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void syncDrafts_WithNoExistingCategory_ShouldCreateCategory() {
+    public void sync_WithNoExistingCategory_ShouldCreateCategory() {
         final CategoryService categoryService = getMockCategoryService();
         when(categoryService.fetchCategoryByExternalId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
@@ -97,7 +96,7 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "newExternalId"));
 
 
-        categorySync.syncDrafts(categoryDrafts);
+        categorySync.sync(categoryDrafts);
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
         assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
@@ -108,12 +107,12 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void syncDrafts_WithExistingCategory_ShouldUpdateCategory() {
+    public void sync_WithExistingCategory_ShouldUpdateCategory() {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "externalId"));
 
 
-        categorySync.syncDrafts(categoryDrafts);
+        categorySync.sync(categoryDrafts);
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
         assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
         assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(1);
@@ -124,7 +123,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void syncDrafts_WithIdenticalExistingCategory_ShouldUpdateCategory() {
+    public void sync_WithIdenticalExistingCategory_ShouldUpdateCategory() {
         final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH,
             "name",
             "slug",
@@ -139,7 +138,7 @@ public class CategorySyncTest {
         categoryDrafts.add(categoryDraft);
 
 
-        categorySync.syncDrafts(categoryDrafts);
+        categorySync.sync(categoryDrafts);
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
         assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
         assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
@@ -150,7 +149,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void syncDrafts_WithExistingCategoryButExceptionOnFetch_ShouldFailSync() {
+    public void sync_WithExistingCategoryButExceptionOnFetch_ShouldFailSync() {
         CompletableFuture<Optional<Category>> futureThrowingSphereException = CompletableFuture.supplyAsync(() -> {
             throw new SphereException();
         });
@@ -162,7 +161,7 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "externalId"));
 
 
-        categorySync.syncDrafts(categoryDrafts);
+        categorySync.sync(categoryDrafts);
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
         assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
@@ -173,7 +172,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void syncDrafts_WithNoExistingCategoryButExceptionOnCreate_ShouldFailSync() {
+    public void sync_WithNoExistingCategoryButExceptionOnCreate_ShouldFailSync() {
         final CompletableFuture<Category> futureThrowingSphereException = CompletableFuture.supplyAsync(() -> {
             throw new SphereException();
         });
@@ -188,7 +187,7 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "externalId"));
 
 
-        categorySync.syncDrafts(categoryDrafts);
+        categorySync.sync(categoryDrafts);
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
         assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
@@ -199,7 +198,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void syncDrafts_WithExistingCategoryButExceptionOnUpdate_ShouldFailSync() {
+    public void sync_WithExistingCategoryButExceptionOnUpdate_ShouldFailSync() {
         final CompletableFuture<Category> futureThrowingSphereException = CompletableFuture.supplyAsync(() -> {
             throw new SphereException();
         });
@@ -211,7 +210,7 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "externalId"));
 
 
-        categorySync.syncDrafts(categoryDrafts);
+        categorySync.sync(categoryDrafts);
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
         assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);

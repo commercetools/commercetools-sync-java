@@ -25,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.inventories.utils.InventoryDraftTransformerUtils.transformToDrafts;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -73,9 +72,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * </p>
      */
     @Override
-    public CompletionStage<InventorySyncStatistics> syncDrafts(@Nonnull final List<InventoryEntryDraft>
+    public CompletionStage<InventorySyncStatistics> sync(@Nonnull final List<InventoryEntryDraft>
                                                                        inventoryDrafts) {
-        return super.syncDrafts(inventoryDrafts);
+        return super.sync(inventoryDrafts);
     }
 
     /**
@@ -96,24 +95,11 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *                                           processes performed by this sync instance
      */
     @Override
-    protected CompletionStage<InventorySyncStatistics> processDrafts(@Nonnull final List<InventoryEntryDraft>
+    protected CompletionStage<InventorySyncStatistics> process(@Nonnull final List<InventoryEntryDraft>
                                                                              inventories) {
         return populateSupplyChannels(inventories)
             .thenCompose(supplyChannelKeyToId -> splitToBatchesAndProcess(inventories, supplyChannelKeyToId))
             .exceptionally(ex -> statistics);
-    }
-
-    /**
-     * Converts {@code inventories} to {@link InventoryEntryDraft} objects and perform full synchronisation process
-     * as described in {@link InventorySync#syncDrafts(List)}.
-     *
-     * @param inventories  {@link List} of {@link InventoryEntry} that you would like to sync into your CTP project.
-     * @see InventorySync#syncDrafts(List)
-     */
-    @Override
-    protected CompletionStage<InventorySyncStatistics> process(@Nonnull final List<InventoryEntry> inventories) {
-        final List<InventoryEntryDraft> drafts = transformToDrafts(inventories);
-        return processDrafts(drafts);
     }
 
     /**
