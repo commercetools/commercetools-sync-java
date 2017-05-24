@@ -3,7 +3,6 @@ package com.commercetools.sync.inventories;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.queries.ChannelQuery;
-import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -20,7 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.commons.utils.SphereClientUtils.getCtpClientOfTargetProject;
+import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.EXPECTED_DELIVERY_1;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.EXPECTED_DELIVERY_2;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.QUANTITY_ON_STOCK_1;
@@ -40,7 +39,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class InventoryServiceTest {
 
     private InventoryService inventoryService;
-    private BlockingSphereClient targetProjectClient;
 
     /**
      * Deletes inventories and supply channels from source and target CTP projects.
@@ -50,8 +48,7 @@ public class InventoryServiceTest {
     public void setup() {
         deleteInventoriesAndSupplyChannels();
         populateTargetProject();
-        targetProjectClient = getCtpClientOfTargetProject().getClient();
-        inventoryService = new InventoryServiceImpl(targetProjectClient);
+        inventoryService = new InventoryServiceImpl(CTP_TARGET_CLIENT);
     }
 
     @AfterClass
@@ -109,8 +106,11 @@ public class InventoryServiceTest {
         assertThat(result.getKey()).isEqualTo(SUPPLY_CHANNEL_KEY_2);
 
         //assert CTP state
-        final Optional<Channel> createdChannelOptional = targetProjectClient
-            .executeBlocking(ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_2)).head();
+        final Optional<Channel> createdChannelOptional = CTP_TARGET_CLIENT
+            .execute(ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_2))
+            .toCompletableFuture()
+            .join()
+            .head();
         assertThat(createdChannelOptional).isNotEmpty();
         assertThat(createdChannelOptional.get()).isEqualTo(result);
     }
@@ -134,7 +134,7 @@ public class InventoryServiceTest {
 
         //assert CTP state
         final Optional<InventoryEntry> updatedInventoryEntry =
-            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_2, null);
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_2, null);
         assertThat(updatedInventoryEntry).isNotEmpty();
         assertThat(updatedInventoryEntry.get()).isEqualTo(result);
     }
@@ -143,7 +143,7 @@ public class InventoryServiceTest {
     public void updateInventoryEntry_ShouldUpdateInventoryEntryProperly() {
         //fetch existing inventory entry and assert its state
         final Optional<InventoryEntry> existingEntryOptional =
-            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, null);
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);
         assertThat(existingEntryOptional).isNotEmpty();
 
         final InventoryEntry existingEntry = existingEntryOptional.get();
@@ -170,7 +170,7 @@ public class InventoryServiceTest {
 
         //assert CTP state
         final Optional<InventoryEntry> updatedInventoryEntry =
-            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, null);
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);
         assertThat(updatedInventoryEntry).isNotEmpty();
         assertThat(updatedInventoryEntry.get()).isEqualTo(result);
     }

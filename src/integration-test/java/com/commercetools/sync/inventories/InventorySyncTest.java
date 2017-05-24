@@ -4,7 +4,6 @@ import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.queries.ChannelQuery;
-import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
@@ -19,8 +18,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.utils.SphereClientUtils.getCtpClientOfSourceProject;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.getCtpClientOfTargetProject;
+import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.EXPECTED_DELIVERY_1;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.EXPECTED_DELIVERY_2;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.QUANTITY_ON_STOCK_1;
@@ -43,17 +42,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class InventorySyncTest {
 
-    private BlockingSphereClient targetProjectClient;
-    private BlockingSphereClient sourceProjectClient;
-
     /**
      * Deletes inventories and supply channels from source and target CTP projects.
      * Populates source and target CTP projects with test data.
      */
     @Before
     public void setup() {
-        this.sourceProjectClient = getCtpClientOfSourceProject().getClient();
-        this.targetProjectClient = getCtpClientOfTargetProject().getClient();
         deleteInventoriesAndSupplyChannels();
         populateSourceProject();
         populateTargetProject();
@@ -68,7 +62,7 @@ public class InventorySyncTest {
     public void sync_WithUpdatedDraft_ShouldUpdateEntryInCtp() {
         //Make sure that old entry has correct values before sync.
         final Optional<InventoryEntry> oldInventoryBeforeSync =
-            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, null);
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);
         assertThat(oldInventoryBeforeSync).isNotEmpty();
         assertValues(oldInventoryBeforeSync.get(), QUANTITY_ON_STOCK_1, EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1);
 
@@ -76,7 +70,7 @@ public class InventorySyncTest {
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
             .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, null)
             .build();
-        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(getCtpClientOfTargetProject())
+        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .build();
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
 
@@ -89,7 +83,7 @@ public class InventorySyncTest {
 
         //Make sure that old entry has correct values after sync.
         final Optional<InventoryEntry> oldInventoryAfterSync =
-            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, null);
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);
         assertThat(oldInventoryAfterSync).isNotEmpty();
         assertValues(oldInventoryAfterSync.get(), QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2);
     }
@@ -98,14 +92,14 @@ public class InventorySyncTest {
     public void sync_WithNewDraft_ShouldCreateDraftInCtp() {
         //Make sure that old entry has correct values before sync.
         final Optional<InventoryEntry> oldInventoryBeforeSync =
-            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_2, null);
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_2, null);
         assertThat(oldInventoryBeforeSync).isEmpty();
 
         //Prepare sync data.
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
             .of(SKU_2, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, null)
             .build();
-        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(getCtpClientOfTargetProject())
+        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .build();
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
 
@@ -118,7 +112,7 @@ public class InventorySyncTest {
 
         //Make sure that old entry has correct values after sync.
         final Optional<InventoryEntry> oldInventoryAfterSync =
-            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_2, null);
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_2, null);
         assertThat(oldInventoryAfterSync).isNotEmpty();
         assertValues(oldInventoryAfterSync.get(), QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2);
     }
@@ -132,8 +126,10 @@ public class InventorySyncTest {
     public void sync_WithExpandedReferenceToExistingSupplyChannel_ShouldUpdateEntry() {
         //Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
         final ChannelQuery supplyChannelQuery = ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_1);
-        final Optional<Channel> supplyChannel = targetProjectClient
-            .executeBlocking(supplyChannelQuery)
+        final Optional<Channel> supplyChannel = CTP_TARGET_CLIENT
+            .execute(supplyChannelQuery)
+            .toCompletableFuture()
+            .join()
             .head();
         assertThat(supplyChannel).isNotEmpty();
 
@@ -149,7 +145,7 @@ public class InventorySyncTest {
 
         //Ensure old entry values before sync.
         final Optional<InventoryEntry> oldInventoryBeforeSync =
-            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, supplyChannelReference);
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, supplyChannelReference);
         assertThat(oldInventoryBeforeSync).isPresent();
         assertThat(oldInventoryBeforeSync.get().getQuantityOnStock()).isEqualTo(QUANTITY_ON_STOCK_1);
         assertThat(oldInventoryBeforeSync.get().getExpectedDelivery()).isEqualTo(EXPECTED_DELIVERY_1);
@@ -157,7 +153,7 @@ public class InventorySyncTest {
         assertThat(oldInventoryBeforeSync.get().getSupplyChannel().getId()).isEqualTo(supplyChannelReference.getId());
 
         //Prepare sync options and perform sync of draft to target project.
-        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(getCtpClientOfTargetProject())
+        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .build();
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
         final InventorySyncStatistics inventorySyncStatistics = inventorySync
@@ -168,7 +164,7 @@ public class InventorySyncTest {
 
         //Ensure old entry values after sync.
         final Optional<InventoryEntry> oldInventoryAfterSync =
-            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, supplyChannelReference);
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, supplyChannelReference);
         assertThat(oldInventoryAfterSync).isPresent();
         assertThat(oldInventoryAfterSync.get().getQuantityOnStock()).isEqualTo(QUANTITY_ON_STOCK_2);
         assertThat(oldInventoryAfterSync.get().getExpectedDelivery()).isEqualTo(EXPECTED_DELIVERY_2);
@@ -189,8 +185,10 @@ public class InventorySyncTest {
          * This is done only for test assertion reasons, not necessary for sync.
          */
         final ChannelQuery supplyChannelQuery = ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_1);
-        final Optional<Channel> supplyChannel = targetProjectClient
-            .executeBlocking(supplyChannelQuery)
+        final Optional<Channel> supplyChannel = CTP_TARGET_CLIENT
+            .execute(supplyChannelQuery)
+            .toCompletableFuture()
+            .join()
             .head();
         assertThat(supplyChannel).isNotEmpty();
 
@@ -208,7 +206,7 @@ public class InventorySyncTest {
 
         //Ensure old entry values before sync.
         final Optional<InventoryEntry> oldInventoryBeforeSync =
-            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1,
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1,
                 supplyChannel.get().toReference());
         assertThat(oldInventoryBeforeSync).isPresent();
         assertThat(oldInventoryBeforeSync.get().getQuantityOnStock()).isEqualTo(QUANTITY_ON_STOCK_1);
@@ -216,7 +214,7 @@ public class InventorySyncTest {
         assertThat(oldInventoryBeforeSync.get().getRestockableInDays()).isEqualTo(RESTOCKABLE_IN_DAYS_1);
 
         //Prepare sync options and perform sync of draft to target project.
-        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(getCtpClientOfTargetProject())
+        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .build();
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
         final InventorySyncStatistics inventorySyncStatistics = inventorySync
@@ -227,7 +225,7 @@ public class InventorySyncTest {
 
         //Ensure old entry values after sync.
         final Optional<InventoryEntry> oldInventoryAfterSync =
-            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1,
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1,
                 supplyChannel.get().toReference());
         assertThat(oldInventoryAfterSync).isPresent();
         assertThat(oldInventoryAfterSync.get().getQuantityOnStock()).isEqualTo(QUANTITY_ON_STOCK_2);
@@ -239,8 +237,10 @@ public class InventorySyncTest {
     public void sync_WithNewSupplyChannelAndChannelsEnsured_ShouldCreateNewSupplyChannelInCtp() {
         //Make sure that supply channel doesn't exist before sync.
         final ChannelQuery oldSupplyChannelQuery = ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_2);
-        final Optional<Channel> oldSupplyChannelBeforeSync = getCtpClientOfTargetProject().getClient()
-            .executeBlocking(oldSupplyChannelQuery)
+        final Optional<Channel> oldSupplyChannelBeforeSync = CTP_TARGET_CLIENT
+            .execute(oldSupplyChannelQuery)
+            .toCompletableFuture()
+            .join()
             .head();
         assertThat(oldSupplyChannelBeforeSync).isEmpty();
 
@@ -249,7 +249,7 @@ public class InventorySyncTest {
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
             .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, newSupplyChannelReference)
             .build();
-        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(getCtpClientOfTargetProject())
+        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .ensureChannels(true)
             .build();
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
@@ -262,8 +262,10 @@ public class InventorySyncTest {
         assertStatistics(inventorySyncStatistics, 1, 1, 0, 0);
 
         //Make sure that supply channel exists before sync.
-        final Optional<Channel> oldSupplyChannelAfterSync = getCtpClientOfTargetProject().getClient()
-            .executeBlocking(oldSupplyChannelQuery)
+        final Optional<Channel> oldSupplyChannelAfterSync = CTP_TARGET_CLIENT
+            .execute(oldSupplyChannelQuery)
+            .toCompletableFuture()
+            .join()
             .head();
         assertThat(oldSupplyChannelAfterSync).isNotEmpty();
         assertThat(oldSupplyChannelAfterSync.get().getKey()).isEqualTo(SUPPLY_CHANNEL_KEY_2);
@@ -275,8 +277,10 @@ public class InventorySyncTest {
         final ChannelQuery targetChannelsQuery = ChannelQuery.of()
             .withPredicates(channelQueryModel ->
                 channelQueryModel.roles().containsAny(singletonList(ChannelRole.INVENTORY_SUPPLY)));
-        final List<Channel> targetChannelsBeforeSync = targetProjectClient
-            .executeBlocking(targetChannelsQuery)
+        final List<Channel> targetChannelsBeforeSync = CTP_TARGET_CLIENT
+            .execute(targetChannelsQuery)
+            .toCompletableFuture()
+            .join()
             .getResults();
         assertThat(targetChannelsBeforeSync).isNotEmpty();
         assertThat(targetChannelsBeforeSync).hasSize(1);
@@ -284,8 +288,10 @@ public class InventorySyncTest {
 
         //Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from source project.
         final ChannelQuery channelQuery = ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_1);
-        final Optional<Channel> sourceSupplyChannel = sourceProjectClient
-            .executeBlocking(channelQuery)
+        final Optional<Channel> sourceSupplyChannel = CTP_SOURCE_CLIENT
+            .execute(channelQuery)
+            .toCompletableFuture()
+            .join()
             .head();
         assertThat(sourceSupplyChannel).isNotEmpty();
 
@@ -300,15 +306,17 @@ public class InventorySyncTest {
             .build();
 
         //Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
-        final Optional<Channel> targetSupplyChannel = targetProjectClient
-            .executeBlocking(channelQuery)
+        final Optional<Channel> targetSupplyChannel = CTP_TARGET_CLIENT
+            .execute(channelQuery)
+            .toCompletableFuture()
+            .join()
             .head();
         assertThat(targetSupplyChannel).isNotEmpty();
         final Reference<Channel> targetChannelReference = targetSupplyChannel.get().toReference();
 
         //Ensure old entry values before sync.
         final Optional<InventoryEntry> oldInventoryBeforeSync =
-            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, targetChannelReference);
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, targetChannelReference);
         assertThat(oldInventoryBeforeSync).isPresent();
         assertThat(oldInventoryBeforeSync.get().getQuantityOnStock()).isEqualTo(QUANTITY_ON_STOCK_1);
         assertThat(oldInventoryBeforeSync.get().getExpectedDelivery()).isEqualTo(EXPECTED_DELIVERY_1);
@@ -316,7 +324,7 @@ public class InventorySyncTest {
         assertThat(oldInventoryBeforeSync.get().getSupplyChannel().getId()).isEqualTo(targetChannelReference.getId());
 
         //Prepare sync options and perform sync of draft to target project.
-        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(getCtpClientOfTargetProject())
+        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .build();
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
         final InventorySyncStatistics inventorySyncStatistics = inventorySync
@@ -327,7 +335,7 @@ public class InventorySyncTest {
 
         //Ensure old entry values after sync.
         final Optional<InventoryEntry> oldInventoryAfterSync =
-            getInventoryEntryBySkuAndSupplyChannel(targetProjectClient, SKU_1, targetChannelReference);
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, targetChannelReference);
         assertThat(oldInventoryAfterSync).isPresent();
         assertThat(oldInventoryAfterSync.get().getQuantityOnStock()).isEqualTo(QUANTITY_ON_STOCK_2);
         assertThat(oldInventoryAfterSync.get().getExpectedDelivery()).isEqualTo(EXPECTED_DELIVERY_2);
@@ -335,8 +343,10 @@ public class InventorySyncTest {
         assertThat(oldInventoryAfterSync.get().getSupplyChannel().getId()).isEqualTo(targetChannelReference.getId());
 
         //Ensure channels in target project after sync
-        final List<Channel> targetChannelsAfterSync = targetProjectClient
-            .executeBlocking(targetChannelsQuery)
+        final List<Channel> targetChannelsAfterSync = CTP_TARGET_CLIENT
+            .execute(targetChannelsQuery)
+            .toCompletableFuture()
+            .join()
             .getResults();
         assertThat(targetChannelsAfterSync).isNotEmpty();
         assertThat(targetChannelsAfterSync).hasSize(1);

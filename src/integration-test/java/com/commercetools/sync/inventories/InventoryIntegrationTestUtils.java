@@ -6,7 +6,7 @@ import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.commands.ChannelCreateCommand;
 import io.sphere.sdk.channels.commands.ChannelDeleteCommand;
 import io.sphere.sdk.channels.queries.ChannelQuery;
-import io.sphere.sdk.client.BlockingSphereClient;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
@@ -21,10 +21,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
 import static com.commercetools.sync.commons.utils.SphereClientUtils.cleanupTable;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.getCtpClientOfSourceProject;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.getCtpClientOfTargetProject;
 import static java.util.Collections.singleton;
 
 class InventoryIntegrationTestUtils {
@@ -52,7 +52,7 @@ class InventoryIntegrationTestUtils {
      *
      * @param sphereClient sphere client used to execute requests
      */
-    static void cleanupInventoryEntries(@Nonnull final BlockingSphereClient sphereClient) {
+    static void cleanupInventoryEntries(@Nonnull final SphereClient sphereClient) {
         cleanupTable(sphereClient, InventoryIntegrationTestUtils::inventoryEntryQuerySupplier,
             InventoryEntryDeleteCommand::of);
     }
@@ -63,7 +63,7 @@ class InventoryIntegrationTestUtils {
      *
      * @param sphereClient sphere client used to execute requests
      */
-    static void cleanupSupplyChannels(@Nonnull final BlockingSphereClient sphereClient) {
+    static void cleanupSupplyChannels(@Nonnull final SphereClient sphereClient) {
         cleanupTable(sphereClient, InventoryIntegrationTestUtils::supplyChannelQuerySupplier,
             ChannelDeleteCommand::of);
     }
@@ -72,10 +72,10 @@ class InventoryIntegrationTestUtils {
      * Deletes inventory entries and supply channels from both source and target projects.
      */
     static void deleteInventoriesAndSupplyChannels() {
-        cleanupInventoryEntries(getCtpClientOfSourceProject().getClient());
-        cleanupSupplyChannels(getCtpClientOfSourceProject().getClient());
-        cleanupInventoryEntries(getCtpClientOfTargetProject().getClient());
-        cleanupSupplyChannels(getCtpClientOfTargetProject().getClient());
+        cleanupInventoryEntries(CTP_SOURCE_CLIENT);
+        cleanupSupplyChannels(CTP_SOURCE_CLIENT);
+        cleanupInventoryEntries(CTP_TARGET_CLIENT);
+        cleanupSupplyChannels(CTP_TARGET_CLIENT);
     }
 
     /**
@@ -94,11 +94,15 @@ class InventoryIntegrationTestUtils {
         final ChannelDraft channelDraft2 = ChannelDraft.of(SUPPLY_CHANNEL_KEY_2)
             .withRoles(ChannelRole.INVENTORY_SUPPLY);
 
-        final String channelId1 = getCtpClientOfSourceProject().getClient()
-            .executeBlocking(ChannelCreateCommand.of(channelDraft1))
+        final String channelId1 = CTP_SOURCE_CLIENT
+            .execute(ChannelCreateCommand.of(channelDraft1))
+            .toCompletableFuture()
+            .join()
             .getId();
-        final String channelId2 = getCtpClientOfSourceProject().getClient()
-            .executeBlocking(ChannelCreateCommand.of(channelDraft2))
+        final String channelId2 = CTP_SOURCE_CLIENT
+            .execute(ChannelCreateCommand.of(channelDraft2))
+            .toCompletableFuture()
+            .join()
             .getId();
 
         final Reference<Channel> supplyChannelReference1 = Channel.referenceOfId(channelId1);
@@ -111,9 +115,9 @@ class InventoryIntegrationTestUtils {
         final InventoryEntryDraft draft3 = InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_ON_STOCK_2,
             EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, supplyChannelReference2).build();
 
-        getCtpClientOfSourceProject().getClient().executeBlocking(InventoryEntryCreateCommand.of(draft1));
-        getCtpClientOfSourceProject().getClient().executeBlocking(InventoryEntryCreateCommand.of(draft2));
-        getCtpClientOfSourceProject().getClient().executeBlocking(InventoryEntryCreateCommand.of(draft3));
+        CTP_SOURCE_CLIENT.execute(InventoryEntryCreateCommand.of(draft1)).toCompletableFuture().join();
+        CTP_SOURCE_CLIENT.execute(InventoryEntryCreateCommand.of(draft2)).toCompletableFuture().join();
+        CTP_SOURCE_CLIENT.execute(InventoryEntryCreateCommand.of(draft3)).toCompletableFuture().join();
 
     }
 
@@ -127,9 +131,10 @@ class InventoryIntegrationTestUtils {
     static void populateTargetProject() {
         final ChannelDraft channelDraft = ChannelDraft.of(SUPPLY_CHANNEL_KEY_1)
             .withRoles(ChannelRole.INVENTORY_SUPPLY);
-        final String channelId = getCtpClientOfTargetProject()
-            .getClient()
-            .executeBlocking(ChannelCreateCommand.of(channelDraft))
+        final String channelId = CTP_TARGET_CLIENT
+            .execute(ChannelCreateCommand.of(channelDraft))
+            .toCompletableFuture()
+            .join()
             .getId();
         final Reference<Channel> supplyChannelReference = Channel.referenceOfId(channelId);
 
@@ -138,8 +143,8 @@ class InventoryIntegrationTestUtils {
         final InventoryEntryDraft draft2 = InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_ON_STOCK_1,
             EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1, supplyChannelReference).build();
 
-        getCtpClientOfTargetProject().getClient().executeBlocking(InventoryEntryCreateCommand.of(draft1));
-        getCtpClientOfTargetProject().getClient().executeBlocking(InventoryEntryCreateCommand.of(draft2));
+        CTP_TARGET_CLIENT.execute(InventoryEntryCreateCommand.of(draft1)).toCompletableFuture().join();
+        CTP_TARGET_CLIENT.execute(InventoryEntryCreateCommand.of(draft2)).toCompletableFuture().join();
     }
 
     /**
@@ -150,8 +155,7 @@ class InventoryIntegrationTestUtils {
      * @param supplyChannel optional reference to supply channel of requested inventory entry
      * @return {@link Optional} which may contain inventory entry of {@code sku} and {@code supplyChannel}
      */
-    static Optional<InventoryEntry> getInventoryEntryBySkuAndSupplyChannel(@Nonnull final BlockingSphereClient
-                                                                               sphereClient,
+    static Optional<InventoryEntry> getInventoryEntryBySkuAndSupplyChannel(@Nonnull final SphereClient sphereClient,
                                                                            @Nonnull final String sku,
                                                                            @Nullable final Reference<Channel>
                                                                                supplyChannel) {
@@ -162,7 +166,10 @@ class InventoryIntegrationTestUtils {
                 inventoryEntryQueryModel -> inventoryEntryQueryModel.supplyChannel().isNotPresent())
             : query.plusPredicates(
                 inventoryEntryQueryModel -> inventoryEntryQueryModel.supplyChannel().is(supplyChannel));
-        return sphereClient.executeBlocking(query).head();
+        return sphereClient.execute(query)
+            .toCompletableFuture()
+            .join()
+            .head();
     }
 
     private static InventoryEntryQuery inventoryEntryQuerySupplier() {
