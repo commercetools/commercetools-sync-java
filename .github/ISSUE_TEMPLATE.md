@@ -14,10 +14,10 @@ so that:
 
 <!-- If you're describing a bug, please let us know the steps to reproduce your problem. -->
 
-### Expected Behavior
+### Expected Behaviour
 <!-- What should happen or how it should work. -->
 
-### Current Behavior
+### Current Behaviour
 <!-- What happens instead of the expected behavior. -->
 <!-- If suggesting a change, explain the difference from current behavior. -->
 

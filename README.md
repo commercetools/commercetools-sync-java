@@ -20,8 +20,8 @@ commercetools sync is a Java library that could be used to synchronise in any of
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
 2. Synchronise data coming from an already-existing commercetools project in the form of 
-[JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) resource objects 
-(e.g. [Category](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/Category.java)).
+[JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
+(e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
 
 Currently this library supports synchronising the following commercetools resources:-

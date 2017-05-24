@@ -17,7 +17,7 @@ commercetools project.
 objects to the desired commercetools project.
 2. Synchronise inventory entries coming from an already-existing commercetools project in the form of
 [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) 
-[InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntry.java)
+[InventoryEntryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntryDraft.java)
 objects to another commercetools project.
 
 3. Build any of the following commercetools [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) update action
@@ -96,32 +96,9 @@ If not provided, it is set to `30` by default.
 ### How to use `InventorySync`
 
 Having `InventorySyncOptions` instance the [InventorySync](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/inventories/InventorySync.java)
-instance can be created. It can then do any of the following:
+instance can be created. It can then do the following:
 
 #### `sync`
-
-Used to sync a list of [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk)
-[InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntry.java)
-objects.
-
-````java
-// instantiating an inventory sync
-final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
-  
-// execute the sync on your list of inventory entries
-inventorySync.sync(inventoryEntries);
-````
-
-**Important!**
-Before using `sync`, you should make sure that every [InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntry.java)
-in your input list which contains a [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
-to a supply channel has that reference expanded, that means when calling [getObj()](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java#L52)
-function on a reference's object a [Channel](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/channels/Channel.java)
-object that contains its key would be obtained. More information about why it is important can be found in the
-[FAQ](#why-is-it-important-to-provide-extended-supply-channel-references-in-entries-from-input-lists-of-sync-process)
-section.
-
-#### `syncDrafts`
 
 Used to sync a list of [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk)
 [InventoryEntryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntryDraft.java)
@@ -132,11 +109,11 @@ objects.
 final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
 
 // execute the sync on your list of inventory entries
-inventorySync.syncDrafts(inventoryEntriesDrafts);
+inventorySync.sync(inventoryEntriesDrafts);
 ````
 
 **Important!**
-Before using `syncDrafts` you should make sure that every `InventoryEntryDraft`, that belongs to a `Channel`, in your
+Before using `sync` you should make sure that every `InventoryEntryDraft`, that belongs to a `Channel`, in your
 input list either:
 - Has the [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
 to the `supplyChannel` expanded. This means that calling `getObj()` on the reference would not
@@ -157,7 +134,7 @@ Used to get an object  containing all the stats of the sync process; which inclu
 of updated, created, failed, processed inventory entries and the processing time of the sync in different time units and in a
 human readable format.
 ````java
-inventorySync.syncDrafts(inventoryDrafts);
+inventorySync.sync(inventoryDrafts);
 inventorySync.getStatistics().getCreated(); // 1000
 inventorySync.getStatistics().getFailed(); // 5
 inventorySync.getStatistics().getUpdated(); // 995
