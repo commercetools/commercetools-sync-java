@@ -46,7 +46,6 @@ public class SphereClientUtils {
             .toCompletableFuture()
             .join()
             .getResults()
-            .stream()
             .forEach(item -> client.execute(deleteFunction.apply(item)).toCompletableFuture().join());
     }
 }
