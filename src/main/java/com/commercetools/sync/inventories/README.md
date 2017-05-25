@@ -1,7 +1,6 @@
 # commercetools inventory sync
 
-Java module that can be used to synchronise your new commercetools inventory entries to your existing
-commercetools project.
+Utility which provides API for building CTP inventory update actions and inventory synchronisation.
 
 - [What it offers?](#what-it-offers)
 - [How to use it?](#how-to-use-it)
