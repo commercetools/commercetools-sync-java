@@ -49,7 +49,7 @@ final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
 inventorySync.sync(inventoryEntryDrafts);
 ````
 
-**Preconditions:** The sync expects a list of non-null `InventoryEntryDraft` objects that have their `sku` fields set.
+**Preconditions:** The sync expects a list of `InventoryEntryDraft` objects that have their `sku` fields set.
 Also every `InventoryEntryDraft`, that belongs to a `Channel`, in your input list must either:
 - Has the [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
 to the `supplyChannel` expanded. This means that calling `getObj()` on the reference would not
@@ -114,14 +114,9 @@ a flag which enables the sync module to add additional object properties (e.g. c
 existing ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing
 object properties.
 
+<!-- TODO It seems that I don't use all of them e.g. removeOtherSet/CollectionEntries however they are enable by inheritance. Ensure if should they be documented here -->
+
 ## Under the hood
 
-The inventory sync uses the `sku` and `supplyChannel` key to match new inventory entries to existing ones.
-1. If an inventory entry exists with the same `sku` and a reference to a `supplyChannel` with the same key, it means that
-this inventory entry already exists on the CTP project. Therefore, the tool calculates update actions that should be
-done to update the old inventory entry with the new inventory entry's fields. Only if there are update actions needed,
-they will be issued to the CTP platform.
-2. If no matching inventory entry with the same `sku` and a reference to a `supplyChannel` with the same key is found,
-the tool will create a new one.
-
-The sync, however, will never delete an inventory entry.
+The tool matches categories by their `sku` and `supplyChannel` key. Based on that inventories are created or updated.
+Currently the tool does not support inventory deletion.
