@@ -13,6 +13,7 @@ import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.commands.InventoryEntryCreateCommand;
 import io.sphere.sdk.inventory.commands.InventoryEntryUpdateCommand;
+import io.sphere.sdk.inventory.expansion.InventoryEntryExpansionModel;
 import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.inventory.queries.InventoryEntryQueryBuilder;
 import io.sphere.sdk.queries.QueryExecutionUtils;
@@ -38,6 +39,7 @@ final class InventoryServiceImpl implements InventoryService {
     public CompletionStage<List<InventoryEntry>> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus) {
         final InventoryEntryQuery query = InventoryEntryQueryBuilder.of()
                 .plusPredicates(queryModel -> queryModel.sku().isIn(skus))
+                .plusExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
                 .build();
         return QueryExecutionUtils.queryAll(ctpClient, query);
     }
