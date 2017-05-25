@@ -76,18 +76,44 @@ inventorySync.sync(inventoryEntryDrafts)
 
 Additional optional configuration for the sync can be configured on the `InventorySyncOptions` instance, according to your need:
 
-- `ensureChannels` a flag which represents a strategy to handle syncing inventory entries with missing supply channels.
+- `ensureChannels`
+a flag which represents a strategy to handle syncing inventory entries with missing supply channels.
 Having an inventory entry, with a missing supply channel reference, could be processed in either of the following ways:
     - If `ensureChannels` is set to `false` this inventory entry won't be synced and the `errorCallback` will be triggered.
     - If `ensureChannels` is set to `true` the sync will attempt to create the missing channel with the given key.
       If it fails to create the supply channel, the inventory entry won't sync and `errorCallback` will be triggered.
     - If not provided, it is set to `false` by default.
 
-- `batchSize` a number that could be used to set the batch size with which inventory entries are fetched and processed with,
-  as inventory entries are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
-  `batchSize` inventory entries from the input list, then fetches the corresponding inventory entries from the target CTP project
-  in a single request, and then performs the update actions needed. Playing with this option can slightly improve or reduce processing speed.
+- `batchSize`
+a number that could be used to set the batch size with which inventory entries are fetched and processed with,
+as inventory entries are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
+`batchSize` inventory entries from the input list, then fetches the corresponding inventory entries from the target CTP project
+in a single request, and then performs the update actions needed. Playing with this option can slightly improve or reduce processing speed.
     - If not provided, it is set to `30` by default.
+
+- `errorCallBack`
+a callback that is called whenever an event occurs during the sync process that represents an error.
+
+- `warningCallBack`
+a callback that is called whenever an event occurs during the sync process that represents a warning.
+
+- `removeOtherLocales`
+a flag which enables the sync module to add additional localizations without deleting existing ones, if set to `false`.
+If set to `true`, which is the default value of the option, it deletes the existing object properties.
+
+- `removeOtherSetEntries`
+a flag which enables the sync module to add additional Set entries without deleting existing ones, if set to `false`.
+If set to `true`, which is the default value of the option, it deletes the existing Set entries.
+
+- `removeOtherCollectionEntries`
+a flag which enables the sync module to add collection (e.g. Assets, Images etc.) entries without deleting existing
+ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing collection
+entries.
+
+- `removeOtherProperties`
+a flag which enables the sync module to add additional object properties (e.g. custom fields, etc..) without deleting
+existing ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing
+object properties.
 
 ## How does it work?
 
