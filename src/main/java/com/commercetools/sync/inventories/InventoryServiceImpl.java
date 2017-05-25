@@ -39,7 +39,6 @@ final class InventoryServiceImpl implements InventoryService {
     public CompletionStage<List<InventoryEntry>> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus) {
         final InventoryEntryQuery query = InventoryEntryQueryBuilder.of()
                 .plusPredicates(queryModel -> queryModel.sku().isIn(skus))
-                .plusExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
                 .build();
         return QueryExecutionUtils.queryAll(ctpClient, query);
     }

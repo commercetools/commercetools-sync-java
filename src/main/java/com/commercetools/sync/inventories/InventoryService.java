@@ -17,7 +17,6 @@ interface InventoryService {
 
     /**
      * Queries existing {@link InventoryEntry}'s against set of skus.
-     * Returned entries have an expanded reference to the {@code supplyChannel}.
      *
      * @param skus {@link Set} of sku values, used in search predicate
      * @return {@link List} of matching entries or empty list when there was no entry of sku matching to {@code skus}.
