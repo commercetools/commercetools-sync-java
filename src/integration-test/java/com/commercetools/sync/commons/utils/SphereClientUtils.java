@@ -29,23 +29,27 @@ public class SphereClientUtils {
 
     /**
      * Fetches resources of {@link T} using query provided by {@code querySupplier}.
-     * Then each resource from result list is deleted using command provided by {@code deleteFunction}.
+     * Then each resource from result list is converted to {@link SphereRequest} using {@code resourceToRequest}.
+     * Then each request is executed by {@code client}.
      * Method blocks until above operations were done.
      *
+     * Example of use: you could provide a supplier which returns a query that will fetch all resources
+     * of type {@link io.sphere.sdk.inventory.InventoryEntry}, and a function that returns delete command for given
+     * inventory entry. It would result in deleting all inventory entries from the given CTP.
+     *
      * @param client sphere client used to executing requests
-     * @param querySupplier supplier of resources that need to be cleaned up
-     * @param deleteFunction function that takes resource and returns its delete command
-     * @param <T> type of resource to cleanup
+     * @param querySupplier supplier of resources that need to be processed
+     * @param resourceToRequest function that takes resource and returns sphere request
+     * @param <T> type of resource
      */
-    public static <T> void cleanupTable(
-        @Nonnull final SphereClient client,
-        @Nonnull final Supplier<SphereRequest<PagedQueryResult<T>>> querySupplier,
-        @Nonnull final Function<T, SphereRequest<T>> deleteFunction) {
+    public static <T> void fetchAndProcess(@Nonnull final SphereClient client,
+                                           @Nonnull final Supplier<SphereRequest<PagedQueryResult<T>>> querySupplier,
+                                           @Nonnull final Function<T, SphereRequest<T>> resourceToRequest) {
 
         client.execute(querySupplier.get())
             .toCompletableFuture()
             .join()
             .getResults()
-            .forEach(item -> client.execute(deleteFunction.apply(item)).toCompletableFuture().join());
+            .forEach(item -> client.execute(resourceToRequest.apply(item)).toCompletableFuture().join());
     }
 }

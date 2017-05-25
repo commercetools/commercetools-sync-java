@@ -24,7 +24,7 @@ import java.util.Optional;
 import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.cleanupTable;
+import static com.commercetools.sync.commons.utils.SphereClientUtils.fetchAndProcess;
 import static java.util.Collections.singleton;
 
 class InventoryIntegrationTestUtils {
@@ -53,7 +53,7 @@ class InventoryIntegrationTestUtils {
      * @param sphereClient sphere client used to execute requests
      */
     static void cleanupInventoryEntries(@Nonnull final SphereClient sphereClient) {
-        cleanupTable(sphereClient, InventoryIntegrationTestUtils::inventoryEntryQuerySupplier,
+        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::inventoryEntryQuerySupplier,
             InventoryEntryDeleteCommand::of);
     }
 
@@ -64,7 +64,7 @@ class InventoryIntegrationTestUtils {
      * @param sphereClient sphere client used to execute requests
      */
     static void cleanupSupplyChannels(@Nonnull final SphereClient sphereClient) {
-        cleanupTable(sphereClient, InventoryIntegrationTestUtils::supplyChannelQuerySupplier,
+        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::supplyChannelQuerySupplier,
             ChannelDeleteCommand::of);
     }
 
