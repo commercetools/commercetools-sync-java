@@ -38,10 +38,8 @@ class InventoryIntegrationTestUtils {
     static final Integer RESTOCKABLE_IN_DAYS_1 = 1;
     static final Integer RESTOCKABLE_IN_DAYS_2 = 2;
 
-    static final ZonedDateTime EXPECTED_DELIVERY_1 =
-        ZonedDateTime.of(2017, 4, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
-    static final ZonedDateTime EXPECTED_DELIVERY_2 =
-        ZonedDateTime.of(2017, 5, 1, 20, 0, 0, 0, ZoneId.of("UTC"));
+    static final ZonedDateTime EXPECTED_DELIVERY_1 = ZonedDateTime.of(2017, 4, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
+    static final ZonedDateTime EXPECTED_DELIVERY_2 = ZonedDateTime.of(2017, 5, 1, 20, 0, 0, 0, ZoneId.of("UTC"));
 
     static final String SUPPLY_CHANNEL_KEY_1 = "channel-key_1";
     static final String SUPPLY_CHANNEL_KEY_2 = "channel-key_2";
@@ -94,16 +92,10 @@ class InventoryIntegrationTestUtils {
         final ChannelDraft channelDraft2 = ChannelDraft.of(SUPPLY_CHANNEL_KEY_2)
             .withRoles(ChannelRole.INVENTORY_SUPPLY);
 
-        final String channelId1 = CTP_SOURCE_CLIENT
-            .execute(ChannelCreateCommand.of(channelDraft1))
-            .toCompletableFuture()
-            .join()
-            .getId();
-        final String channelId2 = CTP_SOURCE_CLIENT
-            .execute(ChannelCreateCommand.of(channelDraft2))
-            .toCompletableFuture()
-            .join()
-            .getId();
+        final String channelId1 = CTP_SOURCE_CLIENT.execute(ChannelCreateCommand.of(channelDraft1))
+            .toCompletableFuture().join().getId();
+        final String channelId2 = CTP_SOURCE_CLIENT.execute(ChannelCreateCommand.of(channelDraft2))
+            .toCompletableFuture().join().getId();
 
         final Reference<Channel> supplyChannelReference1 = Channel.referenceOfId(channelId1);
         final Reference<Channel> supplyChannelReference2 = Channel.referenceOfId(channelId2);
@@ -129,13 +121,9 @@ class InventoryIntegrationTestUtils {
      * reference to supply channel created before.
      */
     static void populateTargetProject() {
-        final ChannelDraft channelDraft = ChannelDraft.of(SUPPLY_CHANNEL_KEY_1)
-            .withRoles(ChannelRole.INVENTORY_SUPPLY);
-        final String channelId = CTP_TARGET_CLIENT
-            .execute(ChannelCreateCommand.of(channelDraft))
-            .toCompletableFuture()
-            .join()
-            .getId();
+        final ChannelDraft channelDraft = ChannelDraft.of(SUPPLY_CHANNEL_KEY_1).withRoles(ChannelRole.INVENTORY_SUPPLY);
+        final String channelId = CTP_TARGET_CLIENT.execute(ChannelCreateCommand.of(channelDraft))
+            .toCompletableFuture().join().getId();
         final Reference<Channel> supplyChannelReference = Channel.referenceOfId(channelId);
 
         final InventoryEntryDraft draft1 = InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_ON_STOCK_1,
@@ -159,17 +147,13 @@ class InventoryIntegrationTestUtils {
                                                                            @Nonnull final String sku,
                                                                            @Nullable final Reference<Channel>
                                                                                supplyChannel) {
-        InventoryEntryQuery query = InventoryEntryQuery.of()
-            .plusPredicates(inventoryEntryQueryModel -> inventoryEntryQueryModel.sku().is(sku));
+        InventoryEntryQuery query = InventoryEntryQuery.of().plusPredicates(inventoryEntryQueryModel ->
+            inventoryEntryQueryModel.sku().is(sku));
         query = supplyChannel == null
-            ? query.plusPredicates(
-                inventoryEntryQueryModel -> inventoryEntryQueryModel.supplyChannel().isNotPresent())
-            : query.plusPredicates(
-                inventoryEntryQueryModel -> inventoryEntryQueryModel.supplyChannel().is(supplyChannel));
-        return sphereClient.execute(query)
-            .toCompletableFuture()
-            .join()
-            .head();
+            ? query.plusPredicates(inventoryEntryQueryModel -> inventoryEntryQueryModel.supplyChannel().isNotPresent())
+            : query.plusPredicates(inventoryEntryQueryModel -> inventoryEntryQueryModel.supplyChannel()
+            .is(supplyChannel));
+        return sphereClient.execute(query).toCompletableFuture().join().head();
     }
 
     private static InventoryEntryQuery inventoryEntryQuerySupplier() {
@@ -177,10 +161,7 @@ class InventoryIntegrationTestUtils {
     }
 
     private static ChannelQuery supplyChannelQuerySupplier() {
-        return ChannelQuery.of()
-            .withLimit(QUERY_MAX_LIMIT)
-            .plusPredicates(channelQueryModel ->
-                channelQueryModel.roles()
-                    .containsAny(singleton(ChannelRole.INVENTORY_SUPPLY)));
+        return ChannelQuery.of().withLimit(QUERY_MAX_LIMIT).plusPredicates(channelQueryModel ->
+            channelQueryModel.roles().containsAny(singleton(ChannelRole.INVENTORY_SUPPLY)));
     }
 }
