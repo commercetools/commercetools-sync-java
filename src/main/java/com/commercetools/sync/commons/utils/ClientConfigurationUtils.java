@@ -14,7 +14,6 @@ import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
 
 public class ClientConfigurationUtils {
-    //private static BlockingSphereClient ctpClient;
     private static final long DEFAULT_TIMEOUT = 30;
     private static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
 
@@ -26,15 +25,11 @@ public class ClientConfigurationUtils {
     public static synchronized BlockingSphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
                                                                  final long timeout,
                                                                  @Nonnull final TimeUnit timeUnit) {
-        //TODO refactor cache (commented code) (GITHUB ISSUE #42)
-        //if (ctpClient == null) {
+        //TODO provide reasonable cache (GITHUB ISSUE #42)
         final HttpClient httpClient = newHttpClient();
         final SphereAccessTokenSupplier tokenSupplier =
             SphereAccessTokenSupplier.ofAutoRefresh(clientConfig, httpClient, false);
         final SphereClient underlying = SphereClient.of(clientConfig, httpClient, tokenSupplier);
-        //    ctpClient = BlockingSphereClient.of(underlying, timeout, timeUnit);
-        //}
-        //return ctpClient;
         return BlockingSphereClient.of(underlying, timeout, timeUnit);
     }
 

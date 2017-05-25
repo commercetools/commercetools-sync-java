@@ -33,7 +33,7 @@ public class SphereClientUtils {
      * Then each request is executed by {@code client}.
      * Method blocks until above operations were done.
      *
-     * Example of use: you could provide a supplier which returns a query that will fetch all resources
+     * <p>Example of use: you could provide a supplier which returns a query that will fetch all resources
      * of type {@link io.sphere.sdk.inventory.InventoryEntry}, and a function that returns delete command for given
      * inventory entry. It would result in deleting all inventory entries from the given CTP.
      *
