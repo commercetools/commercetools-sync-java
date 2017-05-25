@@ -3,8 +3,7 @@
 Utility which provides API for building CTP inventory update actions and inventory synchronisation.
 
 - [Usage](#usage)
-- [How does it work?](#how-does-it-work)
-- [FAQ](#faq)
+- [Under the hood](#under-the-hood)
 
 
 ## Usage
@@ -50,7 +49,7 @@ final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
 inventorySync.sync(inventoryEntryDrafts);
 ````
 
-**Note:** The sync expects a list of non-null `InventoryEntryDraft` objects that have their `sku` fields set.
+**Preconditions:** The sync expects a list of non-null `InventoryEntryDraft` objects that have their `sku` fields set.
 Also every `InventoryEntryDraft`, that belongs to a `Channel`, in your input list must either:
 - Has the [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
 to the `supplyChannel` expanded. This means that calling `getObj()` on the reference would not
@@ -115,7 +114,7 @@ a flag which enables the sync module to add additional object properties (e.g. c
 existing ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing
 object properties.
 
-## How does it work?
+## Under the hood
 
 The inventory sync uses the `sku` and `supplyChannel` key to match new inventory entries to existing ones.
 1. If an inventory entry exists with the same `sku` and a reference to a `supplyChannel` with the same key, it means that
@@ -126,29 +125,3 @@ they will be issued to the CTP platform.
 the tool will create a new one.
 
 The sync, however, will never delete an inventory entry.
- 
-## FAQ
-#### What does the number of processed inventories actually refer to in the statistics of the sync process?
-It refers to the total number of inventories input to the sync. Under all the following cases an inventory is to be
-counted as processed:
-- new inventory caused the old one to be updated.
-- new inventory was created.
-- new inventory was the same as the old one and requires no action.
-- new inventory failed to process.
-
-The only case where an inventory would not be processed is if the entire sync process fails and stops, before reaching
-this inventory in the input list.
-
-#### Why is it important to provide extended supply channel references in entries from input lists of sync process?
-In CTP, an [inventory](http://dev.commercetools.com/http-api-projects-inventory.html) allows you to track stock quantity per SKU and optionally per supply channel, which makes
-the sync uniquely identify an inventory entry by both its `sku` and supply channel `key`. It uses them for matching old and new inventory entries. In both the [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk)
-[InventoryEntryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntryDraft.java)
-and the [InventoryEntry](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/inventory/InventoryEntry.java)
-`sku` is provided directly as a `String`, but they just have a
-[JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk)
-[Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
-to the channel, not the `key` of the channel (unless [reference expanded](https://dev.commercetools.com/http-api.html#reference-expansion)).
-Therefore, make sure that you comply to the preconditions of syncing as mentioned in the [How to use it?](#how-to-use-it) section. This is
-important for proper comparision of new and old inventories that reference supply channels.
-
- 
