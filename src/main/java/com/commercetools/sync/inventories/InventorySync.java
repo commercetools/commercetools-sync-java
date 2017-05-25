@@ -117,7 +117,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * executed. Valid draft is a {@link InventoryEntryDraft} object that is not {@code null} and its SKU is not empty.
      *
      * @param inventories {@link List} of {@link InventoryEntryDraft} resources that would be synced into CTP project.
-     * @param channelsMap cache of existing {@code supplyChannels}
+     * @param channelsMap mapping of supply channel key to supply channel Id for supply channels existing in
+     *                             CTP project.
      * @return {@link CompletionStage} with {@link InventorySyncStatistics} holding statistics of all sync
      *                                           processes performed by this sync instance
      */
@@ -176,8 +177,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *     <li>Instantiate {@code supplyChannelKeyToId} map</li>
      *     <li>Create missing supply channels if needed</li>
      * </ul>
-     * Method returns {@link CompletionStage} of {@link ChannelsMap} that contains cache of existing
-     * {@code supplyChannels}. It may contain {@link SyncProblemException} when fetching supply channels results in
+     * Method returns {@link CompletionStage} of {@link ChannelsMap} that contains mapping of supply channels'
+     * keys to ids. It may contain {@link SyncProblemException} when fetching supply channels results in
      * exception.
      *
      * @param drafts {@link List} containing {@link InventoryEntryDraft} objects where missing supply channels can occur
@@ -199,13 +200,12 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * When {@code ensureChannel} from {@link InventorySyncOptions} is set to {@code true} then attempts to create
      * missing supply channels. Missing supply channel is a supply channel of key that can not be found in CTP project,
      * but occurs in {@code drafts} list. Method returns {@link CompletionStage} of {@link ChannelsMap} that
-     * contains cache of existing {@code supplyChannels}. If there is no need to create missing supply channels then
-     * cache is built from passed {@code channelsMapBuilder}. Otherwise {@code channelsMapBuilder} is filled with
-     * newly created channels and then built.
+     * contains updated {@code channelsMapBuilder}.
      *
      * @param drafts {@link List} containing {@link InventoryEntryDraft} objects where missing supply channels can occur
-     * @param channelsMapBuilder builder of cache of existing {@code supplyChannels}
-     * @return {@link CompletionStage} of {@link ChannelsMap} that contains cache of existing {@code supplyChannels}
+     * @param channelsMapBuilder mapping of supply channel key to supply channel Id for supply channels existing in
+     *                             CTP project.
+     * @return {@link CompletionStage} of {@link ChannelsMap} that contains updated {@code channelsMapBuilder}
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<ChannelsMap> createMissingSupplyChannels(@Nonnull final List<InventoryEntryDraft> drafts,
@@ -246,7 +246,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * results in exception then error callback is executed and {@code batchOfDrafts} isn't processed.
 
      * @param batchOfDrafts batch of drafts that need to be synced
-     * @param channelsMap cache of existing {@code supplyChannels}
+     * @param channelsMap mapping of supply channel key to supply channel Id for supply channels existing in
+     *                             CTP project.
      * @return {@link CompletionStage} of {@link Void} that indicates method progress, that may contain
      *      {@link SyncProblemException} when fetching existing inventory entries results in exception.
      */
@@ -271,7 +272,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param existingInventories mapping of {@link SkuChannelKeyTuple} to {@link InventoryEntry} of instances existing
      *                            in a CTP project
      * @param drafts drafts that need to be synced
-     * @param channelsMap cache of existing {@code supplyChannels}
+     * @param channelsMap mapping of supply channel key to supply channel Id for supply channels existing in
+     *                             CTP project.
      * @return {@link CompletionStage} of {@link Void} that indicates all possible creation/update attempts progress.
      */
     private CompletionStage<Void> compareAndSync(@Nonnull final Map<SkuChannelKeyTuple, InventoryEntry>
@@ -324,7 +326,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * returned {@link CompletionStage} contains such exception.
      *
      * @param drafts {@link List} of drafts
-     * @param channelsMap cache of existing {@code supplyChannels}
      * @return {@link CompletionStage} instance which contains either {@link Map} of {@link SkuChannelKeyTuple} to
      *      {@link InventoryEntry} of instances existing in a CTP project that correspond to passed {@code drafts} by
      *      sku comparision, or exception occurred during fetching existing inventory entries
@@ -371,7 +372,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param entry entry from existing system that could be updated.
      * @param draft draft containing data that could differ from data in {@code entry}.
      *              <strong>Sku isn't compared</strong>
-     * @return {@link CompletionStage} of {@link InventoryEntry} that may contain passed {@code entry}, updated
+     * @return {@link CompletionStage} of {@link CompletionStage} that may contain passed {@code entry}, updated
      *      {@link InventoryEntry}, or exception
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
