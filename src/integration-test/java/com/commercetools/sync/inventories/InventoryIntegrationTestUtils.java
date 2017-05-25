@@ -52,7 +52,7 @@ class InventoryIntegrationTestUtils {
      *
      * @param sphereClient sphere client used to execute requests
      */
-    static void cleanupInventoryEntries(@Nonnull final SphereClient sphereClient) {
+    static void deleteInventoryEntries(@Nonnull final SphereClient sphereClient) {
         fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::inventoryEntryQuerySupplier,
             InventoryEntryDeleteCommand::of);
     }
@@ -63,7 +63,7 @@ class InventoryIntegrationTestUtils {
      *
      * @param sphereClient sphere client used to execute requests
      */
-    static void cleanupSupplyChannels(@Nonnull final SphereClient sphereClient) {
+    static void deleteSupplyChannels(@Nonnull final SphereClient sphereClient) {
         fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::supplyChannelQuerySupplier,
             ChannelDeleteCommand::of);
     }
@@ -72,10 +72,10 @@ class InventoryIntegrationTestUtils {
      * Deletes inventory entries and supply channels from both source and target projects.
      */
     static void deleteInventoriesAndSupplyChannels() {
-        cleanupInventoryEntries(CTP_SOURCE_CLIENT);
-        cleanupSupplyChannels(CTP_SOURCE_CLIENT);
-        cleanupInventoryEntries(CTP_TARGET_CLIENT);
-        cleanupSupplyChannels(CTP_TARGET_CLIENT);
+        deleteInventoryEntries(CTP_SOURCE_CLIENT);
+        deleteSupplyChannels(CTP_SOURCE_CLIENT);
+        deleteInventoryEntries(CTP_TARGET_CLIENT);
+        deleteSupplyChannels(CTP_TARGET_CLIENT);
     }
 
     /**
