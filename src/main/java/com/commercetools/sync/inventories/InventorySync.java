@@ -24,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.inventories.ChannelKeyExtractor.extractChannelKey;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -87,7 +88,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
 
     /**
      * Performs full process of synchronisation between inventory entries present in a system
-     * and passed {@code inventories}. This is accomplished by:
+     * and passed {@code inventoryDrafts}. This is accomplished by:
      * <ul>
      *     <li>Comparing entries and drafts by {@code sku} and {@code supplyChannel} key</li>
      *     <li>Calculating of necessary updates and creation commands</li>
@@ -98,25 +99,27 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * <p><strong>Inherited doc:</strong>
      * {@inheritDoc}
      *
-     * @param inventories {@link List} of {@link InventoryEntryDraft} resources that would be synced into CTP project.
+     * @param inventoryDrafts {@link List} of {@link InventoryEntryDraft} resources that would be synced into CTP
+     *                                   project.
      * @return {@link CompletionStage} with {@link InventorySyncStatistics} holding statistics of all sync
      *                                           processes performed by this sync instance
      */
     @Override
     protected CompletionStage<InventorySyncStatistics> process(@Nonnull final List<InventoryEntryDraft>
-                                                                             inventories) {
-        return populateSupplyChannels(inventories)
-            .thenCompose(supplyChannelKeyToId -> splitToBatchesAndProcess(inventories, supplyChannelKeyToId))
+                                                                       inventoryDrafts) {
+        return populateSupplyChannels(inventoryDrafts)
+            .thenCompose(supplyChannelKeyToId -> splitToBatchesAndProcess(inventoryDrafts, supplyChannelKeyToId))
             .exceptionally(exception -> statistics);
     }
 
     /**
-     * Iterates through the whole {@code inventories} list and accumulates its valid drafts to batches. Every batch
-     * is then processed by {@link InventorySync#processBatch(List, Map)}. For invalid drafts from {@code inventories}
-     * "processed" and "failed" counters from statistics are incremented and error callback is executed. Valid draft
-     * is a {@link InventoryEntryDraft} object that is not {@code null} and its SKU is not empty.
+     * Iterates through the whole {@code drafts} list and accumulates its valid drafts to batches. Every batch
+     * is then processed by {@link InventorySync#processBatch(List, Map)}. For invalid drafts from
+     * {@code drafts} "processed" and "failed" counters from statistics are incremented and error callback is
+     * executed. Valid draft is a {@link InventoryEntryDraft} object that is not {@code null} and its SKU is not empty.
      *
-     * @param inventories {@link List} of {@link InventoryEntryDraft} resources that would be synced into CTP project.
+     * @param drafts {@link List} of {@link InventoryEntryDraft} resources that would be synced into CTP
+     *                                   project.
      * @param supplyChannelKeyToId mapping of supply channel key to supply channel Id for supply channels existing in
      *                             CTP project.
      * @return {@link CompletionStage} with {@link InventorySyncStatistics} holding statistics of all sync
@@ -124,15 +127,15 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     @Nonnull
     private CompletionStage<InventorySyncStatistics> splitToBatchesAndProcess(@Nonnull final List<InventoryEntryDraft>
-                                                                                      inventories,
+                                                                                      drafts,
                                                                               @Nonnull final Map<String, String>
                                                                                   supplyChannelKeyToId) {
         List<InventoryEntryDraft> accumulator = new ArrayList<>(syncOptions.getBatchSize());
         final List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
-        for (InventoryEntryDraft entry : inventories) {
-            if (entry != null) {
-                if (isNotEmpty(entry.getSku())) {
-                    accumulator.add(entry);
+        for (InventoryEntryDraft draft : drafts) {
+            if (draft != null) {
+                if (isNotEmpty(draft.getSku())) {
+                    accumulator.add(draft);
                     if (accumulator.size() == syncOptions.getBatchSize()) {
                         final CompletableFuture<Void> batchProcessingFuture =
                             processBatch(accumulator, supplyChannelKeyToId)
@@ -178,13 +181,12 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *     <li>Instantiate {@code supplyChannelKeyToId} map</li>
      *     <li>Create missing supply channels if needed</li>
      * </ul>
-     * Method returns {@link CompletionStage} of {@link Map<String, String>} that contains mapping of supply channels'
-     * keys to ids. It may contain {@link SyncProblemException} when fetching supply channels results in
-     * exception.
+     * Method returns {@link CompletionStage} of {@link Map} that contains mapping of supply channels' keys to ids.
+     * It may contain {@link SyncProblemException} when fetching supply channels results in exception.
      *
      * @param drafts {@link List} containing {@link InventoryEntryDraft} objects where missing supply channels can occur
-     * @return {@link CompletionStage} of {@link Map<String, String>} that contain mapping of supply channels'
-     * keys to ids, or {@link SyncProblemException} when fetching supply channels results in exception
+     * @return {@link CompletionStage} of {@link Map} that contain mapping of supply channels' keys to ids, or
+     *      {@link SyncProblemException} when fetching supply channels results in exception
      */
     private CompletionStage<Map<String, String>> populateSupplyChannels(@Nonnull final List<InventoryEntryDraft>
                                                                             drafts) {
@@ -201,13 +203,13 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     /**
      * When {@code ensureChannel} from {@link InventorySyncOptions} is set to {@code true} then attempts to create
      * missing supply channels. Missing supply channel is a supply channel of key that can not be found in CTP project,
-     * but occurs in {@code drafts} list. Method returns {@link CompletionStage} of {@link Map<String, String>} that
-     * contains updated {@code supplyChannelKeyToId}.
+     * but occurs in {@code drafts} list. Method returns {@link CompletionStage} of {@link Map} that contains updated
+     * {@code supplyChannelKeyToId}.
      *
      * @param drafts {@link List} containing {@link InventoryEntryDraft} objects where missing supply channels can occur
      * @param supplyChannelKeyToId mapping of supply channel key to supply channel Id for supply channels existing in
      *                             CTP project.
-     * @return {@link CompletionStage} of {@link Map<String, String>} that contains updated {@code supplyChannelKeyToId}
+     * @return {@link CompletionStage} of {@link Map} that contains updated {@code supplyChannelKeyToId}
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Map<String, String>> createMissingSupplyChannels(@Nonnull final List<InventoryEntryDraft>
@@ -216,8 +218,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                                                                                  supplyChannelKeyToId) {
         if (syncOptions.shouldEnsureChannels()) {
             final List<String> missingChannelsKeys = drafts.stream()
-                .map(SkuChannelKeyTuple::of)
-                .map(SkuChannelKeyTuple::getKey)
+                .map(ChannelKeyExtractor::extractChannelKey)
                 .distinct()
                 .filter(Objects::nonNull)
                 .filter(key -> !supplyChannelKeyToId.containsKey(key))
@@ -244,7 +245,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     /**
      * Fetches existing {@link InventoryEntry} objects from CTP project that correspond to passed {@code batchOfDrafts}.
      * Having existing inventory entries fetched, {@code batchOfDrafts} is compared and synced with fetched objects by
-     * {@link InventorySync#compareAndSync(Map, List, Map)} function. When fetching existing inventory entries results
+     * {@link InventorySync#compareAndSync(List, List, Map)} function. When fetching existing inventory entries results
      * in exception then error callback is executed and {@code batchOfDrafts} isn't processed.
 
      * @param batchOfDrafts batch of drafts that need to be synced
@@ -266,50 +267,48 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * For each draft from {@code drafts} it checks if there is corresponding entry in {@code existingInventories},
+     * For each draft from {@code drafts} it checks if there is corresponding entry in {@code oldInventories},
      * and then either attempts to update such entry with data from draft or attempts to create new entry from draft.
      * After comparision and performing action "processed" and other relevant counter from statistics is incremented.
      * Method returns {@link CompletionStage} of {@link Void} that indicates all possible creation/update attempts
      * progress.
      *
-     * @param existingInventories mapping of {@link SkuChannelKeyTuple} to {@link InventoryEntry} of instances existing
+     * @param oldInventories mapping of {@link ChannelKeyExtractor} to {@link InventoryEntry} of instances existing
      *                            in a CTP project
      * @param drafts drafts that need to be synced
      * @param supplyChannelKeyToId mapping of supply channel key to supply channel Id for supply channels existing in
      *                             CTP project.
      * @return {@link CompletionStage} of {@link Void} that indicates all possible creation/update attempts progress.
      */
-    private CompletionStage<Void> compareAndSync(@Nonnull final Map<SkuChannelKeyTuple, InventoryEntry>
-                                                     existingInventories,
+    private CompletionStage<Void> compareAndSync(@Nonnull final List<InventoryEntry> oldInventories,
                                                  @Nonnull final List<InventoryEntryDraft> drafts,
                                                  @Nonnull final Map<String, String> supplyChannelKeyToId) {
         final List<CompletableFuture<Void>> futures = new ArrayList<>(drafts.size());
         drafts.forEach(draft -> {
             final Optional<InventoryEntryDraft> fixedDraft = replaceChannelReference(draft, supplyChannelKeyToId);
             if (fixedDraft.isPresent()) {
-                final SkuChannelKeyTuple skuKeyOfDraft = SkuChannelKeyTuple.of(draft);
-                if (existingInventories.containsKey(skuKeyOfDraft)) {
-                    final InventoryEntry existingEntry = existingInventories.get(skuKeyOfDraft);
-                    futures.add(attemptUpdate(existingEntry, fixedDraft.get())
-                        .thenAccept(updatedChannel -> {
-                            if (!updatedChannel.equals(existingEntry)) {
+                final Optional<InventoryEntry> oldInventory = getCorrespondingEntry(oldInventories, fixedDraft.get());
+                if (oldInventory.isPresent()) {
+                    futures.add(attemptUpdate(oldInventory.get(), fixedDraft.get())
+                        .thenAccept(updatedInventory -> {
+                            if (!updatedInventory.equals(oldInventory.get())) {
                                 statistics.incrementUpdated();
                             }
                         })
                         .exceptionally(exception -> {
                             statistics.incrementFailed();
                             syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
-                                SkuChannelKeyTuple.of(draft).getKey()), exception);
+                                extractChannelKey(draft)), exception);
                             return null;
                         })
                         .toCompletableFuture());
                 } else {
                     futures.add(inventoryService.createInventoryEntry(fixedDraft.get())
-                        .thenAccept(createdEntry -> statistics.incrementCreated())
+                        .thenAccept(createdInventory -> statistics.incrementCreated())
                         .exceptionally(exception -> {
                             statistics.incrementFailed();
                             syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_CREATE_FAILED, draft.getSku(),
-                                SkuChannelKeyTuple.of(draft).getKey()), exception);
+                                extractChannelKey(draft)), exception);
                             return null;
                         })
                         .toCompletableFuture());
@@ -323,23 +322,41 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * Returns {@link CompletionStage} instance which may contain mapping of {@link SkuChannelKeyTuple} to
+     * Attempts to find in an {@code oldInventories} list an {@link InventoryEntry} of the same {@code sku} and
+     * {@code supplyChannel} as {@code draft} instance. Supply channels, if not null, are compared by id.
+     *
+     * @param oldInventories list of old {@link InventoryEntry} instances
+     * @param draft new {@link InventoryEntryDraft} instance where supply channel reference, if present, points to
+     *              channel in target CTP project
+     * @return {@link Optional} that may contain {@link InventoryEntry} found in {@code oldInventories} that correspond
+     *      to {@code draft} or empty {@link Optional} if no such entry was found
+     */
+    private Optional<InventoryEntry> getCorrespondingEntry(@Nonnull final List<InventoryEntry> oldInventories,
+                                                           @Nonnull final InventoryEntryDraft draft) {
+        return oldInventories.stream()
+            .filter(oldInventory -> oldInventory.getSku().equals(draft.getSku()))
+            .filter(oldInventory -> draft.getSupplyChannel() == null
+                ? (oldInventory.getSupplyChannel() == null)
+                : ((oldInventory.getSupplyChannel() != null)
+                && oldInventory.getSupplyChannel().getId().equals(draft.getSupplyChannel().getId())))
+            .findFirst();
+    }
+
+    /**
+     * Returns {@link CompletionStage} instance which may contain mapping of {@link ChannelKeyExtractor} to
      * {@link InventoryEntry} of instances existing in a CTP project. Instances are fetched from API by skus, that
      * corresponds to skus present in {@code drafts}. If fetching existing instances results in exception then
      * returned {@link CompletionStage} contains such exception.
      *
      * @param drafts {@link List} of drafts
-     * @return {@link CompletionStage} instance which contains either {@link Map} of {@link SkuChannelKeyTuple} to
+     * @return {@link CompletionStage} instance which contains either {@link Map} of {@link ChannelKeyExtractor} to
      *      {@link InventoryEntry} of instances existing in a CTP project that correspond to passed {@code drafts} by
      *      sku comparision, or exception occurred during fetching existing inventory entries
      */
-    private CompletionStage<Map<SkuChannelKeyTuple, InventoryEntry>> fetchExistingInventories(@Nonnull final
-                                                                                              List<InventoryEntryDraft>
-                                                                                                  drafts) {
+    private CompletionStage<List<InventoryEntry>> fetchExistingInventories(@Nonnull final List<InventoryEntryDraft>
+                                                                               drafts) {
         final Set<String> skus = extractSkus(drafts);
-        return inventoryService.fetchInventoryEntriesBySkus(skus)
-            .thenApply(existingEntries -> existingEntries.stream().collect(toMap(SkuChannelKeyTuple::of,
-                entry -> entry)));
+        return inventoryService.fetchInventoryEntriesBySkus(skus);
     }
 
     /**
@@ -369,13 +386,12 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<InventoryEntry> attemptUpdate(final InventoryEntry entry, final InventoryEntryDraft draft) {
-
-            final List<UpdateAction<InventoryEntry>> updateActions =
-                InventorySyncUtils.buildActions(entry, draft, syncOptions, typeService);
-            if (!updateActions.isEmpty()) {
-                return inventoryService.updateInventoryEntry(entry, updateActions);
-            }
-            return CompletableFuture.completedFuture(entry);
+        final List<UpdateAction<InventoryEntry>> updateActions =
+            InventorySyncUtils.buildActions(entry, draft, syncOptions, typeService);
+        if (!updateActions.isEmpty()) {
+            return inventoryService.updateInventoryEntry(entry, updateActions);
+        }
+        return CompletableFuture.completedFuture(entry);
     }
 
     /**
@@ -396,7 +412,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     private Optional<InventoryEntryDraft> replaceChannelReference(final InventoryEntryDraft draft,
                                                                   final Map<String, String> supplyChannelKeyToId) {
-        final String supplyChannelKey = SkuChannelKeyTuple.of(draft).getKey();
+        final String supplyChannelKey = extractChannelKey(draft);
         if (supplyChannelKey != null) {
             if (supplyChannelKeyToId.containsKey(supplyChannelKey)) {
                 return Optional.of(
