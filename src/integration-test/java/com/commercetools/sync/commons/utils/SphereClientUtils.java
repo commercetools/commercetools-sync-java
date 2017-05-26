@@ -28,8 +28,8 @@ public class SphereClientUtils {
     public static final Long QUERY_MAX_LIMIT = 500L;
 
     /**
-     * Fetches resources of {@link T} using query provided by {@code querySupplier}.
-     * Then each resource from result list is converted to {@link SphereRequest} using {@code resourceToRequest}.
+     * Fetches resources of {@link T} using query provided by {@code query}.
+     * Then each resource from result list is converted to {@link SphereRequest} using {@code ctpRequest}.
      * Then each request is executed by {@code client}.
      * Method blocks until above operations were done.
      *
@@ -38,18 +38,15 @@ public class SphereClientUtils {
      * inventory entry. It would result in deleting all inventory entries from the given CTP.
      *
      * @param client sphere client used to executing requests
-     * @param querySupplier supplier of resources that need to be processed
-     * @param resourceToRequest function that takes resource and returns sphere request
+     * @param query supplier of resources that need to be processed
+     * @param ctpRequest function that takes resource and returns sphere request
      * @param <T> type of resource
      */
     public static <T> void fetchAndProcess(@Nonnull final SphereClient client,
-                                           @Nonnull final Supplier<SphereRequest<PagedQueryResult<T>>> querySupplier,
-                                           @Nonnull final Function<T, SphereRequest<T>> resourceToRequest) {
+                                           @Nonnull final Supplier<SphereRequest<PagedQueryResult<T>>> query,
+                                           @Nonnull final Function<T, SphereRequest<T>> ctpRequest) {
 
-        client.execute(querySupplier.get())
-            .toCompletableFuture()
-            .join()
-            .getResults()
-            .forEach(item -> client.execute(resourceToRequest.apply(item)).toCompletableFuture().join());
+        client.execute(query.get()).toCompletableFuture().join().getResults()
+            .forEach(item -> client.execute(ctpRequest.apply(item)).toCompletableFuture().join());
     }
 }
