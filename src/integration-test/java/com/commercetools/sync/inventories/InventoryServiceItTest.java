@@ -36,7 +36,7 @@ import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class InventoryServiceTest {
+public class InventoryServiceItTest {
 
     private InventoryService inventoryService;
 
