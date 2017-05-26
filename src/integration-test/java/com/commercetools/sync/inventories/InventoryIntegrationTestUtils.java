@@ -6,6 +6,7 @@ import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.commands.ChannelCreateCommand;
 import io.sphere.sdk.channels.commands.ChannelDeleteCommand;
 import io.sphere.sdk.channels.queries.ChannelQuery;
+import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -27,22 +28,22 @@ import static com.commercetools.sync.commons.utils.SphereClientUtils.QUERY_MAX_L
 import static com.commercetools.sync.commons.utils.SphereClientUtils.fetchAndProcess;
 import static java.util.Collections.singleton;
 
-class InventoryIntegrationTestUtils {
+public class InventoryIntegrationTestUtils {
 
-    static final String SKU_1 = "100000";
-    static final String SKU_2 = "200000";
+    public static final String SKU_1 = "100000";
+    public static final String SKU_2 = "200000";
 
-    static final Long QUANTITY_ON_STOCK_1 = 1L;
-    static final Long QUANTITY_ON_STOCK_2 = 2L;
+    public static final Long QUANTITY_ON_STOCK_1 = 1L;
+    public static final Long QUANTITY_ON_STOCK_2 = 2L;
 
-    static final Integer RESTOCKABLE_IN_DAYS_1 = 1;
-    static final Integer RESTOCKABLE_IN_DAYS_2 = 2;
+    public static final Integer RESTOCKABLE_IN_DAYS_1 = 1;
+    public static final Integer RESTOCKABLE_IN_DAYS_2 = 2;
 
-    static final ZonedDateTime EXPECTED_DELIVERY_1 = ZonedDateTime.of(2017, 4, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
-    static final ZonedDateTime EXPECTED_DELIVERY_2 = ZonedDateTime.of(2017, 5, 1, 20, 0, 0, 0, ZoneId.of("UTC"));
+    public static final ZonedDateTime EXPECTED_DELIVERY_1 = ZonedDateTime.of(2017, 4, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
+    public static final ZonedDateTime EXPECTED_DELIVERY_2 = ZonedDateTime.of(2017, 5, 1, 20, 0, 0, 0, ZoneId.of("UTC"));
 
-    static final String SUPPLY_CHANNEL_KEY_1 = "channel-key_1";
-    static final String SUPPLY_CHANNEL_KEY_2 = "channel-key_2";
+    public static final String SUPPLY_CHANNEL_KEY_1 = "channel-key_1";
+    public static final String SUPPLY_CHANNEL_KEY_2 = "channel-key_2";
 
     /**
      * Deletes up to {@link com.commercetools.sync.commons.utils.SphereClientUtils#QUERY_MAX_LIMIT} inventory entries
@@ -50,7 +51,7 @@ class InventoryIntegrationTestUtils {
      *
      * @param sphereClient sphere client used to execute requests
      */
-    static void deleteInventoryEntries(@Nonnull final SphereClient sphereClient) {
+    public static void deleteInventoryEntries(@Nonnull final SphereClient sphereClient) {
         fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::inventoryEntryQuerySupplier,
             InventoryEntryDeleteCommand::of);
     }
@@ -61,7 +62,7 @@ class InventoryIntegrationTestUtils {
      *
      * @param sphereClient sphere client used to execute requests
      */
-    static void deleteSupplyChannels(@Nonnull final SphereClient sphereClient) {
+    public static void deleteSupplyChannels(@Nonnull final SphereClient sphereClient) {
         fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::supplyChannelQuerySupplier,
             ChannelDeleteCommand::of);
     }
@@ -69,7 +70,7 @@ class InventoryIntegrationTestUtils {
     /**
      * Deletes inventory entries and supply channels from both source and target projects.
      */
-    static void deleteInventoriesAndSupplyChannels() {
+    public static void deleteInventoriesAndSupplyChannels() {
         deleteInventoryEntries(CTP_SOURCE_CLIENT);
         deleteSupplyChannels(CTP_SOURCE_CLIENT);
         deleteInventoryEntries(CTP_TARGET_CLIENT);
@@ -86,7 +87,7 @@ class InventoryIntegrationTestUtils {
      * Creates inventory entry of values: SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2 and
      * reference to secondly created supply channel.
      */
-    static void populateSourceProject() {
+    public static void populateSourceProject() {
         final ChannelDraft channelDraft1 = ChannelDraft.of(SUPPLY_CHANNEL_KEY_1)
             .withRoles(ChannelRole.INVENTORY_SUPPLY);
         final ChannelDraft channelDraft2 = ChannelDraft.of(SUPPLY_CHANNEL_KEY_2)
@@ -120,7 +121,7 @@ class InventoryIntegrationTestUtils {
      * Creates inventory entry of values: SKU_1, QUANTITY_ON_STOCK_1, EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1 and
      * reference to supply channel created before.
      */
-    static void populateTargetProject() {
+    public static void populateTargetProject() {
         final ChannelDraft channelDraft = ChannelDraft.of(SUPPLY_CHANNEL_KEY_1).withRoles(ChannelRole.INVENTORY_SUPPLY);
         final String channelId = CTP_TARGET_CLIENT.execute(ChannelCreateCommand.of(channelDraft))
             .toCompletableFuture().join().getId();
@@ -143,10 +144,11 @@ class InventoryIntegrationTestUtils {
      * @param supplyChannel optional reference to supply channel of requested inventory entry
      * @return {@link Optional} which may contain inventory entry of {@code sku} and {@code supplyChannel}
      */
-    static Optional<InventoryEntry> getInventoryEntryBySkuAndSupplyChannel(@Nonnull final SphereClient sphereClient,
-                                                                           @Nonnull final String sku,
-                                                                           @Nullable final Reference<Channel>
-                                                                               supplyChannel) {
+    public static Optional<InventoryEntry> getInventoryEntryBySkuAndSupplyChannel(@Nonnull final SphereClient
+                                                                                      sphereClient,
+                                                                                  @Nonnull final String sku,
+                                                                                  @Nullable final Reference<Channel>
+                                                                                      supplyChannel) {
         InventoryEntryQuery query = InventoryEntryQuery.of().plusPredicates(inventoryEntryQueryModel ->
             inventoryEntryQueryModel.sku().is(sku));
         query = supplyChannel == null
@@ -154,6 +156,20 @@ class InventoryIntegrationTestUtils {
             : query.plusPredicates(inventoryEntryQueryModel -> inventoryEntryQueryModel.supplyChannel()
             .is(supplyChannel));
         return sphereClient.execute(query).toCompletableFuture().join().head();
+    }
+
+    /**
+     * Tries to fetch channel of key {@code channelKey} using {@code sphereClient}.
+     *
+     * @param sphereClient sphere client used to execute requests
+     * @param channelKey key of requested channel
+     * @return {@link Optional} which may contain channel of key {@code channelKey}
+     */
+    public static Optional<Channel> getChannelByKey(@Nonnull final SphereClient sphereClient,
+                                                    @Nonnull final String channelKey) {
+        final ChannelQuery channelQuery = ChannelQueryBuilder.of().plusPredicates(channelQueryModel ->
+            channelQueryModel.key().is(channelKey)).build();
+        return sphereClient.execute(channelQuery).toCompletableFuture().join().head();
     }
 
     private static InventoryEntryQuery inventoryEntryQuerySupplier() {
