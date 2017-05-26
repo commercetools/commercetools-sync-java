@@ -4,6 +4,8 @@ import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.queries.ChannelQuery;
+import io.sphere.sdk.client.QueueSphereClientDecorator;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
@@ -18,6 +20,8 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.stream.LongStream;
 
 import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
@@ -333,6 +337,69 @@ public class InventorySyncItTest {
         final List<InventoryEntry> oldEntriesAfterSync = CTP_TARGET_CLIENT.execute(InventoryEntryQuery.of())
             .toCompletableFuture().join().getResults();
         assertThat(oldEntriesAfterSync).hasSize(12);
+    }
+
+    @Test
+    public void sync_WithSphereClientDecorator_ShouldReturnProperStatistics() {
+        //Fetch new inventories from source project. Convert them to drafts.
+        final List<InventoryEntryDraft> newInventories = CTP_SOURCE_CLIENT.execute(InventoryEntryQuery.of()
+            .withExpansionPaths(inventoryEntryExpansionModel -> inventoryEntryExpansionModel.supplyChannel()))
+            .toCompletableFuture().join().getResults().stream()
+            .map(newInventory -> InventoryEntryDraftBuilder.of(newInventory).build()).collect(toList());
+
+        /*
+         * Prepare sync options and perform sync of draft to target project.
+         * Use QueueSphereClientDecorator to limit parallelisation on CTP requests.
+         */
+        final SphereClient client = QueueSphereClientDecorator.of(CTP_TARGET_CLIENT, 2);
+        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(client)
+            .ensureChannels(true).build();
+        final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
+        final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(newInventories).toCompletableFuture()
+            .join();
+        assertStatistics(inventorySyncStatistics, 3, 1,1, 0);
+    }
+
+    @Test
+    public void sync_ShouldReturnProperReportMessage() {
+        //Fetch new inventories from source project. Convert them to drafts.
+        final List<InventoryEntryDraft> newInventories = CTP_SOURCE_CLIENT.execute(InventoryEntryQuery.of()
+            .withExpansionPaths(inventoryEntryExpansionModel -> inventoryEntryExpansionModel.supplyChannel()))
+            .toCompletableFuture().join().getResults().stream()
+            .map(newInventory -> InventoryEntryDraftBuilder.of(newInventory).build()).collect(toList());
+
+        //Prepare sync options and perform sync of draft to target project.
+        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+            .ensureChannels(true).build();
+        final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
+        final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(newInventories).toCompletableFuture()
+            .join();
+        assertStatistics(inventorySyncStatistics, 3, 1,1, 0);
+        assertThat(inventorySyncStatistics.getReportMessage())
+            .isEqualTo("Summary: 3 inventory entries were processed in total (1 created, 1 updated, 0 failed to sync)"
+                + ".");
+    }
+
+    @Test
+    public void sync_WithCustomErrorCallback_ShouldExecuteCallbackOnError() {
+        //Fetch new inventories from source project. Convert them to drafts.
+        final List<InventoryEntryDraft> newInventories = CTP_SOURCE_CLIENT.execute(InventoryEntryQuery.of()
+            .withExpansionPaths(inventoryEntryExpansionModel -> inventoryEntryExpansionModel.supplyChannel()))
+            .toCompletableFuture().join().getResults().stream()
+            .map(newInventory -> InventoryEntryDraftBuilder.of(newInventory).build()).collect(toList());
+
+        //Prepare sync options and perform sync of draft to target project.
+        final AtomicInteger invocationCounter = new AtomicInteger(0);
+        BiConsumer<String, Throwable> countingErrorCallback = (string, throwable) ->
+            invocationCounter.incrementAndGet();
+        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+            .setErrorCallBack(countingErrorCallback)
+            .ensureChannels(false).build();
+        final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
+        final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(newInventories).toCompletableFuture()
+            .join();
+        assertStatistics(inventorySyncStatistics, 3, 0,1, 1);
+        assertThat(invocationCounter.get()).isEqualTo(1);
     }
 
     private void assertStatistics(@Nullable final InventorySyncStatistics statistics,
