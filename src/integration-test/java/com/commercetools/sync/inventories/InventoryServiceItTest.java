@@ -29,7 +29,7 @@ import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.R
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.SKU_1;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.SKU_2;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.SUPPLY_CHANNEL_KEY_2;
-import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.deleteInventoriesAndSupplyChannels;
+import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.deleteInventoryRelatedResources;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.getInventoryEntryBySkuAndSupplyChannel;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.populateTargetProject;
 import static java.util.Collections.singleton;
@@ -46,14 +46,14 @@ public class InventoryServiceItTest {
      */
     @Before
     public void setup() {
-        deleteInventoriesAndSupplyChannels();
+        deleteInventoryRelatedResources();
         populateTargetProject();
         inventoryService = new InventoryServiceImpl(CTP_TARGET_CLIENT);
     }
 
     @AfterClass
     public static void cleanup() {
-        deleteInventoriesAndSupplyChannels();
+        deleteInventoryRelatedResources();
     }
 
     @Test

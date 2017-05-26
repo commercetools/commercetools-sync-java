@@ -14,12 +14,22 @@ import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.inventory.commands.InventoryEntryCreateCommand;
 import io.sphere.sdk.inventory.commands.InventoryEntryDeleteCommand;
 import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.types.FieldDefinition;
+import io.sphere.sdk.types.StringFieldType;
+import io.sphere.sdk.types.TypeDraft;
+import io.sphere.sdk.types.TypeDraftBuilder;
+import io.sphere.sdk.types.commands.TypeCreateCommand;
+import io.sphere.sdk.types.commands.TypeDeleteCommand;
+import io.sphere.sdk.types.queries.TypeQuery;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.Locale;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
@@ -27,6 +37,7 @@ import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_
 import static com.commercetools.sync.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
 import static com.commercetools.sync.commons.utils.SphereClientUtils.fetchAndProcess;
 import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 
 public class InventoryIntegrationTestUtils {
 
@@ -44,6 +55,9 @@ public class InventoryIntegrationTestUtils {
 
     public static final String SUPPLY_CHANNEL_KEY_1 = "channel-key_1";
     public static final String SUPPLY_CHANNEL_KEY_2 = "channel-key_2";
+
+    public static final String CUSTOM_TYPE = "inventory-custom-type-name";
+    public static final String CUSTOM_FIELD_NAME = "inventory-custom-field-1";
 
     /**
      * Deletes up to {@link com.commercetools.sync.commons.utils.SphereClientUtils#QUERY_MAX_LIMIT} inventory entries
@@ -68,13 +82,26 @@ public class InventoryIntegrationTestUtils {
     }
 
     /**
-     * Deletes inventory entries and supply channels from both source and target projects.
+     * Deletes up to {@link com.commercetools.sync.commons.utils.SphereClientUtils#QUERY_MAX_LIMIT} types containing
+     * resource type id of {@link InventoryEntry#resourceTypeId()} role from CTP project, represented by provided
+     * {@code sphereClient}.
+     *
+     * @param sphereClient sphere client used to execute requests
      */
-    public static void deleteInventoriesAndSupplyChannels() {
+    public static void deleteInventoryCustomTypes(@Nonnull final SphereClient sphereClient) {
+        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::customTypeQuerySupplier, TypeDeleteCommand::of);
+    }
+
+    /**
+     * Deletes inventory entries, supply channels and inventory custom types from both source and target projects.
+     */
+    public static void deleteInventoryRelatedResources() {
         deleteInventoryEntries(CTP_SOURCE_CLIENT);
         deleteSupplyChannels(CTP_SOURCE_CLIENT);
+        deleteInventoryCustomTypes(CTP_SOURCE_CLIENT);
         deleteInventoryEntries(CTP_TARGET_CLIENT);
         deleteSupplyChannels(CTP_TARGET_CLIENT);
+        deleteInventoryCustomTypes(CTP_TARGET_CLIENT);
     }
 
     /**
@@ -120,6 +147,7 @@ public class InventoryIntegrationTestUtils {
      * Creates inventory entry of values: SKU_1, QUANTITY_ON_STOCK_1, EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1.
      * Creates inventory entry of values: SKU_1, QUANTITY_ON_STOCK_1, EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1 and
      * reference to supply channel created before.
+     * Creates inventory custom type of key CUSTOM_TYPE, and String field definition of name CUSTOM_FIELD_NAME.
      */
     public static void populateTargetProject() {
         final ChannelDraft channelDraft = ChannelDraft.of(SUPPLY_CHANNEL_KEY_1).withRoles(ChannelRole.INVENTORY_SUPPLY);
@@ -134,6 +162,13 @@ public class InventoryIntegrationTestUtils {
 
         CTP_TARGET_CLIENT.execute(InventoryEntryCreateCommand.of(draft1)).toCompletableFuture().join();
         CTP_TARGET_CLIENT.execute(InventoryEntryCreateCommand.of(draft2)).toCompletableFuture().join();
+
+        final FieldDefinition fieldDefinition = FieldDefinition
+            .of(StringFieldType.of(), CUSTOM_FIELD_NAME, LocalizedString.of(Locale.ENGLISH, CUSTOM_FIELD_NAME), false);
+        final TypeDraft typeDraft = TypeDraftBuilder.of(CUSTOM_TYPE, LocalizedString.of(Locale.ENGLISH, CUSTOM_TYPE),
+            Collections.singleton(InventoryEntry.resourceTypeId())).fieldDefinitions(singletonList(fieldDefinition))
+            .build();
+        CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(typeDraft)).toCompletableFuture().join();
     }
 
     /**
@@ -179,5 +214,10 @@ public class InventoryIntegrationTestUtils {
     private static ChannelQuery supplyChannelQuerySupplier() {
         return ChannelQuery.of().withLimit(QUERY_MAX_LIMIT).plusPredicates(channelQueryModel ->
             channelQueryModel.roles().containsAny(singleton(ChannelRole.INVENTORY_SUPPLY)));
+    }
+
+    private static TypeQuery customTypeQuerySupplier() {
+        return TypeQuery.of().withLimit(QUERY_MAX_LIMIT).plusPredicates(typeQueryModel ->
+        typeQueryModel.resourceTypeIds().containsAny(singleton(InventoryEntry.resourceTypeId())));
     }
 }

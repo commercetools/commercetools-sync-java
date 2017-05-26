@@ -32,7 +32,7 @@ import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.S
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.SKU_2;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.SUPPLY_CHANNEL_KEY_1;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.SUPPLY_CHANNEL_KEY_2;
-import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.deleteInventoriesAndSupplyChannels;
+import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.deleteInventoryRelatedResources;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.getChannelByKey;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.getInventoryEntryBySkuAndSupplyChannel;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.populateSourceProject;
@@ -52,14 +52,14 @@ public class InventorySyncItTest {
      */
     @Before
     public void setup() {
-        deleteInventoriesAndSupplyChannels();
+        deleteInventoryRelatedResources();
         populateSourceProject();
         populateTargetProject();
     }
 
     @AfterClass
     public static void delete() {
-        deleteInventoriesAndSupplyChannels();
+        deleteInventoryRelatedResources();
     }
 
     @Test
