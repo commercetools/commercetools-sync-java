@@ -33,6 +33,7 @@ import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.S
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.SUPPLY_CHANNEL_KEY_1;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.SUPPLY_CHANNEL_KEY_2;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.deleteInventoriesAndSupplyChannels;
+import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.getChannelByKey;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.getInventoryEntryBySkuAndSupplyChannel;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.populateSourceProject;
 import static com.commercetools.sync.inventories.InventoryIntegrationTestUtils.populateTargetProject;
@@ -57,7 +58,7 @@ public class InventorySyncItTest {
     }
 
     @AfterClass
-    public static void cleanup() {
+    public static void delete() {
         deleteInventoriesAndSupplyChannels();
     }
 
@@ -115,9 +116,7 @@ public class InventorySyncItTest {
     @Test
     public void sync_WithExpandedReferenceToExistingSupplyChannel_ShouldUpdateInventory() {
         //Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
-        final ChannelQuery supplyChannelQuery = ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_1);
-        final Optional<Channel> supplyChannel = CTP_TARGET_CLIENT.execute(supplyChannelQuery).toCompletableFuture()
-            .join().head();
+        final Optional<Channel> supplyChannel = getChannelByKey(CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_1);
         assertThat(supplyChannel).isNotEmpty();
 
         //Make Reference from fetched Channel. Ensure that it is expanded.
@@ -157,9 +156,7 @@ public class InventorySyncItTest {
          * Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
          * This is done only for test assertion reasons, not necessary for sync.
          */
-        final ChannelQuery supplyChannelQuery = ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_1);
-        final Optional<Channel> supplyChannel = CTP_TARGET_CLIENT.execute(supplyChannelQuery).toCompletableFuture()
-            .join().head();
+        final Optional<Channel> supplyChannel = getChannelByKey(CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_1);
         assertThat(supplyChannel).isNotEmpty();
 
         /*
@@ -196,9 +193,7 @@ public class InventorySyncItTest {
     @Test
     public void sync_WithNewSupplyChannelAndChannelsEnsured_ShouldCreateNewSupplyChannel() {
         //Ensure that supply channel doesn't exist before sync.
-        final ChannelQuery oldSupplyChannelQuery = ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_2);
-        final Optional<Channel> oldSupplyChannelBeforeSync = CTP_TARGET_CLIENT.execute(oldSupplyChannelQuery)
-            .toCompletableFuture().join().head();
+        final Optional<Channel> oldSupplyChannelBeforeSync = getChannelByKey(CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_2);
         assertThat(oldSupplyChannelBeforeSync).isEmpty();
 
         //Prepare sync data.
@@ -216,8 +211,7 @@ public class InventorySyncItTest {
         assertStatistics(inventorySyncStatistics, 1, 1, 0, 0);
 
         //Ensure that supply channel exists before sync.
-        final Optional<Channel> oldSupplyChannelAfterSync = CTP_TARGET_CLIENT.execute(oldSupplyChannelQuery)
-            .toCompletableFuture().join().head();
+        final Optional<Channel> oldSupplyChannelAfterSync = getChannelByKey(CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_2);
         assertThat(oldSupplyChannelAfterSync).isNotEmpty();
         assertThat(oldSupplyChannelAfterSync.get().getKey()).isEqualTo(SUPPLY_CHANNEL_KEY_2);
     }
@@ -234,9 +228,7 @@ public class InventorySyncItTest {
         assertThat(targetChannelsBeforeSync.get(0).getKey()).isEqualTo(SUPPLY_CHANNEL_KEY_1);
 
         //Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from source project.
-        final ChannelQuery channelQuery = ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_1);
-        final Optional<Channel> sourceSupplyChannel = CTP_SOURCE_CLIENT.execute(channelQuery).toCompletableFuture()
-            .join().head();
+        final Optional<Channel> sourceSupplyChannel = getChannelByKey(CTP_SOURCE_CLIENT, SUPPLY_CHANNEL_KEY_1);
         assertThat(sourceSupplyChannel).isNotEmpty();
 
         //Make Reference from fetched Channel. Ensure that it is expanded.
@@ -249,8 +241,7 @@ public class InventorySyncItTest {
             .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, sourceChannelReference).build();
 
         //Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
-        final Optional<Channel> targetSupplyChannel = CTP_TARGET_CLIENT.execute(channelQuery).toCompletableFuture()
-            .join().head();
+        final Optional<Channel> targetSupplyChannel = getChannelByKey(CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_1);
         assertThat(targetSupplyChannel).isNotEmpty();
         final Reference<Channel> targetChannelReference = targetSupplyChannel.get().toReference();
 
