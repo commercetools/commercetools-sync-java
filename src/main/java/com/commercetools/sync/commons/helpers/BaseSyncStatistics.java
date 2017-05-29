@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
@@ -14,31 +16,24 @@ import static java.lang.String.format;
 public abstract class BaseSyncStatistics {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseSyncStatistics.class);
 
-    private String reportMessage;
+    protected static final String REPORT_MESSAGE_TEMPLATE = "Summary: %d %s were processed in total "
+        + "(%d created, %d updated, %d up to date and %d failed to sync).";
+
     private int updated;
     private int created;
     private int failed;
+    private int upToDate;
     private int processed;
-    private long startTime;
-    private long processingTimeInDays;
-    private long processingTimeInHours;
-    private long processingTimeInMinutes;
-    private long processingTimeInSeconds;
     private long processingTimeInMillis;
-    private String humanReadableProcessingTime;
 
-
-    public BaseSyncStatistics() {
-        reportMessage = StringUtil.EMPTY_STRING;
-        humanReadableProcessingTime = StringUtil.EMPTY_STRING;
-    }
-
-    /**
-     * Stores the current time of instantiation in the {@code startTime} instance variable that will be used later
-     * when {@link BaseSyncStatistics#calculateProcessingTime()} is called to calculate the total time of processing.
-     */
-    public void startTimer() {
-        startTime = System.currentTimeMillis();
+    protected BaseSyncStatistics(final long processingTimeInMillis, final int created, final int updated,
+                                 final int upToDate, final int failed) {
+        this.processingTimeInMillis = processingTimeInMillis;
+        this.processed = created + updated + upToDate + failed;
+        this.created = created;
+        this.updated = updated;
+        this.upToDate = upToDate;
+        this.failed = failed;
     }
 
     /**
@@ -51,26 +46,12 @@ public abstract class BaseSyncStatistics {
     }
 
     /**
-     * Increments the total number of resource updated.
-     */
-    public void incrementUpdated() {
-        this.updated++;
-    }
-
-    /**
      * Gets the total number of resources created.
      *
      * @return total number of resources created.
      */
     public int getCreated() {
         return created;
-    }
-
-    /**
-     * Increments the total number of resource created.
-     */
-    public void incrementCreated() {
-        this.created++;
     }
 
     /**
@@ -83,13 +64,6 @@ public abstract class BaseSyncStatistics {
     }
 
     /**
-     * Increments the total number of resources processed/synced.
-     */
-    public void incrementProcessed() {
-        this.processed++;
-    }
-
-    /**
      * Gets the total number of resources that failed to sync.
      *
      * @return total number of resources that failed to sync.
@@ -99,107 +73,12 @@ public abstract class BaseSyncStatistics {
     }
 
     /**
-     * Increments the total number of resources that failed to sync.
-     */
-    public void incrementFailed() {
-        this.failed++;
-    }
-
-    /**
-     * Calculates the processing time taken by the subtracting the time, when the
-     * {@link BaseSyncStatistics#startTimer()} method of this instance was called, from the current time in
-     * Milliseconds. It also sets the processing time in all the units {@code processingTimeInDays},
-     * {@code processingTimeInHours}, {@code processingTimeInMinutes}, {@code processingTimeInSeconds} and
-     * {@code processingTimeInMillis}. It also builds a human readable processing time, as string, in the following
-     * format @{code "0d, 0h, 0m, 2s, 545ms"} and stores it in the publicly exposed
-     * variable {@code humanReadableProcessingTime}.
-     */
-    public void calculateProcessingTime() {
-        setProcessingTimeInAllUnits();
-        setHumanReadableProcessingTime();
-    }
-
-    /**
-     * Calculates the processing time taken by the subtracting the time when this {@link BaseSyncStatistics} instance
-     * was instantiated from the current time in Milliseconds. It sets the processing time in all the units
-     * {@code processingTimeInDays}, {@code processingTimeInHours}, {@code processingTimeInMinutes},
-     * {@code processingTimeInSeconds} and {@code processingTimeInMillis}.
-     */
-    private void setProcessingTimeInAllUnits() {
-        processingTimeInMillis = System.currentTimeMillis() - this.startTime;
-        processingTimeInDays = TimeUnit.MILLISECONDS.toDays(processingTimeInMillis);
-        processingTimeInHours = TimeUnit.MILLISECONDS.toHours(processingTimeInMillis);
-        processingTimeInMinutes = TimeUnit.MILLISECONDS.toMinutes(processingTimeInHours);
-        processingTimeInSeconds = TimeUnit.MILLISECONDS.toSeconds(processingTimeInMillis);
-    }
-
-    /**
-     * Builds a human readable processing time, as string, in the following format @{code "0d, 0h, 0m, 2s, 545ms"}
-     * and stores it in the publicly exposed variable {@code humanReadableProcessingTime}.
-     */
-    private void setHumanReadableProcessingTime() {
-        final long completeDaysInHours = TimeUnit.DAYS.toHours(processingTimeInDays);
-        final long completeHoursInMinutes = TimeUnit.HOURS.toMinutes(processingTimeInHours);
-        final long completeMinutesInSeconds = TimeUnit.MINUTES.toSeconds(processingTimeInMinutes);
-        final long completeSecondsInMillis = TimeUnit.SECONDS.toMillis(processingTimeInSeconds);
-
-        final long remainingHours = processingTimeInHours - completeDaysInHours;
-        final long remainingMinutes = processingTimeInMinutes - completeHoursInMinutes;
-        final long remainingSeconds = processingTimeInSeconds - completeMinutesInSeconds;
-        final long remainingMillis = processingTimeInMillis - completeSecondsInMillis;
-
-        humanReadableProcessingTime = format("%dd, %dh, %dm, %ds, %dms",
-          processingTimeInDays,
-          remainingHours,
-          remainingMinutes,
-          remainingSeconds,
-          remainingMillis
-        );
-    }
-
-    /**
-     * Gets the human readable processing time in the following format @{code "0d, 0h, 0m, 2s, 545ms"}.
+     * Gets the total number of resources that were already up to date.
      *
-     * @return the human readable processing time in the following format @{code "0d, 0h, 0m, 2s, 545ms"}
+     * @return total number of resources that were already up to date.
      */
-    public String getHumanReadableProcessingTime() {
-        return humanReadableProcessingTime;
-    }
-
-    /**
-     * Gets the number of days it took to process.
-     *
-     * @return number of days taken to process.
-     */
-    public long getProcessingTimeInDays() {
-        return processingTimeInDays;
-    }
-
-    /**
-     * Gets the number of hours it took to process.
-     *
-     * @return number of hours taken to process.
-     */
-    public long getProcessingTimeInHours() {
-        return processingTimeInHours;
-    }
-
-    /**
-     * Gets the number of minutes it took to process.
-     *
-     * @return number of minutes taken to process.
-     */
-    public long getProcessingTimeInMinutes() {
-        return processingTimeInMinutes;
-    }
-
-    /**
-     * Gets the number of seconds it took to process.
-     *
-     * @return number of seconds taken to process.
-     */
-    public long getProcessingTimeInSeconds() {
-        return processingTimeInSeconds;
+    public int getUpToDate() {
+        return upToDate;
     }
 
     /**
@@ -209,6 +88,16 @@ public abstract class BaseSyncStatistics {
      */
     public long getProcessingTimeInMillis() {
         return processingTimeInMillis;
+    }
+
+    /**
+     * Returns processing time formatted by {@code dataFormat}.
+     *
+     * @param dateFormat date formatter
+     * @return formatted time taken to process
+     */
+    public String getFormattedProcessingTime(@Nonnull final DateFormat dateFormat) {
+        return dateFormat.format(new Date(processingTimeInMillis));
     }
 
     /**
