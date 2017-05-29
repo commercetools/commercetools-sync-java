@@ -2,7 +2,6 @@ package com.commercetools.sync.inventories.utils;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.inventories.InventorySyncOptions;
-import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
