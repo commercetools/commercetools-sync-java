@@ -10,15 +10,23 @@ import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.queries.PagedResult;
+import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public class CategoryServiceImpl implements CategoryService {
     private final SphereClient ctpClient;
+
+    /**
+     * Cache of Category externalId -> id
+     */
+    private final Map<String, String> cache = new HashMap<>();
 
     public CategoryServiceImpl(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
@@ -26,7 +34,25 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<Category>> fetchCategoryByExternalId(@Nullable final String externalId) {
+    public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String externalId) {
+        if (cache.isEmpty()) {
+            return cacheAndFetch(externalId);
+        }
+        return CompletableFuture.completedFuture(Optional.ofNullable(cache.get(externalId)));
+    }
+
+    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String externalId) {
+        return QueryExecutionUtils.queryAll(ctpClient, CategoryQuery.of())
+                                  .thenApply(categories -> {
+                                      categories.forEach(category ->
+                                          cache.put(category.getExternalId(), category.getId()));
+                                      return Optional.ofNullable(cache.get(externalId));
+                                  });
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Optional<Category>> fetchCategoryByExternalId(@Nonnull final String externalId) {
         final CategoryQuery categoryQuery = CategoryQuery.of().byExternalId(externalId);
         return ctpClient.execute(categoryQuery).thenApply(PagedResult::head);
     }

@@ -10,34 +10,42 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 /**
  * Implementation of TypeService interface.
- * TODO: USE graphQL to get only keys
+ * TODO: USE graphQL to get only keys OR MAKE PR/ISSUE TO FIX QueryExecutionUtils.queryAll
  * TODO: UNIT TEST
  * TODO: JAVA DOC
  */
 public class TypeServiceImpl implements TypeService {
     private final SphereClient ctpClient;
+    /**
+     * Cache of type key->id
+     */
     private final Map<String, String> cache = new HashMap<>();
 
     public TypeServiceImpl(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
     }
 
-    @Nullable
+    @Nonnull
     @Override
-    public String getCachedTypeKeyById(@Nullable final String id) {
+    public CompletionStage<Optional<String>> fetchCachedTypeId(@Nullable final String key) {
         if (cache.isEmpty()) {
-            fetchAllTypesKeysIntoCache().toCompletableFuture().join();
+            cacheAndFetch(key);
         }
-        return cache.get(id);
+        return CompletableFuture.completedFuture(Optional.ofNullable(cache.get(key)));
     }
 
     @Nonnull
-    private CompletionStage<Void> fetchAllTypesKeysIntoCache() {
+    private CompletionStage<Optional<String>> cacheAndFetch(@Nullable final String key) {
         return QueryExecutionUtils.queryAll(ctpClient, TypeQuery.of())
-          .thenAccept(types -> types.forEach(type -> cache.put(type.getId(), type.getKey())));
+                                  .thenApply(types -> {
+                                      types.forEach(type -> cache.put(type.getKey(), type.getId()));
+                                      return Optional.ofNullable(cache.get(key));
+                                  });
     }
 }
