@@ -76,16 +76,14 @@ public class InventorySyncMockUtils {
      * returned instance will return {@link Map} populated with given {@code fieldName} and {@code fieldValue}
      *
      * @param typeId custom type id
-     * @param typeKey custom type key
      * @param fieldName custom field name
      * @param fieldValue custom field value
      * @return mock instance of {@link CustomFields}
      */
-    public static CustomFields getMockCustomFields(final String typeId, final String typeKey, final String fieldName,
+    public static CustomFields getMockCustomFields(final String typeId, final String fieldName,
                                                    final Object fieldValue) {
         final CustomFields customFields = mock(CustomFields.class);
         final Type type = mock(Type.class);
-        when(type.getKey()).thenReturn(typeKey);
         when(type.getId()).thenReturn(typeId);
         when(customFields.getFieldsJsonMap()).thenReturn(mockFields(fieldName, fieldValue));
         when(customFields.getType()).thenReturn(Type.referenceOfId(typeId).filled(type));

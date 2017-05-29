@@ -31,7 +31,7 @@ final class GenericUpdateActionUtils {
      * Creates a CTP "setCustomType" update action on the given resource {@link T} (which currently could either
      * be a {@link Category} or a {@link Channel}).
      *
-     * @param customTypeKey       the key of the new custom type.
+     * @param customTypeId       the id of the new custom type.
      * @param customFieldsJsonMap the custom fields map of JSON values.
      * @param resource            the resource to do the update action on.
      * @param <T>                 the type of the resource to do the update action on.
@@ -40,13 +40,13 @@ final class GenericUpdateActionUtils {
      */
     @Nonnull
     static <T extends Custom & Resource<T>> Optional<UpdateAction<T>> buildTypedSetCustomTypeUpdateAction(
-        @Nullable final String customTypeKey,
+        @Nullable final String customTypeId,
         @Nullable final Map<String, JsonNode> customFieldsJsonMap,
         @Nonnull final T resource,
         @Nonnull final BaseSyncOptions syncOptions) {
         try {
             return Optional.of(GenericCustomActionBuilderFactory.of(resource)
-                                                                .buildSetCustomTypeAction(customTypeKey,
+                                                                .buildSetCustomTypeAction(customTypeId,
                                                                     customFieldsJsonMap));
         } catch (BuildUpdateActionException | IllegalAccessException | InstantiationException exception) {
             syncOptions.applyErrorCallback(format(SET_CUSTOM_TYPE_BUILD_FAILED, resource.toReference().getTypeId(),

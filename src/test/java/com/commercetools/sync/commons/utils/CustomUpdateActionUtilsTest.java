@@ -1,10 +1,9 @@
 package com.commercetools.sync.commons.utils;
 
+import com.commercetools.sync.categories.CategorySyncMockUtils;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
-import com.commercetools.sync.services.TypeService;
-import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.carts.Cart;
@@ -19,10 +18,7 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
@@ -33,7 +29,6 @@ import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.build
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,28 +37,22 @@ public class CustomUpdateActionUtilsTest {
     private static final CategorySyncOptions CATEGORY_SYNC_OPTIONS = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
 
     @Test
-    public void buildCustomUpdateActions_WithNonNullCustomFieldsWithDifferentKeys_ShouldBuildUpdateActions() {
-        final String oldCategoryCustomTypeKey = "1";
+    public void buildCustomUpdateActions_WithNonNullCustomFieldsWithDifferentTypes_ShouldBuildUpdateActions() {
         final Category oldCategory = mock(Category.class);
         final CustomFields oldCategoryCustomFields = mock(CustomFields.class);
-        final Reference<Type> oldCategoryCustomFieldsDraftTypeReference = Reference.of("type", "anyId");
+        final Reference<Type> oldCategoryCustomFieldsDraftTypeReference = Reference.of(Type.referenceTypeId(), "2");
         when(oldCategoryCustomFields.getType()).thenReturn(oldCategoryCustomFieldsDraftTypeReference);
         when(oldCategory.getCustom()).thenReturn(oldCategoryCustomFields);
 
-        final String newCategoryCustomTypeKey = "2";
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         final CustomFieldsDraft newCategoryCustomFieldsDraft = mock(CustomFieldsDraft.class);
 
-        final ResourceIdentifier<Type> typeResourceIdentifier = ResourceIdentifier
-            .ofIdOrKey("anyId", newCategoryCustomTypeKey);
+        final ResourceIdentifier<Type> typeResourceIdentifier = Reference.of(Type.referenceTypeId(), "1");
         when(newCategoryCustomFieldsDraft.getType()).thenReturn(typeResourceIdentifier);
         when(newCategoryDraft.getCustom()).thenReturn(newCategoryCustomFieldsDraft);
 
-        final TypeService typeService = mock(TypeServiceImpl.class);
-        when(typeService.getCachedTypeKeyById(anyString())).thenReturn(oldCategoryCustomTypeKey);
-
         final List<UpdateAction<Category>> updateActions =
-            buildCustomUpdateActions(oldCategory, newCategoryDraft, CATEGORY_SYNC_OPTIONS, typeService);
+            buildCustomUpdateActions(oldCategory, newCategoryDraft, CATEGORY_SYNC_OPTIONS);
 
         // Should set custom type of old category.
         assertThat(updateActions).isNotNull();
@@ -76,15 +65,10 @@ public class CustomUpdateActionUtilsTest {
         final Category oldCategory = mock(Category.class);
         when(oldCategory.getCustom()).thenReturn(null);
 
-        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
-        final CustomFieldsDraft newCategoryCustomFieldsDraft = mock(CustomFieldsDraft.class);
-        final ResourceIdentifier<Type> newCategoryCustomFieldsDraftTypeReference = ResourceIdentifier.ofId("anyId");
-        when(newCategoryCustomFieldsDraft.getType()).thenReturn(newCategoryCustomFieldsDraftTypeReference);
-        when(newCategoryDraft.getCustom()).thenReturn(newCategoryCustomFieldsDraft);
-
+        final CategoryDraft newCategoryDraft = CategorySyncMockUtils.getMockCategoryDraft(Locale.ENGLISH, "name",
+            "externalId", "parentId", "customTypeId", new HashMap<>());
         final List<UpdateAction<Category>> updateActions =
-            buildCustomUpdateActions(oldCategory, newCategoryDraft, CATEGORY_SYNC_OPTIONS,
-                mock(TypeService.class));
+            buildCustomUpdateActions(oldCategory, newCategoryDraft, CATEGORY_SYNC_OPTIONS);
 
         // Should add custom type to old category.
         assertThat(updateActions).isNotNull();
@@ -102,8 +86,7 @@ public class CustomUpdateActionUtilsTest {
         when(newCategoryDraft.getCustom()).thenReturn(null);
 
         final List<UpdateAction<Category>> updateActions =
-            buildCustomUpdateActions(oldCategory, newCategoryDraft, CATEGORY_SYNC_OPTIONS,
-                mock(TypeService.class));
+            buildCustomUpdateActions(oldCategory, newCategoryDraft, CATEGORY_SYNC_OPTIONS);
 
         // Should remove custom type from old category.
         assertThat(updateActions).isNotNull();
@@ -112,8 +95,8 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildCustomUpdateActions_WithNullKeys_ShouldCallSyncOptionsCallBack() {
-        final Reference<Type> categoryTypeReference = Reference.of("type", "anyId");
+    public void buildCustomUpdateActions_WithNullIds_ShouldCallSyncOptionsCallBack() {
+        final Reference<Type> categoryTypeReference = Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), null);
 
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
@@ -146,16 +129,12 @@ public class CustomUpdateActionUtilsTest {
                                                                                       updateActionErrorCallBack)
                                                                                   .build();
 
-        // Mock type service and Category Custom Type key Cache.
-        final TypeService typeServiceMock = mock(TypeServiceImpl.class);
-        when(typeServiceMock.getCachedTypeKeyById(anyString())).thenReturn(null);
-
         final List<UpdateAction<Category>> updateActions =
-            buildCustomUpdateActions(oldCategory, newCategoryDraft, categorySyncOptions, typeServiceMock);
+            buildCustomUpdateActions(oldCategory, newCategoryDraft, categorySyncOptions);
 
         assertThat(callBackResponses).hasSize(2);
         assertThat(callBackResponses.get(0)).isEqualTo("Failed to build custom fields update actions on the category"
-            + " with id 'oldCategoryId'. Reason: Custom type keys are not set for both the old and new category.");
+            + " with id 'oldCategoryId'. Reason: Custom type ids are not set for both the old and new category.");
         assertThat((Exception) callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
         assertThat(updateActions).isEmpty();
     }
@@ -169,47 +148,34 @@ public class CustomUpdateActionUtilsTest {
         when(newCategoryDraft.getCustom()).thenReturn(null);
 
         final List<UpdateAction<Category>> updateActions =
-            buildCustomUpdateActions(oldCategory, newCategoryDraft, CATEGORY_SYNC_OPTIONS,
-                mock(TypeService.class));
+            buildCustomUpdateActions(oldCategory, newCategoryDraft, CATEGORY_SYNC_OPTIONS);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).isEmpty();
     }
 
     @Test
-    public void buildNonNullCustomFieldsUpdateActions_WithSameCategoryTypeKeys_ShouldBuildUpdateActions()
+    public void
+    buildNonNullCustomFieldsUpdateActions_WithSameCategoryTypesButDifferentFieldValues_ShouldBuildUpdateActions()
         throws BuildUpdateActionException {
-        @SuppressWarnings("unchecked")
-        final Reference<Type> categoryTypeReference = mock(Reference.class);
-        final String categoryCustomTypeInternalId = "categoryCustomTypeId";
-        final String categoryCustomTypeKey = "categoryCustomTypeKey";
-        when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
-        when(categoryTypeReference.getKey()).thenReturn(categoryCustomTypeKey);
-
-
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
         final Map<String, JsonNode> oldCustomFieldsJsonMapMock = new HashMap<>();
         oldCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-        when(oldCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        when(oldCustomFieldsMock.getType()).thenReturn(Reference.of(Type.referenceTypeId(), "categoryCustomTypeId"));
         when(oldCustomFieldsMock.getFieldsJsonMap()).thenReturn(oldCustomFieldsJsonMapMock);
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
         final Map<String, JsonNode> newCustomFieldsJsonMapMock = new HashMap<>();
         newCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
-        when(newCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        when(newCustomFieldsMock.getType()).thenReturn(Reference.of(Type.referenceTypeId(), "categoryCustomTypeId"));
         when(newCustomFieldsMock.getFields()).thenReturn(newCustomFieldsJsonMapMock);
-
-        // Mock TypeService and Category Custom Type key Cache.
-        final TypeService typeService = mock(TypeServiceImpl.class);
-        when(typeService.getCachedTypeKeyById(anyString())).thenReturn(categoryCustomTypeKey);
 
         final List<UpdateAction<Category>> updateActions =
             buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
                 newCustomFieldsMock, mock(Category.class),
-                CATEGORY_SYNC_OPTIONS,
-                typeService);
+                CATEGORY_SYNC_OPTIONS);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
@@ -217,33 +183,18 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsUpdateActions_WithDifferentCategoryTypeKeys_ShouldBuildUpdateActions()
+    public void buildNonNullCustomFieldsUpdateActions_WithDifferentCategoryTypeIds_ShouldBuildUpdateActions()
         throws BuildUpdateActionException {
-        @SuppressWarnings("unchecked")
-        final Reference<Type> categoryTypeReference = mock(Reference.class);
-        final String categoryCustomTypeInternalId = "categoryCustomTypeId";
-        final String categoryCustomTypeKey = "categoryCustomTypeKey";
-        when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
-        when(categoryTypeReference.getKey()).thenReturn(categoryCustomTypeKey);
-
-        final ResourceIdentifier<Type> newCategoryTypeReference = ResourceIdentifier
-            .ofIdOrKey("newCategoryCustomTypeId",
-                "newCategoryCustomTypeKey");
-
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
-        when(oldCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        when(oldCustomFieldsMock.getType()).thenReturn(Reference.of(Type.referenceTypeId(), "categoryCustomTypeId"));
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
-        when(newCustomFieldsMock.getType()).thenReturn(newCategoryTypeReference);
-
-        // Mock TypeService and Category Custom Type key Cache.
-        final TypeService typeService = mock(TypeServiceImpl.class);
-        when(typeService.getCachedTypeKeyById(anyString())).thenReturn(categoryCustomTypeKey);
+        when(newCustomFieldsMock.getType()).thenReturn(ResourceIdentifier.ofId("newCategoryCustomTypeId"));
 
         final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
-            newCustomFieldsMock, mock(Category.class), CATEGORY_SYNC_OPTIONS, mock(TypeService.class));
+            newCustomFieldsMock, mock(Category.class), CATEGORY_SYNC_OPTIONS);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
@@ -251,29 +202,18 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsUpdateActions_WithNullOldCategoryTypeKey_ShouldBuildUpdateActions()
+    public void buildNonNullCustomFieldsUpdateActions_WithNullOldCategoryTypeId_ShouldBuildUpdateActions()
         throws BuildUpdateActionException {
-        @SuppressWarnings("unchecked")
-        final Reference<Type> categoryTypeReference = mock(Reference.class);
-        final String categoryCustomTypeInternalId = "categoryCustomTypeId";
-        final String categoryCustomTypeKey = "categoryCustomTypeKey";
-        when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
-        when(categoryTypeReference.getKey()).thenReturn(categoryCustomTypeKey);
-
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
-        when(oldCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        when(oldCustomFieldsMock.getType()).thenReturn(Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), null));
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
-        when(newCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
-
-        // Mock TypeService and Category Custom Type key Cache.
-        final TypeService typeService = mock(TypeServiceImpl.class);
-        when(typeService.getCachedTypeKeyById(anyString())).thenReturn(null);
+        when(newCustomFieldsMock.getType()).thenReturn(Reference.of(Type.referenceTypeId(), "categoryCustomTypeId"));
 
         final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
-            newCustomFieldsMock, mock(Category.class), CATEGORY_SYNC_OPTIONS, mock(TypeService.class));
+            newCustomFieldsMock, mock(Category.class), CATEGORY_SYNC_OPTIONS);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
@@ -281,29 +221,18 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsUpdateActions_WithNullNewCategoryTypeKey_ShouldBuildUpdateActions()
+    public void buildNonNullCustomFieldsUpdateActions_WithNullNewCategoryTypeId_ShouldBuildUpdateActions()
         throws BuildUpdateActionException {
-        @SuppressWarnings("unchecked")
-        final Reference<Type> categoryTypeReference = mock(Reference.class);
-        final String categoryCustomTypeInternalId = "categoryCustomTypeId";
-        final String categoryCustomTypeKey = "categoryCustomTypeKey";
-        when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
-
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
-        when(oldCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
+        when(oldCustomFieldsMock.getType()).thenReturn(Reference.of(Type.referenceTypeId(), "1"));
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
-        when(newCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
-
-        // Mock TypeService and Category Custom Type key Cache.
-        final TypeService typeService = mock(TypeServiceImpl.class);
-        when(typeService.getCachedTypeKeyById(anyString())).thenReturn(categoryCustomTypeKey);
-
+        when(newCustomFieldsMock.getType()).thenReturn(Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), null));
 
         final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
-            newCustomFieldsMock, mock(Category.class), CATEGORY_SYNC_OPTIONS, typeService);
+            newCustomFieldsMock, mock(Category.class), CATEGORY_SYNC_OPTIONS);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
@@ -311,14 +240,9 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsUpdateActions_WithSameKeysButNullNewCustomFields_ShouldBuildUpdateActions()
+    public void buildNonNullCustomFieldsUpdateActions_WithSameIdsButNullNewCustomFields_ShouldBuildUpdateActions()
         throws BuildUpdateActionException {
-        @SuppressWarnings("unchecked")
-        final Reference<Type> categoryTypeReference = mock(Reference.class);
-        final String categoryCustomTypeInternalId = "categoryCustomTypeId";
-        final String categoryCustomTypeKey = "categoryCustomTypeKey";
-        when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
-        when(categoryTypeReference.getKey()).thenReturn(categoryCustomTypeKey);
+        final Reference<Type> categoryTypeReference = Reference.of(Type.referenceTypeId(), "categoryCustomTypeId");
 
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
@@ -332,13 +256,9 @@ public class CustomUpdateActionUtilsTest {
         when(newCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
         when(newCustomFieldsMock.getFields()).thenReturn(null);
 
-        // Mock TypeService and Category Custom Type key Cache.
-        final TypeService typeService = mock(TypeServiceImpl.class);
-        when(typeService.getCachedTypeKeyById(anyString())).thenReturn(categoryCustomTypeKey);
-
         final List<UpdateAction<Category>> updateActions =
             buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
-                newCustomFieldsMock, mock(Category.class), CATEGORY_SYNC_OPTIONS, typeService);
+                newCustomFieldsMock, mock(Category.class), CATEGORY_SYNC_OPTIONS);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
@@ -346,12 +266,9 @@ public class CustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsUpdateActions_WithNullKeys_ShouldThrowBuildUpdateActionException()
+    public void buildNonNullCustomFieldsUpdateActions_WithNullIds_ShouldThrowBuildUpdateActionException()
         throws BuildUpdateActionException {
-        @SuppressWarnings("unchecked")
-        final Reference<Type> categoryTypeReference = mock(Reference.class);
-        final String categoryCustomTypeInternalId = "categoryCustomTypeId";
-        when(categoryTypeReference.getId()).thenReturn(categoryCustomTypeInternalId);
+        final Reference<Type> categoryTypeReference = Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), null);
 
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
@@ -361,17 +278,13 @@ public class CustomUpdateActionUtilsTest {
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
         when(newCustomFieldsMock.getType()).thenReturn(categoryTypeReference);
 
-        // Mock TypeService and Category Custom Type key Cache.
-        final TypeService typeService = mock(TypeServiceImpl.class);
-        when(typeService.getCachedTypeKeyById(anyString())).thenReturn(null);
-
         final Category oldCategory = mock(Category.class);
         when(oldCategory.getId()).thenReturn("oldCategoryId");
-        when(oldCategory.toReference()).thenReturn(Reference.of(Category.referenceTypeId(), "oldCategoryId"));
+        when(oldCategory.toReference()).thenReturn(Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), null));
 
         assertThatThrownBy(() ->
             buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
-                newCustomFieldsMock, oldCategory, CATEGORY_SYNC_OPTIONS, mock(TypeService.class)))
+                newCustomFieldsMock, oldCategory, CATEGORY_SYNC_OPTIONS))
             .isInstanceOf(BuildUpdateActionException.class);
     }
 
