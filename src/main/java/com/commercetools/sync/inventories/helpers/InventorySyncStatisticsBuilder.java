@@ -22,7 +22,7 @@ public final class InventorySyncStatisticsBuilder extends BaseSyncStatisticsBuil
      * <p><strong>Inherited doc:</strong><br/>{@inheritDoc}
      */
     @Override
-    public InventorySyncStatisticsBuilder getThis() {
+    protected InventorySyncStatisticsBuilder getThis() {
         return this;
     }
 }

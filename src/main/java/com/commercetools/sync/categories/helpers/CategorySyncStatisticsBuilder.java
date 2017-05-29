@@ -22,7 +22,7 @@ public final class CategorySyncStatisticsBuilder extends BaseSyncStatisticsBuild
      * <p><strong>Inherited doc:</strong><br/>{@inheritDoc}
      */
     @Override
-    public CategorySyncStatisticsBuilder getThis() {
+    protected CategorySyncStatisticsBuilder getThis() {
         return this;
     }
 }

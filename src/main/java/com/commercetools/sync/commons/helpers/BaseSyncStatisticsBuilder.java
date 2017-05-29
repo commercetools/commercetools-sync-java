@@ -77,5 +77,5 @@ public abstract class BaseSyncStatisticsBuilder<T extends BaseSyncStatisticsBuil
      *
      * @return an instance of the class that overrides this method.
      */
-    public abstract T getThis();
+    protected abstract T getThis();
 }
