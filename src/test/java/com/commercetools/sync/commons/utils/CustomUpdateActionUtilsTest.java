@@ -18,7 +18,12 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import org.junit.Test;
 
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.Locale;
 import java.util.function.BiConsumer;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;

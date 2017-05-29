@@ -8,7 +8,12 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
-import java.util.*;
+
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;

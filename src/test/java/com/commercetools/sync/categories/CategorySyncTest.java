@@ -9,7 +9,12 @@ import io.sphere.sdk.models.SphereException;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
