@@ -14,6 +14,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     protected boolean removeOtherSetEntries = true;
     protected boolean removeOtherCollectionEntries = true;
     protected boolean removeOtherProperties = true;
+    protected boolean allowUuid = false;
 
     /**
      * Sets the {@code errorCallBack} function of the sync module. This callback will be called whenever an event occurs
@@ -88,6 +89,20 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      */
     public T setRemoveOtherProperties(final boolean removeOtherProperties) {
         this.removeOtherProperties = removeOtherProperties;
+        return getThis();
+    }
+
+    /**
+     * The sync expects the user to pass the keys to references in the {@code id} field of References. If the key values
+     * are in UUID format, then this flag must be set to true, otherwise the sync will fail to resolve the reference.
+     * This flag, if set to true, enables the user to use keys with UUID format. By default, it is set to {@code false}.
+     * This method sets this flag's value with the new value.
+     *
+     * @param allowUuid new vale to set to the boolean flag.
+     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
+     */
+    public T setAllowUuid(final boolean allowUuid) {
+        this.allowUuid = allowUuid;
         return getThis();
     }
 

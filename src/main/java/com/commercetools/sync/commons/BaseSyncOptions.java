@@ -15,6 +15,7 @@ public class BaseSyncOptions {
     private boolean removeOtherSetEntries = true;
     private boolean removeOtherCollectionEntries = true;
     private boolean removeOtherProperties = true;
+    private boolean allowUuid = false;
 
     protected BaseSyncOptions(@Nonnull final SphereClient ctpClient,
                               final BiConsumer<String, Throwable> errorCallBack,
@@ -22,7 +23,8 @@ public class BaseSyncOptions {
                               final boolean removeOtherLocales,
                               final boolean removeOtherSetEntries,
                               final boolean removeOtherCollectionEntries,
-                              final boolean removeOtherProperties) {
+                              final boolean removeOtherProperties,
+                              final boolean allowUuid) {
         this.ctpClient = ctpClient;
         this.errorCallBack = errorCallBack;
         this.warningCallBack = warningCallBack;
@@ -30,6 +32,7 @@ public class BaseSyncOptions {
         this.removeOtherSetEntries = removeOtherSetEntries;
         this.removeOtherCollectionEntries = removeOtherCollectionEntries;
         this.removeOtherProperties = removeOtherProperties;
+        this.allowUuid = allowUuid;
     }
 
     /**
@@ -143,5 +146,17 @@ public class BaseSyncOptions {
         if (this.errorCallBack != null) {
             this.errorCallBack.accept(errorMessage, exception);
         }
+    }
+
+    /**
+     * The sync expects the user to pass the keys to references in the {@code id} field of References. If the key values
+     * are in UUID format, then this flag must be set to true, otherwise the sync will fail to resolve the reference.
+     * This flag, if set to true, enables the user to use keys with UUID format. By default, it is set to {@code false}.
+     *
+     * @return a {@code boolean} flag, if set to true, enables the user to use keys with UUID format for references.
+     * By default, it is set to {@code false}.
+     */
+    public boolean isUuidAllowed() {
+        return allowUuid;
     }
 }
