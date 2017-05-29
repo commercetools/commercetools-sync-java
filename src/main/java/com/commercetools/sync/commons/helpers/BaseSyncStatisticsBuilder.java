@@ -1,5 +1,7 @@
 package com.commercetools.sync.commons.helpers;
 
+import javax.annotation.Nonnull;
+
 public abstract class BaseSyncStatisticsBuilder<T extends BaseSyncStatisticsBuilder<T, S>,
     S extends BaseSyncStatistics> {
 
@@ -57,6 +59,21 @@ public abstract class BaseSyncStatisticsBuilder<T extends BaseSyncStatisticsBuil
      */
     public T setProcessingTimeInMillis(final long processingTimeInMillis) {
         this.processingTimeInMillis = processingTimeInMillis;
+        return getThis();
+    }
+
+    /**
+     * Adds all given statistics values to values held in {@code this} builder instance.
+     *
+     * @param statisticsToAdd statistics object that contains values that should be added
+     * @return {@code this} instance of {@link T}
+     */
+    public T addAllStatistics(@Nonnull final S statisticsToAdd) {
+        this.created += statisticsToAdd.getCreated();
+        this.updated += statisticsToAdd.getUpdated();
+        this.upToDate += statisticsToAdd.getUpToDate();
+        this.failed += statisticsToAdd.getFailed();
+        this.processingTimeInMillis += statisticsToAdd.getProcessingTimeInMillis();
         return getThis();
     }
 

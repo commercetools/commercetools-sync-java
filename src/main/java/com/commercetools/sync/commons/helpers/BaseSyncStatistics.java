@@ -2,16 +2,12 @@ package com.commercetools.sync.commons.helpers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
-
-import static java.lang.String.format;
 
 public abstract class BaseSyncStatistics {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseSyncStatistics.class);
