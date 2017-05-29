@@ -1,26 +1,27 @@
 package com.commercetools.sync.categories.helpers;
 
-
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
 import static java.lang.String.format;
 
-public class CategorySyncStatistics extends BaseSyncStatistics {
-    public CategorySyncStatistics() {
-        super();
+public final class CategorySyncStatistics extends BaseSyncStatistics {
+
+    CategorySyncStatistics(final long processingTimeInMillis, final int created, final int updated, final int upToDate,
+                           final int failed) {
+        super(processingTimeInMillis, created, updated, upToDate, failed);
     }
 
     /**
      * Builds a summary of the category sync statistics instance that looks like the following example:
      *
-     * <p>"Summary: 2 categories were processed in total (0 created, 0 updated and 0 categories failed to sync)."
+     * <p>"Summary: 10 categories were processed in total (4 created, 2 updated, 2 were up to date and 2 failed to
+     * sync)."
      *
      * @return a summary message of the category sync statistics instance.
      */
     @Override
     public String getReportMessage() {
-        return format("Summary: %s categories were processed in total "
-            + "(%s created, %s updated and %s categories failed to sync).",
-          getProcessed(), getCreated(), getUpdated(), getFailed());
+        return format(REPORT_MESSAGE_TEMPLATE, getProcessed(), "categories", getCreated(), getUpdated(), getUpToDate(),
+            getFailed());
     }
 }

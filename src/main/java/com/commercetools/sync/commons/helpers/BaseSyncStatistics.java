@@ -17,7 +17,7 @@ public abstract class BaseSyncStatistics {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseSyncStatistics.class);
 
     protected static final String REPORT_MESSAGE_TEMPLATE = "Summary: %d %s were processed in total "
-        + "(%d created, %d updated, %d up to date and %d failed to sync).";
+        + "(%d created, %d updated, %d were up to date and %d failed to sync).";
 
     private int updated;
     private int created;
