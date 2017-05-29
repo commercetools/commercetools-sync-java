@@ -14,27 +14,28 @@ public final class InventorySyncOptions extends BaseSyncOptions {
     private final int batchSize;
 
     InventorySyncOptions(@Nonnull final SphereClient ctpClient,
-                                   final BiConsumer<String, Throwable> updateActionErrorCallBack,
-                                   final Consumer<String> updateActionWarningCallBack,
-                                   final boolean removeOtherLocales,
-                                   final boolean removeOtherSetEntries,
-                                   final boolean removeOtherCollectionEntries,
-                                   final boolean removeOtherProperties,
-                                   boolean ensureChannels,
-                                   int batchSize) {
+                         final BiConsumer<String, Throwable> updateActionErrorCallBack,
+                         final Consumer<String> updateActionWarningCallBack,
+                         final boolean removeOtherLocales,
+                         final boolean removeOtherSetEntries,
+                         final boolean removeOtherCollectionEntries,
+                         final boolean removeOtherProperties,
+                         final boolean allowUuid,
+                         boolean ensureChannels,
+                         int batchSize) {
         super(ctpClient,
             updateActionErrorCallBack,
             updateActionWarningCallBack,
             removeOtherLocales,
             removeOtherSetEntries,
             removeOtherCollectionEntries,
-            removeOtherProperties);
+            removeOtherProperties,
+            allowUuid);
         this.ensureChannels = ensureChannels;
         this.batchSize = batchSize;
     }
 
     /**
-     *
      * @return option that indicates whether sync process should create supply channel of given key when it doesn't
      *      exists in a target system yet.
      */
@@ -43,7 +44,6 @@ public final class InventorySyncOptions extends BaseSyncOptions {
     }
 
     /**
-     *
      * @return option that indicates capacity of batch of processed inventory entries.
      * @see InventorySyncOptionsBuilder#setBatchSize(int)
      */
