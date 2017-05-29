@@ -243,8 +243,8 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorMessage).contains("Failed to resolve reference on CategoryDraft with externalId:'externalId'."
-            + " Reason: Failed to resolve parent reference. Reason: Found a UUID in the id field. Expecting a "
-            + "key without a UUID value. If you want to allow UUID values for your reference keys, please use the "
+            + " Reason: Failed to resolve parent reference. Reason: Found a UUID in the id field. Expecting a key "
+            + "without a UUID value. If you want to allow UUID values for reference keys, please use the "
             + "setAllowUuid(true) option in the sync options.");
     }
 

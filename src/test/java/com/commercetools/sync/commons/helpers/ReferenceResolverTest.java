@@ -85,8 +85,8 @@ public class ReferenceResolverTest {
         assertThatThrownBy(() -> resolveReferences(categoryDraft, typeService, categoryService, syncOptions))
             .isInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve parent reference. Reason: Found a UUID in the id field. Expecting a key "
-                + "without a UUID value. If you want to allow UUID values for your keys please use the "
-                + "setAllowUuid(true) option for your sync options.");
+                + "without a UUID value. If you want to allow UUID values for reference keys, please use the "
+                + "setAllowUuid(true) option in the sync options.");
     }
 
     @Test
@@ -98,9 +98,9 @@ public class ReferenceResolverTest {
 
         assertThatThrownBy(() -> resolveReferences(categoryDraft, typeService, categoryService, syncOptions))
             .isInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve custom type reference. Reason: Found a UUID in the id field. Expecting a key "
-                + "without a UUID value. If you want to allow UUID values for your keys please use the "
-                + "setAllowUuid(true) option for your sync options.");
+            .hasMessage("Failed to resolve custom type reference. Reason: Found a UUID in the id field. Expecting a key"
+                + " without a UUID value. If you want to allow UUID values for reference keys, please use the"
+                + " setAllowUuid(true) option in the sync options.");
     }
 
     @Test
