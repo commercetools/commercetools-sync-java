@@ -161,7 +161,7 @@ public class CustomUpdateActionUtilsTest {
 
     @Test
     public void
-    buildNonNullCustomFieldsUpdateActions_WithSameCategoryTypesButDifferentFieldValues_ShouldBuildUpdateActions()
+        buildNonNullCustomFieldsUpdateActions_WithSameCategoryTypesButDifferentFieldValues_ShouldBuildUpdateActions()
         throws BuildUpdateActionException {
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);

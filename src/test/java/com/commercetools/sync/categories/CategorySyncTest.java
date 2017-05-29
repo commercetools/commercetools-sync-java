@@ -225,7 +225,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithExistingCategoryButWithNotAllowedUUIDReferenceResolution_ShouldFailSync() {
+    public void sync_WithExistingCategoryButWithNotAllowedUuidReferenceResolution_ShouldFailSync() {
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
             getMockCategoryService());
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();

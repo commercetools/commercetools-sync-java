@@ -48,7 +48,6 @@ public class MockUtils {
      * <li>{@link CategoryService#createCategory(CategoryDraft)}</li>
      * <li>{@link CategoryService#updateCategory(Category, List)}</li>
      * </ul>
-     *
      * or returns a dummy category id of value "parentId" whenever the following method is called on the service:
      * <ul>
      * <li>{@link CategoryService#fetchCachedCategoryId(String)}</li>

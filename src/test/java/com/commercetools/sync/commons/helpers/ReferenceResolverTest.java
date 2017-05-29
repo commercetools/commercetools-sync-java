@@ -33,6 +33,9 @@ public class ReferenceResolverTest {
     private CategoryService categoryService;
     private CategorySyncOptions syncOptions;
 
+    /**
+     * Sets up the services and the options needed for reference resolution.
+     */
     @Before
     public void setup() {
         typeService = getMockTypeService();
