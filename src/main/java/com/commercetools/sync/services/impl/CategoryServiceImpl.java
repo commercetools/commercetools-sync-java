@@ -24,7 +24,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final SphereClient ctpClient;
 
     /**
-     * Cache of Category externalId -> id
+     * Cache of Categories' [externalId -> id].
      */
     private final Map<String, String> cache = new HashMap<>();
 

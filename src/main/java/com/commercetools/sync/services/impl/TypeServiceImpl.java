@@ -23,7 +23,7 @@ import java.util.concurrent.CompletionStage;
 public class TypeServiceImpl implements TypeService {
     private final SphereClient ctpClient;
     /**
-     * Cache of type key->id
+     * Cache of Types' [key -> id].
      */
     private final Map<String, String> cache = new HashMap<>();
 

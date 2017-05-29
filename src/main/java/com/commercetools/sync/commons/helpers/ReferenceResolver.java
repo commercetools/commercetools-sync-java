@@ -183,7 +183,6 @@ public final class ReferenceResolver {
      * {@code allowUuid} flag set to true, or the id value doesn't have a UUID format.</li>
      * <li>Checks if the id value is not null or not empty.</li>
      * </ol>
-     *
      * If the above checks pass, the id value is returned. Otherwise a {@link ReferenceResolutionException} is thrown.
      *
      * @param resourceIdentifier the reference from which the id value is validated and returned.

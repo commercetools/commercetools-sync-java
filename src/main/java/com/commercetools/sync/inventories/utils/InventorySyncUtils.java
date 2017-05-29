@@ -41,7 +41,7 @@ public final class InventorySyncUtils {
      *                    on the build update action process. And other options (See {@link BaseSyncOptions}
      *                    for more info.
      * @return list containing {@link UpdateAction} that need to be performed on {@code oldEntry} resource so
-     * that it will be synced with {@code newEntry} or empty list when both entries are already in sync.
+     *      that it will be synced with {@code newEntry} or empty list when both entries are already in sync.
      */
     @Nonnull
     public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldEntry,
