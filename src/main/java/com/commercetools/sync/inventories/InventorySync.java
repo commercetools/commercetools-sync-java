@@ -2,6 +2,7 @@ package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
+import com.commercetools.sync.inventories.helpers.InventorySyncStatisticsBuilder;
 import com.commercetools.sync.inventories.utils.InventorySyncUtils;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
@@ -32,7 +33,8 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 /**
  * Default implementation of inventories sync process.
  */
-public final class InventorySync extends BaseSync<InventoryEntryDraft, InventorySyncStatistics, InventorySyncOptions> {
+public final class InventorySync extends BaseSync<InventoryEntryDraft, InventorySyncStatistics,
+    InventorySyncStatisticsBuilder, InventorySyncOptions> {
     private static final String CTP_INVENTORY_FETCH_FAILED = "Failed to fetch existing inventory entries of SKUs %s.";
     private static final String CTP_CHANNEL_FETCH_FAILED = "Failed to fetch supply channels.";
     private static final String CTP_INVENTORY_ENTRY_UPDATE_FAILED = "Failed to update inventory entry of sku '%s' and "
@@ -58,7 +60,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
 
     InventorySync(@Nonnull final InventorySyncOptions syncOptions, @Nonnull final InventoryService inventoryService,
                   @Nonnull final TypeService typeService) {
-        super(new InventorySyncStatistics(), syncOptions);
+        super(new InventorySyncStatisticsBuilder(), syncOptions);
         this.inventoryService = inventoryService;
         this.typeService = typeService;
     }
@@ -106,13 +108,13 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *                                           processes performed by this sync instance
      */
     @Override
-    protected CompletionStage<InventorySyncStatistics> process(@Nonnull final List<InventoryEntryDraft>
+    protected CompletionStage<InventorySyncStatisticsBuilder> process(@Nonnull final List<InventoryEntryDraft>
                                                                              inventories) {
         return populateSupplyChannels(inventories)
                 .thenCompose(v -> splitToBatchesAndProcess(inventories))
                 .exceptionally(exception -> {
                     syncOptions.applyErrorCallback(CTP_CHANNEL_FETCH_FAILED, exception);
-                    return statistics;
+                    return new InventorySyncStatisticsBuilder();
                 });
     }
 
@@ -127,8 +129,10 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *                                           processes performed by this sync instance
      */
     @Nonnull
-    private CompletionStage<InventorySyncStatistics> splitToBatchesAndProcess(@Nonnull final List<InventoryEntryDraft>
-                                                                                      inventories) {
+    private CompletionStage<InventorySyncStatisticsBuilder> splitToBatchesAndProcess(@Nonnull final
+                                                                                         List<InventoryEntryDraft>
+                                                                                             inventories) {
+        final InventorySyncStatisticsBuilder statisticsBuilder = new InventorySyncStatisticsBuilder();
         List<InventoryEntryDraft> accumulator = new ArrayList<>(syncOptions.getBatchSize());
         final List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
         for (InventoryEntryDraft entry : inventories) {
@@ -136,32 +140,26 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 if (isNotEmpty(entry.getSku())) {
                     accumulator.add(entry);
                     if (accumulator.size() == syncOptions.getBatchSize()) {
-                        completableFutures.add(processBatch(accumulator).toCompletableFuture());
+                        completableFutures.add(processBatch(accumulator).thenAccept(statisticsBuilder::addAllStatistics)
+                            .toCompletableFuture());
                         accumulator = new ArrayList<>(syncOptions.getBatchSize());
                     }
                 } else {
-                    statistics.incrementProcessed();
-                    statistics.incrementFailed();
+                    statisticsBuilder.incrementFailed();
                     syncOptions.applyErrorCallback(INVENTORY_DRAFT_HAS_NO_SKU, null);
                 }
             } else {
-                statistics.incrementProcessed();
-                statistics.incrementFailed();
+                statisticsBuilder.incrementFailed();
                 syncOptions.applyErrorCallback(INVENTORY_DRAFT_IS_NULL, null);
             }
         }
         if (!accumulator.isEmpty()) {
-            completableFutures.add(processBatch(accumulator).toCompletableFuture());
+            completableFutures.add(processBatch(accumulator).thenAccept(statisticsBuilder::addAllStatistics)
+                .toCompletableFuture());
         }
         return CompletableFuture
             .allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()]))
-            .thenApply(v -> statistics);
-    }
-
-    @Override
-    @Nonnull
-    public InventorySyncStatistics getStatistics() {
-        return statistics;
+            .thenApply(v -> statisticsBuilder);
     }
 
     /**
@@ -223,15 +221,15 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * exception then error callback is executed and {@code batchOfDrafts} isn't processed.
 
      * @param batchOfDrafts batch of drafts that need to be synced
-     * @return {@link CompletionStage} of {@link Void} that indicates method progress.
+     * @return {@link CompletionStage} of {@link InventorySyncStatistics} that contains statistics of batch processing
      */
-    private CompletionStage<Void> processBatch(final List<InventoryEntryDraft> batchOfDrafts) {
+    private CompletionStage<InventorySyncStatistics> processBatch(final List<InventoryEntryDraft> batchOfDrafts) {
         return fetchExistingInventories(batchOfDrafts)
                 .thenCompose(existingInventories -> compareAndSync(existingInventories, batchOfDrafts))
                 .exceptionally(exception -> {
                     syncOptions.applyErrorCallback(format(CTP_INVENTORY_FETCH_FAILED, extractSkus(batchOfDrafts)),
                         exception);
-                    return null;
+                    return new InventorySyncStatisticsBuilder().build();
                 });
     }
 
@@ -239,28 +237,30 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * For each draft from {@code drafts} it checks if there is corresponding entry in {@code existingInventories},
      * and then either attempts to update such entry with data from draft or attempts to create new entry from draft.
      * After comparision and performing action "processed" counter from statistics is incremented.
-     * Method returns {@link CompletionStage} of {@link Void} that indicates all possible creation/update attempts
-     * progress.
+     * Method returns {@link CompletionStage} of {@link InventorySyncStatistics>} that contains statistics of batch
+     * processing.
      *
      * @param existingInventories mapping of {@link SkuChannelKeyTuple} to {@link InventoryEntry} of instances existing
      *                            in a CTP project
      * @param drafts drafts that need to be synced
-     * @return {@link CompletionStage} of {@link Void} that indicates all possible creation/update attempts progress.
+     * @return {@link CompletionStage} of {@link InventorySyncStatistics} that contains statistics of batch processing
      */
-    private CompletionStage<Void> compareAndSync(final Map<SkuChannelKeyTuple, InventoryEntry> existingInventories,
-                                                 final List<InventoryEntryDraft> drafts) {
+    private CompletionStage<InventorySyncStatistics> compareAndSync(final Map<SkuChannelKeyTuple, InventoryEntry>
+                                                                       existingInventories,
+                                                                   final List<InventoryEntryDraft> drafts) {
+        final InventorySyncStatisticsBuilder statisticsBuilder = new InventorySyncStatisticsBuilder();
         final List<CompletableFuture<Void>> futures = new ArrayList<>(drafts.size());
         drafts.forEach(draft -> {
             final SkuChannelKeyTuple skuKeyOfDraft = SkuChannelKeyTuple.of(draft);
             if (existingInventories.containsKey(skuKeyOfDraft)) {
                 final InventoryEntry existingEntry = existingInventories.get(skuKeyOfDraft);
-                futures.add(attemptUpdate(existingEntry, draft).toCompletableFuture());
+                futures.add(attemptUpdate(existingEntry, draft, statisticsBuilder).toCompletableFuture());
             } else {
-                futures.add(attemptCreate(draft).toCompletableFuture());
+                futures.add(attemptCreate(draft, statisticsBuilder).toCompletableFuture());
             }
-            statistics.incrementProcessed();
         });
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
+            .thenApply(v -> statisticsBuilder.build());
     }
 
     /**
@@ -300,32 +300,36 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * It calculates list of {@link UpdateAction} and calls API only when there is a need.
      * Before calculate differences, the channel reference from {@code draft} is replaced, so it points to
      * proper channel ID in target system.
-     * It either updates inventory entry and increments "updated" counter in statistics, or increments "failed" counter
-     * and executes error callback function in case of any exception.
+     * It either updates inventory entry and increments "updated" counter in {@code statisticsBuilder}, or increments
+     * "failed" counter and executes error callback function in case of any exception.
      *
      * @param entry entry from existing system that could be updated.
      * @param draft draft containing data that could differ from data in {@code entry}.
      *              <strong>Sku isn't compared</strong>
+     * @param statisticsBuilder builder of inventory sync statistics which will be updated
      * @return {@link CompletionStage} of {@link Void} that indicates method progress
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<Void> attemptUpdate(final InventoryEntry entry, final InventoryEntryDraft draft) {
+    private CompletionStage<Void> attemptUpdate(final InventoryEntry entry, final InventoryEntryDraft draft,
+                                                final InventorySyncStatisticsBuilder statisticsBuilder) {
         final Optional<InventoryEntryDraft> fixedDraft = replaceChannelReference(draft);
         if (fixedDraft.isPresent()) {
             final List<UpdateAction<InventoryEntry>> updateActions =
                 InventorySyncUtils.buildActions(entry, fixedDraft.get(), syncOptions, typeService);
             if (!updateActions.isEmpty()) {
                 return inventoryService.updateInventoryEntry(entry, updateActions)
-                    .thenAccept(updatedEntry -> statistics.incrementUpdated())
+                    .thenAccept(updatedEntry -> statisticsBuilder.incrementUpdated())
                     .exceptionally(exception -> {
-                        statistics.incrementFailed();
+                        statisticsBuilder.incrementFailed();
                         syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
                             SkuChannelKeyTuple.of(draft).getKey()), exception);
                         return null;
                     });
+            } else {
+                statisticsBuilder.incrementUpToDate();
             }
         } else {
-            statistics.incrementFailed();
+            statisticsBuilder.incrementFailed();
         }
         return CompletableFuture.completedFuture(null);
     }
@@ -334,26 +338,28 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * Tries to create Inventory Entry in CTP project, using {@code draft}.
      * Before calling API, the channel reference from {@code draft} is replaced, so it points to proper channel ID
      * in target system.
-     * It either creates inventory entry and increments "created" counter in statistics, or increments "failed" counter
-     * and executes error callback function in case of any exception.
+     * It either creates inventory entry and increments "created" counter in {@code statisticsBuilder}, or increments
+     * "failed" counter and executes error callback function in case of any exception.
      *
      * @param draft draft of new inventory entry
+     * @param statisticsBuilder builder of inventory sync statistics which will be updated
      * @return {@link CompletionStage} instance that indicates method progress
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<Void> attemptCreate(final InventoryEntryDraft draft) {
+    private CompletionStage<Void> attemptCreate(final InventoryEntryDraft draft,
+                                                final InventorySyncStatisticsBuilder statisticsBuilder) {
         final Optional<InventoryEntryDraft> fixedDraft = replaceChannelReference(draft);
         if (fixedDraft.isPresent()) {
             return inventoryService.createInventoryEntry(fixedDraft.get())
-                .thenAccept(createdEntry -> statistics.incrementCreated())
+                .thenAccept(createdEntry -> statisticsBuilder.incrementCreated())
                 .exceptionally(exception -> {
-                    statistics.incrementFailed();
+                    statisticsBuilder.incrementFailed();
                     syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_CREATE_FAILED, draft.getSku(),
                         SkuChannelKeyTuple.of(draft).getKey()), exception);
                     return null;
                 });
         } else {
-            statistics.incrementFailed();
+            statisticsBuilder.incrementFailed();
         }
         return CompletableFuture.completedFuture(null);
     }

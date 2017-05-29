@@ -1,6 +1,7 @@
 package com.commercetools.sync.categories;
 
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
+import com.commercetools.sync.categories.helpers.CategorySyncStatisticsBuilder;
 import com.commercetools.sync.categories.utils.CategorySyncUtils;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.services.CategoryService;
@@ -22,7 +23,8 @@ import java.util.concurrent.ExecutionException;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
+public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncStatisticsBuilder,
+    CategorySyncOptions> {
     private static final String CTP_CATEGORY_UPDATE_FAILED = "Failed to update category with externalId:'%s'."
         + " Reason: %s";
     private static final String CTP_CATEGORY_FETCH_FAILED = "Failed to fetch category with externalId:'%s'."
@@ -68,7 +70,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     CategorySync(@Nonnull final CategorySyncOptions syncOptions,
                  @Nonnull final TypeService typeService,
                  @Nonnull final CategoryService categoryService) {
-        super(new CategorySyncStatistics(), syncOptions);
+        super(new CategorySyncStatisticsBuilder(), syncOptions);
         this.typeService = typeService;
         this.categoryService = categoryService;
     }
@@ -79,32 +81,33 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * If a category exists, this category is synced to be the same as the new category draft in this list. If no
      * category exist with such external id, a new category, identical to this new category draft is created.
      *
-     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried out
+     * <p>The returned builder instance is updated accordingly to whether the CTP request was carried out
      * successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
      * specified in the {@code syncOptions} is called.
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
      * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of
-     *      {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
-     *      {@link this} {@link CategorySync}.
+     *      {@link CategorySyncStatisticsBuilder} representing the builder of {@code statistics} baked for
+     *      the sync process
      */
     @Override
-    protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<CategoryDraft> categoryDrafts) {
+    protected CompletionStage<CategorySyncStatisticsBuilder> process(@Nonnull final List<CategoryDraft>
+                                                                             categoryDrafts) {
+        final CategorySyncStatisticsBuilder statisticsBuilder = new CategorySyncStatisticsBuilder();
         for (CategoryDraft categoryDraft : categoryDrafts) {
             if (categoryDraft != null) {
                 final String externalId = categoryDraft.getExternalId();
                 if (isNotBlank(externalId)) {
-                    createOrUpdateCategory(categoryDraft);
+                    createOrUpdateCategory(categoryDraft, statisticsBuilder);
                 } else {
                     final String errorMessage = format(CATEGORY_DRAFT_EXTERNAL_ID_NOT_SET, categoryDraft.getName());
-                    handleError(errorMessage, null);
+                    handleError(errorMessage, null, statisticsBuilder);
                 }
             } else {
-                handleError(CATEGORY_DRAFT_IS_NULL, null);
+                handleError(CATEGORY_DRAFT_IS_NULL, null, statisticsBuilder);
             }
-            statistics.incrementProcessed();
         }
-        return CompletableFuture.completedFuture(statistics);
+        return CompletableFuture.completedFuture(statisticsBuilder);
     }
 
     /**
@@ -113,31 +116,33 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * either blocks to create a new category, if none exist with the same external id, or blocks to update the
      * existing category.
      *
-     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried out
+     * <p>The {@code statisticsBuilder} instance is updated accordingly to whether the CTP request was carried out
      * successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
      * specified in the {@code syncOptions} is called.
      *
      * @param categoryDraft the category draft where we get the new data.
+     * @param statisticsBuilder builder of a category sync statistics baked for the process.
      */
-    private void createOrUpdateCategory(@Nonnull final CategoryDraft categoryDraft) {
+    private void createOrUpdateCategory(@Nonnull final CategoryDraft categoryDraft,
+                                        @Nonnull final CategorySyncStatisticsBuilder statisticsBuilder) {
         final String externalId = categoryDraft.getExternalId();
         try {
             categoryService.fetchCategoryByExternalId(externalId)
                            .thenCompose(fetchedCategoryOptional ->
                                fetchedCategoryOptional
-                                   .map(category -> syncCategories(category, categoryDraft))
-                                   .orElseGet(() -> createCategory(categoryDraft)))
+                                   .map(category -> syncCategories(category, categoryDraft, statisticsBuilder))
+                                   .orElseGet(() -> createCategory(categoryDraft, statisticsBuilder)))
                            .exceptionally(exception -> {
                                final String errorMessage = format(CTP_CATEGORY_FETCH_FAILED,
                                    categoryDraft.getExternalId(), exception.getMessage());
-                               handleError(errorMessage, exception);
+                               handleError(errorMessage, exception, statisticsBuilder);
                                return null;
                            })
                            .toCompletableFuture().get();
         } catch (InterruptedException | ExecutionException exception) {
             final String errorMessage = format(CTP_CATEGORY_SYNC_FAILED, categoryDraft.getExternalId(),
                 exception.getMessage());
-            handleError(errorMessage, exception);
+            handleError(errorMessage, exception, statisticsBuilder);
         }
     }
 
@@ -145,20 +150,22 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * Given a {@link CategoryDraft}, issues a request to the CTP project defined by the client configuration stored in
      * the {@code syncOptions} instance of this class to create a category with the same fields as this category draft.
      *
-     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
+     * <p>The {@code statisticsBuilder} instance is updated accordingly to whether the CTP request was carried
      * out successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
      * specified in the {@code syncOptions} is called.
      *
      * @param categoryDraft the category draft to create the category from.
+     * @param statisticsBuilder Builder of a category sync statistics baked for the process.
      * @return a future monad which can contain an empty result.
      */
-    private CompletionStage<Void> createCategory(@Nonnull final CategoryDraft categoryDraft) {
+    private CompletionStage<Void> createCategory(@Nonnull final CategoryDraft categoryDraft,
+                                                 @Nonnull final CategorySyncStatisticsBuilder statisticsBuilder) {
         return categoryService.createCategory(categoryDraft)
-                              .thenAccept(createdCategory -> statistics.incrementCreated())
+                              .thenAccept(createdCategory -> statisticsBuilder.incrementCreated())
                               .exceptionally(exception -> {
                                   final String errorMessage = format(CTP_CATEGORY_CREATE_FAILED,
                                       categoryDraft.getExternalId(), exception.getMessage());
-                                  handleError(errorMessage, exception);
+                                  handleError(errorMessage, exception, statisticsBuilder);
                                   return null;
                               });
     }
@@ -170,15 +177,19 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new data.
+     * @param statisticsBuilder Builder of a category sync statistics baked for the process.
      * @return a future monad which can contain an empty result.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> syncCategories(@Nonnull final Category oldCategory,
-                                                 @Nonnull final CategoryDraft newCategory) {
+                                                 @Nonnull final CategoryDraft newCategory,
+                                                 @Nonnull final CategorySyncStatisticsBuilder statisticsBuilder) {
         final List<UpdateAction<Category>> updateActions =
             CategorySyncUtils.buildActions(oldCategory, newCategory, syncOptions, typeService);
         if (!updateActions.isEmpty()) {
-            return updateCategory(oldCategory, updateActions);
+            return updateCategory(oldCategory, updateActions, statisticsBuilder);
+        } else {
+            statisticsBuilder.incrementUpToDate();
         }
         return CompletableFuture.completedFuture(null);
     }
@@ -188,36 +199,40 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * the CTP project defined by the client configuration stored in the {@code syncOptions} instance
      * of this class to update the specified category with this list of update actions.
      *
-     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
+     * <p>The {@code statisticsBuilder} instance is updated accordingly to whether the CTP request was carried
      * out successfully or not. If an exception was thrown on executing the request to CTP,
      * the optional error callback specified in the {@code syncOptions} is called.
      *
      * @param category      the category to update.
      * @param updateActions the list of update actions to update the category with.
+     * @param statisticsBuilder Builder of a category sync statistics baked for the process.
      * @return a future monad which can contain an empty result.
      */
     private CompletionStage<Void> updateCategory(@Nonnull final Category category,
-                                                 @Nonnull final List<UpdateAction<Category>> updateActions) {
+                                                 @Nonnull final List<UpdateAction<Category>> updateActions,
+                                                 @Nonnull final CategorySyncStatisticsBuilder statisticsBuilder) {
         return categoryService.updateCategory(category, updateActions)
-                              .thenAccept(updatedCategory -> statistics.incrementUpdated())
+                              .thenAccept(updatedCategory -> statisticsBuilder.incrementUpdated())
                               .exceptionally(exception -> {
                                   final String errorMessage = format(CTP_CATEGORY_UPDATE_FAILED,
                                       category.getExternalId(), exception.getMessage());
-                                  handleError(errorMessage, exception);
+                                  handleError(errorMessage, exception, statisticsBuilder);
                                   return null;
                               });
     }
 
     /**
      * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
-     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
-     * incrementing the total number of failed categories to sync.
+     * optional error callback specified in the {@code syncOptions} and updates the {@code statisticsBuilder} instance
+     * by incrementing the total number of failed categories to sync.
      *
      * @param errorMessage The error message describing the reason(s) of failure.
      * @param exception    The exception that called caused the failure, if any.
+     * @param statisticsBuilder Builder of a category sync statistics baked for the process.
      */
-    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
+    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
+                             @Nonnull final CategorySyncStatisticsBuilder statisticsBuilder) {
         syncOptions.applyErrorCallback(errorMessage, exception);
-        statistics.incrementFailed();
+        statisticsBuilder.incrementFailed();
     }
 }
