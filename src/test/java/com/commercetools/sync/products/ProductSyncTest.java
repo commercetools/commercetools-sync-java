@@ -3,6 +3,7 @@ package com.commercetools.sync.products;
 import com.commercetools.sync.commons.actions.UpdateActionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.ProductService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -30,20 +31,21 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("unchecked")
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
 public class ProductSyncTest {
 
     @Test
     public void sync_expectServiceTryFetchAndCreateNew() {
-        ProductSyncOptions syncOptionsMock = mock(ProductSyncOptions.class);
         ProductService serviceSpy = spy(ProductService.class);
         when(serviceSpy.fetch(any())).thenReturn(completedFuture(Optional.empty()));
-        UpdateActionsBuilder<Product, ProductDraft> updateActionsBuilderSpy = spy(UpdateActionsBuilder.class);
-        ProductSync sync = new ProductSync(syncOptionsMock, serviceSpy, updateActionsBuilderSpy);
         List<ProductDraft> drafts = new ArrayList<>();
         ProductDraft draftMock = mock(ProductDraft.class);
         drafts.add(draftMock);
         when(draftMock.getKey()).thenReturn("productKey");
         when(serviceSpy.create(any())).thenReturn(completedFuture(null));
+        ProductSyncOptions syncOptionsMock = mock(ProductSyncOptions.class);
+        UpdateActionsBuilder<Product, ProductDraft> updateActionsBuilderSpy = spy(UpdateActionsBuilder.class);
+        ProductSync sync = new ProductSync(syncOptionsMock, serviceSpy, updateActionsBuilderSpy);
 
         ProductSyncStatistics statistics = sync.sync(drafts).toCompletableFuture().join();
 
@@ -57,18 +59,19 @@ public class ProductSyncTest {
 
     @Test
     public void sync_expectServiceFetchAndUpdateExisting() {
-        ProductSyncOptions syncOptionsMock = mock(ProductSyncOptions.class);
         ProductService serviceSpy = spy(ProductService.class);
-        UpdateActionsBuilder<Product, ProductDraft> updateActionsBuilderSpy = spy(UpdateActionsBuilder.class);
         Product productMock = mock(Product.class);
         when(serviceSpy.fetch(any())).thenReturn(completedFuture(Optional.of(productMock)));
-        ProductSync sync = new ProductSync(syncOptionsMock, serviceSpy, updateActionsBuilderSpy);
         List<ProductDraft> drafts = new ArrayList<>();
         ProductDraft draftMock = mock(ProductDraft.class);
         drafts.add(draftMock);
         when(draftMock.getKey()).thenReturn("productKey");
         when(serviceSpy.update(any(), anyList())).thenReturn(completedFuture(null));
-        when(updateActionsBuilderSpy.buildActions(any(), any())).thenReturn(singletonList(ChangeName.of(localizedString("name2"))));
+        UpdateActionsBuilder<Product, ProductDraft> updateActionsBuilderSpy = spy(UpdateActionsBuilder.class);
+        when(updateActionsBuilderSpy.buildActions(any(), any()))
+                .thenReturn(singletonList(ChangeName.of(localizedString("name2"))));
+        ProductSyncOptions syncOptionsMock = mock(ProductSyncOptions.class);
+        ProductSync sync = new ProductSync(syncOptionsMock, serviceSpy, updateActionsBuilderSpy);
 
         ProductSyncStatistics statistics = sync.sync(drafts).toCompletableFuture().join();
 
@@ -83,19 +86,19 @@ public class ProductSyncTest {
 
     @Test
     public void sync_expectServiceFetchAndDoNotUpdateExistingAsIdentical() {
-        ProductSyncOptions syncOptionsMock = mock(ProductSyncOptions.class);
         ProductService serviceSpy = spy(ProductService.class);
-        UpdateActionsBuilder<Product, ProductDraft> updateActionsBuilderSpy = spy(UpdateActionsBuilder.class);
         Product productMock = mock(Product.class);
         addName(productMock, null);
         when(serviceSpy.fetch(any())).thenReturn(completedFuture(Optional.of(productMock)));
-        ProductSync sync = new ProductSync(syncOptionsMock, serviceSpy, updateActionsBuilderSpy);
         List<ProductDraft> drafts = new ArrayList<>();
         ProductDraft draftMock = mock(ProductDraft.class);
         drafts.add(draftMock);
         when(draftMock.getKey()).thenReturn("productKey");
         when(serviceSpy.update(any(), anyList())).thenReturn(completedFuture(null));
+        UpdateActionsBuilder<Product, ProductDraft> updateActionsBuilderSpy = spy(UpdateActionsBuilder.class);
         when(updateActionsBuilderSpy.buildActions(any(), any())).thenReturn(emptyList());
+        ProductSyncOptions syncOptionsMock = mock(ProductSyncOptions.class);
+        ProductSync sync = new ProductSync(syncOptionsMock, serviceSpy, updateActionsBuilderSpy);
         ProductSyncStatistics statistics = sync.sync(drafts).toCompletableFuture().join();
 
         assertThat(statistics).isNotNull();

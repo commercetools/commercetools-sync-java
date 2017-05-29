@@ -1,0 +1,201 @@
+{
+  "id": "ba81a6da-cf83-435b-a89e-2afab579846f",
+  "version": 10,
+  "productType": {
+    "typeId": "product-type",
+    "id": "cda0dbf7-b42e-40bf-8453-241d5b587f93"
+  },
+  "catalogs": [],
+  "masterData": {
+    "current": {
+      "name": {
+        "de": "Rehrücken ohne Knochen"
+      },
+      "description": {
+        "de": "Die Rückenstücke des Rehs gelten als wahres Geschmackserlebnis und beherbergen die edelsten Teile des Rehs. Aus dem Rücken können Sie feine Filets herausschneiden, die sich hervorragend zum Kurzbraten oder Grillen eignen. Da der Knochen von uns bereits schonend entfernt wurde, können Sie sich voll und ganz auf den einzigartigen Geschmack konzentrieren."
+      },
+      "categories": [
+        {
+          "typeId": "category",
+          "id": "5cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        }
+      ],
+      "categoryOrderHints": {},
+      "slug": {
+        "de": "rehruecken-o-kn"
+      },
+      "masterVariant": {
+        "id": 1,
+        "sku": "3065833",
+        "prices": [
+        ],
+        "images": [
+          {
+            "url": "https://53346cfbf3c7e017ed3d-6de74c3efa80f1c837c6a988b57abe66.ssl.cf3.rackcdn.com/16.11.11_rehruecken--O9hsZFH4.png",
+            "dimensions": {
+              "w": 0,
+              "h": 0
+            }
+          }
+        ],
+        "attributes": [
+          {
+            "name": "priceInfo",
+            "value": "64,90/kg"
+          },
+          {
+            "name": "size",
+            "value": "ca. 1 x 1000 g"
+          },
+          {
+            "name": "rinderrasse",
+            "value": "Reh"
+          },
+          {
+            "name": "herkunft",
+            "value": "Deutschland"
+          },
+          {
+            "name": "fuetterung",
+            "value": "Gräser, Kräuter, Knospen, Eicheln, Beeren"
+          },
+          {
+            "name": "teilstueck",
+            "value": "Reh-Rücken"
+          },
+          {
+            "name": "reifung",
+            "value": "wet-aged, mindestens 2 Tage"
+          },
+          {
+            "name": "haltbarkeit",
+            "value": "bei < 7°C: 8 Tage ungeöffnet"
+          },
+          {
+            "name": "verpackung",
+            "value": "vakuumverpackt"
+          },
+          {
+            "name": "anlieferung",
+            "value": "frisch"
+          },
+          {
+            "name": "zubereitung",
+            "value": "Grill, Ofen, Niedertemperatur"
+          },
+          {
+            "name": "ean",
+            "value": "2743580000005"
+          }
+        ],
+        "assets": []
+      },
+      "variants": [],
+      "searchKeywords": {}
+    },
+    "staged": {
+      "name": {
+        "de": "Rehrücken ohne Knochen"
+      },
+      "description": {
+        "de": "Die Rückenstücke des Rehs gelten als wahres Geschmackserlebnis und beherbergen die edelsten Teile des Rehs. Aus dem Rücken können Sie feine Filets herausschneiden, die sich hervorragend zum Kurzbraten oder Grillen eignen. Da der Knochen von uns bereits schonend entfernt wurde, können Sie sich voll und ganz auf den einzigartigen Geschmack konzentrieren."
+      },
+      "categories": [
+        {
+          "typeId": "category",
+          "id": "5cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        }
+      ],
+      "categoryOrderHints": {},
+      "slug": {
+        "de": "rehruecken-o-kn"
+      },
+      "masterVariant": {
+        "id": 1,
+        "sku": "3065833",
+        "prices": [
+          {
+            "value": {
+              "currencyCode": "EUR",
+              "centAmount": 6490
+            },
+            "id": "6333988e-2136-47b2-b4ab-1cf817f41070"
+          }
+        ],
+        "images": [
+          {
+            "url": "https://53346cfbf3c7e017ed3d-6de74c3efa80f1c837c6a988b57abe66.ssl.cf3.rackcdn.com/16.11.11_rehruecken--O9hsZFH4.png",
+            "dimensions": {
+              "w": 0,
+              "h": 0
+            }
+          }
+        ],
+        "attributes": [
+          {
+            "name": "priceInfo",
+            "value": "64,90/kg"
+          },
+          {
+            "name": "size",
+            "value": "ca. 1 x 1000 g"
+          },
+          {
+            "name": "rinderrasse",
+            "value": "Reh"
+          },
+          {
+            "name": "herkunft",
+            "value": "Deutschland"
+          },
+          {
+            "name": "fuetterung",
+            "value": "Gräser, Kräuter, Knospen, Eicheln, Beeren"
+          },
+          {
+            "name": "teilstueck",
+            "value": "Reh-Rücken"
+          },
+          {
+            "name": "reifung",
+            "value": "wet-aged, mindestens 2 Tage"
+          },
+          {
+            "name": "haltbarkeit",
+            "value": "bei < 7°C: 8 Tage ungeöffnet"
+          },
+          {
+            "name": "verpackung",
+            "value": "vakuumverpackt"
+          },
+          {
+            "name": "anlieferung",
+            "value": "frisch"
+          },
+          {
+            "name": "zubereitung",
+            "value": "Grill, Ofen, Niedertemperatur"
+          },
+          {
+            "name": "ean",
+            "value": "2743580000005"
+          }
+        ],
+        "assets": []
+      },
+      "variants": [],
+      "searchKeywords": {}
+    },
+    "published": true,
+    "hasStagedChanges": false
+  },
+  "catalogData": {},
+  "taxCategory": {
+    "typeId": "tax-category",
+    "id": "ebbe95fb-2282-4f9a-8747-fbe440e02dc0"
+  },
+  "lastVariantId": 1,
+  "createdAt": "2016-11-21T09:32:41.261Z",
+  "lastModifiedAt": "2016-12-05T16:09:03.307Z",
+  "lastMessageSequenceNumber": 3
+}

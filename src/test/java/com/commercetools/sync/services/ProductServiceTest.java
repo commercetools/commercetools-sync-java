@@ -1,33 +1,41 @@
 package com.commercetools.sync.services;
 
-import com.commercetools.sync.services.impl.ProductServiceImpl;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 public class ProductServiceTest {
-    @Test
-    public void of() {
-        assertThat(ProductService.of()).isInstanceOf(ProductServiceImpl.class);
+
+    private ProductService service;
+    private SphereClient ctpClient;
+
+    @Before
+    public void setUp() throws Exception {
+        ctpClient = spy(SphereClient.class);
+        service = ProductService.of(ctpClient);
     }
 
     @Test
     public void create() {
-        ProductService service = ProductService.of();
+        Product product = service.create(mock(ProductDraft.class)).toCompletableFuture().join();
 
-        CompletionStage<Void> stage = service.create(null);
-
-        assertThat(stage).isNull();
+        assertThat(product).isNotNull();
+        verify(ctpClient).execute(any());
     }
 
     @Test
     public void update() {
-        ProductService service = ProductService.of();
-
         CompletionStage<Void> stage = service.update(null, null);
 
         assertThat(stage).isNull();
@@ -35,8 +43,6 @@ public class ProductServiceTest {
 
     @Test
     public void fetch() {
-        ProductService service = ProductService.of();
-
         CompletionStage<Optional<Product>> stage = service.fetch(null);
 
         assertThat(stage).isNull();

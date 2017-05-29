@@ -11,6 +11,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ProductTestUtils {
+    /**
+     * Empty.
+     */
     public static LocalizedString localizedString(final String string) {
         if (string == null) {
             return null;
@@ -18,6 +21,9 @@ public class ProductTestUtils {
         return LocalizedString.of(Locale.ENGLISH, string);
     }
 
+    /**
+     * Empty.
+     */
     public static void addName(final Product productMock, final String name) {
         ProductCatalogData catalogData = mock(ProductCatalogData.class);
         ProductData data = mock(ProductData.class);

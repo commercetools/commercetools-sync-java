@@ -1,0 +1,459 @@
+{
+  "id": "cda0dbf7-b42e-40bf-8453-241d5b587f93",
+  "version": 46,
+  "name": "main",
+  "description": "all fleisch",
+  "classifier": "Complex",
+  "attributes": [
+    {
+      "name": "priceInfo",
+      "label": {
+        "de": "Grundpreis"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "size",
+      "label": {
+        "de": "Größe"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "rinderrasse",
+      "label": {
+        "de": "Rinderrasse"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "herkunft",
+      "label": {
+        "de": "Herkunft"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "fuetterung",
+      "label": {
+        "de": "Fütterung"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "teilstueck",
+      "label": {
+        "de": "Teilstück"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "reifung",
+      "label": {
+        "de": "Reifung"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "haltbarkeit",
+      "label": {
+        "de": "Haltbarkeit"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "verpackung",
+      "label": {
+        "de": "Verpackung"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "anlieferung",
+      "label": {
+        "de": "Anlieferung"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "zubereitung",
+      "label": {
+        "de": "Zubereitung"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "textTeilstueck",
+      "label": {
+        "de": "Text Teilstück"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "MultiLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "shortTitle",
+      "label": {
+        "de": "Kurz Titel"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "shortDescription",
+      "label": {
+        "de": "Kurz Beschreibung"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "MultiLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "ean",
+      "label": {
+        "de": "EAN"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "None",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "isOnStock",
+      "label": {
+        "de": "auf Lager"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "boolean"
+      },
+      "attributeConstraint": "None",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "sort",
+      "label": {
+        "de": "Sortierwert"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "number"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "topseller",
+      "label": {
+        "de": "Topselling-Produkt"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "boolean"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "creationDate",
+      "label": {
+        "de": "Neuheit"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "date"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "pdpHeadline",
+      "label": {
+        "de": "Detailüberschrift"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "pdpSubHeadline",
+      "label": {
+        "de": "Detailteilüberschrift"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "zutaten",
+      "label": {
+        "de": "Zutaten"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "fett",
+      "label": {
+        "de": "Fett"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "kohlenhydrate",
+      "label": {
+        "de": "Kohlenhydrate"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "gesaettigtFett",
+      "label": {
+        "de": "davon gesättigte Fettsäuren"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "energie",
+      "label": {
+        "de": "Energie"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "eiweiss",
+      "label": {
+        "de": "Eiweiß"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "salz",
+      "label": {
+        "de": "Salz"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "zucker",
+      "label": {
+        "de": "Zucker"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "schlachtung",
+      "label": {
+        "de": "Schlachtung"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "MultiLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "aufzucht",
+      "label": {
+        "de": "Aufzucht"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "MultiLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "angebot",
+      "label": {
+        "de": "Angebot"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "None",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    }
+  ],
+  "createdAt": "2015-06-09T08:51:37.052Z",
+  "lastModifiedAt": "2017-05-22T14:15:26.431Z"
+}

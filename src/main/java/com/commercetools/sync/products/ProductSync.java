@@ -5,6 +5,7 @@ import com.commercetools.sync.commons.actions.UpdateActionsBuilder;
 import com.commercetools.sync.products.actions.ProductUpdateActionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.ProductService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -22,7 +23,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private final UpdateActionsBuilder<Product, ProductDraft> updateActionsBuilder;
 
     public ProductSync(final ProductSyncOptions productSyncOptions) {
-        this(productSyncOptions, ProductService.of(), ProductUpdateActionsBuilder.of());
+        this(productSyncOptions, ProductService.of(productSyncOptions.getCtpClient()),
+                ProductUpdateActionsBuilder.of());
     }
 
     ProductSync(final ProductSyncOptions productSyncOptions, final ProductService productService,
@@ -44,13 +46,14 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                         .thenRun(statistics::incrementCreated)))
                         .toCompletableFuture().get();
             } catch (InterruptedException | ExecutionException exception) {
-
+                exception.printStackTrace();
             }
             statistics.incrementProcessed();
         }
         return CompletableFuture.completedFuture(statistics);
     }
 
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> syncProduct(final Product product, final ProductDraft productDraft) {
         List<UpdateAction<Product>> updateActions = updateActionsBuilder.buildActions(product, productDraft);
         if (!updateActions.isEmpty()) {
