@@ -313,7 +313,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         final Optional<InventoryEntryDraft> fixedDraft = replaceChannelReference(draft);
         if (fixedDraft.isPresent()) {
             final List<UpdateAction<InventoryEntry>> updateActions =
-                InventorySyncUtils.buildActions(entry, fixedDraft.get(), syncOptions, typeService);
+                InventorySyncUtils.buildActions(entry, fixedDraft.get(), syncOptions);
             if (!updateActions.isEmpty()) {
                 return inventoryService.updateInventoryEntry(entry, updateActions)
                     .thenAccept(updatedEntry -> statistics.incrementUpdated())
