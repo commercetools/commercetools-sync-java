@@ -3,6 +3,7 @@ package com.commercetools.sync.categories;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.categories.utils.CategorySyncUtils;
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
@@ -19,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
+import static com.commercetools.sync.commons.helpers.ReferenceResolver.resolveReferences;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -34,6 +36,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private static final String CATEGORY_DRAFT_EXTERNAL_ID_NOT_SET = "CategoryDraft with name: %s doesn't have an"
         + " externalId.";
     private static final String CATEGORY_DRAFT_IS_NULL = "CategoryDraft is null.";
+    private static final String CATEGORY_DRAFT_REFERENCE_RESOLUTION_FAILED = "Failed to resolve reference on "
+        + "CategoryDraft with externalId:'%s'. Reason: %s";
 
     private final TypeService typeService;
     private final CategoryService categoryService;
@@ -164,9 +168,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     }
 
     /**
-     * Given an existing {@link Category} and a new {@link CategoryDraft}, this method calculates all the update actions
-     * required to synchronize the existing category to be the same as the new one. If there are update actions found, a
-     * request is made to CTP to update the existing category, otherwise it doesn't issue a request.
+     * Given an existing {@link Category} and a new {@link CategoryDraft}, first resolves all references on the category
+     * draft, then it calculates all the update actions required to synchronize the existing category to be the same as
+     * the new one. If there are update actions found, a request is made to CTP to update the existing category,
+     * otherwise it doesn't issue a request.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new data.
@@ -175,13 +180,22 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> syncCategories(@Nonnull final Category oldCategory,
                                                  @Nonnull final CategoryDraft newCategory) {
-        final List<UpdateAction<Category>> updateActions =
-            CategorySyncUtils.buildActions(oldCategory, newCategory, syncOptions, typeService);
-        if (!updateActions.isEmpty()) {
-            return updateCategory(oldCategory, updateActions);
+        try {
+            final CategoryDraft resolvedReferencesCategoryDraft =
+                resolveReferences(newCategory, typeService, categoryService, syncOptions);
+            final List<UpdateAction<Category>> updateActions =
+                CategorySyncUtils.buildActions(oldCategory, resolvedReferencesCategoryDraft, syncOptions);
+            if (!updateActions.isEmpty()) {
+                return updateCategory(oldCategory, updateActions);
+            }
+        } catch (@Nonnull final ReferenceResolutionException exception) {
+            final String errorMessage = format(CATEGORY_DRAFT_REFERENCE_RESOLUTION_FAILED, newCategory.getExternalId(),
+                exception.getMessage());
+            handleError(errorMessage, exception);
         }
         return CompletableFuture.completedFuture(null);
     }
+
 
     /**
      * Given a {@link Category} and a {@link List} of {@link UpdateAction} elements, this method issues a request to
