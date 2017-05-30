@@ -1,142 +1,121 @@
 package com.commercetools.sync.commons.helpers;
 
-import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
-import io.netty.util.internal.StringUtil;
+import com.commercetools.sync.categories.helpers.CategorySyncStatisticsBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.concurrent.TimeUnit;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 import static com.commercetools.sync.commons.helpers.BaseSyncStatistics.getStatisticsAsJsonString;
-import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BaseSyncStatisticsTest {
-    private BaseSyncStatistics baseSyncStatistics;
+    private static final long ONE_HOUR_FIFTEEN_MINUTES_AND_TWENTY_SECONDS_IN_MILLIS = 75 * 60 * 1000 + 20 * 1000L;
+    private BaseSyncStatisticsBuilder baseSyncStatisticsBuilder;
 
     @Before
     public void setup() {
-        baseSyncStatistics = new CategorySyncStatistics();
+        baseSyncStatisticsBuilder = new CategorySyncStatisticsBuilder();
     }
 
     @Test
     public void getUpdated_WithNoUpdated_ShouldReturnZero() {
-        assertThat(baseSyncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(baseSyncStatisticsBuilder.build().getUpdated()).isEqualTo(0);
     }
 
     @Test
     public void incrementUpdated_ShouldIncrementUpdatedValue() {
-        baseSyncStatistics.incrementUpdated();
-        assertThat(baseSyncStatistics.getUpdated()).isEqualTo(1);
+        baseSyncStatisticsBuilder.incrementUpdated();
+        assertThat(baseSyncStatisticsBuilder.build().getUpdated()).isEqualTo(1);
     }
 
     @Test
     public void getCreated_WithNoCreated_ShouldReturnZero() {
-        assertThat(baseSyncStatistics.getCreated()).isEqualTo(0);
+        assertThat(baseSyncStatisticsBuilder.build().getCreated()).isEqualTo(0);
     }
 
     @Test
     public void incrementCreated_ShouldIncrementCreatedValue() {
-        baseSyncStatistics.incrementCreated();
-        assertThat(baseSyncStatistics.getCreated()).isEqualTo(1);
+        baseSyncStatisticsBuilder.incrementCreated();
+        assertThat(baseSyncStatisticsBuilder.build().getCreated()).isEqualTo(1);
+    }
+
+    @Test
+    public void getUpToDate_WithNoUpToDate_ShouldReturnZero() {
+        assertThat(baseSyncStatisticsBuilder.build().getUpToDate()).isEqualTo(0);
+    }
+
+    @Test
+    public void incrementUpToDate_ShouldIncrementUpToDateValue() {
+        baseSyncStatisticsBuilder.incrementUpToDate();
+        assertThat(baseSyncStatisticsBuilder.build().getUpToDate()).isEqualTo(1);
     }
 
     @Test
     public void getProcessed_WithNoProcessed_ShouldReturnZero() {
-        assertThat(baseSyncStatistics.getProcessed()).isEqualTo(0);
+        assertThat(baseSyncStatisticsBuilder.build().getProcessed()).isEqualTo(0);
     }
 
     @Test
-    public void incrementProcessed_ShouldIncrementProcessedValue() {
-        baseSyncStatistics.incrementProcessed();
-        assertThat(baseSyncStatistics.getProcessed()).isEqualTo(1);
+    public void getProcessed_WithOtherStatsIncremented_ShouldReturnSumOfOtherValues() {
+        baseSyncStatisticsBuilder.incrementCreated();
+        baseSyncStatisticsBuilder.incrementUpdated();
+        baseSyncStatisticsBuilder.incrementUpToDate();
+        baseSyncStatisticsBuilder.incrementFailed();
+        assertThat(baseSyncStatisticsBuilder.build().getProcessed()).isEqualTo(4);
     }
 
     @Test
     public void getFailed_WithNoFailed_ShouldReturnZero() {
-        assertThat(baseSyncStatistics.getFailed()).isEqualTo(0);
+        assertThat(baseSyncStatisticsBuilder.build().getFailed()).isEqualTo(0);
     }
 
     @Test
     public void incrementFailed_ShouldIncrementFailedValue() {
-        baseSyncStatistics.incrementFailed();
-        assertThat(baseSyncStatistics.getFailed()).isEqualTo(1);
+        baseSyncStatisticsBuilder.incrementFailed();
+        assertThat(baseSyncStatisticsBuilder.build().getFailed()).isEqualTo(1);
     }
 
     @Test
-    public void calculateProcessingTime_ShouldSetProcessingTimeInAllUnitsAndHumanReadableString() throws
-        InterruptedException {
-        assertThat(baseSyncStatistics.getProcessingTimeInMillis()).isEqualTo(0);
-        assertThat(baseSyncStatistics.getHumanReadableProcessingTime()).isEqualTo(StringUtil.EMPTY_STRING);
-
-        final int waitingTimeInMillis = 100;
-        Thread.sleep(waitingTimeInMillis);
-        baseSyncStatistics.calculateProcessingTime();
-
-        assertThat(baseSyncStatistics.getProcessingTimeInDays()).isGreaterThanOrEqualTo(0);
-        assertThat(baseSyncStatistics.getProcessingTimeInHours()).isGreaterThanOrEqualTo(0);
-        assertThat(baseSyncStatistics.getProcessingTimeInMinutes()).isGreaterThanOrEqualTo(0);
-        assertThat(baseSyncStatistics.getProcessingTimeInSeconds()).isGreaterThanOrEqualTo(waitingTimeInMillis / 1000);
-        assertThat(baseSyncStatistics.getProcessingTimeInMillis()).isGreaterThanOrEqualTo(waitingTimeInMillis);
-
-        final long remainingMillis = baseSyncStatistics.getProcessingTimeInMillis()
-            - TimeUnit.SECONDS.toMillis(baseSyncStatistics.getProcessingTimeInSeconds());
-        assertThat(baseSyncStatistics.getHumanReadableProcessingTime()).contains(format(", %dms", remainingMillis));
+    public void getProcesingTimeInMillis_WithNoProcessingTime_ShouldReturnZero() {
+        assertThat(baseSyncStatisticsBuilder.build().getProcessingTimeInMillis()).isEqualTo(0L);
     }
 
     @Test
-    public void getStatisticsAsJsonString_WithoutCalculatingProcessingTime_ShouldGetCorrectJsonString() {
-        baseSyncStatistics.incrementCreated();
-        baseSyncStatistics.incrementProcessed();
+    public void setProcesingTimeInMillis_ShouldSetProcessingTimeValue() {
+        baseSyncStatisticsBuilder.setProcessingTimeInMillis(ONE_HOUR_FIFTEEN_MINUTES_AND_TWENTY_SECONDS_IN_MILLIS);
+        assertThat(baseSyncStatisticsBuilder.build().getProcessingTimeInMillis())
+            .isEqualTo(ONE_HOUR_FIFTEEN_MINUTES_AND_TWENTY_SECONDS_IN_MILLIS);
+    }
 
-        baseSyncStatistics.incrementFailed();
-        baseSyncStatistics.incrementProcessed();
+    @Test
+    public void getFormattedProcessingTime_ShouldReturnFormattedString() {
+        final DateFormat dateFormat = new SimpleDateFormat("H'h, 'm'm, 's's, 'SSS'ms'");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        baseSyncStatisticsBuilder.setProcessingTimeInMillis(ONE_HOUR_FIFTEEN_MINUTES_AND_TWENTY_SECONDS_IN_MILLIS);
+        assertThat(baseSyncStatisticsBuilder.build().getFormattedProcessingTime(dateFormat))
+            .isEqualTo("1h, 15m, 20s, 000ms");
+    }
 
-        baseSyncStatistics.incrementUpdated();
-        baseSyncStatistics.incrementProcessed();
+    @Test
+    public void getStatisticsAsJsonString_ShouldGetCorrectJsonString() {
+        baseSyncStatisticsBuilder.incrementCreated();
+        baseSyncStatisticsBuilder.incrementFailed();
+        baseSyncStatisticsBuilder.incrementUpdated();
+        baseSyncStatisticsBuilder.incrementUpToDate();
+        baseSyncStatisticsBuilder.setProcessingTimeInMillis(ONE_HOUR_FIFTEEN_MINUTES_AND_TWENTY_SECONDS_IN_MILLIS);
 
-        final String statisticsAsJsonString = getStatisticsAsJsonString(baseSyncStatistics);
+        final String statisticsAsJsonString = getStatisticsAsJsonString(baseSyncStatisticsBuilder.build());
         assertThat(statisticsAsJsonString)
-            .isEqualTo("{\"reportMessage\":\"Summary: 3 categories were processed in total (1 created, 1 updated and"
-                + " 1 categories failed to sync).\",\""
-                + "updated\":1,\""
+            .isEqualTo("{\"updated\":1,\""
                 + "created\":1,\""
                 + "failed\":1,\""
-                + "processed\":3,\""
-                + "processingTimeInDays\":" + baseSyncStatistics.getProcessingTimeInDays() + ",\""
-                + "processingTimeInHours\":" + baseSyncStatistics.getProcessingTimeInHours() + ",\""
-                + "processingTimeInMinutes\":" + baseSyncStatistics.getProcessingTimeInMinutes() + ",\""
-                + "processingTimeInSeconds\":" + baseSyncStatistics.getProcessingTimeInSeconds() + ",\""
-                + "processingTimeInMillis\":" + baseSyncStatistics.getProcessingTimeInMillis() + ",\""
-                + "humanReadableProcessingTime\":\"" + baseSyncStatistics.getHumanReadableProcessingTime() + "\"}");
-    }
-
-    @Test
-    public void getStatisticsAsJsonString_WithCalculatingProcessingTime_ShouldGetCorrectJsonString() {
-        baseSyncStatistics.incrementCreated();
-        baseSyncStatistics.incrementProcessed();
-
-        baseSyncStatistics.incrementFailed();
-        baseSyncStatistics.incrementProcessed();
-
-        baseSyncStatistics.incrementUpdated();
-        baseSyncStatistics.incrementProcessed();
-
-        baseSyncStatistics.calculateProcessingTime();
-
-        final String statisticsAsJsonString = getStatisticsAsJsonString(baseSyncStatistics);
-        assertThat(statisticsAsJsonString)
-            .isEqualTo("{\"reportMessage\":\"Summary: 3 categories were processed in total (1 created, 1 updated and"
-                + " 1 categories failed to sync).\",\""
-                + "updated\":1,\""
-                + "created\":1,\""
-                + "failed\":1,\""
-                + "processed\":3,\""
-                + "processingTimeInDays\":" + baseSyncStatistics.getProcessingTimeInDays() + ",\""
-                + "processingTimeInHours\":" + baseSyncStatistics.getProcessingTimeInHours() + ",\""
-                + "processingTimeInMinutes\":" + baseSyncStatistics.getProcessingTimeInMinutes() + ",\""
-                + "processingTimeInSeconds\":" + baseSyncStatistics.getProcessingTimeInSeconds() + ",\""
-                + "processingTimeInMillis\":" + baseSyncStatistics.getProcessingTimeInMillis() + ",\""
-                + "humanReadableProcessingTime\":\"" + baseSyncStatistics.getHumanReadableProcessingTime() + "\"}");
+                + "upToDate\":1,\""
+                + "processed\":4,\""
+                + "processingTimeInMillis\":" + ONE_HOUR_FIFTEEN_MINUTES_AND_TWENTY_SECONDS_IN_MILLIS + ",\""
+                + "reportMessage\":\"Summary: 4 categories were processed in total (1 created, 1 updated, 1 were "
+                + "up to date and 1 failed to sync).\"}");
     }
 }

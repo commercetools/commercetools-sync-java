@@ -49,7 +49,7 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(0);
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 0 categories were processed in total "
-                + "(0 created, 0 updated and 0 categories failed to sync).");
+                + "(0 created, 0 updated, 0 were up to date and 0 failed to sync).");
     }
 
     @Test
@@ -64,7 +64,7 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+                + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
     }
 
     @Test
@@ -79,7 +79,7 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+                + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
     }
 
     @Test
@@ -100,7 +100,7 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
-                + "(1 created, 0 updated and 0 categories failed to sync).");
+                + "(1 created, 0 updated, 0 were up to date and 0 failed to sync).");
     }
 
     @Test
@@ -116,7 +116,7 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
-                + "(0 created, 1 updated and 0 categories failed to sync).");
+                + "(0 created, 1 updated, 0 were up to date and 0 failed to sync).");
     }
 
     @Test
@@ -142,7 +142,7 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 0 categories failed to sync).");
+                + "(0 created, 0 updated, 1 were up to date and 0 failed to sync).");
     }
 
     @Test
@@ -165,7 +165,7 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+                + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
     }
 
     @Test
@@ -191,7 +191,7 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+                + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
     }
 
     @Test
@@ -214,7 +214,7 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+                + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
     }
 
 }
