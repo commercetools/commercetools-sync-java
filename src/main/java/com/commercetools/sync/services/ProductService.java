@@ -19,5 +19,5 @@ public interface ProductService {
 
     CompletionStage<Product> create(ProductDraft productDraft);
 
-    CompletionStage<Void> update(Product product, List<UpdateAction<Product>> updateActions);
+    CompletionStage<Product> update(Product product, List<UpdateAction<Product>> updateActions);
 }

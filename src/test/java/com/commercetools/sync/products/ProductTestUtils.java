@@ -28,7 +28,7 @@ public class ProductTestUtils {
         ProductCatalogData catalogData = mock(ProductCatalogData.class);
         ProductData data = mock(ProductData.class);
         when(data.getName()).thenReturn(localizedString(name));
-        when(catalogData.getCurrent()).thenReturn(data);
+        when(catalogData.getStaged()).thenReturn(data);
         when(productMock.getMasterData()).thenReturn(catalogData);
     }
 }

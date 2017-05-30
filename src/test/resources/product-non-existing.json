@@ -1,7 +1,7 @@
 {
-  "id": "ba81a6da-cf83-435b-a89e-2afab579846f",
+  "id": "2a81a6da-cf83-435b-a89e-2afab579846f",
   "version": 10,
-  "key": "productKey1",
+  "key": "productKey2",
   "productType": {
     "typeId": "product-type",
     "id": "cda0dbf7-b42e-40bf-8453-241d5b587f93"
@@ -23,11 +23,11 @@
       ],
       "categoryOrderHints": {},
       "slug": {
-        "de": "rehruecken-o-kn"
+        "de": "1ehruecken-o-kn"
       },
       "masterVariant": {
         "id": 1,
-        "sku": "3065833",
+        "sku": "1065833",
         "prices": [
         ],
         "images": [
@@ -109,11 +109,11 @@
       ],
       "categoryOrderHints": {},
       "slug": {
-        "de": "rehruecken-o-kn"
+        "de": "1ehruecken-o-kn"
       },
       "masterVariant": {
         "id": 1,
-        "sku": "3065833",
+        "sku": "1065833",
         "prices": [
         ],
         "images": [

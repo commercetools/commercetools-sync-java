@@ -37,7 +37,7 @@ public final class ProductUpdateActionsBuilder implements UpdateActionsBuilder<P
     }
 
     private Optional<UpdateAction<Product>> changeName(final Product product, final ProductDraft productDraft) {
-        if (!Objects.equals(product.getMasterData().getCurrent().getName(), productDraft.getName())) {
+        if (!Objects.equals(product.getMasterData().getStaged().getName(), productDraft.getName())) {
             return Optional.of(ChangeName.of(productDraft.getName()));
         } else {
             return Optional.empty();
