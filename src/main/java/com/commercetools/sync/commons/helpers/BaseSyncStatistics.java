@@ -1,7 +1,6 @@
 package com.commercetools.sync.commons.helpers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,24 +111,6 @@ public abstract class BaseSyncStatistics {
      *
      * @return a summary message of the statistics report.
      */
+    @JsonIgnore
     public abstract String getReportMessage();
-
-    /**
-     * Builds a JSON String that represents the fields of the supplied instance of {@link BaseSyncStatistics}.
-     * Note: The order of the fields in the built JSON String depends on the order of the instance variables in this
-     * class.
-     *
-     * @param statistics the instance of {@link BaseSyncStatistics} from which to create a JSON String.
-     * @return a JSON representation of the given {@code statistics} as a String.
-     */
-    public static String getStatisticsAsJsonString(@Nonnull final BaseSyncStatistics statistics) {
-        String result = null;
-        final ObjectMapper mapper = new ObjectMapper();
-        try {
-            result = mapper.writeValueAsString(statistics);
-        } catch (JsonProcessingException processingException) {
-            LOGGER.error("Failed to build JSON String of summary.", processingException);
-        }
-        return result;
-    }
 }

@@ -4,7 +4,6 @@ import com.commercetools.sync.categories.helpers.CategorySyncStatisticsBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.commercetools.sync.commons.helpers.BaseSyncStatistics.getStatisticsAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BaseSyncStatisticsTest {
@@ -91,25 +90,5 @@ public class BaseSyncStatisticsTest {
         baseSyncStatisticsBuilder.setProcessingTimeInMillis(ONE_HOUR_FIFTEEN_MINUTES_AND_TWENTY_SECONDS_IN_MILLIS);
         assertThat(baseSyncStatisticsBuilder.build().getFormattedProcessingTime("d'd, 'H'h, 'm'm, 's's, 'S'ms'"))
             .isEqualTo("0d, 1h, 15m, 20s, 000ms");
-    }
-
-    @Test
-    public void getStatisticsAsJsonString_ShouldGetCorrectJsonString() {
-        baseSyncStatisticsBuilder.incrementCreated();
-        baseSyncStatisticsBuilder.incrementFailed();
-        baseSyncStatisticsBuilder.incrementUpdated();
-        baseSyncStatisticsBuilder.incrementUpToDate();
-        baseSyncStatisticsBuilder.setProcessingTimeInMillis(ONE_HOUR_FIFTEEN_MINUTES_AND_TWENTY_SECONDS_IN_MILLIS);
-
-        final String statisticsAsJsonString = getStatisticsAsJsonString(baseSyncStatisticsBuilder.build());
-        assertThat(statisticsAsJsonString)
-            .isEqualTo("{\"updated\":1,\""
-                + "created\":1,\""
-                + "failed\":1,\""
-                + "upToDate\":1,\""
-                + "processed\":4,\""
-                + "processingTimeInMillis\":" + ONE_HOUR_FIFTEEN_MINUTES_AND_TWENTY_SECONDS_IN_MILLIS + ",\""
-                + "reportMessage\":\"Summary: 4 categories were processed in total (1 created, 1 updated, 1 were "
-                + "up to date and 1 failed to sync).\"}");
     }
 }
