@@ -11,16 +11,18 @@ import java.util.function.Supplier;
 
 public class SphereClientUtils {
 
-    public static final SphereClient CTP_SOURCE_CLIENT = ClientConfigurationUtils.createClient(
-        SphereClientConfig.of(
-            System.getenv("SOURCE_PROJECT_KEY"),
-            System.getenv("SOURCE_CLIENT_ID"),
-            System.getenv("SOURCE_CLIENT_SECRET")));
-    public static final SphereClient CTP_TARGET_CLIENT = ClientConfigurationUtils.createClient(
-        SphereClientConfig.of(
-            System.getenv("TARGET_PROJECT_KEY"),
-            System.getenv("TARGET_CLIENT_ID"),
-            System.getenv("TARGET_CLIENT_SECRET")));
+    public static final SphereClientConfig CTP_SOURCE_CLIENT_CONFIG = SphereClientConfig.of(
+        System.getenv("SOURCE_PROJECT_KEY"),
+        System.getenv("SOURCE_CLIENT_ID"),
+        System.getenv("SOURCE_CLIENT_SECRET"));
+    public static final SphereClientConfig CTP_TARGET_CLIENT_CONFIG = SphereClientConfig.of(
+        System.getenv("TARGET_PROJECT_KEY"),
+        System.getenv("TARGET_CLIENT_ID"),
+        System.getenv("TARGET_CLIENT_SECRET"));
+    public static final SphereClient CTP_SOURCE_CLIENT =
+        ClientConfigurationUtils.createClient(CTP_SOURCE_CLIENT_CONFIG);
+    public static final SphereClient CTP_TARGET_CLIENT =
+        ClientConfigurationUtils.createClient(CTP_TARGET_CLIENT_CONFIG);
 
     /**
      * Max limit that can be applied to a query in CTP.
