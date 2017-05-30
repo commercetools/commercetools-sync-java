@@ -2,12 +2,11 @@ package com.commercetools.sync.commons.helpers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.text.DateFormat;
-import java.util.Date;
 
 public abstract class BaseSyncStatistics {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseSyncStatistics.class);
@@ -87,13 +86,25 @@ public abstract class BaseSyncStatistics {
     }
 
     /**
-     * Returns processing time formatted by {@code dataFormat}.
+     * Returns processing time formatted according to {@code format} string. Given {@code format} can contain following
+     * tokens:
+     * <table>
+     *     <tr><td><strong>character</strong></td><td><strong>duration element</strong></td></tr>
+     *     <tr><td>y</td><td>years</td></tr>
+     *     <tr><td>M</td><td>months</td></tr>
+     *     <tr><td>d</td><td>days</td></tr>
+     *     <tr><td>H</td><td>hours</td></tr>
+     *     <tr><td>m</td><td>minutes</td></tr>
+     *     <tr><td>s</td><td>seconds</td></tr>
+     *     <tr><td>S</td><td>milliseconds</td></tr>
+     *     <tr><td>'text'</td><td>arbitrary text content</td></tr>
+     * </table>
      *
-     * @param dateFormat date formatter
+     * @param format date formatter
      * @return formatted time taken to process
      */
-    public String getFormattedProcessingTime(@Nonnull final DateFormat dateFormat) {
-        return dateFormat.format(new Date(processingTimeInMillis));
+    public String getFormattedProcessingTime(@Nonnull final String format) {
+        return DurationFormatUtils.formatDuration(processingTimeInMillis, format);
     }
 
     /**

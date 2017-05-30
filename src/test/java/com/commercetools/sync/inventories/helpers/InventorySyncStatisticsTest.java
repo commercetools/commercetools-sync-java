@@ -4,10 +4,6 @@ package com.commercetools.sync.inventories.helpers;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
-
 import static com.commercetools.sync.commons.helpers.BaseSyncStatistics.getStatisticsAsJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -93,11 +89,9 @@ public class InventorySyncStatisticsTest {
 
     @Test
     public void getFormattedProcessingTime_ShouldReturnFormattedString() {
-        final DateFormat dateFormat = new SimpleDateFormat("H'h, 'm'm, 's's, 'SSS'ms'");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         inventorySyncStatisticsBuilder.setProcessingTimeInMillis(ONE_HOUR_FIFTEEN_MINUTES_AND_TWENTY_SECONDS_IN_MILLIS);
-        assertThat(inventorySyncStatisticsBuilder.build().getFormattedProcessingTime(dateFormat))
-            .isEqualTo("1h, 15m, 20s, 000ms");
+        assertThat(inventorySyncStatisticsBuilder.build().getFormattedProcessingTime("d'd, 'H'h, 'm'm, 's's, 'S'ms'"))
+            .isEqualTo("0d, 1h, 15m, 20s, 000ms");
     }
 
     @Test
