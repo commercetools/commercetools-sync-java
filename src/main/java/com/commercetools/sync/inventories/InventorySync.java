@@ -192,22 +192,14 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *
      * @param existingInventories mapping of {@link SkuChannelKeyTuple} to {@link InventoryEntry} of instances existing
      *                            in a CTP project
-     * @param drafts drafts that need to be synced
+     * @param inventoryEntryDrafts drafts that need to be synced
      * @return {@link CompletionStage} of {@link Void} that indicates all possible creation/update attempts progress.
      */
-    private CompletionStage<Void> compareAndSync(final Map<SkuChannelKeyTuple, InventoryEntry> existingInventories,
-                                                 final List<InventoryEntryDraft> drafts) {
-        final List<CompletableFuture<Void>> futures = new ArrayList<>(drafts.size());
-        drafts.forEach(draft -> {
-            final SkuChannelKeyTuple skuKeyOfDraft = SkuChannelKeyTuple.of(draft);
-            if (existingInventories.containsKey(skuKeyOfDraft)) {
-                final InventoryEntry existingEntry = existingInventories.get(skuKeyOfDraft);
-                futures.add(attemptUpdate(existingEntry, draft).toCompletableFuture());
-            } else {
-                futures.add(attemptCreate(draft).toCompletableFuture());
-            }
-            statistics.incrementProcessed();
-        });
+    private CompletionStage<Void> syncBatch(final Map<SkuChannelKeyTuple, InventoryEntry> existingInventories,
+                                            final List<InventoryEntryDraft> inventoryEntryDrafts) {
+        final List<CompletableFuture<Void>> futures = new ArrayList<>(inventoryEntryDrafts.size());
+        inventoryEntryDrafts.forEach(inventoryEntryDraft ->
+            futures.add(resolveReferencesAndSync(existingInventories, inventoryEntryDraft)));
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
     }
 
