@@ -334,4 +334,52 @@ public class CategorySyncTest {
             + "(null/empty).");
     }
 
+    @Test
+    public void sync_WithNotAllowedUuidCustomTypeKey_ShouldFailSync() {
+        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
+            getMockCategoryService());
+        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
+
+        final String uuidCustomTypeKey = UUID.randomUUID().toString();
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", "parentExternalId",
+            uuidCustomTypeKey, new HashMap<>()));
+
+        categorySync.sync(categoryDrafts);
+        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
+        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
+        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
+        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
+        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+            "Summary: 1 categories were processed in total "
+                + "(0 created, 0 updated and 1 categories failed to sync).");
+        assertThat(errorMessage).isEqualTo("Failed to resolve reference on CategoryDraft with externalId:'externalId'."
+            + " Reason: Failed to resolve custom type reference. Reason: Found a UUID in the id field. Expecting a key"
+            + " without a UUID value. If you want to allow UUID values for reference keys, please use the"
+            + " setAllowUuid(true) option in the sync options.");
+    }
+
+    @Test
+    public void sync_WithAllowedUuidCustomTypeKey_ShouldSync() {
+        categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
+                                                        .setErrorCallBack((err, ex) -> errorMessage = err)
+                                                        .setAllowUuid(true)
+                                                        .build();
+        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
+            getMockCategoryService());
+        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
+
+        final String uuidCustomTypeKey = UUID.randomUUID().toString();
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", "parentExternalId",
+            uuidCustomTypeKey, new HashMap<>()));
+
+        categorySync.sync(categoryDrafts);
+        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
+        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
+        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(1);
+        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
+        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+            "Summary: 1 categories were processed in total "
+                + "(0 created, 1 updated and 0 categories failed to sync).");
+    }
+
 }
