@@ -97,7 +97,8 @@ public class CategorySyncTest {
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
                                                            categoryService);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "newExternalId"));
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", "parentExternalId",
+            "customTypeId", new HashMap<>()));
 
 
         categorySync.sync(categoryDrafts);
