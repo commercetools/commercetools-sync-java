@@ -20,17 +20,15 @@ To build the update action for changing inventory quantity:
 final Optional<UpdateAction<InventoryEntry>> updateAction = buildChangeQuantityAction(oldInventory, inventoryDraft);
 ````
 
-For other examples of update actions, please check [here]():
+For other examples of update actions, please check [here]().
 
 <!-- TODO: Provide relevant integration tests in a dedicated branch -->
 
 ### Sync list of inventory entry drafts
 
-### How to use `InventorySyncOptions` and `InventorySyncOptionsBuilder`
-
 In order to use the inventory sync an instance of
 [InventorySyncOptions](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/inventories/InventorySyncOptions.java)
-have to be injected.
+has to be injected.
 
 In order to instantiate a `InventorySyncOptions`, a `sphereClient` is required:
 
@@ -52,8 +50,8 @@ inventorySync.sync(inventoryEntryDrafts);
 **Preconditions:** The sync expects a list of `InventoryEntryDraft` objects that have their `sku` fields set.
 Also every `InventoryEntryDraft`, that belongs to a `Channel`, in your input list must either:
 - Has the [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
-to the `supplyChannel` expanded. This means that calling `getObj()` on the reference would not
-return `null`, but returns the [Channel](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/channels/Channel.java)
+to the `supplyChannel` expanded. This means that calling `getObj()` on the reference should not
+return `null`, but return the [Channel](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/channels/Channel.java)
 object, from which the sync can access its `key`. Example of sync performed that way can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncTest.java#L128).
 - If the reference is not expanded, then it is very important to provide the channel `key` in the `id` field of the
 reference. This means calling `getId()` on the channel reference would return it's `key`. Example of sync performed that
@@ -61,9 +59,9 @@ way can be found [here](https://github.com/commercetools/commercetools-sync-java
 
 <!-- TODO: Ensure above paths to examples in a dedicated branch -->
 
-The sync results in a `ComplectionStage` that contains `InventorySyncStatistics` object. From a received instance
-you could check all the stats of the sync process, which included a report message, the total number of updated,
-created, failed, processed inventories and the processing time of the sync.
+The sync results in a `CompletionStage` that contains an `InventorySyncStatistics` object. This object contains all
+the stats of the sync process: a report message, the total number of updated, created, failed, processed inventory entries
+and the processing time of the sync in different time units and in a human readable format.
 
 <!-- TODO: Update above after resolving #23 -->
 <!-- TODO: Consider if getStatistics() is needed. Express your doubts in a #23 -->
