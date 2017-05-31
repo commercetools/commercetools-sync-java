@@ -47,7 +47,8 @@ final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
 inventorySync.sync(inventoryEntryDrafts);
 ````
 
-**Preconditions:** The sync expects a list of `InventoryEntryDraft` objects that have their `sku` fields set.
+**Preconditions:** The sync expects a list of `InventoryEntryDraft` objects that have their `sku` fields set,
+otherwise the sync will trigger an `errorCallback` function set by the user (more on it can be found down below in the options explanations).
 Also every `InventoryEntryDraft`, that belongs to a `Channel`, in your input list must either:
 - Has the [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
 to the `supplyChannel` expanded. This means that calling `getObj()` on the reference should not
