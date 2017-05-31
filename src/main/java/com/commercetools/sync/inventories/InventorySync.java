@@ -139,14 +139,10 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                         accumulator = new ArrayList<>(syncOptions.getBatchSize());
                     }
                 } else {
-                    statistics.incrementProcessed();
-                    statistics.incrementFailed();
-                    syncOptions.applyErrorCallback(INVENTORY_DRAFT_HAS_NO_SKU, null);
+                    handleError(INVENTORY_DRAFT_HAS_NO_SKU, null, 1);
                 }
             } else {
-                statistics.incrementProcessed();
-                statistics.incrementFailed();
-                syncOptions.applyErrorCallback(INVENTORY_DRAFT_IS_NULL, null);
+                handleError(INVENTORY_DRAFT_IS_NULL, null, 1);
             }
         }
         if (!accumulator.isEmpty()) {
@@ -175,10 +171,10 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     private CompletionStage<Void> processBatch(final List<InventoryEntryDraft> batchOfDrafts) {
         return fetchExistingInventories(batchOfDrafts)
-                .thenCompose(existingInventories -> compareAndSync(existingInventories, batchOfDrafts))
+                .thenCompose(existingInventories -> syncBatch(existingInventories, batchOfDrafts))
                 .exceptionally(exception -> {
-                    syncOptions.applyErrorCallback(format(CTP_INVENTORY_FETCH_FAILED, extractSkus(batchOfDrafts)),
-                        exception);
+                    final String errorMessage = format(CTP_INVENTORY_FETCH_FAILED, extractSkus(batchOfDrafts));
+                    handleError(errorMessage, exception, batchOfDrafts.size());
                     return null;
                 });
     }
@@ -313,19 +309,16 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * Method tries to create supply channel of given {@code supplyChannelKey} in CTP project.
-     * If operation succeed then {@code supplyChannelKeyToId} map is updated, otherwise
-     * error callback function is executed.
+     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
+     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
+     * incrementing the total number of failed categories to sync.
      *
-     * @param supplyChannelKey key of supply channel that seems to not exists in a system
-     * @return {@link CompletionStage} instance that indicates method progress
+     * @param errorMessage The error message describing the reason(s) of failure.
+     * @param exception    The exception that called caused the failure, if any.
      */
-    private CompletionStage<Void> createMissingSupplyChannel(@Nonnull final String supplyChannelKey) {
-        return inventoryService.createSupplyChannel(supplyChannelKey)
-            .thenAccept(channel -> supplyChannelKeyToId.put(channel.getKey(), channel.getId()))
-            .exceptionally(exception -> {
-                syncOptions.applyErrorCallback(format(CTP_CHANNEL_CREATE_FAILED, supplyChannelKey), exception);
-                return null;
-            });
+    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
+                             final int failedTimes) {
+        syncOptions.applyErrorCallback(errorMessage, exception);
+        statistics.incrementFailed(failedTimes);
     }
 }
