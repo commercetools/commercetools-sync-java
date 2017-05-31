@@ -24,7 +24,7 @@ public class ProductServiceTest {
     private SphereClient ctpClient;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ctpClient = spy(SphereClient.class);
         service = ProductService.of(ctpClient);
     }
