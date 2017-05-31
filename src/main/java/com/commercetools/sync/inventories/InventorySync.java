@@ -1,31 +1,33 @@
 package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.inventories.helpers.InventoryReferenceResolver;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.inventories.utils.InventorySyncUtils;
+import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.InventoryService;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.impl.ChannelServiceImpl;
+import com.commercetools.sync.services.impl.InventoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
-import io.sphere.sdk.models.Reference;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
