@@ -1,7 +1,6 @@
 package com.commercetools.sync.categories;
 
 import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.SphereClient;
@@ -95,7 +94,7 @@ public class CategorySyncTest {
         final CategoryService categoryService = getMockCategoryService();
         when(categoryService.fetchCategoryByExternalId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
-        final CategorySync categorySync = new CategorySync(categorySyncOptions, mock(TypeService.class),
+        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
                                                            categoryService);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "newExternalId"));
@@ -185,8 +184,7 @@ public class CategorySyncTest {
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
         when(categoryService.createCategory(any())).thenReturn(futureThrowingSphereException);
 
-        final CategorySync categorySync = new CategorySync(categorySyncOptions, mock(TypeService.class),
-                                                           categoryService);
+        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(), categoryService);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "externalId"));
 
