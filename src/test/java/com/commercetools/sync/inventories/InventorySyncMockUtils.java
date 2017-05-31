@@ -1,5 +1,7 @@
 package com.commercetools.sync.inventories;
 
+import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.InventoryService;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
@@ -10,9 +12,11 @@ import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import io.sphere.sdk.types.Type;
 
+import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -20,6 +24,7 @@ import java.util.concurrent.CompletionStage;
 import static java.util.Collections.singleton;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -101,26 +106,37 @@ public class InventorySyncMockUtils {
      * Returns mock instance of {@link InventoryService}. Executing any method with any parameter on this instance
      * returns values passed in parameters, wrapped in {@link CompletionStage}.
      *
-     * @param supplyChannels result of calling {@link InventoryService#fetchAllSupplyChannels()}
      * @param inventoryEntries result of calling {@link InventoryService#fetchInventoryEntriesBySkus(Set)}
-     * @param createdSupplyChannel result of calling {@link InventoryService#createSupplyChannel(String)}
      * @param createdInventoryEntry result of calling {@link InventoryService#createInventoryEntry(InventoryEntryDraft)}
      * @param updatedInventoryEntry result of calling
      *      {@link InventoryService#updateInventoryEntry(InventoryEntry, List)}
      * @return mock instance of {@link InventoryService}
      */
-    public static InventoryService getMockInventoryService(final List<Channel> supplyChannels,
-                                                           final List<InventoryEntry> inventoryEntries,
-                                                           final Channel createdSupplyChannel,
+    public static InventoryService getMockInventoryService(final List<InventoryEntry> inventoryEntries,
                                                            final InventoryEntry createdInventoryEntry,
                                                            final InventoryEntry updatedInventoryEntry) {
         final InventoryService inventoryService = mock(InventoryService.class);
-        when(inventoryService.fetchAllSupplyChannels()).thenReturn(completedFuture(supplyChannels));
         when(inventoryService.fetchInventoryEntriesBySkus(any())).thenReturn(completedFuture(inventoryEntries));
-        when(inventoryService.createSupplyChannel(any())).thenReturn(completedFuture(createdSupplyChannel));
         when(inventoryService.createInventoryEntry(any())).thenReturn(completedFuture(createdInventoryEntry));
         when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(completedFuture(updatedInventoryEntry));
         return inventoryService;
+    }
+
+    /**
+     * Returns mock instance of {@link InventoryService}. Executing any method with any parameter on this instance
+     * returns values passed in parameters, wrapped in {@link CompletionStage}.
+     *
+     * @param createdSupplyChannel result of calling {@link ChannelService#createChannel(String)}
+     *      {@link InventoryService#updateInventoryEntry(InventoryEntry, List)}
+     * @return mock instance of {@link InventoryService}
+     */
+    public static ChannelService getMockChannelService(@Nonnull final Channel createdSupplyChannel,
+                                                       final String cachedChannelId) {
+        final ChannelService channelService = mock(ChannelService.class);
+        when(channelService.fetchCachedChannelId(anyString()))
+            .thenReturn(completedFuture(Optional.of(cachedChannelId)));
+        when(channelService.createChannel(any())).thenReturn(completedFuture(createdSupplyChannel));
+        return channelService;
     }
 
     /**
