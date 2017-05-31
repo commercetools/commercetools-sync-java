@@ -266,7 +266,8 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorMessage).isEqualTo("Failed to resolve reference on CategoryDraft with externalId:'externalId'."
-            + " Reason: Failed to resolve parent reference. Reason: Reference 'id' field value is blank (null/empty).");
+            + " Reason: Failed to resolve parent reference. Reason: Key is blank (null/empty) on both expanded"
+            + " reference object and reference id field.");
     }
 
     @Test
@@ -287,7 +288,8 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorMessage).isEqualTo("Failed to resolve reference on CategoryDraft with externalId:'externalId'."
-            + " Reason: Failed to resolve parent reference. Reason: Reference 'id' field value is blank (null/empty).");
+            + " Reason: Failed to resolve parent reference. Reason: Key is blank (null/empty) on both expanded"
+            + " reference object and reference id field.");
     }
 
     @Test
