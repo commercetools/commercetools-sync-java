@@ -150,7 +150,10 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         }
         return CompletableFuture
             .allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()]))
-            .thenApply(v -> statistics);
+            .thenApply(result -> {
+                statistics.incrementProcessed(inventories.size());
+                return statistics;
+            });
     }
 
     @Override
