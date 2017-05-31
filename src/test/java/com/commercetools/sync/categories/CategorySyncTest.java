@@ -8,12 +8,12 @@ import io.sphere.sdk.models.SphereException;
 import org.junit.Before;
 import org.junit.Test;
 
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.HashMap;
 import java.util.UUID;
+
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
@@ -158,6 +158,7 @@ public class CategorySyncTest {
         });
         final CategoryService categoryService = getMockCategoryService();
         when(categoryService.fetchCategoryByExternalId(anyString())).thenReturn(futureThrowingSphereException);
+
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(), categoryService);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "externalId"));
