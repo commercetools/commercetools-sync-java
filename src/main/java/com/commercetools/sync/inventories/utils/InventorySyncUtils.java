@@ -24,9 +24,7 @@ import static java.util.stream.Collectors.toList;
  */
 public final class InventorySyncUtils {
 
-    private InventorySyncUtils() {
-        throw new AssertionError();
-    }
+    private InventorySyncUtils() { }
 
     /**
      * Returns list of {@link UpdateAction} that needs to be performed on {@code oldEntry} resource so that it will
