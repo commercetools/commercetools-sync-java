@@ -98,7 +98,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             if (categoryDraft != null) {
                 final String externalId = categoryDraft.getExternalId();
                 if (isNotBlank(externalId)) {
-                    createOrUpdateCategory(categoryDraft);
+                    resolveReferencesAndSync(categoryDraft);
                 } else {
                     final String errorMessage = format(CATEGORY_DRAFT_EXTERNAL_ID_NOT_SET, categoryDraft.getName());
                     handleError(errorMessage, null);
@@ -123,7 +123,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param categoryDraft the category draft where we get the new data.
      */
-    private void createOrUpdateCategory(@Nonnull final CategoryDraft categoryDraft) {
+    private void resolveReferencesAndSync(@Nonnull final CategoryDraft categoryDraft) {
         final String externalId = categoryDraft.getExternalId();
         try {
             referenceResolver.resolveReferences(categoryDraft)
