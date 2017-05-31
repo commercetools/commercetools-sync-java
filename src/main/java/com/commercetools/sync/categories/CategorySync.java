@@ -191,20 +191,11 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @return a future monad which can contain an empty result.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<Void> syncCategories(@Nonnull final Category oldCategory,
-                                                 @Nonnull final CategoryDraft newCategory) {
-        try {
-            final CategoryDraft resolvedReferencesCategoryDraft =
-                resolveReferences(newCategory, typeService, categoryService, syncOptions);
-            final List<UpdateAction<Category>> updateActions =
-                CategorySyncUtils.buildActions(oldCategory, resolvedReferencesCategoryDraft, syncOptions);
-            if (!updateActions.isEmpty()) {
-                return updateCategory(oldCategory, updateActions);
-            }
-        } catch (@Nonnull final ReferenceResolutionException exception) {
-            final String errorMessage = format(CATEGORY_DRAFT_REFERENCE_RESOLUTION_FAILED, newCategory.getExternalId(),
-                exception.getMessage());
-            handleError(errorMessage, exception);
+    private CompletionStage<Void> buildUpdateActionsAndUpdate(@Nonnull final Category oldCategory,
+                                                           @Nonnull final CategoryDraft newCategory) {
+        final List<UpdateAction<Category>> updateActions = buildActions(oldCategory, newCategory, syncOptions);
+        if (!updateActions.isEmpty()) {
+            return updateCategory(oldCategory, updateActions);
         }
         return CompletableFuture.completedFuture(null);
     }
