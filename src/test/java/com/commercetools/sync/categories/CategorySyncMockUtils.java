@@ -61,7 +61,7 @@ public class CategorySyncMockUtils {
         when(oldCategory.getMetaTitle()).thenReturn(LocalizedString.of(locale, metaTitle));
         when(oldCategory.getMetaKeywords()).thenReturn(LocalizedString.of(locale, metaKeywords));
         when(oldCategory.getOrderHint()).thenReturn(orderHint);
-        when(oldCategory.getParent()).thenReturn(Reference.of("type", parentId));
+        when(oldCategory.getParent()).thenReturn(Reference.of(Category.referenceTypeId(), parentId));
         return oldCategory;
     }
 
@@ -130,7 +130,7 @@ public class CategorySyncMockUtils {
         when(categoryDraft.getMetaTitle()).thenReturn(LocalizedString.of(locale, metaTitle));
         when(categoryDraft.getMetaKeywords()).thenReturn(LocalizedString.of(locale, metaKeywords));
         when(categoryDraft.getOrderHint()).thenReturn(orderHint);
-        when(categoryDraft.getParent()).thenReturn(Reference.of("type", parentId));
+        when(categoryDraft.getParent()).thenReturn(Reference.of(Category.referenceTypeId(), parentId));
         return categoryDraft;
     }
 
@@ -159,7 +159,7 @@ public class CategorySyncMockUtils {
         final CategoryDraft categoryDraft = mock(CategoryDraft.class);
         when(categoryDraft.getName()).thenReturn(LocalizedString.of(locale, name));
         when(categoryDraft.getExternalId()).thenReturn(externalId);
-        when(categoryDraft.getParent()).thenReturn(Reference.of("type", parentId));
+        when(categoryDraft.getParent()).thenReturn(Reference.of(Category.referenceTypeId(), parentId));
 
         final CustomFieldsDraft newCategoryCustomFieldsDraft = mock(CustomFieldsDraft.class);
         final ResourceIdentifier<Type> newCategoryCustomFieldsDraftTypeReference =
