@@ -361,7 +361,7 @@ public class InventorySyncItTest {
     }
 
     @Test
-    public void sync_ShouldReturnProperReportMessage() {
+    public void sync_ShouldReturnProperStatisticsObject() {
         //Fetch new inventories from source project. Convert them to drafts.
         final List<InventoryEntryDraft> newInventories = CTP_SOURCE_CLIENT.execute(InventoryEntryQuery.of()
             .withExpansionPaths(inventoryEntryExpansionModel -> inventoryEntryExpansionModel.supplyChannel()))
@@ -375,6 +375,11 @@ public class InventorySyncItTest {
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(newInventories).toCompletableFuture()
             .join();
         assertStatistics(inventorySyncStatistics, 3, 1,1, 0);
+        assertThat(inventorySyncStatistics.getProcessed()).isEqualTo(3);
+        assertThat(inventorySyncStatistics.getCreated()).isEqualTo(1);
+        assertThat(inventorySyncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(inventorySyncStatistics.getFailed()).isEqualTo(0);
+        assertThat(inventorySyncStatistics.getProcessingTimeInMillis()).isGreaterThan(0l);
         assertThat(inventorySyncStatistics.getReportMessage())
             .isEqualTo("Summary: 3 inventory entries were processed in total (1 created, 1 updated, 0 failed to sync)"
                 + ".");
