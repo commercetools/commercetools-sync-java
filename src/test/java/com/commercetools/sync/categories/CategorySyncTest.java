@@ -53,18 +53,18 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithANullDraft_ShouldSkipIt() {
+    public void sync_WithANullDraft_ShouldBeCountedAsFailed() {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(null);
 
         categorySync.sync(categoryDrafts);
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
+        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(0);
+        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 0 categories were processed in total "
-                + "(0 created, 0 updated and 0 categories failed to sync).");
+            "Summary: 1 categories were processed in total "
+                + "(0 created, 0 updated and 1 categories failed to sync).");
     }
 
     @Test
