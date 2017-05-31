@@ -127,7 +127,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithIdenticalExistingCategory_ShouldUpdateCategory() {
+    public void sync_WithIdenticalExistingCategory_ShouldNotUpdateCategory() {
         final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH,
             "name",
             "slug",
