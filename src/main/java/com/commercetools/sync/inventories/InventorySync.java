@@ -211,6 +211,32 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
     }
 
+    private CompletableFuture<Void> resolveReferencesAndSync(@Nonnull final Map<SkuChannelKeyTuple, InventoryEntry>
+                                                                 existingInventories,
+                                                             @Nonnull final InventoryEntryDraft inventoryEntryDraft) {
+        final SkuChannelKeyTuple skuKeyOfDraft = SkuChannelKeyTuple.of(inventoryEntryDraft);
+        return referenceResolver.resolveReferences(inventoryEntryDraft)
+                                .thenCompose(resolvedDraft -> {
+                                    if (existingInventories.containsKey(skuKeyOfDraft)) {
+                                        final InventoryEntry existingEntry = existingInventories.get(skuKeyOfDraft);
+                                        return attemptUpdate(existingEntry, resolvedDraft);
+                                    } else {
+                                        return attemptCreate(inventoryEntryDraft);
+                                    }
+                                })
+                                .exceptionally(exception -> {
+                                    if (exception instanceof CompletionException) {
+                                        // Unwrap the exception from CompletionException
+                                        exception = exception.getCause();
+                                    }
+                                    final String errorMessage = format(INVENTORY_DRAFT_REFERENCE_RESOLUTION_FAILED,
+                                        inventoryEntryDraft.getSku(), exception.getMessage());
+                                    handleError(errorMessage, exception, 1);
+                                    return null;
+                                })
+                                .toCompletableFuture();
+    }
+
     /**
      * Returns {@link CompletionStage} instance which may contain mapping of {@link SkuChannelKeyTuple} to
      * {@link InventoryEntry} of instances existing in a CTP project. Instances are fetched from API by skus, that
@@ -258,22 +284,17 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> attemptUpdate(final InventoryEntry entry, final InventoryEntryDraft draft) {
-        final Optional<InventoryEntryDraft> fixedDraft = replaceChannelReference(draft);
-        if (fixedDraft.isPresent()) {
-            final List<UpdateAction<InventoryEntry>> updateActions =
-                InventorySyncUtils.buildActions(entry, fixedDraft.get(), syncOptions);
-            if (!updateActions.isEmpty()) {
-                return inventoryService.updateInventoryEntry(entry, updateActions)
-                    .thenAccept(updatedEntry -> statistics.incrementUpdated())
-                    .exceptionally(exception -> {
-                        statistics.incrementFailed();
-                        syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
-                            SkuChannelKeyTuple.of(draft).getKey()), exception);
-                        return null;
-                    });
-            }
-        } else {
-            statistics.incrementFailed();
+        final List<UpdateAction<InventoryEntry>> updateActions =
+            InventorySyncUtils.buildActions(entry, draft, syncOptions);
+        if (!updateActions.isEmpty()) {
+            return inventoryService.updateInventoryEntry(entry, updateActions)
+                .thenAccept(updatedEntry -> statistics.incrementUpdated())
+                .exceptionally(exception -> {
+                    final String errorMessage = format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
+                        SkuChannelKeyTuple.of(draft).getKey());
+                    handleError(errorMessage, exception, 1);
+                    return null;
+                });
         }
         return CompletableFuture.completedFuture(null);
     }
@@ -288,67 +309,15 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param draft draft of new inventory entry
      * @return {@link CompletionStage} instance that indicates method progress
      */
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> attemptCreate(final InventoryEntryDraft draft) {
-        final Optional<InventoryEntryDraft> fixedDraft = replaceChannelReference(draft);
-        if (fixedDraft.isPresent()) {
-            return inventoryService.createInventoryEntry(fixedDraft.get())
-                .thenAccept(createdEntry -> statistics.incrementCreated())
-                .exceptionally(exception -> {
-                    statistics.incrementFailed();
-                    syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_CREATE_FAILED, draft.getSku(),
-                        SkuChannelKeyTuple.of(draft).getKey()), exception);
-                    return null;
-                });
-        } else {
-            statistics.incrementFailed();
-        }
-        return CompletableFuture.completedFuture(null);
-    }
-
-    /**
-     * Returns {@link Optional} that may contain {@link InventoryEntryDraft}. The payload of optional would be:
-     * <ul>
-     *     <li>Same {@code draft} instance if it has no reference to supply channel</li>
-     *     <li>New {@link InventoryEntryDraft} instance if {@code draft} contains reference to supply channel.
-     *     New instance would have same values as {@code draft} except for supply channel reference. Reference
-     *     will be replaced with reference that points to ID of existing channel for key given in draft.</li>
-     *     <li>Empty if supply channel for key wasn't found in {@code supplyChannelKeyToId}</li>
-     * </ul>
-     *
-     * @param draft inventory entry draft from processed list
-     * @return {@link Optional} with draft that is prepared to being created or compared with existing
-     * {@link InventoryEntry}, or empty optional if method fails to find supply channel ID that should be referenced
-     */
-    private Optional<InventoryEntryDraft> replaceChannelReference(final InventoryEntryDraft draft) {
-        final String supplyChannelKey = SkuChannelKeyTuple.of(draft).getKey();
-        if (supplyChannelKey != null) {
-            if (supplyChannelKeyToId.containsKey(supplyChannelKey)) {
-                return Optional.of(
-                    withSupplyChannel(draft, supplyChannelKeyToId.get(supplyChannelKey)));
-            } else {
-                syncOptions.applyErrorCallback(format(CHANNEL_KEY_MAPPING_DOESNT_EXIST, supplyChannelKey), null);
-                return Optional.empty();
-            }
-        }
-        return Optional.of(draft);
-    }
-
-    /**
-     * Returns new {@link InventoryEntryDraft} containing same data as {@code draft} except for
-     * supply channel reference that is replaced by reference pointing to {@code supplyChannelId}.
-     *
-     * @param draft           draft where reference should be replaced
-     * @param supplyChannelId ID of supply channel existing in target project
-     * @return {@link InventoryEntryDraft} with supply channel reference pointing to {@code supplyChannelId}
-     *      and other data same as in {@code draft}
-     */
-    private InventoryEntryDraft withSupplyChannel(@Nonnull final InventoryEntryDraft draft,
-                                                  @Nonnull final String supplyChannelId) {
-        final Reference<Channel> supplyChannelRef = Channel.referenceOfId(supplyChannelId);
-        return InventoryEntryDraftBuilder.of(draft)
-            .supplyChannel(supplyChannelRef)
-            .build();
+        return inventoryService.createInventoryEntry(draft)
+            .thenAccept(createdEntry -> statistics.incrementCreated())
+            .exceptionally(exception -> {
+                final String errorMessage = format(CTP_INVENTORY_ENTRY_CREATE_FAILED, draft.getSku(),
+                    SkuChannelKeyTuple.of(draft).getKey());
+                handleError(errorMessage, exception, 1);
+                return null;
+            });
     }
 
     /**
