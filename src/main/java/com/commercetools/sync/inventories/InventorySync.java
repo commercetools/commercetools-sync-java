@@ -88,14 +88,10 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * Performs full process of synchronisation between inventory entries present in a system
-     * and passed {@code inventories}. This is accomplished by:
-     * <ul>
-     *     <li>Comparing entries and drafts by {@code sku} and {@code supplyChannel} key</li>
-     *     <li>Calculating of necessary updates and creation commands</li>
-     *     <li>Actually <strong>performing</strong> changes in a target CTP project</li>
-     * </ul>
-     * The process is customized according to {@link InventorySyncOptions} passed to constructor of this object.
+     * Iterates through the whole {@code inventories} list and accumulates its valid drafts to batches. Every batch
+     * is then processed by {@link InventorySync#processBatch(List)}. For invalid drafts from {@code inventories}
+     * "processed" and "failed" counters from statistics are incremented and error callback is executed. A valid draft
+     * is a {@link InventoryEntryDraft} object that is not {@code null} and its SKU is not empty.
      *
      * <p><strong>Inherited doc:</strong>
      * {@inheritDoc}
@@ -104,29 +100,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @return {@link CompletionStage} with {@link InventorySyncStatistics} holding statistics of all sync
      *                                           processes performed by this sync instance
      */
-    @Override
-    protected CompletionStage<InventorySyncStatistics> process(@Nonnull final List<InventoryEntryDraft>
-                                                                             inventories) {
-        return populateSupplyChannels(inventories)
-                .thenCompose(v -> splitToBatchesAndProcess(inventories))
-                .exceptionally(exception -> {
-                    syncOptions.applyErrorCallback(CTP_CHANNEL_FETCH_FAILED, exception);
-                    return statistics;
-                });
-    }
-
-    /**
-     * Iterates through the whole {@code inventories} list and accumulates its valid drafts to batches. Every batch
-     * is then processed by {@link InventorySync#processBatch(List)}. For invalid drafts from {@code inventories}
-     * "processed" and "failed" counters from statistics are incremented and error callback is executed. Valid draft
-     * is a {@link InventoryEntryDraft} object that is not {@code null} and its SKU is not empty.
-     *
-     * @param inventories {@link List} of {@link InventoryEntryDraft} resources that would be synced into CTP project.
-     * @return {@link CompletionStage} with {@link InventorySyncStatistics} holding statistics of all sync
-     *                                           processes performed by this sync instance
-     */
     @Nonnull
-    private CompletionStage<InventorySyncStatistics> splitToBatchesAndProcess(@Nonnull final List<InventoryEntryDraft>
+    protected CompletionStage<InventorySyncStatistics> process(@Nonnull final List<InventoryEntryDraft>
                                                                                       inventories) {
         List<InventoryEntryDraft> accumulator = new ArrayList<>(syncOptions.getBatchSize());
         final List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
