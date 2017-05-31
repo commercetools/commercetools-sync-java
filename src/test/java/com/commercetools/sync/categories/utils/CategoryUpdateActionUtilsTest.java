@@ -41,7 +41,7 @@ public class CategoryUpdateActionUtilsTest {
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private static final CategorySyncOptions CATEGORY_SYNC_OPTIONS = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
     private static final Locale LOCALE = Locale.GERMAN;
-    private static final String MOCK_CATEGORY_REFERENCE_TYPE = "type";
+    private static final String MOCK_CATEGORY_REFERENCE_TYPE = Category.referenceTypeId();
     private static final String MOCK_OLD_CATEGORY_PARENT_ID = "1";
     private static final String MOCK_OLD_CATEGORY_NAME = "categoryName";
     private static final String MOCK_OLD_CATEGORY_SLUG = "categorySlug";
