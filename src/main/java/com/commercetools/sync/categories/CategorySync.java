@@ -1,9 +1,8 @@
 package com.commercetools.sync.categories;
 
+import com.commercetools.sync.categories.helpers.CategoryReferenceResolver;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
-import com.commercetools.sync.categories.utils.CategorySyncUtils;
 import com.commercetools.sync.commons.BaseSync;
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
@@ -17,10 +16,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
-import static com.commercetools.sync.commons.helpers.ReferenceResolver.resolveReferences;
+import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -39,8 +39,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private static final String CATEGORY_DRAFT_REFERENCE_RESOLUTION_FAILED = "Failed to resolve reference on "
         + "CategoryDraft with externalId:'%s'. Reason: %s";
 
-    private final TypeService typeService;
     private final CategoryService categoryService;
+    private final CategoryReferenceResolver referenceResolver;
 
     /**
      * Takes a {@link CategorySyncOptions} instance to instantiate a new {@link CategorySync} instance that could be
@@ -73,8 +73,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                  @Nonnull final TypeService typeService,
                  @Nonnull final CategoryService categoryService) {
         super(new CategorySyncStatistics(), syncOptions);
-        this.typeService = typeService;
         this.categoryService = categoryService;
+        this.referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
     }
 
     /**
@@ -126,18 +126,31 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private void createOrUpdateCategory(@Nonnull final CategoryDraft categoryDraft) {
         final String externalId = categoryDraft.getExternalId();
         try {
-            categoryService.fetchCategoryByExternalId(externalId)
-                           .thenCompose(fetchedCategoryOptional ->
-                               fetchedCategoryOptional
-                                   .map(category -> syncCategories(category, categoryDraft))
-                                   .orElseGet(() -> createCategory(categoryDraft)))
-                           .exceptionally(exception -> {
-                               final String errorMessage = format(CTP_CATEGORY_FETCH_FAILED,
-                                   categoryDraft.getExternalId(), exception.getMessage());
-                               handleError(errorMessage, exception);
-                               return null;
-                           })
-                           .toCompletableFuture().get();
+            referenceResolver.resolveReferences(categoryDraft)
+                             .thenCompose(draftWithResolvedReferences ->
+                                 categoryService.fetchCategoryByExternalId(externalId)
+                                                .thenCompose(fetchedCategoryOptional -> fetchedCategoryOptional
+                                                    .map(category ->
+                                                        buildUpdateActionsAndUpdate(category,
+                                                            draftWithResolvedReferences))
+                                                    .orElseGet(() -> createCategory(draftWithResolvedReferences)))
+                                                .exceptionally(exception -> {
+                                                    final String errorMessage = format(CTP_CATEGORY_FETCH_FAILED,
+                                                        categoryDraft.getExternalId(), exception.getMessage());
+                                                    handleError(errorMessage, exception);
+                                                    return null;
+                                                }))
+                             .exceptionally(exception -> {
+                                 if (exception instanceof CompletionException) {
+                                     // Unwrap the exception from CompletionException
+                                     exception = exception.getCause();
+                                 }
+                                 final String errorMessage = format(CATEGORY_DRAFT_REFERENCE_RESOLUTION_FAILED,
+                                     externalId, exception.getMessage());
+                                 handleError(errorMessage, exception);
+                                 return null;
+                             })
+                             .toCompletableFuture().get();
         } catch (InterruptedException | ExecutionException exception) {
             final String errorMessage = format(CTP_CATEGORY_SYNC_FAILED, categoryDraft.getExternalId(),
                 exception.getMessage());
