@@ -42,16 +42,16 @@ public abstract class BaseSyncStatistics {
     }
 
     /**
-     * Gets the total number of resources updated.
+     * Gets the total number of resources that were updated.
      *
-     * @return total number of resources updated.
+     * @return total number of resources that were updated.
      */
     public int getUpdated() {
         return updated;
     }
 
     /**
-     * Increments the total number of resource updated.
+     * Increments the total number of resource that were updated.
      */
     public void incrementUpdated() {
         this.updated++;
@@ -63,15 +63,18 @@ public abstract class BaseSyncStatistics {
     public void incrementUpdated(final int times) {
         this.updated += times;
     }
+
+    /**
+     * Gets the total number of resources that were created.
      *
-     * @return total number of resources created.
+     * @return total number of resources that were created.
      */
     public int getCreated() {
         return created;
     }
 
     /**
-     * Increments the total number of resource created.
+     * Increments the total number of resource that were created.
      */
     public void incrementCreated() {
         this.created++;
@@ -83,15 +86,18 @@ public abstract class BaseSyncStatistics {
     public void incrementCreated(final int times) {
         this.created += times;
     }
+
+    /**
+     * Gets the total number of resources that were processed/synced.
      *
-     * @return total number of resources processed/synced.
+     * @return total number of resources that were processed/synced.
      */
     public int getProcessed() {
         return processed;
     }
 
     /**
-     * Increments the total number of resources processed/synced.
+     * Increments the total number of resources that were processed/synced.
      */
     public void incrementProcessed() {
         this.processed++;
