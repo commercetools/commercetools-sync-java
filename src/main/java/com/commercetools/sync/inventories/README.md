@@ -51,12 +51,10 @@ Also every `InventoryEntryDraft`, that belongs to a `Channel`, in your input lis
 - Has the [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
 to the `supplyChannel` expanded. This means that calling `getObj()` on the reference should not
 return `null`, but return the [Channel](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/channels/Channel.java)
-object, from which the sync can access its `key`. Example of sync performed that way can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncTest.java#L128).
+object, from which the sync can access its `key`. Example of sync performed that way can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L121).
 - If the reference is not expanded, then it is very important to provide the channel `key` in the `id` field of the
 reference. This means calling `getId()` on the channel reference would return it's `key`. Example of sync performed that
-way can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncTest.java#L181).
-
-<!-- TODO: Ensure above paths to examples in a dedicated branch -->
+way can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L158).
 
 The sync results in a `CompletionStage` that contains an `InventorySyncStatistics` object. This object contains all
 the stats of the sync process: a report message, the total number of updated, created, failed, processed inventory entries
