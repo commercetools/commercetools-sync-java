@@ -20,9 +20,7 @@ To build the update action for changing inventory quantity:
 final Optional<UpdateAction<InventoryEntry>> updateAction = buildChangeQuantityAction(oldInventory, inventoryDraft);
 ````
 
-For other examples of update actions, please check [here]().
-
-<!-- TODO: Provide relevant integration tests in a dedicated branch -->
+For other examples of update actions, please check [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/utils/InventoryUpdateActionUtilsItTest.java).
 
 ### Sync list of inventory entry drafts
 
