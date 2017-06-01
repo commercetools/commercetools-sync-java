@@ -215,28 +215,43 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                                                                              @Nonnull final Map<String, String>
                                                                                  supplyChannelKeyToId) {
         if (syncOptions.shouldEnsureChannels()) {
-            final List<String> missingChannelsKeys = drafts.stream()
-                .map(ChannelKeyExtractor::extractChannelKey)
-                .distinct()
-                .filter(Objects::nonNull)
-                .filter(key -> !supplyChannelKeyToId.containsKey(key))
-                .collect(toList());
-            final List<CompletableFuture<Channel>> creationStages = missingChannelsKeys.stream()
-                .map(this::createMissingSupplyChannel)
-                .map(newChannelStage -> newChannelStage
-                    .handle((newChannel, exception) -> {
-                        if (newChannel != null) {
-                            supplyChannelKeyToId.put(newChannel.getKey(), newChannel.getId());
-                        }
-                        return newChannel;
-                    }))
-                .map(CompletionStage::toCompletableFuture)
+            final List<String> missingChannelsKeys = findMissingChannelsKeys(drafts, supplyChannelKeyToId);
+            final List<CompletableFuture<Void>> newChannelsFutures = createSupplyChannelsOfKeys(missingChannelsKeys)
+                .stream()
+                .map(channelFuture -> channelFuture
+                    .thenAccept(channelOptional -> putKeyAndIdToMapIfPresent(channelOptional, supplyChannelKeyToId)))
                 .collect(toList());
             return CompletableFuture
-                .allOf(creationStages.toArray(new CompletableFuture[creationStages.size()]))
+                .allOf(newChannelsFutures.toArray(new CompletableFuture[newChannelsFutures.size()]))
                 .thenApply(v -> supplyChannelKeyToId);
         } else {
             return CompletableFuture.completedFuture(supplyChannelKeyToId);
+        }
+    }
+
+    private List<String> findMissingChannelsKeys(@Nonnull final List<InventoryEntryDraft> drafts,
+                                                 @Nonnull final Map<String, String> supplyChannelKeyToId) {
+        return drafts.stream()
+            .map(ChannelKeyExtractor::extractChannelKey)
+            .distinct()
+            .filter(Objects::nonNull)
+            .filter(key -> !supplyChannelKeyToId.containsKey(key))
+            .collect(toList());
+    }
+
+    private List<CompletableFuture<Optional<Channel>>> createSupplyChannelsOfKeys(@Nonnull final List<String>
+                                                                                      missingChannelsKeys) {
+        return missingChannelsKeys.stream()
+            .map(this::createMissingSupplyChannel)
+            .map(CompletionStage::toCompletableFuture)
+            .collect(toList());
+    }
+
+    private void putKeyAndIdToMapIfPresent(@Nonnull Optional<Channel> supplyChannelOptional,
+                                           @Nonnull final Map<String, String> supplyChannelKeyToId) {
+        if (supplyChannelOptional.isPresent()) {
+            final Channel supplyChannel = supplyChannelOptional.get();
+            supplyChannelKeyToId.put(supplyChannel.getKey(), supplyChannel.getId());
         }
     }
 
@@ -442,18 +457,19 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
 
     /**
      * Method tries to create supply channel of given {@code supplyChannelKey} in CTP project.
-     * If operation succeed then {@link CompletionStage} with created {@link Channel} is returned, otherwise
-     * error callback function is executed and {@link CompletionStage} with {@link SyncProblemException} is returned.
+     * If operation succeed then {@link CompletionStage} containing {@link Optional} with created {@link Channel} is
+     * returned, otherwise error callback function is executed and {@link CompletionStage} with empty {@link Optional}
+     * is returned.
      *
      * @param supplyChannelKey key of supply channel that seems to not exists in a system
-     * @return {@link CompletionStage} instance that contains either created {@link Channel} instance when succeed
-     *      or {@link SyncProblemException} instance otherwise
+     * @return {@link CompletionStage} instance with {@link Optional} that may contain created {@link Channel}
      */
-    private CompletionStage<Channel> createMissingSupplyChannel(@Nonnull final String supplyChannelKey) {
+    private CompletionStage<Optional<Channel>> createMissingSupplyChannel(@Nonnull final String supplyChannelKey) {
         return inventoryService.createSupplyChannel(supplyChannelKey)
+            .thenApply(newChannel -> Optional.of(newChannel))
             .exceptionally(exception -> {
                 syncOptions.applyErrorCallback(format(CTP_CHANNEL_CREATE_FAILED, supplyChannelKey), exception);
-                throw new SyncProblemException();
+                return Optional.empty();
             });
     }
 }
