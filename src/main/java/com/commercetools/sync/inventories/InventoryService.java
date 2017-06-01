@@ -4,6 +4,8 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
+import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.queries.PagedQueryResult;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -23,6 +25,8 @@ interface InventoryService {
      */
     @Nonnull
     CompletionStage<List<InventoryEntry>> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus);
+
+    CompletionStage<PagedQueryResult<InventoryEntry>> fetchInventoryEntryBySkuAndSupplyChannel(String sku, Reference<Channel> supplyChannel);
 
     /**
      * Fetches all {@link Channel} that contain role {@code "InventorySupply"}.

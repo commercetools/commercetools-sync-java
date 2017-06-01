@@ -7,6 +7,7 @@ import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.inventories.ChannelKeyExtractor.extractChannelKey;
@@ -457,5 +459,36 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 syncOptions.applyErrorCallback(format(CTP_CHANNEL_CREATE_FAILED, supplyChannelKey), exception);
                 throw new SyncProblemException();
             });
+    }
+
+    private CompletionStage<InventoryEntry> tryRepeatUpdateOn409(@Nonnull final InventoryEntryDraft newInventory,
+                                                                 @Nonnull final Throwable ctpException,
+                                                                 final int attemptsLeft) {
+        if ((attemptsLeft > 0) && (ctpException instanceof ConcurrentModificationException)) {
+            return inventoryService.fetchInventoryEntryBySkuAndSupplyChannel(newInventory.getSku(),
+                newInventory.getSupplyChannel())
+                .thenCompose(oldInventories -> {
+                    if (oldInventories.head().isPresent()) {
+                        return attemptUpdate(oldInventories.head().get(), newInventory);
+                    }
+                    return getCompletionStageWithException(new SyncProblemException());
+                }).handle((inventoryEntry, exception) -> {
+                    if (inventoryEntry != null) {
+                        return CompletableFuture.completedFuture(inventoryEntry);
+                    }
+                    if (exception != null) {
+                        return tryRepeatUpdateOn409(newInventory, exception, attemptsLeft - 1);
+                    }
+                    throw new SyncProblemException();
+                }).thenCompose(u -> u);
+        } else {
+            return getCompletionStageWithException(ctpException);
+        }
+    }
+
+    private <T> CompletionStage<T> getCompletionStageWithException(@Nonnull final Throwable exception) {
+        final CompletableFuture<T> exceptionalStage = new CompletableFuture<>();
+        exceptionalStage.completeExceptionally(exception);
+        return exceptionalStage;
     }
 }
