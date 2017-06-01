@@ -1,5 +1,6 @@
 package com.commercetools.sync.inventories;
 
+import com.commercetools.sync.commons.MockUtils;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.InventoryService;
@@ -8,17 +9,28 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
+import io.sphere.sdk.inventory.InventoryEntryDraftDsl;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.SphereException;
+import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.CustomFieldsDraftBuilder;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
+import static com.commercetools.sync.commons.MockUtils.getMockCustomFieldsDraft;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockCustomFields;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
@@ -58,6 +70,7 @@ public class InventorySyncTest {
 
     private List<InventoryEntryDraft> drafts;
     private List<InventoryEntry> existingInventories;
+    private String errorMessage;
 
     /**
      * Initialises test data.
@@ -151,7 +164,7 @@ public class InventorySyncTest {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
 
-        final InventorySyncOptions options = getInventorySyncOptions(30, false);
+        final InventorySyncOptions options = getInventorySyncOptions(30, false, true);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
         final ChannelService channelService = mock(ChannelService.class);
@@ -198,7 +211,7 @@ public class InventorySyncTest {
 
     @Test
     public void sync_WithExceptionWhenFetchingExistingInventoriesBatch_ShouldProcessThatBatch() {
-        final InventorySyncOptions options = getInventorySyncOptions(1, false);
+        final InventorySyncOptions options = getInventorySyncOptions(1, false, true);
 
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
@@ -223,7 +236,7 @@ public class InventorySyncTest {
 
     @Test
     public void sync_WithExceptionWhenCreatingOrUpdatingEntries_ShouldNotSync() {
-        final InventorySyncOptions options = getInventorySyncOptions(3, false);
+        final InventorySyncOptions options = getInventorySyncOptions(3, false, true);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
         when(inventoryService.createInventoryEntry(any())).thenReturn(getCompletionStageWithException());
@@ -245,18 +258,149 @@ public class InventorySyncTest {
         assertThat(stats.getUpdated()).isEqualTo(0);
     }
 
+    @Test
+    public void sync_WithExistingInventoryEntryButWithNullCustomTypeReference_ShouldFailSync() {
+        final InventorySyncOptions options = getInventorySyncOptions(3, false, true);
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+
+        final ChannelService channelService = mock(ChannelService.class);
+        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+            .thenReturn(completedFuture(Optional.of(REF_2)));
+        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
+            mock(TypeService.class));
+
+        final List<InventoryEntryDraft> newDrafts = new ArrayList<>();
+        final InventoryEntryDraft draftWithNullCustomTypeId =
+            InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
+                               .withCustom(getMockCustomFieldsDraft(null, new HashMap<>()));
+        newDrafts.add(draftWithNullCustomTypeId);
+
+        inventorySync.sync(newDrafts);
+        assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(0);
+        assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(1);
+        assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(0);
+        assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
+        assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
+            "Summary: 1 inventory entries were processed in total "
+                + "(0 created, 0 updated and 1 failed to sync).");
+        assertThat(errorMessage).contains("Failed to resolve reference on InventoryEntryDraft with sku:'1000'."
+            + " Reason: Failed to resolve custom type reference. Reason: Reference 'id' field value is blank "
+            + "(null/empty).");
+    }
+
+    @Test
+    public void sync_WithExistingInventoryEntryButWithEmptyCustomTypeReference_ShouldFailSync() {
+        final InventorySyncOptions options = getInventorySyncOptions(3, false, true);
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+
+        final ChannelService channelService = mock(ChannelService.class);
+        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+            .thenReturn(completedFuture(Optional.of(REF_2)));
+        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
+            mock(TypeService.class));
+
+        final List<InventoryEntryDraft> newDrafts = new ArrayList<>();
+        final InventoryEntryDraft draftWithNullCustomTypeId =
+            InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
+                               .withCustom(getMockCustomFieldsDraft("", new HashMap<>()));
+        newDrafts.add(draftWithNullCustomTypeId);
+
+        inventorySync.sync(newDrafts);
+        assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(0);
+        assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(1);
+        assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(0);
+        assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
+        assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
+            "Summary: 1 inventory entries were processed in total "
+                + "(0 created, 0 updated and 1 failed to sync).");
+        assertThat(errorMessage).contains("Failed to resolve reference on InventoryEntryDraft with sku:'1000'."
+            + " Reason: Failed to resolve custom type reference. Reason: Reference 'id' field value is blank "
+            + "(null/empty).");
+    }
+
+    @Test
+    public void sync_WithNotAllowedUuidCustomTypeKey_ShouldFailSync() {
+        final InventorySyncOptions options = getInventorySyncOptions(3, false, false);
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+
+        final ChannelService channelService = mock(ChannelService.class);
+        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+            .thenReturn(completedFuture(Optional.of(REF_2)));
+        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
+            mock(TypeService.class));
+
+        final String uuidCustomTypeKey = UUID.randomUUID().toString();
+        final List<InventoryEntryDraft> newDrafts = new ArrayList<>();
+        final InventoryEntryDraft draftWithNullCustomTypeId =
+            InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
+                               .withCustom(getMockCustomFieldsDraft(uuidCustomTypeKey, new HashMap<>()));
+        newDrafts.add(draftWithNullCustomTypeId);
+
+        inventorySync.sync(newDrafts);
+        assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(0);
+        assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(1);
+        assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(0);
+        assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
+        assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
+            "Summary: 1 inventory entries were processed in total "
+                + "(0 created, 0 updated and 1 failed to sync).");
+        assertThat(errorMessage).contains("Failed to resolve reference on InventoryEntryDraft with sku:'1000'."
+            + " Reason: Failed to resolve custom type reference. Reason: Found a UUID in the id field. Expecting a key"
+            + " without a UUID value. If you want to allow UUID values for reference keys, please use the "
+            + "setAllowUuid(true) option in the sync options.");
+    }
+
+    @Test
+    public void sync_WithAllowedUuidCustomTypeKey_ShouldSync() {
+        final InventorySyncOptions options = getInventorySyncOptions(3, false, true);
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+        when(inventoryService.fetchInventoryEntriesBySkus(any())).thenReturn(completedFuture(existingInventories));
+
+        final ChannelService channelService = mock(ChannelService.class);
+        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+            .thenReturn(completedFuture(Optional.of(REF_2)));
+
+        final TypeService mockTypeService = mock(TypeService.class);
+        when(mockTypeService.fetchCachedTypeId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of("key")));
+        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
+            mockTypeService);
+
+        final String uuidCustomTypeKey = UUID.randomUUID().toString();
+        final List<InventoryEntryDraft> newDrafts = new ArrayList<>();
+        final InventoryEntryDraft draftWithNullCustomTypeId =
+            InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
+                               .withCustom(getMockCustomFieldsDraft(uuidCustomTypeKey, new HashMap<>()));
+        newDrafts.add(draftWithNullCustomTypeId);
+
+        inventorySync.sync(newDrafts);
+        assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(0);
+        assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(0);
+        assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(1);
+        assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
+        assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
+            "Summary: 1 inventory entries were processed in total "
+                + "(0 created, 1 updated and 0 failed to sync).");
+    }
+
     private InventorySync getInventorySync(int batchSize, boolean ensureChannels) {
-        final InventorySyncOptions options = getInventorySyncOptions(batchSize, ensureChannels);
+        final InventorySyncOptions options = getInventorySyncOptions(batchSize, ensureChannels, true);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3), REF_2);
         return new InventorySync(options, inventoryService, channelService, mock(TypeService.class));
     }
 
-    private InventorySyncOptions getInventorySyncOptions(int batchSize, boolean ensureChannels) {
+    private InventorySyncOptions getInventorySyncOptions(int batchSize, boolean ensureChannels, boolean allowUuid) {
         return InventorySyncOptionsBuilder.of(mock(SphereClient.class))
-                .setBatchSize(batchSize)
-                .ensureChannels(ensureChannels)
-                .build();
+                                          .setBatchSize(batchSize)
+                                          .ensureChannels(ensureChannels)
+                                          .setAllowUuid(allowUuid)
+                                          .setErrorCallBack((callBackError, exception) -> errorMessage = callBackError)
+                                          .build();
     }
 }
