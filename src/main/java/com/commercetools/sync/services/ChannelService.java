@@ -2,9 +2,12 @@ package com.commercetools.sync.services;
 
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.channels.ChannelRole;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 public interface ChannelService {
@@ -25,26 +28,29 @@ public interface ChannelService {
      *      found in the CTP project with this external id.
      */
     @Nonnull
-    CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key);
+    CompletionStage<Optional<String>> fetchCachedChannelIdByKeyAndRoles(@Nonnull final String key,
+                                                                        @Nonnull final List<ChannelRole> roles);
 
     /**
-     * Creates new supply channel of role {@code "InventorySupply"} and {@code key}.
+     * Creates a new channel with the supplied {@code key} and set of {@code roles}.
      *
-     * @param key key of supply channel
-     * @return created {@link Channel}
+     * @param key   key of supply channel.
+     * @param roles the set of roles assigned to the channel.
+     * @return a future containing as a result the created {@link Channel} or a sphere exception.
      */
     @Nonnull
-    CompletionStage<Channel> createChannel(@Nonnull final String key);
+    CompletionStage<Channel> createChannel(@Nonnull final String key, @Nonnull final Set<ChannelRole> roles);
 
     /**
-     * Creates new supply channel of role {@code "InventorySupply"} and {@code key} and puts a new mapping in
-     * a cache map.
+     * Creates a new channel with the supplied {@code key} and set of {@code roles} and puts a new mapping of it's key
+     * to id in a cache map.
      *
-     * @param key key of supply channel
-     * @return created {@link Channel}
+     * @param key key of supply channel.
+     * @param roles the set of roles assigned to the channel.
+     * @return a future containing as a result the created {@link Channel} or a sphere exception.
      */
     @Nonnull
-    CompletionStage<Channel> createAndCacheChannel(@Nonnull final String key);
+    CompletionStage<Channel> createAndCacheChannel(@Nonnull final String key, @Nonnull final Set<ChannelRole> roles);
 
     /**
      * Adds a new mapping of key to id of the supplied channel to a cache map.

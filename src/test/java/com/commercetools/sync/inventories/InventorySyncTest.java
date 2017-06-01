@@ -16,7 +16,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
@@ -156,7 +155,7 @@ public class InventorySyncTest {
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
         final ChannelService channelService = mock(ChannelService.class);
-        when(channelService.fetchCachedChannelId(anyString()))
+        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
             .thenReturn(completedFuture(Optional.empty()));
 
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
@@ -231,8 +230,8 @@ public class InventorySyncTest {
         when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(getCompletionStageWithException());
 
         final ChannelService channelService = mock(ChannelService.class);
-        when(channelService.fetchCachedChannelId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.of(REF_2)));
+        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+            .thenReturn(completedFuture(Optional.of(REF_2)));
 
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
             mock(TypeService.class));

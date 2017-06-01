@@ -6,6 +6,7 @@ import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
@@ -15,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -76,11 +78,13 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
             try {
                 final String keyFromExpansion = getKeyFromExpansion(channelReference);
                 final String channelKey = getKeyFromExpansionOrReference(keyFromExpansion, channelReference);
-                return channelService.fetchCachedChannelId(channelKey)
-                              .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
-                                  .filter(StringUtils::isNotBlank)
-                                  .map(resolvedChannelId -> setChannelReference(resolvedChannelId, inventoryEntryDraft))
-                                  .orElseGet(() -> createChannelAndSetReference(channelKey, inventoryEntryDraft)));
+                return channelService
+                    .fetchCachedChannelIdByKeyAndRoles(channelKey,
+                        Collections.singletonList(ChannelRole.INVENTORY_SUPPLY))
+                    .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
+                        .filter(StringUtils::isNotBlank)
+                        .map(resolvedChannelId -> setChannelReference(resolvedChannelId, inventoryEntryDraft))
+                        .orElseGet(() -> createChannelAndSetReference(channelKey, inventoryEntryDraft)));
             } catch (ReferenceResolutionException exception) {
                 final ReferenceResolutionException referenceResolutionException = new ReferenceResolutionException(
                     buildErrorMessage(FAILED_TO_RESOLVE_SUPPLY_CHANNEL, exception),
@@ -125,10 +129,10 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
     }
 
     /**
-     * Helper method that creates a new {@link Channel} on the CTP project with the specified {@code channelKey}, only
-     * if the {@code ensureChannels} options is set to {@code true} on the {@code options} instance of {@code this}
-     * class. Then it resolves the supply channel reference on the the supplied {@code inventoryEntryDraft} by setting
-     * the id of it's supply channel reference with the newly created Channel.
+     * Helper method that creates a new {@link Channel} on the CTP project with the specified {@code channelKey} and of
+     * the role {@code "InventorySupply"}. Only if the {@code ensureChannels} options is set to {@code true} on the
+     * {@code options} instance of {@code this} class. Then it resolves the supply channel reference on the supplied
+     * {@code inventoryEntryDraft} by setting the id of it's supply channel reference with the newly created Channel.
      *
      * <p>If the {@code ensureChannels} options is set to {@code false} on the {@code options} instance of {@code this}
      * class, a completed {@link CompletableFuture} with the same exact {@link InventoryEntryDraft} passed is returned
@@ -147,7 +151,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
                                                                               @Nonnull final InventoryEntryDraft
                                                                                   inventoryEntryDraft) {
         if (getOptions().shouldEnsureChannels()) {
-            return channelService.createAndCacheChannel(channelKey)
+            return channelService.createAndCacheChannel(channelKey, Collections.singleton(ChannelRole.INVENTORY_SUPPLY))
                                  .thenApply(createdChannel -> InventoryEntryDraftBuilder
                                      .of(inventoryEntryDraft)
                                      .supplyChannel(Reference.of(Channel.referenceTypeId(), createdChannel.getId()))

@@ -14,16 +14,14 @@ import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static java.util.Collections.singleton;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -123,19 +121,24 @@ public class InventorySyncMockUtils {
     }
 
     /**
-     * Returns mock instance of {@link InventoryService}. Executing any method with any parameter on this instance
-     * returns values passed in parameters, wrapped in {@link CompletionStage}.
+     * Returns mock instance of {@link InventoryService} with the specified parameters as mock results of calling the
+     *   {@link ChannelService#createAndCacheChannel(String, Set)} and
+     *   {@link ChannelService#fetchCachedChannelIdByKeyAndRoles(String, List)} of the mock channel service.
      *
-     * @param createdSupplyChannel result of calling {@link ChannelService#createChannel(String)}
-     *      {@link InventoryService#updateInventoryEntry(InventoryEntry, List)}
-     * @return mock instance of {@link InventoryService}
+     * @param createdSupplyChannel result of future resulting from calling
+     *      {@link ChannelService#createAndCacheChannel(String, Set)}
+     * @param cachedChannelId result of future resulting from calling
+     *      {@link ChannelService#fetchCachedChannelIdByKeyAndRoles(String, List)}
+     *
+     * @return mock instance of {@link InventoryService}.
      */
     public static ChannelService getMockChannelService(@Nonnull final Channel createdSupplyChannel,
                                                        final String cachedChannelId) {
         final ChannelService channelService = mock(ChannelService.class);
-        when(channelService.fetchCachedChannelId(anyString()))
+        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
             .thenReturn(completedFuture(Optional.of(cachedChannelId)));
-        when(channelService.createChannel(any())).thenReturn(completedFuture(createdSupplyChannel));
+        when(channelService.createAndCacheChannel(any(), any()))
+            .thenReturn(completedFuture(createdSupplyChannel));
         return channelService;
     }
 
