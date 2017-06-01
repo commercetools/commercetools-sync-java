@@ -35,7 +35,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
     @Nonnull
     public CompletionStage<InventoryEntryDraft> resolveReferences(@Nonnull final InventoryEntryDraft
                                                                           inventoryEntryDraft) {
-        return resolveCustomTypeReference(inventoryEntryDraft).thenCompose(this::resolveChannelReference);
+        return resolveCustomTypeReference(inventoryEntryDraft).thenCompose(this::getChannelKeyAndResolveReference);
     }
 
     @Override
@@ -65,26 +65,20 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
      * cache. If it is is not found, the resultant draft would remain exactly the same as the passed inventory entry
      * draft (without a channel reference resolution).
      *
-     * @param inventoryEntryDraft the inventoryEntryDraft to resolve it's channel reference.
+     * @param draft the inventoryEntryDraft to resolve it's channel reference.
      * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance with resolved
      *          supply channel or, in case an error occurs during reference resolution,
      *          a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    private CompletionStage<InventoryEntryDraft> resolveChannelReference(@Nonnull final InventoryEntryDraft
-                                                                                 inventoryEntryDraft) {
-        final Reference<Channel> channelReference = inventoryEntryDraft.getSupplyChannel();
+    private CompletionStage<InventoryEntryDraft> getChannelKeyAndResolveReference(
+        @Nonnull final InventoryEntryDraft draft) {
+        final Reference<Channel> channelReference = draft.getSupplyChannel();
         if (channelReference != null) {
             try {
                 final String keyFromExpansion = getKeyFromExpansion(channelReference);
                 final String channelKey = getKeyFromExpansionOrReference(keyFromExpansion, channelReference);
-                return channelService
-                    .fetchCachedChannelIdByKeyAndRoles(channelKey,
-                        Collections.singletonList(ChannelRole.INVENTORY_SUPPLY))
-                    .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
-                        .filter(StringUtils::isNotBlank)
-                        .map(resolvedChannelId -> setChannelReference(resolvedChannelId, inventoryEntryDraft))
-                        .orElseGet(() -> createChannelAndSetReference(channelKey, inventoryEntryDraft)));
+                return resolveChannelReference(draft, channelKey);
             } catch (ReferenceResolutionException exception) {
                 final ReferenceResolutionException referenceResolutionException = new ReferenceResolutionException(
                     buildErrorMessage(FAILED_TO_RESOLVE_SUPPLY_CHANNEL, exception),
@@ -92,7 +86,29 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
                 return CompletableFutureUtils.exceptionallyCompletedFuture(referenceResolutionException);
             }
         }
-        return CompletableFuture.completedFuture(InventoryEntryDraftBuilder.of(inventoryEntryDraft).build());
+        return CompletableFuture.completedFuture(InventoryEntryDraftBuilder.of(draft).build());
+    }
+
+    /**
+     * Given an {@link InventoryEntryDraft} and a {@code channelKey} this method fetches the actual id of the
+     * channel corresponding to this key, ideally from a cache. Then it sets this id on the supply channel reference
+     * id of the inventory entry draft. If the id is not found in cache nor the CTP project, the resultant draft would
+     * remain exactly the same as the passed draft (without supply channel resolution).
+     *
+     * @param draft the inventory entry draft to resolve it's supply channel reference.
+     * @param channelKey the key of the channel to resolve it's actual id on the draft.
+     * @return a {@link CompletionStage} that contains as a result a new inventory entry draft instance with resolved
+     *      supply channel reference or an exception.
+     */
+    @Nonnull
+    private CompletionStage<InventoryEntryDraft> resolveChannelReference(@Nonnull final InventoryEntryDraft draft,
+                                                                         @Nonnull final String channelKey) {
+        return channelService.fetchCachedChannelIdByKeyAndRoles(channelKey,
+            Collections.singletonList(ChannelRole.INVENTORY_SUPPLY))
+                             .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
+                                 .filter(StringUtils::isNotBlank)
+                                 .map(resolvedChannelId -> setChannelReference(resolvedChannelId, draft))
+                                 .orElseGet(() -> createChannelAndSetReference(channelKey, draft)));
     }
 
     /**
