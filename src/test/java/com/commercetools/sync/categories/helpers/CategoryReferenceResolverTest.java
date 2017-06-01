@@ -171,20 +171,6 @@ public class CategoryReferenceResolverTest {
                                  }).toCompletableFuture().join();
     }
 
-    @Test
-    public void resolveReferences_WithNoUuidSet_ShouldResolveCustomTypeReference() {
-        final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH, "myDraft", "externalId",
-            "parentExternalId", "customTypeId", new HashMap<>());
-
-        final CategoryReferenceResolver categoryReferenceResolver =
-            new CategoryReferenceResolver(syncOptions, typeService, categoryService);
-
-        final CategoryDraft draftWithResolvedReferences = categoryReferenceResolver
-            .resolveReferences(categoryDraft).toCompletableFuture().join();
-
-        assertThat(draftWithResolvedReferences.getCustom()).isNotNull();
-        assertThat(draftWithResolvedReferences.getCustom().getType().getId()).isEqualTo("typeId");
-    }
 
     @Test
     public void resolveReferences_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
