@@ -20,8 +20,11 @@ import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import static java.lang.String.format;
+
 public final class InventoryReferenceResolver extends BaseReferenceResolver<InventoryEntryDraft, InventorySyncOptions> {
     private static final String FAILED_TO_RESOLVE_SUPPLY_CHANNEL = "Failed to resolve supply channel reference.";
+    private static final String CHANNEL_DOES_NOT_EXIST = "Channel with key '%s' does not exist.";
     private ChannelService channelService;
 
     public InventoryReferenceResolver(@Nonnull final InventorySyncOptions options,
@@ -174,7 +177,8 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
                                      .build());
         } else {
             final ReferenceResolutionException referenceResolutionException =
-                new ReferenceResolutionException(FAILED_TO_RESOLVE_SUPPLY_CHANNEL);
+                new ReferenceResolutionException(FAILED_TO_RESOLVE_SUPPLY_CHANNEL + " Reason: " +
+                    format(CHANNEL_DOES_NOT_EXIST, channelKey));
             return CompletableFutureUtils.exceptionallyCompletedFuture(referenceResolutionException);
         }
     }
