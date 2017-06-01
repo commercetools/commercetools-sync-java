@@ -1,5 +1,6 @@
 package com.commercetools.sync.inventories;
 
+import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.InventoryService;
@@ -27,6 +28,7 @@ import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockC
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
@@ -63,7 +65,8 @@ public class InventorySyncTest {
 
     private List<InventoryEntryDraft> drafts;
     private List<InventoryEntry> existingInventories;
-    private String errorMessage;
+    private List<String> errorCallBackMessages;
+    private List<Throwable> errorCallBackExceptions;
 
     /**
      * Initialises test data.
@@ -96,6 +99,9 @@ public class InventorySyncTest {
                 InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, reference1),
                 InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_2))
         );
+
+        errorCallBackMessages = new ArrayList<>();
+        errorCallBackExceptions = new ArrayList<>();
     }
 
     @Test
@@ -110,6 +116,8 @@ public class InventorySyncTest {
         assertThat(stats.getFailed()).isEqualTo(0);
         assertThat(stats.getCreated()).isEqualTo(3);
         assertThat(stats.getUpdated()).isEqualTo(4);
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(errorCallBackExceptions).hasSize(0);
     }
 
     @Test
@@ -123,6 +131,8 @@ public class InventorySyncTest {
         assertThat(stats.getFailed()).isEqualTo(0);
         assertThat(stats.getCreated()).isEqualTo(3);
         assertThat(stats.getUpdated()).isEqualTo(4);
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(errorCallBackExceptions).hasSize(0);
     }
 
     @Test
@@ -136,6 +146,8 @@ public class InventorySyncTest {
         assertThat(stats.getFailed()).isEqualTo(0);
         assertThat(stats.getCreated()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(errorCallBackExceptions).hasSize(0);
     }
 
     @Test
@@ -150,6 +162,8 @@ public class InventorySyncTest {
         assertThat(stats.getCreated()).isEqualTo(1);
         assertThat(stats.getFailed()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(errorCallBackExceptions).hasSize(0);
     }
 
     @Test
@@ -174,6 +188,12 @@ public class InventorySyncTest {
         assertThat(stats.getFailed()).isEqualTo(1);
         assertThat(stats.getCreated()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on InventoryEntryDraft with"
+            + " sku:'3000'. Reason: Failed to resolve supply channel reference. Reason: Channel with key"
+            + " 'channel-key_3' does not exist.");
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -187,6 +207,10 @@ public class InventorySyncTest {
         assertThat(stats.getFailed()).isEqualTo(1);
         assertThat(stats.getCreated()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process inventory entry without sku.");
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
     }
 
     @Test
@@ -200,6 +224,10 @@ public class InventorySyncTest {
         assertThat(stats.getFailed()).isEqualTo(1);
         assertThat(stats.getCreated()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process inventory entry without sku.");
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
     }
 
     @Test
@@ -225,6 +253,8 @@ public class InventorySyncTest {
         assertThat(stats.getFailed()).isEqualTo(3);
         assertThat(stats.getCreated()).isEqualTo(3);
         assertThat(stats.getUpdated()).isEqualTo(3);
+        assertThat(errorCallBackMessages).hasSize(3);
+        assertThat(errorCallBackExceptions).hasSize(3);
     }
 
     @Test
@@ -249,6 +279,8 @@ public class InventorySyncTest {
         assertThat(stats.getFailed()).isEqualTo(7);
         assertThat(stats.getCreated()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
+        assertThat(errorCallBackMessages).hasSize(7);
+        assertThat(errorCallBackExceptions).hasSize(7);
     }
 
     @Test
@@ -277,9 +309,12 @@ public class InventorySyncTest {
         assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 inventory entries were processed in total "
                 + "(0 created, 0 updated and 1 failed to sync).");
-        assertThat(errorMessage).contains("Failed to resolve reference on InventoryEntryDraft with sku:'1000'."
+        assertThat(errorCallBackMessages).isNotEmpty();
+        assertThat(errorCallBackMessages.get(0)).contains("Failed to resolve reference on InventoryEntryDraft with sku:'1000'."
             + " Reason: Failed to resolve custom type reference. Reason: Reference 'id' field value is blank "
             + "(null/empty).");
+        assertThat(errorCallBackExceptions).isNotEmpty();
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -308,9 +343,12 @@ public class InventorySyncTest {
         assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 inventory entries were processed in total "
                 + "(0 created, 0 updated and 1 failed to sync).");
-        assertThat(errorMessage).contains("Failed to resolve reference on InventoryEntryDraft with sku:'1000'."
+        assertThat(errorCallBackMessages).isNotEmpty();
+        assertThat(errorCallBackMessages.get(0)).contains("Failed to resolve reference on InventoryEntryDraft with sku:'1000'."
             + " Reason: Failed to resolve custom type reference. Reason: Reference 'id' field value is blank "
             + "(null/empty).");
+        assertThat(errorCallBackExceptions).isNotEmpty();
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -340,10 +378,13 @@ public class InventorySyncTest {
         assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 inventory entries were processed in total "
                 + "(0 created, 0 updated and 1 failed to sync).");
-        assertThat(errorMessage).contains("Failed to resolve reference on InventoryEntryDraft with sku:'1000'."
+        assertThat(errorCallBackMessages).isNotEmpty();
+        assertThat(errorCallBackMessages.get(0)).contains("Failed to resolve reference on InventoryEntryDraft with sku:'1000'."
             + " Reason: Failed to resolve custom type reference. Reason: Found a UUID in the id field. Expecting a key"
             + " without a UUID value. If you want to allow UUID values for reference keys, please use the "
             + "setAllowUuid(true) option in the sync options.");
+        assertThat(errorCallBackExceptions).isNotEmpty();
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -380,6 +421,100 @@ public class InventorySyncTest {
                 + "(0 created, 1 updated and 0 failed to sync).");
     }
 
+    @Test
+    public void syncDrafts_WithExceptionWhenCreatingNewSupplyChannel_ShouldTriggerErrorCallbackAndIncrementFailed() {
+        final InventorySyncOptions options = getInventorySyncOptions(3, true, false);
+
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+
+        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3), REF_2);
+        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+        when(channelService.createAndCacheChannel(anyString(), any())).thenReturn(getCompletionStageWithException());
+
+        final InventoryEntryDraft newInventoryDraft = InventoryEntryDraft
+            .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_3));
+        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
+            mock(TypeService.class));
+
+        final InventorySyncStatistics stats = inventorySync.sync(singletonList(newInventoryDraft))
+            .toCompletableFuture()
+            .join();
+        assertThat(stats).isNotNull();
+        assertThat(stats.getProcessed()).isEqualTo(1);
+        assertThat(stats.getFailed()).isEqualTo(1);
+        assertThat(stats.getCreated()).isEqualTo(0);
+        assertThat(stats.getUpdated()).isEqualTo(0);
+        assertThat(errorCallBackMessages).isNotEmpty();
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to create new supply channel of key '%s'.",
+            KEY_3));
+        assertThat(errorCallBackExceptions).isNotEmpty();
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    public void syncDrafts_WithNullInInputList_ShouldIncrementFailedStatistics() {
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+
+        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3), REF_2);
+        final InventorySyncOptions options = getInventorySyncOptions(3, false, false);
+
+        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
+            mock(TypeService.class));
+
+        final InventorySyncStatistics stats = inventorySync.sync(singletonList(null))
+            .toCompletableFuture()
+            .join();
+        assertThat(stats).isNotNull();
+        assertThat(stats.getProcessed()).isEqualTo(1);
+        assertThat(stats.getFailed()).isEqualTo(1);
+        assertThat(stats.getCreated()).isEqualTo(0);
+        assertThat(stats.getUpdated()).isEqualTo(0);
+        assertThat(errorCallBackMessages).isNotEmpty();
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process null inventory draft.");
+        assertThat(errorCallBackExceptions).isNotEmpty();
+        assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
+    }
+
+    @Test
+    public void syncDrafts_WithChannelNotPresentInMap_ShouldIncrementFailedStatistics() {
+        final InventorySyncOptions options = getInventorySyncOptions(30, false, false);
+        final Channel oldChannel = getMockSupplyChannel(REF_1, KEY_1);
+        final Reference<Channel> oldChannelReference = Channel.referenceOfId(REF_1).filled(oldChannel);
+        final List<InventoryEntry> oldInventories = singletonList(
+            getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, oldChannelReference, null));
+
+        final InventoryService inventoryService = getMockInventoryService(oldInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+
+        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_2, KEY_2), REF_2);
+        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+            .thenReturn(completedFuture(Optional.empty()));
+
+        final InventoryEntryDraft newInventoryDraft = InventoryEntryDraft
+            .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_1));
+
+        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
+            mock(TypeService.class));
+
+        final InventorySyncStatistics stats = inventorySync.sync(singletonList(newInventoryDraft))
+            .toCompletableFuture()
+            .join();
+        assertThat(stats).isNotNull();
+        assertThat(stats.getProcessed()).isEqualTo(1);
+        assertThat(stats.getFailed()).isEqualTo(1);
+        assertThat(stats.getCreated()).isEqualTo(0);
+        assertThat(stats.getUpdated()).isEqualTo(0);
+        assertThat(errorCallBackMessages).isNotEmpty();
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on InventoryEntryDraft with"
+            + " sku:'1000'. Reason: Failed to resolve supply channel reference. Reason: Channel with key"
+            + " 'channel-key_1' does not exist.");
+        assertThat(errorCallBackExceptions).isNotEmpty();
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
+    }
+
     private InventorySync getInventorySync(int batchSize, boolean ensureChannels) {
         final InventorySyncOptions options = getInventorySyncOptions(batchSize, ensureChannels, true);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
@@ -393,7 +528,10 @@ public class InventorySyncTest {
                                           .setBatchSize(batchSize)
                                           .ensureChannels(ensureChannels)
                                           .setAllowUuid(allowUuid)
-                                          .setErrorCallBack((callBackError, exception) -> errorMessage = callBackError)
+                                          .setErrorCallBack((callBackError, exception) -> {
+                                              errorCallBackMessages.add(callBackError);
+                                              errorCallBackExceptions.add(exception);
+                                          })
                                           .build();
     }
 }

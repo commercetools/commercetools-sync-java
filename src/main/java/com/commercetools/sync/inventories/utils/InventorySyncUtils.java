@@ -23,9 +23,7 @@ import static java.util.stream.Collectors.toList;
  */
 public final class InventorySyncUtils {
 
-    private InventorySyncUtils() {
-        throw new AssertionError();
-    }
+    private InventorySyncUtils() { }
 
     /**
      * Compares the quantityOnStock, the restockableInDays, the expectedDelivery, the supply channel and Custom
