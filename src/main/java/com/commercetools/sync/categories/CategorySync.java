@@ -167,7 +167,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * specified in the {@code syncOptions} is called.
      *
      * @param categoryDraft the category draft to create the category from.
-     * @return a future monad which can contain an empty result.
+     * @return a future which contains an empty result after execution of the create.
      */
     private CompletionStage<Void> createCategory(@Nonnull final CategoryDraft categoryDraft) {
         return categoryService.createCategory(categoryDraft)
@@ -186,9 +186,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * the new one. If there are update actions found, a request is made to CTP to update the existing category,
      * otherwise it doesn't issue a request.
      *
-     * @param oldCategory the category which should be updated.
+     * @param oldCategory the category which could be updated.
      * @param newCategory the category draft where we get the new data.
-     * @return a future monad which can contain an empty result.
+     * @return a future which contains an empty result after execution of the update.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> buildUpdateActionsAndUpdate(@Nonnull final Category oldCategory,
@@ -212,7 +212,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param category      the category to update.
      * @param updateActions the list of update actions to update the category with.
-     * @return a future monad which can contain an empty result.
+     * @return a future which contains an empty result after execution of the update.
      */
     private CompletionStage<Void> updateCategory(@Nonnull final Category category,
                                                  @Nonnull final List<UpdateAction<Category>> updateActions) {
