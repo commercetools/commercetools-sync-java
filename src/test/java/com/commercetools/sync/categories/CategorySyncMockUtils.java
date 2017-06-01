@@ -160,15 +160,12 @@ public class CategorySyncMockUtils {
         when(categoryDraft.getName()).thenReturn(LocalizedString.of(locale, name));
         when(categoryDraft.getExternalId()).thenReturn(externalId);
         when(categoryDraft.getParent()).thenReturn(Reference.of(Category.referenceTypeId(), parentId));
+        final CustomFieldsDraft mockCustomFieldsDraft = getMockCustomFieldsDraft(customTypeId, customFields);
+        when(categoryDraft.getCustom()).thenReturn(mockCustomFieldsDraft);
 
-        final CustomFieldsDraft newCategoryCustomFieldsDraft = mock(CustomFieldsDraft.class);
-        final ResourceIdentifier<Type> newCategoryCustomFieldsDraftTypeReference =
-            ResourceIdentifier.ofId(customTypeId);
-        when(newCategoryCustomFieldsDraft.getType()).thenReturn(newCategoryCustomFieldsDraftTypeReference);
-        when(newCategoryCustomFieldsDraft.getFields()).thenReturn(customFields);
-        when(categoryDraft.getCustom()).thenReturn(newCategoryCustomFieldsDraft);
         return categoryDraft;
     }
+
 
     /**
      * Given a {@code locale}, {@code name}, {@code slug} and {@code externalId}; this method creates a mock of

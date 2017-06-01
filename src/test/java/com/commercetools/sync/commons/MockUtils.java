@@ -1,14 +1,19 @@
 package com.commercetools.sync.commons;
 
 import com.commercetools.sync.services.CategoryService;
+import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.Type;
 
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -107,5 +112,15 @@ public class MockUtils {
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.of("typeId")));
         return typeService;
+    }
+
+    public static CustomFieldsDraft getMockCustomFieldsDraft(@Nullable final String customTypeId,
+                                                             @Nonnull final Map<String, JsonNode> customFields) {
+        final CustomFieldsDraft newCategoryCustomFieldsDraft = mock(CustomFieldsDraft.class);
+        final ResourceIdentifier<Type> newCategoryCustomFieldsDraftTypeReference =
+            ResourceIdentifier.ofId(customTypeId);
+        when(newCategoryCustomFieldsDraft.getType()).thenReturn(newCategoryCustomFieldsDraftTypeReference);
+        when(newCategoryCustomFieldsDraft.getFields()).thenReturn(customFields);
+        return newCategoryCustomFieldsDraft;
     }
 }
