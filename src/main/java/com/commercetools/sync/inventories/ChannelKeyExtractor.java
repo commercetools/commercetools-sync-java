@@ -1,6 +1,8 @@
 package com.commercetools.sync.inventories;
 
+import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
+import io.sphere.sdk.models.Reference;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,14 +28,14 @@ final class ChannelKeyExtractor {
      */
     @Nullable
     static String extractChannelKey(@Nonnull final InventoryEntryDraft newEntryDraft) {
-        String key = null;
-        if (newEntryDraft.getSupplyChannel() != null) {
-            if (newEntryDraft.getSupplyChannel().getObj() != null) {
-                key = newEntryDraft.getSupplyChannel().getObj().getKey();
+        final Reference<Channel> supplyChannel = newEntryDraft.getSupplyChannel();
+        if (supplyChannel != null) {
+            if (supplyChannel.getObj() != null) {
+                return supplyChannel.getObj().getKey();
             } else {
-                key = newEntryDraft.getSupplyChannel().getId();
+                return supplyChannel.getId();
             }
         }
-        return key;
+        return null;
     }
 }
