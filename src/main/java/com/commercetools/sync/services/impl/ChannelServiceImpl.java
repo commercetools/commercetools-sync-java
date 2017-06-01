@@ -12,7 +12,11 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
