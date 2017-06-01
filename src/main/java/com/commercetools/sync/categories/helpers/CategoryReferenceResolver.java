@@ -33,7 +33,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
     @Override
     @Nonnull
     public CompletionStage<CategoryDraft> resolveReferences(@Nonnull final CategoryDraft categoryDraft) {
-        return resolveCustomTypeReference(categoryDraft).thenCompose(this::resolveParentReference);
+        return resolveCustomTypeReference(categoryDraft).thenCompose(this::getParentKeyAndResolveReference);
     }
 
     @Override
@@ -60,17 +60,13 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
      * parent category reference. The externalId of the parent category is either taken from the expanded object or
      * taken from the id field of the reference.
      *
-     * <p>The method then tries to fetch the externalId of the parent category, optimistically from a
-     * cache. If it is is not found, the resultant draft would remain exactly the same as the passed category
-     * draft (without a parent reference resolution).
-     *
      * @param categoryDraft the categoryDraft to resolve it's parent reference.
      * @return a {@link CompletionStage} that contains as a result a new categoryDraft instance with resolved parent
      *      category references or, in case an error occurs during reference resolution,
      *      a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    private CompletionStage<CategoryDraft> resolveParentReference(@Nonnull final CategoryDraft categoryDraft) {
+    private CompletionStage<CategoryDraft> getParentKeyAndResolveReference(@Nonnull final CategoryDraft categoryDraft) {
         CategoryDraftBuilder categoryDraftBuilder = CategoryDraftBuilder.of(categoryDraft);
         final Reference<Category> parentCategoryReference = categoryDraft.getParent();
         if (parentCategoryReference != null) {
@@ -78,7 +74,31 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
                 final String keyFromExpansion = getExternalIdFromExpansion(parentCategoryReference);
                 final String parentCategoryExternalId = getKeyFromExpansionOrReference(
                     keyFromExpansion, parentCategoryReference);
-                return categoryService.fetchCachedCategoryId(parentCategoryExternalId)
+                return resolveParentReference(categoryDraft, parentCategoryExternalId);
+            } catch (ReferenceResolutionException exception) {
+                final ReferenceResolutionException referenceResolutionException = new ReferenceResolutionException(
+                    buildErrorMessage(FAILED_TO_RESOLVE_PARENT, exception), exception);
+                return CompletableFutureUtils.exceptionallyCompletedFuture(referenceResolutionException);
+            }
+        }
+        return CompletableFuture.completedFuture(categoryDraftBuilder.build());
+    }
+
+    /**
+     * Given a {@link CategoryDraft} and a {@code parentCategoryExternalId} this method fetches the actual id of the
+     * category corresponding to this external id, ideally from a cache. Then it sets this id on the parent reference
+     * id. If the id is not found in cache nor the CTP project, the resultant draft would remain exactly the same as
+     * the passed category draft (without parent reference resolution).
+     *
+     * @param categoryDraft the categoryDraft to resolve it's parent reference.
+     * @param parentCategoryExternalId the parent category external id of to resolve it's actual id on the draft.
+     * @return a {@link CompletionStage} that contains as a result a new categoryDraft instance with resolved parent
+     *      category references or an exception.
+     */
+    @Nonnull
+    private CompletionStage<CategoryDraft> resolveParentReference(@Nonnull final CategoryDraft categoryDraft,
+                                                                  @Nonnull final String parentCategoryExternalId) {
+        return categoryService.fetchCachedCategoryId(parentCategoryExternalId)
                               .thenApply(resolvedParentIdOptional -> resolvedParentIdOptional
                                   .filter(StringUtils::isNotBlank)
                                   .map(resolvedParentId ->
@@ -87,13 +107,6 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
                                                               resolvedParentId))
                                                           .build())
                                   .orElseGet(() -> CategoryDraftBuilder.of(categoryDraft).build()));
-            } catch (ReferenceResolutionException exception) {
-                final ReferenceResolutionException referenceResolutionException = new ReferenceResolutionException(
-                    buildErrorMessage(FAILED_TO_RESOLVE_PARENT, exception), exception);
-                return CompletableFutureUtils.exceptionallyCompletedFuture(referenceResolutionException);
-            }
-        }
-        return CompletableFuture.completedFuture(categoryDraftBuilder.build());
     }
 
     /**
