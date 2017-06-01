@@ -11,7 +11,6 @@ import com.commercetools.sync.services.impl.ChannelServiceImpl;
 import com.commercetools.sync.services.impl.InventoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -65,31 +64,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>
-     *     <strong>NOTE:</strong> {@code inventoryDrafts} are compared with existing inventory entries by {@code sku}
-     *     and {@code supplyChannel} key. Every {@link InventoryEntryDraft} that contains {@code supplyChannel} should
-     *     either:
-     *     <ul>
-     *         <li>have {@code supplyChannel} expanded, that means
-     *         {@code inventoryEntryDraft.getSupplyChannel().getObj()} should return {@link Channel} object,
-     *         which contains channel key</li>
-     *         <li>or have {@code supplyChannel} not expanded and {@code supplyChannel} key should be provided in
-     *         place of reference id, that means {@code inventoryEntryDraft.getSupplyChannel().getObj()} should
-     *         return {@code null} and {@code inventoryEntryDraft.getSupplyChannel().getId()} should
-     *         return {@code supplyChannel} key</li>
-     *     </ul>
-     *     This is important for proper resources comparision.
-     * </p>
-     */
-    @Override
-    public CompletionStage<InventorySyncStatistics> sync(@Nonnull final List<InventoryEntryDraft>
-                                                                       inventoryDrafts) {
-        return super.sync(inventoryDrafts);
-    }
-
-    /**
      * Iterates through the whole {@code inventories} list and accumulates its valid drafts to batches. Every batch
      * is then processed by {@link InventorySync#processBatch(List)}. For invalid drafts from {@code inventories}
      * "processed" and "failed" counters from statistics are incremented and error callback is executed. A valid draft
@@ -132,13 +106,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 return statistics;
             });
     }
-
-    @Override
-    @Nonnull
-    public InventorySyncStatistics getStatistics() {
-        return statistics;
-    }
-
 
     /**
      * Fetches existing {@link InventoryEntry} objects from CTP project that correspond to passed {@code batchOfDrafts}.
