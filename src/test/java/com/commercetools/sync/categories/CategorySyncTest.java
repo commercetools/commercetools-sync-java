@@ -1,5 +1,6 @@
 package com.commercetools.sync.categories;
 
+import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -9,12 +10,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.HashMap;
 import java.util.UUID;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static com.commercetools.sync.commons.MockUtils.getMockCategoryService;
@@ -28,7 +31,9 @@ import static org.mockito.Mockito.when;
 public class CategorySyncTest {
     private CategorySync categorySync;
     private CategorySyncOptions categorySyncOptions;
-    private String errorMessage;
+
+    private List<String> errorCallBackMessages;
+    private List<Throwable> errorCallBackExceptions;
 
     /**
      * Initializes instances of  {@link CategorySyncOptions} and {@link CategorySync} which will be used by some
@@ -36,9 +41,14 @@ public class CategorySyncTest {
      */
     @Before
     public void setup() {
+        errorCallBackMessages = new ArrayList<>();
+        errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
         categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
-                                                        .setErrorCallBack((err, ex) -> errorMessage = err)
+                                                        .setErrorCallBack((errorMessage, exception) -> {
+                                                            errorCallBackMessages.add(errorMessage);
+                                                            errorCallBackExceptions.add(exception);
+                                                        })
                                                         .build();
         categorySync = new CategorySync(categorySyncOptions, getMockTypeService(), getMockCategoryService());
     }
@@ -54,6 +64,9 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 0 categories were processed in total "
                 + "(0 created, 0 updated and 0 categories failed to sync).");
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(errorCallBackExceptions).hasSize(0);
+
     }
 
     @Test
@@ -69,7 +82,10 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorMessage).isEqualTo("CategoryDraft is null.");
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("CategoryDraft is null.");
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
     }
 
     @Test
@@ -85,8 +101,11 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorMessage).isEqualTo("CategoryDraft with name: LocalizedString(en -> noExternalIdDraft)"
-            + " doesn't have an externalId.");
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("CategoryDraft with name: LocalizedString(en ->"
+            + " noExternalIdDraft) doesn't have an externalId.");
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
     }
 
     @Test
@@ -109,6 +128,8 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(1 created, 0 updated and 0 categories failed to sync).");
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(errorCallBackExceptions).hasSize(0);
     }
 
     @Test
@@ -124,6 +145,8 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 1 updated and 0 categories failed to sync).");
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(errorCallBackExceptions).hasSize(0);
     }
 
     @Test
@@ -150,6 +173,8 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 0 categories failed to sync).");
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(errorCallBackExceptions).hasSize(0);
     }
 
     @Test
@@ -173,7 +198,10 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorMessage).contains("Failed to fetch category with externalId:'externalId'");
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).contains("Failed to fetch category with externalId:'externalId'");
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
     }
 
     @Test
@@ -199,7 +227,10 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorMessage).contains("Failed to create category with externalId:'externalId'");
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).contains("Failed to create category with externalId:'externalId'");
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
     }
 
     @Test
@@ -221,7 +252,10 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorMessage).contains("Failed to update category with externalId:'externalId'");
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).contains("Failed to update category with externalId:'externalId'");
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
     }
 
     @Test
@@ -242,10 +276,13 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorMessage).contains("Failed to resolve reference on CategoryDraft with externalId:'externalId'."
-            + " Reason: Failed to resolve parent reference. Reason: Found a UUID in the id field. Expecting a key "
-            + "without a UUID value. If you want to allow UUID values for reference keys, please use the "
-            + "setAllowUuid(true) option in the sync options.");
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on CategoryDraft with"
+            + " externalId:'externalId'. Reason: Failed to resolve parent reference. Reason: Found a UUID in the id"
+            + " field. Expecting a key without a UUID value. If you want to allow UUID values for reference keys,"
+            + " please use the setAllowUuid(true) option in the sync options.");
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -265,9 +302,12 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorMessage).isEqualTo("Failed to resolve reference on CategoryDraft with externalId:'externalId'."
-            + " Reason: Failed to resolve parent reference. Reason: Key is blank (null/empty) on both expanded"
-            + " reference object and reference id field.");
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on CategoryDraft with"
+            + " externalId:'externalId'. Reason: Failed to resolve parent reference. Reason: Key is blank"
+            + " (null/empty) on both expanded reference object and reference id field.");
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -287,9 +327,12 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorMessage).isEqualTo("Failed to resolve reference on CategoryDraft with externalId:'externalId'."
-            + " Reason: Failed to resolve parent reference. Reason: Key is blank (null/empty) on both expanded"
-            + " reference object and reference id field.");
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on CategoryDraft with"
+            + " externalId:'externalId'. Reason: Failed to resolve parent reference. Reason: Key is blank (null/empty)"
+            + " on both expanded reference object and reference id field.");
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -309,9 +352,12 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorMessage).contains("Failed to resolve reference on CategoryDraft with externalId:'externalId'."
-            + " Reason: Failed to resolve custom type reference. Reason: Reference 'id' field value is blank "
-            + "(null/empty).");
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on CategoryDraft with"
+            + " externalId:'externalId'. Reason: Failed to resolve custom type reference. Reason: Reference 'id' field"
+            + " value is blank (null/empty).");
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -331,9 +377,12 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorMessage).isEqualTo("Failed to resolve reference on CategoryDraft with externalId:'externalId'."
-            + " Reason: Failed to resolve custom type reference. Reason: Reference 'id' field value is blank "
-            + "(null/empty).");
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on CategoryDraft with"
+            + " externalId:'externalId'. Reason: Failed to resolve custom type reference. Reason: Reference 'id' field"
+            + " value is blank (null/empty).");
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -354,16 +403,18 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorMessage).isEqualTo("Failed to resolve reference on CategoryDraft with externalId:'externalId'."
-            + " Reason: Failed to resolve custom type reference. Reason: Found a UUID in the id field. Expecting a key"
-            + " without a UUID value. If you want to allow UUID values for reference keys, please use the"
-            + " setAllowUuid(true) option in the sync options.");
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on CategoryDraft with"
+            + " externalId:'externalId'. Reason: Failed to resolve custom type reference. Reason: Found a UUID in the"
+            + " id field. Expecting a key without a UUID value. If you want to allow UUID values for reference keys,"
+            + " please use the setAllowUuid(true) option in the sync options.");
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
     public void sync_WithAllowedUuidCustomTypeKey_ShouldSync() {
         categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                        .setErrorCallBack((err, ex) -> errorMessage = err)
                                                         .setAllowUuid(true)
                                                         .build();
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
@@ -382,6 +433,8 @@ public class CategorySyncTest {
         assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 1 updated and 0 categories failed to sync).");
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(errorCallBackExceptions).hasSize(0);
     }
 
 }
