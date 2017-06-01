@@ -44,6 +44,22 @@ public class MockUtils {
     }
 
     /**
+     * Creates a mock instance of {@link CustomFieldsDraft} with the supplied {@code customTypeId} and
+     * {@code customFields}.
+     *
+     * @return a mock instance of {@link CustomFieldsDraft} with supplied id and custom fields.
+     */
+    public static CustomFieldsDraft getMockCustomFieldsDraft(@Nullable final String customTypeId,
+                                                             @Nonnull final Map<String, JsonNode> customFields) {
+        final CustomFieldsDraft newCategoryCustomFieldsDraft = mock(CustomFieldsDraft.class);
+        final ResourceIdentifier<Type> newCategoryCustomFieldsDraftTypeReference =
+            ResourceIdentifier.ofId(customTypeId);
+        when(newCategoryCustomFieldsDraft.getType()).thenReturn(newCategoryCustomFieldsDraftTypeReference);
+        when(newCategoryCustomFieldsDraft.getFields()).thenReturn(customFields);
+        return newCategoryCustomFieldsDraft;
+    }
+
+    /**
      * Creates a mock {@link CategoryService} that returns a mocked {@link Category} instance whenever any of the
      * following methods are called:
      * <ul>
@@ -110,15 +126,5 @@ public class MockUtils {
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.of("typeId")));
         return typeService;
-    }
-
-    public static CustomFieldsDraft getMockCustomFieldsDraft(@Nullable final String customTypeId,
-                                                             @Nonnull final Map<String, JsonNode> customFields) {
-        final CustomFieldsDraft newCategoryCustomFieldsDraft = mock(CustomFieldsDraft.class);
-        final ResourceIdentifier<Type> newCategoryCustomFieldsDraftTypeReference =
-            ResourceIdentifier.ofId(customTypeId);
-        when(newCategoryCustomFieldsDraft.getType()).thenReturn(newCategoryCustomFieldsDraftTypeReference);
-        when(newCategoryCustomFieldsDraft.getFields()).thenReturn(customFields);
-        return newCategoryCustomFieldsDraft;
     }
 }

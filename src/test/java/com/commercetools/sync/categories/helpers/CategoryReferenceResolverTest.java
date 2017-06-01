@@ -2,15 +2,12 @@ package com.commercetools.sync.categories.helpers;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
-import com.commercetools.sync.categories.helpers.CategoryReferenceResolver;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;

@@ -122,7 +122,7 @@ public class InventoryReferenceResolverTest {
 
     @Test
     public void
-    resolveReferences_WithNonExistentSupplyChannelAndNotEnsureChannel_ShouldNotResolveSupplyChannelReference() {
+        resolveReferences_WithNonExistentSupplyChannelAndNotEnsureChannel_ShouldNotResolveSupplyChannelReference() {
         when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
@@ -147,7 +147,7 @@ public class InventoryReferenceResolverTest {
 
     @Test
     public void
-    resolveReferences_WithNonExistentSupplyChannelAndEnsureChannel_ShouldResolveSupplyChannelReference() {
+        resolveReferences_WithNonExistentSupplyChannelAndEnsureChannel_ShouldResolveSupplyChannelReference() {
         final InventorySyncOptions optionsWithEnsureChannels = InventorySyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                           .ensureChannels(true)
                                                                                           .build();

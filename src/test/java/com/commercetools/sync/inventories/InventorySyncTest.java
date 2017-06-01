@@ -1,6 +1,5 @@
 package com.commercetools.sync.inventories;
 
-import com.commercetools.sync.commons.MockUtils;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.InventoryService;
@@ -9,12 +8,7 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.inventory.InventoryEntryDraftDsl;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.CustomFieldsDraftBuilder;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,11 +22,10 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.MockUtils.getMockCustomFieldsDraft;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockCustomFields;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryService;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;

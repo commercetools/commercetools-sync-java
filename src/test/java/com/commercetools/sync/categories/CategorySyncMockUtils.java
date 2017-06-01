@@ -6,9 +6,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

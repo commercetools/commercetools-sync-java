@@ -138,7 +138,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *      sku comparision, or exception occurred during fetching existing inventory entries
      */
     private CompletionStage<Map<SkuChannelKeyTuple, InventoryEntry>>
-    fetchExistingInventories(@Nonnull final List<InventoryEntryDraft> drafts) {
+        fetchExistingInventories(@Nonnull final List<InventoryEntryDraft> drafts) {
         final Set<String> skus = extractSkus(drafts);
         return inventoryService.fetchInventoryEntriesBySkus(skus)
                                .thenApply(
@@ -216,7 +216,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     *
      * Given an existing {@link InventoryEntry} and a new {@link InventoryEntryDraft}, the method calculates all the
      * update actions required to synchronize the existing entry to be the same as the new one. If there are update
      * actions found, a request is made to CTP to update the existing entry, otherwise it doesn't issue a request.
