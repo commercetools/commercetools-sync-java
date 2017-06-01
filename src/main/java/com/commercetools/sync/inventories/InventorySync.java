@@ -285,7 +285,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         drafts.forEach(draft -> {
             final Optional<InventoryEntryDraft> fixedDraft = replaceChannelReference(draft, supplyChannelKeyToId);
             if (fixedDraft.isPresent()) {
-                final Optional<InventoryEntry> oldInventory = getCorrespondingEntry(oldInventories, fixedDraft.get());
+                final Optional<InventoryEntry> oldInventory = findCorrespondingEntry(oldInventories, fixedDraft.get());
                 if (oldInventory.isPresent()) {
                     futures.add(attemptUpdate(oldInventory.get(), fixedDraft.get())
                         .thenAccept(updatedInventory -> {
@@ -329,8 +329,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @return {@link Optional} that may contain {@link InventoryEntry} found in {@code oldInventories} that correspond
      *      to {@code draft} or empty {@link Optional} if no such entry was found
      */
-    private Optional<InventoryEntry> getCorrespondingEntry(@Nonnull final List<InventoryEntry> oldInventories,
-                                                           @Nonnull final InventoryEntryDraft draft) {
+    private Optional<InventoryEntry> findCorrespondingEntry(@Nonnull final List<InventoryEntry> oldInventories,
+                                                            @Nonnull final InventoryEntryDraft draft) {
         return oldInventories.stream()
             .filter(oldInventory -> oldInventory.getSku().equals(draft.getSku()))
             .filter(oldInventory -> draft.getSupplyChannel() == null
