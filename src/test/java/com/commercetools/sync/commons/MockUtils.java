@@ -1,7 +1,6 @@
 package com.commercetools.sync.commons;
 
 import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -11,14 +10,13 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
