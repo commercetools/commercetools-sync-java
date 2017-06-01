@@ -127,16 +127,33 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * For each draft from {@code drafts} it checks if there is corresponding entry in {@code existingInventories},
-     * and then either attempts to update such entry with data from draft or attempts to create new entry from draft.
-     * After comparision and performing action "processed" counter from statistics is incremented.
-     * Method returns {@link CompletionStage} of {@link Void} that indicates all possible creation/update attempts
-     * progress.
+     * Given a list of inventory entry drafts, this method extracts a list of all distinct SKUs from the drafts, then
+     * it tries to fetch a list of Inventory entries with those SKUs, then it returns a future which contains a
+     * mapping of {@link SkuChannelKeyTuple} to {@link InventoryEntry} of instances existing in a CTP project or an
+     * exception.
      *
-     * @param existingInventories mapping of {@link SkuChannelKeyTuple} to {@link InventoryEntry} of instances existing
-     *                            in a CTP project
+     * @param drafts {@link List} of inventory entry drafts to create mapping for.
+     * @return {@link CompletionStage} instance which contains either {@link Map} of {@link SkuChannelKeyTuple} to
+     *      {@link InventoryEntry} of instances existing in a CTP project that correspond to passed {@code drafts} by
+     *      sku comparision, or exception occurred during fetching existing inventory entries
+     */
+    private CompletionStage<Map<SkuChannelKeyTuple, InventoryEntry>>
+    fetchExistingInventories(@Nonnull final List<InventoryEntryDraft> drafts) {
+        final Set<String> skus = extractSkus(drafts);
+        return inventoryService.fetchInventoryEntriesBySkus(skus)
+                               .thenApply(
+                                   existingEntries -> existingEntries.stream().collect(toMap(SkuChannelKeyTuple::of,
+                                       entry -> entry)));
+    }
+
+    /**
+     * Given a list of inventory entry {@code drafts}, this method resolves the references of each entry and attempts to
+     * sync it to the CTP project depending whether it exists or not in the {@code existingInventories}.
+     *
+     * @param existingInventories  mapping of {@link SkuChannelKeyTuple} to {@link InventoryEntry} of instances existing
+     *                             in a CTP project
      * @param inventoryEntryDrafts drafts that need to be synced
-     * @return {@link CompletionStage} of {@link Void} that indicates all possible creation/update attempts progress.
+     * @return a future which contains an empty result after execution of the update.
      */
     private CompletionStage<Void> syncBatch(final Map<SkuChannelKeyTuple, InventoryEntry> existingInventories,
                                             final List<InventoryEntryDraft> inventoryEntryDrafts) {
@@ -146,6 +163,20 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
     }
 
+    /**
+     * Given an inventory entry {@code draft}, this method first resolves all references on the draft, then checks if
+     * there is corresponding entry in {@code existingInventories}. If there is, then it attempts to update such entry
+     * with data from draft, otherwise it attempts to create new entry from draft.
+     *
+     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
+     * out successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
+     * specified in the {@code syncOptions} is called.
+     *
+     * @param existingInventories mapping of {@link SkuChannelKeyTuple} to {@link InventoryEntry} of instances existing
+     *                            in a CTP project
+     * @param inventoryEntryDraft draft that need to be synced
+     * @return a future which contains an empty result after execution of the update.
+     */
     private CompletableFuture<Void> resolveReferencesAndSync(@Nonnull final Map<SkuChannelKeyTuple, InventoryEntry>
                                                                  existingInventories,
                                                              @Nonnull final InventoryEntryDraft inventoryEntryDraft) {
@@ -154,7 +185,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                                 .thenCompose(resolvedDraft -> {
                                     if (existingInventories.containsKey(skuKeyOfDraft)) {
                                         final InventoryEntry existingEntry = existingInventories.get(skuKeyOfDraft);
-                                        return attemptUpdate(existingEntry, resolvedDraft);
+                                        return buildUpdateActionsAndUpdate(existingEntry, resolvedDraft);
                                     } else {
                                         return attemptCreate(inventoryEntryDraft);
                                     }
@@ -173,52 +204,35 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * Returns {@link CompletionStage} instance which may contain mapping of {@link SkuChannelKeyTuple} to
-     * {@link InventoryEntry} of instances existing in a CTP project. Instances are fetched from API by skus, that
-     * corresponds to skus present in {@code drafts}. If fetching existing instances results in exception then
-     * returned {@link CompletionStage} contains such exception.
-     *
-     * @param drafts {@link List} of drafts
-     * @return {@link CompletionStage} instance which contains either {@link Map} of {@link SkuChannelKeyTuple} to
-     *      {@link InventoryEntry} of instances existing in a CTP project that correspond to passed {@code drafts} by
-     *      sku comparision, or exception occurred during fetching existing inventory entries
-     */
-    private CompletionStage<Map<SkuChannelKeyTuple, InventoryEntry>> fetchExistingInventories(final
-                                                                                              List<InventoryEntryDraft>
-                                                                                                  drafts) {
-        final Set<String> skus = extractSkus(drafts);
-        return inventoryService.fetchInventoryEntriesBySkus(skus)
-            .thenApply(existingEntries -> existingEntries.stream().collect(toMap(SkuChannelKeyTuple::of,
-                entry -> entry)));
-    }
-
-    /**
-     * Returns distinct SKUs present in {@code inventories}.
+     * Returns a distinct set of SKUs from the supplied list of inventory entry drafts.
      *
      * @param inventories {@link List} of {@link InventoryEntryDraft} where each draft contains its sku
      * @return {@link Set} of distinct SKUs found in {@code inventories}.
      */
-    private Set<String> extractSkus(final List<InventoryEntryDraft> inventories) {
+    private Set<String> extractSkus(@Nonnull final List<InventoryEntryDraft> inventories) {
         return inventories.stream()
                 .map(InventoryEntryDraft::getSku)
                 .collect(Collectors.toSet());
     }
 
     /**
-     * Tries to update {@code entry} in CTP project with data from {@code draft}.
-     * It calculates list of {@link UpdateAction} and calls API only when there is a need.
-     * Before calculate differences, the channel reference from {@code draft} is replaced, so it points to
-     * proper channel ID in target system.
-     * It either updates inventory entry and increments "updated" counter in statistics, or increments "failed" counter
-     * and executes error callback function in case of any exception.
      *
-     * @param entry entry from existing system that could be updated.
+     * Given an existing {@link InventoryEntry} and a new {@link InventoryEntryDraft}, the method calculates all the
+     * update actions required to synchronize the existing entry to be the same as the new one. If there are update
+     * actions found, a request is made to CTP to update the existing entry, otherwise it doesn't issue a request.
+     *
+     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
+     * out successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
+     * specified in the {@code syncOptions} is called.
+     *
+     * @param entry existing inventory entry that could be updated.
      * @param draft draft containing data that could differ from data in {@code entry}.
      *              <strong>Sku isn't compared</strong>
-     * @return {@link CompletionStage} of {@link Void} that indicates method progress
+     * @return a future which contains an empty result after execution of the update.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<Void> attemptUpdate(final InventoryEntry entry, final InventoryEntryDraft draft) {
+    private CompletionStage<Void> buildUpdateActionsAndUpdate(@Nonnull final InventoryEntry entry,
+                                                              @Nonnull final InventoryEntryDraft draft) {
         final List<UpdateAction<InventoryEntry>> updateActions =
             InventorySyncUtils.buildActions(entry, draft, syncOptions);
         if (!updateActions.isEmpty()) {
@@ -235,24 +249,25 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * Tries to create Inventory Entry in CTP project, using {@code draft}.
-     * Before calling API, the channel reference from {@code draft} is replaced, so it points to proper channel ID
-     * in target system.
-     * It either creates inventory entry and increments "created" counter in statistics, or increments "failed" counter
-     * and executes error callback function in case of any exception.
+     * Given an inventory entry {@code draft}, issues a request to the CTP project to create a corresponding Inventory
+     * Entry.
      *
-     * @param draft draft of new inventory entry
-     * @return {@link CompletionStage} instance that indicates method progress
+     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
+     * out successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
+     * specified in the {@code syncOptions} is called.
+     *
+     * @param draft the inventory entry draft to create the inventory entry from.
+     * @return a future which contains an empty result after execution of the create.
      */
-    private CompletionStage<Void> attemptCreate(final InventoryEntryDraft draft) {
+    private CompletionStage<Void> attemptCreate(@Nonnull final InventoryEntryDraft draft) {
         return inventoryService.createInventoryEntry(draft)
-            .thenAccept(createdEntry -> statistics.incrementCreated())
-            .exceptionally(exception -> {
-                final String errorMessage = format(CTP_INVENTORY_ENTRY_CREATE_FAILED, draft.getSku(),
-                    SkuChannelKeyTuple.of(draft).getKey());
-                handleError(errorMessage, exception, 1);
-                return null;
-            });
+                               .thenAccept(createdEntry -> statistics.incrementCreated())
+                               .exceptionally(exception -> {
+                                   final String errorMessage = format(CTP_INVENTORY_ENTRY_CREATE_FAILED, draft.getSku(),
+                                       SkuChannelKeyTuple.of(draft).getKey());
+                                   handleError(errorMessage, exception, 1);
+                                   return null;
+                               });
     }
 
     /**
