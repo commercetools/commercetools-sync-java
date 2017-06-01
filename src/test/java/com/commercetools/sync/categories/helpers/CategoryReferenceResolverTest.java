@@ -6,8 +6,11 @@ import com.commercetools.sync.categories.helpers.CategoryReferenceResolver;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
+import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
@@ -48,7 +51,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithNoUuidSet_ShouldResolveParentReference() {
+    public void resolveReferences_WithNoKeysAsUuidSet_ShouldResolveParentReference() {
         final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH, "myDraft", "externalId",
             "parentExternalId", "customTypeId", new HashMap<>());
 
@@ -62,13 +65,13 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithUuidSetAndAllowed_ShouldNotResolveReferences() {
+    public void resolveReferences_WithKeysAsUuidSetAndAllowed_ShouldResolveReferences() {
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                   .setAllowUuid(true)
                                                                                   .build();
-        final String parentUuid = String.valueOf(UUID.randomUUID());
+        final String uuidKey = String.valueOf(UUID.randomUUID());
         final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH, "myDraft", "externalId",
-            parentUuid, "customTypeId", new HashMap<>());
+            uuidKey, uuidKey, new HashMap<>());
 
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(categorySyncOptions, typeService, categoryService);
@@ -83,7 +86,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithParentUuidSetAndNotAllowed_ShouldNotResolveParentReference() {
+    public void resolveReferences_WithParentKeyAsUuidSetAndNotAllowed_ShouldNotResolveParentReference() {
         final String parentUuid = String.valueOf(UUID.randomUUID());
         final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH, "myDraft", "externalId",
             parentUuid, "customTypeId", new HashMap<>());
@@ -124,7 +127,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithExceptionOnFetch_ShouldNotResolveReferences() {
+    public void resolveReferences_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH, "myDraft", "externalId",
             "parentId", "customTypeId", new HashMap<>());
 
@@ -139,16 +142,14 @@ public class CategoryReferenceResolverTest {
         categoryReferenceResolver.resolveReferences(categoryDraft)
                                  .exceptionally(exception -> {
                                      assertThat(exception).isExactlyInstanceOf(CompletionException.class);
-                                     assertThat(exception.getCause())
-                                         .isExactlyInstanceOf(SphereException.class);
-                                     assertThat(exception.getCause().getMessage())
-                                         .contains("bad request");
+                                     assertThat(exception.getCause()).isExactlyInstanceOf(SphereException.class);
+                                     assertThat(exception.getCause().getMessage()).contains("bad request");
                                      return null;
                                  }).toCompletableFuture().join();
     }
 
     @Test
-    public void resolveReferences_WithCustomTypeUuidSetAndNotAllowed_ShouldNotResolveCustomTypeReference() {
+    public void resolveReferences_WithCustomTypeKeyAsUuidSetAndNotAllowed_ShouldNotResolveCustomTypeReference() {
         final String customTypeUuid = String.valueOf(UUID.randomUUID());
         final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH, "myDraft", "externalId",
             "parentExternalId", customTypeUuid, new HashMap<>());
@@ -186,7 +187,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithNonExistentCustomType_ShouldResolveCustomTypeReference() {
+    public void resolveReferences_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
         final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH, "myDraft", "externalId",
             "parentExternalId", "customTypeId", new HashMap<>());
         when(typeService.fetchCachedTypeId(anyString()))
