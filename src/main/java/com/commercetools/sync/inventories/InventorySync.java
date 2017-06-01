@@ -293,16 +293,24 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 if (oldInventory.isPresent()) {
                     futures.add(attemptUpdate(oldInventory.get(), fixedDraft.get())
                         .thenAccept(updatedInventory -> {
-                            if (!updatedInventory.equals(oldInventory.get())) {
+                            if (updatedInventory != null) {
                                 statistics.incrementUpdated();
                             }
                         })
-                        .exceptionally(exception -> {
-                            statistics.incrementFailed();
-                            syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
-                                extractChannelKey(draft)), exception);
-                            return null;
-                        })
+                        .exceptionally(exception ->
+                            tryRepeatUpdateOn409(fixedDraft.get(), exception, 5)
+                            .thenAccept(updatedInventory -> {
+                                if (updatedInventory != null) {
+                                    statistics.incrementUpdated();
+                                }
+                            })
+                            .exceptionally(exceptionAfterRetry -> {
+                                statistics.incrementFailed();
+                                syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
+                                            extractChannelKey(draft)), exceptionAfterRetry);
+                                return null;
+                            }).toCompletableFuture().join()
+                        )
                         .toCompletableFuture());
                 } else {
                     futures.add(inventoryService.createInventoryEntry(fixedDraft.get())
@@ -376,14 +384,14 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     /**
      * Tries to update {@code entry} in CTP project with data from {@code draft}.
      * It calculates list of {@link UpdateAction} and calls API only when there is a need.
-     * If there is no need to call API it returns {@link CompletionStage} with passed {@code entry}.
+     * If there is no need to call API it returns {@link CompletionStage} with {@code null} value.
      * Otherwise it updates inventory entry and returns {@link CompletionStage} that may contain either updated
      * {@link InventoryEntry}, or exception.
      *
      * @param entry entry from existing system that could be updated.
      * @param draft draft containing data that could differ from data in {@code entry}.
      *              <strong>Sku isn't compared</strong>
-     * @return {@link CompletionStage} of {@link CompletionStage} that may contain passed {@code entry}, updated
+     * @return {@link CompletionStage} of {@link CompletionStage} that may contain {@code null} value, updated
      *      {@link InventoryEntry}, or exception
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
@@ -393,7 +401,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         if (!updateActions.isEmpty()) {
             return inventoryService.updateInventoryEntry(entry, updateActions);
         }
-        return CompletableFuture.completedFuture(entry);
+        return CompletableFuture.completedFuture(null);
     }
 
     /**
