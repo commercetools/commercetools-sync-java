@@ -226,6 +226,29 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
+    public void resolveReferences_WithNullIdOnParentReference_ShouldNotResolveParentReference() {
+        final CategoryDraft categoryDraft = mock(CategoryDraft.class);
+        final Reference<Category> parentCategoryReference =
+            Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), null);
+        when(categoryDraft.getParent()).thenReturn(parentCategoryReference);
+
+        final CategoryReferenceResolver categoryReferenceResolver =
+            new CategoryReferenceResolver(syncOptions, typeService, categoryService);
+
+        categoryReferenceResolver.resolveReferences(categoryDraft)
+                                 .exceptionally(exception -> {
+                                     assertThat(exception).isExactlyInstanceOf(CompletionException.class);
+                                     assertThat(exception.getCause())
+                                         .isExactlyInstanceOf(ReferenceResolutionException.class);
+                                     assertThat(exception.getCause().getMessage())
+                                         .isEqualTo("Failed to resolve parent reference. Reason: Key is blank "
+                                             + "(null/empty) on both expanded reference object and reference id "
+                                             + "field.");
+                                     return null;
+                                 }).toCompletableFuture().join();
+    }
+
+    @Test
     public void resolveReferences_WithNullIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH, "myDraft", "externalId",
             "parentExternalId", "customTypeId", new HashMap<>());
