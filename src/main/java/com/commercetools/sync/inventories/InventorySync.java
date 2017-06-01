@@ -25,6 +25,14 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.inventories.ChannelKeyExtractor.extractChannelKey;
+import static com.commercetools.sync.inventories.InventorySyncMessages.CHANNEL_KEY_MAPPING_DOESNT_EXIST;
+import static com.commercetools.sync.inventories.InventorySyncMessages.CTP_CHANNEL_CREATE_FAILED;
+import static com.commercetools.sync.inventories.InventorySyncMessages.CTP_CHANNEL_FETCH_FAILED;
+import static com.commercetools.sync.inventories.InventorySyncMessages.CTP_INVENTORY_ENTRY_CREATE_FAILED;
+import static com.commercetools.sync.inventories.InventorySyncMessages.CTP_INVENTORY_ENTRY_UPDATE_FAILED;
+import static com.commercetools.sync.inventories.InventorySyncMessages.CTP_INVENTORY_FETCH_FAILED;
+import static com.commercetools.sync.inventories.InventorySyncMessages.INVENTORY_DRAFT_HAS_NO_SKU;
+import static com.commercetools.sync.inventories.InventorySyncMessages.INVENTORY_DRAFT_IS_NULL;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -34,16 +42,6 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
  * Default implementation of inventories sync process.
  */
 public final class InventorySync extends BaseSync<InventoryEntryDraft, InventorySyncStatistics, InventorySyncOptions> {
-    private static final String CTP_INVENTORY_FETCH_FAILED = "Failed to fetch existing inventory entries of SKUs %s.";
-    private static final String CTP_CHANNEL_FETCH_FAILED = "Failed to fetch supply channels.";
-    private static final String CTP_INVENTORY_ENTRY_UPDATE_FAILED = "Failed to update inventory entry of sku '%s' and "
-        + "supply channel key '%s'.";
-    private static final String INVENTORY_DRAFT_HAS_NO_SKU = "Failed to process inventory entry without sku.";
-    private static final String INVENTORY_DRAFT_IS_NULL = "Failed to process null inventory draft.";
-    private static final String CTP_CHANNEL_CREATE_FAILED = "Failed to create new supply channel of key '%s'.";
-    private static final String CTP_INVENTORY_ENTRY_CREATE_FAILED = "Failed to create inventory entry of sku '%s' "
-        + "and supply channel key '%s'.";
-    private static final String CHANNEL_KEY_MAPPING_DOESNT_EXIST = "Failed to find supply channel of key '%s'.";
 
     private final InventoryService inventoryService;
 
