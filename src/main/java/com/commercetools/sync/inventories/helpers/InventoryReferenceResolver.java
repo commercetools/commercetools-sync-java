@@ -57,8 +57,10 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
      * taken from the id field of the reference.
      *
      * <p>The method then tries to fetch the key of the supply channel, optimistically from a
-     * cache. If it is is not found, the resultant draft would remain exactly the same as the passed inventory entry
-     * draft (without a channel reference resolution).
+     * cache. If the id is not found in cache nor the CTP project and {@code ensureChannel}
+     * option is set to true, a new channel will be created with this key and the role {@code "InventorySupply"}.
+     * However, if the {@code ensureChannel} is set to false, the future is completed exceptionally with a
+     * {@link ReferenceResolutionException}.
      *
      * @param draft the inventoryEntryDraft to resolve it's channel reference.
      * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance with resolved
@@ -84,8 +86,10 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
     /**
      * Given an {@link InventoryEntryDraft} and a {@code channelKey} this method fetches the actual id of the
      * channel corresponding to this key, ideally from a cache. Then it sets this id on the supply channel reference
-     * id of the inventory entry draft. If the id is not found in cache nor the CTP project, the resultant draft would
-     * remain exactly the same as the passed draft (without supply channel resolution).
+     * id of the inventory entry draft. If the id is not found in cache nor the CTP project and {@code ensureChannel}
+     * option is set to true, a new channel will be created with this key and the role {@code "InventorySupply"}.
+     * However, if the {@code ensureChannel} is set to false, the future is completed exceptionally with a
+     * {@link ReferenceResolutionException}.
      *
      * @param draft the inventory entry draft to resolve it's supply channel reference.
      * @param channelKey the key of the channel to resolve it's actual id on the draft.
@@ -144,8 +148,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
      * {@code inventoryEntryDraft} by setting the id of it's supply channel reference with the newly created Channel.
      *
      * <p>If the {@code ensureChannels} options is set to {@code false} on the {@code options} instance of {@code this}
-     * class, a completed {@link CompletableFuture} with the same exact {@link InventoryEntryDraft} passed is returned
-     * as a result.
+     * class, the future is completed exceptionally with a {@link ReferenceResolutionException}.
      *
      * <p>The method then returns a CompletionStage with a resolved channel reference {@link InventoryEntryDraft}
      * object.
