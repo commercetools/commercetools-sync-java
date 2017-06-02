@@ -1,6 +1,5 @@
 package com.commercetools.sync.commons.helpers;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import javax.annotation.Nonnull;
@@ -108,6 +107,5 @@ public abstract class BaseSyncStatistics {
      *
      * @return a summary message of the statistics report.
      */
-    @JsonIgnore
     public abstract String getReportMessage();
 }
