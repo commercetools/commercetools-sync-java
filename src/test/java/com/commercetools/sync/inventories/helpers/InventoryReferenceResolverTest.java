@@ -54,7 +54,7 @@ public class InventoryReferenceResolverTest {
     public void setup() {
         typeService = getMockTypeService();
         channelService = InventorySyncMockUtils
-            .getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY), CHANNEL_ID);
+            .getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY));
         syncOptions = InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
     }
 
