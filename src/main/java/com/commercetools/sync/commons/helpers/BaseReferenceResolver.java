@@ -16,9 +16,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.regex.Pattern;
 
-import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * This class is responsible for providing an abstract implementation of reference resolution on different CTP
@@ -193,20 +191,5 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      */
     protected static boolean isReferenceExpanded(@Nonnull final Reference reference) {
         return reference.getObj() != null;
-    }
-
-    /**
-     * Given a {@link String} {@code customMessage} and {@link Throwable} exception, this method appends the exception's
-     * message, if it exists, as a reason after the {@code customMessage} {@link String} and returns the result.
-     *
-     * @param customMessage the main message, which would always be at the beginning of the resultant string.
-     * @param cause         the exception from which it's message, if it exists, will be appended to the customMessage.
-     * @return the complete error message in the form "{customMessage}. Reason: {cause.getMessage()}"
-     */
-    @Nonnull
-    protected static String buildErrorMessage(@Nonnull final String customMessage, @Nonnull final Throwable cause) {
-        final String causeMessage = cause.getMessage();
-        final String reason = isNotBlank(causeMessage) ? format("Reason: %s", causeMessage) : "";
-        return isNotBlank(reason) ? format(customMessage + " %s", reason) : customMessage;
     }
 }
