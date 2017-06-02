@@ -25,6 +25,12 @@ public abstract class BaseSync<T, S extends BaseSyncStatistics, U extends BaseSy
      * this list with it's corresponding old resource in a given CTP project, and in turn it either issues update
      * actions on the existing resource if it exists or create it if it doesn't.
      *
+     * <p>This method should return a subclass of {@link BaseSyncStatisticsBuilder} wrapped in a
+     * {@link CompletionStage}. The {@code process} method is responsible for creating an instance of statistics builder
+     * and for updating its counters with relevant values. However it is a responsibility of the caller for calculating
+     * the total processing time and for setting that time on the returned instance. You can see how it is used by
+     * {@link BaseSync#sync(List)}.
+     *
      * @param resourceDrafts the list of new resources as drafts.
      * @return an instance of {@link CompletionStage&lt;S&gt;} which contains as a result an instance of {@link U} which
      *      is a subclass of {@link BaseSyncStatisticsBuilder} representing the statistics of a single sync performed by
