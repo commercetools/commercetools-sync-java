@@ -28,7 +28,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  *            specified by the user, on reference resolution.
  */
 public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
-    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference.";
     private static final String UUID_NOT_ALLOWED = "Found a UUID in the id field. Expecting a key without a UUID value."
         + " If you want to allow UUID values for reference keys, please use the setAllowUuid(true) option in the sync"
         + " options.";
