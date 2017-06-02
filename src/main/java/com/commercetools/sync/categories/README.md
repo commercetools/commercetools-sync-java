@@ -38,7 +38,9 @@ final CategorySync categorySync = new CategorySync(categorySyncOptions);
 // execute the sync on your list of categories
 categorySync.sync(categoryDrafts);
 ````
-**Note**: The sync expects a list of non-null `CategoryDraft` objects that have their `externalId` fields set.
+**Note**: The sync expects a list of non-null `CategoryDraft` objects that have their `externalId` fields set, otherwise
+ the sync will trigger an `errorCallback` function which is set by the user. More on this option can be found down below
+  in the additional `options` explanations.
 
 
 In order to get the statistics of the sync process, use the `getStatistics()` method on the sync instance. It is used 
