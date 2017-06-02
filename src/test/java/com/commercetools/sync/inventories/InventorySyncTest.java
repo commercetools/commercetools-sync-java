@@ -114,23 +114,8 @@ public class InventorySyncTest {
         assertThat(stats).isNotNull();
         assertThat(stats.getProcessed()).isEqualTo(9);
         assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(3);
-        assertThat(stats.getUpdated()).isEqualTo(4);
-        assertThat(errorCallBackMessages).hasSize(0);
-        assertThat(errorCallBackExceptions).hasSize(0);
-    }
-
-    @Test
-    public void sync_ShouldReturnProperStatistics() {
-        final InventorySync inventorySync = getInventorySync(30, false);
-        final InventorySyncStatistics stats = inventorySync.sync(drafts)
-                .toCompletableFuture()
-                .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(9);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(3);
-        assertThat(stats.getUpdated()).isEqualTo(4);
+        assertThat(stats.getCreated()).isEqualTo(7);
+        assertThat(stats.getUpdated()).isEqualTo(1);
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
