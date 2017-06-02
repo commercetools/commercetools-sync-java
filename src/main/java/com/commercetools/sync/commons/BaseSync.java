@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 
-public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSyncStatisticsBuilder<V, U>,
-    W extends BaseSyncOptions> {
-    private final V totalStatisticsBuilder;
+public abstract class BaseSync<T, S extends BaseSyncStatistics, U extends BaseSyncStatisticsBuilder<U, S>,
+    V extends BaseSyncOptions> {
+    private final U totalStatisticsBuilder;
     private Object totalStatisticsLock;
-    protected final W syncOptions;
+    protected final V syncOptions;
 
-    protected BaseSync(@Nonnull final V totalStatisticsBuilder, @Nonnull final W syncOptions) {
+    protected BaseSync(@Nonnull final U totalStatisticsBuilder, @Nonnull final V syncOptions) {
         this.totalStatisticsBuilder = totalStatisticsBuilder;
         this.syncOptions = syncOptions;
         this.totalStatisticsLock = new Object();
@@ -26,11 +26,11 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
      * actions on the existing resource if it exists or create it if it doesn't.
      *
      * @param resourceDrafts the list of new resources as drafts.
-     * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of {@link V} which
+     * @return an instance of {@link CompletionStage&lt;S&gt;} which contains as a result an instance of {@link U} which
      *      is a subclass of {@link BaseSyncStatisticsBuilder} representing the builder of {@code statistics} baked for
      *      the sync process
      */
-    protected abstract CompletionStage<V> process(@Nonnull final List<T> resourceDrafts);
+    protected abstract CompletionStage<U> process(@Nonnull final List<T> resourceDrafts);
 
 
     /**
@@ -39,14 +39,14 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
      * actions on the existing resource if it exists or create it if it doesn't.
      *
      * @param resourceDrafts the list of new resources as drafts.
-     * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of {@link U} which
+     * @return an instance of {@link CompletionStage&lt;S&gt;} which contains as a result an instance of {@link S} which
      *      is a subclass of {@link BaseSyncStatistics} representing the {@code statistics} of this sync process.
      */
-    public CompletionStage<U> sync(@Nonnull final List<T> resourceDrafts) {
+    public CompletionStage<S> sync(@Nonnull final List<T> resourceDrafts) {
         final long startTime = System.currentTimeMillis();
         return process(resourceDrafts).thenApply(resultingStatisticsBuilder -> {
             resultingStatisticsBuilder.setProcessingTimeInMillis(System.currentTimeMillis() - startTime);
-            final U resultingStatistics = resultingStatisticsBuilder.build();
+            final S resultingStatistics = resultingStatisticsBuilder.build();
             updateTotalStatistics(resultingStatistics);
             return resultingStatistics;
         });
@@ -54,13 +54,13 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
 
 
     /**
-     * Returns an instance of type U which is a subclass of {@link BaseSyncStatistics} containing the total stats of
+     * Returns an instance of type S which is a subclass of {@link BaseSyncStatistics} containing the total stats of
      * all sync processes performed by {@code this} sync instance.
      *
      * @return a statistics object for all sync processes performed by {@code this} sync instance.
      */
     @Nonnull
-    public U getStatistics() {
+    public S getStatistics() {
         synchronized (totalStatisticsLock) {
             return totalStatisticsBuilder.build();
         }
@@ -71,7 +71,7 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
      *
      * @param statisticsToJoin statistics of sync that should be joined to total stats
      */
-    private void updateTotalStatistics(final U statisticsToJoin) {
+    private void updateTotalStatistics(final S statisticsToJoin) {
         synchronized (totalStatisticsLock) {
             totalStatisticsBuilder.addAllStatistics(statisticsToJoin);
         }
