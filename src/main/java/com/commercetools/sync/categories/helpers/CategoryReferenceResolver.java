@@ -20,7 +20,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public final class CategoryReferenceResolver extends BaseReferenceResolver<CategoryDraft, CategorySyncOptions> {
-    private static final String FAILED_TO_RESOLVE_PARENT = "Failed to resolve parent reference.";
     private CategoryService categoryService;
 
     public CategoryReferenceResolver(@Nonnull final CategorySyncOptions options,
@@ -32,13 +31,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
 
     @Override
     @Nonnull
-    public CompletionStage<CategoryDraft> resolveReferences(@Nonnull final CategoryDraft categoryDraft) {
-        return resolveCustomTypeReference(categoryDraft).thenCompose(this::getParentKeyAndResolveReference);
-    }
-
-    @Override
-    @Nonnull
-    protected CompletionStage<CategoryDraft> resolveCustomTypeReference(@Nonnull final CategoryDraft categoryDraft) {
+    public CompletionStage<CategoryDraft> resolveCustomTypeReference(@Nonnull final CategoryDraft categoryDraft) {
         final CustomFieldsDraft custom = categoryDraft.getCustom();
         if (custom != null) {
             return getCustomTypeId(custom)
@@ -66,7 +59,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
      *      a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    private CompletionStage<CategoryDraft> getParentKeyAndResolveReference(@Nonnull final CategoryDraft categoryDraft) {
+    public CompletionStage<CategoryDraft> resolveParentReference(@Nonnull final CategoryDraft categoryDraft) {
         CategoryDraftBuilder categoryDraftBuilder = CategoryDraftBuilder.of(categoryDraft);
         final Reference<Category> parentCategoryReference = categoryDraft.getParent();
         if (parentCategoryReference != null) {
@@ -74,11 +67,9 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
                 final String keyFromExpansion = getExternalIdFromExpansion(parentCategoryReference);
                 final String parentCategoryExternalId = getKeyFromExpansionOrReference(
                     keyFromExpansion, parentCategoryReference);
-                return resolveParentReference(categoryDraft, parentCategoryExternalId);
+                return fetchAndResolveParentReference(categoryDraft, parentCategoryExternalId);
             } catch (ReferenceResolutionException exception) {
-                final ReferenceResolutionException referenceResolutionException = new ReferenceResolutionException(
-                    buildErrorMessage(FAILED_TO_RESOLVE_PARENT, exception), exception);
-                return CompletableFutureUtils.exceptionallyCompletedFuture(referenceResolutionException);
+                return CompletableFutureUtils.exceptionallyCompletedFuture(exception);
             }
         }
         return CompletableFuture.completedFuture(categoryDraftBuilder.build());
@@ -96,8 +87,9 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
      *      category references or an exception.
      */
     @Nonnull
-    private CompletionStage<CategoryDraft> resolveParentReference(@Nonnull final CategoryDraft categoryDraft,
-                                                                  @Nonnull final String parentCategoryExternalId) {
+    private CompletionStage<CategoryDraft> fetchAndResolveParentReference(
+        @Nonnull final CategoryDraft categoryDraft,
+        @Nonnull final String parentCategoryExternalId) {
         return categoryService.fetchCachedCategoryId(parentCategoryExternalId)
                               .thenApply(resolvedParentIdOptional -> resolvedParentIdOptional
                                   .filter(StringUtils::isNotBlank)
