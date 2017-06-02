@@ -17,7 +17,7 @@ public abstract class BaseSyncStatisticsBuilder<T extends BaseSyncStatisticsBuil
      * @return {@code this} instance of {@link T}
      */
     public T incrementCreated() {
-        this.created++;
+        created++;
         return getThis();
     }
 
@@ -27,7 +27,7 @@ public abstract class BaseSyncStatisticsBuilder<T extends BaseSyncStatisticsBuil
      * @return {@code this} instance of {@link T}
      */
     public T incrementUpdated() {
-        this.updated++;
+        updated++;
         return getThis();
     }
 
@@ -37,7 +37,7 @@ public abstract class BaseSyncStatisticsBuilder<T extends BaseSyncStatisticsBuil
      * @return {@code this} instance of {@link T}
      */
     public T incrementUpToDate() {
-        this.upToDate++;
+        upToDate++;
         return getThis();
     }
 
@@ -47,7 +47,7 @@ public abstract class BaseSyncStatisticsBuilder<T extends BaseSyncStatisticsBuil
      * @return {@code this} instance of {@link T}
      */
     public T incrementFailed() {
-        this.failed++;
+        failed++;
         return getThis();
     }
 
@@ -69,11 +69,11 @@ public abstract class BaseSyncStatisticsBuilder<T extends BaseSyncStatisticsBuil
      * @return {@code this} instance of {@link T}
      */
     public T addAllStatistics(@Nonnull final S statisticsToAdd) {
-        this.created += statisticsToAdd.getCreated();
-        this.updated += statisticsToAdd.getUpdated();
-        this.upToDate += statisticsToAdd.getUpToDate();
-        this.failed += statisticsToAdd.getFailed();
-        this.processingTimeInMillis += statisticsToAdd.getProcessingTimeInMillis();
+        created += statisticsToAdd.getCreated();
+        updated += statisticsToAdd.getUpdated();
+        upToDate += statisticsToAdd.getUpToDate();
+        failed += statisticsToAdd.getFailed();
+        processingTimeInMillis += statisticsToAdd.getProcessingTimeInMillis();
         return getThis();
     }
 
