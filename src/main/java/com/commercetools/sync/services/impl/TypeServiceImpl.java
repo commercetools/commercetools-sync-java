@@ -17,8 +17,7 @@ import java.util.concurrent.CompletionStage;
 /**
  * Implementation of TypeService interface.
  * TODO: USE graphQL to get only keys OR MAKE PR/ISSUE TO FIX QueryExecutionUtils.queryAll
- * TODO: UNIT TEST
- * TODO: JAVA DOC
+ * TODO: INTEGRATION TEST GITHUB ISSUE#7
  */
 public class TypeServiceImpl implements TypeService {
     private final SphereClient ctpClient;

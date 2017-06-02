@@ -1,6 +1,5 @@
 package com.commercetools.sync.services;
 
-import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 
@@ -22,7 +21,8 @@ public interface ChannelService {
      * {@link Optional} with the id inside of it or an empty {@link Optional} if no {@link Channel} was
      * found in the CTP project with this key.
      *
-     * @param key the externalId by which a {@link Category} id should be fetched from the CTP project.
+     * @param key the key by which a {@link Channel} id should be fetched from the CTP project.
+     * @param roles the set of roles assigned to the channel.
      * @return {@link CompletionStage&lt;Optional&lt;String&gt;&gt;} in which the result of it's completion could
      *      contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no {@link Channel} was
      *      found in the CTP project with this external id.

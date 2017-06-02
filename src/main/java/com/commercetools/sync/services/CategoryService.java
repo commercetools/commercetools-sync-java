@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 public interface CategoryService {
-
     /**
      * Given an {@code externalId}, this method first checks if cached map of category external ids -> ids is not empty.
      * If not, it returns a completed future that contains an optional that contains what this external id maps to in
