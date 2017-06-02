@@ -16,7 +16,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
@@ -36,7 +35,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private static final String CATEGORY_DRAFT_EXTERNAL_ID_NOT_SET = "CategoryDraft with name: %s doesn't have an"
         + " externalId.";
     private static final String CATEGORY_DRAFT_IS_NULL = "CategoryDraft is null.";
-    private static final String CATEGORY_DRAFT_REFERENCE_RESOLUTION_FAILED = "Failed to resolve reference on "
+    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+        + "CategoryDraft with externalId:'%s'. Reason: %s";
+    private static final String FAILED_TO_RESOLVE_PARENT = "Failed to resolve parent reference on "
         + "CategoryDraft with externalId:'%s'. Reason: %s";
 
     private final CategoryService categoryService;
@@ -112,10 +113,11 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     }
 
     /**
-     * Given a category draft {@link CategoryDraft} with an externalId, this method blocks execution to try to fetch the
-     * existing category from CTP project stored in the {@code syncOptions} instance of this class. If successful, it
-     * either blocks to create a new category, if none exist with the same external id, or blocks to update the
-     * existing category.
+     * Given a category draft {@link CategoryDraft} with an externalId, this method blocks execution to first resolve
+     * the references on the category draft (custom type reference and the parent category reference). Then it tries
+     * to fetch the existing category from CTP project stored in the {@code syncOptions} instance of this class. If
+     * successful, it either blocks to create a new category, if none exist with the same external id, or blocks to
+     * update the existing category.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried out
      * successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
@@ -126,27 +128,30 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private void resolveReferencesAndSync(@Nonnull final CategoryDraft categoryDraft) {
         final String externalId = categoryDraft.getExternalId();
         try {
-            referenceResolver.resolveReferences(categoryDraft)
-                             .thenCompose(draftWithResolvedReferences ->
-                                 categoryService.fetchCategoryByExternalId(externalId)
-                                                .thenCompose(fetchedCategoryOptional -> fetchedCategoryOptional
-                                                    .map(category ->
-                                                        buildUpdateActionsAndUpdate(category,
-                                                            draftWithResolvedReferences))
-                                                    .orElseGet(() -> createCategory(draftWithResolvedReferences)))
-                                                .exceptionally(exception -> {
-                                                    final String errorMessage = format(CTP_CATEGORY_FETCH_FAILED,
-                                                        categoryDraft.getExternalId(), exception.getMessage());
-                                                    handleError(errorMessage, exception);
-                                                    return null;
-                                                }))
+            referenceResolver.resolveCustomTypeReference(categoryDraft)
+                             .thenCompose(draftWithResolvedCustomTypeReference -> referenceResolver
+                                 .resolveParentReference(draftWithResolvedCustomTypeReference)
+                                 .thenCompose(resolvedDraft ->
+                                     categoryService.fetchCategoryByExternalId(externalId)
+                                                    .thenCompose(fetchedCategoryOptional -> fetchedCategoryOptional
+                                                        .map(category ->
+                                                            buildUpdateActionsAndUpdate(category, resolvedDraft))
+                                                        .orElseGet(() -> createCategory(resolvedDraft)))
+                                                    .exceptionally(exception -> {
+                                                        final String errorMessage = format(CTP_CATEGORY_FETCH_FAILED,
+                                                            categoryDraft.getExternalId(), exception.getMessage());
+                                                        handleError(errorMessage, exception);
+                                                        return null;
+                                                    }))
+                                 .exceptionally(exception -> {
+                                     final String errorMessage = format(FAILED_TO_RESOLVE_PARENT, externalId,
+                                         exception.getMessage());
+                                     handleError(errorMessage, exception);
+                                     return null;
+                                 }))
                              .exceptionally(exception -> {
-                                 if (exception instanceof CompletionException) {
-                                     // Unwrap the exception from CompletionException
-                                     exception = exception.getCause();
-                                 }
-                                 final String errorMessage = format(CATEGORY_DRAFT_REFERENCE_RESOLUTION_FAILED,
-                                     externalId, exception.getMessage());
+                                 final String errorMessage = format(FAILED_TO_RESOLVE_CUSTOM_TYPE, externalId,
+                                     exception.getMessage());
                                  handleError(errorMessage, exception);
                                  return null;
                              })
