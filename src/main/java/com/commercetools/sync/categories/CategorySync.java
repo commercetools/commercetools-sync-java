@@ -87,8 +87,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
      * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of
-     *      {@link CategorySyncStatisticsBuilder} representing the builder of {@code statistics} baked for
-     *      the sync process
+     *      {@link CategorySyncStatisticsBuilder} representing the statistics of a single sync performed by this method.
      */
     @Override
     protected CompletionStage<CategorySyncStatisticsBuilder> process(@Nonnull final List<CategoryDraft>
@@ -121,7 +120,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * specified in the {@code syncOptions} is called.
      *
      * @param categoryDraft the category draft where we get the new data.
-     * @param statisticsBuilder builder of a category sync statistics baked for the process.
+     * @param statisticsBuilder builder of a category sync statistics, which will be updated.
      */
     private void createOrUpdateCategory(@Nonnull final CategoryDraft categoryDraft,
                                         @Nonnull final CategorySyncStatisticsBuilder statisticsBuilder) {
@@ -155,7 +154,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * specified in the {@code syncOptions} is called.
      *
      * @param categoryDraft the category draft to create the category from.
-     * @param statisticsBuilder Builder of a category sync statistics baked for the process.
+     * @param statisticsBuilder builder of a category sync statistics, which will be updated.
      * @return a future monad which can contain an empty result.
      */
     private CompletionStage<Void> createCategory(@Nonnull final CategoryDraft categoryDraft,
@@ -177,7 +176,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new data.
-     * @param statisticsBuilder Builder of a category sync statistics baked for the process.
+     * @param statisticsBuilder builder of a category sync statistics, which will be updated.
      * @return a future monad which can contain an empty result.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
@@ -205,7 +204,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param category      the category to update.
      * @param updateActions the list of update actions to update the category with.
-     * @param statisticsBuilder Builder of a category sync statistics baked for the process.
+     * @param statisticsBuilder builder of a category sync statistics, which will be updated.
      * @return a future monad which can contain an empty result.
      */
     private CompletionStage<Void> updateCategory(@Nonnull final Category category,
@@ -228,7 +227,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param errorMessage The error message describing the reason(s) of failure.
      * @param exception    The exception that called caused the failure, if any.
-     * @param statisticsBuilder Builder of a category sync statistics baked for the process.
+     * @param statisticsBuilder builder of a category sync statistics, which will be updated.
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
                              @Nonnull final CategorySyncStatisticsBuilder statisticsBuilder) {

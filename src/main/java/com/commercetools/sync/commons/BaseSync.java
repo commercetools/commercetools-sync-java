@@ -27,8 +27,8 @@ public abstract class BaseSync<T, S extends BaseSyncStatistics, U extends BaseSy
      *
      * @param resourceDrafts the list of new resources as drafts.
      * @return an instance of {@link CompletionStage&lt;S&gt;} which contains as a result an instance of {@link U} which
-     *      is a subclass of {@link BaseSyncStatisticsBuilder} representing the builder of {@code statistics} baked for
-     *      the sync process
+     *      is a subclass of {@link BaseSyncStatisticsBuilder} representing the statistics of a single sync performed by
+     *      this method.
      */
     protected abstract CompletionStage<U> process(@Nonnull final List<T> resourceDrafts);
 

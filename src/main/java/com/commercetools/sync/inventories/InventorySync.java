@@ -104,8 +104,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * {@inheritDoc}
      *
      * @param inventories {@link List} of {@link InventoryEntryDraft} resources that would be synced into CTP project.
-     * @return {@link CompletionStage} with {@link InventorySyncStatistics} holding statistics of all sync
-     *                                           processes performed by this sync instance
+     * @return {@link CompletionStage} with {@link InventorySyncStatisticsBuilder} representing the statistics of a
+     *      single sync performed by this method.
      */
     @Override
     protected CompletionStage<InventorySyncStatisticsBuilder> process(@Nonnull final List<InventoryEntryDraft>
@@ -125,8 +125,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * is a {@link InventoryEntryDraft} object that is not {@code null} and its SKU is not empty.
      *
      * @param inventories {@link List} of {@link InventoryEntryDraft} resources that would be synced into CTP project.
-     * @return {@link CompletionStage} with {@link InventorySyncStatistics} holding statistics of all sync
-     *                                           processes performed by this sync instance
+     * @return {@link CompletionStage} with {@link InventorySyncStatisticsBuilder} representing the statistics of a
+     *      single sync performed by this method.
      */
     @Nonnull
     private CompletionStage<InventorySyncStatisticsBuilder> splitToBatchesAndProcess(@Nonnull final
@@ -306,7 +306,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param entry entry from existing system that could be updated.
      * @param draft draft containing data that could differ from data in {@code entry}.
      *              <strong>Sku isn't compared</strong>
-     * @param statisticsBuilder builder of inventory sync statistics which will be updated
+     * @param statisticsBuilder builder of an inventory sync statistics, which will be updated
      * @return {@link CompletionStage} of {@link Void} that indicates method progress
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
@@ -342,7 +342,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * "failed" counter and executes error callback function in case of any exception.
      *
      * @param draft draft of new inventory entry
-     * @param statisticsBuilder builder of inventory sync statistics which will be updated
+     * @param statisticsBuilder builder of an inventory sync statistics, which will be updated
      * @return {@link CompletionStage} instance that indicates method progress
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
