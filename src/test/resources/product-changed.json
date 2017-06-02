@@ -116,7 +116,9 @@
           "id": "5cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
         }
       ],
-      "categoryOrderHints": {},
+      "categoryOrderHints": {
+        "9e6de6ad-cc94-4034-aa9f-276ccb437efd": "0.95"
+      },
       "slug": {
         "de": "rehruecken-o-k1"
       },

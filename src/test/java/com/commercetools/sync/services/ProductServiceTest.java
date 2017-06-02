@@ -1,18 +1,27 @@
 package com.commercetools.sync.services;
 
+import com.commercetools.sync.products.ProductTestUtils;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.commands.ProductUpdateCommand;
+import io.sphere.sdk.products.commands.updateactions.ChangeName;
+import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -41,12 +50,25 @@ public class ProductServiceTest {
 
     @Test
     public void update() {
-        when(ctpClient.execute(any())).thenReturn(completedFuture(mock(Product.class)));
+        Product mock = mock(Product.class);
+        when(ctpClient.execute(any())).thenReturn(completedFuture(mock));
 
-        Product product = service.update(mock(Product.class), emptyList()).toCompletableFuture().join();
+        List<UpdateAction<Product>> updateActions = singletonList(ChangeName.of(ProductTestUtils.localizedString("new name")));
+        Product product = service.update(mock, updateActions).toCompletableFuture().join();
 
         assertThat(product).isNotNull();
-        verify(ctpClient).execute(any());
+        verify(ctpClient).execute(eq(ProductUpdateCommand.of(mock, updateActions)));
+    }
+
+    @Test
+    public void publish() {
+        Product mock = mock(Product.class);
+        when(ctpClient.execute(any())).thenReturn(completedFuture(mock));
+
+        Product product = service.publish(mock).toCompletableFuture().join();
+
+        assertThat(product).isNotNull();
+        verify(ctpClient).execute(eq(ProductUpdateCommand.of(mock, Publish.of())));
     }
 
     @Test

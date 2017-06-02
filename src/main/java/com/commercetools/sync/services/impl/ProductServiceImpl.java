@@ -7,6 +7,7 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
+import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.queries.PagedResult;
 import io.sphere.sdk.queries.QueryPredicate;
@@ -37,5 +38,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public CompletionStage<Product> update(final Product product, final List<UpdateAction<Product>> updateActions) {
         return ctpClient.execute(ProductUpdateCommand.of(product, updateActions));
+    }
+
+    @Override
+    public CompletionStage<Product> publish(final Product product) {
+        return ctpClient.execute(ProductUpdateCommand.of(product, Publish.of()));
     }
 }

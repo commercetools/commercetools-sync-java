@@ -1,15 +1,15 @@
 package com.commercetools.sync.products;
 
-import com.commercetools.sync.commons.actions.UpdateActionsBuilder;
+import com.commercetools.sync.products.actions.ProductUpdateActionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.ProductService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import static com.commercetools.sync.products.ProductTestUtils.join;
 import static com.commercetools.sync.products.ProductTestUtils.localizedString;
+import static com.commercetools.sync.products.ProductTestUtils.syncOptions;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -36,14 +37,12 @@ import static org.mockito.Mockito.when;
 public class ProductSyncTest {
 
     private ProductService service;
-    private UpdateActionsBuilder<Product, ProductDraft> updateActionsBuilderSpy;
-    private ProductSync sync;
+    private ProductUpdateActionsBuilder updateActionsBuilder;
 
     @Before
     public void setUp() {
         service = spy(ProductService.class);
-        updateActionsBuilderSpy = spy(UpdateActionsBuilder.class);
-        sync = new ProductSync(mock(ProductSyncOptions.class), service, updateActionsBuilderSpy);
+        updateActionsBuilder = mock(ProductUpdateActionsBuilder.class);
     }
 
     @Test
@@ -52,13 +51,14 @@ public class ProductSyncTest {
         when(service.create(any())).thenReturn(completedFuture(null));
         ProductDraft productDraft = productDraft();
 
+        ProductSync sync = new ProductSync(syncOptions(mock(SphereClient.class), true, true), service, updateActionsBuilder);
         ProductSyncStatistics statistics = join(sync.sync(singletonList(productDraft)));
 
         verifyStatistics(statistics, 1, 0, 1);
         verify(service).fetch(eq(productDraft.getKey()));
         verify(service).create(same(productDraft));
         verifyNoMoreInteractions(service);
-        verifyNoMoreInteractions(updateActionsBuilderSpy);
+        verifyNoMoreInteractions(updateActionsBuilder);
     }
 
     @Test
@@ -66,32 +66,59 @@ public class ProductSyncTest {
         Product product = serviceWillFetch(mock(Product.class));
         when(service.update(any(), anyList())).thenReturn(completedFuture(null));
         List<UpdateAction<Product>> updateActions = singletonList(ChangeName.of(localizedString("name2")));
-        when(updateActionsBuilderSpy.buildActions(any(), any())).thenReturn(updateActions);
+        when(updateActionsBuilder.buildActions(any(), any(), any())).thenReturn(updateActions);
         ProductDraft productDraft = productDraft();
 
+        ProductSyncOptions syncOptions = syncOptions(mock(SphereClient.class), false, true);
+        ProductSync sync = new ProductSync(syncOptions, service, updateActionsBuilder);
         ProductSyncStatistics statistics = join(sync.sync(singletonList(productDraft)));
 
         verifyStatistics(statistics, 1, 1, 0);
         verify(service).fetch(eq(productDraft.getKey()));
         verify(service).update(same(product), same(updateActions));
-        verify(updateActionsBuilderSpy).buildActions(same(product), same(productDraft));
+        verify(updateActionsBuilder).buildActions(same(product), same(productDraft), same(syncOptions));
         verifyNoMoreInteractions(service);
-        verifyNoMoreInteractions(updateActionsBuilderSpy);
+        verifyNoMoreInteractions(updateActionsBuilder);
+    }
+
+    @Test
+    public void sync_expectServiceFetchAndUpdateExistingAndPublish() {
+        Product product = serviceWillFetch(mock(Product.class));
+        Product updated = mock(Product.class);
+        when(service.update(any(), anyList())).thenReturn(completedFuture(updated));
+        when(service.publish(any())).thenReturn(completedFuture(null));
+        List<UpdateAction<Product>> updateActions = singletonList(ChangeName.of(localizedString("name2")));
+        when(updateActionsBuilder.buildActions(any(), any(), any())).thenReturn(updateActions);
+        ProductDraft productDraft = productDraft();
+
+        ProductSyncOptions syncOptions = syncOptions(mock(SphereClient.class), true, true);
+        ProductSync sync = new ProductSync(syncOptions, service, updateActionsBuilder);
+        ProductSyncStatistics statistics = join(sync.sync(singletonList(productDraft)));
+
+        verifyStatistics(statistics, 1, 1, 0);
+        verify(service).fetch(eq(productDraft.getKey()));
+        verify(service).update(same(product), same(updateActions));
+        verify(service).publish(same(updated));
+        verify(updateActionsBuilder).buildActions(same(product), same(productDraft), same(syncOptions));
+        verifyNoMoreInteractions(service);
+        verifyNoMoreInteractions(updateActionsBuilder);
     }
 
     @Test
     public void sync_expectServiceFetchAndDoNotUpdateExistingAsIdentical() {
         Product product = serviceWillFetch(mock(Product.class));
-        when(updateActionsBuilderSpy.buildActions(any(), any())).thenReturn(emptyList());
+        when(updateActionsBuilder.buildActions(any(), any(), any())).thenReturn(emptyList());
         ProductDraft productDraft = productDraft();
 
+        ProductSyncOptions syncOptions = syncOptions(mock(SphereClient.class), true, true);
+        ProductSync sync = new ProductSync(syncOptions, service, updateActionsBuilder);
         ProductSyncStatistics statistics = join(sync.sync(singletonList(productDraft)));
 
         verifyStatistics(statistics, 1, 0, 0);
         verify(service).fetch(eq(productDraft.getKey()));
-        verify(updateActionsBuilderSpy).buildActions(same(product), same(productDraft));
+        verify(updateActionsBuilder).buildActions(same(product), same(productDraft), same(syncOptions));
         verifyNoMoreInteractions(service);
-        verifyNoMoreInteractions(updateActionsBuilderSpy);
+        verifyNoMoreInteractions(updateActionsBuilder);
     }
 
     private Product serviceWillFetch(Product product) {
@@ -110,11 +137,6 @@ public class ProductSyncTest {
         ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn("productKey");
         return productDraft;
-    }
-
-    @Test
-    @Ignore
-    public void getStatistics() {
     }
 
 }

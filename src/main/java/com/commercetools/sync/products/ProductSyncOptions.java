@@ -60,11 +60,11 @@ public class ProductSyncOptions extends BaseSyncOptions {
      *
      * @return {@code this} instance's {@code compareStaged} boolean value.
      */
-    boolean isCompareStaged() {
+    public boolean isCompareStaged() {
         return compareStaged;
     }
 
-    boolean isPublish() {
+    public boolean isPublish() {
         return publish;
     }
 

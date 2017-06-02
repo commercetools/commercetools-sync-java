@@ -1,5 +1,7 @@
 package com.commercetools.sync.products;
 
+import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
@@ -14,17 +16,14 @@ import java.util.Locale;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.it.products.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Locale.GERMAN;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ProductTestUtils {
-    /**
-     * Empty.
-     */
     public static LocalizedString localizedString(final String string) {
         if (string == null) {
             return null;
@@ -32,37 +31,51 @@ public class ProductTestUtils {
         return LocalizedString.of(Locale.ENGLISH, string);
     }
 
-    public static ProductSyncOptions getProductSyncOptions() {
+    public static ProductSyncOptions syncOptions(final SphereClient client, final boolean publish, final boolean compareStaged) {
         ProductSyncOptions syncOptions = mock(ProductSyncOptions.class);
-        when(syncOptions.getCtpClient()).thenReturn(CTP_SOURCE_CLIENT);
-        when(syncOptions.isPublish()).thenReturn(true); // TODO test other things
+        when(syncOptions.getCtpClient()).thenReturn(client);
+        when(syncOptions.isPublish()).thenReturn(publish);
+        when(syncOptions.isCompareStaged()).thenReturn(compareStaged);
         return syncOptions;
     }
 
-    public static ProductType getProductType() {
+    public static ProductType productType() {
         return readObjectFromResource("product-type-main.json", ProductType.typeReference());
     }
 
-    public static ProductDraft productDraft(String resourcePath, ProductType productType) {
-        Product template = getProduct(resourcePath);
-        ProductData staged = staged(template);
+    public static ProductDraft productDraft(String resourcePath, ProductType productType, Category category, final ProductSyncOptions syncOptions) {
+        Product template = product(resourcePath);
+        ProductData productData;
+        if (syncOptions.isCompareStaged()) {
+            productData = template.getMasterData().getStaged();
+        } else {
+            productData = template.getMasterData().getCurrent();
+        }
 
-        List<ProductVariantDraft> allVariants = staged.getAllVariants().stream()
+        @SuppressWarnings("ConstantConditions")
+        List<ProductVariantDraft> allVariants = productData.getAllVariants().stream()
                 .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
                 .collect(Collectors.toList());
 
-        return ProductDraftBuilder
-                .of(productType, staged.getName(), staged.getSlug(), allVariants)
-                .metaDescription(staged(template).getMetaDescription())
-                .metaKeywords(staged(template).getMetaKeywords())
-                .metaTitle(staged(template).getMetaTitle())
-                .searchKeywords(staged(template).getSearchKeywords())
+        ProductDraftBuilder builder = ProductDraftBuilder
+                .of(productType, productData.getName(), productData.getSlug(), allVariants)
+                .metaDescription(productData.getMetaDescription())
+                .metaKeywords(productData.getMetaKeywords())
+                .metaTitle(productData.getMetaTitle())
+                .searchKeywords(productData.getSearchKeywords())
                 .key(template.getKey())
-                .publish(template.getMasterData().isPublished())
-                .build();
+                .publish(template.getMasterData().isPublished());
+        if (nonNull(category)) {
+//            builder = builder.categoryOrderHints(CategoryOrderHints.of(singletonMap(category.getId(), "0.95")));
+        }
+        return builder.build();
     }
 
-    public static Product getProduct(final String resourcePath) {
+    public static ProductDraft productDraft(String resourcePath, ProductType productType, ProductSyncOptions syncOptions) {
+        return productDraft(resourcePath, productType, null, syncOptions);
+    }
+
+    public static Product product(final String resourcePath) {
         return readObjectFromResource(resourcePath, Product.typeReference());
     }
 
@@ -84,7 +97,4 @@ public class ProductTestUtils {
         return stage.toCompletableFuture().join();
     }
 
-    public static ProductData staged(final Product product) {
-        return product.getMasterData().getStaged();
-    }
 }
