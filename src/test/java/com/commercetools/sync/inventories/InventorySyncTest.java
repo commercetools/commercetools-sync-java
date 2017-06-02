@@ -450,6 +450,34 @@ public class InventorySyncTest {
     }
 
     @Test
+    public void syncDrafts_WithNewSupplyChannelAndEnsure_ShouldSync() {
+        final InventorySyncOptions options = getInventorySyncOptions(3, true, false);
+
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+
+        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
+        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
+        final InventoryEntryDraft newInventoryDraft = InventoryEntryDraft
+            .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_3));
+        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
+            mock(TypeService.class));
+
+        final InventorySyncStatistics stats = inventorySync.sync(singletonList(newInventoryDraft))
+                                                           .toCompletableFuture()
+                                                           .join();
+        assertThat(stats).isNotNull();
+        assertThat(stats.getProcessed()).isEqualTo(1);
+        assertThat(stats.getFailed()).isEqualTo(0);
+        assertThat(stats.getCreated()).isEqualTo(1);
+        assertThat(stats.getUpdated()).isEqualTo(0);
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+    }
+
+    @Test
     public void syncDrafts_WithExceptionWhenCreatingNewSupplyChannel_ShouldTriggerErrorCallbackAndIncrementFailed() {
         final InventorySyncOptions options = getInventorySyncOptions(3, true, false);
 
