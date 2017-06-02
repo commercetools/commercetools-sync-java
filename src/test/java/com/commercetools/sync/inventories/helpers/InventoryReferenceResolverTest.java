@@ -137,7 +137,7 @@ public class InventoryReferenceResolverTest {
 
     @Test
     public void
-    resolveSupplyChannelReference_WithNonExistingChannelAndEnsureChannel_ShouldResolveSupplyChannelReference() {
+        resolveSupplyChannelReference_WithNonExistingChannelAndEnsureChannel_ShouldResolveSupplyChannelReference() {
         final InventorySyncOptions optionsWithEnsureChannels = InventorySyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                           .ensureChannels(true)
                                                                                           .build();
