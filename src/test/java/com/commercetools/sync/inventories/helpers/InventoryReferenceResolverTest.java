@@ -59,7 +59,7 @@ public class InventoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithNoKeysAsUuidSetAndNotAllowed_ShouldResolveReferences() {
+    public void resolveCustomTypeReference_WithNoKeysAsUuidSetAndNotAllowed_ShouldResolveReferences() {
         final InventoryEntryDraft draft = InventoryEntryDraft
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), CHANNEL_KEY))
             .withCustom(getMockCustomFieldsDraft(CUSTOM_TYPE_KEY, new HashMap<>()));
@@ -67,17 +67,14 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
         final InventoryEntryDraft draftWithResolvedReferences = referenceResolver
-            .resolveReferences(draft).toCompletableFuture().join();
-
-        assertThat(draftWithResolvedReferences.getSupplyChannel()).isNotNull();
-        assertThat(draftWithResolvedReferences.getSupplyChannel().getId()).isEqualTo(CHANNEL_ID);
+            .resolveCustomTypeReference(draft).toCompletableFuture().join();
 
         assertThat(draftWithResolvedReferences.getCustom()).isNotNull();
         assertThat(draftWithResolvedReferences.getCustom().getType().getId()).isEqualTo("typeId");
     }
 
     @Test
-    public void resolveReferences_WithKeysAsUuidSetAndAllowed_ShouldResolveReferences() {
+    public void resolveCustomTypeReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReferences() {
         final InventorySyncOptions optionsWithAllowedUuid = InventorySyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                     .setAllowUuid(true)
                                                                                     .build();
@@ -88,17 +85,14 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(optionsWithAllowedUuid, typeService, channelService);
         final InventoryEntryDraft draftWithResolvedReferences = referenceResolver
-            .resolveReferences(draft).toCompletableFuture().join();
-
-        assertThat(draftWithResolvedReferences.getSupplyChannel()).isNotNull();
-        assertThat(draftWithResolvedReferences.getSupplyChannel().getId()).isEqualTo(CHANNEL_ID);
+            .resolveCustomTypeReference(draft).toCompletableFuture().join();
 
         assertThat(draftWithResolvedReferences.getCustom()).isNotNull();
         assertThat(draftWithResolvedReferences.getCustom().getType().getId()).isEqualTo("typeId");
     }
 
     @Test
-    public void resolveReferences_WithSupplyChannelKeyAsUuidSetAndNotAllowed_ShouldNotResolveSupplyChannelReference() {
+    public void resolveSupplyChannelReference_WithChannelKeyAsUuidSetAndNotAllowed_ShouldNotResolveChannelReference() {
         final InventoryEntryDraft draft = InventoryEntryDraft
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), UUID_KEY))
             .withCustom(getMockCustomFieldsDraft(CUSTOM_TYPE_KEY, new HashMap<>()));
@@ -106,23 +100,20 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
-        referenceResolver.resolveReferences(draft)
+        referenceResolver.resolveSupplyChannelReference(draft)
                                  .exceptionally(exception -> {
-                                     assertThat(exception).isExactlyInstanceOf(CompletionException.class);
-                                     assertThat(exception.getCause())
-                                         .isExactlyInstanceOf(ReferenceResolutionException.class);
-                                     assertThat(exception.getCause().getMessage())
-                                         .isEqualTo("Failed to resolve supply channel reference. Reason: Found a UUID"
-                                             + " in the id field. Expecting a key without a UUID value. If you want to"
-                                             + " allow UUID values for reference keys, please use the"
-                                             + " setAllowUuid(true) option in the sync options.");
+                                     assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
+                                     assertThat(exception.getMessage())
+                                         .isEqualTo("Found a UUID in the id field. Expecting a key without a UUID"
+                                             + " value. If you want to allow UUID values for reference keys, please"
+                                             + " use the setAllowUuid(true) option in the sync options.");
                                      return null;
                                  }).toCompletableFuture().join();
     }
 
     @Test
     public void
-        resolveReferences_WithNonExistentSupplyChannelAndNotEnsureChannel_ShouldNotResolveSupplyChannelReference() {
+        resolveSupplyChannelReference_WithNonExistingChannelAndNotEnsureChannel_ShouldNotResolveChannelReference() {
         when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
@@ -133,21 +124,20 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
-        referenceResolver.resolveReferences(draft)
+        referenceResolver.resolveSupplyChannelReference(draft)
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(CompletionException.class);
                              assertThat(exception.getCause())
                                  .isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getCause().getMessage())
-                                 .isEqualTo("Failed to resolve supply channel reference. Reason: Channel with key "
-                                     + "'channel-key_1' does not exist.");
+                                 .isEqualTo("Channel with key 'channel-key_1' does not exist.");
                              return null;
                          }).toCompletableFuture().join();
     }
 
     @Test
     public void
-        resolveReferences_WithNonExistentSupplyChannelAndEnsureChannel_ShouldResolveSupplyChannelReference() {
+    resolveSupplyChannelReference_WithNonExistingChannelAndEnsureChannel_ShouldResolveSupplyChannelReference() {
         final InventorySyncOptions optionsWithEnsureChannels = InventorySyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                           .ensureChannels(true)
                                                                                           .build();
@@ -161,7 +151,7 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(optionsWithEnsureChannels, typeService, channelService);
 
-        referenceResolver.resolveReferences(draft)
+        referenceResolver.resolveSupplyChannelReference(draft)
                          .thenAccept(resolvedDraft -> {
                              assertThat(resolvedDraft.getSupplyChannel()).isNotNull();
                              assertThat(resolvedDraft.getSupplyChannel().getId()).isEqualTo(CHANNEL_ID);
@@ -169,7 +159,7 @@ public class InventoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
+    public void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         final InventoryEntryDraft draft = InventoryEntryDraft
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), UUID_KEY))
             .withCustom(getMockCustomFieldsDraft(CUSTOM_TYPE_KEY, new HashMap<>()));
@@ -180,7 +170,7 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
-        referenceResolver.resolveReferences(draft)
+        referenceResolver.resolveCustomTypeReference(draft)
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(CompletionException.class);
                              assertThat(exception.getCause()).isExactlyInstanceOf(SphereException.class);
@@ -190,7 +180,7 @@ public class InventoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithCustomTypeKeyAsUuidSetAndNotAllowed_ShouldNotResolveCustomTypeReference() {
+    public void resolveCustomTypeReference_WithKeyAsUuidSetAndNotAllowed_ShouldNotResolveCustomTypeReference() {
         final InventoryEntryDraft draft = InventoryEntryDraft
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), CHANNEL_KEY))
             .withCustom(getMockCustomFieldsDraft(UUID_KEY, new HashMap<>()));
@@ -198,22 +188,21 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
-        referenceResolver.resolveReferences(draft)
+        referenceResolver.resolveCustomTypeReference(draft)
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(CompletionException.class);
                              assertThat(exception.getCause())
                                  .isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getCause().getMessage())
-                                 .isEqualTo("Failed to resolve custom type reference. Reason: Found a UUID"
-                                     + " in the id field. Expecting a key without a UUID value. If you want to"
-                                     + " allow UUID values for reference keys, please use the"
+                                 .isEqualTo("Found a UUID in the id field. Expecting a key without a UUID value. If you"
+                                     + " want to allow UUID values for reference keys, please use the"
                                      + " setAllowUuid(true) option in the sync options.");
                              return null;
                          }).toCompletableFuture().join();
     }
 
     @Test
-    public void resolveReferences_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
+    public void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
@@ -224,7 +213,7 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
-        referenceResolver.resolveReferences(draft)
+        referenceResolver.resolveCustomTypeReference(draft)
                          .thenAccept(resolvedDraft -> {
                              assertThat(resolvedDraft.getCustom()).isNotNull();
                              assertThat(resolvedDraft.getCustom().getType()).isNotNull();
@@ -233,7 +222,7 @@ public class InventoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithEmptyIdOnSupplyChannelReference_ShouldNotResolveSupplyChannelReference() {
+    public void resolveSupplyChannelReference_WithEmptyIdOnSupplyChannelReference_ShouldNotResolveChannelReference() {
         final InventoryEntryDraft draft = InventoryEntryDraft
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), ""))
             .withCustom(getMockCustomFieldsDraft(CUSTOM_TYPE_KEY, new HashMap<>()));
@@ -241,20 +230,18 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
-        referenceResolver.resolveReferences(draft)
+        referenceResolver.resolveSupplyChannelReference(draft)
                          .exceptionally(exception -> {
-                             assertThat(exception).isExactlyInstanceOf(CompletionException.class);
-                             assertThat(exception.getCause())
-                                 .isExactlyInstanceOf(ReferenceResolutionException.class);
-                             assertThat(exception.getCause().getMessage())
-                                 .isEqualTo("Failed to resolve supply channel reference. Reason: Key is blank "
-                                     + "(null/empty) on both expanded reference object and reference id field.");
+                             assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
+                             assertThat(exception.getMessage())
+                                 .isEqualTo("Key is blank (null/empty) on both expanded reference object and reference"
+                                     + " id field.");
                              return null;
                          }).toCompletableFuture().join();
     }
 
     @Test
-    public void resolveReferences_WithNullIdOnSupplyChannelReference_ShouldNotResolveSupplyChannelReference() {
+    public void resolveSupplyChannelReference_WithNullIdOnChannelReference_ShouldNotResolveSupplyChannelReference() {
         final InventoryEntryDraft draft = mock(InventoryEntryDraft.class);
         final Reference<Channel> supplyChannelReference =
             Reference.ofResourceTypeIdAndId(Channel.referenceTypeId(), null);
@@ -263,20 +250,18 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
-        referenceResolver.resolveReferences(draft)
+        referenceResolver.resolveSupplyChannelReference(draft)
                          .exceptionally(exception -> {
-                             assertThat(exception).isExactlyInstanceOf(CompletionException.class);
-                             assertThat(exception.getCause())
-                                 .isExactlyInstanceOf(ReferenceResolutionException.class);
-                             assertThat(exception.getCause().getMessage())
-                                 .isEqualTo("Failed to resolve supply channel reference. Reason: Key is blank "
-                                     + "(null/empty) on both expanded reference object and reference id field.");
+                             assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
+                             assertThat(exception.getMessage())
+                                 .isEqualTo("Key is blank (null/empty) on both expanded reference object and reference"
+                                     + " id field.");
                              return null;
                          }).toCompletableFuture().join();
     }
 
     @Test
-    public void resolveReferences_WithNullIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
+    public void resolveCustomTypeReference_WithNullIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final InventoryEntryDraft draft = InventoryEntryDraft
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), CHANNEL_KEY))
             .withCustom(getMockCustomFieldsDraft(null, new HashMap<>()));
@@ -284,20 +269,19 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
-        referenceResolver.resolveReferences(draft)
+        referenceResolver.resolveCustomTypeReference(draft)
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(CompletionException.class);
                              assertThat(exception.getCause())
                                  .isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getCause().getMessage())
-                                 .isEqualTo("Failed to resolve custom type reference. Reason: Reference 'id' field"
-                                     + " value is blank (null/empty).");
+                                 .isEqualTo("Reference 'id' field value is blank (null/empty).");
                              return null;
                          }).toCompletableFuture().join();
     }
 
     @Test
-    public void resolveReferences_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
+    public void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final InventoryEntryDraft draft = InventoryEntryDraft
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), CHANNEL_KEY))
             .withCustom(getMockCustomFieldsDraft("", new HashMap<>()));
@@ -305,14 +289,13 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
-        referenceResolver.resolveReferences(draft)
+        referenceResolver.resolveCustomTypeReference(draft)
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(CompletionException.class);
                              assertThat(exception.getCause())
                                  .isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getCause().getMessage())
-                                 .isEqualTo("Failed to resolve custom type reference. Reason: Reference 'id' field"
-                                     + " value is blank (null/empty).");
+                                 .isEqualTo("Reference 'id' field value is blank (null/empty).");
                              return null;
                          }).toCompletableFuture().join();
     }

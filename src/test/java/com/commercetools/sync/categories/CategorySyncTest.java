@@ -277,12 +277,14 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on CategoryDraft with"
-            + " externalId:'externalId'. Reason: Failed to resolve parent reference. Reason: Found a UUID in the id"
-            + " field. Expecting a key without a UUID value. If you want to allow UUID values for reference keys,"
-            + " please use the setAllowUuid(true) option in the sync options.");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve parent reference on CategoryDraft"
+            + " with externalId:'externalId'. Reason:"
+            + " com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Found a UUID in the id field."
+            + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please use"
+            + " the setAllowUuid(true) option in the sync options.");
         assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -303,11 +305,13 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on CategoryDraft with"
-            + " externalId:'externalId'. Reason: Failed to resolve parent reference. Reason: Key is blank"
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve parent reference on CategoryDraft with"
+            + " externalId:'externalId'. Reason:"
+            + " com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Key is blank"
             + " (null/empty) on both expanded reference object and reference id field.");
         assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -328,11 +332,12 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on CategoryDraft with"
-            + " externalId:'externalId'. Reason: Failed to resolve parent reference. Reason: Key is blank (null/empty)"
-            + " on both expanded reference object and reference id field.");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve parent reference on CategoryDraft with "
+            + "externalId:'externalId'. Reason: com.commercetools.sync.commons.exceptions.ReferenceResolutionException:"
+            + " Key is blank (null/empty) on both expanded reference object and reference id field.");
         assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -353,11 +358,13 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on CategoryDraft with"
-            + " externalId:'externalId'. Reason: Failed to resolve custom type reference. Reason: Reference 'id' field"
-            + " value is blank (null/empty).");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve custom type reference on CategoryDraft"
+            + " with externalId:'externalId'. Reason: "
+            + "com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Reference 'id' field value is "
+            + "blank (null/empty).");
         assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -378,11 +385,13 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on CategoryDraft with"
-            + " externalId:'externalId'. Reason: Failed to resolve custom type reference. Reason: Reference 'id' field"
-            + " value is blank (null/empty).");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve custom type reference on CategoryDraft"
+            + " with externalId:'externalId'. Reason: "
+            + "com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Reference 'id' field value is "
+            + "blank (null/empty).");
         assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -404,12 +413,14 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on CategoryDraft with"
-            + " externalId:'externalId'. Reason: Failed to resolve custom type reference. Reason: Found a UUID in the"
-            + " id field. Expecting a key without a UUID value. If you want to allow UUID values for reference keys,"
-            + " please use the setAllowUuid(true) option in the sync options.");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve custom type reference on CategoryDraft"
+            + " with externalId:'externalId'. Reason:"
+            + " com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Found a UUID in the id field."
+            + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please use"
+            + " the setAllowUuid(true) option in the sync options.");
         assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
