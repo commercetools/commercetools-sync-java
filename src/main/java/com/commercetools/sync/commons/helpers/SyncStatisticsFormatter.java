@@ -7,5 +7,6 @@ import javax.annotation.Nonnull;
  */
 public interface SyncStatisticsFormatter {
 
+    @Nonnull
     String format(@Nonnull final BaseSyncStatistics statistics);
 }

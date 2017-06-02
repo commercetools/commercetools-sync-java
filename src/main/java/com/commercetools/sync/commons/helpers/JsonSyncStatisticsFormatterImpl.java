@@ -24,13 +24,12 @@ public class JsonSyncStatisticsFormatterImpl implements SyncStatisticsFormatter 
      */
     @Override
     public String format(@Nonnull final BaseSyncStatistics statistics) {
-        String result = null;
         final ObjectMapper mapper = new ObjectMapper();
         try {
-            result = mapper.writeValueAsString(statistics);
+            return mapper.writeValueAsString(statistics);
         } catch (JsonProcessingException processingException) {
             LOGGER.error("Failed to build JSON String of summary.", processingException);
         }
-        return result;
+        return "{}";
     }
 }
