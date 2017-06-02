@@ -184,6 +184,39 @@ public class InventorySyncTest {
     }
 
     @Test
+    public void sync_WithInValidSupplyChannelKey_ShouldFailSync() {
+        final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
+            Channel.referenceOfId(UUID.randomUUID().toString()));
+
+        final InventorySyncOptions options = getInventorySyncOptions(30, false, false);
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+        final ChannelService channelService = mock(ChannelService.class);
+        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+            .thenReturn(completedFuture(Optional.empty()));
+
+        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
+            mock(TypeService.class));
+
+        final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNewChannel))
+                                                           .toCompletableFuture()
+                                                           .join();
+        assertThat(stats.getProcessed()).isEqualTo(1);
+        assertThat(stats.getFailed()).isEqualTo(1);
+        assertThat(stats.getCreated()).isEqualTo(0);
+        assertThat(stats.getUpdated()).isEqualTo(0);
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve supply channel reference on "
+            + "InventoryEntryDraft with sku:'%s'. Reason: "
+            + "com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Found a UUID in the id field."
+            + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please use"
+            + " the setAllowUuid(true) option in the sync options.", SKU_3));
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
+    }
+
+    @Test
     public void sync_WithDraftsWithNullSku_ShouldNotSync() {
         final InventoryEntryDraft draftWithNullSku = InventoryEntryDraft.of(null, 12);
         final InventorySync inventorySync = getInventorySync(30, false);
