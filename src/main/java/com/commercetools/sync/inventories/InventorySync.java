@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
@@ -35,15 +34,15 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
  */
 public final class InventorySync extends BaseSync<InventoryEntryDraft, InventorySyncStatistics, InventorySyncOptions> {
     private static final String CTP_INVENTORY_FETCH_FAILED = "Failed to fetch existing inventory entries of SKUs %s.";
-    private static final String CTP_CHANNEL_FETCH_FAILED = "Failed to fetch supply channels.";
     private static final String CTP_INVENTORY_ENTRY_UPDATE_FAILED = "Failed to update inventory entry of sku '%s' and "
         + "supply channel key '%s'.";
     private static final String INVENTORY_DRAFT_HAS_NO_SKU = "Failed to process inventory entry without sku.";
     private static final String INVENTORY_DRAFT_IS_NULL = "Failed to process null inventory draft.";
-    private static final String CTP_CHANNEL_CREATE_FAILED = "Failed to create new supply channel of key '%s'.";
     private static final String CTP_INVENTORY_ENTRY_CREATE_FAILED = "Failed to create inventory entry of sku '%s' "
         + "and supply channel key '%s'.";
-    private static final String INVENTORY_DRAFT_REFERENCE_RESOLUTION_FAILED = "Failed to resolve reference on "
+    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+        + "InventoryEntryDraft with sku:'%s'. Reason: %s";
+    private static final String FAILED_TO_RESOLVE_SUPPLY_CHANNEL = "Failed to resolve supply channel reference on "
         + "InventoryEntryDraft with sku:'%s'. Reason: %s";
 
 
@@ -180,22 +179,28 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     private CompletableFuture<Void> resolveReferencesAndSync(@Nonnull final Map<SkuChannelKeyTuple, InventoryEntry>
                                                                  existingInventories,
                                                              @Nonnull final InventoryEntryDraft inventoryEntryDraft) {
-        final SkuChannelKeyTuple skuKeyOfDraft = SkuChannelKeyTuple.of(inventoryEntryDraft);
-        return referenceResolver.resolveReferences(inventoryEntryDraft)
-                                .thenCompose(resolvedDraft -> {
-                                    if (existingInventories.containsKey(skuKeyOfDraft)) {
-                                        final InventoryEntry existingEntry = existingInventories.get(skuKeyOfDraft);
-                                        return buildUpdateActionsAndUpdate(existingEntry, resolvedDraft);
-                                    } else {
-                                        return attemptCreate(inventoryEntryDraft);
-                                    }
-                                })
+        return referenceResolver.resolveCustomTypeReference(inventoryEntryDraft)
+                                .thenCompose(draftWithResolvedCustomTypeReference -> referenceResolver
+                                        .resolveSupplyChannelReference(draftWithResolvedCustomTypeReference)
+                                        .thenCompose(resolvedDraft -> {
+                                            final SkuChannelKeyTuple skuKeyOfDraft =
+                                                SkuChannelKeyTuple.of(resolvedDraft);
+                                            if (existingInventories.containsKey(skuKeyOfDraft)) {
+                                                final InventoryEntry existingEntry =
+                                                    existingInventories.get(skuKeyOfDraft);
+                                                return buildUpdateActionsAndUpdate(existingEntry, resolvedDraft);
+                                            } else {
+                                                return attemptCreate(inventoryEntryDraft);
+                                            }
+                                        })
+                                        .exceptionally(exception -> {
+                                            final String errorMessage = format(FAILED_TO_RESOLVE_SUPPLY_CHANNEL,
+                                                inventoryEntryDraft.getSku(), exception.getMessage());
+                                            handleError(errorMessage, exception, 1);
+                                            return null;
+                                        }))
                                 .exceptionally(exception -> {
-                                    if (exception instanceof CompletionException) {
-                                        // Unwrap the exception from CompletionException
-                                        exception = exception.getCause();
-                                    }
-                                    final String errorMessage = format(INVENTORY_DRAFT_REFERENCE_RESOLUTION_FAILED,
+                                    final String errorMessage = format(FAILED_TO_RESOLVE_CUSTOM_TYPE,
                                         inventoryEntryDraft.getSku(), exception.getMessage());
                                     handleError(errorMessage, exception, 1);
                                     return null;

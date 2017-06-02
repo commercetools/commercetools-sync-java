@@ -23,7 +23,6 @@ import java.util.concurrent.CompletionStage;
 import static java.lang.String.format;
 
 public final class InventoryReferenceResolver extends BaseReferenceResolver<InventoryEntryDraft, InventorySyncOptions> {
-    private static final String FAILED_TO_RESOLVE_SUPPLY_CHANNEL = "Failed to resolve supply channel reference.";
     private static final String CHANNEL_DOES_NOT_EXIST = "Channel with key '%s' does not exist.";
     private ChannelService channelService;
 
@@ -36,14 +35,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
 
     @Override
     @Nonnull
-    public CompletionStage<InventoryEntryDraft> resolveReferences(@Nonnull final InventoryEntryDraft
-                                                                          inventoryEntryDraft) {
-        return resolveCustomTypeReference(inventoryEntryDraft).thenCompose(this::getChannelKeyAndResolveReference);
-    }
-
-    @Override
-    @Nonnull
-    protected CompletionStage<InventoryEntryDraft> resolveCustomTypeReference(@Nonnull final InventoryEntryDraft
+    public CompletionStage<InventoryEntryDraft> resolveCustomTypeReference(@Nonnull final InventoryEntryDraft
                                                                                       inventoryEntryDraft) {
         final CustomFieldsDraft custom = inventoryEntryDraft.getCustom();
         if (custom != null) {
@@ -74,19 +66,16 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
      *          a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    private CompletionStage<InventoryEntryDraft> getChannelKeyAndResolveReference(
+    public CompletionStage<InventoryEntryDraft> resolveSupplyChannelReference(
         @Nonnull final InventoryEntryDraft draft) {
         final Reference<Channel> channelReference = draft.getSupplyChannel();
         if (channelReference != null) {
             try {
                 final String keyFromExpansion = getKeyFromExpansion(channelReference);
                 final String channelKey = getKeyFromExpansionOrReference(keyFromExpansion, channelReference);
-                return resolveChannelReference(draft, channelKey);
+                return fetchOrCreateAndResolveReference(draft, channelKey);
             } catch (ReferenceResolutionException exception) {
-                final ReferenceResolutionException referenceResolutionException = new ReferenceResolutionException(
-                    buildErrorMessage(FAILED_TO_RESOLVE_SUPPLY_CHANNEL, exception),
-                    exception);
-                return CompletableFutureUtils.exceptionallyCompletedFuture(referenceResolutionException);
+                return CompletableFutureUtils.exceptionallyCompletedFuture(exception);
             }
         }
         return CompletableFuture.completedFuture(InventoryEntryDraftBuilder.of(draft).build());
@@ -104,8 +93,9 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
      *      supply channel reference or an exception.
      */
     @Nonnull
-    private CompletionStage<InventoryEntryDraft> resolveChannelReference(@Nonnull final InventoryEntryDraft draft,
-                                                                         @Nonnull final String channelKey) {
+    private CompletionStage<InventoryEntryDraft> fetchOrCreateAndResolveReference(
+        @Nonnull final InventoryEntryDraft draft,
+        @Nonnull final String channelKey) {
         return channelService.fetchCachedChannelIdByKeyAndRoles(channelKey,
             Collections.singletonList(ChannelRole.INVENTORY_SUPPLY))
                              .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
@@ -177,8 +167,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
                                      .build());
         } else {
             final ReferenceResolutionException referenceResolutionException =
-                new ReferenceResolutionException(FAILED_TO_RESOLVE_SUPPLY_CHANNEL + " Reason: "
-                    + format(CHANNEL_DOES_NOT_EXIST, channelKey));
+                new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));
             return CompletableFutureUtils.exceptionallyCompletedFuture(referenceResolutionException);
         }
     }

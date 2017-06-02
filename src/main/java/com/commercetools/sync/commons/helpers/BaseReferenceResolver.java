@@ -56,19 +56,6 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     }
 
     /**
-     * Given a draft of {@link T} (e.g. {@link CategoryDraft}) this method attempts to resolve all references on it to
-     * return {@link CompletionStage} which contains a new instance of the draft with the resolved references. The
-     * method tries to fetch the keys of the references, optimistically from caches. If any of the keys is is not found,
-     * the resultant draft would remain exactly the same as the passed draft (without the specific reference resolution)
-     *
-     * @param draft the draft to resolve it's references.
-     * @return a {@link CompletionStage} that contains as a result a new draft instance with resolved custom
-     *      type references or, in case an error occurs during reference resolution,
-     *      a {@link ReferenceResolutionException}.
-     */
-    protected abstract CompletionStage<T> resolveReferences(@Nonnull final T draft);
-
-    /**
      * Given a draft of {@link T} (e.g. {@link CategoryDraft}) this method attempts to resolve it's custom type
      * reference to return {@link CompletionStage} which contains a new instance of the draft with the resolved
      * custom type reference. The key of the custom type is taken from the from the id field of the reference.
