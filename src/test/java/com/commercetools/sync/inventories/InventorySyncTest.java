@@ -478,43 +478,6 @@ public class InventorySyncTest {
         assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
     }
 
-    @Test
-    public void syncDrafts_WithChannelNotPresentInMap_ShouldIncrementFailedStatistics() {
-        final InventorySyncOptions options = getInventorySyncOptions(30, false, false);
-        final Channel oldChannel = getMockSupplyChannel(REF_1, KEY_1);
-        final Reference<Channel> oldChannelReference = Channel.referenceOfId(REF_1).filled(oldChannel);
-        final List<InventoryEntry> oldInventories = singletonList(
-            getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, oldChannelReference, null));
-
-        final InventoryService inventoryService = getMockInventoryService(oldInventories,
-            mock(InventoryEntry.class), mock(InventoryEntry.class));
-
-        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_2, KEY_2), REF_2);
-        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
-            .thenReturn(completedFuture(Optional.empty()));
-
-        final InventoryEntryDraft newInventoryDraft = InventoryEntryDraft
-            .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_1));
-
-        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
-            mock(TypeService.class));
-
-        final InventorySyncStatistics stats = inventorySync.sync(singletonList(newInventoryDraft))
-            .toCompletableFuture()
-            .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
-        assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve reference on InventoryEntryDraft with"
-            + " sku:'1000'. Reason: Failed to resolve supply channel reference. Reason: Channel with key"
-            + " 'channel-key_1' does not exist.");
-        assertThat(errorCallBackExceptions).isNotEmpty();
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
-    }
-
     private InventorySync getInventorySync(int batchSize, boolean ensureChannels) {
         final InventorySyncOptions options = getInventorySyncOptions(batchSize, ensureChannels, true);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
