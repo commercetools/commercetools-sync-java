@@ -84,10 +84,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
             final String customTypeKey = getKeyFromResourceIdentifier(customFieldsDraft.getType());
             return typeService.fetchCachedTypeId(customTypeKey);
         } catch (ReferenceResolutionException exception) {
-            final ReferenceResolutionException referenceResolutionException = new ReferenceResolutionException(
-                buildErrorMessage(FAILED_TO_RESOLVE_CUSTOM_TYPE, exception),
-                exception);
-            return CompletableFutureUtils.exceptionallyCompletedFuture(referenceResolutionException);
+            return CompletableFutureUtils.exceptionallyCompletedFuture(exception);
         }
     }
 
