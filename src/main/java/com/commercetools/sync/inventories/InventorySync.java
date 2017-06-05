@@ -218,8 +218,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             final List<String> missingChannelsKeys = findMissingChannelsKeys(drafts, supplyChannelKeyToId);
             final List<CompletableFuture<Void>> newChannelsFutures = createSupplyChannelsOfKeys(missingChannelsKeys)
                 .stream()
-                .map(channelFuture -> channelFuture
-                    .thenAccept(channelOptional -> putKeyAndIdToMapIfPresent(channelOptional, supplyChannelKeyToId)))
+                .map(newChannelFuture -> newChannelFuture
+                    .thenAccept(newChannelOptional -> newChannelOptional.ifPresent(
+                        newChannel -> supplyChannelKeyToId.put(newChannel.getKey(), newChannel.getId()))))
                 .collect(toList());
             return CompletableFuture
                 .allOf(newChannelsFutures.toArray(new CompletableFuture[newChannelsFutures.size()]))
@@ -229,6 +230,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         }
     }
 
+    @Nonnull
     private List<String> findMissingChannelsKeys(@Nonnull final List<InventoryEntryDraft> drafts,
                                                  @Nonnull final Map<String, String> supplyChannelKeyToId) {
         return drafts.stream()
@@ -239,20 +241,13 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             .collect(toList());
     }
 
+    @Nonnull
     private List<CompletableFuture<Optional<Channel>>> createSupplyChannelsOfKeys(@Nonnull final List<String>
                                                                                       missingChannelsKeys) {
         return missingChannelsKeys.stream()
             .map(this::createMissingSupplyChannel)
             .map(CompletionStage::toCompletableFuture)
             .collect(toList());
-    }
-
-    private void putKeyAndIdToMapIfPresent(@Nonnull final Optional<Channel> supplyChannelOptional,
-                                           @Nonnull final Map<String, String> supplyChannelKeyToId) {
-        if (supplyChannelOptional.isPresent()) {
-            final Channel supplyChannel = supplyChannelOptional.get();
-            supplyChannelKeyToId.put(supplyChannel.getKey(), supplyChannel.getId());
-        }
     }
 
     /**
