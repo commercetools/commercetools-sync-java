@@ -14,6 +14,8 @@ import io.sphere.sdk.producttypes.ProductType;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletionStage;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
@@ -21,7 +23,6 @@ import static java.util.Locale.GERMAN;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class ProductTestUtils {
     public static LocalizedString localizedString(final String string) {
@@ -29,14 +30,6 @@ public class ProductTestUtils {
             return null;
         }
         return LocalizedString.of(Locale.ENGLISH, string);
-    }
-
-    public static ProductSyncOptions syncOptions(final SphereClient client, final boolean publish, final boolean compareStaged) {
-        ProductSyncOptions syncOptions = mock(ProductSyncOptions.class);
-        when(syncOptions.getCtpClient()).thenReturn(client);
-        when(syncOptions.isPublish()).thenReturn(publish);
-        when(syncOptions.isCompareStaged()).thenReturn(compareStaged);
-        return syncOptions;
     }
 
     public static ProductType productType() {
@@ -97,4 +90,15 @@ public class ProductTestUtils {
         return stage.toCompletableFuture().join();
     }
 
+    @SuppressWarnings("unchecked")
+    public static ProductSyncOptions syncOptions(boolean publish, boolean compareStaged) {
+        return syncOptions(mock(SphereClient.class), publish, compareStaged);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static ProductSyncOptions syncOptions(SphereClient client, boolean publish, boolean compareStaged) {
+        BiConsumer errorCallBack = mock(BiConsumer.class);
+        Consumer warningCallBack = mock(Consumer.class);
+        return ProductSyncOptionsBuilder.of(client, errorCallBack, warningCallBack).publish(publish).compareStaged(compareStaged).build();
+    }
 }

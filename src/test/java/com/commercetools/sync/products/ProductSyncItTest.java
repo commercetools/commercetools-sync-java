@@ -37,10 +37,10 @@ import static com.commercetools.sync.it.products.SphereClientUtils.CTP_SOURCE_CL
 import static com.commercetools.sync.it.products.SphereClientUtils.QUERY_MAX_LIMIT;
 import static com.commercetools.sync.it.products.SphereClientUtils.fetchAndProcess;
 import static com.commercetools.sync.products.ProductTestUtils.de;
-import static com.commercetools.sync.products.ProductTestUtils.syncOptions;
 import static com.commercetools.sync.products.ProductTestUtils.productType;
 import static com.commercetools.sync.products.ProductTestUtils.join;
 import static com.commercetools.sync.products.ProductTestUtils.productDraft;
+import static com.commercetools.sync.products.ProductTestUtils.syncOptions;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -80,7 +80,7 @@ public class ProductSyncItTest {
 
     @Test
     public void sync_withNewProduct_shouldCreateProduct() {
-        ProductSyncOptions syncOptions = syncOptions(client, true, true);
+        ProductSyncOptions syncOptions = syncOptions(client,true, true);
         ProductDraft productDraft = productDraft("product-non-existing.json", productType, category, syncOptions);
 
         // no product with given key has been populated during setup
@@ -96,7 +96,7 @@ public class ProductSyncItTest {
 
     @Test
     public void sync_withEqualProduct_shouldNotUpdateProduct() {
-        ProductSyncOptions syncOptions = syncOptions(client, true, false);
+        ProductSyncOptions syncOptions = syncOptions(client,true, false);
         ProductDraft productDraft = productDraft("product.json", productType, category, syncOptions);
         Product product = join(service.fetch(productDraft.getKey())).get();
 
@@ -111,7 +111,7 @@ public class ProductSyncItTest {
 
     @Test
     public void sync_withChangedProduct_shouldUpdateProduct() {
-        ProductSyncOptions syncOptions = syncOptions(client, true, true);
+        ProductSyncOptions syncOptions = syncOptions(true, true);
         ProductDraft productDraft = productDraft("product-changed.json", productType, category, syncOptions);
         Product product = join(service.fetch(productDraft.getKey())).get();
 
@@ -138,7 +138,7 @@ public class ProductSyncItTest {
 
     @Test
     public void sync_withChangedProduct_shouldUpdateProductAndPublish() {
-        ProductSyncOptions syncOptions = syncOptions(client, true, true);
+        ProductSyncOptions syncOptions = syncOptions(client,true, true);
         ProductDraft productDraft = productDraft("product-changed.json", productType, category, syncOptions);
         Product product = join(service.fetch(productDraft.getKey())).get();
 

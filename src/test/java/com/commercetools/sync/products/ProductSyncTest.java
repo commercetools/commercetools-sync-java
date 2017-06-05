@@ -4,7 +4,6 @@ import com.commercetools.sync.products.actions.ProductUpdateActionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.ProductService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -51,7 +50,8 @@ public class ProductSyncTest {
         when(service.create(any())).thenReturn(completedFuture(null));
         ProductDraft productDraft = productDraft();
 
-        ProductSync sync = new ProductSync(syncOptions(mock(SphereClient.class), true, true), service, updateActionsBuilder);
+        ProductSyncOptions syncOptions = syncOptions(true, true);
+        ProductSync sync = new ProductSync(syncOptions, service, updateActionsBuilder);
         ProductSyncStatistics statistics = join(sync.sync(singletonList(productDraft)));
 
         verifyStatistics(statistics, 1, 0, 1);
@@ -69,7 +69,7 @@ public class ProductSyncTest {
         when(updateActionsBuilder.buildActions(any(), any(), any())).thenReturn(updateActions);
         ProductDraft productDraft = productDraft();
 
-        ProductSyncOptions syncOptions = syncOptions(mock(SphereClient.class), false, true);
+        ProductSyncOptions syncOptions = syncOptions(false, true);
         ProductSync sync = new ProductSync(syncOptions, service, updateActionsBuilder);
         ProductSyncStatistics statistics = join(sync.sync(singletonList(productDraft)));
 
@@ -91,7 +91,7 @@ public class ProductSyncTest {
         when(updateActionsBuilder.buildActions(any(), any(), any())).thenReturn(updateActions);
         ProductDraft productDraft = productDraft();
 
-        ProductSyncOptions syncOptions = syncOptions(mock(SphereClient.class), true, true);
+        ProductSyncOptions syncOptions = syncOptions(true, true);
         ProductSync sync = new ProductSync(syncOptions, service, updateActionsBuilder);
         ProductSyncStatistics statistics = join(sync.sync(singletonList(productDraft)));
 
@@ -110,7 +110,7 @@ public class ProductSyncTest {
         when(updateActionsBuilder.buildActions(any(), any(), any())).thenReturn(emptyList());
         ProductDraft productDraft = productDraft();
 
-        ProductSyncOptions syncOptions = syncOptions(mock(SphereClient.class), true, true);
+        ProductSyncOptions syncOptions = syncOptions(true, true);
         ProductSync sync = new ProductSync(syncOptions, service, updateActionsBuilder);
         ProductSyncStatistics statistics = join(sync.sync(singletonList(productDraft)));
 

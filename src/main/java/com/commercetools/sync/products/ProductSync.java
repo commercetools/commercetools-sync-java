@@ -37,19 +37,22 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     protected CompletionStage<ProductSyncStatistics> process(@Nonnull final List<ProductDraft> resourceDrafts) {
         for (ProductDraft productDraft : resourceDrafts) {
             try {
-                CompletionStage<Optional<Product>> fetchStage = service.fetch(productDraft.getKey());
-                fetchStage.thenCompose(productOptional ->
-                        productOptional
-                                .map(product -> syncProduct(product, productDraft))
-                                .orElseGet(() -> service.create(productDraft)
-                                        .thenRun(statistics::incrementCreated)))
-                        .toCompletableFuture().get();
+                CompletionStage<Optional<Product>> fetch = service.fetch(productDraft.getKey());
+                fetch.thenCompose(productOptional -> productOptional
+                        .map(product -> syncProduct(product, productDraft))
+                        .orElseGet(() -> createProduct(productDraft))
+                ).toCompletableFuture().get();
             } catch (InterruptedException | ExecutionException exception) {
                 exception.printStackTrace();
             }
             statistics.incrementProcessed();
         }
         return CompletableFuture.completedFuture(statistics);
+    }
+
+    private CompletionStage<Void> createProduct(final ProductDraft productDraft) {
+        return service.create(productDraft)
+                .thenRun(statistics::incrementCreated);
     }
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
