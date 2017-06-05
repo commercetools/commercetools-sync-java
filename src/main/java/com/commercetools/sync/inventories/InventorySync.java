@@ -34,6 +34,7 @@ import static com.commercetools.sync.inventories.InventorySyncMessages.CTP_INVEN
 import static com.commercetools.sync.inventories.InventorySyncMessages.INVENTORY_DRAFT_HAS_NO_SKU;
 import static com.commercetools.sync.inventories.InventorySyncMessages.INVENTORY_DRAFT_IS_NULL;
 import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -106,7 +107,13 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     protected CompletionStage<InventorySyncStatistics> process(@Nonnull final List<InventoryEntryDraft>
                                                                        inventoryDrafts) {
         return populateSupplyChannels(inventoryDrafts)
-            .thenCompose(supplyChannelKeyToId -> splitToBatchesAndProcess(inventoryDrafts, supplyChannelKeyToId))
+            .thenCompose(supplyChannelKeyToIdOptional -> {
+                if (supplyChannelKeyToIdOptional.isPresent()) {
+                    return splitToBatchesAndProcess(inventoryDrafts, supplyChannelKeyToIdOptional.get());
+                } else {
+                    return completedFuture(statistics);
+                }
+            })
             .exceptionally(exception -> statistics);
     }
 
@@ -136,9 +143,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                     accumulator.add(draft);
                     if (accumulator.size() == syncOptions.getBatchSize()) {
                         final CompletableFuture<Void> batchProcessingFuture =
-                            processBatch(accumulator, supplyChannelKeyToId)
-                                .exceptionally(exception -> null)
-                                .toCompletableFuture();
+                            processBatch(accumulator, supplyChannelKeyToId).toCompletableFuture();
                         completableFutures.add(batchProcessingFuture);
                         accumulator = new ArrayList<>(syncOptions.getBatchSize());
                     }
@@ -155,9 +160,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         }
         if (!accumulator.isEmpty()) {
             final CompletableFuture<Void> batchProcessingFuture =
-                processBatch(accumulator, supplyChannelKeyToId)
-                    .exceptionally(exception  -> null)
-                    .toCompletableFuture();
+                processBatch(accumulator, supplyChannelKeyToId).toCompletableFuture();
             completableFutures.add(batchProcessingFuture);
         }
         return CompletableFuture
@@ -179,23 +182,28 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *     <li>Instantiate {@code supplyChannelKeyToId} map</li>
      *     <li>Create missing supply channels if needed</li>
      * </ul>
-     * Method returns {@link CompletionStage} of {@link Map} that contains mapping of supply channels' keys to ids.
-     * It may contain {@link SyncProblemException} when fetching supply channels results in exception.
+     * Method returns {@link CompletionStage} of {@link Optional} that may contain mapping of supply channels'
+     * keys to ids. Empty optional indicates that problem occurred during fetching existing channels.
      *
      * @param drafts {@link List} containing {@link InventoryEntryDraft} objects where missing supply channels can occur
-     * @return {@link CompletionStage} of {@link Map} that contain mapping of supply channels' keys to ids, or
-     *      {@link SyncProblemException} when fetching supply channels results in exception
+     * @return {@link CompletionStage} of {@link Optional} that may contain mapping of supply channels' keys to ids.
      */
-    private CompletionStage<Map<String, String>> populateSupplyChannels(@Nonnull final List<InventoryEntryDraft>
-                                                                            drafts) {
+    private CompletionStage<Optional<Map<String, String>>> populateSupplyChannels(@Nonnull final
+                                                                                  List<InventoryEntryDraft> drafts) {
         return inventoryService.fetchAllSupplyChannels()
-                .exceptionally(exception -> {
-                    syncOptions.applyErrorCallback(CTP_CHANNEL_FETCH_FAILED, exception);
-                    throw new SyncProblemException();
-                })
-                .thenApply(existingSupplyChannels -> existingSupplyChannels.stream()
-                            .collect(toMap(Channel::getKey, Channel::getId)))
-                .thenCompose(supplyChannelKeyToId -> createMissingSupplyChannels(drafts, supplyChannelKeyToId));
+            .thenApply(existingSupplyChannels -> existingSupplyChannels.stream()
+                .collect(toMap(Channel::getKey, Channel::getId)))
+            .exceptionally(exception -> {
+                syncOptions.applyErrorCallback(CTP_CHANNEL_FETCH_FAILED, exception);
+                return null;
+            })
+            .thenCompose(supplyChannelKeyToId -> {
+                if (supplyChannelKeyToId != null) {
+                    return createMissingSupplyChannels(drafts, supplyChannelKeyToId).thenApply(Optional::of);
+                } else {
+                    return completedFuture(Optional.empty());
+                }
+            });
     }
 
     /**
@@ -226,7 +234,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 .allOf(newChannelsFutures.toArray(new CompletableFuture[newChannelsFutures.size()]))
                 .thenApply(v -> supplyChannelKeyToId);
         } else {
-            return CompletableFuture.completedFuture(supplyChannelKeyToId);
+            return completedFuture(supplyChannelKeyToId);
         }
     }
 
@@ -259,19 +267,18 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param batchOfDrafts batch of drafts that need to be synced
      * @param supplyChannelKeyToId mapping of supply channel key to supply channel Id for supply channels existing in
      *                             CTP project.
-     * @return {@link CompletionStage} of {@link Void} that indicates method progress, that may contain
-     *      {@link SyncProblemException} when fetching existing inventory entries results in exception.
+     * @return {@link CompletionStage} of {@link Void} that indicates method progress
      */
     private CompletionStage<Void> processBatch(@Nonnull final List<InventoryEntryDraft> batchOfDrafts,
                                                @Nonnull final Map<String, String> supplyChannelKeyToId) {
         return fetchExistingInventories(batchOfDrafts)
-            .exceptionally(exception -> {
-                syncOptions.applyErrorCallback(format(CTP_INVENTORY_FETCH_FAILED, extractSkus(batchOfDrafts)),
-                    exception);
-                throw new SyncProblemException();
-            })
-            .thenCompose(existingInventories -> compareAndSync(existingInventories, batchOfDrafts,
-                supplyChannelKeyToId));
+            .thenCompose(oldInventoriesOptional -> {
+                if (oldInventoriesOptional.isPresent()) {
+                    return compareAndSync(oldInventoriesOptional.get(), batchOfDrafts, supplyChannelKeyToId);
+                } else {
+                    return completedFuture(null);
+                }
+            });
     }
 
     /**
@@ -357,10 +364,15 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *      {@link InventoryEntry} of instances existing in a CTP project that correspond to passed {@code drafts} by
      *      sku comparision, or exception occurred during fetching existing inventory entries
      */
-    private CompletionStage<List<InventoryEntry>> fetchExistingInventories(@Nonnull final List<InventoryEntryDraft>
-                                                                               drafts) {
+    private CompletionStage<Optional<List<InventoryEntry>>> fetchExistingInventories(@Nonnull final
+                                                                                     List<InventoryEntryDraft> drafts) {
         final Set<String> skus = extractSkus(drafts);
-        return inventoryService.fetchInventoryEntriesBySkus(skus);
+        return inventoryService.fetchInventoryEntriesBySkus(skus)
+            .thenApply(inventories -> Optional.of(inventories))
+            .exceptionally(exception -> {
+                syncOptions.applyErrorCallback(format(CTP_INVENTORY_FETCH_FAILED, extractSkus(drafts)), exception);
+                return Optional.empty();
+            });
     }
 
     /**
@@ -402,7 +414,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                     return Optional.empty();
                 });
         }
-        return CompletableFuture.completedFuture(Optional.of(entry));
+        return completedFuture(Optional.of(entry));
     }
 
     /**
