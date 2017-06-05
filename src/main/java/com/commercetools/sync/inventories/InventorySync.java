@@ -382,7 +382,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                                                                                      List<InventoryEntryDraft> drafts) {
         final Set<String> skus = extractSkus(drafts);
         return inventoryService.fetchInventoryEntriesBySkus(skus)
-            .thenApply(inventories -> Optional.of(inventories))
+            .thenApply(Optional::of)
             .exceptionally(exception -> {
                 syncOptions.applyErrorCallback(format(CTP_INVENTORY_FETCH_FAILED, extractSkus(drafts)), exception);
                 return Optional.empty();
@@ -509,7 +509,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     private CompletionStage<Optional<Channel>> createMissingSupplyChannel(@Nonnull final String supplyChannelKey) {
         return inventoryService.createSupplyChannel(supplyChannelKey)
-            .thenApply(newChannel -> Optional.of(newChannel))
+            .thenApply(Optional::of)
             .exceptionally(exception -> {
                 syncOptions.applyErrorCallback(format(CTP_CHANNEL_CREATE_FAILED, supplyChannelKey), exception);
                 return Optional.empty();
