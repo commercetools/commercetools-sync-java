@@ -114,8 +114,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 } else {
                     return completedFuture(statistics);
                 }
-            })
-            .exceptionally(exception -> statistics);
+            });
     }
 
     /**
