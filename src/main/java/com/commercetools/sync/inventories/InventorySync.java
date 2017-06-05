@@ -297,17 +297,13 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             if (fixedDraft.isPresent()) {
                 final Optional<InventoryEntry> oldInventory = findCorrespondingEntry(oldInventories, fixedDraft.get());
                 if (oldInventory.isPresent()) {
-                    futures.add(attemptUpdate(oldInventory.get(), fixedDraft.get())
-                        .thenAccept(updatedInventory -> {
-                            if (!updatedInventory.equals(oldInventory.get())) {
+                    futures.add(update(oldInventory.get(), fixedDraft.get())
+                        .thenAccept(updatedInventoryOptional -> {
+                            if (!updatedInventoryOptional.isPresent()) {
+                                statistics.incrementFailed();
+                            } else if (!updatedInventoryOptional.get().equals(oldInventory.get())) {
                                 statistics.incrementUpdated();
                             }
-                        })
-                        .exceptionally(exception -> {
-                            statistics.incrementFailed();
-                            syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
-                                extractChannelKey(draft)), exception);
-                            return null;
                         })
                         .toCompletableFuture());
                 } else {
@@ -393,13 +389,20 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *      {@link InventoryEntry}, or exception
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<InventoryEntry> attemptUpdate(final InventoryEntry entry, final InventoryEntryDraft draft) {
+    private CompletionStage<Optional<InventoryEntry>> update(final InventoryEntry entry,
+                                                             final InventoryEntryDraft draft) {
         final List<UpdateAction<InventoryEntry>> updateActions =
             InventorySyncUtils.buildActions(entry, draft, syncOptions, typeService);
         if (!updateActions.isEmpty()) {
-            return inventoryService.updateInventoryEntry(entry, updateActions);
+            return inventoryService.updateInventoryEntry(entry, updateActions)
+                .thenApply(updatedInventory -> Optional.of(updatedInventory))
+                .exceptionally(exception -> {
+                    syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
+                        extractChannelKey(draft)), exception);
+                    return Optional.empty();
+                });
         }
-        return CompletableFuture.completedFuture(entry);
+        return CompletableFuture.completedFuture(Optional.of(entry));
     }
 
     /**
