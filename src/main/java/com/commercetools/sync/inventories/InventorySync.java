@@ -247,7 +247,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             .collect(toList());
     }
 
-    private void putKeyAndIdToMapIfPresent(@Nonnull Optional<Channel> supplyChannelOptional,
+    private void putKeyAndIdToMapIfPresent(@Nonnull final Optional<Channel> supplyChannelOptional,
                                            @Nonnull final Map<String, String> supplyChannelKeyToId) {
         if (supplyChannelOptional.isPresent()) {
             final Channel supplyChannel = supplyChannelOptional.get();

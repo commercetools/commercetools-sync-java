@@ -1,6 +1,6 @@
 package com.commercetools.sync.inventories;
 
-class InventorySyncMessages {
+final class InventorySyncMessages {
 
     public static final String CTP_INVENTORY_FETCH_FAILED = "Failed to fetch existing inventory entries of SKUs %s.";
     public static final String CTP_CHANNEL_FETCH_FAILED = "Failed to fetch supply channels.";
