@@ -8,7 +8,6 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.CategoryDeleteCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
@@ -27,7 +26,7 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.queries.QueryDsl;
 import io.sphere.sdk.search.SearchKeyword;
 import io.sphere.sdk.search.SearchKeywords;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,17 +36,16 @@ import static com.commercetools.sync.it.products.SphereClientUtils.CTP_SOURCE_CL
 import static com.commercetools.sync.it.products.SphereClientUtils.QUERY_MAX_LIMIT;
 import static com.commercetools.sync.it.products.SphereClientUtils.fetchAndProcess;
 import static com.commercetools.sync.products.ProductTestUtils.de;
-import static com.commercetools.sync.products.ProductTestUtils.productType;
 import static com.commercetools.sync.products.ProductTestUtils.join;
 import static com.commercetools.sync.products.ProductTestUtils.productDraft;
+import static com.commercetools.sync.products.ProductTestUtils.productType;
 import static com.commercetools.sync.products.ProductTestUtils.syncOptions;
+import static com.commercetools.sync.products.actions.ProductUpdateActionsBuilder.masterData;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Locale.GERMAN;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @SuppressWarnings("ConstantConditions")
 public class ProductSyncItTest {
@@ -73,14 +71,14 @@ public class ProductSyncItTest {
         service = ProductService.of(client);
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @After
+    public void tearDown() {
         Env.delete();
     }
 
     @Test
     public void sync_withNewProduct_shouldCreateProduct() {
-        ProductSyncOptions syncOptions = syncOptions(client,true, true);
+        ProductSyncOptions syncOptions = syncOptions(client, true, true);
         ProductDraft productDraft = productDraft("product-non-existing.json", productType, category, syncOptions);
 
         // no product with given key has been populated during setup
@@ -96,7 +94,7 @@ public class ProductSyncItTest {
 
     @Test
     public void sync_withEqualProduct_shouldNotUpdateProduct() {
-        ProductSyncOptions syncOptions = syncOptions(client,true, false);
+        ProductSyncOptions syncOptions = syncOptions(client, true, false);
         ProductDraft productDraft = productDraft("product.json", productType, category, syncOptions);
         Product product = join(service.fetch(productDraft.getKey())).get();
 
@@ -111,21 +109,21 @@ public class ProductSyncItTest {
 
     @Test
     public void sync_withChangedProduct_shouldUpdateProduct() {
-        ProductSyncOptions syncOptions = syncOptions(true, true);
-        ProductDraft productDraft = productDraft("product-changed.json", productType, category, syncOptions);
+        ProductSyncOptions options = syncOptions(true, true);
+        ProductDraft productDraft = productDraft("product-changed.json", productType, category, options);
         Product product = join(service.fetch(productDraft.getKey())).get();
 
-        productSync = new ProductSync(syncOptions, service, updateActionsBuilder);
+        productSync = new ProductSync(options, service, updateActionsBuilder);
         join(productSync.sync(singletonList(productDraft)));
 
         Product afterSync = join(service.fetch(productDraft.getKey())).get();
-        verifyChange(D::name, product, afterSync, "Rehrücken ohne Knochen", "new name");
-        verifyChange(D::slug, product, afterSync, "rehruecken-o-kn", "rehruecken-o-k1");
-        verifyChange(D::masterVariantSku, product, afterSync, "3065833", "3065831");
-        verifyChange(D::metaDescription, product, afterSync, null, "new Meta description");
-        verifyChange(D::metaKeywords, product, afterSync, null, "key1,key2");
-        verifyChange(D::metaTitle, product, afterSync, null, "new title");
-        verifyChange(D::searchKeywords, product, afterSync,
+        verifyChange(p -> name(p, options), product, afterSync, "Rehrücken ohne Knochen", "new name");
+        verifyChange(p -> slug(p, options), product, afterSync, "rehruecken-o-kn", "rehruecken-o-k1");
+        verifyChange(p -> masterVariantSku(p, options), product, afterSync, "3065833", "3065831");
+        verifyChange(p -> metaDescription(p, options), product, afterSync, null, "new Meta description");
+        verifyChange(p -> metaKeywords(p, options), product, afterSync, null, "key1,key2");
+        verifyChange(p -> metaTitle(p, options), product, afterSync, null, "new title");
+        verifyChange(p -> searchKeywords(p, options), product, afterSync,
                 SearchKeywords.of(),
                 SearchKeywords.of(GERMAN, asList(SearchKeyword.of("key1"), SearchKeyword.of("key2"))));
         // verifyChange(D::categoryOrderHints, product, afterSync,
@@ -138,21 +136,21 @@ public class ProductSyncItTest {
 
     @Test
     public void sync_withChangedProduct_shouldUpdateProductAndPublish() {
-        ProductSyncOptions syncOptions = syncOptions(client,true, true);
-        ProductDraft productDraft = productDraft("product-changed.json", productType, category, syncOptions);
+        ProductSyncOptions options = syncOptions(client, true, true);
+        ProductDraft productDraft = productDraft("product-changed.json", productType, category, options);
         Product product = join(service.fetch(productDraft.getKey())).get();
 
-        productSync = new ProductSync(syncOptions, service, updateActionsBuilder);
+        productSync = new ProductSync(options, service, updateActionsBuilder);
         join(productSync.sync(singletonList(productDraft)));
 
         Product afterSync = join(service.fetch(productDraft.getKey())).get();
-        verifyChange(D::name, product, afterSync, "Rehrücken ohne Knochen", "new name");
-        verifyChange(D::slug, product, afterSync, "rehruecken-o-kn", "rehruecken-o-k1");
-        verifyChange(D::masterVariantSku, product, afterSync, "3065833", "3065831");
-        verifyChange(D::metaDescription, product, afterSync, null, "new Meta description");
-        verifyChange(D::metaKeywords, product, afterSync, null, "key1,key2");
-        verifyChange(D::metaTitle, product, afterSync, null, "new title");
-        verifyChange(D::searchKeywords, product, afterSync,
+        verifyChange(p -> name(p, options), product, afterSync, "Rehrücken ohne Knochen", "new name");
+        verifyChange(p -> slug(p, options), product, afterSync, "rehruecken-o-kn", "rehruecken-o-k1");
+        verifyChange(p -> masterVariantSku(p, options), product, afterSync, "3065833", "3065831");
+        verifyChange(p -> metaDescription(p, options), product, afterSync, null, "new Meta description");
+        verifyChange(p -> metaKeywords(p, options), product, afterSync, null, "key1,key2");
+        verifyChange(p -> metaTitle(p, options), product, afterSync, null, "new title");
+        verifyChange(p -> searchKeywords(p, options), product, afterSync,
                 SearchKeywords.of(),
                 SearchKeywords.of(GERMAN, asList(SearchKeyword.of("key1"), SearchKeyword.of("key2"))));
         // verifyChange(D::categoryOrderHints, product, afterSync,
@@ -163,46 +161,44 @@ public class ProductSyncItTest {
         assertThat(afterSync).isNotEqualTo(product);
     }
 
-    private <X> void verifyChange(final Function<Product, X> valueProvider,
-                                  final Product old, final Product newP,
-                                  final X oldValue, final X newValue) {
+    private static <X> void verifyChange(final Function<Product, X> valueProvider,
+                                         final Product old, final Product newP,
+                                         final X oldValue, final X newValue) {
         assertThat(valueProvider.apply(old)).isEqualTo(oldValue);
         assertThat(valueProvider.apply(newP)).isEqualTo(newValue);
     }
 
-    private static class D {
-        private static String name(final Product product) {
-            return de(product.getMasterData().getStaged().getName());
-        }
-
-        private static String slug(final Product product) {
-            return de(product.getMasterData().getStaged().getSlug());
-        }
-
-        private static String masterVariantSku(final Product product) {
-            return product.getMasterData().getStaged().getMasterVariant().getSku();
-        }
-
-        private static String metaDescription(final Product product) {
-            return de(product.getMasterData().getStaged().getMetaDescription());
-        }
-
-        private static String metaTitle(final Product product) {
-            return de(product.getMasterData().getStaged().getMetaTitle());
-        }
-
-        private static String metaKeywords(final Product product) {
-            return de(product.getMasterData().getStaged().getMetaKeywords());
-        }
-
-        private static SearchKeywords searchKeywords(final Product product) {
-            return product.getMasterData().getStaged().getSearchKeywords();
-        }
-
-        private static CategoryOrderHints categoryOrderHints(final Product product) {
-            return product.getMasterData().getStaged().getCategoryOrderHints();
-        }
+    private static String name(final Product product, final ProductSyncOptions syncOptions) {
+        return de(masterData(product, syncOptions).getName());
     }
+
+    private static String slug(final Product product, final ProductSyncOptions options) {
+        return de(masterData(product, options).getSlug());
+    }
+
+    private static String masterVariantSku(final Product product, final ProductSyncOptions options) {
+        return masterData(product, options).getMasterVariant().getSku();
+    }
+
+    private static String metaDescription(final Product product, final ProductSyncOptions options) {
+        return de(masterData(product, options).getMetaDescription());
+    }
+
+    private static String metaTitle(final Product product, final ProductSyncOptions options) {
+        return de(masterData(product, options).getMetaTitle());
+    }
+
+    private static String metaKeywords(final Product product, final ProductSyncOptions options) {
+        return de(masterData(product, options).getMetaKeywords());
+    }
+
+    private static SearchKeywords searchKeywords(final Product product, final ProductSyncOptions options) {
+        return masterData(product, options).getSearchKeywords();
+    }
+
+//        private static CategoryOrderHints categoryOrderHints(final Product product) {
+//            return masterData(product, options).getCategoryOrderHints();
+//        }
 
     private static class Env {
 
@@ -218,8 +214,7 @@ public class ProductSyncItTest {
         }
 
         static Product createProduct(final ProductType productType) {
-            ProductSyncOptions syncOptions = mock(ProductSyncOptions.class);
-            when(syncOptions.isCompareStaged()).thenReturn(true);
+            ProductSyncOptions syncOptions = syncOptions(true, true);
             ProductDraft draft = productDraft("product.json", productType, syncOptions);
             return join(client.execute(ProductCreateCommand.of(draft)));
         }

@@ -19,6 +19,7 @@ public class ProductSyncOptionsBuilder extends BaseSyncOptionsBuilder<ProductSyn
     private final Consumer<String> warningCallBack;
 
     private boolean compareStaged = true;
+    private boolean updateStaged = true;
     private boolean publish = false;
     private boolean removeOtherVariants = true;
 
@@ -45,6 +46,7 @@ public class ProductSyncOptionsBuilder extends BaseSyncOptionsBuilder<ProductSyn
                 removeOtherCollectionEntries,
                 removeOtherProperties,
                 compareStaged,
+                updateStaged,
                 publish,
                 removeOtherVariants,
                 whiteList,
@@ -55,6 +57,11 @@ public class ProductSyncOptionsBuilder extends BaseSyncOptionsBuilder<ProductSyn
 
     public ProductSyncOptionsBuilder compareStaged(final boolean compareStaged) {
         this.compareStaged = compareStaged;
+        return this;
+    }
+
+    public ProductSyncOptionsBuilder updateStaged(final boolean updateStaged) {
+        this.updateStaged = updateStaged;
         return this;
     }
 

@@ -57,7 +57,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> syncProduct(final Product product, final ProductDraft productDraft) {
-        List<UpdateAction<Product>> updateActions = updateActionsBuilder.buildActions(product, productDraft, syncOptions);
+        List<UpdateAction<Product>> updateActions =
+                updateActionsBuilder.buildActions(product, productDraft, syncOptions);
         if (!updateActions.isEmpty()) {
             CompletionStage<Product> update = service.update(product, updateActions);
             if (syncOptions.isPublish()) {

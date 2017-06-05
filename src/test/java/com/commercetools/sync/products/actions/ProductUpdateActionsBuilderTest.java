@@ -19,6 +19,7 @@ import static com.commercetools.sync.products.ProductTestUtils.product;
 import static com.commercetools.sync.products.ProductTestUtils.productDraft;
 import static com.commercetools.sync.products.ProductTestUtils.productType;
 import static com.commercetools.sync.products.ProductTestUtils.syncOptions;
+import static com.commercetools.sync.products.actions.ProductUpdateActionsBuilder.masterData;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,25 +49,40 @@ public class ProductUpdateActionsBuilderTest {
     }
 
     @Test
-    public void buildActions_nonEmptyForDifferent() {
-        ProductUpdateActionsBuilder updateActionsBuilder = ProductUpdateActionsBuilder.of();
+    public void buildActions_nonEmptyForDifferent_comparingStaged() {
         Product product = product("product.json");
         ProductSyncOptions syncOptions = syncOptions(true, true);
         ProductDraft productDraft = productDraft("product-changed.json", productType(), null, syncOptions);
 
-        List<UpdateAction<Product>> updateActions = updateActionsBuilder.buildActions(product, productDraft, syncOptions);
+        List<UpdateAction<Product>> updateActions = ProductUpdateActionsBuilder.of()
+                .buildActions(product, productDraft, syncOptions);
 
-        List<UpdateAction<Product>> expectedUpdateActions = asList(
-                ChangeName.of(productDraft.getName()),
-                ChangeSlug.of(productDraft.getSlug()),
+        assertThat(updateActions).isEqualTo(expectedUpdateActions(product, syncOptions, productDraft));
+    }
+
+    @Test
+    public void buildActions_nonEmptyForDifferent_comparingCurrent() {
+        Product product = product("product.json");
+        ProductSyncOptions syncOptions = syncOptions(true, false);
+        ProductDraft productDraft = productDraft("product-changed.json", productType(), null, syncOptions);
+
+        List<UpdateAction<Product>> updateActions = ProductUpdateActionsBuilder.of()
+                .buildActions(product, productDraft, syncOptions);
+
+        assertThat(updateActions).isEqualTo(expectedUpdateActions(product, syncOptions, productDraft));
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private List<UpdateAction<Product>> expectedUpdateActions(final Product product, final ProductSyncOptions syncOptions, final ProductDraft productDraft) {
+        return asList(
+                ChangeName.of(productDraft.getName(), syncOptions.isUpdateStaged()),
+                ChangeSlug.of(productDraft.getSlug(), syncOptions.isUpdateStaged()),
                 SetMetaDescription.of(productDraft.getMetaDescription()),
                 SetMetaKeywords.of(productDraft.getMetaKeywords()),
                 SetMetaTitle.of(productDraft.getMetaTitle()),
-                SetSku.of(product.getMasterData().getStaged().getMasterVariant().getId(), productDraft.getMasterVariant().getSku()),
-                SetSearchKeywords.of(productDraft.getSearchKeywords()));
-        assertThat(updateActions).hasSize(expectedUpdateActions.size());
-        expectedUpdateActions
-                .forEach(action -> assertThat(updateActions.contains(action)));
+                SetSku.of(masterData(product, syncOptions).getMasterVariant().getId(),
+                        productDraft.getMasterVariant().getSku(), syncOptions.isUpdateStaged()),
+                SetSearchKeywords.of(productDraft.getSearchKeywords(), syncOptions.isUpdateStaged()));
     }
 
 }

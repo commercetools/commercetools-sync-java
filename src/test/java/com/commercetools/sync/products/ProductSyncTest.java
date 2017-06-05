@@ -105,7 +105,7 @@ public class ProductSyncTest {
     }
 
     @Test
-    public void sync_expectServiceFetchAndDoNotUpdateExistingAsIdentical() {
+    public void sync_expectServiceFetchAndNoUpdateExistingAsIdentical() {
         Product product = serviceWillFetch(mock(Product.class));
         when(updateActionsBuilder.buildActions(any(), any(), any())).thenReturn(emptyList());
         ProductDraft productDraft = productDraft();

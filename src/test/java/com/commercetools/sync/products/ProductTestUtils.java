@@ -18,6 +18,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.products.actions.ProductUpdateActionsBuilder.masterData;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Locale.GERMAN;
 import static java.util.Objects.isNull;
@@ -38,12 +39,7 @@ public class ProductTestUtils {
 
     public static ProductDraft productDraft(String resourcePath, ProductType productType, Category category, final ProductSyncOptions syncOptions) {
         Product template = product(resourcePath);
-        ProductData productData;
-        if (syncOptions.isCompareStaged()) {
-            productData = template.getMasterData().getStaged();
-        } else {
-            productData = template.getMasterData().getCurrent();
-        }
+        ProductData productData = masterData(template, syncOptions);
 
         @SuppressWarnings("ConstantConditions")
         List<ProductVariantDraft> allVariants = productData.getAllVariants().stream()

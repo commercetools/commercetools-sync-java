@@ -10,10 +10,19 @@
   "masterData": {
     "current": {
       "name": {
-        "de": "new name"
+        "de": "new name current"
       },
       "description": {
         "de": "Die Rückenstücke des Rehs gelten als wahres Geschmackserlebnis und beherbergen die edelsten Teile des Rehs. Aus dem Rücken können Sie feine Filets herausschneiden, die sich hervorragend zum Kurzbraten oder Grillen eignen. Da der Knochen von uns bereits schonend entfernt wurde, können Sie sich voll und ganz auf den einzigartigen Geschmack konzentrieren."
+      },
+      "metaDescription": {
+        "de": "new Meta description current"
+      },
+      "metaKeywords": {
+        "de": "key3,key4"
+      },
+      "metaTitle": {
+        "de": "new title current"
       },
       "categories": [
         {
@@ -21,13 +30,15 @@
           "id": "5cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
         }
       ],
-      "categoryOrderHints": {},
+      "categoryOrderHints": {
+        "9e6de6ad-cc94-4034-aa9f-276ccb437efd": "0.95"
+      },
       "slug": {
-        "de": "rehruecken-o-kn"
+        "de": "rehruecken-o-k1-current"
       },
       "masterVariant": {
         "id": 1,
-        "sku": "3065833",
+        "sku": "3065836",
         "prices": [
         ],
         "images": [
@@ -92,7 +103,16 @@
         "assets": []
       },
       "variants": [],
-      "searchKeywords": {}
+      "searchKeywords": {
+        "de": [
+          {
+            "text": "key3"
+          },
+          {
+            "text": "key4"
+          }
+        ]
+      }
     },
     "staged": {
       "name": {

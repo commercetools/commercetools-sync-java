@@ -30,6 +30,7 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(options.getBlackList()).isEmpty();
         assertThat(options.getWhiteList()).isEmpty();
         assertThat(options.isCompareStaged()).isTrue();
+        assertThat(options.isUpdateStaged()).isTrue();
         assertThat(options.isPublish()).isFalse();
         assertThat(options.isRemoveOtherVariants()).isTrue();
 
@@ -51,6 +52,7 @@ public class ProductSyncOptionsBuilderTest {
         ProductSyncOptions options = ProductSyncOptionsBuilder
                 .of(client, errorCallBack, warningCallBack)
                 .compareStaged(false)
+                .updateStaged(false)
                 .publish(true)
                 .removeOtherVariants(false)
                 .whiteList(singletonList("white1"))
@@ -67,6 +69,7 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(options.getWhiteList()).isEqualTo(singletonList("white1"));
         assertThat(options.getBlackList()).isEqualTo(singletonList("black1"));
         assertThat(options.isCompareStaged()).isFalse();
+        assertThat(options.isUpdateStaged()).isFalse();
         assertThat(options.isPublish()).isTrue();
         assertThat(options.isRemoveOtherVariants()).isFalse();
 

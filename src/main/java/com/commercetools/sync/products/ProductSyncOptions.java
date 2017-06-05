@@ -16,16 +16,17 @@ import java.util.function.Function;
  * It is just provided as a skeleton/reminder for the options it should include in the future.
  */
 public class ProductSyncOptions extends BaseSyncOptions {
-    private boolean compareStaged; // to control whether to compare to the staged data or the published ones.
-    private boolean publish; // to control whether to auto-publish or not.
-    private boolean removeOtherVariants; // to control whether to remove other product variants or not.
+    private final boolean compareStaged; // to control whether to compare to the staged data or the published ones.
+    private final boolean updateStaged; // to control whether to update staged or current projection
+    private final boolean publish; // to control whether to auto-publish or not.
+    private final boolean removeOtherVariants; // to control whether to remove other product variants or not.
 
     // defines which attributes
-    private List<String> whiteList;
-    private List<String> blackList;
+    private final List<String> whiteList;
+    private final List<String> blackList;
 
     // optional filter which can be applied on generated list of update actions
-    private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> actionsFilter;
+    private final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> actionsFilter;
 
     ProductSyncOptions(@Nonnull final SphereClient ctpClient,
                        @Nonnull final BiConsumer<String, Throwable> errorCallBack,
@@ -35,6 +36,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
                        final boolean removeOtherCollectionEntries,
                        final boolean removeOtherProperties,
                        final boolean compareStaged,
+                       final boolean updateStaged,
                        final boolean publish,
                        final boolean removeOtherVariants,
                        final List<String> whiteList,
@@ -44,6 +46,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
         super(ctpClient, errorCallBack, warningCallBack, removeOtherLocales, removeOtherSetEntries,
             removeOtherCollectionEntries, removeOtherProperties);
         this.compareStaged = compareStaged;
+        this.updateStaged = updateStaged;
         this.publish = publish;
         this.removeOtherVariants = removeOtherVariants;
         this.whiteList = whiteList;
@@ -51,17 +54,12 @@ public class ProductSyncOptions extends BaseSyncOptions {
         this.actionsFilter = actionsFilter;
     }
 
-    /**
-     * This getter and all the getters below should be removed. They are only added to use these fields
-     * to supress FindBugs from throwing the alert:
-     *
-     * <p>"This field is never read.  Consider removing it from the class."
-     * TODO: Remove these getters when implementing the Product Sync module.
-     *
-     * @return {@code this} instance's {@code compareStaged} boolean value.
-     */
     public boolean isCompareStaged() {
         return compareStaged;
+    }
+
+    public boolean isUpdateStaged() {
+        return updateStaged;
     }
 
     public boolean isPublish() {
