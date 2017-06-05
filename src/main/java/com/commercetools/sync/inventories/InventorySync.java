@@ -151,7 +151,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
 
     /**
      * Checks if a draft is valid for further processing. If so, then returns {@code true}.
-     * Otherwise applies an {@code errorCallbalck}, increments "failed" and "proceessed" statistics and returns
+     * Otherwise applies an {@code errorCallback}, increments "failed" and "proceessed" statistics and returns
      * {@code false}.
      *
      * @param draft nullable draft, requested for sync
@@ -269,6 +269,15 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         }
     }
 
+    /**
+     * Tries to find supply channels' keys, that occur in {@code drafts} but aren't mapped by
+     * {@code supplyChannelKeyToId}.
+     *
+     * @param drafts drafts that need to be synced
+     * @param supplyChannelKeyToId mapping of supply channel key to supply channel Id for supply channels existing in
+     *                             CTP project.
+     * @return list with missing channels' keys
+     */
     @Nonnull
     private List<String> findMissingChannelsKeys(@Nonnull final List<InventoryEntryDraft> drafts,
                                                  @Nonnull final Map<String, String> supplyChannelKeyToId) {
@@ -280,6 +289,12 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             .collect(toList());
     }
 
+    /**
+     * Tries to create supply channels of keys given in a {@code missingChannelsKeys} list.
+     *
+     * @param missingChannelsKeys missing channels' keys
+     * @return list fulfilled with completable futures that contain optionals which may contain created channels
+     */
     @Nonnull
     private List<CompletableFuture<Optional<Channel>>> createSupplyChannelsOfKeys(@Nonnull final List<String>
                                                                                       missingChannelsKeys) {
@@ -315,7 +330,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     /**
      * For each draft from {@code drafts} it checks if there is corresponding entry in {@code oldInventories},
      * and then either attempts to update such entry with data from draft or attempts to create new entry from draft.
-     * After comparision and performing action "processed" and other relevant counter from statistics is incremented.
+     * After comparision and performing action "processed" and other relevant counter from statistics are incremented.
      * Method returns {@link CompletionStage} of {@link Void} that indicates all possible creation/update attempts
      * progress.
      *
@@ -368,15 +383,13 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * Returns {@link CompletionStage} instance which may contain mapping of {@link ChannelKeyExtractor} to
-     * {@link InventoryEntry} of instances existing in a CTP project. Instances are fetched from API by skus, that
-     * corresponds to skus present in {@code drafts}. If fetching existing instances results in exception then
-     * returned {@link CompletionStage} contains such exception.
+     * Tries to fetch from a CTP a list of inventory entries of SKUs present in {@code drafts}.
+     * If operation succeed then {@link CompletionStage} containing {@link Optional} with fetched {@link List} is
+     * returned, otherwise error callback function is executed and {@link CompletionStage} with empty {@link Optional}
+     * is returned.
      *
      * @param drafts {@link List} of drafts
-     * @return {@link CompletionStage} instance which contains either {@link Map} of {@link ChannelKeyExtractor} to
-     *      {@link InventoryEntry} of instances existing in a CTP project that correspond to passed {@code drafts} by
-     *      sku comparision, or exception occurred during fetching existing inventory entries
+     * @return {@link CompletionStage} instance with {@link Optional} that may contain list of inventory entries
      */
     private CompletionStage<Optional<List<InventoryEntry>>> fetchExistingInventories(@Nonnull final
                                                                                      List<InventoryEntryDraft> drafts) {
@@ -408,8 +421,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * and executes error callback function in case of any exception.
      *
      * @param entry entry from existing system that could be updated.
-     * @param draft draft containing data that could differ from data in {@code entry}.
-     *              <strong>Sku isn't compared</strong>
+     * @param draft draft with the resolved channel reference, containing data that could differ from data in
+     *      {@code entry}.<strong>Sku isn't compared</strong>
      * @return {@link CompletionStage} of {@link Void} that indicates method progress
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
@@ -435,7 +448,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * It either creates inventory entry and increments "created" counter in statistics, or increments "failed" counter
      * and executes error callback function in case of any exception.
      *
-     * @param draft draft of new inventory entry with the proper channel reference
+     * @param draft draft of new inventory entry with the resolved channel reference
      * @return {@link CompletionStage} instance that indicates method progress
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
