@@ -22,11 +22,7 @@ import java.util.concurrent.CompletionStage;
 
 public class CategoryServiceImpl implements CategoryService {
     private final SphereClient ctpClient;
-
-    /**
-     * Cache of Categories' [externalId -> id].
-     */
-    private final Map<String, String> cache = new HashMap<>();
+    private final Map<String, String> externalIdToIdCache = new HashMap<>();
 
     public CategoryServiceImpl(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
@@ -35,18 +31,18 @@ public class CategoryServiceImpl implements CategoryService {
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String externalId) {
-        if (cache.isEmpty()) {
+        if (externalIdToIdCache.isEmpty()) {
             return cacheAndFetch(externalId);
         }
-        return CompletableFuture.completedFuture(Optional.ofNullable(cache.get(externalId)));
+        return CompletableFuture.completedFuture(Optional.ofNullable(externalIdToIdCache.get(externalId)));
     }
 
     private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String externalId) {
         return QueryExecutionUtils.queryAll(ctpClient, CategoryQuery.of())
                                   .thenApply(categories -> {
                                       categories.forEach(category ->
-                                          cache.put(category.getExternalId(), category.getId()));
-                                      return Optional.ofNullable(cache.get(externalId));
+                                          externalIdToIdCache.put(category.getExternalId(), category.getId()));
+                                      return Optional.ofNullable(externalIdToIdCache.get(externalId));
                                   });
     }
 

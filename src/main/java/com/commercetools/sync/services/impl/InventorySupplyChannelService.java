@@ -24,11 +24,7 @@ import java.util.concurrent.CompletionStage;
 public class InventorySupplyChannelService implements ChannelService {
 
     private final SphereClient ctpClient;
-
-    /**
-     * Cache of Channels' [key -> id].
-     */
-    private final Map<String, String> cache = new HashMap<>();
+    private final Map<String, String> keyToIdCache = new HashMap<>();
 
     public InventorySupplyChannelService(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
@@ -37,10 +33,10 @@ public class InventorySupplyChannelService implements ChannelService {
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key) {
-        if (cache.isEmpty()) {
+        if (keyToIdCache.isEmpty()) {
             return cacheAndFetch(key);
         }
-        return CompletableFuture.completedFuture(Optional.ofNullable(cache.get(key)));
+        return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
     }
 
     private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
@@ -53,8 +49,8 @@ public class InventorySupplyChannelService implements ChannelService {
         return QueryExecutionUtils.queryAll(ctpClient, query)
                                   .thenApply(channels -> {
                                       channels.forEach(channel ->
-                                          cache.put(channel.getKey(), channel.getId()));
-                                      return Optional.ofNullable(cache.get(key));
+                                          keyToIdCache.put(channel.getKey(), channel.getId()));
+                                      return Optional.ofNullable(keyToIdCache.get(key));
                                   });
     }
 
@@ -80,6 +76,6 @@ public class InventorySupplyChannelService implements ChannelService {
 
     @Override
     public void cacheChannel(@Nonnull final Channel channel) {
-        cache.put(channel.getKey(), channel.getId());
+        keyToIdCache.put(channel.getKey(), channel.getId());
     }
 }

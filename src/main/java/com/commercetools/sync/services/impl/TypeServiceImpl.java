@@ -20,10 +20,7 @@ import java.util.concurrent.CompletionStage;
  */
 public class TypeServiceImpl implements TypeService {
     private final SphereClient ctpClient;
-    /**
-     * Cache of Types' [key -> id].
-     */
-    private final Map<String, String> cache = new HashMap<>();
+    private final Map<String, String> keyToIdCache = new HashMap<>();
 
     public TypeServiceImpl(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
@@ -32,18 +29,18 @@ public class TypeServiceImpl implements TypeService {
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key) {
-        if (cache.isEmpty()) {
+        if (keyToIdCache.isEmpty()) {
             return cacheAndFetch(key);
         }
-        return CompletableFuture.completedFuture(Optional.ofNullable(cache.get(key)));
+        return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
     }
 
     @Nonnull
     private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
         return QueryExecutionUtils.queryAll(ctpClient, TypeQuery.of())
                                   .thenApply(types -> {
-                                      types.forEach(type -> cache.put(type.getKey(), type.getId()));
-                                      return Optional.ofNullable(cache.get(key));
+                                      types.forEach(type -> keyToIdCache.put(type.getKey(), type.getId()));
+                                      return Optional.ofNullable(keyToIdCache.get(key));
                                   });
     }
 }
