@@ -108,9 +108,9 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
 
     /**
      * Given a key value ({@code keyFromExpansion}) which is potentially fetched from the expansion of a reference. This
-     * method checks if this value is not blank, if it is, it tries to fetch the key value from the id field on the
-     * reference. If it's not blank it returns it. Whether the value is fetched from the expansion or from the
-     * reference's id field, this method makes sure the key is valid:
+     * method checks if this value is not blank (empty string/null), if it is, it tries to fetch the key value from the
+     * id field on the reference. If it's not blank it returns it. Whether the value is fetched from the expansion or
+     * from the reference's id field, this method makes sure the key is valid:
      * <ol>
      *     <li>is not blank (empty/null).</li>
      *     <li>can only have a UUID format if allowed by the {@code options} instance of this class.</li>
@@ -127,22 +127,9 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     protected String getKeyFromExpansionOrReference(@Nullable final String keyFromExpansion,
                                                     @Nonnull final Reference reference)
         throws ReferenceResolutionException {
-        final String key = isBlank(keyFromExpansion) ? getKeyFromReference(reference).orElse(null) :
-            keyFromExpansion;
+        final String key = isBlank(keyFromExpansion) ? reference.getId() : keyFromExpansion;
         validateKey(key, KEY_NOT_SET_ON_EXPANSION_OR_ID_FIELD);
         return key;
-    }
-
-    /**
-     * Helper method that returns an {@link Optional} containing the value of the id field on the passed
-     * {@link Reference} object.
-     *
-     * @param reference the reference to get the value of it's id field.
-     * @return an optional containing the id field value of the passed reference.
-     */
-    @Nonnull
-    private static Optional<String> getKeyFromReference(@Nonnull final Reference reference) {
-        return Optional.ofNullable(reference.getId());
     }
 
     /**
