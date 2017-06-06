@@ -34,7 +34,7 @@ public class TypeServiceImpl implements TypeService {
     @Override
     public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key) {
         if (cache.isEmpty()) {
-            cacheAndFetch(key);
+            return cacheAndFetch(key);
         }
         return CompletableFuture.completedFuture(Optional.ofNullable(cache.get(key)));
     }
