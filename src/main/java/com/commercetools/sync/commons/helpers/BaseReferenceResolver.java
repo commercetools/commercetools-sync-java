@@ -100,6 +100,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      * @return the id value on the {@link ResourceIdentifier}
      * @throws ReferenceResolutionException if any of the validation checks fail.
      */
+    @Nonnull
     private String getKeyFromResourceIdentifier(@Nonnull final ResourceIdentifier resourceIdentifier)
         throws ReferenceResolutionException {
         final String key = resourceIdentifier.getId();

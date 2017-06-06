@@ -4,7 +4,6 @@ package com.commercetools.sync.services;
 import io.sphere.sdk.channels.Channel;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
@@ -26,5 +25,5 @@ public interface TypeService {
      *      found in the CTP project with this external id.
      */
     @Nonnull
-    CompletionStage<Optional<String>> fetchCachedTypeId(@Nullable final String key);
+    CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key);
 }
