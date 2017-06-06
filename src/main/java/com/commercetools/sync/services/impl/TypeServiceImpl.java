@@ -7,7 +7,6 @@ import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.queries.TypeQuery;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -40,7 +39,7 @@ public class TypeServiceImpl implements TypeService {
     }
 
     @Nonnull
-    private CompletionStage<Optional<String>> cacheAndFetch(@Nullable final String key) {
+    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
         return QueryExecutionUtils.queryAll(ctpClient, TypeQuery.of())
                                   .thenApply(types -> {
                                       types.forEach(type -> cache.put(type.getKey(), type.getId()));
