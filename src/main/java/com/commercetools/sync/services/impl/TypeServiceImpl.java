@@ -18,7 +18,7 @@ import java.util.concurrent.CompletionStage;
  * TODO: USE graphQL to get only keys OR MAKE PR/ISSUE TO FIX QueryExecutionUtils.queryAll
  * TODO: INTEGRATION TEST GITHUB ISSUE#7
  */
-public class TypeServiceImpl implements TypeService {
+public final class TypeServiceImpl implements TypeService {
     private final SphereClient ctpClient;
     private final Map<String, String> keyToIdCache = new HashMap<>();
 

@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 
-public class InventorySupplyChannelService implements ChannelService {
+public final class InventorySupplyChannelService implements ChannelService {
 
     private final SphereClient ctpClient;
     private final Map<String, String> keyToIdCache = new HashMap<>();

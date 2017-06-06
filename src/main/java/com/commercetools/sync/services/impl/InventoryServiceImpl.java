@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
-public class InventoryServiceImpl implements InventoryService {
+public final class InventoryServiceImpl implements InventoryService {
 
     private final SphereClient ctpClient;
 

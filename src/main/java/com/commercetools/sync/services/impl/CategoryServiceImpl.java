@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-public class CategoryServiceImpl implements CategoryService {
+public final class CategoryServiceImpl implements CategoryService {
     private final SphereClient ctpClient;
     private final Map<String, String> externalIdToIdCache = new HashMap<>();
 
