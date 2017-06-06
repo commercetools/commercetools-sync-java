@@ -96,7 +96,6 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * The sync expects the user to pass the keys to references in the {@code id} field of References. If the key values
      * are in UUID format, then this flag must be set to true, otherwise the sync will fail to resolve the reference.
      * This flag, if set to true, enables the user to use keys with UUID format. By default, it is set to {@code false}.
-     * This method sets this flag's value with the new value.
      *
      * @param allowUuid new vale to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
