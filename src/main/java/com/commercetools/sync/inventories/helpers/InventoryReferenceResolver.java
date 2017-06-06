@@ -35,19 +35,18 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
 
     @Override
     @Nonnull
-    public CompletionStage<InventoryEntryDraft> resolveCustomTypeReference(@Nonnull final InventoryEntryDraft
-                                                                                      inventoryEntryDraft) {
-        final CustomFieldsDraft custom = inventoryEntryDraft.getCustom();
+    public CompletionStage<InventoryEntryDraft> resolveCustomTypeReference(@Nonnull final InventoryEntryDraft draft) {
+        final CustomFieldsDraft custom = draft.getCustom();
         if (custom != null) {
             return getCustomTypeId(custom).thenApply(resolvedTypeIdOptional ->
                 resolvedTypeIdOptional.filter(StringUtils::isNotBlank)
                                       .map(resolvedTypeId -> InventoryEntryDraftBuilder
-                                          .of(inventoryEntryDraft)
+                                          .of(draft)
                                           .custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields()))
                                           .build())
-                                      .orElseGet(() -> InventoryEntryDraftBuilder.of(inventoryEntryDraft).build()));
+                                      .orElseGet(() -> InventoryEntryDraftBuilder.of(draft).build()));
         }
-        return CompletableFuture.completedFuture(InventoryEntryDraftBuilder.of(inventoryEntryDraft).build());
+        return CompletableFuture.completedFuture(draft);
     }
 
     /**
@@ -80,7 +79,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
                 return CompletableFutureUtils.exceptionallyCompletedFuture(exception);
             }
         }
-        return CompletableFuture.completedFuture(InventoryEntryDraftBuilder.of(draft).build());
+        return CompletableFuture.completedFuture(draft);
     }
 
     /**

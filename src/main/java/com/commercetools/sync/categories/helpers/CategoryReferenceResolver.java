@@ -44,7 +44,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
                                                                   .build())
                                           .orElseGet(() -> CategoryDraftBuilder.of(categoryDraft).build()));
         }
-        return CompletableFuture.completedFuture(CategoryDraftBuilder.of(categoryDraft).build());
+        return CompletableFuture.completedFuture(categoryDraft);
     }
 
     /**
@@ -60,7 +60,6 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
      */
     @Nonnull
     public CompletionStage<CategoryDraft> resolveParentReference(@Nonnull final CategoryDraft categoryDraft) {
-        CategoryDraftBuilder categoryDraftBuilder = CategoryDraftBuilder.of(categoryDraft);
         final Reference<Category> parentCategoryReference = categoryDraft.getParent();
         if (parentCategoryReference != null) {
             try {
@@ -72,7 +71,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
                 return CompletableFutureUtils.exceptionallyCompletedFuture(exception);
             }
         }
-        return CompletableFuture.completedFuture(categoryDraftBuilder.build());
+        return CompletableFuture.completedFuture(categoryDraft);
     }
 
     /**
