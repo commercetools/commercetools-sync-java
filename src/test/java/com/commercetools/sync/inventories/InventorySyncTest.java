@@ -14,6 +14,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletionException;
 import java.util.function.BiConsumer;
 
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
@@ -270,7 +271,7 @@ public class InventorySyncTest {
         assertThat(stats.getUpdated()).isEqualTo(0);
         assertThat(callbackMessages.get(0)).isEqualTo(format("Failed to create new supply channel of key '%s'.",
             KEY_3));
-        assertThat(callbackThrowables.get(0)).isExactlyInstanceOf(RuntimeException.class);
+        assertThat(callbackThrowables.get(0)).isExactlyInstanceOf(CompletionException.class);
     }
 
     @Test
