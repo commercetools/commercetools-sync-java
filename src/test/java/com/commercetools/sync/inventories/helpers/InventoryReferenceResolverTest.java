@@ -76,7 +76,7 @@ public class InventoryReferenceResolverTest {
     @Test
     public void resolveCustomTypeReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReferences() {
         final InventorySyncOptions optionsWithAllowedUuid = InventorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                                    .setAllowUuid(true)
+                                                                                    .setAllowUuidKeys(true)
                                                                                     .build();
         final InventoryEntryDraft draft = InventoryEntryDraft
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), UUID_KEY))
@@ -106,7 +106,7 @@ public class InventoryReferenceResolverTest {
                                      assertThat(exception.getMessage())
                                          .isEqualTo("Found a UUID in the id field. Expecting a key without a UUID"
                                              + " value. If you want to allow UUID values for reference keys, please"
-                                             + " use the setAllowUuid(true) option in the sync options.");
+                                             + " use the setAllowUuidKeys(true) option in the sync options.");
                                      return null;
                                  }).toCompletableFuture().join();
     }
@@ -196,7 +196,7 @@ public class InventoryReferenceResolverTest {
                              assertThat(exception.getCause().getMessage())
                                  .isEqualTo("Found a UUID in the id field. Expecting a key without a UUID value. If you"
                                      + " want to allow UUID values for reference keys, please use the"
-                                     + " setAllowUuid(true) option in the sync options.");
+                                     + " setAllowUuidKeys(true) option in the sync options.");
                              return null;
                          }).toCompletableFuture().join();
     }

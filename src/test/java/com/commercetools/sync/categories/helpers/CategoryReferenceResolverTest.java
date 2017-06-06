@@ -64,7 +64,7 @@ public class CategoryReferenceResolverTest {
     @Test
     public void resolveCustomTypeReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReferences() {
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                                  .setAllowUuid(true)
+                                                                                  .setAllowUuidKeys(true)
                                                                                   .build();
         final String uuidKey = String.valueOf(UUID.randomUUID());
         final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH, "myDraft", "externalId",
@@ -94,7 +94,7 @@ public class CategoryReferenceResolverTest {
                                      assertThat(exception.getMessage())
                                          .isEqualTo("Found a UUID in the id field. Expecting a key without a UUID"
                                              + " value. If you want to allow UUID values for reference keys, please"
-                                             + " use the setAllowUuid(true) option in the sync options.");
+                                             + " use the setAllowUuidKeys(true) option in the sync options.");
                                      return null;
                                  }).toCompletableFuture().join();
     }
@@ -156,7 +156,7 @@ public class CategoryReferenceResolverTest {
                                      assertThat(exception.getCause().getMessage())
                                          .isEqualTo("Found a UUID in the id field. Expecting a key without a UUID "
                                              + "value. If you want to allow UUID values for reference keys, please use"
-                                             + " the setAllowUuid(true) option in the sync options.");
+                                             + " the setAllowUuidKeys(true) option in the sync options.");
                                      return null;
                                  }).toCompletableFuture().join();
     }

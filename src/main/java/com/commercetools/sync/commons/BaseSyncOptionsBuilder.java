@@ -101,7 +101,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * @param allowUuid new vale to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setAllowUuid(final boolean allowUuid) {
+    public T setAllowUuidKeys(final boolean allowUuid) {
         this.allowUuid = allowUuid;
         return getThis();
     }

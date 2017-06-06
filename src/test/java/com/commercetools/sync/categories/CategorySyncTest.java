@@ -281,7 +281,7 @@ public class CategorySyncTest {
             + " with externalId:'externalId'. Reason:"
             + " com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Found a UUID in the id field."
             + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please use"
-            + " the setAllowUuid(true) option in the sync options.");
+            + " the setAllowUuidKeys(true) option in the sync options.");
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -417,7 +417,7 @@ public class CategorySyncTest {
             + " with externalId:'externalId'. Reason:"
             + " com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Found a UUID in the id field."
             + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please use"
-            + " the setAllowUuid(true) option in the sync options.");
+            + " the setAllowUuidKeys(true) option in the sync options.");
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -426,7 +426,7 @@ public class CategorySyncTest {
     @Test
     public void sync_WithAllowedUuidCustomTypeKey_ShouldSync() {
         categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                        .setAllowUuid(true)
+                                                        .setAllowUuidKeys(true)
                                                         .build();
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
             getMockCategoryService());

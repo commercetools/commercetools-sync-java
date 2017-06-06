@@ -156,7 +156,7 @@ public class BaseSyncOptions {
      * @return a {@code boolean} flag, if set to true, enables the user to use keys with UUID format for references.
      *      By default, it is set to {@code false}.
      */
-    public boolean isUuidAllowed() {
+    public boolean shouldAllowUuidKeys() {
         return allowUuid;
     }
 }

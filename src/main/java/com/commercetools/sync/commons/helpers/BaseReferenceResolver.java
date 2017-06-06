@@ -29,8 +29,8 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     private static final String UUID_NOT_ALLOWED = "Found a UUID in the id field. Expecting a key without a UUID value."
-        + " If you want to allow UUID values for reference keys, please use the setAllowUuid(true) option in the sync"
-        + " options.";
+        + " If you want to allow UUID values for reference keys, please use the setAllowUuidKeys(true) option in the"
+        + " sync options.";
     private static final String UNSET_ID_FIELD = "Reference 'id' field value is blank (null/empty).";
     private static final String KEY_NOT_SET_ON_EXPANSION_OR_ID_FIELD = "Key is blank (null/empty) on both expanded"
         + " reference object and reference id field.";
@@ -152,7 +152,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
         if (isBlank(key)) {
             throw new ReferenceResolutionException(errorMessage);
         } else {
-            if (!options.isUuidAllowed() && isUuid(key)) {
+            if (!options.shouldAllowUuidKeys() && isUuid(key)) {
                 throw new ReferenceResolutionException(UUID_NOT_ALLOWED);
             }
         }

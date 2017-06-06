@@ -77,11 +77,11 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void setAllowUuid_WithTrue_ShouldSetFlag() {
-        categorySyncOptionsBuilder.setAllowUuid(true);
+        categorySyncOptionsBuilder.setAllowUuidKeys(true);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
-        assertThat(categorySyncOptions.isUuidAllowed()).isNotNull();
-        assertThat(categorySyncOptions.isUuidAllowed()).isTrue();
+        assertThat(categorySyncOptions.shouldAllowUuidKeys()).isNotNull();
+        assertThat(categorySyncOptions.shouldAllowUuidKeys()).isTrue();
     }
 
     @Test
@@ -125,7 +125,7 @@ public class CategorySyncOptionsBuilderTest {
     public void categorySyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(CTP_CLIENT)
-            .setAllowUuid(true)
+            .setAllowUuidKeys(true)
             .setRemoveOtherLocales(false)
             .setUpdateActionsFilter(updateActions -> Collections.emptyList())
             .build();
