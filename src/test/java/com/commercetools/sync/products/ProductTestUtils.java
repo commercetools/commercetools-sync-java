@@ -3,6 +3,7 @@ package com.commercetools.sync.products;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.products.actions.ProductUpdateActionsBuilder.masterData;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static java.util.Collections.singletonMap;
 import static java.util.Locale.GERMAN;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -37,7 +39,8 @@ public class ProductTestUtils {
         return readObjectFromResource("product-type-main.json", ProductType.typeReference());
     }
 
-    public static ProductDraft productDraft(String resourcePath, ProductType productType, Category category, final ProductSyncOptions syncOptions) {
+    public static ProductDraft productDraft(String resourcePath, ProductType productType,
+                                            Category category, ProductSyncOptions syncOptions) {
         Product template = product(resourcePath);
         ProductData productData = masterData(template, syncOptions);
 
@@ -55,7 +58,7 @@ public class ProductTestUtils {
                 .key(template.getKey())
                 .publish(template.getMasterData().isPublished());
         if (nonNull(category)) {
-//            builder = builder.categoryOrderHints(CategoryOrderHints.of(singletonMap(category.getId(), "0.95")));
+            builder = builder.categoryOrderHints(CategoryOrderHints.of(singletonMap(category.getId(), "0.95")));
         }
         return builder.build();
     }
