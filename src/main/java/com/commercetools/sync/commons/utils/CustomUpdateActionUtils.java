@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedRemoveCustomTypeUpdateAction;
@@ -96,16 +97,16 @@ public final class CustomUpdateActionUtils {
                     // should set the custom type and fields of the new resource to the old one.
                     final String newCustomFieldsTypeKey = newResourceCustomFields.getType().getKey();
                     final Map<String, JsonNode> newCustomFieldsJsonMap = newResourceCustomFields.getFields();
-                    final UpdateAction<T> updateAction = buildTypedSetCustomTypeUpdateAction(
-                        newCustomFieldsTypeKey, newCustomFieldsJsonMap, oldResource, syncOptions).orElse(null);
-                    return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
+                    final Optional<UpdateAction<T>> updateAction = buildTypedSetCustomTypeUpdateAction(
+                        newCustomFieldsTypeKey, newCustomFieldsJsonMap, oldResource, syncOptions);
+                    return updateAction.map(Collections::singletonList).orElseGet(Collections::emptyList);
                 }
             } else {
                 // New resource's custom fields are not set, but old resource's custom fields are set. So we
                 // should remove the custom type from the old resource.
-                final UpdateAction<T> updateAction = buildTypedRemoveCustomTypeUpdateAction(oldResource, syncOptions)
-                    .orElse(null);
-                return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
+                final Optional<UpdateAction<T>> updateAction = buildTypedRemoveCustomTypeUpdateAction(oldResource,
+                    syncOptions);
+                return updateAction.map(Collections::singletonList).orElseGet(Collections::emptyList);
             }
         }
         return Collections.emptyList();
@@ -160,20 +161,18 @@ public final class CustomUpdateActionUtils {
             }
             if (newCustomFieldsJsonMap == null) {
                 // New resource's custom fields are null/not set. So we should unset old custom fields.
-                final UpdateAction<T> updateAction = buildTypedSetCustomTypeUpdateAction(
-                    newCustomTypeId, null, resource, syncOptions).orElse(null);
-                return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
+                final Optional<UpdateAction<T>> updateAction = buildTypedSetCustomTypeUpdateAction(
+                    newCustomTypeId, null, resource, syncOptions);
+                return updateAction.map(Collections::singletonList).orElseGet(Collections::emptyList);
             }
             // old and new resource's custom fields are set. So we should calculate update actions for the
             // the fields of both.
             return buildSetCustomFieldsUpdateActions(oldCustomFieldsJsonMap, newCustomFieldsJsonMap, resource,
                 syncOptions);
         } else {
-            final UpdateAction<T> updateAction =
-                buildTypedSetCustomTypeUpdateAction(
-                    newCustomTypeId, newCustomFieldsJsonMap, resource, syncOptions)
-                    .orElse(null);
-            return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
+            final Optional<UpdateAction<T>> updateAction = buildTypedSetCustomTypeUpdateAction(newCustomTypeId,
+                newCustomFieldsJsonMap, resource, syncOptions);
+            return updateAction.map(Collections::singletonList).orElseGet(Collections::emptyList);
         }
     }
 
