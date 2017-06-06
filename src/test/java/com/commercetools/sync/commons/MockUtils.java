@@ -6,12 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -41,22 +37,6 @@ public class MockUtils {
         customFieldsJsons
             .put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
         return CustomFieldsDraft.ofTypeIdAndJson("StepCategoryTypeId", customFieldsJsons);
-    }
-
-    /**
-     * Creates a mock instance of {@link CustomFieldsDraft} with the supplied {@code customTypeId} and
-     * {@code customFields}.
-     *
-     * @return a mock instance of {@link CustomFieldsDraft} with supplied id and custom fields.
-     */
-    public static CustomFieldsDraft getMockCustomFieldsDraft(@Nullable final String customTypeId,
-                                                             @Nonnull final Map<String, JsonNode> customFields) {
-        final CustomFieldsDraft newCategoryCustomFieldsDraft = mock(CustomFieldsDraft.class);
-        final ResourceIdentifier<Type> newCategoryCustomFieldsDraftTypeReference =
-            ResourceIdentifier.ofId(customTypeId);
-        when(newCategoryCustomFieldsDraft.getType()).thenReturn(newCategoryCustomFieldsDraftTypeReference);
-        when(newCategoryCustomFieldsDraft.getFields()).thenReturn(customFields);
-        return newCategoryCustomFieldsDraft;
     }
 
     /**

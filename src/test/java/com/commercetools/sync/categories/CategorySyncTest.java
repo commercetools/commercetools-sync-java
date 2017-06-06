@@ -341,33 +341,6 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithExistingCategoryButWithNullCustomTypeReference_ShouldFailSync() {
-        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
-            getMockCategoryService());
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", "parentExternalId",
-            null, new HashMap<>()));
-
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve custom type reference on CategoryDraft"
-            + " with externalId:'externalId'. Reason: "
-            + "com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Reference 'id' field value is "
-            + "blank (null/empty).");
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
-    }
-
-    @Test
     public void sync_WithExistingCategoryButWithEmptyCustomTypeReference_ShouldFailSync() {
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
             getMockCategoryService());

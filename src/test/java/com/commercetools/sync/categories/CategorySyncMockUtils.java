@@ -151,15 +151,14 @@ public class CategorySyncMockUtils {
                                                      @Nonnull final String name,
                                                      @Nonnull final String externalId,
                                                      @Nullable final String parentId,
-                                                     @Nullable final String customTypeId,
+                                                     @Nonnull final String customTypeId,
                                                      @Nonnull final Map<String, JsonNode> customFields) {
         final CategoryDraft categoryDraft = mock(CategoryDraft.class);
         when(categoryDraft.getName()).thenReturn(LocalizedString.of(locale, name));
         when(categoryDraft.getExternalId()).thenReturn(externalId);
         when(categoryDraft.getParent()).thenReturn(Category.referenceOfId(parentId));
-        final CustomFieldsDraft mockCustomFieldsDraft = getMockCustomFieldsDraft(customTypeId, customFields);
+        final CustomFieldsDraft mockCustomFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeId, customFields);
         when(categoryDraft.getCustom()).thenReturn(mockCustomFieldsDraft);
-
         return categoryDraft;
     }
 

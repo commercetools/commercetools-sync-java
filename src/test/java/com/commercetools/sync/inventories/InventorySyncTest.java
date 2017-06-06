@@ -11,6 +11,7 @@ import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.SphereException;
+import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,7 +25,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import static com.commercetools.sync.commons.MockUtils.getMockCustomFieldsDraft;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
@@ -305,43 +305,6 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithExistingInventoryEntryButWithNullCustomTypeReference_ShouldFailSync() {
-        final InventorySyncOptions options = getInventorySyncOptions(3, false, true);
-        final InventoryService inventoryService = getMockInventoryService(existingInventories,
-            mock(InventoryEntry.class), mock(InventoryEntry.class));
-
-        final ChannelService channelService = mock(ChannelService.class);
-        when(channelService.fetchCachedChannelId(anyString()))
-            .thenReturn(completedFuture(Optional.of(REF_2)));
-
-        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
-            mock(TypeService.class));
-
-        final List<InventoryEntryDraft> newDrafts = new ArrayList<>();
-        final InventoryEntryDraft draftWithNullCustomTypeId =
-            InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
-                               .withCustom(getMockCustomFieldsDraft(null, new HashMap<>()));
-        newDrafts.add(draftWithNullCustomTypeId);
-
-        inventorySync.sync(newDrafts);
-        assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 inventory entries were processed in total "
-                + "(0 created, 0 updated and 1 failed to sync).");
-        assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve custom type reference on"
-            + " InventoryEntryDraft with sku:'%s'. Reason:"
-            + " com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Reference 'id' field value is"
-            + " blank (null/empty).", SKU_1));
-        assertThat(errorCallBackExceptions).isNotEmpty();
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
-    }
-
-    @Test
     public void sync_WithExistingInventoryEntryButWithEmptyCustomTypeReference_ShouldFailSync() {
         final InventorySyncOptions options = getInventorySyncOptions(3, false, true);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
@@ -356,7 +319,7 @@ public class InventorySyncTest {
         final List<InventoryEntryDraft> newDrafts = new ArrayList<>();
         final InventoryEntryDraft draftWithNullCustomTypeId =
             InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
-                               .withCustom(getMockCustomFieldsDraft("", new HashMap<>()));
+                               .withCustom(CustomFieldsDraft.ofTypeIdAndJson("", new HashMap<>()));
         newDrafts.add(draftWithNullCustomTypeId);
 
         inventorySync.sync(newDrafts);
@@ -393,7 +356,7 @@ public class InventorySyncTest {
         final List<InventoryEntryDraft> newDrafts = new ArrayList<>();
         final InventoryEntryDraft draftWithNullCustomTypeId =
             InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
-                               .withCustom(getMockCustomFieldsDraft(uuidCustomTypeKey, new HashMap<>()));
+                               .withCustom(CustomFieldsDraft.ofTypeIdAndJson(uuidCustomTypeKey, new HashMap<>()));
         newDrafts.add(draftWithNullCustomTypeId);
 
         inventorySync.sync(newDrafts);
@@ -436,7 +399,7 @@ public class InventorySyncTest {
         final List<InventoryEntryDraft> newDrafts = new ArrayList<>();
         final InventoryEntryDraft draftWithNullCustomTypeId =
             InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
-                               .withCustom(getMockCustomFieldsDraft(uuidCustomTypeKey, new HashMap<>()));
+                               .withCustom(CustomFieldsDraft.ofTypeIdAndJson(uuidCustomTypeKey, new HashMap<>()));
         newDrafts.add(draftWithNullCustomTypeId);
 
         inventorySync.sync(newDrafts);
