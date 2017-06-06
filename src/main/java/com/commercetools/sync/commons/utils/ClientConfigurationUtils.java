@@ -47,6 +47,15 @@ public class ClientConfigurationUtils {
     }
 
     /**
+     * Creates a {@link BlockingSphereClient} with a default {@code timeout} value of 30 seconds.
+     *
+     * @return the instanted {@link BlockingSphereClient}.
+     */
+    public static BlockingSphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
+        return createClient(clientConfig, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
+    }
+
+    /**
      * Return a {@link SphereClient} instance which will retry its request after it receives a server error from CTP.
      * A given {@code sphereClient} is wrapped by {@link RetrySphereClientDecorator} with proper rules initialized, and
      * then returned.
@@ -72,17 +81,8 @@ public class ClientConfigurationUtils {
      */
     @Nonnull
     static Duration retryOn5xxDurationCalculator(@Nonnull final RetryContext retryContext) {
-        final double exponent = ((retryContext.getAttempt() - 1L) / 3L) + 1.0d;
+        final long exponent = ((retryContext.getAttempt() - 1L) / 3L) + 1L;
         return Duration.ofSeconds((long) Math.pow(2.0d, exponent));
-    }
-
-    /**
-     * Creates a {@link BlockingSphereClient} with a default {@code timeout} value of 30 seconds.
-     *
-     * @return the instanted {@link BlockingSphereClient}.
-     */
-    public static BlockingSphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
-        return createClient(clientConfig, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
     }
 
     /**
