@@ -12,7 +12,6 @@ import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,8 +35,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
         if (custom != null) {
             return getCustomTypeId(custom)
                 .thenApply(resolvedTypeIdOptional ->
-                    resolvedTypeIdOptional.filter(StringUtils::isNotBlank)
-                                          .map(resolvedTypeId ->
+                    resolvedTypeIdOptional.map(resolvedTypeId ->
                                               CategoryDraftBuilder.of(categoryDraft)
                                                                   .custom(CustomFieldsDraft.ofTypeIdAndJson(
                                                                       resolvedTypeId, custom.getFields()))
@@ -91,7 +89,6 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
         @Nonnull final String parentCategoryExternalId) {
         return categoryService.fetchCachedCategoryId(parentCategoryExternalId)
                               .thenApply(resolvedParentIdOptional -> resolvedParentIdOptional
-                                  .filter(StringUtils::isNotBlank)
                                   .map(resolvedParentId ->
                                       CategoryDraftBuilder.of(categoryDraft)
                                                           .parent(Category.referenceOfId(resolvedParentId))

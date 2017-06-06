@@ -12,7 +12,6 @@ import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -39,8 +38,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
         final CustomFieldsDraft custom = draft.getCustom();
         if (custom != null) {
             return getCustomTypeId(custom).thenApply(resolvedTypeIdOptional ->
-                resolvedTypeIdOptional.filter(StringUtils::isNotBlank)
-                                      .map(resolvedTypeId -> InventoryEntryDraftBuilder
+                resolvedTypeIdOptional.map(resolvedTypeId -> InventoryEntryDraftBuilder
                                           .of(draft)
                                           .custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields()))
                                           .build())
@@ -101,7 +99,6 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
         @Nonnull final String channelKey) {
         return channelService.fetchCachedChannelId(channelKey)
                              .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
-                                 .filter(StringUtils::isNotBlank)
                                  .map(resolvedChannelId -> setChannelReference(resolvedChannelId, draft))
                                  .orElseGet(() -> createChannelAndSetReference(channelKey, draft)));
     }
