@@ -34,6 +34,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     private static final String UNSET_ID_FIELD = "Reference 'id' field value is blank (null/empty).";
     private static final String KEY_NOT_SET_ON_EXPANSION_OR_ID_FIELD = "Key is blank (null/empty) on both expanded"
         + " reference object and reference id field.";
+    private static final String UUID_REGEX = "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}";
 
     private TypeService typeService;
     private S options;
@@ -164,9 +165,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      * @return true if it is in UUID format, otherwise false.
      */
     private static boolean isUuid(@Nonnull final String id) {
-        final String uuidRegex = "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}";
-        final Pattern regexPattern = Pattern
-            .compile(uuidRegex);
+        final Pattern regexPattern = Pattern.compile(UUID_REGEX);
         return regexPattern.matcher(id).matches();
     }
 
