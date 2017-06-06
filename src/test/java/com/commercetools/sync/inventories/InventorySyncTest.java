@@ -178,9 +178,8 @@ public class InventorySyncTest {
         assertThat(stats.getUpdated()).isEqualTo(0);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve supply channel reference on"
-            + " InventoryEntryDraft with sku:'%s'. Reason: "
-            + "com.commercetools.sync.commons.exceptions.ReferenceResolutionException: "
-            + "Channel with key '%s' does not exist.", SKU_3, KEY_3));
+            + " InventoryEntryDraft with sku:'%s'. Reason: %s: Channel with key '%s' does not exist.", SKU_3,
+            ReferenceResolutionException.class.getCanonicalName(), KEY_3));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -211,9 +210,10 @@ public class InventorySyncTest {
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve supply channel reference on "
             + "InventoryEntryDraft with sku:'%s'. Reason: "
-            + "com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Found a UUID in the id field."
+            + "%s: Found a UUID in the id field."
             + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please use"
-            + " the setAllowUuidKeys(true) option in the sync options.", SKU_3));
+            + " the setAllowUuidKeys(true) option in the sync options.", SKU_3,
+            ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -333,8 +333,8 @@ public class InventorySyncTest {
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve custom type reference on"
             + " InventoryEntryDraft with sku:'%s'. Reason:"
-            + " com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Reference 'id' field value is"
-            + " blank (null/empty).", SKU_1));
+            + " %s: Reference 'id' field value is"
+            + " blank (null/empty).", SKU_1, ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -370,9 +370,10 @@ public class InventorySyncTest {
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve custom type reference on"
             + " InventoryEntryDraft with sku:'%s'. Reason:"
-            + " com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Found a UUID in the id field."
+            + " %s: Found a UUID in the id field."
             + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please use"
-            + " the setAllowUuidKeys(true) option in the sync options.", SKU_1));
+            + " the setAllowUuidKeys(true) option in the sync options.", SKU_1,
+            ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);

@@ -22,6 +22,7 @@ import java.util.concurrent.CompletionException;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static com.commercetools.sync.commons.MockUtils.getMockCategoryService;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -277,11 +278,10 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve parent reference on CategoryDraft"
-            + " with externalId:'externalId'. Reason:"
-            + " com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Found a UUID in the id field."
-            + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please use"
-            + " the setAllowUuidKeys(true) option in the sync options.");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve parent reference on CategoryDraft"
+            + " with externalId:'externalId'. Reason: %s: Found a UUID in the id field. Expecting a key without a UUID"
+            + " value. If you want to allow UUID values for reference keys, please use the setAllowUuidKeys(true)"
+            + " option in the sync options.", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -305,10 +305,9 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve parent reference on CategoryDraft with"
-            + " externalId:'externalId'. Reason:"
-            + " com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Key is blank"
-            + " (null/empty) on both expanded reference object and reference id field.");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve parent reference on CategoryDraft"
+            + " with externalId:'externalId'. Reason: %s: Key is blank (null/empty) on both expanded reference object"
+            + " and reference id field.", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -332,9 +331,9 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve parent reference on CategoryDraft with "
-            + "externalId:'externalId'. Reason: com.commercetools.sync.commons.exceptions.ReferenceResolutionException:"
-            + " Key is blank (null/empty) on both expanded reference object and reference id field.");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve parent reference on CategoryDraft"
+            + " with externalId:'externalId'. Reason: %s: Key is blank (null/empty) on both expanded reference object"
+            + " and reference id field.", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -358,10 +357,9 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve custom type reference on CategoryDraft"
-            + " with externalId:'externalId'. Reason: "
-            + "com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Reference 'id' field value is "
-            + "blank (null/empty).");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve custom type reference on "
+            + "CategoryDraft with externalId:'externalId'. Reason: %s: Reference 'id' field value is blank (null/"
+            + "empty).", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -386,11 +384,11 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to resolve custom type reference on CategoryDraft"
-            + " with externalId:'externalId'. Reason:"
-            + " com.commercetools.sync.commons.exceptions.ReferenceResolutionException: Found a UUID in the id field."
-            + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please use"
-            + " the setAllowUuidKeys(true) option in the sync options.");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve custom type reference on"
+            + " CategoryDraft with externalId:'externalId'. Reason: %s: Found a UUID in the id field. Expecting a key"
+            + " without a UUID value. If you want to allow UUID values for reference keys, please use the"
+            + " setAllowUuidKeys(true) option in the sync options.",
+            ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
