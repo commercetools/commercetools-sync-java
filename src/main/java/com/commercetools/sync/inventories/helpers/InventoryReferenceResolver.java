@@ -100,8 +100,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
     private CompletionStage<InventoryEntryDraft> fetchOrCreateAndResolveReference(
         @Nonnull final InventoryEntryDraft draft,
         @Nonnull final String channelKey) {
-        return channelService.fetchCachedChannelIdByKeyAndRoles(channelKey,
-            Collections.singletonList(ChannelRole.INVENTORY_SUPPLY))
+        return channelService.fetchCachedChannelId(channelKey)
                              .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
                                  .filter(StringUtils::isNotBlank)
                                  .map(resolvedChannelId -> setChannelReference(resolvedChannelId, draft))

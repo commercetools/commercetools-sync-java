@@ -28,7 +28,6 @@ import static com.commercetools.sync.commons.MockUtils.getMockCustomFieldsDraft;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -114,7 +113,7 @@ public class InventoryReferenceResolverTest {
     @Test
     public void
         resolveSupplyChannelReference_WithNonExistingChannelAndNotEnsureChannel_ShouldNotResolveChannelReference() {
-        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+        when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final InventoryEntryDraft draft = InventoryEntryDraft
@@ -141,7 +140,7 @@ public class InventoryReferenceResolverTest {
         final InventorySyncOptions optionsWithEnsureChannels = InventorySyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                           .ensureChannels(true)
                                                                                           .build();
-        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+        when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final InventoryEntryDraft draft = InventoryEntryDraft

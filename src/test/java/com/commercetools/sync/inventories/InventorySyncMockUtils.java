@@ -112,9 +112,9 @@ public class InventorySyncMockUtils {
      *      {@link InventoryService#updateInventoryEntry(InventoryEntry, List)}
      * @return mock instance of {@link InventoryService}
      */
-    public static InventoryService getMockInventoryService(final List<InventoryEntry> inventoryEntries,
-                                                           final InventoryEntry createdInventoryEntry,
-                                                           final InventoryEntry updatedInventoryEntry) {
+    static InventoryService getMockInventoryService(final List<InventoryEntry> inventoryEntries,
+                                                    final InventoryEntry createdInventoryEntry,
+                                                    final InventoryEntry updatedInventoryEntry) {
         final InventoryService inventoryService = mock(InventoryService.class);
         when(inventoryService.fetchInventoryEntriesBySkus(any())).thenReturn(completedFuture(inventoryEntries));
         when(inventoryService.createInventoryEntry(any())).thenReturn(completedFuture(createdInventoryEntry));
@@ -125,7 +125,7 @@ public class InventorySyncMockUtils {
     /**
      * Returns mock instance of {@link InventoryService} with the specified parameters as mock results of calling the
      *   {@link ChannelService#createAndCacheChannel(String, Set)} and
-     *   {@link ChannelService#fetchCachedChannelIdByKeyAndRoles(String, List)} of the mock channel service.
+     *   {@link ChannelService#fetchCachedChannelId(String)} (String)} of the mock channel service.
      *
      * @param createdSupplyChannel result of future resulting from calling
      *      {@link ChannelService#createAndCacheChannel(String, Set)}
@@ -136,7 +136,7 @@ public class InventorySyncMockUtils {
         final String createdSupplyChannelId = createdSupplyChannel.getId();
 
         final ChannelService channelService = mock(ChannelService.class);
-        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+        when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(completedFuture(Optional.of(createdSupplyChannelId)));
         when(channelService.createAndCacheChannel(any(), any()))
             .thenReturn(completedFuture(createdSupplyChannel));
@@ -149,7 +149,7 @@ public class InventorySyncMockUtils {
      * @param <T> type of result that is supposed to be inside {@link CompletionStage}
      * @return {@link CompletionStage} instance that is completed exceptionally with {@link RuntimeException}
      */
-    public static <T> CompletionStage<T> getCompletionStageWithException() {
+    static <T> CompletionStage<T> getCompletionStageWithException() {
         final CompletableFuture<T> exceptionalStage = new CompletableFuture<>();
         exceptionalStage.completeExceptionally(new RuntimeException());
         return exceptionalStage;

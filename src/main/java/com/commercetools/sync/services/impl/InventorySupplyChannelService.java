@@ -12,8 +12,8 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 
-public class ChannelServiceImpl implements ChannelService {
+public class InventorySupplyChannelService implements ChannelService {
 
     private final SphereClient ctpClient;
 
@@ -30,26 +30,26 @@ public class ChannelServiceImpl implements ChannelService {
      */
     private final Map<String, String> cache = new HashMap<>();
 
-    public ChannelServiceImpl(@Nonnull final SphereClient ctpClient) {
+    public InventorySupplyChannelService(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<String>> fetchCachedChannelIdByKeyAndRoles(@Nonnull final String key,
-                                                                               @Nonnull final List<ChannelRole> roles) {
+    public CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key) {
         if (cache.isEmpty()) {
-            return cacheAndFetch(key, roles);
+            return cacheAndFetch(key);
         }
         return CompletableFuture.completedFuture(Optional.ofNullable(cache.get(key)));
     }
 
-    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key,
-                                                            @Nonnull final List<ChannelRole> roles) {
-        final ChannelQuery query = ChannelQueryBuilder.of()
-                                                      .plusPredicates(channelQueryModel ->
-                                                          channelQueryModel.roles().containsAny(roles))
-                                                      .build();
+    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
+        final ChannelQuery query =
+            ChannelQueryBuilder.of()
+                               .plusPredicates(channelQueryModel -> channelQueryModel
+                                   .roles()
+                                   .containsAny(Collections.singletonList(ChannelRole.INVENTORY_SUPPLY)))
+                               .build();
         return QueryExecutionUtils.queryAll(ctpClient, query)
                                   .thenApply(channels -> {
                                       channels.forEach(channel ->

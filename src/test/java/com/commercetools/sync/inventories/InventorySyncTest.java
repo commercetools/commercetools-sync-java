@@ -163,7 +163,7 @@ public class InventorySyncTest {
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
         final ChannelService channelService = mock(ChannelService.class);
-        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+        when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(completedFuture(Optional.empty()));
 
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
@@ -195,7 +195,7 @@ public class InventorySyncTest {
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
         final ChannelService channelService = mock(ChannelService.class);
-        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+        when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(completedFuture(Optional.empty()));
 
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
@@ -311,7 +311,7 @@ public class InventorySyncTest {
             mock(InventoryEntry.class), mock(InventoryEntry.class));
 
         final ChannelService channelService = mock(ChannelService.class);
-        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+        when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(completedFuture(Optional.of(REF_2)));
 
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
@@ -348,7 +348,7 @@ public class InventorySyncTest {
             mock(InventoryEntry.class), mock(InventoryEntry.class));
 
         final ChannelService channelService = mock(ChannelService.class);
-        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+        when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(completedFuture(Optional.of(REF_2)));
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
             mock(TypeService.class));
@@ -384,7 +384,7 @@ public class InventorySyncTest {
             mock(InventoryEntry.class), mock(InventoryEntry.class));
 
         final ChannelService channelService = mock(ChannelService.class);
-        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+        when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(completedFuture(Optional.of(REF_2)));
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
             mock(TypeService.class));
@@ -423,7 +423,7 @@ public class InventorySyncTest {
         when(inventoryService.fetchInventoryEntriesBySkus(any())).thenReturn(completedFuture(existingInventories));
 
         final ChannelService channelService = mock(ChannelService.class);
-        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+        when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(completedFuture(Optional.of(REF_2)));
 
         final TypeService mockTypeService = mock(TypeService.class);
@@ -457,7 +457,7 @@ public class InventorySyncTest {
             mock(InventoryEntry.class), mock(InventoryEntry.class));
 
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
-        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+        when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraft
@@ -485,7 +485,7 @@ public class InventorySyncTest {
             mock(InventoryEntry.class), mock(InventoryEntry.class));
 
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
-        when(channelService.fetchCachedChannelIdByKeyAndRoles(anyString(), any()))
+        when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
         when(channelService.createAndCacheChannel(anyString(), any())).thenReturn(failed(new SphereException()));
 
