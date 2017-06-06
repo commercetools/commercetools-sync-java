@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
@@ -59,7 +58,7 @@ public class CategorySyncMockUtils {
         when(oldCategory.getMetaTitle()).thenReturn(LocalizedString.of(locale, metaTitle));
         when(oldCategory.getMetaKeywords()).thenReturn(LocalizedString.of(locale, metaKeywords));
         when(oldCategory.getOrderHint()).thenReturn(orderHint);
-        when(oldCategory.getParent()).thenReturn(Reference.of(Category.referenceTypeId(), parentId));
+        when(oldCategory.getParent()).thenReturn(Category.referenceOfId(parentId));
         return oldCategory;
     }
 
@@ -128,7 +127,7 @@ public class CategorySyncMockUtils {
         when(categoryDraft.getMetaTitle()).thenReturn(LocalizedString.of(locale, metaTitle));
         when(categoryDraft.getMetaKeywords()).thenReturn(LocalizedString.of(locale, metaKeywords));
         when(categoryDraft.getOrderHint()).thenReturn(orderHint);
-        when(categoryDraft.getParent()).thenReturn(Reference.of(Category.referenceTypeId(), parentId));
+        when(categoryDraft.getParent()).thenReturn(Category.referenceOfId(parentId));
         return categoryDraft;
     }
 
@@ -157,7 +156,7 @@ public class CategorySyncMockUtils {
         final CategoryDraft categoryDraft = mock(CategoryDraft.class);
         when(categoryDraft.getName()).thenReturn(LocalizedString.of(locale, name));
         when(categoryDraft.getExternalId()).thenReturn(externalId);
-        when(categoryDraft.getParent()).thenReturn(Reference.of(Category.referenceTypeId(), parentId));
+        when(categoryDraft.getParent()).thenReturn(Category.referenceOfId(parentId));
         final CustomFieldsDraft mockCustomFieldsDraft = getMockCustomFieldsDraft(customTypeId, customFields);
         when(categoryDraft.getCustom()).thenReturn(mockCustomFieldsDraft);
 

@@ -95,8 +95,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
                                   .filter(StringUtils::isNotBlank)
                                   .map(resolvedParentId ->
                                       CategoryDraftBuilder.of(categoryDraft)
-                                                          .parent(Reference.of(Category.referenceTypeId(),
-                                                              resolvedParentId))
+                                                          .parent(Category.referenceOfId(resolvedParentId))
                                                           .build())
                                   .orElseGet(() -> CategoryDraftBuilder.of(categoryDraft).build()));
     }

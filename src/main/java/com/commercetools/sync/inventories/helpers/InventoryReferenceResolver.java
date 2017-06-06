@@ -136,7 +136,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
                                                                                 inventoryEntryDraft) {
         return CompletableFuture.completedFuture(InventoryEntryDraftBuilder
             .of(inventoryEntryDraft)
-            .supplyChannel(Reference.of(Channel.referenceTypeId(), channelId))
+            .supplyChannel(Channel.referenceOfId(channelId))
             .build());
     }
 
@@ -165,7 +165,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
             return channelService.createAndCacheChannel(channelKey, Collections.singleton(ChannelRole.INVENTORY_SUPPLY))
                                  .thenApply(createdChannel -> InventoryEntryDraftBuilder
                                      .of(inventoryEntryDraft)
-                                     .supplyChannel(Reference.of(Channel.referenceTypeId(), createdChannel.getId()))
+                                     .supplyChannel(Channel.referenceOfId(createdChannel.getId()))
                                      .build());
         } else {
             final ReferenceResolutionException referenceResolutionException =

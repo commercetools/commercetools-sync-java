@@ -60,7 +60,7 @@ public class InventoryReferenceResolverTest {
     @Test
     public void resolveCustomTypeReference_WithNoKeysAsUuidSetAndNotAllowed_ShouldResolveReferences() {
         final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), CHANNEL_KEY))
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
             .withCustom(getMockCustomFieldsDraft(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
@@ -78,7 +78,7 @@ public class InventoryReferenceResolverTest {
                                                                                     .setAllowUuidKeys(true)
                                                                                     .build();
         final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), UUID_KEY))
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(UUID_KEY))
             .withCustom(getMockCustomFieldsDraft(UUID_KEY, new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
@@ -93,7 +93,7 @@ public class InventoryReferenceResolverTest {
     @Test
     public void resolveSupplyChannelReference_WithChannelKeyAsUuidSetAndNotAllowed_ShouldNotResolveChannelReference() {
         final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), UUID_KEY))
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(UUID_KEY))
             .withCustom(getMockCustomFieldsDraft(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
@@ -117,7 +117,7 @@ public class InventoryReferenceResolverTest {
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), CHANNEL_KEY))
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
             .withCustom(getMockCustomFieldsDraft(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
@@ -144,7 +144,7 @@ public class InventoryReferenceResolverTest {
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), CHANNEL_KEY))
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
             .withCustom(getMockCustomFieldsDraft(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
@@ -160,7 +160,7 @@ public class InventoryReferenceResolverTest {
     @Test
     public void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), UUID_KEY))
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(UUID_KEY))
             .withCustom(getMockCustomFieldsDraft(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         when(typeService.fetchCachedTypeId(anyString()))
@@ -181,7 +181,7 @@ public class InventoryReferenceResolverTest {
     @Test
     public void resolveCustomTypeReference_WithKeyAsUuidSetAndNotAllowed_ShouldNotResolveCustomTypeReference() {
         final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), CHANNEL_KEY))
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
             .withCustom(getMockCustomFieldsDraft(UUID_KEY, new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
@@ -206,7 +206,7 @@ public class InventoryReferenceResolverTest {
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), CHANNEL_KEY))
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
             .withCustom(getMockCustomFieldsDraft(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
@@ -223,7 +223,7 @@ public class InventoryReferenceResolverTest {
     @Test
     public void resolveSupplyChannelReference_WithEmptyIdOnSupplyChannelReference_ShouldNotResolveChannelReference() {
         final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), ""))
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(""))
             .withCustom(getMockCustomFieldsDraft(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
@@ -242,8 +242,7 @@ public class InventoryReferenceResolverTest {
     @Test
     public void resolveSupplyChannelReference_WithNullIdOnChannelReference_ShouldNotResolveSupplyChannelReference() {
         final InventoryEntryDraft draft = mock(InventoryEntryDraft.class);
-        final Reference<Channel> supplyChannelReference =
-            Reference.ofResourceTypeIdAndId(Channel.referenceTypeId(), null);
+        final Reference<Channel> supplyChannelReference = Channel.referenceOfId(null);
         when(draft.getSupplyChannel()).thenReturn(supplyChannelReference);
 
         final InventoryReferenceResolver referenceResolver =
@@ -262,7 +261,7 @@ public class InventoryReferenceResolverTest {
     @Test
     public void resolveCustomTypeReference_WithNullIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), CHANNEL_KEY))
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
             .withCustom(getMockCustomFieldsDraft(null, new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
@@ -282,7 +281,7 @@ public class InventoryReferenceResolverTest {
     @Test
     public void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Reference.of(Channel.referenceTypeId(), CHANNEL_KEY))
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
             .withCustom(getMockCustomFieldsDraft("", new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =

@@ -45,14 +45,14 @@ public class CustomUpdateActionUtilsTest {
     public void buildCustomUpdateActions_WithNonNullCustomFieldsWithDifferentTypes_ShouldBuildUpdateActions() {
         final Category oldCategory = mock(Category.class);
         final CustomFields oldCategoryCustomFields = mock(CustomFields.class);
-        final Reference<Type> oldCategoryCustomFieldsDraftTypeReference = Reference.of(Type.referenceTypeId(), "2");
+        final Reference<Type> oldCategoryCustomFieldsDraftTypeReference = Type.referenceOfId("2");
         when(oldCategoryCustomFields.getType()).thenReturn(oldCategoryCustomFieldsDraftTypeReference);
         when(oldCategory.getCustom()).thenReturn(oldCategoryCustomFields);
 
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         final CustomFieldsDraft newCategoryCustomFieldsDraft = mock(CustomFieldsDraft.class);
 
-        final ResourceIdentifier<Type> typeResourceIdentifier = Reference.of(Type.referenceTypeId(), "1");
+        final ResourceIdentifier<Type> typeResourceIdentifier = Type.referenceOfId("1");
         when(newCategoryCustomFieldsDraft.getType()).thenReturn(typeResourceIdentifier);
         when(newCategoryDraft.getCustom()).thenReturn(newCategoryCustomFieldsDraft);
 
@@ -101,7 +101,7 @@ public class CustomUpdateActionUtilsTest {
 
     @Test
     public void buildCustomUpdateActions_WithNullIds_ShouldCallSyncOptionsCallBack() {
-        final Reference<Type> categoryTypeReference = Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), null);
+        final Reference<Type> categoryTypeReference = Type.referenceOfId(null);
 
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
@@ -114,7 +114,7 @@ public class CustomUpdateActionUtilsTest {
         // Mock old Category
         final Category oldCategory = mock(Category.class);
         when(oldCategory.getId()).thenReturn("oldCategoryId");
-        when(oldCategory.toReference()).thenReturn(Reference.of(Category.referenceTypeId(), "oldCategoryId"));
+        when(oldCategory.toReference()).thenReturn(Category.referenceOfId("oldCategoryId"));
         when(oldCategory.getCustom()).thenReturn(oldCustomFieldsMock);
 
         // Mock new Category
@@ -167,14 +167,14 @@ public class CustomUpdateActionUtilsTest {
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
         final Map<String, JsonNode> oldCustomFieldsJsonMapMock = new HashMap<>();
         oldCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-        when(oldCustomFieldsMock.getType()).thenReturn(Reference.of(Type.referenceTypeId(), "categoryCustomTypeId"));
+        when(oldCustomFieldsMock.getType()).thenReturn(Type.referenceOfId("categoryCustomTypeId"));
         when(oldCustomFieldsMock.getFieldsJsonMap()).thenReturn(oldCustomFieldsJsonMapMock);
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
         final Map<String, JsonNode> newCustomFieldsJsonMapMock = new HashMap<>();
         newCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
-        when(newCustomFieldsMock.getType()).thenReturn(Reference.of(Type.referenceTypeId(), "categoryCustomTypeId"));
+        when(newCustomFieldsMock.getType()).thenReturn(Type.referenceOfId("categoryCustomTypeId"));
         when(newCustomFieldsMock.getFields()).thenReturn(newCustomFieldsJsonMapMock);
 
         final List<UpdateAction<Category>> updateActions =
@@ -192,7 +192,7 @@ public class CustomUpdateActionUtilsTest {
         throws BuildUpdateActionException {
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
-        when(oldCustomFieldsMock.getType()).thenReturn(Reference.of(Type.referenceTypeId(), "categoryCustomTypeId"));
+        when(oldCustomFieldsMock.getType()).thenReturn(Type.referenceOfId("categoryCustomTypeId"));
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
@@ -211,11 +211,11 @@ public class CustomUpdateActionUtilsTest {
         throws BuildUpdateActionException {
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
-        when(oldCustomFieldsMock.getType()).thenReturn(Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), null));
+        when(oldCustomFieldsMock.getType()).thenReturn(Type.referenceOfId(null));
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
-        when(newCustomFieldsMock.getType()).thenReturn(Reference.of(Type.referenceTypeId(), "categoryCustomTypeId"));
+        when(newCustomFieldsMock.getType()).thenReturn(Type.referenceOfId("categoryCustomTypeId"));
 
         final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
             newCustomFieldsMock, mock(Category.class), CATEGORY_SYNC_OPTIONS);
@@ -230,11 +230,11 @@ public class CustomUpdateActionUtilsTest {
         throws BuildUpdateActionException {
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
-        when(oldCustomFieldsMock.getType()).thenReturn(Reference.of(Type.referenceTypeId(), "1"));
+        when(oldCustomFieldsMock.getType()).thenReturn(Type.referenceOfId("1"));
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
-        when(newCustomFieldsMock.getType()).thenReturn(Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), null));
+        when(newCustomFieldsMock.getType()).thenReturn(Type.referenceOfId(null));
 
         final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
             newCustomFieldsMock, mock(Category.class), CATEGORY_SYNC_OPTIONS);
@@ -247,7 +247,7 @@ public class CustomUpdateActionUtilsTest {
     @Test
     public void buildNonNullCustomFieldsUpdateActions_WithSameIdsButNullNewCustomFields_ShouldBuildUpdateActions()
         throws BuildUpdateActionException {
-        final Reference<Type> categoryTypeReference = Reference.of(Type.referenceTypeId(), "categoryCustomTypeId");
+        final Reference<Type> categoryTypeReference = Type.referenceOfId("categoryCustomTypeId");
 
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
@@ -273,7 +273,7 @@ public class CustomUpdateActionUtilsTest {
     @Test
     public void buildNonNullCustomFieldsUpdateActions_WithNullIds_ShouldThrowBuildUpdateActionException()
         throws BuildUpdateActionException {
-        final Reference<Type> categoryTypeReference = Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), null);
+        final Reference<Type> categoryTypeReference = Type.referenceOfId(null);
 
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
@@ -285,7 +285,7 @@ public class CustomUpdateActionUtilsTest {
 
         final Category oldCategory = mock(Category.class);
         when(oldCategory.getId()).thenReturn("oldCategoryId");
-        when(oldCategory.toReference()).thenReturn(Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), null));
+        when(oldCategory.toReference()).thenReturn(Category.referenceOfId( null));
 
         assertThatThrownBy(() ->
             buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
@@ -446,7 +446,7 @@ public class CustomUpdateActionUtilsTest {
 
         // Cart resource is not handled in GenericUpdateActionUtils#buildTypedUpdateAction
         final Cart cart = mock(Cart.class);
-        when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
+        when(cart.toReference()).thenReturn(Cart.referenceOfId("cartId"));
 
         final List<UpdateAction<Cart>> customFieldsActions =
             buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, cart, CATEGORY_SYNC_OPTIONS);

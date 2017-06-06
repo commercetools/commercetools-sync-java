@@ -184,7 +184,7 @@ public class CategoryReferenceResolverTest {
     public void resolveParentReference_WithEmptyIdOnParentReference_ShouldNotResolveParentReference() {
         final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH, "myDraft", "externalId",
             "parentExternalId", "customTypeId", new HashMap<>());
-        when(categoryDraft.getParent()).thenReturn(Reference.of("type", ""));
+        when(categoryDraft.getParent()).thenReturn(Category.referenceOfId(""));
 
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
@@ -202,8 +202,7 @@ public class CategoryReferenceResolverTest {
     @Test
     public void resolveParentReference_WithNullIdOnParentReference_ShouldNotResolveParentReference() {
         final CategoryDraft categoryDraft = mock(CategoryDraft.class);
-        final Reference<Category> parentCategoryReference =
-            Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), null);
+        final Reference<Category> parentCategoryReference = Category.referenceOfId(null);
         when(categoryDraft.getParent()).thenReturn(parentCategoryReference);
 
         final CategoryReferenceResolver categoryReferenceResolver =
