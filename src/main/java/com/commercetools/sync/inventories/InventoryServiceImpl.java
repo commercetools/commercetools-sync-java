@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
+import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.getRetryOn5xxClient;
 import static java.util.Collections.singleton;
 
 final class InventoryServiceImpl implements InventoryService {
@@ -31,7 +32,7 @@ final class InventoryServiceImpl implements InventoryService {
     private final SphereClient ctpClient;
 
     public InventoryServiceImpl(@Nonnull final SphereClient ctpClient) {
-        this.ctpClient = ctpClient;
+        this.ctpClient = getRetryOn5xxClient(ctpClient);
     }
 
     @Nonnull

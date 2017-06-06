@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
+import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.getRetryOn5xxClient;
+
 /**
  * Implementation of TypeService interface.
  * TODO: USE graphQL to get only keys
@@ -23,7 +25,7 @@ public class TypeServiceImpl implements TypeService {
     private final Map<String, String> cache = new HashMap<>();
 
     public TypeServiceImpl(@Nonnull final SphereClient ctpClient) {
-        this.ctpClient = ctpClient;
+        this.ctpClient = getRetryOn5xxClient(ctpClient);
     }
 
     @Nullable

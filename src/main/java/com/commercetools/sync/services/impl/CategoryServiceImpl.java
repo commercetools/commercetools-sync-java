@@ -17,11 +17,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
+import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.getRetryOn5xxClient;
+
 public class CategoryServiceImpl implements CategoryService {
     private final SphereClient ctpClient;
 
     public CategoryServiceImpl(@Nonnull final SphereClient ctpClient) {
-        this.ctpClient = ctpClient;
+        this.ctpClient = getRetryOn5xxClient(ctpClient);
     }
 
     @Nonnull
