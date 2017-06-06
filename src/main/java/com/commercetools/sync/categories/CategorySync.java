@@ -45,8 +45,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     /**
      * Takes a {@link CategorySyncOptions} instance to instantiate a new {@link CategorySync} instance that could be
-     * used to sync categories or category drafts with the given categories in the CTP project specified in the
-     * injected {@link CategorySyncOptions} instance.
+     * used to sync category drafts with the given categories in the CTP project specified in the injected
+     * {@link CategorySyncOptions} instance.
      *
      * @param syncOptions the container of all the options of the sync process including the CTP project client and/or
      *                    configuration and other sync-specific options.

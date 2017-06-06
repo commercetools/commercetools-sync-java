@@ -50,6 +50,14 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
 
     private final InventoryReferenceResolver referenceResolver;
 
+    /**
+     * Takes a {@link InventorySyncOptions} instance to instantiate a new {@link InventorySync} instance that could be
+     * used to sync inventory drafts with the given inventory entries in the CTP project specified in the injected
+     * {@link InventorySyncOptions} instance.
+     *
+     * @param syncOptions the container of all the options of the sync process including the CTP project client and/or
+     *                    configuration and other sync-specific options.
+     */
     public InventorySync(@Nonnull final InventorySyncOptions syncOptions) {
         this(syncOptions, new InventoryServiceImpl(syncOptions.getCtpClient()),
             new InventorySupplyChannelService(syncOptions.getCtpClient()),
