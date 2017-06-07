@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.BiConsumer;
 
+import static com.commercetools.sync.inventories.InventorySync.ATTEMPTS_ON_409_LIMIT;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryService;
@@ -441,8 +442,8 @@ public class InventorySyncTest {
         assertThat(stats.getFailed()).isEqualTo(1);
         assertThat(stats.getCreated()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
-        verify(service, times(10)).fetchInventoryEntry(eq(SKU_1), any());
-        verify(service, times(11)).updateInventoryEntry(any(), any());
+        verify(service, times(ATTEMPTS_ON_409_LIMIT)).fetchInventoryEntry(eq(SKU_1), any());
+        verify(service, times(ATTEMPTS_ON_409_LIMIT + 1)).updateInventoryEntry(any(), any());
     }
 
     private InventorySync getInventorySync(int batchSize, boolean ensureChannels) {

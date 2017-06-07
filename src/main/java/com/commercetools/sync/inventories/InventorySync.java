@@ -46,6 +46,8 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 public final class InventorySync extends BaseSync<InventoryEntryDraft, InventorySyncStatistics, InventorySyncOptions> {
 
+    static final int ATTEMPTS_ON_409_LIMIT = 5;
+
     private final InventoryService inventoryService;
 
     private final TypeService typeService;
@@ -351,7 +353,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             if (fixedDraft.isPresent()) {
                 futures.add(
                     findCorrespondingEntry(oldInventories, fixedDraft.get())
-                        .map(oldInventory -> update(oldInventory, fixedDraft.get(), 10)) //TODO provide constant
+                        .map(oldInventory -> update(oldInventory, fixedDraft.get(), ATTEMPTS_ON_409_LIMIT))
                         .orElseGet(() -> create(fixedDraft.get()))
                         .toCompletableFuture());
             } else {
@@ -420,17 +422,18 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * It calculates list of {@link UpdateAction} and calls API only when there is a need.
      * It either updates inventory entry and increments "updated" counter in statistics, or increments "failed" counter
      * and executes error callback function in case of any exception.
+     * It attempts to fetch latest version of an {@code entry}, recalculate update actions and retry update in case of
+     * concurrent modification error occurrence.
      *
      * @param entry entry from existing system that could be updated.
-     * @param draft draft with the resolved channel reference, containing data that could differ from data in
-     *      {@code entry}.<strong>Sku isn't compared</strong>
-     * @return {@link CompletionStage} of {@link Void} that indicates method progress
+     * @param draft draft with the resolved channel reference, containing new data
+     * @param retryOn409AttemptsLeft counter which indicates if another retry attempt should be raised
+     * @return {@link CompletionStage} that may contain updated {@link InventoryEntry}
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<InventoryEntry> update(final InventoryEntry entry,
                                                    final InventoryEntryDraft draft,
                                                    final int retryOn409AttemptsLeft) {
-        //TODO refactor
         final List<UpdateAction<InventoryEntry>> updateActions =
             InventorySyncUtils.buildActions(entry, draft, syncOptions, typeService);
         if (!updateActions.isEmpty()) {
@@ -439,26 +442,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                     statistics.incrementUpdated();
                     return completedFuture(updatedInventory);
                 })
-                .exceptionally(ex -> {
-                   if ((retryOn409AttemptsLeft > 0) && (ex instanceof ConcurrentModificationException)) {
-                       return inventoryService.fetchInventoryEntry(draft.getSku(),
-                           draft.getSupplyChannel())
-                           .thenCompose(inventoryEntryOptional ->
-                               inventoryEntryOptional
-                                   .map(inventoryEntry -> update(inventoryEntry, draft, retryOn409AttemptsLeft - 1).toCompletableFuture())
-                                   .orElseGet(() -> {
-                                       statistics.incrementFailed();
-                                       //TODO provide fail MSG and apply error callback
-                                       return completedFuture(null);
-                                   })
-                            ).toCompletableFuture();
-                   } else {
-                       statistics.incrementFailed();
-                       syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
-                           extractChannelKey(draft)), ex);
-                       return completedFuture(null);
-                   }
-                })
+                .exceptionally(exception -> handleUpdateException(exception.getCause(), draft, retryOn409AttemptsLeft)
+                    .toCompletableFuture())
                 .thenCompose(completableFuture -> completableFuture);
         }
         return completedFuture(entry);
@@ -533,6 +518,48 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         return InventoryEntryDraftBuilder.of(draft)
             .supplyChannel(supplyChannelRef)
             .build();
+    }
+
+    /**
+     * Tries to fetch latest version of a corresponding entry, recalculate update actions and retry update if
+     * {@code exception} indicates concurrent modification error. Retry is performed only then, when
+     * {@code retryOn409AttemptsLeft} is greater than 0. Returns {@link CompletionStage} of update invocation, if
+     * retry was attempted. Otherwise it increments "failed" counter, executes error callback function and returns
+     * {@link CompletionStage} with a {@code null} value.
+     *
+     * @param exception exception returned from CTP
+     * @param draft draft draft with the resolved channel reference, containing new data
+     * @param retryOn409AttemptsLeft counter which indicates if another retry attempt should be raised
+     * @return {@link CompletionStage} that may contain updated {@link InventoryEntry}
+     */
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    CompletionStage<InventoryEntry> handleUpdateException(final Throwable exception,
+                                                          final InventoryEntryDraft draft,
+                                                          final int retryOn409AttemptsLeft) {
+        if ((retryOn409AttemptsLeft > 0) && (exception instanceof ConcurrentModificationException)) {
+            return inventoryService.fetchInventoryEntry(draft.getSku(), draft.getSupplyChannel())
+                .thenCompose(inventoryEntryOptional -> inventoryEntryOptional
+                    .map(inventoryEntry -> update(inventoryEntry, draft, retryOn409AttemptsLeft - 1)
+                        .toCompletableFuture())
+                    .orElseGet(() -> {
+                        statistics.incrementFailed();
+                        syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
+                            extractChannelKey(draft)), exception);
+                        return completedFuture(null);
+                    })
+                )
+                .exceptionally(exceptionAfterFetch -> {
+                    statistics.incrementFailed();
+                    syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
+                        extractChannelKey(draft)), exceptionAfterFetch);
+                    return null;
+                });
+        } else {
+            statistics.incrementFailed();
+            syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
+                extractChannelKey(draft)), exception);
+            return completedFuture(null);
+        }
     }
 
     /**

@@ -15,7 +15,7 @@ import io.sphere.sdk.inventory.commands.InventoryEntryCreateCommand;
 import io.sphere.sdk.inventory.commands.InventoryEntryUpdateCommand;
 import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.inventory.queries.InventoryEntryQueryBuilder;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.Referenceable;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
@@ -47,7 +47,7 @@ final class InventoryServiceImpl implements InventoryService {
 
     @Override
     public CompletionStage<Optional<InventoryEntry>> fetchInventoryEntry(@Nonnull final String sku,
-                                                                         @Nullable final Reference supplyChannel) {
+                                                                         @Nullable final Referenceable supplyChannel) {
         InventoryEntryQuery query = InventoryEntryQuery.of().plusPredicates(inventoryEntryQueryModel ->
             inventoryEntryQueryModel.sku().is(sku));
         query = supplyChannel == null

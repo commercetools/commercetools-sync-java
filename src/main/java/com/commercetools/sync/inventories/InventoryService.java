@@ -4,7 +4,7 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.Referenceable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,7 +37,7 @@ interface InventoryService {
      */
     @Nonnull
     CompletionStage<Optional<InventoryEntry>> fetchInventoryEntry(@Nonnull final String sku,
-                                                                  @Nullable final Reference<Channel> supplyChannel);
+                                                                  @Nullable final Referenceable<Channel> supplyChannel);
 
     /**
      * Fetches all {@link Channel} that contain role {@code "InventorySupply"}.
