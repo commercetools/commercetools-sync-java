@@ -31,7 +31,7 @@ public class SphereClientUtils {
 
     /**
      * Fetches resources of {@link T} using query provided by {@code query}.
-     * Then each resource from result list is converted to {@link SphereRequest} using {@code ctpRequest}.
+     * The {@code ctpRequest} is applied on each resultant resource from fetching, to make a {@link SphereRequest}.
      * Then each request is executed by {@code client}.
      * Method blocks until above operations were done.
      *
