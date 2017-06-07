@@ -8,9 +8,10 @@ import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.InventoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.InventoryServiceImpl;
-import com.commercetools.sync.services.impl.InventorySupplyChannelService;
+import com.commercetools.sync.services.impl.ChannelServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -18,6 +19,7 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,7 +62,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     public InventorySync(@Nonnull final InventorySyncOptions syncOptions) {
         this(syncOptions, new InventoryServiceImpl(syncOptions.getCtpClient()),
-            new InventorySupplyChannelService(syncOptions.getCtpClient()),
+            new ChannelServiceImpl(syncOptions.getCtpClient(), Collections.singleton(ChannelRole.INVENTORY_SUPPLY)),
             new TypeServiceImpl(syncOptions.getCtpClient()));
     }
 

@@ -12,7 +12,6 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -21,13 +20,16 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 
-public final class InventorySupplyChannelService implements ChannelService {
+public final class ChannelServiceImpl implements ChannelService {
 
     private final SphereClient ctpClient;
+    private final Set<ChannelRole> channelRoles;
     private final Map<String, String> keyToIdCache = new HashMap<>();
 
-    public InventorySupplyChannelService(@Nonnull final SphereClient ctpClient) {
+    public ChannelServiceImpl(@Nonnull final SphereClient ctpClient,
+                              @Nonnull final Set<ChannelRole> channelRoles) {
         this.ctpClient = ctpClient;
+        this.channelRoles = channelRoles;
     }
 
     @Nonnull
@@ -42,9 +44,7 @@ public final class InventorySupplyChannelService implements ChannelService {
     private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
         final ChannelQuery query =
             ChannelQueryBuilder.of()
-                               .plusPredicates(channelQueryModel -> channelQueryModel
-                                   .roles()
-                                   .containsAny(Collections.singletonList(ChannelRole.INVENTORY_SUPPLY)))
+                               .plusPredicates(channelQueryModel -> channelQueryModel.roles().containsAny(channelRoles))
                                .build();
         return QueryExecutionUtils.queryAll(ctpClient, query)
                                   .thenApply(channels -> {
@@ -56,22 +56,20 @@ public final class InventorySupplyChannelService implements ChannelService {
 
     @Nonnull
     @Override
-    public CompletionStage<Channel> createChannel(@Nonnull final String key, @Nonnull final Set<ChannelRole> roles) {
+    public CompletionStage<Channel> createChannel(@Nonnull final String key) {
         final ChannelDraft draft = ChannelDraftBuilder.of(key)
-                                                      .roles(roles)
+                                                      .roles(channelRoles)
                                                       .build();
         return ctpClient.execute(ChannelCreateCommand.of(draft));
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Channel> createAndCacheChannel(@Nonnull final String key,
-                                                          @Nonnull final Set<ChannelRole> roles) {
-        return createChannel(key, roles)
-            .thenApply(channel -> {
-                cacheChannel(channel);
-                return channel;
-            });
+    public CompletionStage<Channel> createAndCacheChannel(@Nonnull final String key) {
+        return createChannel(key).thenApply(channel -> {
+            cacheChannel(channel);
+            return channel;
+        });
     }
 
     @Override

@@ -1,11 +1,9 @@
 package com.commercetools.sync.services;
 
 import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.channels.ChannelRole;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 public interface ChannelService {
@@ -29,25 +27,23 @@ public interface ChannelService {
     CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key);
 
     /**
-     * Creates a new channel with the supplied {@code key} and set of {@code roles}.
+     * Creates a new channel with the supplied {@code key}.
      *
      * @param key   key of supply channel.
-     * @param roles the set of roles assigned to the channel.
      * @return a future containing as a result the created {@link Channel} or a sphere exception.
      */
     @Nonnull
-    CompletionStage<Channel> createChannel(@Nonnull final String key, @Nonnull final Set<ChannelRole> roles);
+    CompletionStage<Channel> createChannel(@Nonnull final String key);
 
     /**
-     * Creates a new channel with the supplied {@code key} and set of {@code roles} and puts a new mapping of it's key
+     * Creates a new channel with the supplied {@code key} and puts a new mapping of it's key
      * to id in a cache map.
      *
      * @param key key of supply channel.
-     * @param roles the set of roles assigned to the channel.
      * @return a future containing as a result the created {@link Channel} or a sphere exception.
      */
     @Nonnull
-    CompletionStage<Channel> createAndCacheChannel(@Nonnull final String key, @Nonnull final Set<ChannelRole> roles);
+    CompletionStage<Channel> createAndCacheChannel(@Nonnull final String key);
 
     /**
      * Adds a new mapping of key to id of the supplied channel to a cache map.

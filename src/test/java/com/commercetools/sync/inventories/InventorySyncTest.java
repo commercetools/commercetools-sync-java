@@ -451,7 +451,7 @@ public class InventorySyncTest {
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
         when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
-        when(channelService.createAndCacheChannel(anyString(), any())).thenReturn(failed(new SphereException()));
+        when(channelService.createAndCacheChannel(anyString())).thenReturn(failed(new SphereException()));
 
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraft
             .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_3));

@@ -124,11 +124,11 @@ public class InventorySyncMockUtils {
 
     /**
      * Returns mock instance of {@link InventoryService} with the specified parameters as mock results of calling the
-     *   {@link ChannelService#createAndCacheChannel(String, Set)} and
+     *   {@link ChannelService#createAndCacheChannel(String)} and
      *   {@link ChannelService#fetchCachedChannelId(String)} (String)} of the mock channel service.
      *
      * @param createdSupplyChannel result of future resulting from calling
-     *      {@link ChannelService#createAndCacheChannel(String, Set)}
+     *      {@link ChannelService#createAndCacheChannel(String)}
      *
      * @return mock instance of {@link InventoryService}.
      */
@@ -138,7 +138,7 @@ public class InventorySyncMockUtils {
         final ChannelService channelService = mock(ChannelService.class);
         when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(completedFuture(Optional.of(createdSupplyChannelId)));
-        when(channelService.createAndCacheChannel(any(), any()))
+        when(channelService.createAndCacheChannel(any()))
             .thenReturn(completedFuture(createdSupplyChannel));
         return channelService;
     }

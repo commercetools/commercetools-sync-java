@@ -6,7 +6,6 @@ import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
@@ -15,7 +14,6 @@ import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -158,7 +156,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
                                                                               @Nonnull final InventoryEntryDraft
                                                                                   inventoryEntryDraft) {
         if (getOptions().shouldEnsureChannels()) {
-            return channelService.createAndCacheChannel(channelKey, Collections.singleton(ChannelRole.INVENTORY_SUPPLY))
+            return channelService.createAndCacheChannel(channelKey)
                                  .thenCompose(createdChannel -> setChannelReference(createdChannel.getId(),
                                      inventoryEntryDraft));
         } else {
