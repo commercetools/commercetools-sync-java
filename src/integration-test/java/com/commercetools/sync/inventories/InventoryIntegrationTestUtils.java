@@ -66,7 +66,7 @@ public class InventoryIntegrationTestUtils {
      * @param sphereClient sphere client used to execute requests
      */
     public static void deleteInventoryEntries(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::inventoryEntryQuerySupplier,
+        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::getQueryOfAllInventoryEntries,
             InventoryEntryDeleteCommand::of);
     }
 
@@ -77,7 +77,7 @@ public class InventoryIntegrationTestUtils {
      * @param sphereClient sphere client used to execute requests
      */
     public static void deleteSupplyChannels(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::supplyChannelQuerySupplier,
+        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::getQueryOfAllSupplyChannels,
             ChannelDeleteCommand::of);
     }
 
@@ -89,7 +89,8 @@ public class InventoryIntegrationTestUtils {
      * @param sphereClient sphere client used to execute requests
      */
     public static void deleteInventoryCustomTypes(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::customTypeQuerySupplier, TypeDeleteCommand::of);
+        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::getQueryOfAllInventoryCustomTypes,
+            TypeDeleteCommand::of);
     }
 
     /**
@@ -207,16 +208,16 @@ public class InventoryIntegrationTestUtils {
         return sphereClient.execute(channelQuery).toCompletableFuture().join().head();
     }
 
-    private static InventoryEntryQuery inventoryEntryQuerySupplier() {
+    private static InventoryEntryQuery getQueryOfAllInventoryEntries() {
         return InventoryEntryQuery.of().withLimit(QUERY_MAX_LIMIT);
     }
 
-    private static ChannelQuery supplyChannelQuerySupplier() {
+    private static ChannelQuery getQueryOfAllSupplyChannels() {
         return ChannelQuery.of().withLimit(QUERY_MAX_LIMIT).plusPredicates(channelQueryModel ->
             channelQueryModel.roles().containsAny(singleton(ChannelRole.INVENTORY_SUPPLY)));
     }
 
-    private static TypeQuery customTypeQuerySupplier() {
+    private static TypeQuery getQueryOfAllInventoryCustomTypes() {
         return TypeQuery.of().withLimit(QUERY_MAX_LIMIT).plusPredicates(typeQueryModel ->
         typeQueryModel.resourceTypeIds().containsAny(singleton(InventoryEntry.resourceTypeId())));
     }
