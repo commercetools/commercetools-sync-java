@@ -159,10 +159,8 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
                                                                                   inventoryEntryDraft) {
         if (getOptions().shouldEnsureChannels()) {
             return channelService.createAndCacheChannel(channelKey, Collections.singleton(ChannelRole.INVENTORY_SUPPLY))
-                                 .thenApply(createdChannel -> InventoryEntryDraftBuilder
-                                     .of(inventoryEntryDraft)
-                                     .supplyChannel(Channel.referenceOfId(createdChannel.getId()))
-                                     .build());
+                                 .thenCompose(createdChannel -> setChannelReference(createdChannel.getId(),
+                                     inventoryEntryDraft));
         } else {
             final ReferenceResolutionException referenceResolutionException =
                 new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));
