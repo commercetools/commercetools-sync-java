@@ -24,7 +24,6 @@ import io.sphere.sdk.producttypes.ProductTypeDraftDsl;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
 import io.sphere.sdk.producttypes.commands.ProductTypeDeleteCommand;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import io.sphere.sdk.queries.QueryDsl;
 import io.sphere.sdk.search.SearchKeyword;
 import io.sphere.sdk.search.SearchKeywords;
 import org.junit.AfterClass;
@@ -230,11 +229,11 @@ public class ProductSyncItTest {
         }
 
         static void deleteProducts() {
-            fetchAndProcess(CTP_SOURCE_CLIENT, () -> withLimit(ProductQuery.of()),
+            fetchAndProcess(CTP_SOURCE_CLIENT, () -> ProductQuery.of().withLimit(QUERY_MAX_LIMIT),
                 p -> p.getMasterData().isPublished()
                     ? ProductUpdateCommand.of(p, Unpublish.of())
                     : ProductDeleteCommand.of(p));
-            fetchAndProcess(CTP_SOURCE_CLIENT, () -> withLimit(ProductQuery.of()),
+            fetchAndProcess(CTP_SOURCE_CLIENT, () -> ProductQuery.of().withLimit(QUERY_MAX_LIMIT),
                 ProductDeleteCommand::of);
         }
 
@@ -243,8 +242,5 @@ public class ProductSyncItTest {
                 CategoryDeleteCommand::of);
         }
 
-        static <T, C extends QueryDsl<T, C>> C withLimit(final QueryDsl<T, C> of) {
-            return of.withLimit(QUERY_MAX_LIMIT);
-        }
     }
 }
