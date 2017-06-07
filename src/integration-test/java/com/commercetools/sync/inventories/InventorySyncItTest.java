@@ -20,8 +20,10 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
@@ -405,6 +407,44 @@ public class InventorySyncItTest {
             .join();
         assertStatistics(inventorySyncStatistics, 3, 0,1, 1);
         assertThat(invocationCounter.get()).isEqualTo(1);
+    }
+
+    @Test
+    public void sync_WithSyncDifferentBatchesConcurrently_ShouldReturnProperStatistics() {
+        //Prepare new inventories.
+        final List<InventoryEntryDraft> newDrafts = IntStream.range(100,160)
+            .mapToObj(i -> InventoryEntryDraftBuilder.of(String.valueOf(i), QUANTITY_ON_STOCK_1).build())
+            .collect(toList());
+
+        //Split them to batches.
+        final List<InventoryEntryDraft> firstBatch = newDrafts.subList(0,20);
+        final List<InventoryEntryDraft> secondBatch = newDrafts.subList(20,40);
+        final List<InventoryEntryDraft> thirdBatch = newDrafts.subList(40,60);
+
+        //Initialize sync.
+        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
+        final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
+
+        //Run batch syncing concurrently.
+        final CompletableFuture<InventorySyncStatistics> firstResult = inventorySync.sync(firstBatch)
+            .toCompletableFuture();
+        final CompletableFuture<InventorySyncStatistics> secondResult = inventorySync.sync(secondBatch)
+            .toCompletableFuture();
+        final CompletableFuture<InventorySyncStatistics> thirdResult = inventorySync.sync(thirdBatch)
+            .toCompletableFuture();
+
+        CompletableFuture.allOf(firstResult, secondResult, thirdResult).join();
+
+        //Ensure instance's statistics.
+        assertThat(inventorySync.getStatistics()).isNotNull();
+
+        //TODO check distinct results when ISSUE #23 is resolved
+        //TODO uncomment assertions below when ISSUE #23 is resolved (otherwise they may fail)
+
+        //assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(60);
+        //assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(60);
+        //assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(0);
+        //assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(0);
     }
 
     private void assertStatistics(@Nullable final InventorySyncStatistics statistics,
