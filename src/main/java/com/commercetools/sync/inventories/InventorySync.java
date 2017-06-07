@@ -13,7 +13,6 @@ import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.SphereException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,7 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.inventories.ChannelKeyExtractor.extractChannelKey;
@@ -347,13 +345,13 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     private CompletionStage<Void> compareAndSync(@Nonnull final List<InventoryEntry> oldInventories,
                                                  @Nonnull final List<InventoryEntryDraft> drafts,
                                                  @Nonnull final Map<String, String> supplyChannelKeyToId) {
-        final List<CompletableFuture<Void>> futures = new ArrayList<>(drafts.size());
+        final List<CompletableFuture<InventoryEntry>> futures = new ArrayList<>(drafts.size());
         drafts.forEach(draft -> {
             final Optional<InventoryEntryDraft> fixedDraft = replaceChannelReference(draft, supplyChannelKeyToId);
             if (fixedDraft.isPresent()) {
                 futures.add(
                     findCorrespondingEntry(oldInventories, fixedDraft.get())
-                        .map(oldInventory -> update(oldInventory, fixedDraft.get()))
+                        .map(oldInventory -> update(oldInventory, fixedDraft.get(), 10)) //TODO provide constant
                         .orElseGet(() -> create(fixedDraft.get()))
                         .toCompletableFuture());
             } else {
@@ -429,29 +427,41 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @return {@link CompletionStage} of {@link Void} that indicates method progress
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<Void> update(final InventoryEntry entry,
-                                         final InventoryEntryDraft draft) {
+    private CompletionStage<InventoryEntry> update(final InventoryEntry entry,
+                                                   final InventoryEntryDraft draft,
+                                                   final int retryOn409AttemptsLeft) {
+        //TODO refactor
         final List<UpdateAction<InventoryEntry>> updateActions =
             InventorySyncUtils.buildActions(entry, draft, syncOptions, typeService);
         if (!updateActions.isEmpty()) {
             return inventoryService.updateInventoryEntry(entry, updateActions)
-                .thenAccept(updatedInventory -> statistics.incrementUpdated())
-                .exceptionally(exception ->
-                    tryRepeatUpdateOn409(draft, exception, 5)
-                        .thenAccept(updatedInventory -> {
-                            if (updatedInventory != null) {
-                                statistics.incrementUpdated();
-                            }
-                        })
-                        .exceptionally(exceptionAfterRetry -> {
-                            statistics.incrementFailed();
-                            syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
-                                extractChannelKey(draft)), exceptionAfterRetry);
-                            return null;
-                        }).toCompletableFuture().join()
-                );
+                .thenApply(updatedInventory -> {
+                    statistics.incrementUpdated();
+                    return completedFuture(updatedInventory);
+                })
+                .exceptionally(ex -> {
+                   if ((retryOn409AttemptsLeft > 0) && (ex instanceof ConcurrentModificationException)) {
+                       return inventoryService.fetchInventoryEntry(draft.getSku(),
+                           draft.getSupplyChannel())
+                           .thenCompose(inventoryEntryOptional ->
+                               inventoryEntryOptional
+                                   .map(inventoryEntry -> update(inventoryEntry, draft, retryOn409AttemptsLeft - 1).toCompletableFuture())
+                                   .orElseGet(() -> {
+                                       statistics.incrementFailed();
+                                       //TODO provide fail MSG and apply error callback
+                                       return completedFuture(null);
+                                   })
+                            ).toCompletableFuture();
+                   } else {
+                       statistics.incrementFailed();
+                       syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
+                           extractChannelKey(draft)), ex);
+                       return completedFuture(null);
+                   }
+                })
+                .thenCompose(completableFuture -> completableFuture);
         }
-        return completedFuture(null);
+        return completedFuture(entry);
     }
 
     /**
@@ -463,9 +473,12 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @return {@link CompletionStage} instance that indicates method progress
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<Void> create(final InventoryEntryDraft draft) {
+    private CompletionStage<InventoryEntry> create(final InventoryEntryDraft draft) {
         return inventoryService.createInventoryEntry(draft)
-            .thenAccept(createdInventory -> statistics.incrementCreated())
+            .thenApply(createdInventory -> {
+                statistics.incrementCreated();
+                return createdInventory;
+            })
             .exceptionally(exception -> {
                 statistics.incrementFailed();
                 syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_CREATE_FAILED, draft.getSku(),
@@ -538,36 +551,5 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 syncOptions.applyErrorCallback(format(CTP_CHANNEL_CREATE_FAILED, supplyChannelKey), exception);
                 return Optional.empty();
             });
-    }
-
-    private CompletionStage<InventoryEntry> tryRepeatUpdateOn409(@Nonnull final InventoryEntryDraft newInventory,
-                                                                 @Nonnull final Throwable ctpException,
-                                                                 final int attemptsLeft) {
-        if ((attemptsLeft > 0) && (ctpException instanceof ConcurrentModificationException)) {
-            return inventoryService.fetchInventoryEntryBySkuAndSupplyChannel(newInventory.getSku(),
-                newInventory.getSupplyChannel())
-                .thenCompose(oldInventories -> {
-                    if (oldInventories.head().isPresent()) {
-                        return update(oldInventories.head().get(), newInventory);
-                    }
-                    return getCompletionStageWithException(new SphereException());
-                }).handle((inventoryEntry, exception) -> {
-                    if (inventoryEntry != null) {
-                        return CompletableFuture.completedFuture(inventoryEntry);
-                    }
-                    if (exception != null) {
-                        return tryRepeatUpdateOn409(newInventory, exception, attemptsLeft - 1);
-                    }
-                    throw new SphereException();
-                }).thenCompose(u -> u);
-        } else {
-            return getCompletionStageWithException(ctpException);
-        }
-    }
-
-    private <T> CompletionStage<T> getCompletionStageWithException(@Nonnull final Throwable exception) {
-        final CompletableFuture<T> exceptionalStage = new CompletableFuture<>();
-        exceptionalStage.completeExceptionally(exception);
-        return exceptionalStage;
     }
 }
