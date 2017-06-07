@@ -26,9 +26,9 @@ public class ClientConfigurationUtils {
      *
      * @return the instanted {@link BlockingSphereClient}.
      */
-    public static synchronized BlockingSphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
-                                                                 final long timeout,
-                                                                 @Nonnull final TimeUnit timeUnit) {
+    public static synchronized SphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
+                                                         final long timeout,
+                                                         @Nonnull final TimeUnit timeUnit) {
         if (!delegatesCache.containsKey(clientConfig)) {
             final HttpClient httpClient = getHttpClient();
             final SphereAccessTokenSupplier tokenSupplier =
@@ -44,7 +44,7 @@ public class ClientConfigurationUtils {
      *
      * @return the instanted {@link BlockingSphereClient}.
      */
-    public static BlockingSphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
+    public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
         return createClient(clientConfig, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
     }
 
