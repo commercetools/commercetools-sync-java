@@ -14,7 +14,9 @@ import java.util.function.Function;
 import static java.util.Collections.emptyList;
 import static java.util.function.Function.identity;
 
-public class ProductSyncOptionsBuilder extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions> {
+public final class ProductSyncOptionsBuilder
+    extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions> {
+
     private final BiConsumer<String, Throwable> errorCallBack;
     private final Consumer<String> warningCallBack;
 

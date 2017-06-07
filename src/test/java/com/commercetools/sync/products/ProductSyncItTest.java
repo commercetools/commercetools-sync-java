@@ -7,7 +7,7 @@ import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.CategoryDeleteCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
-import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -27,7 +27,7 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.queries.QueryDsl;
 import io.sphere.sdk.search.SearchKeyword;
 import io.sphere.sdk.search.SearchKeywords;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,34 +36,37 @@ import java.util.function.BiFunction;
 import static com.commercetools.sync.it.products.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.it.products.SphereClientUtils.QUERY_MAX_LIMIT;
 import static com.commercetools.sync.it.products.SphereClientUtils.fetchAndProcess;
-import static com.commercetools.sync.products.ProductTestUtils.de;
 import static com.commercetools.sync.products.ProductTestUtils.join;
 import static com.commercetools.sync.products.ProductTestUtils.productDraft;
 import static com.commercetools.sync.products.ProductTestUtils.productType;
 import static com.commercetools.sync.products.ProductTestUtils.syncOptions;
-import static com.commercetools.sync.products.actions.ProductUpdateActionsBuilder.masterData;
+import static com.commercetools.sync.products.helpers.ProductSyncUtils.masterData;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.Locale.GERMAN;
+import static java.util.Objects.isNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("ConstantConditions")
 public class ProductSyncItTest {
 
-    private static SphereClient client;
     private ProductService service;
     private ProductType productType;
     private ProductSync productSync;
     private Category category;
     private ProductUpdateActionsBuilder updateActionsBuilder;
 
+    /**
+     * Initializes environment for integration test of product synchronization against CT platform.
+     *
+     * <p>It first removes up all related resources. Then creates required product type, categories, products and
+     * associates products to categories.
+     */
     @Before
     public void setUp() {
-        client = CTP_SOURCE_CLIENT;
-
         Env.delete();
         productType = Env.createProductType();
         category = Env.createCategory();
@@ -71,35 +74,35 @@ public class ProductSyncItTest {
         Env.addProductToCategory(product, category);
 
         updateActionsBuilder = ProductUpdateActionsBuilder.of();
-        service = ProductService.of(client);
+        service = ProductService.of(CTP_SOURCE_CLIENT);
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDown() {
         Env.delete();
     }
 
     @Test
     public void sync_withNewProduct_shouldCreateProduct() {
-        ProductSyncOptions syncOptions = syncOptions(client, true, true);
-        ProductDraft productDraft = productDraft("product-non-existing.json", productType, null, syncOptions);
+        ProductSyncOptions syncOptions = syncOptions(CTP_SOURCE_CLIENT, true, true);
+        ProductDraft productDraft = productDraft("product-non-existing.json", productType, syncOptions);
 
         // no product with given key has been populated during setup
         assertThat(join(service.fetch(productDraft.getKey())))
-                .isNotPresent();
+            .isNotPresent();
 
         productSync = new ProductSync(syncOptions, service, updateActionsBuilder);
         join(productSync.sync(singletonList(productDraft)));
 
         assertThat(join(service.fetch(productDraft.getKey())))
-                .isPresent();
+            .isPresent();
     }
 
     @Test
     public void sync_withEqualProduct_shouldNotUpdateProduct() {
-        ProductSyncOptions syncOptions = syncOptions(client, true, false);
-        ProductDraft productDraft = productDraft("product.json", productType, null, syncOptions);
-        Product product = join(service.fetch(productDraft.getKey())).get();
+        ProductSyncOptions syncOptions = syncOptions(CTP_SOURCE_CLIENT, true, false);
+        ProductDraft productDraft = productDraft("product.json", productType, syncOptions);
+        final Product product = join(service.fetch(productDraft.getKey())).get();
 
         productSync = new ProductSync(syncOptions, service, updateActionsBuilder);
         join(productSync.sync(singletonList(productDraft)));
@@ -113,8 +116,8 @@ public class ProductSyncItTest {
     @Test
     public void sync_withChangedProduct_shouldUpdateProduct() {
         ProductSyncOptions options = syncOptions(true, true);
-        ProductDraft productDraft = productDraft("product-changed.json", productType, category, options);
-        Product product = join(service.fetch(productDraft.getKey())).get();
+        ProductDraft productDraft = productDraft("product-changed.json", productType, options, category);
+        final Product product = join(service.fetch(productDraft.getKey())).get();
 
         productSync = new ProductSync(options, service, updateActionsBuilder);
         join(productSync.sync(singletonList(productDraft)));
@@ -127,11 +130,11 @@ public class ProductSyncItTest {
         verifyChange(this::metaKeywords, options, product, afterSync, null, "key1,key2");
         verifyChange(this::metaTitle, options, product, afterSync, null, "new title");
         verifyChange(this::searchKeywords, options, product, afterSync,
-                SearchKeywords.of(),
-                SearchKeywords.of(GERMAN, asList(SearchKeyword.of("key1"), SearchKeyword.of("key2"))));
+            SearchKeywords.of(),
+            SearchKeywords.of(GERMAN, asList(SearchKeyword.of("key1"), SearchKeyword.of("key2"))));
         verifyChange(this::categoryOrderHints, options, product, afterSync,
-                CategoryOrderHints.of(emptyMap()),
-                CategoryOrderHints.of(singletonMap(category.getId(), "0.95")));
+            CategoryOrderHints.of(emptyMap()),
+            CategoryOrderHints.of(singletonMap(category.getId(), "0.95")));
         assertThat(afterSync.getMasterData().isPublished()).isTrue();
         assertThat(afterSync.getMasterData().hasStagedChanges()).isFalse();
         assertThat(afterSync).isNotEqualTo(product);
@@ -177,6 +180,12 @@ public class ProductSyncItTest {
         return masterData(product, options).getCategoryOrderHints();
     }
 
+    private String de(final LocalizedString localizedString) {
+        return isNull(localizedString)
+            ? null
+            : localizedString.get(GERMAN);
+    }
+
     static class Env {
 
         static void delete() {
@@ -187,27 +196,28 @@ public class ProductSyncItTest {
 
         static ProductType createProductType() {
             ProductTypeDraftDsl build = ProductTypeDraftBuilder.of(productType()).build();
-            return join(client.execute(ProductTypeCreateCommand.of(build)));
+            return join(CTP_SOURCE_CLIENT.execute(ProductTypeCreateCommand.of(build)));
         }
 
         static Product createProduct(final ProductType productType) {
             ProductSyncOptions syncOptions = syncOptions(true, true);
             ProductDraft draft = productDraft("product.json", productType, syncOptions);
-            return join(client.execute(ProductCreateCommand.of(draft)));
+            return join(CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(draft)));
         }
 
         static Category createCategory() {
             Category template = category();
             CategoryDraftBuilder of = CategoryDraftBuilder.of(template)
-                    .name(template.getName())
-                    .description(template.getDescription())
-                    .slug(template.getSlug());
-            return join(client.execute(CategoryCreateCommand.of(of.build())));
+                .name(template.getName())
+                .description(template.getDescription())
+                .slug(template.getSlug());
+            return join(CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(of.build())));
         }
 
         static void addProductToCategory(final Product product, final Category category) {
-            Product updated = join(client.execute(ProductUpdateCommand.of(product, AddToCategory.of(category))));
-            join(client.execute(ProductUpdateCommand.of(updated, Publish.of())));
+            Product updated =
+                join(CTP_SOURCE_CLIENT.execute(ProductUpdateCommand.of(product, AddToCategory.of(category))));
+            join(CTP_SOURCE_CLIENT.execute(ProductUpdateCommand.of(updated, Publish.of())));
         }
 
         static Category category() {
@@ -215,22 +225,22 @@ public class ProductSyncItTest {
         }
 
         static void deleteProductTypes() {
-            fetchAndProcess(client, () -> ProductTypeQuery.of().withLimit(QUERY_MAX_LIMIT),
-                    ProductTypeDeleteCommand::of);
+            fetchAndProcess(CTP_SOURCE_CLIENT, () -> ProductTypeQuery.of().withLimit(QUERY_MAX_LIMIT),
+                ProductTypeDeleteCommand::of);
         }
 
         static void deleteProducts() {
-            fetchAndProcess(client, () -> withLimit(ProductQuery.of()),
-                    p -> p.getMasterData().isPublished()
-                            ? ProductUpdateCommand.of(p, Unpublish.of())
-                            : ProductDeleteCommand.of(p));
-            fetchAndProcess(client, () -> withLimit(ProductQuery.of()),
-                    ProductDeleteCommand::of);
+            fetchAndProcess(CTP_SOURCE_CLIENT, () -> withLimit(ProductQuery.of()),
+                p -> p.getMasterData().isPublished()
+                    ? ProductUpdateCommand.of(p, Unpublish.of())
+                    : ProductDeleteCommand.of(p));
+            fetchAndProcess(CTP_SOURCE_CLIENT, () -> withLimit(ProductQuery.of()),
+                ProductDeleteCommand::of);
         }
 
         static void deleteCategories() {
-            fetchAndProcess(client, () -> CategoryQuery.of().withLimit(QUERY_MAX_LIMIT),
-                    CategoryDeleteCommand::of);
+            fetchAndProcess(CTP_SOURCE_CLIENT, () -> CategoryQuery.of().withLimit(QUERY_MAX_LIMIT),
+                CategoryDeleteCommand::of);
         }
 
         static <T, C extends QueryDsl<T, C>> C withLimit(final QueryDsl<T, C> of) {

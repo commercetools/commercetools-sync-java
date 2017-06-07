@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.products.ProductTestUtils.join;
-import static com.commercetools.sync.products.ProductTestUtils.localizedString;
+import static com.commercetools.sync.products.ProductTestUtils.en;
 import static com.commercetools.sync.products.ProductTestUtils.syncOptions;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -38,6 +38,9 @@ public class ProductSyncTest {
     private ProductService service;
     private ProductUpdateActionsBuilder updateActionsBuilder;
 
+    /**
+     * Initialises dependencies of component under test.
+     */
     @Before
     public void setUp() {
         service = spy(ProductService.class);
@@ -63,9 +66,9 @@ public class ProductSyncTest {
 
     @Test
     public void sync_expectServiceFetchAndUpdateExisting() {
-        Product product = serviceWillFetch(mock(Product.class));
+        final Product product = serviceWillFetch(mock(Product.class));
         when(service.update(any(), anyList())).thenReturn(completedFuture(null));
-        List<UpdateAction<Product>> updateActions = singletonList(ChangeName.of(localizedString("name2")));
+        List<UpdateAction<Product>> updateActions = singletonList(ChangeName.of(en("name2")));
         when(updateActionsBuilder.buildActions(any(), any(), any())).thenReturn(updateActions);
         ProductDraft productDraft = productDraft();
 
@@ -83,11 +86,11 @@ public class ProductSyncTest {
 
     @Test
     public void sync_expectServiceFetchAndUpdateExistingAndPublish() {
-        Product product = serviceWillFetch(mock(Product.class));
+        final Product product = serviceWillFetch(mock(Product.class));
         Product updated = mock(Product.class);
         when(service.update(any(), anyList())).thenReturn(completedFuture(updated));
         when(service.publish(any())).thenReturn(completedFuture(null));
-        List<UpdateAction<Product>> updateActions = singletonList(ChangeName.of(localizedString("name2")));
+        List<UpdateAction<Product>> updateActions = singletonList(ChangeName.of(en("name2")));
         when(updateActionsBuilder.buildActions(any(), any(), any())).thenReturn(updateActions);
         ProductDraft productDraft = productDraft();
 
@@ -106,7 +109,7 @@ public class ProductSyncTest {
 
     @Test
     public void sync_expectServiceFetchAndNoUpdateExistingAsIdentical() {
-        Product product = serviceWillFetch(mock(Product.class));
+        final Product product = serviceWillFetch(mock(Product.class));
         when(updateActionsBuilder.buildActions(any(), any(), any())).thenReturn(emptyList());
         ProductDraft productDraft = productDraft();
 
@@ -121,12 +124,13 @@ public class ProductSyncTest {
         verifyNoMoreInteractions(updateActionsBuilder);
     }
 
-    private Product serviceWillFetch(Product product) {
+    private Product serviceWillFetch(final Product product) {
         when(service.fetch(any())).thenReturn(completedFuture(Optional.ofNullable(product)));
         return product;
     }
 
-    private void verifyStatistics(final ProductSyncStatistics statistics, final int processed, final int updated, final int created) {
+    private void verifyStatistics(final ProductSyncStatistics statistics,
+                                  final int processed, final int updated, final int created) {
         assertThat(statistics).isNotNull();
         assertThat(statistics.getProcessed()).isEqualTo(processed);
         assertThat(statistics.getCreated()).isEqualTo(created);

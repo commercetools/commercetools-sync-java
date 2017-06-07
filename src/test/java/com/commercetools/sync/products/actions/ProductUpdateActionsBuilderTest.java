@@ -3,8 +3,6 @@ package com.commercetools.sync.products.actions;
 import com.commercetools.sync.products.ProductSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductCatalogData;
-import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
@@ -21,11 +19,9 @@ import static com.commercetools.sync.products.ProductTestUtils.product;
 import static com.commercetools.sync.products.ProductTestUtils.productDraft;
 import static com.commercetools.sync.products.ProductTestUtils.productType;
 import static com.commercetools.sync.products.ProductTestUtils.syncOptions;
-import static com.commercetools.sync.products.actions.ProductUpdateActionsBuilder.masterData;
+import static com.commercetools.sync.products.helpers.ProductSyncUtils.masterData;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class ProductUpdateActionsBuilderTest {
     @Test
@@ -44,9 +40,10 @@ public class ProductUpdateActionsBuilderTest {
         ProductUpdateActionsBuilder updateActionsBuilder = ProductUpdateActionsBuilder.of();
         Product product = product("product.json");
         ProductSyncOptions syncOptions = syncOptions(true, true);
-        ProductDraft productDraft = productDraft("product.json", productType(), null, syncOptions);
+        ProductDraft productDraft = productDraft("product.json", productType(), syncOptions);
 
-        List<UpdateAction<Product>> updateActions = updateActionsBuilder.buildActions(product, productDraft, syncOptions);
+        List<UpdateAction<Product>> updateActions =
+            updateActionsBuilder.buildActions(product, productDraft, syncOptions);
 
         assertThat(updateActions).isEmpty();
     }
@@ -55,7 +52,7 @@ public class ProductUpdateActionsBuilderTest {
     public void buildActions_nonEmptyForDifferent_comparingStaged() {
         Product product = product("product.json");
         ProductSyncOptions syncOptions = syncOptions(true, true);
-        ProductDraft productDraft = productDraft("product-changed.json", productType(), null, syncOptions);
+        ProductDraft productDraft = productDraft("product-changed.json", productType(), syncOptions);
 
         List<UpdateAction<Product>> updateActions = ProductUpdateActionsBuilder.of()
                 .buildActions(product, productDraft, syncOptions);
@@ -67,7 +64,7 @@ public class ProductUpdateActionsBuilderTest {
     public void buildActions_nonEmptyForDifferent_comparingCurrent() {
         Product product = product("product.json");
         ProductSyncOptions syncOptions = syncOptions(true, false);
-        ProductDraft productDraft = productDraft("product-changed.json", productType(), null, syncOptions);
+        ProductDraft productDraft = productDraft("product-changed.json", productType(), syncOptions);
 
         List<UpdateAction<Product>> updateActions = ProductUpdateActionsBuilder.of()
                 .buildActions(product, productDraft, syncOptions);
@@ -75,25 +72,10 @@ public class ProductUpdateActionsBuilderTest {
         assertThat(updateActions).isEqualTo(expectedUpdateActions(product, syncOptions, productDraft));
     }
 
-    @Test
-    public void masterData_test() {
-        ProductSyncOptions syncOptions = mock(ProductSyncOptions.class);
-        Product product = mock(Product.class);
-        ProductCatalogData catalogData = mock(ProductCatalogData.class);
-        when(product.getMasterData()).thenReturn(catalogData);
-        ProductData current = mock(ProductData.class);
-        ProductData staged = mock(ProductData.class);
-        when(catalogData.getCurrent()).thenReturn(current);
-        when(catalogData.getStaged()).thenReturn(staged);
-
-        when(syncOptions.isCompareStaged()).thenReturn(true);
-        assertThat(masterData(product, syncOptions)).isSameAs(staged);
-        when(syncOptions.isCompareStaged()).thenReturn(false);
-        assertThat(masterData(product, syncOptions)).isSameAs(current);
-    }
-
     @SuppressWarnings("ConstantConditions")
-    private List<UpdateAction<Product>> expectedUpdateActions(final Product product, final ProductSyncOptions syncOptions, final ProductDraft productDraft) {
+    private List<UpdateAction<Product>> expectedUpdateActions(final Product product,
+                                                              final ProductSyncOptions syncOptions,
+                                                              final ProductDraft productDraft) {
         return asList(
                 ChangeName.of(productDraft.getName(), syncOptions.isUpdateStaged()),
                 ChangeSlug.of(productDraft.getSlug(), syncOptions.isUpdateStaged()),

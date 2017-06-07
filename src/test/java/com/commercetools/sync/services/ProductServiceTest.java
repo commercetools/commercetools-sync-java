@@ -51,7 +51,8 @@ public class ProductServiceTest {
         Product mock = mock(Product.class);
         when(ctpClient.execute(any())).thenReturn(completedFuture(mock));
 
-        List<UpdateAction<Product>> updateActions = singletonList(ChangeName.of(ProductTestUtils.localizedString("new name")));
+        List<UpdateAction<Product>> updateActions =
+            singletonList(ChangeName.of(ProductTestUtils.en("new name")));
         Product product = service.update(mock, updateActions).toCompletableFuture().join();
 
         assertThat(product).isNotNull();
