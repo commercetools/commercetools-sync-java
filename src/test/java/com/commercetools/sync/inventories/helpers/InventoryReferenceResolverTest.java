@@ -16,6 +16,8 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -45,6 +47,8 @@ public class InventoryReferenceResolverTest {
     private static final Long QUANTITY = 10L;
     private static final Integer RESTOCKABLE_IN_DAYS = 10;
     private static final ZonedDateTime DATE_1 = ZonedDateTime.of(2017, 4, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
+
+    private static Logger LOGGER = LoggerFactory.getLogger(InventoryReferenceResolverTest.class);
 
     /**
      * Sets up the services and the options needed for reference resolution.
@@ -125,6 +129,7 @@ public class InventoryReferenceResolverTest {
 
         referenceResolver.resolveSupplyChannelReference(draft)
                          .exceptionally(exception -> {
+                             LOGGER.info(exception.toString());
                              assertThat(exception).isExactlyInstanceOf(CompletionException.class);
                              assertThat(exception.getCause())
                                  .isExactlyInstanceOf(ReferenceResolutionException.class);
