@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.commercetools.sync.inventories.ChannelKeyExtractor.extractChannelKey;
 import static com.commercetools.sync.inventories.InventorySyncMessages.CHANNEL_KEY_MAPPING_DOESNT_EXIST;
@@ -34,7 +35,9 @@ import static com.commercetools.sync.inventories.InventorySyncMessages.CTP_INVEN
 import static com.commercetools.sync.inventories.InventorySyncMessages.CTP_INVENTORY_FETCH_FAILED;
 import static com.commercetools.sync.inventories.InventorySyncMessages.INVENTORY_DRAFT_HAS_NO_SKU;
 import static com.commercetools.sync.inventories.InventorySyncMessages.INVENTORY_DRAFT_IS_NULL;
+import static java.lang.Math.min;
 import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -107,42 +110,46 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     @Override
     protected CompletionStage<InventorySyncStatistics> process(@Nonnull final List<InventoryEntryDraft>
                                                                        inventoryDrafts) {
-        return populateSupplyChannels(inventoryDrafts)
+        final List<InventoryEntryDraft> validDrafts = inventoryDrafts.stream()
+            .filter(this::validateDraft)
+            .collect(toList());
+        return populateSupplyChannels(validDrafts)
             .thenCompose(supplyChannelKeyToIdOptional -> supplyChannelKeyToIdOptional
-                .map(supplyChannelKeyToId -> splitToBatchesAndProcess(inventoryDrafts, supplyChannelKeyToId))
+                .map(supplyChannelKeyToId -> processDrafts(validDrafts, supplyChannelKeyToId))
                 .orElseGet(() -> completedFuture(statistics)));
     }
 
     /**
-     * Iterates through the whole {@code drafts} list and accumulates its valid drafts to batches. Every batch
-     * is then processed by {@link InventorySync#processBatch(List, Map)}. For invalid drafts from
-     * {@code drafts} "processed" and "failed" counters from statistics are incremented and error callback is
-     * executed. Valid draft is a {@link InventoryEntryDraft} object that is not {@code null} and its SKU is not empty.
+     * Process given {@code drafts} in batches and returns {@link CompletionStage} with statistics of that processing.
      *
-     * @param drafts {@link List} of {@link InventoryEntryDraft} resources that would be synced into CTP
-     *                                   project.
+     * @param drafts {@link List} of {@link InventoryEntryDraft} resources that would be synced into CTP project.
      * @param supplyChannelKeyToId mapping of supply channel key to supply channel Id for supply channels existing in
      *                             CTP project.
      * @return {@link CompletionStage} with {@link InventorySyncStatistics} holding statistics of all sync
      *                                           processes performed by this sync instance
      */
     @Nonnull
-    private CompletionStage<InventorySyncStatistics> splitToBatchesAndProcess(@Nonnull final List<InventoryEntryDraft>
-                                                                                      drafts,
-                                                                              @Nonnull final Map<String, String>
-                                                                                  supplyChannelKeyToId) {
-        List<InventoryEntryDraft> accumulator = new ArrayList<>(syncOptions.getBatchSize());
-        final List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
-        for (InventoryEntryDraft draft : drafts) {
-            if (validateDraft(draft)) {
-                accumulator.add(draft);
-                accumulator = syncAccumulator(accumulator, completableFutures, supplyChannelKeyToId, true);
-            }
-        }
-        syncAccumulator(accumulator, completableFutures, supplyChannelKeyToId, false);
-        return CompletableFuture
-            .allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()]))
+    private CompletionStage<InventorySyncStatistics> processDrafts(@Nonnull final List<InventoryEntryDraft> drafts,
+                                                                   @Nonnull final Map<String, String>
+                                                                       supplyChannelKeyToId) {
+        final List<CompletableFuture<Void>> completableFutures = IntStream
+            .range(0, calculateAmountOfBatches(drafts.size()))
+            .mapToObj(batchIndex -> getBatch(batchIndex, drafts))
+            .map(batch -> processBatch(batch, supplyChannelKeyToId))
+            .map(CompletionStage::toCompletableFuture)
+            .collect(toList());
+        return allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()]))
             .thenApply(v -> statistics);
+    }
+
+    int calculateAmountOfBatches(int listSize) {
+        return (listSize + syncOptions.getBatchSize() - 1) / syncOptions.getBatchSize();
+    }
+
+    List<InventoryEntryDraft> getBatch(int batchIndex, final List<InventoryEntryDraft> drafts) {
+        final int startIndex = batchIndex * syncOptions.getBatchSize();
+        final int endIndex = min((batchIndex + 1) * syncOptions.getBatchSize(), drafts.size());
+        return drafts.subList(startIndex, endIndex);
     }
 
     /**
@@ -164,35 +171,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         statistics.incrementProcessed();
         statistics.incrementFailed();
         return false;
-    }
-
-    /**
-     * Triggers sync for an accumulator containing new inventories.
-     * When {@code checkBatchSize} is set to {@code true}, then sync will be triggered only for an accumulator of a size
-     * equal to {@code batchSize} available in a sync options. Otherwise sync is triggered for every non-empty
-     * accumulator. A {@code completableFutures} list will be updated with the {@link CompletableFuture} returned by
-     * triggered sync. If a sync was triggered then function returns new list. Otherwise it returns the same
-     * {@code accumulator} instance.
-     *
-     * @param accumulator list that collect drafts for sync
-     * @param completableFutures list that collect futures of processed batches
-     * @param supplyChannelKeyToId  mapping of supply channel key to supply channel Id for supply channels existing in
-     *                             CTP project.
-     * @param checkBatchSize indicate that sync should be triggered only when accumulator
-     * @return {@code accumulator} or empty list.
-     */
-    @Nonnull
-    private List<InventoryEntryDraft> syncAccumulator(@Nonnull final List<InventoryEntryDraft> accumulator,
-                                                      @Nonnull final List<CompletableFuture<Void>> completableFutures,
-                                                      @Nonnull final Map<String, String> supplyChannelKeyToId,
-                                                      boolean checkBatchSize) {
-        if (!accumulator.isEmpty()) {
-            if (!checkBatchSize || (checkBatchSize && (accumulator.size() == syncOptions.getBatchSize()))) {
-                completableFutures.add(processBatch(accumulator, supplyChannelKeyToId).toCompletableFuture());
-                return new ArrayList<>(syncOptions.getBatchSize());
-            }
-        }
-        return accumulator;
     }
 
     @Override
@@ -248,8 +226,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             final List<String> missingChannelsKeys = findMissingChannelsKeys(drafts, supplyChannelKeyToId);
             final List<CompletableFuture<Optional<Channel>>> newChannelsFutures =
                 createSupplyChannelsOfKeys(missingChannelsKeys);
-            return CompletableFuture
-                .allOf(newChannelsFutures.toArray(new CompletableFuture[newChannelsFutures.size()]))
+            return allOf(newChannelsFutures.toArray(new CompletableFuture[newChannelsFutures.size()]))
                 .thenRun(() -> {
                     final Map<String, String> newChannelKeyToId = newChannelsFutures.stream()
                         .map(CompletableFuture::join)
@@ -367,7 +344,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             }
             statistics.incrementProcessed();
         });
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+        return allOf(futures.toArray(new CompletableFuture[futures.size()]));
     }
 
     /**
