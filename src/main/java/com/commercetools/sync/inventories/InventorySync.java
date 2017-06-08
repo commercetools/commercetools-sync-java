@@ -107,7 +107,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     @Override
     protected CompletionStage<InventorySyncStatistics> process(@Nonnull final List<InventoryEntryDraft>
                                                                        inventoryDrafts) {
-        return findSupplyChannels(inventoryDrafts)
+        return populateSupplyChannels(inventoryDrafts)
             .thenCompose(supplyChannelKeyToIdOptional -> supplyChannelKeyToIdOptional
                 .map(supplyChannelKeyToId -> splitToBatchesAndProcess(inventoryDrafts, supplyChannelKeyToId))
                 .orElseGet(() -> completedFuture(statistics)));
@@ -134,7 +134,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         List<InventoryEntryDraft> accumulator = new ArrayList<>(syncOptions.getBatchSize());
         final List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
         for (InventoryEntryDraft draft : drafts) {
-            if (shouldProceedWithDraft(draft)) {
+            if (validateDraft(draft)) {
                 accumulator.add(draft);
                 accumulator = syncAccumulator(accumulator, completableFutures, supplyChannelKeyToId, true);
             }
@@ -153,7 +153,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param draft nullable draft, requested for sync
      * @return boolean that indicate if given {@code draft} is valid for sync
      */
-    private boolean shouldProceedWithDraft(@Nullable final InventoryEntryDraft draft) {
+    private boolean validateDraft(@Nullable final InventoryEntryDraft draft) {
         if (draft == null) {
             syncOptions.applyErrorCallback(INVENTORY_DRAFT_IS_NULL, null);
         } else if (isBlank(draft.getSku())) {
@@ -215,8 +215,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param drafts {@link List} containing {@link InventoryEntryDraft} objects where missing supply channels can occur
      * @return {@link CompletionStage} of {@link Optional} that may contain mapping of supply channels' keys to ids.
      */
-    private CompletionStage<Optional<Map<String, String>>> findSupplyChannels(@Nonnull final List<InventoryEntryDraft>
-                                                                                  drafts) {
+    private CompletionStage<Optional<Map<String, String>>> populateSupplyChannels(@Nonnull final
+                                                                                  List<InventoryEntryDraft> drafts) {
         return inventoryService.fetchAllSupplyChannels()
             .thenApply(existingSupplyChannels -> existingSupplyChannels.stream()
                 .collect(toMap(Channel::getKey, Channel::getId)))
