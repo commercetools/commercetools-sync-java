@@ -47,10 +47,10 @@ public class ProductUpdateActionsBuilder {
             Meta::setMetaDescription,
             Meta::setMetaKeywords,
             Meta::setMetaTitle,
-            Variant::setMasterVariantSku
+            Variants::setMasterVariantSku
         ), product, productDraft, syncOptions);
-        simpleActions.addAll(Category.addToCategory(product, productDraft, syncOptions));
-        simpleActions.addAll(Category.setCategoryOrderHints(product, productDraft, syncOptions));
+        simpleActions.addAll(Categories.mapCategories(product, productDraft, syncOptions));
+        simpleActions.addAll(Categories.setCategoryOrderHints(product, productDraft, syncOptions));
         return simpleActions;
     }
 

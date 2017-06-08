@@ -9,8 +9,8 @@ import io.sphere.sdk.products.commands.updateactions.SetSku;
 
 import java.util.Optional;
 
-final class Variant {
-    private Variant() {
+final class Variants {
+    private Variants() {
     }
 
     static Optional<UpdateAction<Product>> setMasterVariantSku(final Product product, final ProductDraft draft,

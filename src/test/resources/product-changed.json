@@ -10,19 +10,19 @@
   "masterData": {
     "current": {
       "name": {
-        "de": "new name current"
+        "en": "new name current"
       },
       "description": {
-        "de": "new description current"
+        "en": "new description current"
       },
       "metaDescription": {
-        "de": "new Meta description current"
+        "en": "new Meta description current"
       },
       "metaKeywords": {
-        "de": "key3,key4"
+        "en": "key3,key4"
       },
       "metaTitle": {
-        "de": "new title current"
+        "en": "new title current"
       },
       "categories": [
         {
@@ -34,7 +34,7 @@
         "9e6de6ad-cc94-4034-aa9f-276ccb437efd": "0.95"
       },
       "slug": {
-        "de": "rehruecken-o-k1-current"
+        "en": "rehruecken-o-k1-current"
       },
       "masterVariant": {
         "id": 1,
@@ -104,7 +104,7 @@
       },
       "variants": [],
       "searchKeywords": {
-        "de": [
+        "en": [
           {
             "text": "key3"
           },
@@ -116,19 +116,19 @@
     },
     "staged": {
       "name": {
-        "de": "new name"
+        "en": "new name"
       },
       "description": {
-        "de": "new description"
+        "en": "new description"
       },
       "metaDescription": {
-        "de": "new Meta description"
+        "en": "new Meta description"
       },
       "metaKeywords": {
-        "de": "key1,key2"
+        "en": "key1,key2"
       },
       "metaTitle": {
-        "de": "new title"
+        "en": "new title"
       },
       "categories": [
         {
@@ -140,7 +140,7 @@
         "9e6de6ad-cc94-4034-aa9f-276ccb437efd": "0.95"
       },
       "slug": {
-        "de": "rehruecken-o-k1"
+        "en": "rehruecken-o-k1"
       },
       "masterVariant": {
         "id": 1,
@@ -210,7 +210,7 @@
       },
       "variants": [],
       "searchKeywords": {
-        "de": [
+        "en": [
           {
             "text": "key1"
           },

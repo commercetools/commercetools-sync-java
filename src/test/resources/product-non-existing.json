@@ -10,20 +10,16 @@
   "masterData": {
     "current": {
       "name": {
-        "de": "Rehrücken ohne Knochen"
+        "en": "Rehrücken ohne Knochen"
       },
       "description": {
-        "de": "Die Rückenstücke des Rehs gelten als wahres Geschmackserlebnis und beherbergen die edelsten Teile des Rehs. Aus dem Rücken können Sie feine Filets herausschneiden, die sich hervorragend zum Kurzbraten oder Grillen eignen. Da der Knochen von uns bereits schonend entfernt wurde, können Sie sich voll und ganz auf den einzigartigen Geschmack konzentrieren."
+        "en": "Die Rückenstücke des Rehs gelten als wahres Geschmackserlebnis und beherbergen die edelsten Teile des Rehs. Aus dem Rücken können Sie feine Filets herausschneiden, die sich hervorragend zum Kurzbraten oder Grillen eignen. Da der Knochen von uns bereits schonend entfernt wurde, können Sie sich voll und ganz auf den einzigartigen Geschmack konzentrieren."
       },
       "categories": [
-        {
-          "typeId": "category",
-          "id": "5cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
-        }
       ],
       "categoryOrderHints": {},
       "slug": {
-        "de": "1ehruecken-o-kn"
+        "en": "1ehruecken-o-kn"
       },
       "masterVariant": {
         "id": 1,
@@ -96,20 +92,16 @@
     },
     "staged": {
       "name": {
-        "de": "Rehrücken ohne Knochen"
+        "en": "Rehrücken ohne Knochen"
       },
       "description": {
-        "de": "Die Rückenstücke des Rehs gelten als wahres Geschmackserlebnis und beherbergen die edelsten Teile des Rehs. Aus dem Rücken können Sie feine Filets herausschneiden, die sich hervorragend zum Kurzbraten oder Grillen eignen. Da der Knochen von uns bereits schonend entfernt wurde, können Sie sich voll und ganz auf den einzigartigen Geschmack konzentrieren."
+        "en": "Die Rückenstücke des Rehs gelten als wahres Geschmackserlebnis und beherbergen die edelsten Teile des Rehs. Aus dem Rücken können Sie feine Filets herausschneiden, die sich hervorragend zum Kurzbraten oder Grillen eignen. Da der Knochen von uns bereits schonend entfernt wurde, können Sie sich voll und ganz auf den einzigartigen Geschmack konzentrieren."
       },
       "categories": [
-        {
-          "typeId": "category",
-          "id": "5cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
-        }
       ],
       "categoryOrderHints": {},
       "slug": {
-        "de": "1ehruecken-o-kn"
+        "en": "1ehruecken-o-kn"
       },
       "masterVariant": {
         "id": 1,

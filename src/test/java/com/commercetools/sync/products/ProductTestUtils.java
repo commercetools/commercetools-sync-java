@@ -18,7 +18,6 @@ import java.util.Locale;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.products.helpers.ProductSyncUtils.masterData;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
@@ -26,6 +25,7 @@ import static java.util.Collections.singletonMap;
 import static java.util.Locale.ENGLISH;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toList;
 import static org.mockito.Mockito.mock;
 
 public class ProductTestUtils {
@@ -51,14 +51,38 @@ public class ProductTestUtils {
      * is not null.
      */
     public static ProductDraft productDraft(final String resourcePath, final ProductType productType,
-                                            final ProductSyncOptions syncOptions, @Nullable final Category category) {
+                                            final ProductSyncOptions syncOptions,
+                                            @Nullable final List<Category> categories) {
+        return productDraft(resourcePath, productType, syncOptions, categories, true);
+    }
+
+    /**
+     * Provides {@link ProductDraft} built on product template read from {@code resourcePath},
+     * based on {@code productType} with {@code syncOptions} applied and category order hints set if {@code category}
+     * is not null.
+     */
+    public static ProductDraft productDraft(final String resourcePath, final ProductType productType,
+                                            final ProductSyncOptions syncOptions) {
+        return productDraft(resourcePath, productType, syncOptions, null);
+    }
+
+    /**
+     * Provides {@link ProductDraft} built on product template read from {@code resourcePath},
+     * based on {@code productType} with {@code syncOptions} applied and category order hints set if {@code category}
+     * is not null.
+     */
+    public static ProductDraft productDraft(final String resourcePath, final ProductType productType,
+                                            final ProductSyncOptions syncOptions,
+                                            @Nullable final List<Category> categories,
+                                            final boolean withCategoryOrderHints) {
+
         Product template = product(resourcePath);
         ProductData productData = masterData(template, syncOptions);
 
         @SuppressWarnings("ConstantConditions")
         List<ProductVariantDraft> allVariants = productData.getAllVariants().stream()
             .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
-            .collect(Collectors.toList());
+            .collect(toList());
 
         ProductDraftBuilder builder = ProductDraftBuilder
             .of(productType, productData.getName(), productData.getSlug(), allVariants)
@@ -69,15 +93,18 @@ public class ProductTestUtils {
             .searchKeywords(productData.getSearchKeywords())
             .key(template.getKey())
             .publish(template.getMasterData().isPublished());
-        if (nonNull(category)) {
-            builder = builder.categoryOrderHints(CategoryOrderHints.of(singletonMap(category.getId(), "0.95")));
+        if (nonNull(categories)) {
+            if (!categories.isEmpty()) {
+                builder = builder.categories(categories.stream().map(Category::toReference).collect(toList()));
+                if (withCategoryOrderHints) {
+                    builder = builder.categoryOrderHints(
+                        CategoryOrderHints.of(singletonMap(categories.get(0).getId(), "0.95")));
+                }
+            }
+        } else {
+            builder = builder.categories(productData.getCategories());
         }
         return builder.build();
-    }
-
-    public static ProductDraft productDraft(final String resourcePath, final ProductType productType,
-                                            final ProductSyncOptions syncOptions) {
-        return productDraft(resourcePath, productType, syncOptions, null);
     }
 
     /**

@@ -1,39 +1,45 @@
 package com.commercetools.sync.products.actions;
 
 import com.commercetools.sync.products.ProductSyncOptions;
+import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.AddToCategory;
+import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.SetCategoryOrderHint;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static com.commercetools.sync.products.actions.ActionUtils.actionsOnProductData;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 
-final class Category {
-    private Category() {
+final class Categories {
+    private Categories() {
     }
 
-    static List<UpdateAction<Product>> addToCategory(final Product product, final ProductDraft draft,
+    static List<UpdateAction<Product>> mapCategories(final Product product, final ProductDraft draft,
                                                      final ProductSyncOptions syncOptions) {
         return actionsOnProductData(product, syncOptions,
             ProductData::getCategories, draft.getCategories(), (oldCategories, newCategories) -> {
-                newCategories.removeAll(oldCategories);
-                if (!newCategories.isEmpty()) {
-                    // TODO only for one category now
-                    return singletonList(
-                        AddToCategory.of(newCategories.iterator().next(), syncOptions.isUpdateStaged()));
-                }
-                return emptyList();
+
+                List<UpdateAction<Product>> updateActions = new ArrayList<>();
+
+                subtract(newCategories, oldCategories).forEach(c ->
+                    updateActions.add(AddToCategory.of(c, syncOptions.isUpdateStaged())));
+
+                subtract(oldCategories, newCategories).forEach(c ->
+                    updateActions.add(RemoveFromCategory.of(c, syncOptions.isUpdateStaged())));
+
+                return updateActions;
             });
     }
 
@@ -64,5 +70,12 @@ final class Category {
 
                 return updateActions;
             });
+    }
+
+    private static Set<Reference<Category>> subtract(final Set<Reference<Category>> set1,
+                                                     final Set<Reference<Category>> set2) {
+        Set<Reference<Category>> difference = new HashSet<>(set1);
+        difference.removeAll(set2);
+        return difference;
     }
 }
