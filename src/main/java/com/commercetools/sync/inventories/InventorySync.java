@@ -108,13 +108,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     protected CompletionStage<InventorySyncStatistics> process(@Nonnull final List<InventoryEntryDraft>
                                                                        inventoryDrafts) {
         return findSupplyChannels(inventoryDrafts)
-            .thenCompose(supplyChannelKeyToIdOptional -> {
-                if (supplyChannelKeyToIdOptional.isPresent()) {
-                    return splitToBatchesAndProcess(inventoryDrafts, supplyChannelKeyToIdOptional.get());
-                } else {
-                    return completedFuture(statistics);
-                }
-            });
+            .thenCompose(supplyChannelKeyToIdOptional -> supplyChannelKeyToIdOptional
+                .map(supplyChannelKeyToId -> splitToBatchesAndProcess(inventoryDrafts, supplyChannelKeyToId))
+                .orElseGet(() -> completedFuture(statistics)));
     }
 
     /**
