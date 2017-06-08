@@ -48,7 +48,7 @@ public class InventoryReferenceResolverTest {
     private static final Integer RESTOCKABLE_IN_DAYS = 10;
     private static final ZonedDateTime DATE_1 = ZonedDateTime.of(2017, 4, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
 
-    private static Logger LOGGER = LoggerFactory.getLogger(InventoryReferenceResolverTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InventoryReferenceResolverTest.class);
 
     /**
      * Sets up the services and the options needed for reference resolution.
