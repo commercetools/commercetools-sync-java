@@ -1,7 +1,6 @@
 package com.commercetools.sync.products.actions;
 
 import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.products.helpers.ProductSyncUtils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
@@ -12,6 +11,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static com.commercetools.sync.products.helpers.ProductSyncUtils.masterData;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 
@@ -25,7 +25,7 @@ final class ActionUtils {
                                                                    final Function<ProductData, X> productValue,
                                                                    final X draftValue,
                                                                    final Function<X, UpdateAction<Product>> action) {
-        ProductData productData = ProductSyncUtils.masterData(product, syncOptions);
+        ProductData productData = masterData(product, syncOptions);
         return isNull(productData)
             ? Optional.empty()
             : action(productValue.apply(productData), draftValue, action);
@@ -45,7 +45,7 @@ final class ActionUtils {
                                                                 final X draftValue,
                                                                 final BiFunction<X, X, List<UpdateAction<Product>>>
                                                                     actions) {
-        ProductData productData = ProductSyncUtils.masterData(product, syncOptions);
+        ProductData productData = masterData(product, syncOptions);
         return isNull(productData)
             ? emptyList()
             : actions(productValue.apply(productData), draftValue, actions);
