@@ -313,13 +313,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     private CompletionStage<Void> processBatch(@Nonnull final List<InventoryEntryDraft> batchOfDrafts,
                                                @Nonnull final Map<String, String> supplyChannelKeyToId) {
         return fetchExistingInventories(batchOfDrafts)
-            .thenCompose(oldInventoriesOptional -> {
-                if (oldInventoriesOptional.isPresent()) {
-                    return compareAndSync(oldInventoriesOptional.get(), batchOfDrafts, supplyChannelKeyToId);
-                } else {
-                    return completedFuture(null);
-                }
-            });
+            .thenCompose(oldInventoriesOptional -> oldInventoriesOptional
+                .map(oldInventories -> compareAndSync(oldInventories, batchOfDrafts, supplyChannelKeyToId))
+                .orElseGet(() -> completedFuture(null)));
     }
 
     /**
