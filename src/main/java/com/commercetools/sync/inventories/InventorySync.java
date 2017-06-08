@@ -366,11 +366,15 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                                                             @Nonnull final InventoryEntryDraft draft) {
         return oldInventories.stream()
             .filter(oldInventory -> oldInventory.getSku().equals(draft.getSku()))
-            .filter(oldInventory -> draft.getSupplyChannel() == null
-                ? (oldInventory.getSupplyChannel() == null)
-                : ((oldInventory.getSupplyChannel() != null)
-                && oldInventory.getSupplyChannel().getId().equals(draft.getSupplyChannel().getId())))
+            .filter(oldInventory -> hasSameSupplyChannel(oldInventory, draft))
             .findFirst();
+    }
+
+    private boolean hasSameSupplyChannel(final InventoryEntry inventory, final InventoryEntryDraft draft) {
+        return draft.getSupplyChannel() == null
+            ? (inventory.getSupplyChannel() == null)
+            : ((inventory.getSupplyChannel() != null)
+            && inventory.getSupplyChannel().getId().equals(draft.getSupplyChannel().getId()));
     }
 
     /**
