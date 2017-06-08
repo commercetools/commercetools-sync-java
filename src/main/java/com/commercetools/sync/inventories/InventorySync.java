@@ -224,41 +224,40 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 syncOptions.applyErrorCallback(CTP_CHANNEL_FETCH_FAILED, exception);
                 return null;
             })
-            .thenCompose(supplyChannelKeyToId -> {
-                if (supplyChannelKeyToId != null) {
-                    return createMissingSupplyChannels(drafts, supplyChannelKeyToId).thenApply(Optional::of);
-                } else {
-                    return completedFuture(Optional.empty());
-                }
-            });
+            .thenCompose(supplyChannelKeyToId -> createMissingSupplyChannels(drafts, supplyChannelKeyToId))
+            .thenApply(Optional::ofNullable);
     }
 
     /**
      * When {@code ensureChannel} from {@link InventorySyncOptions} is set to {@code true} then attempts to create
      * missing supply channels. Missing supply channel is a supply channel of key that can not be found in CTP project,
      * but occurs in {@code drafts} list. Method returns {@link CompletionStage} of {@link Map} that contains updated
-     * {@code supplyChannelKeyToId}.
+     * {@code supplyChannelKeyToId}. Null {@code supplyChannelKeyToId} results in null value within completion stage.
      *
      * @param drafts {@link List} containing {@link InventoryEntryDraft} objects where missing supply channels can occur
      * @param supplyChannelKeyToId mapping of supply channel key to supply channel Id for supply channels existing in
-     *                             CTP project.
-     * @return {@link CompletionStage} of {@link Map} that contains updated {@code supplyChannelKeyToId}
+     *                             CTP project
+     * @return {@link CompletionStage} of {@link Map} that contains updated {@code supplyChannelKeyToId} or {@code null}
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Map<String, String>> createMissingSupplyChannels(@Nonnull final List<InventoryEntryDraft>
                                                                                      drafts,
-                                                                             @Nonnull final Map<String, String>
+                                                                             @Nullable final Map<String, String>
                                                                                  supplyChannelKeyToId) {
-        if (syncOptions.shouldEnsureChannels()) {
+        if (supplyChannelKeyToId != null && syncOptions.shouldEnsureChannels()) {
             final List<String> missingChannelsKeys = findMissingChannelsKeys(drafts, supplyChannelKeyToId);
-            final List<CompletableFuture<Void>> newChannelsFutures = createSupplyChannelsOfKeys(missingChannelsKeys)
-                .stream()
-                .map(newChannelFuture -> newChannelFuture
-                    .thenAccept(newChannelOptional -> newChannelOptional.ifPresent(
-                        newChannel -> supplyChannelKeyToId.put(newChannel.getKey(), newChannel.getId()))))
-                .collect(toList());
+            final List<CompletableFuture<Optional<Channel>>> newChannelsFutures =
+                createSupplyChannelsOfKeys(missingChannelsKeys);
             return CompletableFuture
                 .allOf(newChannelsFutures.toArray(new CompletableFuture[newChannelsFutures.size()]))
+                .thenRun(() -> {
+                    final Map<String, String> newChannelKeyToId = newChannelsFutures.stream()
+                        .map(CompletableFuture::join)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(toMap(Channel::getKey, Channel::getId));
+                    supplyChannelKeyToId.putAll(newChannelKeyToId);
+                })
                 .thenApply(v -> supplyChannelKeyToId);
         } else {
             return completedFuture(supplyChannelKeyToId);
