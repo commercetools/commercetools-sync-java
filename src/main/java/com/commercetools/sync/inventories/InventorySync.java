@@ -300,6 +300,24 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
+     * Method tries to create supply channel of given {@code supplyChannelKey} in CTP project.
+     * If operation succeed then {@link CompletionStage} containing {@link Optional} with created {@link Channel} is
+     * returned, otherwise error callback function is executed and {@link CompletionStage} with empty {@link Optional}
+     * is returned.
+     *
+     * @param supplyChannelKey key of supply channel that seems to not exists in a system
+     * @return {@link CompletionStage} instance with {@link Optional} that may contain created {@link Channel}
+     */
+    private CompletionStage<Optional<Channel>> createMissingSupplyChannel(@Nonnull final String supplyChannelKey) {
+        return inventoryService.createSupplyChannel(supplyChannelKey)
+            .thenApply(Optional::of)
+            .exceptionally(exception -> {
+                syncOptions.applyErrorCallback(format(CTP_CHANNEL_CREATE_FAILED, supplyChannelKey), exception);
+                return Optional.empty();
+            });
+    }
+
+    /**
      * Fetches existing {@link InventoryEntry} objects from CTP project that correspond to passed {@code batchOfDrafts}.
      * Having existing inventory entries fetched, {@code batchOfDrafts} is compared and synced with fetched objects by
      * {@link InventorySync#compareAndSync(List, List, Map)} function. When fetching existing inventory entries results
@@ -504,23 +522,5 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         return InventoryEntryDraftBuilder.of(draft)
             .supplyChannel(supplyChannelRef)
             .build();
-    }
-
-    /**
-     * Method tries to create supply channel of given {@code supplyChannelKey} in CTP project.
-     * If operation succeed then {@link CompletionStage} containing {@link Optional} with created {@link Channel} is
-     * returned, otherwise error callback function is executed and {@link CompletionStage} with empty {@link Optional}
-     * is returned.
-     *
-     * @param supplyChannelKey key of supply channel that seems to not exists in a system
-     * @return {@link CompletionStage} instance with {@link Optional} that may contain created {@link Channel}
-     */
-    private CompletionStage<Optional<Channel>> createMissingSupplyChannel(@Nonnull final String supplyChannelKey) {
-        return inventoryService.createSupplyChannel(supplyChannelKey)
-            .thenApply(Optional::of)
-            .exceptionally(exception -> {
-                syncOptions.applyErrorCallback(format(CTP_CHANNEL_CREATE_FAILED, supplyChannelKey), exception);
-                return Optional.empty();
-            });
     }
 }
