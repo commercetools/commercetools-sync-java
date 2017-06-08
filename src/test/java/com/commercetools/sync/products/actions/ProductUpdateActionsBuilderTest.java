@@ -6,6 +6,7 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
+import io.sphere.sdk.products.commands.updateactions.SetDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
@@ -24,6 +25,7 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductUpdateActionsBuilderTest {
+
     @Test
     public void of_expectSingleton() {
         ProductUpdateActionsBuilder productUpdateActionsBuilder = ProductUpdateActionsBuilder.of();
@@ -55,7 +57,7 @@ public class ProductUpdateActionsBuilderTest {
         ProductDraft productDraft = productDraft("product-changed.json", productType(), syncOptions);
 
         List<UpdateAction<Product>> updateActions = ProductUpdateActionsBuilder.of()
-                .buildActions(product, productDraft, syncOptions);
+            .buildActions(product, productDraft, syncOptions);
 
         assertThat(updateActions).isEqualTo(expectedUpdateActions(product, syncOptions, productDraft));
     }
@@ -67,7 +69,7 @@ public class ProductUpdateActionsBuilderTest {
         ProductDraft productDraft = productDraft("product-changed.json", productType(), syncOptions);
 
         List<UpdateAction<Product>> updateActions = ProductUpdateActionsBuilder.of()
-                .buildActions(product, productDraft, syncOptions);
+            .buildActions(product, productDraft, syncOptions);
 
         assertThat(updateActions).isEqualTo(expectedUpdateActions(product, syncOptions, productDraft));
     }
@@ -77,14 +79,16 @@ public class ProductUpdateActionsBuilderTest {
                                                               final ProductSyncOptions syncOptions,
                                                               final ProductDraft productDraft) {
         return asList(
-                ChangeName.of(productDraft.getName(), syncOptions.isUpdateStaged()),
-                ChangeSlug.of(productDraft.getSlug(), syncOptions.isUpdateStaged()),
-                SetMetaDescription.of(productDraft.getMetaDescription()),
-                SetMetaKeywords.of(productDraft.getMetaKeywords()),
-                SetMetaTitle.of(productDraft.getMetaTitle()),
-                SetSku.of(masterData(product, syncOptions).getMasterVariant().getId(),
-                        productDraft.getMasterVariant().getSku(), syncOptions.isUpdateStaged()),
-                SetSearchKeywords.of(productDraft.getSearchKeywords(), syncOptions.isUpdateStaged()));
+            ChangeName.of(productDraft.getName(), syncOptions.isUpdateStaged()),
+            ChangeSlug.of(productDraft.getSlug(), syncOptions.isUpdateStaged()),
+            SetDescription.of(productDraft.getDescription(), syncOptions.isUpdateStaged()),
+            SetSearchKeywords.of(productDraft.getSearchKeywords(), syncOptions.isUpdateStaged()),
+            SetMetaDescription.of(productDraft.getMetaDescription()),
+            SetMetaKeywords.of(productDraft.getMetaKeywords()),
+            SetMetaTitle.of(productDraft.getMetaTitle()),
+            SetSku.of(masterData(product, syncOptions).getMasterVariant().getId(),
+                productDraft.getMasterVariant().getSku(), syncOptions.isUpdateStaged())
+        );
     }
 
 }

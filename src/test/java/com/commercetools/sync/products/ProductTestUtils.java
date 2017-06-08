@@ -57,17 +57,18 @@ public class ProductTestUtils {
 
         @SuppressWarnings("ConstantConditions")
         List<ProductVariantDraft> allVariants = productData.getAllVariants().stream()
-                .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
-                .collect(Collectors.toList());
+            .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
+            .collect(Collectors.toList());
 
         ProductDraftBuilder builder = ProductDraftBuilder
-                .of(productType, productData.getName(), productData.getSlug(), allVariants)
-                .metaDescription(productData.getMetaDescription())
-                .metaKeywords(productData.getMetaKeywords())
-                .metaTitle(productData.getMetaTitle())
-                .searchKeywords(productData.getSearchKeywords())
-                .key(template.getKey())
-                .publish(template.getMasterData().isPublished());
+            .of(productType, productData.getName(), productData.getSlug(), allVariants)
+            .metaDescription(productData.getMetaDescription())
+            .metaKeywords(productData.getMetaKeywords())
+            .metaTitle(productData.getMetaTitle())
+            .description(productData.getDescription())
+            .searchKeywords(productData.getSearchKeywords())
+            .key(template.getKey())
+            .publish(template.getMasterData().isPublished());
         if (nonNull(category)) {
             builder = builder.categoryOrderHints(CategoryOrderHints.of(singletonMap(category.getId(), "0.95")));
         }
