@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventories;
+package com.commercetools.sync.inventories.utils;
 
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
@@ -39,7 +39,7 @@ import static com.commercetools.sync.commons.utils.SphereClientUtils.fetchAndPro
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
-public class InventoryIntegrationTestUtils {
+public class InventoryItTestUtils {
 
     public static final String SKU_1 = "100000";
     public static final String SKU_2 = "200000";
@@ -59,6 +59,16 @@ public class InventoryIntegrationTestUtils {
     public static final String CUSTOM_TYPE = "inventory-custom-type-name";
     public static final String CUSTOM_FIELD_NAME = "inventory-custom-field-1";
 
+    private static final InventoryEntryQuery QUERY_ALL_INVENTORIES = InventoryEntryQuery.of()
+        .withLimit(QUERY_MAX_LIMIT);
+
+    private static final ChannelQuery QUERY_ALL_SUPPLY_CHANNELS = ChannelQuery.of().withLimit(QUERY_MAX_LIMIT)
+        .plusPredicates(queryModel -> queryModel.roles().containsAny(singleton(ChannelRole.INVENTORY_SUPPLY)));
+
+    private static final TypeQuery QUERY_ALL_INVENTORY_CUSTOM_TYPES = TypeQuery.of().withLimit(QUERY_MAX_LIMIT)
+        .plusPredicates(queryModel -> queryModel.resourceTypeIds()
+            .containsAny(singleton(InventoryEntry.resourceTypeId())));
+
     /**
      * Deletes up to {@link com.commercetools.sync.commons.utils.SphereClientUtils#QUERY_MAX_LIMIT} inventory entries
      * from CTP project, represented by provided {@code sphereClient}.
@@ -66,8 +76,7 @@ public class InventoryIntegrationTestUtils {
      * @param sphereClient sphere client used to execute requests
      */
     public static void deleteInventoryEntries(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::getQueryOfAllInventoryEntries,
-            InventoryEntryDeleteCommand::of);
+        fetchAndProcess(sphereClient, QUERY_ALL_INVENTORIES, InventoryEntryDeleteCommand::of);
     }
 
     /**
@@ -77,8 +86,7 @@ public class InventoryIntegrationTestUtils {
      * @param sphereClient sphere client used to execute requests
      */
     public static void deleteSupplyChannels(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::getQueryOfAllSupplyChannels,
-            ChannelDeleteCommand::of);
+        fetchAndProcess(sphereClient, QUERY_ALL_SUPPLY_CHANNELS, ChannelDeleteCommand::of);
     }
 
     /**
@@ -89,8 +97,7 @@ public class InventoryIntegrationTestUtils {
      * @param sphereClient sphere client used to execute requests
      */
     public static void deleteInventoryCustomTypes(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::getQueryOfAllInventoryCustomTypes,
-            TypeDeleteCommand::of);
+        fetchAndProcess(sphereClient, QUERY_ALL_INVENTORY_CUSTOM_TYPES, TypeDeleteCommand::of);
     }
 
     /**
@@ -206,19 +213,5 @@ public class InventoryIntegrationTestUtils {
         final ChannelQuery channelQuery = ChannelQueryBuilder.of().plusPredicates(channelQueryModel ->
             channelQueryModel.key().is(channelKey)).build();
         return sphereClient.execute(channelQuery).toCompletableFuture().join().head();
-    }
-
-    private static InventoryEntryQuery getQueryOfAllInventoryEntries() {
-        return InventoryEntryQuery.of().withLimit(QUERY_MAX_LIMIT);
-    }
-
-    private static ChannelQuery getQueryOfAllSupplyChannels() {
-        return ChannelQuery.of().withLimit(QUERY_MAX_LIMIT).plusPredicates(channelQueryModel ->
-            channelQueryModel.roles().containsAny(singleton(ChannelRole.INVENTORY_SUPPLY)));
-    }
-
-    private static TypeQuery getQueryOfAllInventoryCustomTypes() {
-        return TypeQuery.of().withLimit(QUERY_MAX_LIMIT).plusPredicates(typeQueryModel ->
-        typeQueryModel.resourceTypeIds().containsAny(singleton(InventoryEntry.resourceTypeId())));
     }
 }
