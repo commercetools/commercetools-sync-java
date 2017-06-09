@@ -39,7 +39,7 @@ import static com.commercetools.sync.commons.utils.SphereClientUtils.fetchAndPro
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
-public class InventoryIntegrationTestUtils {
+public class InventoryItTestUtils {
 
     public static final String SKU_1 = "100000";
     public static final String SKU_2 = "200000";
@@ -66,7 +66,7 @@ public class InventoryIntegrationTestUtils {
      * @param sphereClient sphere client used to execute requests
      */
     public static void deleteInventoryEntries(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::getQueryOfAllInventoryEntries,
+        fetchAndProcess(sphereClient, InventoryItTestUtils::getQueryOfAllInventoryEntries,
             InventoryEntryDeleteCommand::of);
     }
 
@@ -77,7 +77,7 @@ public class InventoryIntegrationTestUtils {
      * @param sphereClient sphere client used to execute requests
      */
     public static void deleteSupplyChannels(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::getQueryOfAllSupplyChannels,
+        fetchAndProcess(sphereClient, InventoryItTestUtils::getQueryOfAllSupplyChannels,
             ChannelDeleteCommand::of);
     }
 
@@ -89,7 +89,7 @@ public class InventoryIntegrationTestUtils {
      * @param sphereClient sphere client used to execute requests
      */
     public static void deleteInventoryCustomTypes(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, InventoryIntegrationTestUtils::getQueryOfAllInventoryCustomTypes,
+        fetchAndProcess(sphereClient, InventoryItTestUtils::getQueryOfAllInventoryCustomTypes,
             TypeDeleteCommand::of);
     }
 

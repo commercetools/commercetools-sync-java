@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ClientConfigurationUtilsTest {
+public class ClientConfigurationUtilsItTest {
 
     @Test
     public void createClient_WithSameConfig_ReturnsSameClient() {
