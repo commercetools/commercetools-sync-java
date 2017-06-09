@@ -7,7 +7,6 @@ import io.sphere.sdk.queries.PagedQueryResult;
 
 import javax.annotation.Nonnull;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class SphereClientUtils {
 
@@ -30,25 +29,24 @@ public class SphereClientUtils {
     public static final Long QUERY_MAX_LIMIT = 500L;
 
     /**
-     * Fetches resources of {@link T} using query provided by {@code query}.
-     * The {@code ctpRequest} is applied on each resultant resource from fetching, to make a {@link SphereRequest}.
-     * Then each request is executed by {@code client}.
+     * Fetches resources of {@link T} using a {@code query}. The {@code ctpRequest} is applied on each resultant
+     * resource from fetching, to make a {@link SphereRequest}. Then each request is executed by {@code client}.
      * Method blocks until above operations were done.
      *
-     * <p>Example of use: you could provide a supplier which returns a query that will fetch all resources
-     * of type {@link io.sphere.sdk.inventory.InventoryEntry}, and a function that returns delete command for given
+     * <p>Example of use: you could provide a query that will fetch all resources of type
+     * {@link io.sphere.sdk.inventory.InventoryEntry}, and a function that returns delete command for given
      * inventory entry. It would result in deleting all inventory entries from the given CTP.
      *
      * @param client sphere client used to executing requests
-     * @param query supplier of resources that need to be processed
+     * @param query query of resources that need to be processed
      * @param ctpRequest function that takes resource and returns sphere request
      * @param <T> type of resource
      */
     public static <T> void fetchAndProcess(@Nonnull final SphereClient client,
-                                           @Nonnull final Supplier<SphereRequest<PagedQueryResult<T>>> query,
+                                           @Nonnull final SphereRequest<PagedQueryResult<T>> query,
                                            @Nonnull final Function<T, SphereRequest<T>> ctpRequest) {
 
-        client.execute(query.get()).toCompletableFuture().join().getResults()
+        client.execute(query).toCompletableFuture().join().getResults()
             .forEach(item -> client.execute(ctpRequest.apply(item)).toCompletableFuture().join());
     }
 }
