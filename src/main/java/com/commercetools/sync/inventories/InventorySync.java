@@ -463,24 +463,24 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                     .map(inventoryEntry -> update(inventoryEntry, draft, retryOn409AttemptsLeft - 1)
                         .toCompletableFuture())
                     .orElseGet(() -> {
-                        statistics.incrementFailed();
-                        syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
-                            extractChannelKey(draft)), exception);
+                        reportFailureOfInventoryUpdate(draft, exception);
                         return completedFuture(null);
                     })
                 )
                 .exceptionally(exceptionAfterFetch -> {
-                    statistics.incrementFailed();
-                    syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
-                        extractChannelKey(draft)), exceptionAfterFetch);
+                    reportFailureOfInventoryUpdate(draft, exceptionAfterFetch);
                     return null;
                 });
         } else {
-            statistics.incrementFailed();
-            syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
-                extractChannelKey(draft)), exception);
+            reportFailureOfInventoryUpdate(draft, exception);
             return completedFuture(null);
         }
+    }
+
+    private void reportFailureOfInventoryUpdate(final InventoryEntryDraft draft, final Throwable exception) {
+        statistics.incrementFailed();
+        syncOptions.applyErrorCallback(format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
+            extractChannelKey(draft)), exception);
     }
 
     /**
