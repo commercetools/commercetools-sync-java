@@ -47,7 +47,8 @@ final class InventoryServiceImpl implements InventoryService {
 
     @Override
     public CompletionStage<Optional<InventoryEntry>> fetchInventoryEntry(@Nonnull final String sku,
-                                                                         @Nullable final Referenceable supplyChannel) {
+                                                                         @Nullable final Referenceable<Channel>
+                                                                             supplyChannel) {
         InventoryEntryQuery query = InventoryEntryQuery.of().plusPredicates(inventoryEntryQueryModel ->
             inventoryEntryQueryModel.sku().is(sku));
         query = supplyChannel == null
