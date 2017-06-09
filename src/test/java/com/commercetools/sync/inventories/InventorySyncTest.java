@@ -9,6 +9,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.SphereException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,7 +22,6 @@ import java.util.concurrent.CompletionException;
 import java.util.function.BiConsumer;
 
 import static com.commercetools.sync.inventories.InventorySync.ATTEMPTS_ON_409_LIMIT;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
@@ -110,11 +110,7 @@ public class InventorySyncTest {
                 .toCompletableFuture()
                 .join();
         final InventorySyncStatistics stats = inventorySync.getStatistics();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(9);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(3);
-        assertThat(stats.getUpdated()).isEqualTo(3);
+        verifyStatistics(stats, 9, 0, 3, 3);
     }
 
     @Test
@@ -123,11 +119,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(drafts)
                 .toCompletableFuture()
                 .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(9);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(3);
-        assertThat(stats.getUpdated()).isEqualTo(3);
+        verifyStatistics(stats, 9, 0, 3, 3);
     }
 
     @Test
@@ -136,11 +128,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(emptyList())
                 .toCompletableFuture()
                 .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(0);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 0, 0, 0, 0);
     }
 
     @Test
@@ -151,10 +139,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNewChannel))
                 .toCompletableFuture()
                 .join();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 0, 1, 0);
     }
 
     @Test
@@ -165,10 +150,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNewChannel))
                 .toCompletableFuture()
                 .join();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
     }
 
     @Test
@@ -178,10 +160,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNullSku))
                 .toCompletableFuture()
                 .join();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
     }
 
     @Test
@@ -191,10 +170,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithEmptySku))
                 .toCompletableFuture()
                 .join();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
     }
 
     @Test
@@ -202,15 +178,12 @@ public class InventorySyncTest {
         final InventorySyncOptions options = getInventorySyncOptions(30, false);
         final InventoryService service = getMockInventoryService(existingSupplyChannels, existingInventories,
                 getMockSupplyChannel(REF_3, KEY_3), mock(InventoryEntry.class), mock(InventoryEntry.class));
-        when(service.fetchAllSupplyChannels()).thenReturn(getCompletionStageWithException());
+        when(service.fetchAllSupplyChannels()).thenReturn(exceptionallyCompletedFuture(new SphereException()));
         final InventorySync inventorySync = new InventorySync(options, service, mock(TypeService.class));
         final InventorySyncStatistics stats = inventorySync.sync(drafts)
                 .toCompletableFuture()
                 .join();
-        assertThat(stats.getProcessed()).isEqualTo(0);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 0, 0, 0, 0);
     }
 
     @Test
@@ -218,16 +191,13 @@ public class InventorySyncTest {
         final InventorySyncOptions options = getInventorySyncOptions(1, false);
         final InventoryService service = getMockInventoryService(existingSupplyChannels, existingInventories,
                 getMockSupplyChannel(REF_3, KEY_3), mock(InventoryEntry.class), mock(InventoryEntry.class));
-        when(service.fetchInventoryEntriesBySkus(singleton(SKU_1))).thenReturn(getCompletionStageWithException());
+        when(service.fetchInventoryEntriesBySkus(singleton(SKU_1))).thenReturn(exceptionallyCompletedFuture(
+            new SphereException()));
         final InventorySync inventorySync = new InventorySync(options, service, mock(TypeService.class));
         final InventorySyncStatistics stats = inventorySync.sync(drafts)
                 .toCompletableFuture()
                 .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(6);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(3);
-        assertThat(stats.getUpdated()).isEqualTo(3);
+        verifyStatistics(stats, 6, 0, 3, 3);
     }
 
     @Test
@@ -235,17 +205,14 @@ public class InventorySyncTest {
         final InventorySyncOptions options = getInventorySyncOptions(3, false);
         final InventoryService service = getMockInventoryService(existingSupplyChannels, existingInventories,
                 getMockSupplyChannel(REF_3, KEY_3), mock(InventoryEntry.class), mock(InventoryEntry.class));
-        when(service.createInventoryEntry(any())).thenReturn(getCompletionStageWithException());
-        when(service.updateInventoryEntry(any(), any())).thenReturn(getCompletionStageWithException());
+        when(service.createInventoryEntry(any())).thenReturn(exceptionallyCompletedFuture(new SphereException()));
+        when(service.updateInventoryEntry(any(), any())).thenReturn(exceptionallyCompletedFuture(
+            new SphereException()));
         final InventorySync inventorySync = new InventorySync(options, service, mock(TypeService.class));
         final InventorySyncStatistics stats = inventorySync.sync(drafts)
                 .toCompletableFuture()
                 .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(9);
-        assertThat(stats.getFailed()).isEqualTo(6);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 9, 6, 0, 0);
     }
 
     @Test
@@ -265,7 +232,7 @@ public class InventorySyncTest {
             .build();
         final InventoryService service = getMockInventoryService(existingSupplyChannels, existingInventories,
             getMockSupplyChannel(REF_3, KEY_3), mock(InventoryEntry.class), mock(InventoryEntry.class));
-        when(service.createSupplyChannel(any())).thenReturn(getCompletionStageWithException());
+        when(service.createSupplyChannel(any())).thenReturn(exceptionallyCompletedFuture(new SphereException()));
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraft
             .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_3));
         final InventorySync inventorySync = new InventorySync(options, service, mock(TypeService.class));
@@ -273,11 +240,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(newInventoryDraft))
             .toCompletableFuture()
             .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
         assertThat(callbackMessages.get(0)).isEqualTo(format("Failed to create new supply channel of key '%s'.",
             KEY_3));
         assertThat(callbackThrowables.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -293,11 +256,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(null))
             .toCompletableFuture()
             .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
     }
 
     @Test
@@ -316,11 +275,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(newInventoryDraft))
             .toCompletableFuture()
             .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
     }
 
     @Test
@@ -345,11 +300,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(newEntry)).toCompletableFuture()
             .join();
 
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(1);
+        verifyStatistics(stats, 1, 0, 0, 1);
         verify(service, times(1)).fetchInventoryEntry(eq(SKU_1), any());
         verify(service, times(2)).updateInventoryEntry(any(), any());
         verify(service, times(1)).updateInventoryEntry(eq(oldInventory), any());
@@ -378,11 +329,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(newEntry)).toCompletableFuture()
             .join();
 
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
         verify(service, times(1)).fetchInventoryEntry(eq(SKU_1), any());
         verify(service, times(2)).updateInventoryEntry(any(), any());
         verify(service, times(1)).updateInventoryEntry(eq(oldInventory), any());
@@ -407,11 +354,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(newEntry)).toCompletableFuture()
             .join();
 
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
         verify(service, times(1)).fetchInventoryEntry(eq(SKU_1), any());
         verify(service, times(1)).updateInventoryEntry(any(), any());
         verify(service, times(1)).updateInventoryEntry(eq(oldInventory), any());
@@ -437,11 +380,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(newEntry)).toCompletableFuture()
             .join();
 
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
         verify(service, times(ATTEMPTS_ON_409_LIMIT)).fetchInventoryEntry(eq(SKU_1), any());
         verify(service, times(ATTEMPTS_ON_409_LIMIT + 1)).updateInventoryEntry(any(), any());
     }
@@ -458,5 +397,14 @@ public class InventorySyncTest {
                 .setBatchSize(batchSize)
                 .ensureChannels(ensureChannels)
                 .build();
+    }
+
+    private void verifyStatistics(final InventorySyncStatistics statistics, final int expectedProcessed,
+                                  final int expectedFailed, final int expectedCreated, final int expectedUpdated) {
+        assertThat(statistics).isNotNull();
+        assertThat(statistics.getProcessed()).isEqualTo(expectedProcessed);
+        assertThat(statistics.getFailed()).isEqualTo(expectedFailed);
+        assertThat(statistics.getCreated()).isEqualTo(expectedCreated);
+        assertThat(statistics.getUpdated()).isEqualTo(expectedUpdated);
     }
 }

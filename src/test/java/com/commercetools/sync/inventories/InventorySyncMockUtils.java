@@ -14,7 +14,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static java.util.Collections.singleton;
@@ -123,17 +122,5 @@ public class InventorySyncMockUtils {
         when(inventoryService.createInventoryEntry(any())).thenReturn(completedFuture(createdInventoryEntry));
         when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(completedFuture(updatedInventoryEntry));
         return inventoryService;
-    }
-
-    /**
-     * Returns {@link CompletionStage} completed exceptionally.
-     *
-     * @param <T> type of result that is supposed to be inside {@link CompletionStage}
-     * @return {@link CompletionStage} instance that is completed exceptionally with {@link RuntimeException}
-     */
-    public static <T> CompletionStage<T> getCompletionStageWithException() {
-        final CompletableFuture<T> exceptionalStage = new CompletableFuture<>();
-        exceptionalStage.completeExceptionally(new RuntimeException());
-        return exceptionalStage;
     }
 }
