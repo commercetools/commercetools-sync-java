@@ -222,7 +222,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                                                                                      drafts,
                                                                              @Nullable final Map<String, String>
                                                                                  supplyChannelKeyToId) {
-        if (supplyChannelKeyToId != null && syncOptions.shouldEnsureChannels()) {
+        if (supplyChannelKeyToId == null) {
+            return completedFuture(null);
+        } else if (syncOptions.shouldEnsureChannels()) {
             final List<String> missingChannelsKeys = findMissingChannelsKeys(drafts, supplyChannelKeyToId);
             final List<CompletableFuture<Optional<Channel>>> newChannelsFutures =
                 createSupplyChannelsOfKeys(missingChannelsKeys);
