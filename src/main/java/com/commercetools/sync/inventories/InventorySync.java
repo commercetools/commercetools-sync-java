@@ -459,18 +459,14 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                                                           final int retryOn409AttemptsLeft) {
         if ((retryOn409AttemptsLeft > 0) && (exception instanceof ConcurrentModificationException)) {
             return inventoryService.fetchInventoryEntry(draft.getSku(), draft.getSupplyChannel())
+                .exceptionally(exceptionFromFetch -> Optional.empty())
                 .thenCompose(inventoryEntryOptional -> inventoryEntryOptional
                     .map(inventoryEntry -> update(inventoryEntry, draft, retryOn409AttemptsLeft - 1)
                         .toCompletableFuture())
                     .orElseGet(() -> {
                         reportFailureOfInventoryUpdate(draft, exception);
                         return completedFuture(null);
-                    })
-                )
-                .exceptionally(exceptionAfterFetch -> {
-                    reportFailureOfInventoryUpdate(draft, exceptionAfterFetch);
-                    return null;
-                });
+                    }));
         } else {
             reportFailureOfInventoryUpdate(draft, exception);
             return completedFuture(null);
