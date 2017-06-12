@@ -13,16 +13,16 @@ import io.sphere.sdk.queries.PagedResult;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class CategoryServiceImpl implements CategoryService {
     private final SphereClient ctpClient;
-    private final Map<String, String> externalIdToIdCache = new HashMap<>();
+    private final Map<String, String> externalIdToIdCache = new ConcurrentHashMap<>();
 
     public CategoryServiceImpl(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;

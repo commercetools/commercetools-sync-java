@@ -7,11 +7,11 @@ import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.queries.TypeQuery;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implementation of TypeService interface.
@@ -20,7 +20,7 @@ import java.util.concurrent.CompletionStage;
  */
 public final class TypeServiceImpl implements TypeService {
     private final SphereClient ctpClient;
-    private final Map<String, String> keyToIdCache = new HashMap<>();
+    private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
     public TypeServiceImpl(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;

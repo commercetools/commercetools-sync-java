@@ -12,19 +12,19 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public final class ChannelServiceImpl implements ChannelService {
 
     private final SphereClient ctpClient;
     private final Set<ChannelRole> channelRoles;
-    private final Map<String, String> keyToIdCache = new HashMap<>();
+    private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
     public ChannelServiceImpl(@Nonnull final SphereClient ctpClient,
                               @Nonnull final Set<ChannelRole> channelRoles) {
