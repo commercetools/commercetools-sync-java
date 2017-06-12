@@ -8,7 +8,6 @@ import com.commercetools.sync.commons.helpers.GenericCustomActionBuilderFactory;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.models.Reference;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,7 +34,7 @@ public class GenericCustomActionBuilderFactoryTest {
         IllegalAccessException, InstantiationException {
         assertThatThrownBy(() -> {
             final Cart cart = mock(Cart.class);
-            when(cart.toReference()).thenReturn(Reference.of("cart", "cartId"));
+            when(cart.toReference()).thenReturn(Cart.referenceOfId("cartId"));
             GenericCustomActionBuilderFactory.of(cart);
         }).isInstanceOf(BuildUpdateActionException.class);
     }

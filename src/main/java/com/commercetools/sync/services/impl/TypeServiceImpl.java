@@ -7,37 +7,40 @@ import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.queries.TypeQuery;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implementation of TypeService interface.
- * TODO: USE graphQL to get only keys
- * TODO: UNIT TEST
- * TODO: JAVA DOC
+ * TODO: USE graphQL to get only keys OR MAKE PR/ISSUE TO FIX QueryExecutionUtils.queryAll
+ * TODO: INTEGRATION TEST GITHUB ISSUE#7
  */
-public class TypeServiceImpl implements TypeService {
+public final class TypeServiceImpl implements TypeService {
     private final SphereClient ctpClient;
-    private final Map<String, String> cache = new HashMap<>();
+    private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
     public TypeServiceImpl(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
     }
 
-    @Nullable
+    @Nonnull
     @Override
-    public String getCachedTypeKeyById(@Nullable final String id) {
-        if (cache.isEmpty()) {
-            fetchAllTypesKeysIntoCache().toCompletableFuture().join();
+    public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key) {
+        if (keyToIdCache.isEmpty()) {
+            return cacheAndFetch(key);
         }
-        return cache.get(id);
+        return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
     }
 
     @Nonnull
-    private CompletionStage<Void> fetchAllTypesKeysIntoCache() {
+    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
         return QueryExecutionUtils.queryAll(ctpClient, TypeQuery.of())
-          .thenAccept(types -> types.forEach(type -> cache.put(type.getId(), type.getKey())));
+                                  .thenApply(types -> {
+                                      types.forEach(type -> keyToIdCache.put(type.getKey(), type.getId()));
+                                      return Optional.ofNullable(keyToIdCache.get(key));
+                                  });
     }
 }

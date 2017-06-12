@@ -58,6 +58,7 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
             this.removeOtherSetEntries,
             this.removeOtherCollectionEntries,
             this.removeOtherProperties,
+            this.allowUuid,
             this.updateActionsFilter);
     }
 

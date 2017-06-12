@@ -26,9 +26,15 @@ public class BaseSyncStatisticsTest {
     }
 
     @Test
-    public void incrementUpdated_ShouldIncrementUpdatedValue() {
+    public void incrementUpdated_WithNoSpecifiedTimes_ShouldIncrementUpdatedValue() {
         baseSyncStatistics.incrementUpdated();
         assertThat(baseSyncStatistics.getUpdated()).isEqualTo(1);
+    }
+
+    @Test
+    public void incrementUpdated_WithSpecifiedTimes_ShouldIncrementUpdatedValue() {
+        baseSyncStatistics.incrementUpdated(5);
+        assertThat(baseSyncStatistics.getUpdated()).isEqualTo(5);
     }
 
     @Test
@@ -37,9 +43,15 @@ public class BaseSyncStatisticsTest {
     }
 
     @Test
-    public void incrementCreated_ShouldIncrementCreatedValue() {
+    public void incrementCreated_WithNoSpecifiedTimes_ShouldIncrementCreatedValue() {
         baseSyncStatistics.incrementCreated();
         assertThat(baseSyncStatistics.getCreated()).isEqualTo(1);
+    }
+
+    @Test
+    public void incrementCreated_WithSpecifiedTimes_ShouldIncrementCreatedValue() {
+        baseSyncStatistics.incrementCreated(2);
+        assertThat(baseSyncStatistics.getCreated()).isEqualTo(2);
     }
 
     @Test
@@ -48,9 +60,15 @@ public class BaseSyncStatisticsTest {
     }
 
     @Test
-    public void incrementProcessed_ShouldIncrementProcessedValue() {
+    public void incrementProcessed_WithNoSpecifiedTimes_ShouldIncrementProcessedValue() {
         baseSyncStatistics.incrementProcessed();
         assertThat(baseSyncStatistics.getProcessed()).isEqualTo(1);
+    }
+
+    @Test
+    public void incrementProcessed_WithSpecifiedTimes_ShouldIncrementProcessedValue() {
+        baseSyncStatistics.incrementProcessed(2);
+        assertThat(baseSyncStatistics.getProcessed()).isEqualTo(2);
     }
 
     @Test
@@ -59,9 +77,15 @@ public class BaseSyncStatisticsTest {
     }
 
     @Test
-    public void incrementFailed_ShouldIncrementFailedValue() {
+    public void incrementFailed_WithNoSpecifiedTimes_ShouldIncrementFailedValue() {
         baseSyncStatistics.incrementFailed();
         assertThat(baseSyncStatistics.getFailed()).isEqualTo(1);
+    }
+
+    @Test
+    public void incrementFailed_WithSpecifiedTimes_ShouldIncrementFailedValue() {
+        baseSyncStatistics.incrementFailed(3);
+        assertThat(baseSyncStatistics.getFailed()).isEqualTo(3);
     }
 
     @Test
