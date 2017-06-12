@@ -28,7 +28,7 @@ import java.util.concurrent.CompletionException;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
