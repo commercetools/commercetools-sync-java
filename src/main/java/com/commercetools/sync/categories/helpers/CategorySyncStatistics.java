@@ -19,8 +19,9 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
      */
     @Override
     public String getReportMessage() {
-        return format("Summary: %s categories were processed in total "
-            + "(%s created, %s updated and %s categories failed to sync).",
-          getProcessed(), getCreated(), getUpdated(), getFailed());
+        reportMessage = format("Summary: %s categories were processed in total "
+                + "(%s created, %s updated and %s categories failed to sync).",
+            getProcessed(), getCreated(), getUpdated(), getFailed());
+        return reportMessage;
     }
 }

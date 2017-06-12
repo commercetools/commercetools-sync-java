@@ -2,8 +2,10 @@ sudo: false
 
 language: java
 
+dist: trusty
+
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 install: true # skips travis' default installation step which executes gradle assemble.
 
