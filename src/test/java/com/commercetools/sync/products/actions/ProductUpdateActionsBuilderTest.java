@@ -88,7 +88,7 @@ public class ProductUpdateActionsBuilderTest {
                                                               final ProductSyncOptions syncOptions,
                                                               final ProductDraft productDraft) {
         ProductData productData = masterData(product, syncOptions);
-        boolean updateStaged = syncOptions.isUpdateStaged();
+        boolean updateStaged = syncOptions.shouldUpdateStaged();
         List<UpdateAction<Product>> result = new ArrayList<>();
         result.addAll(asList(
             ChangeName.of(productDraft.getName(), updateStaged),

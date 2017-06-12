@@ -23,28 +23,28 @@ final class Base {
                                                       final ProductSyncOptions syncOptions) {
         return actionOnProductData(product, syncOptions,
             ProductData::getName, draft.getName(),
-            name -> ChangeName.of(name, syncOptions.isUpdateStaged()));
+            name -> ChangeName.of(name, syncOptions.shouldUpdateStaged()));
     }
 
     static Optional<UpdateAction<Product>> changeSlug(final Product product, final ProductDraft draft,
                                                       final ProductSyncOptions syncOptions) {
         return actionOnProductData(product, syncOptions,
             ProductData::getSlug, draft.getSlug(),
-            slug -> ChangeSlug.of(slug, syncOptions.isUpdateStaged()));
+            slug -> ChangeSlug.of(slug, syncOptions.shouldUpdateStaged()));
     }
 
     static Optional<UpdateAction<Product>> setSearchKeywords(final Product product, final ProductDraft draft,
                                                              final ProductSyncOptions syncOptions) {
         return actionOnProductData(product, syncOptions,
             ProductData::getSearchKeywords, draft.getSearchKeywords(),
-            searchKeywords -> SetSearchKeywords.of(searchKeywords, syncOptions.isUpdateStaged()));
+            searchKeywords -> SetSearchKeywords.of(searchKeywords, syncOptions.shouldUpdateStaged()));
     }
 
     static Optional<UpdateAction<Product>> setDescription(final Product product, final ProductDraft draft,
                                                           final ProductSyncOptions syncOptions) {
         return actionOnProductData(product, syncOptions,
             ProductData::getDescription, draft.getDescription(),
-            description -> SetDescription.of(description, syncOptions.isUpdateStaged()));
+            description -> SetDescription.of(description, syncOptions.shouldUpdateStaged()));
     }
 
     // TODO there is a setKey in nodeJs sync tool

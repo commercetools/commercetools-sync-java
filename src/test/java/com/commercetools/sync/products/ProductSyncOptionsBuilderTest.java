@@ -29,10 +29,10 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(options.getActionsFilter()).isEqualTo(identity());
         assertThat(options.getBlackList()).isEmpty();
         assertThat(options.getWhiteList()).isEmpty();
-        assertThat(options.isCompareStaged()).isTrue();
-        assertThat(options.isUpdateStaged()).isTrue();
-        assertThat(options.isPublish()).isFalse();
-        assertThat(options.isRemoveOtherVariants()).isTrue();
+        assertThat(options.shouldCompareStaged()).isTrue();
+        assertThat(options.shouldUpdateStaged()).isTrue();
+        assertThat(options.shouldPublish()).isFalse();
+        assertThat(options.shouldRemoveOtherVariants()).isTrue();
 
         assertThat(options.getErrorCallBack()).isSameAs(errorCallBack);
         assertThat(options.getWarningCallBack()).isSameAs(warningCallBack);
@@ -68,10 +68,10 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(options.getActionsFilter()).isSameAs(actionsFilter);
         assertThat(options.getWhiteList()).isEqualTo(singletonList("white1"));
         assertThat(options.getBlackList()).isEqualTo(singletonList("black1"));
-        assertThat(options.isCompareStaged()).isFalse();
-        assertThat(options.isUpdateStaged()).isFalse();
-        assertThat(options.isPublish()).isTrue();
-        assertThat(options.isRemoveOtherVariants()).isFalse();
+        assertThat(options.shouldCompareStaged()).isFalse();
+        assertThat(options.shouldUpdateStaged()).isFalse();
+        assertThat(options.shouldPublish()).isTrue();
+        assertThat(options.shouldRemoveOtherVariants()).isFalse();
 
         assertThat(options.getErrorCallBack()).isSameAs(errorCallBack);
         assertThat(options.getWarningCallBack()).isSameAs(warningCallBack);

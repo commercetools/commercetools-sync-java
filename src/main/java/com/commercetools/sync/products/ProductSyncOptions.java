@@ -54,19 +54,19 @@ public class ProductSyncOptions extends BaseSyncOptions {
         this.actionsFilter = actionsFilter;
     }
 
-    public boolean isCompareStaged() {
+    public boolean shouldCompareStaged() {
         return compareStaged;
     }
 
-    public boolean isUpdateStaged() {
+    public boolean shouldUpdateStaged() {
         return updateStaged;
     }
 
-    public boolean isPublish() {
+    public boolean shouldPublish() {
         return publish;
     }
 
-    boolean isRemoveOtherVariants() {
+    boolean shouldRemoveOtherVariants() {
         return removeOtherVariants;
     }
 

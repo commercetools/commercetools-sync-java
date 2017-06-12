@@ -35,10 +35,10 @@ final class Categories {
                 List<UpdateAction<Product>> updateActions = new ArrayList<>();
 
                 subtract(newCategories, oldCategories).forEach(c ->
-                    updateActions.add(AddToCategory.of(c, syncOptions.isUpdateStaged())));
+                    updateActions.add(AddToCategory.of(c, syncOptions.shouldUpdateStaged())));
 
                 subtract(oldCategories, newCategories).forEach(c ->
-                    updateActions.add(RemoveFromCategory.of(c, syncOptions.isUpdateStaged())));
+                    updateActions.add(RemoveFromCategory.of(c, syncOptions.shouldUpdateStaged())));
 
                 return updateActions;
             });
@@ -62,14 +62,14 @@ final class Categories {
                 // is or will be assigned to given category
                 oldMap.forEach((categoryId, value) -> {
                     if (!newMap.containsKey(categoryId) && newCategoryIds.contains(categoryId)) {
-                        updateActions.add(SetCategoryOrderHint.of(categoryId, null, syncOptions.isUpdateStaged()));
+                        updateActions.add(SetCategoryOrderHint.of(categoryId, null, syncOptions.shouldUpdateStaged()));
                     }
                 });
 
                 // add category hints present in draft if they are absent or changed in old product
                 newMap.forEach((key, value) -> {
                     if (!oldMap.containsKey(key) || !Objects.equals(oldMap.get(key), value)) {
-                        updateActions.add(SetCategoryOrderHint.of(key, value, syncOptions.isUpdateStaged()));
+                        updateActions.add(SetCategoryOrderHint.of(key, value, syncOptions.shouldUpdateStaged()));
                     }
                 });
 

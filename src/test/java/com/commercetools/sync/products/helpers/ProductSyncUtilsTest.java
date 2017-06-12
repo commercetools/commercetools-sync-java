@@ -24,9 +24,9 @@ public class ProductSyncUtilsTest {
         when(catalogData.getCurrent()).thenReturn(current);
         when(catalogData.getStaged()).thenReturn(staged);
 
-        when(syncOptions.isCompareStaged()).thenReturn(true);
+        when(syncOptions.shouldCompareStaged()).thenReturn(true);
         assertThat(masterData(product, syncOptions)).isSameAs(staged);
-        when(syncOptions.isCompareStaged()).thenReturn(false);
+        when(syncOptions.shouldCompareStaged()).thenReturn(false);
         assertThat(masterData(product, syncOptions)).isSameAs(current);
     }
 

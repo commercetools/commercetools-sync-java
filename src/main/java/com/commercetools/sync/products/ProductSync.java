@@ -61,7 +61,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 updateActionsBuilder.buildActions(product, productDraft, syncOptions);
         if (!updateActions.isEmpty()) {
             CompletionStage<Product> update = service.update(product, updateActions);
-            if (syncOptions.isPublish()) {
+            if (syncOptions.shouldPublish()) {
                 update = update.thenCompose(service::publish);
             }
             return update.thenRun(statistics::incrementUpdated);

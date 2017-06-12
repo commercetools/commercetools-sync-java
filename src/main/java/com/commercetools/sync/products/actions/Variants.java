@@ -20,7 +20,7 @@ final class Variants {
         return ActionUtils.actionOnProductData(product, syncOptions,
             productData -> productData.getMasterVariant().getSku(), draft.getMasterVariant().getSku(),
             newSku -> SetSku.of(ProductSyncUtils.masterData(product, syncOptions).getMasterVariant().getId(), newSku,
-                syncOptions.isUpdateStaged()));
+                syncOptions.shouldUpdateStaged()));
         // TODO beware that this change is staged and needs to be published
     }
 }
