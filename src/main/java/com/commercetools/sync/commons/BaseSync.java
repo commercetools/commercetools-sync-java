@@ -11,13 +11,11 @@ import java.util.concurrent.CompletionStage;
 public abstract class BaseSync<T, S extends BaseSyncStatistics, U extends BaseSyncStatisticsBuilder<U, S>,
     V extends BaseSyncOptions> {
     private final U totalStatisticsBuilder;
-    private Object totalStatisticsLock;
     protected final V syncOptions;
 
     protected BaseSync(@Nonnull final U totalStatisticsBuilder, @Nonnull final V syncOptions) {
         this.totalStatisticsBuilder = totalStatisticsBuilder;
         this.syncOptions = syncOptions;
-        this.totalStatisticsLock = new Object();
     }
 
     /**
@@ -66,10 +64,8 @@ public abstract class BaseSync<T, S extends BaseSyncStatistics, U extends BaseSy
      * @return a statistics object for all sync processes performed by {@code this} sync instance.
      */
     @Nonnull
-    public S getStatistics() {
-        synchronized (totalStatisticsLock) {
-            return totalStatisticsBuilder.build();
-        }
+    public synchronized S getStatistics() {
+        return totalStatisticsBuilder.build();
     }
 
     /**
@@ -77,9 +73,7 @@ public abstract class BaseSync<T, S extends BaseSyncStatistics, U extends BaseSy
      *
      * @param statisticsToJoin statistics of sync that should be joined to total stats
      */
-    private void updateTotalStatistics(final S statisticsToJoin) {
-        synchronized (totalStatisticsLock) {
-            totalStatisticsBuilder.addAllStatistics(statisticsToJoin);
-        }
+    private synchronized void updateTotalStatistics(final S statisticsToJoin) {
+        totalStatisticsBuilder.addAllStatistics(statisticsToJoin);
     }
 }
