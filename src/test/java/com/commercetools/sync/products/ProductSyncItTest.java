@@ -32,26 +32,26 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.it.products.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.it.products.SphereClientUtils.QUERY_MAX_LIMIT;
 import static com.commercetools.sync.it.products.SphereClientUtils.fetchAndProcess;
 import static com.commercetools.sync.products.ProductTestUtils.join;
-import static com.commercetools.sync.products.ProductTestUtils.productDraft;
+import static com.commercetools.sync.products.ProductTestUtils.productDraftBuilder;
 import static com.commercetools.sync.products.ProductTestUtils.productType;
 import static com.commercetools.sync.products.ProductTestUtils.syncOptions;
 import static com.commercetools.sync.products.helpers.ProductSyncUtils.masterData;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static java.util.Locale.ENGLISH;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
@@ -63,14 +63,13 @@ public class ProductSyncItTest {
 
     private ProductService service;
     private ProductType productType;
-    private ProductSync productSync;
     private List<Category> categories;
     private ProductUpdateActionsBuilder updateActionsBuilder;
-    private List<Category> firstThreeCategories;
+    private Product product;
 
     /**
      * Initializes environment for integration test of product synchronization against CT platform.
-     *
+     * <p>
      * <p>It first removes up all related resources. Then creates required product type, categories, products and
      * associates products to categories.
      */
@@ -79,8 +78,7 @@ public class ProductSyncItTest {
         Env.delete();
         productType = Env.createProductType();
         categories = Env.createCategories();
-        Product product = Env.createProduct(productType);
-        firstThreeCategories = Env.addProductToCategories(product, categories);
+        product = Env.createProduct(productType);
 
         updateActionsBuilder = ProductUpdateActionsBuilder.of();
         service = ProductService.of(CTP_SOURCE_CLIENT);
@@ -94,14 +92,13 @@ public class ProductSyncItTest {
     @Test
     public void sync_withNewProduct_shouldCreateProduct() {
         ProductSyncOptions syncOptions = syncOptions(CTP_SOURCE_CLIENT, true, true);
-        ProductDraft productDraft = productDraft("product-non-existing.json", productType, syncOptions,
-            singletonList(categories.get(0)));
+        ProductDraft productDraft = Env.productDraft("product-non-existing.json", productType, syncOptions);
 
         // no product with given key has been populated during setup
         assertThat(join(service.fetch(productDraft.getKey())))
             .isNotPresent();
 
-        productSync = new ProductSync(syncOptions, service, updateActionsBuilder);
+        ProductSync productSync = new ProductSync(syncOptions, service, updateActionsBuilder);
         join(productSync.sync(singletonList(productDraft)));
 
         assertThat(join(service.fetch(productDraft.getKey())))
@@ -110,14 +107,18 @@ public class ProductSyncItTest {
 
     @Test
     public void sync_withEqualProduct_shouldNotUpdateProduct() {
+        List<Category> firstThreeCategories = Env.addProductToCategories(product, categories);
+
         ProductSyncOptions syncOptions = syncOptions(CTP_SOURCE_CLIENT, true, false);
-        ProductDraft productDraft = productDraft("product.json", productType, syncOptions,
-            firstThreeCategories, false);
+        ProductDraft productDraft = Env.productDraft("product.json", productType, syncOptions,
+            firstThreeCategories, oldHints(firstThreeCategories));
         final Product product = join(service.fetch(productDraft.getKey())).get();
 
-        productSync = new ProductSync(syncOptions, service, updateActionsBuilder);
+        // when
+        ProductSync productSync = new ProductSync(syncOptions, service, updateActionsBuilder);
         join(productSync.sync(singletonList(productDraft)));
 
+        // then
         Product afterSync = join(service.fetch(productDraft.getKey())).get();
         assertThat(afterSync.getMasterData().isPublished()).isTrue();
         assertThat(afterSync.getMasterData().hasStagedChanges()).isFalse();
@@ -126,81 +127,47 @@ public class ProductSyncItTest {
 
     @Test
     public void sync_withChangedProduct_shouldUpdateProduct() {
+        Env.addProductToCategories(product, categories);
+
         ProductSyncOptions options = syncOptions(true, true);
         List<Category> lastThreeCategories = categories.subList(1, 4);
-        ProductDraft productDraft = productDraft("product-changed.json", productType, options,
-            lastThreeCategories);
+        ProductDraft productDraft = Env.productDraft("product-changed.json", productType, options,
+            lastThreeCategories, newHints(lastThreeCategories));
         final Product product = join(service.fetch(productDraft.getKey())).get();
 
-        productSync = new ProductSync(options, service, updateActionsBuilder);
+        // when
+        ProductSync productSync = new ProductSync(options, service, updateActionsBuilder);
         join(productSync.sync(singletonList(productDraft)));
 
+        // then
         Product afterSync = join(service.fetch(productDraft.getKey())).get();
-        verifyChange(this::name, options, product, afterSync, "Rehrücken ohne Knochen", "new name");
-        verifyChange(this::slug, options, product, afterSync, "rehruecken-o-kn", "rehruecken-o-k1");
-        verifyChange(this::masterVariantSku, options, product, afterSync, "3065833", "3065831");
-        verifyChange(this::metaDescription, options, product, afterSync, null, "new Meta description");
-        verifyChange(this::metaKeywords, options, product, afterSync, null, "key1,key2");
-        verifyChange(this::metaTitle, options, product, afterSync, null, "new title");
-        verifyChange(this::searchKeywords, options, product, afterSync,
-            SearchKeywords.of(),
-            SearchKeywords.of(ENGLISH, asList(SearchKeyword.of("key1"), SearchKeyword.of("key2"))));
-        verifyChange(this::categories, options, product, afterSync,
-            toReferences(firstThreeCategories), toReferences(lastThreeCategories));
-        verifyChange(this::categoryOrderHints, options, product, afterSync,
-            CategoryOrderHints.of(emptyMap()),
-            CategoryOrderHints.of(singletonMap(categories.get(1).getId(), "0.95")));
-        assertThat(afterSync.getMasterData().isPublished()).isTrue();
-        assertThat(afterSync.getMasterData().hasStagedChanges()).isFalse();
-        assertThat(afterSync).isNotEqualTo(product);
+        new DataVerifier(afterSync, product, options, categories).verify();
+    }
+
+    private static CategoryOrderHints newHints(final List<Category> lastThreeCategories) {
+        return CategoryOrderHints.of(categoryOrderHintsMap(
+            lastThreeCategories.get(0).getId(), String.valueOf(0.53),
+            lastThreeCategories.get(1).getId(), String.valueOf(0.83),
+            lastThreeCategories.get(2).getId(), String.valueOf(0.93)));
+    }
+
+    private static CategoryOrderHints oldHints(final List<Category> firstThreeCategories) {
+        return CategoryOrderHints.of(categoryOrderHintsMap(
+            firstThreeCategories.get(0).getId(), String.valueOf(0.43),
+            firstThreeCategories.get(1).getId(), String.valueOf(0.53),
+            firstThreeCategories.get(2).getId(), String.valueOf(0.63)));
+    }
+
+    private static Map<String, String> categoryOrderHintsMap(final String... categoryIdOrderHints) {
+        Map<String, String> newHints = new HashMap<>();
+        for (int i = 0; i < categoryIdOrderHints.length; i += 2) {
+            newHints.put(categoryIdOrderHints[i], categoryIdOrderHints[i + 1]);
+        }
+        return newHints;
     }
 
     private Set<Reference<Category>> toReferences(final List<Category> lastThreeCategories) {
         return new HashSet<>(lastThreeCategories.stream().map(Category::toReference).collect(toSet()));
-    }
-
-    private static <X> void verifyChange(final BiFunction<Product, ProductSyncOptions, X> valueProvider,
-                                         final ProductSyncOptions syncOptions,
-                                         final Product old, final Product newP,
-                                         final X oldValue, final X newValue) {
-        assertThat(valueProvider.apply(old, syncOptions)).isEqualTo(oldValue);
-        assertThat(valueProvider.apply(newP, syncOptions)).isEqualTo(newValue);
-    }
-
-    private String name(final Product product, final ProductSyncOptions syncOptions) {
-        return en(masterData(product, syncOptions).getName());
-    }
-
-    private String slug(final Product product, final ProductSyncOptions options) {
-        return en(masterData(product, options).getSlug());
-    }
-
-    private String masterVariantSku(final Product product, final ProductSyncOptions options) {
-        return masterData(product, options).getMasterVariant().getSku();
-    }
-
-    private String metaDescription(final Product product, final ProductSyncOptions options) {
-        return en(masterData(product, options).getMetaDescription());
-    }
-
-    private String metaTitle(final Product product, final ProductSyncOptions options) {
-        return en(masterData(product, options).getMetaTitle());
-    }
-
-    private String metaKeywords(final Product product, final ProductSyncOptions options) {
-        return en(masterData(product, options).getMetaKeywords());
-    }
-
-    private SearchKeywords searchKeywords(final Product product, final ProductSyncOptions options) {
-        return masterData(product, options).getSearchKeywords();
-    }
-
-    private Set<Reference<Category>> categories(final Product product, final ProductSyncOptions options) {
-        return masterData(product, options).getCategories();
-    }
-
-    private CategoryOrderHints categoryOrderHints(final Product product, final ProductSyncOptions options) {
-        return masterData(product, options).getCategoryOrderHints();
     }
 
     @Nullable
@@ -208,6 +175,83 @@ public class ProductSyncItTest {
         return isNull(localizedString)
             ? null
             : localizedString.get(ENGLISH);
+    }
+
+    private class DataVerifier {
+        private final Product afterSync;
+        private final Product product;
+        private final ProductSyncOptions options;
+        private final List<Category> firstThreeCategories;
+        private final List<Category> lastThreeCategories;
+
+        DataVerifier(final Product afterSync, final Product product, final ProductSyncOptions options,
+                     final List<Category> categories) {
+            this.afterSync = afterSync;
+            this.product = product;
+            this.options = options;
+            this.firstThreeCategories = categories.subList(0, 3);
+            this.lastThreeCategories = categories.subList(1, 4);
+        }
+
+        void verify() {
+            verifyChange(this::name, "Rehrücken ohne Knochen", "new name");
+            verifyChange(this::slug, "rehruecken-o-kn", "rehruecken-o-k1");
+            verifyChange(this::masterVariantSku, "3065833", "3065831");
+            verifyChange(this::metaDescription, null, "new Meta description");
+            verifyChange(this::metaKeywords, null, "key1,key2");
+            verifyChange(this::metaTitle, null, "new title");
+            verifyChange(this::searchKeywords, SearchKeywords.of(), newSearchKeywords());
+            verifyChange(this::categories, toReferences(firstThreeCategories), toReferences(lastThreeCategories));
+            verifyChange(this::categoryOrderHints, oldHints(firstThreeCategories), newHints(lastThreeCategories));
+            assertThat(afterSync.getMasterData().isPublished()).isTrue();
+            assertThat(afterSync.getMasterData().hasStagedChanges()).isFalse();
+            assertThat(afterSync).isNotEqualTo(product);
+        }
+
+        SearchKeywords newSearchKeywords() {
+            return SearchKeywords.of(ENGLISH, asList(SearchKeyword.of("key1"), SearchKeyword.of("key2")));
+        }
+
+        String name(final Product product) {
+            return en(masterData(product, options).getName());
+        }
+
+        String slug(final Product product) {
+            return en(masterData(product, options).getSlug());
+        }
+
+        String masterVariantSku(final Product product) {
+            return masterData(product, options).getMasterVariant().getSku();
+        }
+
+        String metaDescription(final Product product) {
+            return en(masterData(product, options).getMetaDescription());
+        }
+
+        String metaTitle(final Product product) {
+            return en(masterData(product, options).getMetaTitle());
+        }
+
+        String metaKeywords(final Product product) {
+            return en(masterData(product, options).getMetaKeywords());
+        }
+
+        SearchKeywords searchKeywords(final Product product) {
+            return masterData(product, options).getSearchKeywords();
+        }
+
+        Set<Reference<Category>> categories(final Product product) {
+            return masterData(product, options).getCategories();
+        }
+
+        CategoryOrderHints categoryOrderHints(final Product product) {
+            return masterData(product, options).getCategoryOrderHints();
+        }
+
+        <X> void verifyChange(final Function<Product, X> value, final X oldValue, final X newValue) {
+            assertThat(value.apply(product)).isEqualTo(oldValue);
+            assertThat(value.apply(afterSync)).isEqualTo(newValue);
+        }
     }
 
     static class Env {
@@ -225,8 +269,26 @@ public class ProductSyncItTest {
 
         static Product createProduct(final ProductType productType) {
             ProductSyncOptions syncOptions = syncOptions(true, true);
-            ProductDraft draft = productDraft("product.json", productType, syncOptions, emptyList());
+            ProductDraft draft = productDraft("product.json", productType, syncOptions);
             return join(CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(draft)));
+        }
+
+        static ProductDraft productDraft(final String resourcePath, final ProductType productType,
+                                         final ProductSyncOptions syncOptions) {
+            return productDraftBuilder(resourcePath, productType, syncOptions)
+                .categories(emptyList())
+                .categoryOrderHints(null)
+                .build();
+        }
+
+        static ProductDraft productDraft(final String resourcePath, final ProductType productType,
+                                         final ProductSyncOptions syncOptions,
+                                         final List<Category> categories,
+                                         final CategoryOrderHints categoryOrderHints) {
+            return productDraftBuilder(resourcePath, productType, syncOptions)
+                .categories(categories.stream().map(Category::toReference).collect(toList()))
+                .categoryOrderHints(categoryOrderHints)
+                .build();
         }
 
         static List<Category> createCategories() {
@@ -243,7 +305,11 @@ public class ProductSyncItTest {
 
         static List<Category> addProductToCategories(final Product product, final List<Category> categories) {
             List<Category> sublist = categories.subList(0, 3);
-            List<AddToCategory> addToCategories = sublist.stream().map(AddToCategory::of).collect(toList());
+            List<AddToCategory> addToCategories = sublist.stream()
+                .map(category -> {
+                    String orderHint = String.valueOf(0.43 + sublist.indexOf(category) / 10d);
+                    return AddToCategory.of(category, orderHint);
+                }).collect(toList());
             Product updated = join(CTP_SOURCE_CLIENT.execute(ProductUpdateCommand.of(product, addToCategories)));
             join(CTP_SOURCE_CLIENT.execute(ProductUpdateCommand.of(updated, Publish.of())));
             return sublist;

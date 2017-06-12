@@ -18,10 +18,27 @@
       "categories": [
         {
           "typeId": "category",
-          "id": "5cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+          "id": "1cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        },
+        {
+          "typeId": "category",
+          "id": "2cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        },
+        {
+          "typeId": "category",
+          "id": "3cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        },
+        {
+          "typeId": "category",
+          "id": "4cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
         }
       ],
-      "categoryOrderHints": {},
+      "categoryOrderHints": {
+        "1cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.43",
+        "2cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.53",
+        "3cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.63",
+        "4cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.73"
+      },
       "slug": {
         "en": "rehruecken-o-kn"
       },
@@ -104,10 +121,27 @@
       "categories": [
         {
           "typeId": "category",
-          "id": "5cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+          "id": "1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        },
+        {
+          "typeId": "category",
+          "id": "2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        },
+        {
+          "typeId": "category",
+          "id": "3dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        },
+        {
+          "typeId": "category",
+          "id": "4dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
         }
       ],
-      "categoryOrderHints": {},
+      "categoryOrderHints": {
+        "1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.43",
+        "2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.53",
+        "3dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.63",
+        "4dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.73"
+      },
       "slug": {
         "en": "rehruecken-o-kn"
       },

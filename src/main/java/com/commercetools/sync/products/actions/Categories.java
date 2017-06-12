@@ -21,6 +21,7 @@ import java.util.Set;
 import static com.commercetools.sync.products.actions.ActionUtils.actionsOnProductData;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toSet;
 
 final class Categories {
     private Categories() {
@@ -48,16 +49,20 @@ final class Categories {
         return actionsOnProductData(product, syncOptions,
             ProductData::getCategoryOrderHints, draft.getCategoryOrderHints(), (oldHints, newHints) -> {
 
+                Set<String> newCategoryIds = draft.getCategories().stream()
+                    .map(Reference::getId)
+                    .collect(toSet());
+
                 List<UpdateAction<Product>> updateActions = new ArrayList<>();
 
                 Map<String, String> newMap = nonNull(newHints) ? newHints.getAsMap() : emptyMap();
                 Map<String, String> oldMap = nonNull(oldHints) ? oldHints.getAsMap() : emptyMap();
 
-                // remove category hints present in old product if they are absent in draft
-                oldMap.forEach((key, value) -> {
-                    if (!newMap.containsKey(key)) {
-                        updateActions.add(
-                            SetCategoryOrderHint.of(key, null, syncOptions.isUpdateStaged()));
+                // remove category hints present in old product if they are absent in draft but only if product
+                // is or will be assigned to given category
+                oldMap.forEach((categoryId, value) -> {
+                    if (!newMap.containsKey(categoryId) && newCategoryIds.contains(categoryId)) {
+                        updateActions.add(SetCategoryOrderHint.of(categoryId, null, syncOptions.isUpdateStaged()));
                     }
                 });
 
