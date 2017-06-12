@@ -49,14 +49,17 @@ inventorySync.sync(inventoryEntryDrafts);
 
 **Preconditions:** The sync expects a list of `InventoryEntryDraft` objects that have their `sku` fields set,
 otherwise the sync will trigger an `errorCallback` function set by the user (more on it can be found down below in the options explanations).
-Also every `InventoryEntryDraft`, that belongs to a `Channel`, in your input list must either:
-- Has the [Reference](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-sdk-base/src/main/java/io/sphere/sdk/models/Reference.java)
-to the `supplyChannel` expanded. This means that calling `getObj()` on the reference should not
-return `null`, but return the [Channel](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/channels/Channel.java)
-object, from which the sync can access its `key`. Example of sync performed that way can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncTest.java#L128).
-- If the reference is not expanded, then it is very important to provide the channel `key` in the `id` field of the
-reference. This means calling `getId()` on the channel reference would return it's `key`. Example of sync performed that
-way can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncTest.java#L181).
+
+ Every inventory entry has a reference to a supply `Channel` and a reference to the `Type` of its custom fields. These 
+ references are matched by their `key`. Therefore, in order for the sync to resolve the actual ids of those references, 
+ their `key`s has to be supplied in one of two ways:
+ - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
+ reference would return its `key`. Note that the library will check that this `key` is not 
+ provided in `UUID` format by default. However, if you want to provide the `key` in `UUID` format, you can
+  set it through the sync options. Different example of sync performed that way can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncTest.java#L128).
+ - Provide the reference expanded. This means that calling `getObj()` on the reference should not return `null`,
+  but return the actual object complete object of the reference, from which the its `key` can be directly accessible. 
+  Example of sync performed that way can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncTest.java#L181).
 
 <!-- TODO: Ensure above paths to examples in a dedicated branch -->
 
@@ -112,6 +115,10 @@ entries.
 a flag which enables the sync module to add additional object properties (e.g. custom fields, etc..) without deleting
 existing ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing
 object properties.
+
+- `allowUuid`
+a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
+
 
 <!-- TODO It seems that I don't use all of them e.g. removeOtherSet/CollectionEntries however they are enable by inheritance. Ensure if should they be documented here -->
 
