@@ -1,20 +1,23 @@
 package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.inventories.helpers.InventoryReferenceResolver;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.inventories.utils.InventorySyncUtils;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.InventoryService;
 import com.commercetools.sync.services.TypeService;
-import com.commercetools.sync.services.impl.InventoryServiceImpl;
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
+import com.commercetools.sync.services.impl.InventoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
+import io.sphere.sdk.models.Reference;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,20 +40,19 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 public final class InventorySync extends BaseSync<InventoryEntryDraft, InventorySyncStatistics, InventorySyncOptions> {
     private static final String CTP_INVENTORY_FETCH_FAILED = "Failed to fetch existing inventory entries of SKUs %s.";
     private static final String CTP_INVENTORY_ENTRY_UPDATE_FAILED = "Failed to update inventory entry of sku '%s' and "
-        + "supply channel key '%s'.";
+        + "supply channel id '%s'.";
     private static final String INVENTORY_DRAFT_HAS_NO_SKU = "Failed to process inventory entry without sku.";
     private static final String INVENTORY_DRAFT_IS_NULL = "Failed to process null inventory draft.";
     private static final String CTP_INVENTORY_ENTRY_CREATE_FAILED = "Failed to create inventory entry of sku '%s' "
-        + "and supply channel key '%s'.";
+        + "and supply channel id '%s'.";
     private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
         + "InventoryEntryDraft with sku:'%s'. Reason: %s";
     private static final String FAILED_TO_RESOLVE_SUPPLY_CHANNEL = "Failed to resolve supply channel reference on "
         + "InventoryEntryDraft with sku:'%s'. Reason: %s";
 
-
     private final InventoryService inventoryService;
-
     private final InventoryReferenceResolver referenceResolver;
+    private Map<InventoryEntryIdentifier, InventoryEntry> existingInventories;
 
     /**
      * Takes a {@link InventorySyncOptions} instance to instantiate a new {@link InventorySync} instance that could be
@@ -120,7 +122,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     /**
      * Fetches existing {@link InventoryEntry} objects from CTP project that correspond to passed {@code batchOfDrafts}.
      * Having existing inventory entries fetched, {@code batchOfDrafts} is compared and synced with fetched objects by
-     * {@link InventorySync#syncBatch(Map, List)} function. When fetching existing inventory entries results in
+     * {@link InventorySync#syncBatch(List)} function. When fetching existing inventory entries results in
      * exception then error callback is executed and {@code batchOfDrafts} isn't processed.
 
      * @param batchOfDrafts batch of drafts that need to be synced
@@ -128,7 +130,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     private CompletionStage<Void> processBatch(final List<InventoryEntryDraft> batchOfDrafts) {
         return fetchExistingInventories(batchOfDrafts)
-                .thenCompose(existingInventories -> syncBatch(existingInventories, batchOfDrafts))
+                .thenCompose(existingInventories -> syncBatch(batchOfDrafts))
                 .exceptionally(exception -> {
                     final String errorMessage = format(CTP_INVENTORY_FETCH_FAILED, extractSkus(batchOfDrafts));
                     handleError(errorMessage, exception, batchOfDrafts.size());
@@ -138,38 +140,36 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
 
     /**
      * Given a list of inventory entry drafts, this method extracts a list of all distinct SKUs from the drafts, then
-     * it tries to fetch a list of Inventory entries with those SKUs, then it returns a future which contains a
-     * mapping of {@link SkuChannelKeyTuple} to {@link InventoryEntry} of instances existing in a CTP project or an
-     * exception.
+     * it tries to fetch a list of Inventory entries with those SKUs, then it populates the map of
+     * {@code existingInventories} with a {@link InventoryEntryIdentifier} as a key for each {@link InventoryEntry}
+     * of instances existing in a CTP project.
      *
      * @param drafts {@link List} of inventory entry drafts to create mapping for.
-     * @return {@link CompletionStage} instance which contains either {@link Map} of {@link SkuChannelKeyTuple} to
-     *      {@link InventoryEntry} of instances existing in a CTP project that correspond to passed {@code drafts} by
-     *      sku comparision, or exception occurred during fetching existing inventory entries
+     * @return a future which contains an empty result after populating the map of {@code existingInventories} with
+     *         the instances of the existing {@link InventoryEntry} in the CTP project or an exception.
      */
-    private CompletionStage<Map<SkuChannelKeyTuple, InventoryEntry>>
-        fetchExistingInventories(@Nonnull final List<InventoryEntryDraft> drafts) {
+    private CompletionStage<Void> fetchExistingInventories(@Nonnull final List<InventoryEntryDraft> drafts) {
         final Set<String> skus = extractSkus(drafts);
         return inventoryService.fetchInventoryEntriesBySkus(skus)
-                               .thenApply(
-                                   existingEntries -> existingEntries.stream().collect(toMap(SkuChannelKeyTuple::of,
-                                       entry -> entry)));
+                               .thenAccept(
+                                   existingEntries -> {
+                                       existingInventories = existingEntries
+                                           .stream().collect(toMap(InventoryEntryIdentifier::of,
+                                               entry -> entry));
+                                   });
     }
 
     /**
      * Given a list of inventory entry {@code drafts}, this method resolves the references of each entry and attempts to
      * sync it to the CTP project depending whether it exists or not in the {@code existingInventories}.
      *
-     * @param existingInventories  mapping of {@link SkuChannelKeyTuple} to {@link InventoryEntry} of instances existing
-     *                             in a CTP project
      * @param inventoryEntryDrafts drafts that need to be synced
      * @return a future which contains an empty result after execution of the update.
      */
-    private CompletionStage<Void> syncBatch(final Map<SkuChannelKeyTuple, InventoryEntry> existingInventories,
-                                            final List<InventoryEntryDraft> inventoryEntryDrafts) {
+    private CompletionStage<Void> syncBatch(final List<InventoryEntryDraft> inventoryEntryDrafts) {
         final List<CompletableFuture<Void>> futures = new ArrayList<>(inventoryEntryDrafts.size());
         inventoryEntryDrafts.forEach(inventoryEntryDraft ->
-            futures.add(resolveReferencesAndSync(existingInventories, inventoryEntryDraft)));
+            futures.add(resolveReferencesAndSync(inventoryEntryDraft)));
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
     }
 
@@ -182,23 +182,19 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * out successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
      * specified in the {@code syncOptions} is called.
      *
-     * @param existingInventories mapping of {@link SkuChannelKeyTuple} to {@link InventoryEntry} of instances existing
-     *                            in a CTP project
      * @param inventoryEntryDraft draft that need to be synced
      * @return a future which contains an empty result after execution of the update.
      */
-    private CompletableFuture<Void> resolveReferencesAndSync(@Nonnull final Map<SkuChannelKeyTuple, InventoryEntry>
-                                                                 existingInventories,
-                                                             @Nonnull final InventoryEntryDraft inventoryEntryDraft) {
+    private CompletableFuture<Void> resolveReferencesAndSync(@Nonnull final InventoryEntryDraft inventoryEntryDraft) {
         return referenceResolver.resolveCustomTypeReference(inventoryEntryDraft)
                                 .thenCompose(draftWithResolvedCustomTypeReference -> referenceResolver
                                         .resolveSupplyChannelReference(draftWithResolvedCustomTypeReference)
                                         .thenCompose(resolvedDraft -> {
-                                            final SkuChannelKeyTuple skuKeyOfDraft =
-                                                SkuChannelKeyTuple.of(resolvedDraft);
-                                            if (existingInventories.containsKey(skuKeyOfDraft)) {
+                                            final InventoryEntryIdentifier draftIdentifier =
+                                                InventoryEntryIdentifier.of(resolvedDraft);
+                                            if (existingInventories.containsKey(draftIdentifier)) {
                                                 final InventoryEntry existingEntry =
-                                                    existingInventories.get(skuKeyOfDraft);
+                                                    existingInventories.get(draftIdentifier);
                                                 return buildUpdateActionsAndUpdate(existingEntry, resolvedDraft);
                                             } else {
                                                 return attemptCreate(inventoryEntryDraft);
@@ -254,8 +250,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             return inventoryService.updateInventoryEntry(entry, updateActions)
                 .thenAccept(updatedEntry -> statistics.incrementUpdated())
                 .exceptionally(exception -> {
+                    final Reference<Channel> supplyChannel = draft.getSupplyChannel();
                     final String errorMessage = format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
-                        SkuChannelKeyTuple.of(draft).getKey());
+                        supplyChannel != null ? supplyChannel.getId() : null);
                     handleError(errorMessage, exception, 1);
                     return null;
                 });
@@ -278,8 +275,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         return inventoryService.createInventoryEntry(draft)
                                .thenAccept(createdEntry -> statistics.incrementCreated())
                                .exceptionally(exception -> {
+                                   final Reference<Channel> supplyChannel = draft.getSupplyChannel();
                                    final String errorMessage = format(CTP_INVENTORY_ENTRY_CREATE_FAILED, draft.getSku(),
-                                       SkuChannelKeyTuple.of(draft).getKey());
+                                       supplyChannel != null ? supplyChannel.getId() : null);
                                    handleError(errorMessage, exception, 1);
                                    return null;
                                });
