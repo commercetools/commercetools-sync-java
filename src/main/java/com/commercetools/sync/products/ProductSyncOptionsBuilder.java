@@ -47,6 +47,7 @@ public final class ProductSyncOptionsBuilder
                 removeOtherSetEntries,
                 removeOtherCollectionEntries,
                 removeOtherProperties,
+                allowUuid,
                 compareStaged,
                 updateStaged,
                 publish,
