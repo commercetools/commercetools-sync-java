@@ -16,7 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class CommonTypeUpdateActionUtilsTest {
     private static final Locale LOCALE = Locale.GERMAN;
-    private static final String MOCK_CATEGORY_REFERENCE_TYPE = "type";
     private static final String MOCK_OLD_CATEGORY_NAME = "categoryName";
 
     @Test
@@ -117,9 +116,8 @@ public class CommonTypeUpdateActionUtilsTest {
 
     @Test
     public void buildUpdateActionForReferences_WithDifferentTypeReferenceIds_ShouldBuildUpdateAction() {
-        final Reference<Category> oldCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE,
-            "1");
-        Reference<Category> newCategoryReference = Reference.ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "2");
+        final Reference<Category> oldCategoryReference = Category.referenceOfId("1");
+        Reference<Category> newCategoryReference = Category.referenceOfId("2");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
             LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
@@ -133,8 +131,7 @@ public class CommonTypeUpdateActionUtilsTest {
 
     @Test
     public void buildUpdateActionForReferences_WithOneNullReference_ShouldBuildUpdateAction() {
-        final Reference<Category> categoryReference = Reference
-            .ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
+        final Reference<Category> categoryReference = Category.referenceOfId("1");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
             LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
@@ -148,8 +145,7 @@ public class CommonTypeUpdateActionUtilsTest {
 
     @Test
     public void buildUpdateActionForReferences_WithSameCategoryReferences_ShouldNotBuildUpdateAction() {
-        final Reference<Category> categoryReference = Reference
-            .ofResourceTypeIdAndId(MOCK_CATEGORY_REFERENCE_TYPE, "1");
+        final Reference<Category> categoryReference = Category.referenceOfId("1");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
             LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
