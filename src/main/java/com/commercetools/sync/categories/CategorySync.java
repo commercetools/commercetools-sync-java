@@ -33,7 +33,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         + " Reason: %s";
     private static final String CATEGORY_DRAFT_EXTERNAL_ID_NOT_SET = "CategoryDraft with name: %s doesn't have an"
         + " externalId.";
-
+    private static final String CATEGORY_DRAFT_IS_NULL = "CategoryDraft is null.";
 
     private final TypeService typeService;
     private final CategoryService categoryService;
@@ -92,7 +92,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<CategoryDraft> categoryDrafts) {
         for (CategoryDraft categoryDraft : categoryDrafts) {
             if (categoryDraft != null) {
-                statistics.incrementProcessed();
                 final String externalId = categoryDraft.getExternalId();
                 if (isNotBlank(externalId)) {
                     createOrUpdateCategory(categoryDraft);
@@ -100,7 +99,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     final String errorMessage = format(CATEGORY_DRAFT_EXTERNAL_ID_NOT_SET, categoryDraft.getName());
                     handleError(errorMessage, null);
                 }
+            } else {
+                handleError(CATEGORY_DRAFT_IS_NULL, null);
             }
+            statistics.incrementProcessed();
         }
         return CompletableFuture.completedFuture(statistics);
     }

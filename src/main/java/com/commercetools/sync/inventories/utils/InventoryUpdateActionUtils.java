@@ -9,6 +9,7 @@ import io.sphere.sdk.inventory.commands.updateactions.SetExpectedDelivery;
 import io.sphere.sdk.inventory.commands.updateactions.SetRestockableInDays;
 import io.sphere.sdk.inventory.commands.updateactions.SetSupplyChannel;
 import io.sphere.sdk.models.Reference;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
@@ -21,9 +22,7 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
  */
 public final class InventoryUpdateActionUtils {
 
-    private InventoryUpdateActionUtils() {
-        throw new AssertionError();
-    }
+    private InventoryUpdateActionUtils() { }
 
     /**
      * Compares the {@code quantityOnStock} values of an {@link InventoryEntry} and an {@link InventoryEntryDraft}
@@ -43,7 +42,7 @@ public final class InventoryUpdateActionUtils {
                                                                                    @Nonnull final InventoryEntryDraft
                                                                                        newEntry) {
         final Long oldQuantityOnStock = oldEntry.getQuantityOnStock();
-        final Long newQuantityOnStock = newEntry.getQuantityOnStock() == null ? Long.valueOf(0L) : newEntry
+        final Long newQuantityOnStock = newEntry.getQuantityOnStock() == null ? NumberUtils.LONG_ZERO : newEntry
             .getQuantityOnStock();
         return buildUpdateAction(oldQuantityOnStock, newQuantityOnStock, () -> ChangeQuantity.of(newQuantityOnStock));
     }
