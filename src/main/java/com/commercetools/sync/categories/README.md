@@ -42,7 +42,7 @@ categorySync.sync(categoryDrafts);
  the sync will trigger an `errorCallback` function which is set by the user. More on this option can be found down below
  in the additional `options` explanations.
  
- Every category has a reference to a `parent category` and a reference to the `Type` of its custom fields. Categories 
+ Every category may have a reference to a `parent category` and a reference to the `Type` of its custom fields. Categories 
  are matched by their `externalId` but Types are matched by their `key` Therefore, in order for the sync to resolve the 
  actual ids of those references, the `key`/`externalId` of the 
  `Type`/parent `Category` has to be supplied in one of two ways:
