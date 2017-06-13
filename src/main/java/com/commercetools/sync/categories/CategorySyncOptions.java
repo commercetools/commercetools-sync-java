@@ -21,15 +21,17 @@ public final class CategorySyncOptions extends BaseSyncOptions {
                         final boolean removeOtherSetEntries,
                         final boolean removeOtherCollectionEntries,
                         final boolean removeOtherProperties,
+                        final boolean allowUuid,
                         final Function<List<UpdateAction<Category>>,
                           List<UpdateAction<Category>>> updateActionsFilter) {
         super(ctpClient,
-                updateActionErrorCallBack,
-                updateActionWarningCallBack,
-                removeOtherLocales,
-                removeOtherSetEntries,
-                removeOtherCollectionEntries,
-                removeOtherProperties);
+            updateActionErrorCallBack,
+            updateActionWarningCallBack,
+            removeOtherLocales,
+            removeOtherSetEntries,
+            removeOtherCollectionEntries,
+            removeOtherProperties,
+            allowUuid);
         this.updateActionsFilter = updateActionsFilter;
     }
 

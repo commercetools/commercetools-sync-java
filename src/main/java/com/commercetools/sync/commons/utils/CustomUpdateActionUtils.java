@@ -18,15 +18,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedRemoveCustomTypeUpdateAction;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomFieldUpdateAction;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction;
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public final class CustomUpdateActionUtils {
-    private static final String CUSTOM_TYPE_KEYS_NOT_SET = "Custom type keys are not set for both the old and new %s.";
+    private static final String CUSTOM_TYPE_IDS_NOT_SET = "Custom type ids are not set for both the old and new %s.";
     private static final String CUSTOM_FIELDS_UPDATE_ACTIONS_BUILD_FAILED = "Failed to build custom fields update "
         + "actions on the %s with id '%s'. Reason: %s";
 
@@ -40,7 +42,7 @@ public final class CustomUpdateActionUtils {
      * method which is responsible for supplying the sync options to the sync utility method. For example, custom error
      * callbacks for errors. The {@link TypeService} is injected also for fetching the key of the old resource type
      * from it's cache (see {@link CustomUpdateActionUtils#buildNonNullCustomFieldsUpdateActions(CustomFields,
-     * CustomFieldsDraft, Custom, BaseSyncOptions, TypeService)}).
+     * CustomFieldsDraft, Custom, BaseSyncOptions)}).
      *
      * <p><p>An update action will be added to the result list in the following cases:-
      * <ol>
@@ -69,7 +71,6 @@ public final class CustomUpdateActionUtils {
      * @param oldResource the resource which should be updated.
      * @param newResource the resource draft where we get the new custom fields.
      * @param syncOptions responsible for supplying the sync options to the sync utility method.
-     * @param typeService responsible for fetching the key of the old resource type from it's cache.
      * @return a list that contains all the update actions needed, otherwise an
      *      empty list if no update actions are needed.
      */
@@ -78,14 +79,13 @@ public final class CustomUpdateActionUtils {
         buildCustomUpdateActions(
         @Nonnull final T oldResource,
         @Nonnull final S newResource,
-        @Nonnull final BaseSyncOptions syncOptions,
-        @Nonnull final TypeService typeService) {
+        @Nonnull final BaseSyncOptions syncOptions) {
         final CustomFields oldResourceCustomFields = oldResource.getCustom();
         final CustomFieldsDraft newResourceCustomFields = newResource.getCustom();
         if (oldResourceCustomFields != null && newResourceCustomFields != null) {
             try {
                 return buildNonNullCustomFieldsUpdateActions(oldResourceCustomFields, newResourceCustomFields,
-                    oldResource, syncOptions, typeService);
+                    oldResource, syncOptions);
             } catch (BuildUpdateActionException exception) {
                 syncOptions.applyErrorCallback(format(CUSTOM_FIELDS_UPDATE_ACTIONS_BUILD_FAILED,
                     oldResource.toReference().getTypeId(), oldResource.getId(), exception.getMessage()), exception);
@@ -97,16 +97,16 @@ public final class CustomUpdateActionUtils {
                     // should set the custom type and fields of the new resource to the old one.
                     final String newCustomFieldsTypeKey = newResourceCustomFields.getType().getKey();
                     final Map<String, JsonNode> newCustomFieldsJsonMap = newResourceCustomFields.getFields();
-                    final UpdateAction<T> updateAction = buildTypedSetCustomTypeUpdateAction(
-                        newCustomFieldsTypeKey, newCustomFieldsJsonMap, oldResource, syncOptions).orElse(null);
-                    return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
+                    final Optional<UpdateAction<T>> updateAction = buildTypedSetCustomTypeUpdateAction(
+                        newCustomFieldsTypeKey, newCustomFieldsJsonMap, oldResource, syncOptions);
+                    return updateAction.map(Collections::singletonList).orElseGet(Collections::emptyList);
                 }
             } else {
                 // New resource's custom fields are not set, but old resource's custom fields are set. So we
                 // should remove the custom type from the old resource.
-                final UpdateAction<T> updateAction = buildTypedRemoveCustomTypeUpdateAction(oldResource, syncOptions)
-                    .orElse(null);
-                return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
+                final Optional<UpdateAction<T>> updateAction = buildTypedRemoveCustomTypeUpdateAction(oldResource,
+                    syncOptions);
+                return updateAction.map(Collections::singletonList).orElseGet(Collections::emptyList);
             }
         }
         return Collections.emptyList();
@@ -140,7 +140,6 @@ public final class CustomUpdateActionUtils {
      * @param resource        the resource that the custom fields are on. It is used to identify the type of the
      *                        resource, to call the corresponding update actions.
      * @param syncOptions     responsible for supplying the sync options to the sync utility method.
-     * @param typeService     responsible for fetching the key of the old resource type from it's cache.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update
      *      actions are needed.
      */
@@ -149,34 +148,31 @@ public final class CustomUpdateActionUtils {
         @Nonnull final CustomFields oldCustomFields,
         @Nonnull final CustomFieldsDraft newCustomFields,
         @Nonnull final T resource,
-        @Nonnull final BaseSyncOptions syncOptions,
-        @Nonnull final TypeService typeService) throws BuildUpdateActionException {
-        final String oldCustomFieldsTypeKey = typeService.getCachedTypeKeyById(oldCustomFields.getType().getId());
+        @Nonnull final BaseSyncOptions syncOptions) throws BuildUpdateActionException {
+        final String oldCustomTypeId = oldCustomFields.getType().getId();
         final Map<String, JsonNode> oldCustomFieldsJsonMap = oldCustomFields.getFieldsJsonMap();
-        final String newCustomFieldsTypeKey = newCustomFields.getType().getKey();
+        final String newCustomTypeId = newCustomFields.getType().getId();
         final Map<String, JsonNode> newCustomFieldsJsonMap = newCustomFields.getFields();
 
-        if (Objects.equals(oldCustomFieldsTypeKey, newCustomFieldsTypeKey)) {
-            if (oldCustomFieldsTypeKey == null && newCustomFieldsTypeKey == null) {
-                throw new BuildUpdateActionException(format(CUSTOM_TYPE_KEYS_NOT_SET,
+        if (Objects.equals(oldCustomTypeId, newCustomTypeId)) {
+            if (isBlank(oldCustomTypeId)) {
+                throw new BuildUpdateActionException(format(CUSTOM_TYPE_IDS_NOT_SET,
                     resource.toReference().getTypeId()));
             }
             if (newCustomFieldsJsonMap == null) {
                 // New resource's custom fields are null/not set. So we should unset old custom fields.
-                final UpdateAction<T> updateAction = buildTypedSetCustomTypeUpdateAction(
-                    newCustomFieldsTypeKey, null, resource, syncOptions).orElse(null);
-                return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
+                final Optional<UpdateAction<T>> updateAction = buildTypedSetCustomTypeUpdateAction(
+                    newCustomTypeId, null, resource, syncOptions);
+                return updateAction.map(Collections::singletonList).orElseGet(Collections::emptyList);
             }
             // old and new resource's custom fields are set. So we should calculate update actions for the
             // the fields of both.
             return buildSetCustomFieldsUpdateActions(oldCustomFieldsJsonMap, newCustomFieldsJsonMap, resource,
                 syncOptions);
         } else {
-            final UpdateAction<T> updateAction =
-                buildTypedSetCustomTypeUpdateAction(
-                    newCustomFieldsTypeKey, newCustomFieldsJsonMap, resource, syncOptions)
-                    .orElse(null);
-            return updateAction != null ? Collections.singletonList(updateAction) : Collections.emptyList();
+            final Optional<UpdateAction<T>> updateAction = buildTypedSetCustomTypeUpdateAction(newCustomTypeId,
+                newCustomFieldsJsonMap, resource, syncOptions);
+            return updateAction.map(Collections::singletonList).orElseGet(Collections::emptyList);
         }
     }
 
