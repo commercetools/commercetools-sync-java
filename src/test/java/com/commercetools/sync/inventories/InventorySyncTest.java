@@ -79,7 +79,6 @@ public class InventorySyncTest {
     @Before
     public void setup() {
         final Channel channel1 = getMockSupplyChannel(REF_1, KEY_1);
-        final Channel channel2 = getMockSupplyChannel(REF_2, KEY_2);
 
         final Reference<Channel> expandedReference1 = Channel.referenceOfId(REF_1).filled(channel1);
 
