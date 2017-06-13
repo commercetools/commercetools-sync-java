@@ -1,20 +1,12 @@
 package com.commercetools.sync.commons.helpers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.util.internal.StringUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 
 public abstract class BaseSyncStatistics {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaseSyncStatistics.class);
-
-    private String reportMessage;
+    protected String reportMessage;
     private int updated;
     private int created;
     private int failed;
@@ -42,51 +34,72 @@ public abstract class BaseSyncStatistics {
     }
 
     /**
-     * Gets the total number of resources updated.
+     * Gets the total number of resources that were updated.
      *
-     * @return total number of resources updated.
+     * @return total number of resources that were updated.
      */
     public int getUpdated() {
         return updated;
     }
 
     /**
-     * Increments the total number of resource updated.
+     * Increments the total number of resource that were updated.
      */
     public void incrementUpdated() {
         this.updated++;
     }
 
     /**
-     * Gets the total number of resources created.
+     * Increments the total number of resources that were updated by the supplied times.
+     */
+    public void incrementUpdated(final int times) {
+        this.updated += times;
+    }
+
+    /**
+     * Gets the total number of resources that were created.
      *
-     * @return total number of resources created.
+     * @return total number of resources that were created.
      */
     public int getCreated() {
         return created;
     }
 
     /**
-     * Increments the total number of resource created.
+     * Increments the total number of resource that were created.
      */
     public void incrementCreated() {
         this.created++;
     }
 
     /**
-     * Gets the total number of resources processed/synced.
+     * Increments the total number of resources that were created by the supplied times.
+     */
+    public void incrementCreated(final int times) {
+        this.created += times;
+    }
+
+    /**
+     * Gets the total number of resources that were processed/synced.
      *
-     * @return total number of resources processed/synced.
+     * @return total number of resources that were processed/synced.
      */
     public int getProcessed() {
         return processed;
     }
 
     /**
-     * Increments the total number of resources processed/synced.
+     * Increments the total number of resources that were processed/synced.
      */
     public void incrementProcessed() {
         this.processed++;
+    }
+
+    /**
+     * Increments the total number of resources that were processed/synced by the supplied times.
+     */
+    public void incrementProcessed(final int times) {
+        this.processed += times;
     }
 
     /**
@@ -103,6 +116,13 @@ public abstract class BaseSyncStatistics {
      */
     public void incrementFailed() {
         this.failed++;
+    }
+
+    /**
+     * Increments the total number of resources that failed to sync by the supplied times.
+     */
+    public void incrementFailed(final int times) {
+        this.failed += times;
     }
 
     /**
@@ -216,24 +236,7 @@ public abstract class BaseSyncStatistics {
      *
      * @return a summary message of the statistics report.
      */
-    public abstract String getReportMessage();
-
-    /**
-     * Builds a JSON String that represents the fields of the supplied instance of {@link BaseSyncStatistics}.
-     * Note: The order of the fields in the built JSON String depends on the order of the instance variables in this
-     * class.
-     *
-     * @param statistics the instance of {@link BaseSyncStatistics} from which to create a JSON String.
-     * @return a JSON representation of the given {@code statistics} as a String.
-     */
-    public static String getStatisticsAsJsonString(@Nonnull final BaseSyncStatistics statistics) {
-        String result = null;
-        final ObjectMapper mapper = new ObjectMapper();
-        try {
-            result = mapper.writeValueAsString(statistics);
-        } catch (JsonProcessingException processingException) {
-            LOGGER.error("Failed to build JSON String of summary.", processingException);
-        }
-        return result;
+    public String getReportMessage() {
+        return reportMessage;
     }
 }
