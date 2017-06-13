@@ -202,6 +202,18 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
+     * Returns a distinct set of SKUs from the supplied list of inventory entry drafts.
+     *
+     * @param inventories {@link List} of {@link InventoryEntryDraft} where each draft contains its sku
+     * @return {@link Set} of distinct SKUs found in {@code inventories}.
+     */
+    private Set<String> extractSkus(@Nonnull final List<InventoryEntryDraft> inventories) {
+        return inventories.stream()
+            .map(InventoryEntryDraft::getSku)
+            .collect(Collectors.toSet());
+    }
+
+    /**
      * Given an inventory entry {@code draft}, this method resolves all references on the draft. If the the references
      * resolution was successful this method returns a future which contains an {@link Optional} containing resolved
      * inventory entry draft. Otherwise an error is handled and a future containing an empty optional is returned.
@@ -335,18 +347,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             ? (inventory.getSupplyChannel() == null)
             : ((inventory.getSupplyChannel() != null)
             && inventory.getSupplyChannel().getId().equals(draft.getSupplyChannel().getId()));
-    }
-
-    /**
-     * Returns a distinct set of SKUs from the supplied list of inventory entry drafts.
-     *
-     * @param inventories {@link List} of {@link InventoryEntryDraft} where each draft contains its sku
-     * @return {@link Set} of distinct SKUs found in {@code inventories}.
-     */
-    private Set<String> extractSkus(@Nonnull final List<InventoryEntryDraft> inventories) {
-        return inventories.stream()
-                .map(InventoryEntryDraft::getSku)
-                .collect(Collectors.toSet());
     }
 
     /**
