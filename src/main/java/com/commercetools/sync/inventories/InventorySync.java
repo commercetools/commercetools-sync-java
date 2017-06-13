@@ -1,6 +1,7 @@
 package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.inventories.helpers.InventoryReferenceResolver;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.inventories.utils.InventorySyncUtils;
@@ -23,6 +24,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -41,7 +43,9 @@ import static java.lang.Math.min;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
@@ -185,18 +189,23 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
 
     /**
      * Given a list of inventory entry {@code drafts}, this method resolves the references of each entry and attempts to
-     * sync it to the CTP project depending whether the references resolution was successful.
+     * sync it to the CTP project depending whether the references resolution was successful. In addition the given
+     * {@code oldInventories} list is converted to a {@link Map} of an identifier to an inventory entry, for a resources
+     * comparison reason.
      *
+     * @param oldInventories inventory entries from CTP
      * @param inventoryEntryDrafts drafts that need to be synced
-     * @return a future which contains an empty result after execution of the buildUpdateActionsAndUpdate
+     * @return a future which contains an empty result after execution of the update
      */
     private CompletionStage<Void> syncBatch(@Nonnull final List<InventoryEntry> oldInventories,
                                             @Nonnull final List<InventoryEntryDraft> inventoryEntryDrafts) {
+        final Map<InventoryEntryIdentifier , InventoryEntry> identifierToOldInventoryEntry = oldInventories
+            .stream().collect(toMap(InventoryEntryIdentifier::of, identity()));
         final List<CompletableFuture<Void>> futures = new ArrayList<>(inventoryEntryDrafts.size());
         inventoryEntryDrafts.forEach(inventoryEntryDraft ->
             futures.add(resolveReferences(inventoryEntryDraft)
                 .thenCompose(resolvedDraftOptional -> resolvedDraftOptional
-                    .map(resolvedDraft -> syncDraft(oldInventories, resolvedDraft))
+                    .map(resolvedDraft -> syncDraft(identifierToOldInventoryEntry, resolvedDraft))
                     .orElseGet(() -> completedFuture(null)))));
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
     }
@@ -243,37 +252,20 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * Tries to create the new inventory entry or buildUpdateActionsAndUpdate an old one, depending whether an entry
+     * Tries to create the new inventory entry or update an old one, depending whether an entry
      * corresponding to the {@code resolvedDraft} was found among {@code oldInventories}.
      *
-     * @param oldInventories list of old {@link InventoryEntry} instances
+     * @param oldInventories map of {@link InventoryEntryIdentifier} to old {@link InventoryEntry} instances
      * @param resolvedDraft inventory entry draft which has its references resolved
-     * @return a future which contains an empty result after execution of the buildUpdateActionsAndUpdate
+     * @return a future which contains an empty result after execution of the update
      */
-    private CompletableFuture<Void> syncDraft(@Nonnull final List<InventoryEntry> oldInventories,
+    private CompletableFuture<Void> syncDraft(@Nonnull final Map<InventoryEntryIdentifier , InventoryEntry>
+                                                  oldInventories,
                                               @Nonnull final InventoryEntryDraft resolvedDraft) {
-        return findCorrespondingEntry(oldInventories, resolvedDraft)
-            .map(oldInventory -> buildUpdateActionsAndUpdate(oldInventory, resolvedDraft))
-            .orElseGet(() -> create(resolvedDraft))
-            .toCompletableFuture();
-    }
-
-    /**
-     * Finds a inventory entry that correspond to a given {@code draft} among the given {@code oldInventories} list.
-     * Returns an {@link Optional} containing the found inventory entry, or an empty optional if no corresponding entry
-     * was found.
-     *
-     * @param oldInventories list of old {@link InventoryEntry} instances
-     * @param draft inventory entry draft which has its supply channel reference resolved
-     * @return {@link Optional} which may contain {@link InventoryEntry} corresponding to a given {@code draft}
-     */
-    @Nonnull
-    private Optional<InventoryEntry> findCorrespondingEntry(@Nonnull final List<InventoryEntry> oldInventories,
-                                                            @Nonnull final InventoryEntryDraft draft) {
-        return oldInventories.stream()
-            .filter(oldInventory -> oldInventory.getSku().equals(draft.getSku()))
-            .filter(oldInventory -> hasSameSupplyChannel(oldInventory, draft))
-            .findFirst();
+        final InventoryEntry oldInventory = oldInventories.get(InventoryEntryIdentifier.of(resolvedDraft));
+        return oldInventory != null
+            ? buildUpdateActionsAndUpdate(oldInventory, resolvedDraft).toCompletableFuture()
+            : create(resolvedDraft).toCompletableFuture();
     }
 
     /**
@@ -288,7 +280,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param entry existing inventory entry that could be updated.
      * @param draft draft containing data that could differ from data in {@code entry}.
      *              <strong>Sku isn't compared</strong>
-     * @return a future which contains an empty result after execution of the buildUpdateActionsAndUpdate.
+     * @return a future which contains an empty result after execution of the update.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> buildUpdateActionsAndUpdate(@Nonnull final InventoryEntry entry,
@@ -331,22 +323,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 handleError(errorMessage, exception, 1);
                 return null;
             });
-    }
-
-    /**
-     * Checks if an {@code inventory} and a {@code draft} contain references that point to the same supply channel. The
-     * {@code true} value is returned when both references are absent or they both represent the same {@code id}.
-     *
-     * @param inventory inventory entry
-     * @param draft inventory entry draft
-     * @return boolean value, which indicates supply channels equality
-     */
-    private boolean hasSameSupplyChannel(@Nonnull final InventoryEntry inventory,
-                                         @Nonnull final InventoryEntryDraft draft) {
-        return draft.getSupplyChannel() == null
-            ? (inventory.getSupplyChannel() == null)
-            : ((inventory.getSupplyChannel() != null)
-            && inventory.getSupplyChannel().getId().equals(draft.getSupplyChannel().getId()));
     }
 
     /**
