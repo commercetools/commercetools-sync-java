@@ -1,5 +1,6 @@
-package com.commercetools.sync.inventories;
+package com.commercetools.sync.services;
 
+import com.commercetools.sync.services.impl.InventoryServiceImpl;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.queries.ChannelQuery;
@@ -52,7 +53,7 @@ public class InventoryServiceItTest {
     }
 
     @AfterClass
-    public static void cleanup() {
+    public static void delete() {
         deleteInventoryRelatedResources();
     }
 
@@ -77,42 +78,6 @@ public class InventoryServiceItTest {
             .filter(inventoryEntry -> inventoryEntry.getSupplyChannel() != null)
             .map(InventoryEntry::getSupplyChannel)
             .forEach(supplyChannel -> assertThat(supplyChannel.getObj()).isNotNull());
-    }
-
-    @Test
-    public void fetchAllSupplyChannels_ShouldReturnProperChannels() {
-        final List<Channel> result = inventoryService.fetchAllSupplyChannels()
-            .toCompletableFuture()
-            .join();
-
-        //assert result size
-        assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-
-        //assert role of results
-        assertThat(result.get(0).getRoles()).containsExactly(ChannelRole.INVENTORY_SUPPLY);
-    }
-
-    @Test
-    public void createSupplyChannel_ShouldCreateProperChannel() {
-        //create channel
-        final Channel result = inventoryService.createSupplyChannel(SUPPLY_CHANNEL_KEY_2)
-            .toCompletableFuture()
-            .join();
-
-        //assert returned data
-        assertThat(result).isNotNull();
-        assertThat(result.getRoles()).containsExactly(ChannelRole.INVENTORY_SUPPLY);
-        assertThat(result.getKey()).isEqualTo(SUPPLY_CHANNEL_KEY_2);
-
-        //assert CTP state
-        final Optional<Channel> createdChannelOptional = CTP_TARGET_CLIENT
-            .execute(ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_2))
-            .toCompletableFuture()
-            .join()
-            .head();
-        assertThat(createdChannelOptional).isNotEmpty();
-        assertThat(createdChannelOptional.get()).isEqualTo(result);
     }
 
     @Test

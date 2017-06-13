@@ -192,10 +192,9 @@ public class InventoryUpdateActionUtilsItTest {
             .withCustom(customFieldsDraft);
 
         //Build update actions.
-        final TypeService typeService = new TypeServiceImpl(CTP_TARGET_CLIENT);
         final InventorySyncOptions options = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
         final List<UpdateAction<InventoryEntry>> updateActions =
-            buildCustomUpdateActions(oldInventoryBeforeSync, newInventory, options, typeService);
+            buildCustomUpdateActions(oldInventoryBeforeSync, newInventory, options);
         assertThat(updateActions).isNotEmpty();
 
         //Execute update command and ensure returned entry is properly updated.
