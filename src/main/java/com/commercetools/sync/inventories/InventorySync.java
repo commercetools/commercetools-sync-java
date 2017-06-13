@@ -309,8 +309,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * out successfully or not. If an exception was thrown on executing the request to CTP, the error handling method
      * is called.
      *
-     * @param draft draft of new inventory entry with the resolved channel reference
-     * @return {@link CompletionStage} instance that indicates method progress
+     * @param draft the inventory entry draft to create the inventory entry from.
+     * @return a future which contains an empty result after execution of the create.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> create(@Nonnull final InventoryEntryDraft draft) {
