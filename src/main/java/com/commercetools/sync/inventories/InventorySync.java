@@ -312,7 +312,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param draft the inventory entry draft to create the inventory entry from.
      * @return a future which contains an empty result after execution of the create.
      */
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> create(@Nonnull final InventoryEntryDraft draft) {
         return inventoryService.createInventoryEntry(draft)
             .thenAccept(createdInventory -> statistics.incrementCreated())
