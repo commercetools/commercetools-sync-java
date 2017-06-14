@@ -88,6 +88,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @return {@link CompletionStage} with {@link InventorySyncStatistics} holding statistics of all sync
      *                                           processes performed by this sync instance
      */
+    @Nonnull
     @Override
     protected CompletionStage<InventorySyncStatistics> process(@Nonnull final List<InventoryEntryDraft>
                                                                        inventories) {
