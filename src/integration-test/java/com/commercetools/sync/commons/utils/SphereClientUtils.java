@@ -6,7 +6,12 @@ import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.queries.PagedQueryResult;
 
 import javax.annotation.Nonnull;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static java.util.concurrent.CompletableFuture.allOf;
 
 public class SphereClientUtils {
 
@@ -45,8 +50,13 @@ public class SphereClientUtils {
     public static <T> void fetchAndProcess(@Nonnull final SphereClient client,
                                            @Nonnull final SphereRequest<PagedQueryResult<T>> query,
                                            @Nonnull final Function<T, SphereRequest<T>> ctpRequest) {
-
-        client.execute(query).toCompletableFuture().join().getResults()
-            .forEach(item -> client.execute(ctpRequest.apply(item)).toCompletableFuture().join());
+        client.execute(query)
+            .thenCompose(pagedQueryResult -> allOf(
+                pagedQueryResult.getResults().stream()
+                    .map(item -> client.execute(ctpRequest.apply(item)))
+                    .map(CompletionStage::toCompletableFuture)
+                    .collect(Collectors.toList())
+                    .toArray(new CompletableFuture[pagedQueryResult.getResults().size()]))
+            ).toCompletableFuture().join();
     }
 }
