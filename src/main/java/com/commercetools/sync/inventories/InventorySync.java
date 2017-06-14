@@ -204,7 +204,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                                             @Nonnull final List<InventoryEntryDraft> inventoryEntryDrafts) {
         final Map<InventoryEntryIdentifier , InventoryEntry> identifierToOldInventoryEntry = oldInventories
             .stream().collect(toMap(InventoryEntryIdentifier::of, identity()));
-        final List<CompletableFuture<InventoryEntry>> futures = new ArrayList<>(inventoryEntryDrafts.size());
+        final List<CompletableFuture<Void>> futures = new ArrayList<>(inventoryEntryDrafts.size());
         inventoryEntryDrafts.forEach(inventoryEntryDraft ->
             futures.add(resolveReferences(inventoryEntryDraft)
                 .thenCompose(resolvedDraftOptional -> resolvedDraftOptional
@@ -262,9 +262,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param resolvedDraft inventory entry draft which has its references resolved
      * @return a future which contains an empty result after execution of the update
      */
-    private CompletableFuture<InventoryEntry> syncDraft(@Nonnull final Map<InventoryEntryIdentifier, InventoryEntry>
-                                                            oldInventories,
-                                                        @Nonnull final InventoryEntryDraft resolvedDraft) {
+    private CompletableFuture<Void> syncDraft(@Nonnull final Map<InventoryEntryIdentifier, InventoryEntry>
+                                                  oldInventories,
+                                              @Nonnull final InventoryEntryDraft resolvedDraft) {
         final InventoryEntry oldInventory = oldInventories.get(InventoryEntryIdentifier.of(resolvedDraft));
         return oldInventory != null
             ? buildUpdateActionsAndUpdate(oldInventory, resolvedDraft, ATTEMPTS_ON_409_LIMIT).toCompletableFuture()
@@ -287,25 +287,25 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param draft draft containing data that could differ from data in {@code entry}.
      *              <strong>Sku isn't compared</strong>
      * @param retryOn409AttemptsLeft counter which positive value indicates that another retry attempt should be raised
-     * @return a future which contains an empty result after execution of the update.
+     * @return a future which contains an empty result after execution of the update
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<InventoryEntry> buildUpdateActionsAndUpdate(@Nonnull final InventoryEntry entry,
-                                                                        @Nonnull final InventoryEntryDraft draft,
-        final int retryOn409AttemptsLeft) {
+    private CompletionStage<Void> buildUpdateActionsAndUpdate(@Nonnull final InventoryEntry entry,
+                                                              @Nonnull final InventoryEntryDraft draft,
+                                                              final int retryOn409AttemptsLeft) {
         final List<UpdateAction<InventoryEntry>> updateActions =
             InventorySyncUtils.buildActions(entry, draft, syncOptions);
         if (!updateActions.isEmpty()) {
             return inventoryService.updateInventoryEntry(entry, updateActions)
                 .thenApply(updatedInventory -> {
                     statistics.incrementUpdated();
-                    return completedFuture(updatedInventory);
+                    return completedFuture((Void) null);
                 })
                 .exceptionally(exception -> processUpdateException(exception.getCause(), draft, retryOn409AttemptsLeft)
                     .toCompletableFuture())
                 .thenCompose(completableFuture -> completableFuture);
         }
-        return completedFuture(entry);
+        return completedFuture(null);
     }
 
     /**
@@ -317,12 +317,12 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param exception exception returned from CTP
      * @param draft draft draft with the resolved channel reference, containing new data
      * @param retryOn409AttemptsLeft counter which indicates if another retry attempt should be raised
-     * @return {@link CompletionStage} that may contain updated {@link InventoryEntry}
+     * @return a future which contains an empty result after execution of the update.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    CompletionStage<InventoryEntry> processUpdateException(final Throwable exception,
-                                                           final InventoryEntryDraft draft,
-                                                           final int retryOn409AttemptsLeft) {
+    private CompletionStage<Void> processUpdateException(@Nullable final Throwable exception,
+                                                         @Nonnull final InventoryEntryDraft draft,
+                                                         final int retryOn409AttemptsLeft) {
         if ((retryOn409AttemptsLeft > 0) && (exception instanceof ConcurrentModificationException)) {
             return inventoryService.fetchInventoryEntry(draft.getSku(), draft.getSupplyChannel())
                 .exceptionally(exceptionFromFetch -> Optional.empty())
@@ -331,20 +331,29 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                         buildUpdateActionsAndUpdate(inventoryEntry, draft, retryOn409AttemptsLeft - 1)
                             .toCompletableFuture())
                     .orElseGet(() -> {
-                        handleInventoryUpdateError(draft, exception);
-                        return completedFuture(null);
+                        return handleInventoryUpdateError(draft, exception);
                     }));
         } else {
-            handleInventoryUpdateError(draft, exception);
-            return completedFuture(null);
+            return handleInventoryUpdateError(draft, exception);
         }
     }
 
-    private void handleInventoryUpdateError(final InventoryEntryDraft draft, final Throwable exception) {
+    /**
+     * Formats proper error message and calls {@link InventorySync#handleError(String, Throwable, int)}.
+     * Returns completed future containing empty result.
+     *
+     * @param draft draft attempted to sync
+     * @param exception exception thrown after {@code draft} update attempt
+     * @return a future which contains an empty result after handling error
+     */
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    private CompletableFuture<Void> handleInventoryUpdateError(@Nonnull final InventoryEntryDraft draft,
+                                                               @Nullable final Throwable exception) {
         final Reference<Channel> supplyChannel = draft.getSupplyChannel();
         final String errorMessage = format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
             supplyChannel != null ? supplyChannel.getId() : null);
         handleError(errorMessage, exception, 1);
+        return completedFuture(null);
     }
 
     /**
@@ -359,12 +368,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @return a future which contains an empty result after execution of the create.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<InventoryEntry> create(@Nonnull final InventoryEntryDraft draft) {
+    private CompletionStage<Void> create(@Nonnull final InventoryEntryDraft draft) {
         return inventoryService.createInventoryEntry(draft)
-            .thenApply(createdInventory -> {
-                statistics.incrementCreated();
-                return createdInventory;
-            })
+            .thenAccept(createdInventory -> statistics.incrementCreated())
             .exceptionally(exception -> {
                 final Reference<Channel> supplyChannel = draft.getSupplyChannel();
                 final String errorMessage = format(CTP_INVENTORY_ENTRY_CREATE_FAILED, draft.getSku(),
