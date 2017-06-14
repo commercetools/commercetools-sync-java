@@ -252,8 +252,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * Tries to create the new inventory entry or update an old one, depending whether an entry
-     * corresponding to the {@code resolvedDraft} was found among {@code oldInventories}.
+     * Checks if the {@code resolvedDraft} matches with an old existing inventory entry. If it does, it tries to update
+     * it. If it doesn't, it creates it.
      *
      * @param oldInventories map of {@link InventoryEntryIdentifier} to old {@link InventoryEntry} instances
      * @param resolvedDraft inventory entry draft which has its references resolved
