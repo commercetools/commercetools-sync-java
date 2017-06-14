@@ -32,13 +32,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.commercetools.sync.inventories.InventorySyncMessages.CTP_INVENTORY_ENTRY_CREATE_FAILED;
-import static com.commercetools.sync.inventories.InventorySyncMessages.CTP_INVENTORY_ENTRY_UPDATE_FAILED;
-import static com.commercetools.sync.inventories.InventorySyncMessages.CTP_INVENTORY_FETCH_FAILED;
-import static com.commercetools.sync.inventories.InventorySyncMessages.FAILED_TO_RESOLVE_CUSTOM_TYPE;
-import static com.commercetools.sync.inventories.InventorySyncMessages.FAILED_TO_RESOLVE_SUPPLY_CHANNEL;
-import static com.commercetools.sync.inventories.InventorySyncMessages.INVENTORY_DRAFT_HAS_NO_SKU;
-import static com.commercetools.sync.inventories.InventorySyncMessages.INVENTORY_DRAFT_IS_NULL;
 import static java.lang.Math.min;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.allOf;
@@ -52,6 +45,18 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * Default implementation of inventories sync process.
  */
 public final class InventorySync extends BaseSync<InventoryEntryDraft, InventorySyncStatistics, InventorySyncOptions> {
+
+    private static final String CTP_INVENTORY_FETCH_FAILED = "Failed to fetch existing inventory entries of SKUs %s.";
+    private static final String CTP_INVENTORY_ENTRY_UPDATE_FAILED = "Failed to update inventory entry of sku '%s' and "
+        + "supply channel id '%s'.";
+    private static final String INVENTORY_DRAFT_HAS_NO_SKU = "Failed to process inventory entry without sku.";
+    private static final String INVENTORY_DRAFT_IS_NULL = "Failed to process null inventory draft.";
+    private static final String CTP_INVENTORY_ENTRY_CREATE_FAILED = "Failed to create inventory entry of sku '%s' "
+        + "and supply channel id '%s'.";
+    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+        + "InventoryEntryDraft with sku:'%s'. Reason: %s";
+    private static final String FAILED_TO_RESOLVE_SUPPLY_CHANNEL = "Failed to resolve supply channel reference on "
+        + "InventoryEntryDraft with sku:'%s'. Reason: %s";
 
     private final InventoryService inventoryService;
     private final InventoryReferenceResolver referenceResolver;
