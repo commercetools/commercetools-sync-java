@@ -33,13 +33,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.commercetools.sync.inventories.InventorySyncMessages.CTP_INVENTORY_ENTRY_CREATE_FAILED;
-import static com.commercetools.sync.inventories.InventorySyncMessages.CTP_INVENTORY_ENTRY_UPDATE_FAILED;
-import static com.commercetools.sync.inventories.InventorySyncMessages.CTP_INVENTORY_FETCH_FAILED;
-import static com.commercetools.sync.inventories.InventorySyncMessages.FAILED_TO_RESOLVE_CUSTOM_TYPE;
-import static com.commercetools.sync.inventories.InventorySyncMessages.FAILED_TO_RESOLVE_SUPPLY_CHANNEL;
-import static com.commercetools.sync.inventories.InventorySyncMessages.INVENTORY_DRAFT_HAS_NO_SKU;
-import static com.commercetools.sync.inventories.InventorySyncMessages.INVENTORY_DRAFT_IS_NULL;
 import static java.lang.Math.min;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.allOf;
@@ -53,6 +46,18 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * Default implementation of inventories sync process.
  */
 public final class InventorySync extends BaseSync<InventoryEntryDraft, InventorySyncStatistics, InventorySyncOptions> {
+
+    private static final String CTP_INVENTORY_FETCH_FAILED = "Failed to fetch existing inventory entries of SKUs %s.";
+    private static final String CTP_INVENTORY_ENTRY_UPDATE_FAILED = "Failed to update inventory entry of sku '%s' and "
+        + "supply channel id '%s'.";
+    private static final String INVENTORY_DRAFT_HAS_NO_SKU = "Failed to process inventory entry without sku.";
+    private static final String INVENTORY_DRAFT_IS_NULL = "Failed to process null inventory draft.";
+    private static final String CTP_INVENTORY_ENTRY_CREATE_FAILED = "Failed to create inventory entry of sku '%s' "
+        + "and supply channel id '%s'.";
+    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+        + "InventoryEntryDraft with sku:'%s'. Reason: %s";
+    private static final String FAILED_TO_RESOLVE_SUPPLY_CHANNEL = "Failed to resolve supply channel reference on "
+        + "InventoryEntryDraft with sku:'%s'. Reason: %s";
 
     static final int ATTEMPTS_ON_409_LIMIT = 5;
 
@@ -91,6 +96,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @return {@link CompletionStage} with {@link InventorySyncStatistics} holding statistics of all sync
      *                                           processes performed by this sync instance
      */
+    @Nonnull
     @Override
     protected CompletionStage<InventorySyncStatistics> process(@Nonnull final List<InventoryEntryDraft>
                                                                        inventories) {
@@ -100,7 +106,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         final List<CompletableFuture<Void>> completableFutures = IntStream
             .range(0, calculateAmountOfBatches(validInventories.size()))
             .mapToObj(batchIndex -> getBatch(batchIndex, validInventories))
-            .map(batch -> processBatch(batch))
+            .map(this::processBatch)
             .map(CompletionStage::toCompletableFuture)
             .collect(toList());
         return allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()]))
@@ -135,7 +141,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param listSize size of a list
      * @return amount of batches, available in a list of a given size
      */
-    int calculateAmountOfBatches(int listSize) {
+    private int calculateAmountOfBatches(int listSize) {
         return (listSize + syncOptions.getBatchSize() - 1) / syncOptions.getBatchSize();
     }
 
@@ -147,7 +153,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @return an n-th batch of drafts, where n is specified by {@code batchIndex}
      */
     @Nonnull
-    List<InventoryEntryDraft> getBatch(int batchIndex, @Nonnull final List<InventoryEntryDraft> drafts) {
+    private List<InventoryEntryDraft> getBatch(final int batchIndex, @Nonnull final List<InventoryEntryDraft> drafts) {
         final int startIndex = batchIndex * syncOptions.getBatchSize();
         final int endIndex = min((batchIndex + 1) * syncOptions.getBatchSize(), drafts.size());
         return drafts.subList(startIndex, endIndex);
@@ -255,8 +261,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * Tries to create the new inventory entry or update an old one, depending whether an entry
-     * corresponding to the {@code resolvedDraft} was found among {@code oldInventories}.
+     * Checks if the {@code resolvedDraft} matches with an old existing inventory entry. If it does, it tries to update
+     * it. If it doesn't, it creates it.
      *
      * @param oldInventories map of {@link InventoryEntryIdentifier} to old {@link InventoryEntry} instances
      * @param resolvedDraft inventory entry draft which has its references resolved
@@ -367,7 +373,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param draft the inventory entry draft to create the inventory entry from.
      * @return a future which contains an empty result after execution of the create.
      */
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> create(@Nonnull final InventoryEntryDraft draft) {
         return inventoryService.createInventoryEntry(draft)
             .thenAccept(createdInventory -> statistics.incrementCreated())
