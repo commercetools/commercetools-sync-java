@@ -132,7 +132,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param listSize size of a list
      * @return amount of batches, available in a list of a given size
      */
-    int calculateAmountOfBatches(int listSize) {
+    private int calculateAmountOfBatches(int listSize) {
         return (listSize + syncOptions.getBatchSize() - 1) / syncOptions.getBatchSize();
     }
 
@@ -144,7 +144,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @return an n-th batch of drafts, where n is specified by {@code batchIndex}
      */
     @Nonnull
-    List<InventoryEntryDraft> getBatch(int batchIndex, @Nonnull final List<InventoryEntryDraft> drafts) {
+    private List<InventoryEntryDraft> getBatch(final int batchIndex, @Nonnull final List<InventoryEntryDraft> drafts) {
         final int startIndex = batchIndex * syncOptions.getBatchSize();
         final int endIndex = min((batchIndex + 1) * syncOptions.getBatchSize(), drafts.size());
         return drafts.subList(startIndex, endIndex);
