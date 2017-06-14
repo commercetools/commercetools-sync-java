@@ -197,7 +197,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                                                     existingInventories.get(draftIdentifier);
                                                 return buildUpdateActionsAndUpdate(existingEntry, resolvedDraft);
                                             } else {
-                                                return attemptCreate(inventoryEntryDraft);
+                                                return attemptCreate(resolvedDraft);
                                             }
                                         })
                                         .exceptionally(exception -> {
