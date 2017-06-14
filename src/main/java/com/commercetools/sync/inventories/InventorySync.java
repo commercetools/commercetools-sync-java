@@ -30,6 +30,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.getRetryOn5xxClient;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -63,9 +64,10 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *                    configuration and other sync-specific options.
      */
     public InventorySync(@Nonnull final InventorySyncOptions syncOptions) {
-        this(syncOptions, new InventoryServiceImpl(syncOptions.getCtpClient()),
-            new ChannelServiceImpl(syncOptions.getCtpClient(), Collections.singleton(ChannelRole.INVENTORY_SUPPLY)),
-            new TypeServiceImpl(syncOptions.getCtpClient()));
+        this(syncOptions, new InventoryServiceImpl(getRetryOn5xxClient(syncOptions.getCtpClient())),
+            new ChannelServiceImpl(getRetryOn5xxClient(syncOptions.getCtpClient()),
+                Collections.singleton(ChannelRole.INVENTORY_SUPPLY)),
+            new TypeServiceImpl(getRetryOn5xxClient(syncOptions.getCtpClient())));
     }
 
     InventorySync(@Nonnull final InventorySyncOptions syncOptions, @Nonnull final InventoryService inventoryService,

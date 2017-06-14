@@ -13,8 +13,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.getRetryOn5xxClient;
-
 /**
  * Implementation of TypeService interface.
  * TODO: USE graphQL to get only keys OR MAKE PR/ISSUE TO FIX QueryExecutionUtils.queryAll
@@ -25,7 +23,7 @@ public final class TypeServiceImpl implements TypeService {
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
     public TypeServiceImpl(@Nonnull final SphereClient ctpClient) {
-        this.ctpClient = getRetryOn5xxClient(ctpClient);
+        this.ctpClient = ctpClient;
     }
 
     @Nonnull

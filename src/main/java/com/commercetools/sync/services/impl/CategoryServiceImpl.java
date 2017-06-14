@@ -20,14 +20,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.getRetryOn5xxClient;
-
 public final class CategoryServiceImpl implements CategoryService {
     private final SphereClient ctpClient;
     private final Map<String, String> externalIdToIdCache = new ConcurrentHashMap<>();
 
     public CategoryServiceImpl(@Nonnull final SphereClient ctpClient) {
-        this.ctpClient = getRetryOn5xxClient(ctpClient);
+        this.ctpClient = ctpClient;
     }
 
     @Nonnull
