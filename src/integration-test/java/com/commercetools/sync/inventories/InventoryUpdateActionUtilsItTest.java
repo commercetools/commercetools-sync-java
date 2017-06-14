@@ -1,7 +1,5 @@
 package com.commercetools.sync.inventories;
 
-import com.commercetools.sync.services.TypeService;
-import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
 import io.sphere.sdk.channels.ChannelRole;
@@ -13,6 +11,7 @@ import io.sphere.sdk.inventory.commands.InventoryEntryUpdateCommand;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
+import io.sphere.sdk.types.Type;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +32,7 @@ import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.REST
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SKU_1;
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.deleteInventoryRelatedResources;
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.getInventoryEntryBySkuAndSupplyChannel;
+import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.getTypeByKey;
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.populateTargetProject;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildChangeQuantityAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetExpectedDeliveryAction;
@@ -184,8 +184,13 @@ public class InventoryUpdateActionUtilsItTest {
         final InventoryEntry oldInventoryBeforeSync = oldInventoryOptional.get();
         assertThat(oldInventoryBeforeSync.getCustom()).isNull();
 
+        //Fetch type and ensure it is present.
+        final Optional<Type> type = getTypeByKey(CTP_TARGET_CLIENT, CUSTOM_TYPE);
+        assertThat(type).isNotEmpty();
+        assertThat(type.get().getKey()).isEqualTo(CUSTOM_TYPE);
+
         //Prepare draft with updated data.
-        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraftBuilder.ofTypeKey(CUSTOM_TYPE)
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraftBuilder.ofType(type.get())
             .addObject(CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE).build();
         final InventoryEntryDraft newInventory =
             InventoryEntryDraft.of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, null)

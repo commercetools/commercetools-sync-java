@@ -1,7 +1,6 @@
 package com.commercetools.sync.services;
 
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
-import com.commercetools.sync.services.impl.InventoryServiceImpl;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.queries.ChannelQuery;
@@ -9,7 +8,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;

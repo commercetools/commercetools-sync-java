@@ -1,9 +1,6 @@
 package com.commercetools.sync.services;
 
 import com.commercetools.sync.services.impl.InventoryServiceImpl;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.channels.ChannelRole;
-import io.sphere.sdk.channels.queries.ChannelQuery;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -29,7 +26,6 @@ import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.REST
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.RESTOCKABLE_IN_DAYS_2;
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SKU_1;
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SKU_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SUPPLY_CHANNEL_KEY_2;
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.deleteInventoryRelatedResources;
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.getInventoryEntryBySkuAndSupplyChannel;
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.populateTargetProject;
