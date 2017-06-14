@@ -97,7 +97,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         final List<CompletableFuture<Void>> completableFutures = IntStream
             .range(0, calculateAmountOfBatches(validInventories.size()))
             .mapToObj(batchIndex -> getBatch(batchIndex, validInventories))
-            .map(batch -> processBatch(batch))
+            .map(this::processBatch)
             .map(CompletionStage::toCompletableFuture)
             .collect(toList());
         return allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()]))
