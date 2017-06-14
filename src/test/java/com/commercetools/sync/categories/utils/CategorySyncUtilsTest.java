@@ -3,7 +3,6 @@ package com.commercetools.sync.categories.utils;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
-import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
@@ -79,8 +78,7 @@ public class CategorySyncUtilsTest {
             CATEGORY_PARENT_ID);
 
         final List<UpdateAction<Category>> updateActions =
-            CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions,
-                mock(TypeService.class));
+            CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions);
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
 
@@ -103,8 +101,7 @@ public class CategorySyncUtilsTest {
             "differentParentId");
 
         final List<UpdateAction<Category>> updateActions =
-            CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions,
-                mock(TypeService.class));
+            CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions);
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(8);
 
@@ -169,8 +166,7 @@ public class CategorySyncUtilsTest {
                                                         .build();
 
         final List<UpdateAction<Category>> updateActions =
-            CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions,
-                mock(TypeService.class));
+            CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions);
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(8);
 
@@ -225,8 +221,7 @@ public class CategorySyncUtilsTest {
             CATEGORY_PARENT_ID);
 
         final List<UpdateAction<Category>> updateActions =
-            CategorySyncUtils.buildCoreActions(mockOldCategory, newCategoryDraft, categorySyncOptions,
-                mock(TypeService.class));
+            CategorySyncUtils.buildCoreActions(mockOldCategory, newCategoryDraft, categorySyncOptions);
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
 
@@ -249,8 +244,7 @@ public class CategorySyncUtilsTest {
             "differentParentId");
 
         final List<UpdateAction<Category>> updateActions =
-            CategorySyncUtils.buildCoreActions(mockOldCategory, newCategoryDraft, categorySyncOptions,
-                mock(TypeService.class));
+            CategorySyncUtils.buildCoreActions(mockOldCategory, newCategoryDraft, categorySyncOptions);
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(8);
 
@@ -305,8 +299,7 @@ public class CategorySyncUtilsTest {
             CATEGORY_PARENT_ID);
 
         final List<UpdateAction<Category>> updateActions =
-            CategorySyncUtils.buildCoreActions(mockOldCategory, newCategoryDraft, categorySyncOptions,
-                mock(TypeService.class));
+            CategorySyncUtils.buildCoreActions(mockOldCategory, newCategoryDraft, categorySyncOptions);
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(0);
     }

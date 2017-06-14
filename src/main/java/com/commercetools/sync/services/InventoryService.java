@@ -1,4 +1,4 @@
-package com.commercetools.sync.inventories;
+package com.commercetools.sync.services;
 
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
@@ -13,10 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
-/**
- * Provides CRUD operations upon {@link InventoryEntry}.
- */
-interface InventoryService {
+public interface InventoryService {
 
     /**
      * Queries existing {@link InventoryEntry}'s against set of skus.
@@ -38,23 +35,6 @@ interface InventoryService {
     @Nonnull
     CompletionStage<Optional<InventoryEntry>> fetchInventoryEntry(@Nonnull final String sku,
                                                                   @Nullable final Referenceable<Channel> supplyChannel);
-
-    /**
-     * Fetches all {@link Channel} that contain role {@code "InventorySupply"}.
-     *
-     * @return {@link List} of matching channels or empty list when no supply channel was found.
-     */
-    @Nonnull
-    CompletionStage<List<Channel>> fetchAllSupplyChannels();
-
-    /**
-     * Creates new supply channel of role {@code "InventorySupply"} and {@code key}.
-     *
-     * @param key key of supply channel
-     * @return created {@link Channel}
-     */
-    @Nonnull
-    CompletionStage<Channel> createSupplyChannel(@Nonnull final String key);
 
     /**
      * Creates new inventory entry from {@code inventoryEntryDraft}.

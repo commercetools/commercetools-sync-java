@@ -18,10 +18,10 @@ public class InventoryCustomActionBuilder extends GenericCustomActionBuilder<Inv
     }
 
     @Override
-    public UpdateAction<InventoryEntry> buildSetCustomTypeAction(@Nullable final String customTypeKey,
+    public UpdateAction<InventoryEntry> buildSetCustomTypeAction(@Nullable final String customTypeId,
                                                                  @Nullable final Map<String, JsonNode>
                                                                      customFieldsJsonMap) {
-        return SetCustomType.ofTypeKeyAndJson(customTypeKey, customFieldsJsonMap);
+        return SetCustomType.ofTypeIdAndJson(customTypeId, customFieldsJsonMap);
     }
 
     @Override

@@ -1,12 +1,7 @@
-package com.commercetools.sync.inventories;
+package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.services.InventoryService;
 import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.channels.ChannelDraft;
-import io.sphere.sdk.channels.ChannelDraftBuilder;
-import io.sphere.sdk.channels.ChannelRole;
-import io.sphere.sdk.channels.commands.ChannelCreateCommand;
-import io.sphere.sdk.channels.queries.ChannelQuery;
-import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
@@ -20,15 +15,12 @@ import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
-import static java.util.Collections.singleton;
-
-final class InventoryServiceImpl implements InventoryService {
+public final class InventoryServiceImpl implements InventoryService {
 
     private final SphereClient ctpClient;
 
@@ -40,8 +32,9 @@ final class InventoryServiceImpl implements InventoryService {
     @Override
     public CompletionStage<List<InventoryEntry>> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus) {
         final InventoryEntryQuery query = InventoryEntryQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.sku().isIn(skus))
-                .build();
+                                                                    .plusPredicates(
+                                                                        queryModel -> queryModel.sku().isIn(skus))
+                                                                    .build();
         return QueryExecutionUtils.queryAll(ctpClient, query);
     }
 
@@ -60,27 +53,8 @@ final class InventoryServiceImpl implements InventoryService {
 
     @Nonnull
     @Override
-    public CompletionStage<List<Channel>> fetchAllSupplyChannels() {
-        final ChannelQuery query = ChannelQueryBuilder.of()
-                .plusPredicates(channelQueryModel -> channelQueryModel.roles()
-                        .containsAny(Collections.singletonList(ChannelRole.INVENTORY_SUPPLY)))
-                .build();
-        return QueryExecutionUtils.queryAll(ctpClient, query);
-    }
-
-    @Nonnull
-    @Override
-    public CompletionStage<Channel> createSupplyChannel(@Nonnull final String key) {
-        final ChannelDraft draft = ChannelDraftBuilder.of(key)
-                .roles(singleton(ChannelRole.INVENTORY_SUPPLY))
-                .build();
-        return ctpClient.execute(ChannelCreateCommand.of(draft));
-    }
-
-    @Nonnull
-    @Override
     public CompletionStage<InventoryEntry> createInventoryEntry(@Nonnull final InventoryEntryDraft
-                                                                        inventoryEntryDraft) {
+                                                                    inventoryEntryDraft) {
         return ctpClient.execute(InventoryEntryCreateCommand.of(inventoryEntryDraft));
     }
 

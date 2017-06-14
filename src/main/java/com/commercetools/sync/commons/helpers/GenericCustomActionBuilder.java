@@ -34,12 +34,12 @@ public abstract class GenericCustomActionBuilder<T extends Custom & Resource<T>>
      * Creates a CTP "setCustomType" update action on the given resource {@link T} (which currently could either
      * be a {@link Category} or a {@link Channel}).
      *
-     * @param customTypeKey       the key of the new custom type.
+     * @param customTypeId       the id of the new custom type.
      * @param customFieldsJsonMap the custom fields map of JSON values.
      * @return a setCustomType update action of the type of the resource it's requested on.
      */
     @Nonnull
-    public abstract UpdateAction<T> buildSetCustomTypeAction(@Nullable final String customTypeKey,
+    public abstract UpdateAction<T> buildSetCustomTypeAction(@Nullable final String customTypeId,
                                                              @Nullable final Map<String, JsonNode> customFieldsJsonMap);
 
     /**

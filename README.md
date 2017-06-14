@@ -2,18 +2,17 @@
 [![Build Status](https://travis-ci.org/commercetools/commercetools-sync-java.svg?branch=master)](https://travis-ci.org/commercetools/commercetools-sync-java)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
 
-Java library that provides different modules to synchronise your new commercetools project data to your existing 
-commercetools project.
+Java API which exposes utilities for building update actions and automatic syncing of CTP data from external sources 
+ such as CSV, XML, JSON, etc.. or an already existing CTP project into a target project.
 
 
-- [What is the commercetools sync?](#what-is-the-commercetools-sync)
-- [How to use it?](#how-to-use-it)
-- [Short-term roadmap](#short-term-roadmap)
+- [Usage](#usage)
+- [Roadmap](#roadmap)
 - [Contributing](#contributing)
 
-## What is the commercetools sync?
+## Usage
 
-commercetools sync is a Java library that could be used to synchronise in any of the following ways:
+commercetools sync is a Java library that could be used to synchronise CTP data in any of the following ways:
 
 1. Synchronise data coming from an external system in any form (CSV, XML, etc..) that has been already mapped to 
 [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
@@ -24,15 +23,15 @@ commercetools sync is a Java library that could be used to synchronise in any of
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
 
-Currently this library supports synchronising the following commercetools resources:-
-- [Category](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories#commercetools-category-sync)
-- [InventoryEntry](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/inventories#commercetools-inventory-sync)
+Currently this library supports synchronising [Categories](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories#commercetools-category-sync)
+and [InventoryEntries](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/inventories#commercetools-inventory-sync).
 
-## How to use it?
+
 
 ### Prerequisites
  
- install [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+ - install Java 8
+ - a target CTP project to which your source of data would be synced to.
 
 <!--- TODO 
 ### Installation
@@ -43,15 +42,22 @@ Currently this library supports synchronising the following commercetools resour
 
 #### Gradle -->
 
-### Using the library
-Please check the README of the specific module to see examples of how to use it:
-- [Category](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories#how-to-use-it)
-- [InventoryEntry](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/inventories#commercetools-inventory-sync)
-
-## Short-term roadmap
+## Roadmap
 https://github.com/commercetools/commercetools-sync-java/milestones
 
 ## Contributing
+
+- Every PR should address an issue on the repository. If the issue doesn't exist, please create it first.
+- Pull requests should always follow the following naming convention: 
+`[issue-number]-[pr-name]`. For example,
+to address issue #65 which refers to a style bug, the PR addressing it should have a name that looks something like
+ `65-fix-style-bug`.
+- Commit messages should always be prefixed with the number of the issue that they address. 
+For example, `#65: Remove redundant space.`
+- After your PR is merged to master:
+    - Delete the branch.
+    - Mark the issue it addresses with the `merged-to-master` label.
+    - Close the issue **only** if the change was released.
 
 ### Development
 ##### Run unit tests
