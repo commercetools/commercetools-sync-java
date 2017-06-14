@@ -21,9 +21,15 @@ public class BaseSyncStatisticsTest {
     }
 
     @Test
-    public void incrementUpdated_ShouldIncrementUpdatedValue() {
+    public void incrementUpdated_WithNoSpecifiedTimes_ShouldIncrementUpdatedValue() {
         baseSyncStatisticsBuilder.incrementUpdated();
         assertThat(baseSyncStatisticsBuilder.build().getUpdated()).isEqualTo(1);
+    }
+
+    @Test
+    public void incrementUpdated_WithSpecifiedTimes_ShouldIncrementUpdatedValue() {
+        baseSyncStatisticsBuilder.incrementUpdated(5);
+        assertThat(baseSyncStatisticsBuilder.build().getUpdated()).isEqualTo(5);
     }
 
     @Test
@@ -32,9 +38,15 @@ public class BaseSyncStatisticsTest {
     }
 
     @Test
-    public void incrementCreated_ShouldIncrementCreatedValue() {
+    public void incrementCreated_WithNoSpecifiedTimes_ShouldIncrementCreatedValue() {
         baseSyncStatisticsBuilder.incrementCreated();
         assertThat(baseSyncStatisticsBuilder.build().getCreated()).isEqualTo(1);
+    }
+
+    @Test
+    public void incrementCreated_WithSpecifiedTimes_ShouldIncrementCreatedValue() {
+        baseSyncStatisticsBuilder.incrementCreated(2);
+        assertThat(baseSyncStatisticsBuilder.build().getCreated()).isEqualTo(2);
     }
 
     @Test
@@ -43,9 +55,15 @@ public class BaseSyncStatisticsTest {
     }
 
     @Test
-    public void incrementUpToDate_ShouldIncrementUpToDateValue() {
+    public void incrementUpToDate_WithNoSpecifiedTimes_ShouldIncrementUpToDateValue() {
         baseSyncStatisticsBuilder.incrementUpToDate();
         assertThat(baseSyncStatisticsBuilder.build().getUpToDate()).isEqualTo(1);
+    }
+
+    @Test
+    public void incrementUpToDate_WithSpecifiedTimes_ShouldIncrementUpToDateValue() {
+        baseSyncStatisticsBuilder.incrementUpToDate(5);
+        assertThat(baseSyncStatisticsBuilder.build().getUpToDate()).isEqualTo(5);
     }
 
     @Test
@@ -68,9 +86,15 @@ public class BaseSyncStatisticsTest {
     }
 
     @Test
-    public void incrementFailed_ShouldIncrementFailedValue() {
+    public void incrementFailed_WithNoSpecifiedTimes_ShouldIncrementFailedValue() {
         baseSyncStatisticsBuilder.incrementFailed();
         assertThat(baseSyncStatisticsBuilder.build().getFailed()).isEqualTo(1);
+    }
+
+    @Test
+    public void incrementFailed_WithSpecifiedTimes_ShouldIncrementFailedValue() {
+        baseSyncStatisticsBuilder.incrementFailed(3);
+        assertThat(baseSyncStatisticsBuilder.build().getFailed()).isEqualTo(3);
     }
 
     @Test

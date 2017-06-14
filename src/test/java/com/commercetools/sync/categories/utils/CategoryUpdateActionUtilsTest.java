@@ -6,17 +6,16 @@ import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
+import io.sphere.sdk.categories.commands.updateactions.ChangeOrderHint;
+import io.sphere.sdk.categories.commands.updateactions.ChangeParent;
 import io.sphere.sdk.categories.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.categories.commands.updateactions.SetDescription;
-import io.sphere.sdk.categories.commands.updateactions.ChangeParent;
-import io.sphere.sdk.categories.commands.updateactions.ChangeOrderHint;
-import io.sphere.sdk.categories.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaKeywords;
+import io.sphere.sdk.categories.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -26,13 +25,13 @@ import java.util.function.Consumer;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeNameUpdateAction;
+import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeOrderHintUpdateAction;
+import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeParentUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeSlugUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetDescriptionUpdateAction;
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeParentUpdateAction;
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeOrderHintUpdateAction;
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaDescriptionUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
+import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -41,7 +40,6 @@ public class CategoryUpdateActionUtilsTest {
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private static final CategorySyncOptions CATEGORY_SYNC_OPTIONS = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
     private static final Locale LOCALE = Locale.GERMAN;
-    private static final String MOCK_CATEGORY_REFERENCE_TYPE = "type";
     private static final String MOCK_OLD_CATEGORY_PARENT_ID = "1";
     private static final String MOCK_OLD_CATEGORY_NAME = "categoryName";
     private static final String MOCK_OLD_CATEGORY_SLUG = "categorySlug";
@@ -197,7 +195,7 @@ public class CategoryUpdateActionUtilsTest {
     @Test
     public void buildChangeParentUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
-        when(newCategoryDraft.getParent()).thenReturn(Reference.of("Category", "2"));
+        when(newCategoryDraft.getParent()).thenReturn(Category.referenceOfId("2"));
 
         final UpdateAction<Category> changeParentUpdateAction =
             buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft, CATEGORY_SYNC_OPTIONS).orElse(null);
@@ -205,14 +203,14 @@ public class CategoryUpdateActionUtilsTest {
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction.getAction()).isEqualTo("changeParent");
         assertThat(((ChangeParent) changeParentUpdateAction).getParent())
-            .isEqualTo(Reference.of("Category", "2"));
+            .isEqualTo(Category.referenceOfId("2"));
     }
 
     @Test
     public void buildChangeParentUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraftWithSameParent = mock(CategoryDraft.class);
         when(newCategoryDraftWithSameParent.getParent())
-            .thenReturn(Reference.of(MOCK_CATEGORY_REFERENCE_TYPE, MOCK_OLD_CATEGORY_PARENT_ID));
+            .thenReturn(Category.referenceOfId(MOCK_OLD_CATEGORY_PARENT_ID));
 
         final Optional<UpdateAction<Category>> changeParentUpdateAction =
             buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameParent, CATEGORY_SYNC_OPTIONS);

@@ -22,6 +22,16 @@ public abstract class BaseSyncStatisticsBuilder<T extends BaseSyncStatisticsBuil
     }
 
     /**
+     * Increments the total number of resources that were created by the supplied times.
+     *
+     * @return {@code this} instance of {@link T}
+     */
+    public T incrementCreated(final int times) {
+        this.created += times;
+        return getThis();
+    }
+
+    /**
      * Increments the total number of resource updated.
      *
      * @return {@code this} instance of {@link T}
@@ -32,12 +42,32 @@ public abstract class BaseSyncStatisticsBuilder<T extends BaseSyncStatisticsBuil
     }
 
     /**
-     * Increments the total number of resources that was up to date.
+     * Increments the total number of resources that were updated by the supplied times.
+     *
+     * @return {@code this} instance of {@link T}
+     */
+    public T incrementUpdated(final int times) {
+        this.updated += times;
+        return getThis();
+    }
+
+    /**
+     * Increments the total number of resources that were up to date.
      *
      * @return {@code this} instance of {@link T}
      */
     public T incrementUpToDate() {
         upToDate++;
+        return getThis();
+    }
+
+    /**
+     * Increments the total number of resources that were up to date by the supplied times.
+     *
+     * @return {@code this} instance of {@link T}
+     */
+    public T incrementUpToDate(final int times) {
+        upToDate += times;
         return getThis();
     }
 
@@ -48,6 +78,16 @@ public abstract class BaseSyncStatisticsBuilder<T extends BaseSyncStatisticsBuil
      */
     public T incrementFailed() {
         failed++;
+        return getThis();
+    }
+
+    /**
+     * Increments the total number of resources that failed to sync by the supplied times.
+     *
+     * @return {@code this} instance of {@link T}
+     */
+    public T incrementFailed(final int times) {
+        this.failed += times;
         return getThis();
     }
 

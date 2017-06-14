@@ -27,9 +27,9 @@ public abstract class BaseSyncStatistics {
     }
 
     /**
-     * Gets the total number of resources updated.
+     * Gets the total number of resources that were updated.
      *
-     * @return total number of resources updated.
+     * @return total number of resources that were updated.
      */
     public int getUpdated() {
         return updated;
@@ -38,7 +38,7 @@ public abstract class BaseSyncStatistics {
     /**
      * Gets the total number of resources created.
      *
-     * @return total number of resources created.
+     * @return total number of resources that were created.
      */
     public int getCreated() {
         return created;
@@ -47,7 +47,7 @@ public abstract class BaseSyncStatistics {
     /**
      * Gets the total number of resources processed/synced.
      *
-     * @return total number of resources processed/synced.
+     * @return total number of resources that were processed/synced.
      */
     public int getProcessed() {
         return processed;

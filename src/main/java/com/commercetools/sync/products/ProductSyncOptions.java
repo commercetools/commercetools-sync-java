@@ -34,6 +34,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
                        final boolean removeOtherSetEntries,
                        final boolean removeOtherCollectionEntries,
                        final boolean removeOtherProperties,
+                       final boolean allowUuid,
                        final boolean compareStaged,
                        final boolean publish,
                        final boolean removeOtherVariants,
@@ -42,7 +43,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
                        @Nonnull final Function<List<UpdateAction<Product>>,
                            List<UpdateAction<Product>>> filterActions) {
         super(ctpClient, errorCallBack, warningCallBack, removeOtherLocales, removeOtherSetEntries,
-            removeOtherCollectionEntries, removeOtherProperties);
+            removeOtherCollectionEntries, removeOtherProperties, allowUuid);
         this.compareStaged = compareStaged;
         this.publish = publish;
         this.removeOtherVariants = removeOtherVariants;

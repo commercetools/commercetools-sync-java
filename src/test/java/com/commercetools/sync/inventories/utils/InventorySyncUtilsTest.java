@@ -1,7 +1,6 @@
 package com.commercetools.sync.inventories.utils;
 
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
-import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -30,11 +29,8 @@ import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockS
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class InventorySyncUtilsTest {
-
-    private static final String CUSTOM_TYPE_KEY = "testType";
     private static final String CUSTOM_TYPE_ID = "testId";
     private static final String CUSTOM_FIELD_1_NAME = "testField";
     private static final String CUSTOM_FIELD_2_NAME = "differentField";
@@ -56,8 +52,8 @@ public class InventorySyncUtilsTest {
     public void setup() {
         final Channel channel = getMockSupplyChannel("111", "key1");
         final Reference<Channel> reference = Channel.referenceOfId("111").filled(channel);
-        final CustomFields customFields = getMockCustomFields(CUSTOM_TYPE_ID, CUSTOM_TYPE_KEY, CUSTOM_FIELD_1_NAME,
-                CUSTOM_FIELD_1_VALUE);
+        final CustomFields customFields =
+            getMockCustomFields(CUSTOM_TYPE_ID, CUSTOM_FIELD_1_NAME, CUSTOM_FIELD_1_VALUE);
 
         inventoryEntry = getMockInventoryEntry("123", 10L, 10, DATE_1, reference, null);
         inventoryEntryWithCustomField1 = getMockInventoryEntry("123", 10L, 10, DATE_1, reference, customFields);
@@ -70,8 +66,8 @@ public class InventorySyncUtilsTest {
     @Test
     public void buildActions_WithSimilarEntries_ShouldReturnEmptyList() {
         List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
-                .buildActions(inventoryEntry, similarDraft, InventorySyncOptionsBuilder.of(mock(SphereClient.class))
-                        .build(), mockTypeService());
+            .buildActions(inventoryEntry, similarDraft, InventorySyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                                   .build());
 
         assertThat(actions).isEmpty();
     }
@@ -79,8 +75,8 @@ public class InventorySyncUtilsTest {
     @Test
     public void buildActions_WithVariousEntries_ShouldReturnActions() {
         List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
-                .buildActions(inventoryEntry, variousDraft, InventorySyncOptionsBuilder.of(mock(SphereClient.class))
-                        .build(), mockTypeService());
+            .buildActions(inventoryEntry, variousDraft, InventorySyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                                   .build());
 
         assertThat(actions).hasSize(4);
         assertThat(actions.get(0)).isNotNull();
@@ -96,13 +92,12 @@ public class InventorySyncUtilsTest {
     @Test
     public void buildActions_WithSimilarEntriesAndSameCustomFields_ShouldReturnEmptyList() {
         final InventoryEntryDraft draft = InventoryEntryDraftBuilder.of(similarDraft)
-                .custom(getDraftOfCustomField(CUSTOM_FIELD_1_NAME, CUSTOM_FIELD_1_VALUE))
-                .build();
-        List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
-                .buildActions(inventoryEntryWithCustomField1, draft, InventorySyncOptionsBuilder
-                                .of(mock(SphereClient.class))
-                                .build(),
-                        mockTypeService());
+                                                                    .custom(getDraftOfCustomField(CUSTOM_FIELD_1_NAME,
+                                                                        CUSTOM_FIELD_1_VALUE))
+                                                                    .build();
+        final List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
+            .buildActions(inventoryEntryWithCustomField1,
+                draft, InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build());
 
         assertThat(actions).isEmpty();
     }
@@ -110,11 +105,10 @@ public class InventorySyncUtilsTest {
     @Test
     public void buildActions_WithSimilarEntriesAndNewCustomTypeSet_ShouldReturnActions() {
         final InventoryEntryDraft draft = InventoryEntryDraftBuilder.of(similarDraft)
-                .custom(getDraftOfCustomField(CUSTOM_FIELD_2_NAME, CUSTOM_FIELD_2_VALUE))
-                .build();
-        List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
-                .buildActions(inventoryEntry, draft, InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build(),
-                        mockTypeService());
+                                                                    .custom(getDraftOfCustomField(CUSTOM_FIELD_2_NAME,
+                                                                        CUSTOM_FIELD_2_VALUE)).build();
+        final List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils.buildActions(inventoryEntry, draft,
+            InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build());
 
         assertThat(actions).hasSize(1);
         assertThat(actions.get(0)).isNotNull();
@@ -123,11 +117,9 @@ public class InventorySyncUtilsTest {
 
     @Test
     public void buildActions_WithSimilarEntriesAndRemovedExistingCustomType_ShouldReturnActions() {
-        List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
-                .buildActions(inventoryEntryWithCustomField1, similarDraft,InventorySyncOptionsBuilder
-                                .of(mock(SphereClient.class))
-                                .build(),
-                        mockTypeService());
+        final List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
+            .buildActions(inventoryEntryWithCustomField1,
+                similarDraft, InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build());
 
         assertThat(actions).hasSize(1);
         assertThat(actions.get(0)).isNotNull();
@@ -137,13 +129,12 @@ public class InventorySyncUtilsTest {
     @Test
     public void buildActions_WithSimilarEntriesButDifferentCustomFields_ShouldReturnActions() {
         final InventoryEntryDraft draft = InventoryEntryDraftBuilder.of(similarDraft)
-                .custom(getDraftOfCustomField(CUSTOM_FIELD_2_NAME, CUSTOM_FIELD_2_VALUE))
-                .build();
-        List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
-                .buildActions(inventoryEntryWithCustomField1, draft,InventorySyncOptionsBuilder
-                                .of(mock(SphereClient.class))
-                                .build(),
-                        mockTypeService());
+                                                                    .custom(getDraftOfCustomField(CUSTOM_FIELD_2_NAME,
+                                                                        CUSTOM_FIELD_2_VALUE))
+                                                                    .build();
+        final List<UpdateAction<InventoryEntry>> actions =
+            InventorySyncUtils.buildActions(inventoryEntryWithCustomField1, draft,
+                InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build());
 
         assertThat(actions).hasSize(2);
         assertThat(actions.get(0)).isNotNull();
@@ -155,13 +146,13 @@ public class InventorySyncUtilsTest {
     @Test
     public void buildActions_WithSimilarEntriesButDifferentCustomFieldValues_ShouldReturnActions() {
         final InventoryEntryDraft draft = InventoryEntryDraftBuilder.of(similarDraft)
-                .custom(getDraftOfCustomField(CUSTOM_FIELD_1_NAME, CUSTOM_FIELD_2_VALUE))
-                .build();
-        List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
-                .buildActions(inventoryEntryWithCustomField1, draft,InventorySyncOptionsBuilder
-                                .of(mock(SphereClient.class))
-                                .build(),
-                        mockTypeService());
+                                                                    .custom(getDraftOfCustomField(CUSTOM_FIELD_1_NAME,
+                                                                        CUSTOM_FIELD_2_VALUE))
+                                                                    .build();
+        final List<UpdateAction<InventoryEntry>> actions = InventorySyncUtils
+            .buildActions(inventoryEntryWithCustomField1, draft, InventorySyncOptionsBuilder
+                .of(mock(SphereClient.class))
+                .build());
 
         assertThat(actions).hasSize(1);
         assertThat(actions.get(0)).isNotNull();
@@ -169,14 +160,8 @@ public class InventorySyncUtilsTest {
     }
 
     private CustomFieldsDraft getDraftOfCustomField(final String fieldName, final String fieldValue) {
-        return CustomFieldsDraftBuilder.ofTypeKey(CUSTOM_TYPE_KEY)
-                .addObject(fieldName, fieldValue)
-                .build();
-    }
-
-    private TypeService mockTypeService() {
-        final TypeService typeService = mock(TypeService.class);
-        when(typeService.getCachedTypeKeyById(CUSTOM_TYPE_ID)).thenReturn(CUSTOM_TYPE_KEY);
-        return typeService;
+        return CustomFieldsDraftBuilder.ofTypeId(CUSTOM_TYPE_ID)
+                                       .addObject(fieldName, fieldValue)
+                                       .build();
     }
 }
