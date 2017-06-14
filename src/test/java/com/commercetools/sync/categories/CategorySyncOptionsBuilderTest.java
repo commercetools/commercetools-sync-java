@@ -76,12 +76,12 @@ public class CategorySyncOptionsBuilderTest {
     }
 
     @Test
-    public void setRemoveOtherSetEntries_WithFalse_ShouldSetFlag() {
-        categorySyncOptionsBuilder.setRemoveOtherSetEntries(false);
+    public void setAllowUuid_WithTrue_ShouldSetFlag() {
+        categorySyncOptionsBuilder.setAllowUuidKeys(true);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
-        assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isNotNull();
-        assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isFalse();
+        assertThat(categorySyncOptions.shouldAllowUuidKeys()).isNotNull();
+        assertThat(categorySyncOptions.shouldAllowUuidKeys()).isTrue();
     }
 
     @Test
@@ -105,6 +105,15 @@ public class CategorySyncOptionsBuilderTest {
     }
 
     @Test
+    public void setRemoveOtherSetEntries_WithFalse_ShouldSetFlag() {
+        categorySyncOptionsBuilder.setRemoveOtherSetEntries(false);
+
+        final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
+        assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isNotNull();
+        assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isFalse();
+    }
+
+    @Test
     public void getThis_ShouldReturnCorrectInstance() {
         final CategorySyncOptionsBuilder instance = categorySyncOptionsBuilder.getThis();
         assertThat(instance).isNotNull();
@@ -116,6 +125,7 @@ public class CategorySyncOptionsBuilderTest {
     public void categorySyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(CTP_CLIENT)
+            .setAllowUuidKeys(true)
             .setRemoveOtherLocales(false)
             .setUpdateActionsFilter(updateActions -> Collections.emptyList())
             .build();
