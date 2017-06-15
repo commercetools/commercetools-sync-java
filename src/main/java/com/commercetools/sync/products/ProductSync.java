@@ -7,14 +7,16 @@ import com.commercetools.sync.services.ProductService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductCatalogData;
 import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
 
@@ -23,7 +25,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     public ProductSync(final ProductSyncOptions productSyncOptions) {
         this(productSyncOptions, ProductService.of(productSyncOptions.getCtpClient()),
-                ProductUpdateActionsBuilder.of());
+            ProductUpdateActionsBuilder.of());
     }
 
     ProductSync(final ProductSyncOptions productSyncOptions, final ProductService service,
@@ -39,34 +41,44 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             try {
                 CompletionStage<Optional<Product>> fetch = service.fetch(productDraft.getKey());
                 fetch.thenCompose(productOptional -> productOptional
-                        .map(product -> syncProduct(product, productDraft))
-                        .orElseGet(() -> createProduct(productDraft))
+                    .map(product -> syncProduct(product, productDraft))
+                    .orElseGet(() -> createProduct(productDraft))
                 ).toCompletableFuture().get();
             } catch (InterruptedException | ExecutionException exception) {
                 exception.printStackTrace();
             }
             statistics.incrementProcessed();
         }
-        return CompletableFuture.completedFuture(statistics);
+        return completedFuture(statistics);
     }
 
     private CompletionStage<Void> createProduct(final ProductDraft productDraft) {
-        return service.create(productDraft)
-                .thenRun(statistics::incrementCreated);
+        return publishIfNeeded(service.create(productDraft))
+            .thenRun(statistics::incrementCreated);
     }
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> syncProduct(final Product product, final ProductDraft productDraft) {
         List<UpdateAction<Product>> updateActions =
-                updateActionsBuilder.buildActions(product, productDraft, syncOptions);
+            updateActionsBuilder.buildActions(product, productDraft, syncOptions);
         if (!updateActions.isEmpty()) {
-            CompletionStage<Product> update = service.update(product, updateActions);
-            if (syncOptions.shouldPublish()) {
-                update = update.thenCompose(service::publish);
-            }
-            return update.thenRun(statistics::incrementUpdated);
+            return publishIfNeeded(service.update(product, updateActions))
+                .thenRun(statistics::incrementUpdated);
         }
-        return CompletableFuture.completedFuture(null);
+        return publishIfNeeded(completedFuture(product)).thenApply(p -> null);
+    }
+
+    private CompletionStage<Product> publishIfNeeded(final CompletionStage<Product> productStage) {
+        if (syncOptions.shouldPublish()) {
+            return productStage.thenCompose(product -> {
+                ProductCatalogData data = product.getMasterData();
+                if (!data.isPublished() || data.hasStagedChanges()) {
+                    return service.publish(product);
+                }
+                return productStage;
+            });
+        }
+        return productStage;
     }
 
 }

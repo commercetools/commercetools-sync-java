@@ -20,7 +20,6 @@ public final class ProductSyncOptionsBuilder
     private final BiConsumer<String, Throwable> errorCallBack;
     private final Consumer<String> warningCallBack;
 
-    private boolean compareStaged = true;
     private boolean updateStaged = true;
     private boolean publish = false;
     private boolean removeOtherVariants = true;
@@ -40,27 +39,21 @@ public final class ProductSyncOptionsBuilder
     @Override
     public ProductSyncOptions build() {
         return new ProductSyncOptions(
-                ctpClient,
-                errorCallBack,
-                warningCallBack,
-                removeOtherLocales,
-                removeOtherSetEntries,
-                removeOtherCollectionEntries,
-                removeOtherProperties,
-                allowUuid,
-                compareStaged,
-                updateStaged,
-                publish,
-                removeOtherVariants,
-                whiteList,
-                blackList,
-                actionsFilter
+            ctpClient,
+            errorCallBack,
+            warningCallBack,
+            removeOtherLocales,
+            removeOtherSetEntries,
+            removeOtherCollectionEntries,
+            removeOtherProperties,
+            allowUuid,
+            updateStaged,
+            publish,
+            removeOtherVariants,
+            whiteList,
+            blackList,
+            actionsFilter
         );
-    }
-
-    public ProductSyncOptionsBuilder compareStaged(final boolean compareStaged) {
-        this.compareStaged = compareStaged;
-        return this;
     }
 
     public ProductSyncOptionsBuilder updateStaged(final boolean updateStaged) {

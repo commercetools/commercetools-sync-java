@@ -18,7 +18,7 @@ public class ProductSyncUtils {
      */
     @Nullable
     public static ProductData masterData(final Product product, final ProductSyncOptions syncOptions) {
-        return syncOptions.shouldCompareStaged()
+        return syncOptions.shouldUpdateStaged()
             ? product.getMasterData().getStaged()
             : product.getMasterData().getCurrent();
     }
