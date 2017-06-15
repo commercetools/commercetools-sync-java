@@ -8,6 +8,7 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.Publish;
+import io.sphere.sdk.products.commands.updateactions.RevertStagedChanges;
 import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,6 +69,17 @@ public class ProductServiceTest {
 
         assertThat(product).isNotNull();
         verify(ctpClient).execute(eq(ProductUpdateCommand.of(mock, Publish.of())));
+    }
+
+    @Test
+    public void revert() {
+        Product mock = mock(Product.class);
+        when(ctpClient.execute(any())).thenReturn(completedFuture(mock));
+
+        Product product = service.revert(mock).toCompletableFuture().join();
+
+        assertThat(product).isNotNull();
+        verify(ctpClient).execute(eq(ProductUpdateCommand.of(mock, RevertStagedChanges.of())));
     }
 
     @Test

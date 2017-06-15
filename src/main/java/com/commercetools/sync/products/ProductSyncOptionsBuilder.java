@@ -22,6 +22,7 @@ public final class ProductSyncOptionsBuilder
 
     private boolean updateStaged = true;
     private boolean publish = false;
+    private boolean revertStagedChanges = false;
     private boolean removeOtherVariants = true;
 
     private List<String> whiteList = emptyList();
@@ -49,6 +50,7 @@ public final class ProductSyncOptionsBuilder
             allowUuid,
             updateStaged,
             publish,
+            revertStagedChanges,
             removeOtherVariants,
             whiteList,
             blackList,
@@ -63,6 +65,11 @@ public final class ProductSyncOptionsBuilder
 
     public ProductSyncOptionsBuilder publish(final boolean publish) {
         this.publish = publish;
+        return this;
+    }
+
+    public ProductSyncOptionsBuilder revertStagedChanges(final boolean revertStagedChanges) {
+        this.revertStagedChanges = revertStagedChanges;
         return this;
     }
 

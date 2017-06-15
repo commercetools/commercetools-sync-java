@@ -59,26 +59,42 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> syncProduct(final Product product, final ProductDraft productDraft) {
-        List<UpdateAction<Product>> updateActions =
-            updateActionsBuilder.buildActions(product, productDraft, syncOptions);
-        if (!updateActions.isEmpty()) {
-            return publishIfNeeded(service.update(product, updateActions))
-                .thenRun(statistics::incrementUpdated);
-        }
-        return publishIfNeeded(completedFuture(product)).thenApply(p -> null);
+        return revertIfNeeded(product).thenCompose(preparedProduct -> {
+            List<UpdateAction<Product>> updateActions =
+                updateActionsBuilder.buildActions(product, productDraft, syncOptions);
+            if (!updateActions.isEmpty()) {
+                return publishIfNeeded(service.update(product, updateActions))
+                    .thenRun(statistics::incrementUpdated);
+            }
+            return publishIfNeeded(completedFuture(product)).thenAccept(published -> {
+                if (published) {
+                    statistics.incrementUpdated();
+                }
+            });
+        });
     }
 
-    private CompletionStage<Product> publishIfNeeded(final CompletionStage<Product> productStage) {
+    private CompletionStage<Product> revertIfNeeded(final Product product) {
+        CompletionStage<Product> productStage = completedFuture(product);
+        if (syncOptions.shouldRevertStagedChanges()) {
+            if (product.getMasterData().hasStagedChanges()) {
+                productStage = service.revert(product);
+            }
+        }
+        return productStage;
+    }
+
+    private CompletionStage<Boolean> publishIfNeeded(final CompletionStage<Product> productStage) {
         if (syncOptions.shouldPublish()) {
             return productStage.thenCompose(product -> {
                 ProductCatalogData data = product.getMasterData();
                 if (!data.isPublished() || data.hasStagedChanges()) {
-                    return service.publish(product);
+                    return service.publish(product).thenApply(p -> true);
                 }
-                return productStage;
+                return productStage.thenApply(p -> false);
             });
         }
-        return productStage;
+        return productStage.thenApply(p -> false);
     }
 
 }

@@ -45,23 +45,24 @@ public class ProductTestUtils {
      */
     @SuppressWarnings("unchecked")
     public static ProductSyncOptions syncOptions(final SphereClient client, final boolean publish,
-                                                 final boolean updateStaged) {
+                                                 final boolean updateStaged, final boolean revertStagedChanges) {
         BiConsumer errorCallBack = mock(BiConsumer.class);
         Consumer warningCallBack = mock(Consumer.class);
         return ProductSyncOptionsBuilder.of(client, errorCallBack, warningCallBack)
             .publish(publish)
+            .revertStagedChanges(revertStagedChanges)
             .updateStaged(updateStaged)
             .build();
     }
 
     @SuppressWarnings("unchecked")
     public static ProductSyncOptions syncOptions(final boolean publish, final boolean updateStaged) {
-        return syncOptions(mock(SphereClient.class), publish, updateStaged);
+        return syncOptions(mock(SphereClient.class), publish, updateStaged, false);
     }
 
     @SuppressWarnings("unchecked")
     public static ProductSyncOptions syncOptions(final boolean publish) {
-        return syncOptions(mock(SphereClient.class), publish, true);
+        return syncOptions(mock(SphereClient.class), publish, true, false);
     }
 
     public static Product product(final String resourcePath) {

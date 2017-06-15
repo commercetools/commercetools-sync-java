@@ -69,7 +69,7 @@ public class ProductSyncItTest {
 
     /**
      * Initializes environment for integration test of product synchronization against CT platform.
-     * <p>
+     *
      * <p>It first removes up all related resources. Then creates required product type, categories, products and
      * associates products to categories.
      */
@@ -91,7 +91,7 @@ public class ProductSyncItTest {
 
     @Test
     public void sync_withNewProduct_shouldCreateProduct() {
-        ProductSyncOptions syncOptions = syncOptions(CTP_SOURCE_CLIENT, true, true);
+        ProductSyncOptions syncOptions = syncOptions(CTP_SOURCE_CLIENT, true, true, false);
         ProductDraft productDraft = Env.productDraft("product-non-existing.json", productType, syncOptions);
 
         // no product with given key has been populated during setup
@@ -109,7 +109,7 @@ public class ProductSyncItTest {
     public void sync_withEqualProduct_shouldNotUpdateProduct() {
         List<Category> firstThreeCategories = Env.addProductToCategories(product, categories);
 
-        ProductSyncOptions syncOptions = syncOptions(CTP_SOURCE_CLIENT, true, false);
+        ProductSyncOptions syncOptions = syncOptions(CTP_SOURCE_CLIENT, true, false, false);
         ProductDraft productDraft = Env.productDraft("product.json", productType, syncOptions,
             firstThreeCategories, oldHints(firstThreeCategories));
         final Product product = join(service.fetch(productDraft.getKey())).get();

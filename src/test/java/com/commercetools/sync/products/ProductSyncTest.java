@@ -4,6 +4,7 @@ import com.commercetools.sync.products.actions.ProductUpdateActionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.ProductService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductCatalogData;
@@ -23,7 +24,6 @@ import java.util.Optional;
 
 import static com.commercetools.sync.products.ProductTestUtils.en;
 import static com.commercetools.sync.products.ProductTestUtils.join;
-import static com.commercetools.sync.products.ProductTestUtils.syncOptions;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -47,21 +47,30 @@ public class ProductSyncTest {
     private ProductDraft productDraft;
     private ProductSyncOptions syncOptions;
 
+    /**
+     * Create collection of all permutations of sync options.
+     */
     @Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-            {true, true, true}, {true, true, false},
-            {true, false, true}, {true, false, false},
-            {false, true, true}, {false, true, false},
-            {false, false, true}, {false, false, false}
+            {true, true, true, true}, {true, true, true, false},
+            {true, true, false, true}, {true, true, false, false},
+            {true, false, true, true}, {true, false, true, false},
+            {true, false, false, true}, {true, false, false, false},
+            {false, true, true, true}, {false, true, true, false},
+            {false, true, false, true}, {false, true, false, false},
+            {false, false, true, true}, {false, false, true, false},
+            {false, false, false, true}, {false, false, false, false}
         });
     }
 
     @Parameter
     public boolean publish;
     @Parameter(1)
-    public boolean isPublished;
+    public boolean revertStagedChanges;
     @Parameter(2)
+    public boolean isPublished;
+    @Parameter(3)
     public boolean hasStagedChanges;
 
     private ProductService service;
@@ -74,11 +83,12 @@ public class ProductSyncTest {
     public void setUp() {
         product = mockProduct();
         service = spy(ProductService.class);
-        when(service.publish(any())).thenReturn(completedFuture(null));
         when(service.update(any(), anyList())).thenReturn(completedFuture(product));
+        when(service.revert(any())).thenReturn(completedFuture(product));
+        when(service.publish(any())).thenReturn(completedFuture(null));
         updateActionsBuilder = mock(ProductUpdateActionsBuilder.class);
         productDraft = productDraft();
-        syncOptions = syncOptions(publish);
+        syncOptions = syncOptions();
     }
 
     @Test
@@ -109,6 +119,7 @@ public class ProductSyncTest {
         verifyStatistics(statistics, 1, 1, 0);
         verify(service).fetch(eq(productDraft.getKey()));
         verify(service).update(same(product), same(updateActions));
+        verifyServiceRevert();
         verifyServicePublish();
         verify(updateActionsBuilder).buildActions(same(product), same(productDraft), same(syncOptions));
         verifyNoMoreInteractions(service);
@@ -117,8 +128,7 @@ public class ProductSyncTest {
 
     @Test
     public void sync_expectServiceFetchAndUpdateExistingAndPublish() {
-        Product fetched = mock(Product.class);
-        when(service.fetch(any())).thenReturn(completedFuture(Optional.of(fetched)));
+        when(service.fetch(any())).thenReturn(completedFuture(Optional.of(product)));
         List<UpdateAction<Product>> updateActions = singletonList(ChangeName.of(en("name2")));
         when(updateActionsBuilder.buildActions(any(), any(), any())).thenReturn(updateActions);
 
@@ -127,9 +137,10 @@ public class ProductSyncTest {
 
         verifyStatistics(statistics, 1, 1, 0);
         verify(service).fetch(eq(productDraft.getKey()));
-        verify(service).update(same(fetched), same(updateActions));
+        verify(service).update(same(product), same(updateActions));
+        verifyServiceRevert();
         verifyServicePublish();
-        verify(updateActionsBuilder).buildActions(same(fetched), same(productDraft), same(syncOptions));
+        verify(updateActionsBuilder).buildActions(same(product), same(productDraft), same(syncOptions));
         verifyNoMoreInteractions(service);
         verifyNoMoreInteractions(updateActionsBuilder);
     }
@@ -142,16 +153,31 @@ public class ProductSyncTest {
         ProductSync sync = new ProductSync(syncOptions, service, updateActionsBuilder);
         ProductSyncStatistics statistics = join(sync.sync(singletonList(productDraft)));
 
-        verifyStatistics(statistics, 1, 0, 0);
+        verifyStatistics(statistics, 1, shouldBePublished() ? 1 : 0, 0);
         verify(service).fetch(eq(productDraft.getKey()));
+        verifyServiceRevert();
         verifyServicePublish();
         verify(updateActionsBuilder).buildActions(same(product), same(productDraft), same(syncOptions));
         verifyNoMoreInteractions(service);
         verifyNoMoreInteractions(updateActionsBuilder);
     }
 
+    private ProductSyncOptions syncOptions() {
+        return ProductTestUtils.syncOptions(mock(SphereClient.class), publish, true, revertStagedChanges);
+    }
+
+    private void verifyServiceRevert() {
+        if (revertStagedChanges && hasStagedChanges) {
+            verify(service).revert(same(product));
+        }
+    }
+
+    private boolean shouldBePublished() {
+        return publish && (!isPublished || hasStagedChanges);
+    }
+
     private void verifyServicePublish() {
-        if (publish && (!isPublished || hasStagedChanges)) {
+        if (shouldBePublished()) {
             verify(service).publish(same(product));
         }
     }

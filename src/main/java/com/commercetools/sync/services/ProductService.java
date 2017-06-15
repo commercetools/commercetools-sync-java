@@ -29,4 +29,6 @@ public interface ProductService {
      * @return a completion stage of published product
      */
     CompletionStage<Product> publish(Product product);
+
+    CompletionStage<Product> revert(Product product);
 }

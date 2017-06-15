@@ -31,6 +31,7 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(options.getWhiteList()).isEmpty();
         assertThat(options.shouldUpdateStaged()).isTrue();
         assertThat(options.shouldPublish()).isFalse();
+        assertThat(options.shouldRevertStagedChanges()).isFalse();
         assertThat(options.shouldRemoveOtherVariants()).isTrue();
 
         assertThat(options.getErrorCallBack()).isSameAs(errorCallBack);
@@ -52,6 +53,7 @@ public class ProductSyncOptionsBuilderTest {
                 .of(client, errorCallBack, warningCallBack)
                 .updateStaged(false)
                 .publish(true)
+                .revertStagedChanges(true)
                 .removeOtherVariants(false)
                 .whiteList(singletonList("white1"))
                 .blackList(singletonList("black1"))
@@ -68,6 +70,7 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(options.getBlackList()).isEqualTo(singletonList("black1"));
         assertThat(options.shouldUpdateStaged()).isFalse();
         assertThat(options.shouldPublish()).isTrue();
+        assertThat(options.shouldRevertStagedChanges()).isTrue();
         assertThat(options.shouldRemoveOtherVariants()).isFalse();
 
         assertThat(options.getErrorCallBack()).isSameAs(errorCallBack);
