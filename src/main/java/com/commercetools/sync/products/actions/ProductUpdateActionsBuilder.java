@@ -13,18 +13,7 @@ import static java.util.stream.Collectors.toList;
 
 public class ProductUpdateActionsBuilder {
 
-    private static final ProductUpdateActionsBuilder productUpdateActionsBuilder;
-
-    // eager singleton
-    static {
-        productUpdateActionsBuilder = new ProductUpdateActionsBuilder();
-    }
-
     private ProductUpdateActionsBuilder() {
-    }
-
-    public static ProductUpdateActionsBuilder of() {
-        return productUpdateActionsBuilder;
     }
 
     /**
@@ -68,5 +57,9 @@ public class ProductUpdateActionsBuilder {
     private interface UpdateCommand {
         Optional<UpdateAction<Product>> supplyAction(final Product product, final ProductDraft draft,
                                                      final ProductSyncOptions syncOptions);
+    }
+
+    public static ProductUpdateActionsBuilder of() {
+        return new ProductUpdateActionsBuilder();
     }
 }

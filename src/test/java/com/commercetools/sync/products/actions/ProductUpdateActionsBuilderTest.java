@@ -36,17 +36,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ProductUpdateActionsBuilderTest {
 
     @Test
-    public void of_expectSingleton() {
-        ProductUpdateActionsBuilder productUpdateActionsBuilder = ProductUpdateActionsBuilder.of();
-
-        assertThat(productUpdateActionsBuilder).isNotNull();
-
-        ProductUpdateActionsBuilder productUpdateActionsBuilder1 = ProductUpdateActionsBuilder.of();
-
-        assertThat(productUpdateActionsBuilder1).isSameAs(productUpdateActionsBuilder);
-    }
-
-    @Test
     public void buildActions_emptyForIdentical() {
         ProductUpdateActionsBuilder updateActionsBuilder = ProductUpdateActionsBuilder.of();
         Product product = product("product.json");
