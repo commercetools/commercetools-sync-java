@@ -72,7 +72,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
 
     InventorySync(@Nonnull final InventorySyncOptions syncOptions, @Nonnull final InventoryService inventoryService,
                   @Nonnull final ChannelService channelService, @Nonnull final TypeService typeService) {
-        super(new InventorySyncStatisticsBuilder(), syncOptions);
+        super(syncOptions);
         this.inventoryService = inventoryService;
         this.referenceResolver = new InventoryReferenceResolver(syncOptions, typeService, channelService);
     }

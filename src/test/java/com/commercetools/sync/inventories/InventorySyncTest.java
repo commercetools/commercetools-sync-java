@@ -110,22 +110,6 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void getStatistics_ShouldReturnProperStatistics() {
-        final InventorySync inventorySync = getInventorySync(30, false);
-        inventorySync.sync(drafts)
-                .toCompletableFuture()
-                .join();
-        final InventorySyncStatistics stats = inventorySync.getStatistics();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(9);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(3);
-        assertThat(stats.getUpdated()).isEqualTo(3);
-        assertThat(errorCallBackMessages).hasSize(0);
-        assertThat(errorCallBackExceptions).hasSize(0);
-    }
-
-    @Test
     public void sync_WithEmptyList_ShouldNotSync() {
         final InventorySync inventorySync = getInventorySync(30, false);
         final InventorySyncStatistics stats = inventorySync.sync(emptyList())
@@ -386,12 +370,12 @@ public class InventorySyncTest {
                                .withCustom(CustomFieldsDraft.ofTypeIdAndJson("", new HashMap<>()));
         newDrafts.add(draftWithNullCustomTypeId);
 
-        inventorySync.sync(newDrafts);
-        assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
+        final InventorySyncStatistics statistics = inventorySync.sync(newDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(1);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 inventory entries were processed in total "
                 + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
         assertThat(errorCallBackMessages).isNotEmpty();
@@ -423,12 +407,12 @@ public class InventorySyncTest {
                                .withCustom(CustomFieldsDraft.ofTypeIdAndJson(uuidCustomTypeKey, new HashMap<>()));
         newDrafts.add(draftWithNullCustomTypeId);
 
-        inventorySync.sync(newDrafts);
-        assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
+        final InventorySyncStatistics statistics = inventorySync.sync(newDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(1);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 inventory entries were processed in total "
                 + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
         assertThat(errorCallBackMessages).isNotEmpty();
@@ -467,12 +451,12 @@ public class InventorySyncTest {
                                .withCustom(CustomFieldsDraft.ofTypeIdAndJson(uuidCustomTypeKey, new HashMap<>()));
         newDrafts.add(draftWithNullCustomTypeId);
 
-        inventorySync.sync(newDrafts);
-        assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
+        final InventorySyncStatistics statistics = inventorySync.sync(newDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(0);
+        assertThat(statistics.getUpdated()).isEqualTo(1);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 inventory entries were processed in total "
                 + "(0 created, 1 updated, 0 were up to date and 0 failed to sync).");
     }

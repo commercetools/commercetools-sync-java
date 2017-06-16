@@ -10,11 +10,9 @@ import java.util.concurrent.CompletionStage;
 
 public abstract class BaseSync<T, S extends BaseSyncStatistics, U extends BaseSyncStatisticsBuilder<U, S>,
     V extends BaseSyncOptions> {
-    private final U totalStatisticsBuilder;
     protected final V syncOptions;
 
-    protected BaseSync(@Nonnull final U totalStatisticsBuilder, @Nonnull final V syncOptions) {
-        this.totalStatisticsBuilder = totalStatisticsBuilder;
+    protected BaseSync(@Nonnull final V syncOptions) {
         this.syncOptions = syncOptions;
     }
 
@@ -50,30 +48,7 @@ public abstract class BaseSync<T, S extends BaseSyncStatistics, U extends BaseSy
         final long startTime = System.currentTimeMillis();
         return process(resourceDrafts).thenApply(resultingStatisticsBuilder -> {
             resultingStatisticsBuilder.setProcessingTimeInMillis(System.currentTimeMillis() - startTime);
-            final S resultingStatistics = resultingStatisticsBuilder.build();
-            updateTotalStatistics(resultingStatistics);
-            return resultingStatistics;
+            return resultingStatisticsBuilder.build();
         });
-    }
-
-
-    /**
-     * Returns an instance of type S which is a subclass of {@link BaseSyncStatistics} containing the total stats of
-     * all sync processes performed by {@code this} sync instance.
-     *
-     * @return a statistics object for all sync processes performed by {@code this} sync instance.
-     */
-    @Nonnull
-    public synchronized S getStatistics() {
-        return totalStatisticsBuilder.build();
-    }
-
-    /**
-     * Join given statistics to total stats of all sync processes performed by {@code this} sync instance.
-     *
-     * @param statisticsToJoin statistics of sync that should be joined to total stats
-     */
-    private synchronized void updateTotalStatistics(final S statisticsToJoin) {
-        totalStatisticsBuilder.addAllStatistics(statisticsToJoin);
     }
 }

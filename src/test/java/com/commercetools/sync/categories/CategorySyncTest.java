@@ -1,5 +1,6 @@
 package com.commercetools.sync.categories;
 
+import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
@@ -58,13 +59,13 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithEmptyListOfDrafts_ShouldNotProcessAnyCategories() {
-        categorySync.sync(new ArrayList<>());
+        final CategorySyncStatistics statistics = categorySync.sync(new ArrayList<>()).toCompletableFuture().join();
 
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(0);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(0);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 0 categories were processed in total "
                 + "(0 created, 0 updated, 0 were up to date and 0 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(0);
@@ -76,12 +77,12 @@ public class CategorySyncTest {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(null);
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        final CategorySyncStatistics statistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(1);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
@@ -95,12 +96,12 @@ public class CategorySyncTest {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "noExternalIdDraft", "no-external-id-draft", null));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        final CategorySyncStatistics statistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(1);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
@@ -122,12 +123,12 @@ public class CategorySyncTest {
             "customTypeId", new HashMap<>()));
 
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        final CategorySyncStatistics statistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(1);
+        assertThat(statistics.getFailed()).isEqualTo(0);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(1 created, 0 updated, 0 were up to date and 0 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(0);
@@ -139,12 +140,12 @@ public class CategorySyncTest {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "externalId"));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        final CategorySyncStatistics statistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(0);
+        assertThat(statistics.getUpdated()).isEqualTo(1);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 1 updated, 0 were up to date and 0 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(0);
@@ -167,12 +168,12 @@ public class CategorySyncTest {
         categoryDrafts.add(categoryDraft);
 
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        final CategorySyncStatistics statistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(0);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated, 1 were up to date and 0 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(0);
@@ -192,12 +193,12 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "externalId"));
 
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        final CategorySyncStatistics statistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(1);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
@@ -221,12 +222,12 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "externalId"));
 
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        final CategorySyncStatistics statistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(1);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
@@ -246,12 +247,12 @@ public class CategorySyncTest {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "externalId"));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        final CategorySyncStatistics statistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(1);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
@@ -270,12 +271,12 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", parentUuid,
             "customTypeId", new HashMap<>()));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        final CategorySyncStatistics statistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(1);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
@@ -297,12 +298,12 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", null,
             "customTypeId", new HashMap<>()));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        final CategorySyncStatistics statistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(1);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
@@ -323,12 +324,12 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", "",
             "customTypeId", new HashMap<>()));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        final CategorySyncStatistics statistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(1);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
@@ -349,12 +350,12 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", "parentExternalId",
             "", new HashMap<>()));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        final CategorySyncStatistics statistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(1);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
@@ -376,12 +377,12 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", "parentExternalId",
             uuidCustomTypeKey, new HashMap<>()));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        final CategorySyncStatistics statistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(1);
+        assertThat(statistics.getUpdated()).isEqualTo(0);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated, 0 were up to date and 1 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
@@ -408,12 +409,12 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", "parentExternalId",
             uuidCustomTypeKey, new HashMap<>()));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
+        final CategorySyncStatistics statistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(statistics.getCreated()).isEqualTo(0);
+        assertThat(statistics.getFailed()).isEqualTo(0);
+        assertThat(statistics.getUpdated()).isEqualTo(1);
+        assertThat(statistics.getProcessed()).isEqualTo(1);
+        assertThat(statistics.getReportMessage()).isEqualTo(
             "Summary: 1 categories were processed in total "
                 + "(0 created, 1 updated, 0 were up to date and 0 failed to sync).");
         assertThat(errorCallBackMessages).hasSize(0);

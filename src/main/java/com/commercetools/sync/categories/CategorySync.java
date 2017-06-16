@@ -75,7 +75,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     CategorySync(@Nonnull final CategorySyncOptions syncOptions,
                  @Nonnull final TypeService typeService,
                  @Nonnull final CategoryService categoryService) {
-        super(new CategorySyncStatisticsBuilder(), syncOptions);
+        super(syncOptions);
         this.categoryService = categoryService;
         this.referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
     }
