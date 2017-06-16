@@ -35,7 +35,7 @@ public class CategorySyncOptionsBuilderTest {
         assertThat(categorySyncOptions.getUpdateActionsFilter()).isNull();
         assertThat(categorySyncOptions.getErrorCallBack()).isNull();
         assertThat(categorySyncOptions.getWarningCallBack()).isNull();
-        assertThat(categorySyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
+        assertThat(categorySyncOptions.getCtpClient()).isNotNull();
     }
 
     @Test

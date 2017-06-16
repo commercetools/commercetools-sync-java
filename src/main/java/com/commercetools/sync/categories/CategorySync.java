@@ -20,7 +20,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
-import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.getRetryOn5xxClient;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -54,8 +53,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     public CategorySync(@Nonnull final CategorySyncOptions syncOptions) {
         this(syncOptions,
-            new TypeServiceImpl(getRetryOn5xxClient(syncOptions.getCtpClient())),
-            new CategoryServiceImpl(getRetryOn5xxClient(syncOptions.getCtpClient())));
+            new TypeServiceImpl(syncOptions.getCtpClient()),
+            new CategoryServiceImpl(syncOptions.getCtpClient()));
     }
 
     /**
