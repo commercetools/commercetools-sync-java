@@ -1,6 +1,7 @@
 package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
+import com.commercetools.sync.inventories.helpers.InventorySyncStatisticsBuilder;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.queries.ChannelQuery;
@@ -383,8 +384,8 @@ public class InventorySyncItTest {
         assertThat(inventorySyncStatistics.getFailed()).isEqualTo(0);
         assertThat(inventorySyncStatistics.getProcessingTimeInMillis()).isGreaterThan(0L);
         assertThat(inventorySyncStatistics.getReportMessage())
-            .isEqualTo("Summary: 3 inventory entries were processed in total (1 created, 1 updated and 0 failed to sync"
-                + ").");
+            .isEqualTo("Summary: 3 inventory entries were processed in total (1 created, 1 updated, 1 were up to date "
+                + "and 0 failed to sync).");
     }
 
     @Test
@@ -426,25 +427,27 @@ public class InventorySyncItTest {
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
 
         //Run batch syncing concurrently.
-        final CompletableFuture<InventorySyncStatistics> firstResult = inventorySync.sync(firstBatch)
+        final InventorySyncStatisticsBuilder totalStatisticsBuilder = new InventorySyncStatisticsBuilder();
+        final CompletableFuture<Void> firstResult = inventorySync.sync(firstBatch)
+            .thenAccept(statistics -> totalStatisticsBuilder.addAllStatistics(statistics))
             .toCompletableFuture();
-        final CompletableFuture<InventorySyncStatistics> secondResult = inventorySync.sync(secondBatch)
+        final CompletableFuture<Void> secondResult = inventorySync.sync(secondBatch)
+            .thenAccept(statistics -> totalStatisticsBuilder.addAllStatistics(statistics))
             .toCompletableFuture();
-        final CompletableFuture<InventorySyncStatistics> thirdResult = inventorySync.sync(thirdBatch)
+        final CompletableFuture<Void> thirdResult = inventorySync.sync(thirdBatch)
+            .thenAccept(statistics -> totalStatisticsBuilder.addAllStatistics(statistics))
             .toCompletableFuture();
 
         CompletableFuture.allOf(firstResult, secondResult, thirdResult).join();
 
         //Ensure instance's statistics.
-        assertThat(inventorySync.getStatistics()).isNotNull();
+        final InventorySyncStatistics totalStatistics = totalStatisticsBuilder.build();
+        assertThat(totalStatistics).isNotNull();
 
-        //TODO check distinct results when ISSUE #23 is resolved
-        //TODO uncomment assertions below when ISSUE #23 is resolved (otherwise they may fail)
-
-        //assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(60);
-        //assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(60);
-        //assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(0);
-        //assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(0);
+        assertThat(totalStatistics.getProcessed()).isEqualTo(60);
+        assertThat(totalStatistics.getCreated()).isEqualTo(60);
+        assertThat(totalStatistics.getUpdated()).isEqualTo(0);
+        assertThat(totalStatistics.getFailed()).isEqualTo(0);
     }
 
     private void assertStatistics(@Nullable final InventorySyncStatistics statistics,
