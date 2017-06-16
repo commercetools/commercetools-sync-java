@@ -95,10 +95,10 @@ public final class CustomUpdateActionUtils {
                 if (newResourceCustomFields != null) {
                     // New resource's custom fields are set, but old resources's custom fields are not set. So we
                     // should set the custom type and fields of the new resource to the old one.
-                    final String newCustomFieldsTypeKey = newResourceCustomFields.getType().getKey();
+                    final String newCustomFieldsTypeId = newResourceCustomFields.getType().getId();
                     final Map<String, JsonNode> newCustomFieldsJsonMap = newResourceCustomFields.getFields();
                     final Optional<UpdateAction<T>> updateAction = buildTypedSetCustomTypeUpdateAction(
-                        newCustomFieldsTypeKey, newCustomFieldsJsonMap, oldResource, syncOptions);
+                        newCustomFieldsTypeId, newCustomFieldsJsonMap, oldResource, syncOptions);
                     return updateAction.map(Collections::singletonList).orElseGet(Collections::emptyList);
                 }
             } else {

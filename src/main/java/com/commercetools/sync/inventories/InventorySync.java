@@ -26,14 +26,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static java.lang.Math.min;
 import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.allOf;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Default implementation of inventories sync process.
@@ -54,7 +61,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
 
     private final InventoryService inventoryService;
     private final InventoryReferenceResolver referenceResolver;
-    private Map<InventoryEntryIdentifier, InventoryEntry> existingInventories;
 
     /**
      * Takes a {@link InventorySyncOptions} instance to instantiate a new {@link InventorySync} instance that could be
@@ -79,9 +85,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
 
     /**
      * Iterates through the whole {@code inventories} list and accumulates its valid drafts to batches. Every batch
-     * is then processed by {@link InventorySync#processBatch(List)}. For invalid drafts from {@code inventories}
-     * "processed" and "failed" counters from statistics are incremented and error callback is executed. A valid draft
-     * is a {@link InventoryEntryDraft} object that is not {@code null} and its SKU is not empty.
+     * is then processed by {@link InventorySync#processBatch(List)}.
      *
      * <p><strong>Inherited doc:</strong>
      * {@inheritDoc}
@@ -91,137 +95,138 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *      single sync performed by this method.
      */
     @Nonnull
+    @Override
     protected CompletionStage<InventorySyncStatisticsBuilder> process(@Nonnull final List<InventoryEntryDraft>
                                                                               inventories) {
         final InventorySyncStatisticsBuilder statisticsBuilder = new InventorySyncStatisticsBuilder();
-        List<InventoryEntryDraft> accumulator = new ArrayList<>(syncOptions.getBatchSize());
-        final List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
-        for (InventoryEntryDraft entry : inventories) {
-            if (entry != null) {
-                if (isNotEmpty(entry.getSku())) {
-                    accumulator.add(entry);
-                    if (accumulator.size() == syncOptions.getBatchSize()) {
-                        completableFutures.add(processBatch(accumulator).thenAccept(statisticsBuilder::addAllStatistics)
-                            .toCompletableFuture());
-                        accumulator = new ArrayList<>(syncOptions.getBatchSize());
-                    }
-                } else {
-                    handleError(INVENTORY_DRAFT_HAS_NO_SKU, null, 1, statisticsBuilder);
-                }
-            } else {
-                handleError(INVENTORY_DRAFT_IS_NULL, null, 1, statisticsBuilder);
-            }
+        final List<InventoryEntryDraft> validInventories = inventories.stream()
+            .filter(inventory -> validateDraft(inventory, statisticsBuilder))
+            .collect(toList());
+        final List<CompletableFuture<Void>> completableFutures = IntStream
+            .range(0, calculateAmountOfBatches(validInventories.size()))
+            .mapToObj(batchIndex -> getBatch(batchIndex, validInventories))
+            .map(this::processBatch)
+            .map(processedFuture -> processedFuture.thenAccept(statisticsBuilder::addAllStatistics))
+            .map(CompletionStage::toCompletableFuture)
+            .collect(toList());
+        return allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()]))
+            .thenApply(v -> statisticsBuilder);
+    }
+
+    /**
+     * Checks if a draft is valid for further processing. If so, then returns {@code true}. Otherwise handles an error
+     * and returns {@code false}. A valid draft is a {@link InventoryEntryDraft} object that is not {@code null} and its
+     * SKU is not empty.
+     *
+     * @param draft nullable draft
+     * @param statisticsBuilder builder of a inventory sync statistics, which will be updated when method meets
+     *                          invalid date
+     * @return boolean that indicate if given {@code draft} is valid for sync
+     */
+    private boolean validateDraft(@Nullable final InventoryEntryDraft draft,
+                                  @Nonnull final InventorySyncStatisticsBuilder statisticsBuilder) {
+        if (draft == null) {
+            handleError(INVENTORY_DRAFT_IS_NULL, null, 1, statisticsBuilder);
+        } else if (isBlank(draft.getSku())) {
+            handleError(INVENTORY_DRAFT_HAS_NO_SKU, null, 1, statisticsBuilder);
+        } else {
+            return true;
         }
-        if (!accumulator.isEmpty()) {
-            completableFutures.add(processBatch(accumulator).thenAccept(statisticsBuilder::addAllStatistics)
-                .toCompletableFuture());
-        }
-        return CompletableFuture
-            .allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()]))
-            .thenApply(result -> statisticsBuilder);
+        return false;
+    }
+
+    /**
+     * Calculates amount of batches, available in a list of a given size. The batch size is specified by a sync options.
+     *
+     * @param listSize size of a list
+     * @return amount of batches, available in a list of a given size
+     */
+    private int calculateAmountOfBatches(int listSize) {
+        return (listSize + syncOptions.getBatchSize() - 1) / syncOptions.getBatchSize();
+    }
+
+    /**
+     * Returns a batch of drafts, extracted from a given list. The batch size is specified by a sync options.
+     *
+     * @param batchIndex zero-based index of a batch
+     * @param drafts list of drafts
+     * @return an n-th batch of drafts, where n is specified by {@code batchIndex}
+     */
+    @Nonnull
+    private List<InventoryEntryDraft> getBatch(final int batchIndex, @Nonnull final List<InventoryEntryDraft> drafts) {
+        final int startIndex = batchIndex * syncOptions.getBatchSize();
+        final int endIndex = min((batchIndex + 1) * syncOptions.getBatchSize(), drafts.size());
+        return drafts.subList(startIndex, endIndex);
     }
 
     /**
      * Fetches existing {@link InventoryEntry} objects from CTP project that correspond to passed {@code batchOfDrafts}.
      * Having existing inventory entries fetched, {@code batchOfDrafts} is compared and synced with fetched objects by
-     * {@link InventorySync#syncBatch(List)} function. When fetching existing inventory entries results in
-     * exception then error callback is executed and {@code batchOfDrafts} isn't processed.
-
+     * {@link InventorySync#syncBatch(List, List)} function. When fetching existing inventory entries results in
+     * an empty optional then {@code batchOfDrafts} isn't processed.
+     *
      * @param batchOfDrafts batch of drafts that need to be synced
      * @return {@link CompletionStage} of {@link InventorySyncStatistics} that contains statistics of batch processing
      */
-    private CompletionStage<InventorySyncStatistics> processBatch(final List<InventoryEntryDraft> batchOfDrafts) {
-        return fetchExistingInventories(batchOfDrafts)
-                .thenCompose(existingInventories -> syncBatch(batchOfDrafts))
-                .exceptionally(exception -> {
-                    final InventorySyncStatisticsBuilder statisticsBuilder = new InventorySyncStatisticsBuilder();
-                    final String errorMessage = format(CTP_INVENTORY_FETCH_FAILED, extractSkus(batchOfDrafts));
-                    handleError(errorMessage, exception, batchOfDrafts.size(), statisticsBuilder);
-                    return statisticsBuilder.build();
-                });
+    private CompletionStage<InventorySyncStatistics> processBatch(@Nonnull final List<InventoryEntryDraft>
+                                                                      batchOfDrafts) {
+        final InventorySyncStatisticsBuilder statisticsBuilder = new InventorySyncStatisticsBuilder();
+        return fetchExistingInventories(batchOfDrafts, statisticsBuilder)
+            .thenCompose(oldInventoriesOptional -> oldInventoriesOptional
+                .map(oldInventories -> syncBatch(oldInventories, batchOfDrafts))
+                .orElseGet(() -> completedFuture(statisticsBuilder.build())));
     }
 
     /**
 
      * Given a list of inventory entry drafts, this method extracts a list of all distinct SKUs from the drafts, then
-     * it tries to fetch a list of Inventory entries with those SKUs, then it populates the map of
-     * {@code existingInventories} with a {@link InventoryEntryIdentifier} as a key for each {@link InventoryEntry}
-     * of instances existing in a CTP project.
+     * it tries to fetch a list of Inventory entries with those SKUs. If operation succeed then {@link CompletionStage}
+     * containing {@link Optional} with fetched {@link List} is returned, otherwise an error is handled and
+     * {@link CompletionStage} with empty {@link Optional} is returned.
      *
-     * @param drafts {@link List} of inventory entry drafts to create mapping for.
-     * @return a future which contains an empty result after populating the map of {@code existingInventories} with
-     *         the instances of the existing {@link InventoryEntry} in the CTP project or an exception.
+     * @param drafts {@link List} of inventory entry drafts
+     * @param statisticsBuilder builder of a inventory sync statistics, which will be updated in case of exception
+     *                          occurrence
+     * @return a future which contains an {@link Optional} that may contain list of inventory entries
      */
-    private CompletionStage<Void> fetchExistingInventories(@Nonnull final List<InventoryEntryDraft> drafts) {
+    private CompletionStage<Optional<List<InventoryEntry>>> fetchExistingInventories(@Nonnull final
+                                                                                     List<InventoryEntryDraft> drafts,
+                                                                                     @Nonnull final
+                                                                                     InventorySyncStatisticsBuilder
+                                                                                         statisticsBuilder) {
         final Set<String> skus = extractSkus(drafts);
         return inventoryService.fetchInventoryEntriesBySkus(skus)
-                               .thenAccept(
-                                   existingEntries -> {
-                                       existingInventories = existingEntries
-                                           .stream().collect(toMap(InventoryEntryIdentifier::of,
-                                               entry -> entry));
-                                   });
+            .thenApply(Optional::of)
+            .exceptionally(exception -> {
+                final String errorMessage = format(CTP_INVENTORY_FETCH_FAILED, extractSkus(drafts));
+                handleError(errorMessage, exception, drafts.size(), statisticsBuilder);
+                return Optional.empty();
+            });
     }
 
     /**
      * Given a list of inventory entry {@code drafts}, this method resolves the references of each entry and attempts to
-     * sync it to the CTP project depending whether it exists or not in the {@code existingInventories}.
+     * sync it to the CTP project depending whether the references resolution was successful. In addition the given
+     * {@code oldInventories} list is converted to a {@link Map} of an identifier to an inventory entry, for a resources
+     * comparison reason.
      *
+     * @param oldInventories inventory entries from CTP
      * @param inventoryEntryDrafts drafts that need to be synced
-     * @return a future which contains an empty result after execution of the update.
+     * @return {@link CompletionStage} of {@link InventorySyncStatistics} that contains statistics of batch sync
      */
-    private CompletionStage<InventorySyncStatistics> syncBatch(final List<InventoryEntryDraft> inventoryEntryDrafts) {
-        final InventorySyncStatisticsBuilder statisticsBuilder = new InventorySyncStatisticsBuilder();
+    private CompletionStage<InventorySyncStatistics> syncBatch(@Nonnull final List<InventoryEntry> oldInventories,
+                                            @Nonnull final List<InventoryEntryDraft> inventoryEntryDrafts) {
+        final Map<InventoryEntryIdentifier , InventoryEntry> identifierToOldInventoryEntry = oldInventories
+            .stream().collect(toMap(InventoryEntryIdentifier::of, identity()));
+            final InventorySyncStatisticsBuilder statisticsBuilder = new InventorySyncStatisticsBuilder();
         final List<CompletableFuture<Void>> futures = new ArrayList<>(inventoryEntryDrafts.size());
         inventoryEntryDrafts.forEach(inventoryEntryDraft ->
-            futures.add(resolveReferencesAndSync(inventoryEntryDraft, statisticsBuilder)));
+            futures.add(resolveReferences(inventoryEntryDraft, statisticsBuilder)
+                .thenCompose(resolvedDraftOptional -> resolvedDraftOptional
+                    .map(resolvedDraft -> syncDraft(identifierToOldInventoryEntry, resolvedDraft, statisticsBuilder))
+                    .orElseGet(() -> completedFuture(null)))));
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
             .thenApply(v -> statisticsBuilder.build());
-    }
-
-    /**
-     * Given an inventory entry {@code draft}, this method first resolves all references on the draft, then checks if
-     * there is corresponding entry in {@code existingInventories}. If there is, then it attempts to update such entry
-     * with data from draft, otherwise it attempts to create new entry from draft.
-     *
-     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
-     * out successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
-     * specified in the {@code syncOptions} is called.
-     *
-     * @param inventoryEntryDraft draft that need to be synced
-     * @return a future which contains an empty result after execution of the update.
-     */
-    private CompletableFuture<Void> resolveReferencesAndSync(@Nonnull final InventoryEntryDraft inventoryEntryDraft,
-                                                             @Nonnull final InventorySyncStatisticsBuilder
-                                                                 statisticsBuilder) {
-        return referenceResolver.resolveCustomTypeReference(inventoryEntryDraft)
-                                .thenCompose(draftWithResolvedCustomTypeReference -> referenceResolver
-                                        .resolveSupplyChannelReference(draftWithResolvedCustomTypeReference)
-                                        .thenCompose(resolvedDraft -> {
-                                            final InventoryEntryIdentifier draftIdentifier =
-                                                InventoryEntryIdentifier.of(resolvedDraft);
-                                            if (existingInventories.containsKey(draftIdentifier)) {
-                                                final InventoryEntry existingEntry =
-                                                    existingInventories.get(draftIdentifier);
-                                                return buildUpdateActionsAndUpdate(existingEntry, resolvedDraft,
-                                                    statisticsBuilder);
-                                            } else {
-                                                return attemptCreate(inventoryEntryDraft, statisticsBuilder);
-                                            }
-                                        })
-                                        .exceptionally(exception -> {
-                                            final String errorMessage = format(FAILED_TO_RESOLVE_SUPPLY_CHANNEL,
-                                                inventoryEntryDraft.getSku(), exception.getMessage());
-                                            handleError(errorMessage, exception, 1, statisticsBuilder);
-                                            return null;
-                                        }))
-                                .exceptionally(exception -> {
-                                    final String errorMessage = format(FAILED_TO_RESOLVE_CUSTOM_TYPE,
-                                        inventoryEntryDraft.getSku(), exception.getMessage());
-                                    handleError(errorMessage, exception, 1, statisticsBuilder);
-                                    return null;
-                                })
-                                .toCompletableFuture();
     }
 
     /**
@@ -232,8 +237,61 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     private Set<String> extractSkus(@Nonnull final List<InventoryEntryDraft> inventories) {
         return inventories.stream()
-                .map(InventoryEntryDraft::getSku)
-                .collect(Collectors.toSet());
+            .map(InventoryEntryDraft::getSku)
+            .collect(Collectors.toSet());
+    }
+
+    /**
+     * Given an inventory entry {@code draft}, this method resolves all references on the draft. If the the references
+     * resolution was successful this method returns a future which contains an {@link Optional} containing resolved
+     * inventory entry draft. Otherwise an error is handled and a future containing an empty optional is returned.
+     *
+     * @param inventoryEntryDraft an inventory entry draft which references has to be resolved
+     * @param statisticsBuilder builder of a inventory sync statistics, which will be updated in case of exception
+     *                          occurrence
+     * @return a future which may contain the resolved inventory entry draft
+     */
+    private CompletableFuture<Optional<InventoryEntryDraft>> resolveReferences(@Nonnull final InventoryEntryDraft
+                                                                                   inventoryEntryDraft,
+                                                                               @Nonnull final
+                                                                               InventorySyncStatisticsBuilder
+                                                                                   statisticsBuilder) {
+        return referenceResolver.resolveCustomTypeReference(inventoryEntryDraft)
+            .thenCompose(draftWithResolvedCustomTypeReference -> referenceResolver
+                .resolveSupplyChannelReference(draftWithResolvedCustomTypeReference)
+                .thenApply(Optional::of)
+                .exceptionally(exception -> {
+                    final String errorMessage = format(FAILED_TO_RESOLVE_SUPPLY_CHANNEL,
+                        inventoryEntryDraft.getSku(), exception.getMessage());
+                    handleError(errorMessage, exception, 1, statisticsBuilder);
+                    return Optional.empty();
+                }))
+            .exceptionally(exception -> {
+                final String errorMessage = format(FAILED_TO_RESOLVE_CUSTOM_TYPE,
+                    inventoryEntryDraft.getSku(), exception.getMessage());
+                handleError(errorMessage, exception, 1, statisticsBuilder);
+                return Optional.empty();
+            })
+            .toCompletableFuture();
+    }
+
+    /**
+     * Checks if the {@code resolvedDraft} matches with an old existing inventory entry. If it does, it tries to update
+     * it. If it doesn't, it creates it.
+     *
+     * @param oldInventories map of {@link InventoryEntryIdentifier} to old {@link InventoryEntry} instances
+     * @param resolvedDraft inventory entry draft which has its references resolved
+     * @param statisticsBuilder builder of a inventory sync statistics, which will be updated
+     * @return a future which contains an empty result after execution of the update
+     */
+    private CompletableFuture<Void> syncDraft(@Nonnull final Map<InventoryEntryIdentifier , InventoryEntry>
+                                                  oldInventories,
+                                              @Nonnull final InventoryEntryDraft resolvedDraft,
+                                              @Nonnull final InventorySyncStatisticsBuilder statisticsBuilder) {
+        final InventoryEntry oldInventory = oldInventories.get(InventoryEntryIdentifier.of(resolvedDraft));
+        return oldInventory != null
+            ? buildUpdateActionsAndUpdate(oldInventory, resolvedDraft, statisticsBuilder).toCompletableFuture()
+            : create(resolvedDraft, statisticsBuilder).toCompletableFuture();
     }
 
     /**
@@ -242,8 +300,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * actions found, a request is made to CTP to update the existing entry, otherwise it doesn't issue a request.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
-     * out successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
-     * specified in the {@code syncOptions} is called.
+     * out successfully or not. If an exception was thrown on executing the request to CTP, the error handling method
+     * is called.
      *
      * @param entry existing inventory entry that could be updated.
      * @param draft draft containing data that could differ from data in {@code entry}.
@@ -271,7 +329,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         } else {
             statisticsBuilder.incrementUpToDate();
         }
-        return CompletableFuture.completedFuture(null);
+        return completedFuture(null);
     }
 
     /**
@@ -279,14 +337,15 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * Entry.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
-     * out successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
-     * specified in the {@code syncOptions} is called.
+     * out successfully or not. If an exception was thrown on executing the request to CTP, the error handling method
+     * is called.
      *
      * @param draft the inventory entry draft to create the inventory entry from.
+     * @param statisticsBuilder builder of a inventory sync statistics, which will be updated
      * @return a future which contains an empty result after execution of the create.
      */
-    private CompletionStage<Void> attemptCreate(@Nonnull final InventoryEntryDraft draft,
-                                                @Nonnull final InventorySyncStatisticsBuilder statisticsBuilder) {
+    private CompletionStage<Void> create(@Nonnull final InventoryEntryDraft draft,
+                                         @Nonnull final InventorySyncStatisticsBuilder statisticsBuilder) {
         return inventoryService.createInventoryEntry(draft)
                                .thenAccept(createdEntry -> statisticsBuilder.incrementCreated())
                                .exceptionally(exception -> {
@@ -305,6 +364,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *
      * @param errorMessage The error message describing the reason(s) of failure.
      * @param exception    The exception that called caused the failure, if any.
+     * @param failedTimes  Indicates how many of given errors occurred.
+     * @param statisticsBuilder builder of a inventory sync statistics, which will be updated
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
                              final int failedTimes, @Nonnull final InventorySyncStatisticsBuilder statisticsBuilder) {
