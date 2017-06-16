@@ -286,7 +286,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @return a future which contains an empty result after execution of the create.
      */
     private CompletionStage<Void> attemptCreate(@Nonnull final InventoryEntryDraft draft,
-                                                @Nonnull InventorySyncStatisticsBuilder statisticsBuilder) {
+                                                @Nonnull final InventorySyncStatisticsBuilder statisticsBuilder) {
         return inventoryService.createInventoryEntry(draft)
                                .thenAccept(createdEntry -> statisticsBuilder.incrementCreated())
                                .exceptionally(exception -> {
@@ -307,7 +307,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param exception    The exception that called caused the failure, if any.
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
-                             final int failedTimes, @Nonnull InventorySyncStatisticsBuilder statisticsBuilder) {
+                             final int failedTimes, @Nonnull final InventorySyncStatisticsBuilder statisticsBuilder) {
         syncOptions.applyErrorCallback(errorMessage, exception);
         statisticsBuilder.incrementFailed(failedTimes);
     }
