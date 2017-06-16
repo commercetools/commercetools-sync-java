@@ -10,7 +10,6 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Reference;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -59,7 +58,7 @@ public class GenericUpdateActionUtilsTest {
     public void buildTypedSetCustomTypeUpdateAction_WithNonHandledResource_ShouldNotBuildUpdateAction() {
         // Cart resource is not handled by buildTypedUpdateAction()
         final Cart cart = mock(Cart.class);
-        when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
+        when(cart.toReference()).thenReturn(Cart.referenceOfId("cartId"));
 
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
         final UpdateAction<Cart> updateAction = buildTypedSetCustomTypeUpdateAction("key", fieldsJsonMap,
@@ -73,7 +72,7 @@ public class GenericUpdateActionUtilsTest {
         // Cart resource is not handled by buildTypedUpdateAction()
         final Cart cart = mock(Cart.class);
         when(cart.getId()).thenReturn("cartId");
-        when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
+        when(cart.toReference()).thenReturn(Cart.referenceOfId("cartId"));
 
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
 
@@ -128,7 +127,7 @@ public class GenericUpdateActionUtilsTest {
     public void buildTypedRemoveCustomTypeUpdateAction_WithNonHandledResource_ShouldNotBuildUpdateAction() {
         // Cart resource is not handled by buildTypedUpdateAction()
         final Cart cart = mock(Cart.class);
-        when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
+        when(cart.toReference()).thenReturn(Cart.referenceOfId("cartId"));
 
         final UpdateAction<Cart> updateAction = buildTypedRemoveCustomTypeUpdateAction(cart, categorySyncOptions)
             .orElse(null);
@@ -141,7 +140,7 @@ public class GenericUpdateActionUtilsTest {
         // Cart resource is not handled by buildTypedUpdateAction()
         final Cart cart = mock(Cart.class);
         when(cart.getId()).thenReturn("cartId");
-        when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
+        when(cart.toReference()).thenReturn(Cart.referenceOfId("cartId"));
 
         // Mock custom options error callback
         final ArrayList<Object> callBackResponses = new ArrayList<>();
@@ -199,7 +198,7 @@ public class GenericUpdateActionUtilsTest {
         // Cart resource is not handled by buildTypedUpdateAction()
         final Cart cart = mock(Cart.class);
         when(cart.getId()).thenReturn("cartId");
-        when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
+        when(cart.toReference()).thenReturn(Cart.referenceOfId("cartId"));
 
         final JsonNode customFieldValue = mock(JsonNode.class);
         final String customFieldName = "name";
@@ -216,7 +215,7 @@ public class GenericUpdateActionUtilsTest {
         // Cart resource is not handled by buildTypedUpdateAction()
         final Cart cart = mock(Cart.class);
         when(cart.getId()).thenReturn("cartId");
-        when(cart.toReference()).thenReturn(Reference.of(Cart.referenceTypeId(), "cartId"));
+        when(cart.toReference()).thenReturn(Cart.referenceOfId("cartId"));
 
         final JsonNode customFieldValue = mock(JsonNode.class);
         final String customFieldName = "name";

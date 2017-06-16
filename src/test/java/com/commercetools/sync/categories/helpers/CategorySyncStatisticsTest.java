@@ -1,13 +1,14 @@
 package com.commercetools.sync.categories.helpers;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.netty.util.internal.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.commercetools.sync.commons.helpers.BaseSyncStatistics.getStatisticsAsJsonString;
+import static com.commercetools.sync.commons.MockUtils.getStatisticsAsJsonString;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -87,7 +88,8 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void getStatisticsAsJsonString_WithoutCalculatingProcessingTime_ShouldGetCorrectJsonString() {
+    public void getStatisticsAsJsonString_WithoutCalculatingProcessingTime_ShouldGetCorrectJsonString()
+        throws JsonProcessingException {
         categorySyncStatistics.incrementCreated();
         categorySyncStatistics.incrementProcessed();
 
@@ -115,7 +117,8 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void getStatisticsAsJsonString_WithCalculatingProcessingTime_ShouldGetCorrectJsonString() {
+    public void getStatisticsAsJsonString_WithCalculatingProcessingTime_ShouldGetCorrectJsonString()
+        throws JsonProcessingException {
         categorySyncStatistics.incrementCreated();
         categorySyncStatistics.incrementProcessed();
 

@@ -1,5 +1,7 @@
 package com.commercetools.sync.inventories;
 
+import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.InventoryService;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
@@ -10,16 +12,19 @@ import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import io.sphere.sdk.types.Type;
 
+import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static java.util.Collections.singleton;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -76,16 +81,14 @@ public class InventorySyncMockUtils {
      * returned instance will return {@link Map} populated with given {@code fieldName} and {@code fieldValue}
      *
      * @param typeId custom type id
-     * @param typeKey custom type key
      * @param fieldName custom field name
      * @param fieldValue custom field value
      * @return mock instance of {@link CustomFields}
      */
-    public static CustomFields getMockCustomFields(final String typeId, final String typeKey, final String fieldName,
+    public static CustomFields getMockCustomFields(final String typeId, final String fieldName,
                                                    final Object fieldValue) {
         final CustomFields customFields = mock(CustomFields.class);
         final Type type = mock(Type.class);
-        when(type.getKey()).thenReturn(typeKey);
         when(type.getId()).thenReturn(typeId);
         when(customFields.getFieldsJsonMap()).thenReturn(mockFields(fieldName, fieldValue));
         when(customFields.getType()).thenReturn(Type.referenceOfId(typeId).filled(type));
@@ -103,26 +106,41 @@ public class InventorySyncMockUtils {
      * Returns mock instance of {@link InventoryService}. Executing any method with any parameter on this instance
      * returns values passed in parameters, wrapped in {@link CompletionStage}.
      *
-     * @param supplyChannels result of calling {@link InventoryService#fetchAllSupplyChannels()}
      * @param inventoryEntries result of calling {@link InventoryService#fetchInventoryEntriesBySkus(Set)}
-     * @param createdSupplyChannel result of calling {@link InventoryService#createSupplyChannel(String)}
      * @param createdInventoryEntry result of calling {@link InventoryService#createInventoryEntry(InventoryEntryDraft)}
      * @param updatedInventoryEntry result of calling
      *      {@link InventoryService#updateInventoryEntry(InventoryEntry, List)}
      * @return mock instance of {@link InventoryService}
      */
-    public static InventoryService getMockInventoryService(final List<Channel> supplyChannels,
-                                                           final List<InventoryEntry> inventoryEntries,
-                                                           final Channel createdSupplyChannel,
-                                                           final InventoryEntry createdInventoryEntry,
-                                                           final InventoryEntry updatedInventoryEntry) {
+    static InventoryService getMockInventoryService(final List<InventoryEntry> inventoryEntries,
+                                                    final InventoryEntry createdInventoryEntry,
+                                                    final InventoryEntry updatedInventoryEntry) {
         final InventoryService inventoryService = mock(InventoryService.class);
-        when(inventoryService.fetchAllSupplyChannels()).thenReturn(completedFuture(supplyChannels));
         when(inventoryService.fetchInventoryEntriesBySkus(any())).thenReturn(completedFuture(inventoryEntries));
-        when(inventoryService.createSupplyChannel(any())).thenReturn(completedFuture(createdSupplyChannel));
         when(inventoryService.createInventoryEntry(any())).thenReturn(completedFuture(createdInventoryEntry));
         when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(completedFuture(updatedInventoryEntry));
         return inventoryService;
+    }
+
+    /**
+     * Returns mock instance of {@link InventoryService} with the specified parameters as mock results of calling the
+     *   {@link ChannelService#createAndCacheChannel(String)} and
+     *   {@link ChannelService#fetchCachedChannelId(String)} (String)} of the mock channel service.
+     *
+     * @param createdSupplyChannel result of future resulting from calling
+     *      {@link ChannelService#createAndCacheChannel(String)}
+     *
+     * @return mock instance of {@link InventoryService}.
+     */
+    public static ChannelService getMockChannelService(@Nonnull final Channel createdSupplyChannel) {
+        final String createdSupplyChannelId = createdSupplyChannel.getId();
+
+        final ChannelService channelService = mock(ChannelService.class);
+        when(channelService.fetchCachedChannelId(anyString()))
+            .thenReturn(completedFuture(Optional.of(createdSupplyChannelId)));
+        when(channelService.createAndCacheChannel(any()))
+            .thenReturn(completedFuture(createdSupplyChannel));
+        return channelService;
     }
 
     /**
@@ -131,7 +149,7 @@ public class InventorySyncMockUtils {
      * @param <T> type of result that is supposed to be inside {@link CompletionStage}
      * @return {@link CompletionStage} instance that is completed exceptionally with {@link RuntimeException}
      */
-    public static <T> CompletionStage<T> getCompletionStageWithException() {
+    static <T> CompletionStage<T> getCompletionStageWithException() {
         final CompletableFuture<T> exceptionalStage = new CompletableFuture<>();
         exceptionalStage.completeExceptionally(new RuntimeException());
         return exceptionalStage;
