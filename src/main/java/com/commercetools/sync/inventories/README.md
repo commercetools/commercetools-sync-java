@@ -46,7 +46,7 @@ inventorySync.sync(inventoryEntryDrafts);
 ````
 
 **Note:** We encourage you to use `QueueSphereClientDecorator` as `sphereClient` implementation. It will reduce amount
-of concurrent requests to CTP, thus will improve its performance. An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L343).
+of concurrent requests to CTP, thus will improve its performance. An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L345).
 
 **Preconditions:** The sync expects a list of `InventoryEntryDraft` objects that have their `sku` fields set,
 otherwise the sync will trigger an `errorCallback` function set by the user (more on it can be found down below in the options explanations).
@@ -64,7 +64,7 @@ Example of sync performed that way can be found [here](https://github.com/commer
 The sync results in a `CompletionStage` that contains an `InventorySyncStatistics` object. This object contains all
 the stats of the sync process: a report message, the total number of updated, created, failed, processed inventory entries
 and the processing time of the sync in different time units and in a human readable format. An example of how it looks like can be found
-[here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L364).
+[here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L366).
 
 <!-- TODO: Update above after resolving #23 -->
 <!-- TODO: Consider if getStatistics() is needed. Express your doubts in a #23 -->
@@ -80,10 +80,10 @@ Additional optional configuration for the sync can be configured on the `Invento
 a flag which represents a strategy to handle syncing inventory entries with missing supply channels.
 Having an inventory entry, with a missing supply channel reference, could be processed in either of the following ways:
     - If `ensureChannels` is set to `false` this inventory entry won't be synced and the `errorCallback` will be triggered.
-    An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L299).
+    An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L301).
     - If `ensureChannels` is set to `true` the sync will attempt to create the missing channel with the given key.
       If it fails to create the supply channel, the inventory entry won't sync and `errorCallback` will be triggered.
-      An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L282).
+      An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L284).
     - If not provided, it is set to `false` by default.
 
 - `batchSize`
@@ -91,12 +91,12 @@ a number that could be used to set the batch size with which inventory entries a
 as inventory entries are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
 `batchSize` inventory entries from the input list, then fetches the corresponding inventory entries from the target CTP project
 in a single request, and then performs the update actions needed. Playing with this option can slightly improve or reduce processing speed.
-An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L316).
+An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L318).
     - If not provided, it is set to `30` by default.
 
 - `errorCallBack`
 a callback that is called whenever an event occurs during the sync process that represents an error.
-An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L389).
+An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L391).
 
 - `warningCallBack`
 a callback that is called whenever an event occurs during the sync process that represents a warning.
