@@ -16,6 +16,8 @@ import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 
 import javax.annotation.Nonnull;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static io.sphere.sdk.retry.RetryAction.ofScheduledRetry;
@@ -23,27 +25,28 @@ import static io.sphere.sdk.retry.RetryPredicate.ofMatchingErrors;
 import static java.util.Collections.singletonList;
 
 public class ClientConfigurationUtils {
-    private static BlockingSphereClient ctpClient;
+    private static HttpClient httpClient;
     private static final long DEFAULT_TIMEOUT = 30;
     private static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
     private static final int RETRY_ON_5XX_ATTEMPTS_LIMIT = 27;
+    private static Map<SphereClientConfig, SphereClient> delegatesCache = new HashMap<>();
 
     /**
      * Creates a {@link BlockingSphereClient} with a custom {@code timeout} with a custom {@link TimeUnit}.
      *
      * @return the instanted {@link BlockingSphereClient}.
      */
-    public static synchronized BlockingSphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
-                                                                 final long timeout,
-                                                                 @Nonnull final TimeUnit timeUnit) {
-        if (ctpClient == null) {
-            final HttpClient httpClient = newHttpClient();
+    public static synchronized SphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
+                                                         final long timeout,
+                                                         @Nonnull final TimeUnit timeUnit) {
+        if (!delegatesCache.containsKey(clientConfig)) {
+            final HttpClient httpClient = getHttpClient();
             final SphereAccessTokenSupplier tokenSupplier =
                 SphereAccessTokenSupplier.ofAutoRefresh(clientConfig, httpClient, false);
             final SphereClient underlying = SphereClient.of(clientConfig, httpClient, tokenSupplier);
-            ctpClient = BlockingSphereClient.of(underlying, timeout, timeUnit);
+            delegatesCache.put(clientConfig, underlying);
         }
-        return ctpClient;
+        return BlockingSphereClient.of(delegatesCache.get(clientConfig), timeout, timeUnit);
     }
 
     /**
@@ -51,7 +54,7 @@ public class ClientConfigurationUtils {
      *
      * @return the instanted {@link BlockingSphereClient}.
      */
-    public static BlockingSphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
+    public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
         return createClient(clientConfig, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
     }
 
@@ -86,14 +89,18 @@ public class ClientConfigurationUtils {
     }
 
     /**
-     * Creates an asynchronous {@link HttpClient} to be used by the {@link BlockingSphereClient}.
+     * Gets an asynchronous {@link HttpClient} to be used by the {@link BlockingSphereClient}.
+     * Client is created during first invocation and then cached.
      *
      * @return {@link HttpClient}
      */
-    private static HttpClient newHttpClient() {
-        final AsyncHttpClient asyncHttpClient =
-            new DefaultAsyncHttpClient(
-                new DefaultAsyncHttpClientConfig.Builder().setAcceptAnyCertificate(true).build());
-        return AsyncHttpClientAdapter.of(asyncHttpClient);
+    private static synchronized HttpClient getHttpClient() {
+        if (httpClient == null) {
+            final AsyncHttpClient asyncHttpClient =
+                new DefaultAsyncHttpClient(
+                    new DefaultAsyncHttpClientConfig.Builder().setAcceptAnyCertificate(true).build());
+            httpClient = AsyncHttpClientAdapter.of(asyncHttpClient);
+        }
+        return httpClient;
     }
 }
