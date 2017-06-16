@@ -69,11 +69,11 @@ public class InventoryServiceItTest {
             .map(InventoryEntry::getSku)
             .forEach(sku -> assertThat(sku).isEqualTo(SKU_1));
 
-        //assert references are expanded
+        //assert references are not expanded
         result.stream()
             .filter(inventoryEntry -> inventoryEntry.getSupplyChannel() != null)
             .map(InventoryEntry::getSupplyChannel)
-            .forEach(supplyChannel -> assertThat(supplyChannel.getObj()).isNotNull());
+            .forEach(supplyChannel -> assertThat(supplyChannel.getObj()).isNull());
     }
 
     @Test
