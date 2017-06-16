@@ -5,6 +5,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.Publish;
@@ -41,10 +42,11 @@ public class ProductServiceTest {
     public void create() {
         when(ctpClient.execute(any())).thenReturn(completedFuture(mock(Product.class)));
 
-        Product product = service.create(mock(ProductDraft.class)).toCompletableFuture().join();
+        ProductDraft draft = mock(ProductDraft.class);
+        Product product = service.create(draft).toCompletableFuture().join();
 
         assertThat(product).isNotNull();
-        verify(ctpClient).execute(any());
+        verify(ctpClient).execute(eq(ProductCreateCommand.of(draft)));
     }
 
     @Test
