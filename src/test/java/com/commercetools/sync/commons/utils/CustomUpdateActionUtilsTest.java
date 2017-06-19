@@ -30,6 +30,7 @@ import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.build
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildNonNullCustomFieldsUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildRemovedCustomFieldsUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions;
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -77,6 +78,43 @@ public class CustomUpdateActionUtilsTest {
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
         assertThat(updateActions.get(0).getAction()).isEqualTo("setCustomType");
+    }
+
+    @Test
+    public void buildCustomUpdateActions_WithNullOldCustomFieldsAndBlankNewTypeId_ShouldCallErrorCallBack() {
+        final Category oldCategory = mock(Category.class);
+        when(oldCategory.getCustom()).thenReturn(null);
+        final String oldCategoryId = "oldCategoryId";
+        when(oldCategory.getId()).thenReturn(oldCategoryId);
+        when(oldCategory.toReference()).thenReturn(Category.referenceOfId(oldCategoryId));
+
+        final CategoryDraft newCategoryDraft = CategorySyncMockUtils.getMockCategoryDraft(Locale.ENGLISH, "name",
+            "slug", "externalId");
+        final CustomFieldsDraft mockCustomFieldsDraft = CustomFieldsDraft.ofTypeKeyAndJson("key", new HashMap<>());
+        when(newCategoryDraft.getCustom()).thenReturn(mockCustomFieldsDraft);
+
+        // Mock custom options error callback
+        final ArrayList<Object> callBackResponses = new ArrayList<>();
+        final BiConsumer<String, Throwable> updateActionErrorCallBack = (errorMessage, exception) -> {
+            callBackResponses.add(errorMessage);
+            callBackResponses.add(exception);
+        };
+
+        // Mock sync options
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                  .setErrorCallBack(
+                                                                                      updateActionErrorCallBack)
+                                                                                  .build();
+
+        final List<UpdateAction<Category>> updateActions =
+            buildCustomUpdateActions(oldCategory, newCategoryDraft, categorySyncOptions);
+
+        // Should add custom type to old category.
+        assertThat(updateActions).isNotNull();
+        assertThat(updateActions).hasSize(0);
+        assertThat(callBackResponses.get(0)).isEqualTo(format("Failed to build custom fields update actions on the "
+            + "category with id '%s'. Reason: New resource's custom type id is blank (empty/null).", oldCategoryId));
+        assertThat(callBackResponses.get(1)).isNull();
     }
 
     @Test
