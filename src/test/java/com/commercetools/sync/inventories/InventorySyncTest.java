@@ -79,10 +79,11 @@ public class InventorySyncTest {
     @Before
     public void setup() {
         final Channel channel1 = getMockSupplyChannel(REF_1, KEY_1);
-        final Channel channel2 = getMockSupplyChannel(REF_2, KEY_2);
 
-        final Reference<Channel> reference1 = Channel.referenceOfId(REF_1).filled(channel1);
-        final Reference<Channel> reference2 = Channel.referenceOfId(REF_2).filled(channel2);
+        final Reference<Channel> expandedReference1 = Channel.referenceOfId(REF_1).filled(channel1);
+
+        final Reference<Channel> reference1 = Channel.referenceOfId(REF_1);
+        final Reference<Channel> reference2 = Channel.referenceOfId(REF_2);
 
         existingInventories = asList(
                 getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, null, null),
@@ -95,13 +96,13 @@ public class InventorySyncTest {
 
         drafts = asList(
                 InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1,null),
-                InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, reference1),
+                InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, expandedReference1),
                 InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_2)),
                 InventoryEntryDraft.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2,null),
-                InventoryEntryDraft.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, reference1),
+                InventoryEntryDraft.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, expandedReference1),
                 InventoryEntryDraft.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, Channel.referenceOfId(KEY_2)),
                 InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,null),
-                InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, reference1),
+                InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, expandedReference1),
                 InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_2))
         );
 
