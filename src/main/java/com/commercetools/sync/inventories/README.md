@@ -123,7 +123,6 @@ object properties.
 - `allowUuid`
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
-
 <!-- TODO Update above options with links to tests. Tests should be written when inventory sync could actually use them (when custom update actions would use them).  -->
 
 ## Under the hood
