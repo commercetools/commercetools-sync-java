@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+// TODO: re-factor with inventory/categories test sphere utils, when merged
 public class SphereClientUtils {
 
     public static final SphereClient CTP_SOURCE_CLIENT = ClientConfigurationUtils.createClient(

@@ -40,12 +40,13 @@ public class ProductServiceTest {
 
     @Test
     public void create() {
-        when(ctpClient.execute(any())).thenReturn(completedFuture(mock(Product.class)));
+        Product mock = mock(Product.class);
+        when(ctpClient.execute(any())).thenReturn(completedFuture(mock));
 
         ProductDraft draft = mock(ProductDraft.class);
         Product product = service.create(draft).toCompletableFuture().join();
 
-        assertThat(product).isNotNull();
+        assertThat(product).isSameAs(mock);
         verify(ctpClient).execute(eq(ProductCreateCommand.of(draft)));
     }
 
@@ -58,7 +59,7 @@ public class ProductServiceTest {
             singletonList(ChangeName.of(ProductTestUtils.en("new name")));
         Product product = service.update(mock, updateActions).toCompletableFuture().join();
 
-        assertThat(product).isNotNull();
+        assertThat(product).isSameAs(mock);
         verify(ctpClient).execute(eq(ProductUpdateCommand.of(mock, updateActions)));
     }
 
@@ -69,7 +70,7 @@ public class ProductServiceTest {
 
         Product product = service.publish(mock).toCompletableFuture().join();
 
-        assertThat(product).isNotNull();
+        assertThat(product).isSameAs(mock);
         verify(ctpClient).execute(eq(ProductUpdateCommand.of(mock, Publish.of())));
     }
 
@@ -80,7 +81,7 @@ public class ProductServiceTest {
 
         Product product = service.revert(mock).toCompletableFuture().join();
 
-        assertThat(product).isNotNull();
+        assertThat(product).isSameAs(mock);
         verify(ctpClient).execute(eq(ProductUpdateCommand.of(mock, RevertStagedChanges.of())));
     }
 
