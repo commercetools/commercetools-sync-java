@@ -18,7 +18,7 @@ import java.util.function.Function;
 public class ProductSyncOptions extends BaseSyncOptions {
     private final boolean updateStaged; // whether to compare and update the staged or current projection data.
     private final boolean publish; // whether to auto-publish or not.
-    private final boolean revertStagedChanges;
+    private final boolean revertStagedChanges; // whether to revert potential staged changes before synchronization.
     private final boolean removeOtherVariants; // whether to remove other product variants or not.
 
     // defines which attributes
