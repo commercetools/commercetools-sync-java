@@ -51,8 +51,6 @@ of concurrent requests to CTP, thus will improve its performance. An example of 
 **Preconditions:** The sync expects a list of `InventoryEntryDraft` objects that have their `sku` fields set,
 otherwise the sync will trigger an `errorCallback` function set by the user (more on it can be found down below in the options explanations).
 
-<!-- TODO: Ensure above paths to examples in a dedicated branch -->
-
 Every inventory entry may have a reference to a supply `Channel` and a reference to the `Type` of its custom fields. These
 references are matched by their `key`. Therefore, in order for the sync to resolve the actual ids of those references,
 their `key`s has to be supplied in one of two ways:
@@ -125,7 +123,7 @@ object properties.
 - `allowUuid`
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
-<!-- TODO It seems that I don't use all of them e.g. removeOtherSet/CollectionEntries however they are enable by inheritance. Ensure if should they be documented here -->
+
 <!-- TODO Update above options with links to tests. Tests should be written when inventory sync could actually use them (when custom update actions would use them).  -->
 
 ## Under the hood
