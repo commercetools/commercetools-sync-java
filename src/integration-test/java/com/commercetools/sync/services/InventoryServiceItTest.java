@@ -1,8 +1,6 @@
-package com.commercetools.sync.inventories;
+package com.commercetools.sync.services;
 
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.channels.ChannelRole;
-import io.sphere.sdk.channels.queries.ChannelQuery;
+import com.commercetools.sync.services.impl.InventoryServiceImpl;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -28,7 +26,6 @@ import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.REST
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.RESTOCKABLE_IN_DAYS_2;
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SKU_1;
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SKU_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SUPPLY_CHANNEL_KEY_2;
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.deleteInventoryRelatedResources;
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.getInventoryEntryBySkuAndSupplyChannel;
 import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.populateTargetProject;
@@ -52,7 +49,7 @@ public class InventoryServiceItTest {
     }
 
     @AfterClass
-    public static void cleanup() {
+    public static void delete() {
         deleteInventoryRelatedResources();
     }
 
@@ -72,47 +69,11 @@ public class InventoryServiceItTest {
             .map(InventoryEntry::getSku)
             .forEach(sku -> assertThat(sku).isEqualTo(SKU_1));
 
-        //assert references are expanded
+        //assert references are not expanded
         result.stream()
             .filter(inventoryEntry -> inventoryEntry.getSupplyChannel() != null)
             .map(InventoryEntry::getSupplyChannel)
-            .forEach(supplyChannel -> assertThat(supplyChannel.getObj()).isNotNull());
-    }
-
-    @Test
-    public void fetchAllSupplyChannels_ShouldReturnProperChannels() {
-        final List<Channel> result = inventoryService.fetchAllSupplyChannels()
-            .toCompletableFuture()
-            .join();
-
-        //assert result size
-        assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-
-        //assert role of results
-        assertThat(result.get(0).getRoles()).containsExactly(ChannelRole.INVENTORY_SUPPLY);
-    }
-
-    @Test
-    public void createSupplyChannel_ShouldCreateProperChannel() {
-        //create channel
-        final Channel result = inventoryService.createSupplyChannel(SUPPLY_CHANNEL_KEY_2)
-            .toCompletableFuture()
-            .join();
-
-        //assert returned data
-        assertThat(result).isNotNull();
-        assertThat(result.getRoles()).containsExactly(ChannelRole.INVENTORY_SUPPLY);
-        assertThat(result.getKey()).isEqualTo(SUPPLY_CHANNEL_KEY_2);
-
-        //assert CTP state
-        final Optional<Channel> createdChannelOptional = CTP_TARGET_CLIENT
-            .execute(ChannelQuery.of().byKey(SUPPLY_CHANNEL_KEY_2))
-            .toCompletableFuture()
-            .join()
-            .head();
-        assertThat(createdChannelOptional).isNotEmpty();
-        assertThat(createdChannelOptional.get()).isEqualTo(result);
+            .forEach(supplyChannel -> assertThat(supplyChannel.getObj()).isNull());
     }
 
     @Test
