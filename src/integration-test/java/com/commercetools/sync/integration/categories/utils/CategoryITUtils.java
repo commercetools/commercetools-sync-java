@@ -123,7 +123,8 @@ public class CategoryITUtils {
 
     /**
      * This method blocks to create the supplied {@code categoryDrafts} in the CTP project defined by the supplied
-     * {@code sphereClient}.
+     * {@code sphereClient}, it also creates a custom type for which the created categories can use for their custom
+     * fields.
      * @param sphereClient defines the CTP project to create the categories on.
      * @param categoryDrafts the drafts to build the categories from.
      */
