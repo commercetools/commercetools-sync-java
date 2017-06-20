@@ -42,7 +42,7 @@ public class CategoryServiceIT {
     }
 
     /**
-     * Cleans up the target and source test data that were built in this test suite.
+     * Cleans up the target and source test data that were built in this test class.
      */
     @AfterClass
     public static void tearDown() {

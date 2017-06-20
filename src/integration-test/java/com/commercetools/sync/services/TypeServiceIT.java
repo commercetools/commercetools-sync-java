@@ -36,7 +36,7 @@ public class TypeServiceIT {
     }
 
     /**
-     * Cleans up the target and source test data that were built in this test suite.
+     * Cleans up the target and source test data that were built in this test class.
      */
     @AfterClass
     public static void tearDown() {
@@ -51,14 +51,13 @@ public class TypeServiceIT {
         assertThat(typeId).isEmpty();
     }
 
-   @Test
+    @Test
     public void fetchCachedTypeId_WithExistingType_ShouldFetchTypeAndCache() {
-       final Optional<String> typeId = typeService.fetchCachedTypeId(OLD_TYPE_KEY)
+        final Optional<String> typeId = typeService.fetchCachedTypeId(OLD_TYPE_KEY)
                                                   .toCompletableFuture()
                                                   .join();
-       assertThat(typeId).isNotEmpty();
+        assertThat(typeId).isNotEmpty();
     }
-
 
     @Test
     public void fetchCachedTypeId_WithNonInvalidatedCache_ShouldFetchTypeAndCache() {
@@ -68,7 +67,8 @@ public class TypeServiceIT {
         // Create new type
         final String newTypeKey = "new_type_key";
         final TypeDraft draft = TypeDraftBuilder
-            .of(newTypeKey, LocalizedString.of(Locale.ENGLISH, "typeName"), ResourceTypeIdsSetBuilder.of().addChannels())
+            .of(newTypeKey, LocalizedString.of(Locale.ENGLISH, "typeName"),
+                ResourceTypeIdsSetBuilder.of().addChannels())
             .build();
         CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(draft)).toCompletableFuture().join();
 
@@ -86,7 +86,8 @@ public class TypeServiceIT {
         // Create new type
         final String newTypeKey = "new_type_key";
         final TypeDraft draft = TypeDraftBuilder
-            .of(newTypeKey, LocalizedString.of(Locale.ENGLISH, "typeName"), ResourceTypeIdsSetBuilder.of().addChannels())
+            .of(newTypeKey, LocalizedString.of(Locale.ENGLISH, "typeName"),
+                ResourceTypeIdsSetBuilder.of().addChannels())
             .build();
         CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(draft)).toCompletableFuture().join();
 

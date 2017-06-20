@@ -38,6 +38,9 @@ public class ChannelServiceIT {
         channelService = new ChannelServiceImpl(CTP_TARGET_CLIENT, Collections.singleton(ChannelRole.INVENTORY_SUPPLY));
     }
 
+    /**
+     * Cleans up the target and source test data that were built in this test class.
+     */
     @AfterClass
     public static void tearDown() {
         deleteInventoryEntriesFromTargetAndSource();

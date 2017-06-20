@@ -106,6 +106,13 @@ public class CategoryITUtils {
         return CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons());
     }
 
+    /**
+     * Builds a mock {@link Map} for the custom fields to their {@link JsonNode} values that looks like that in JSON
+     * format:
+     *
+     * <p>"fields": {"invisibleInShop": false, "backgroundColor": { "en": "red", "de": "rot"}}
+     * @return a Map of the custom fields to their JSON values with mock data.
+     */
     public static Map<String, JsonNode> getMockCustomFieldsJsons() {
         final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
         customFieldsJsons.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));

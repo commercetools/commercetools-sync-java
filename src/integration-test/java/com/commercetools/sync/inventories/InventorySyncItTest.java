@@ -1,6 +1,5 @@
 package com.commercetools.sync.inventories;
 
-import com.commercetools.sync.commons.utils.ITUtils;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
@@ -68,8 +67,12 @@ public class InventorySyncItTest {
         populateTargetProject();
     }
 
+    /**
+     * Deletes all the test data from the {@code CTP_SOURCE_CLIENT} and the {@code CTP_SOURCE_CLIENT} projects that
+     * were set up in this test class.
+     */
     @AfterClass
-    public static void delete() {
+    public static void tearDown() {
         deleteInventoryEntriesFromTargetAndSource();
         deleteTypesFromTargetAndSource();
         deleteChannelsFromTargetAndSource();

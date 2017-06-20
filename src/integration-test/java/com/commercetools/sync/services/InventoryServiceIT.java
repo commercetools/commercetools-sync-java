@@ -52,6 +52,9 @@ public class InventoryServiceIT {
         inventoryService = new InventoryServiceImpl(CTP_TARGET_CLIENT);
     }
 
+    /**
+     * Cleans up the target and source test data that were built in this test class.
+     */
     @AfterClass
     public static void tearDown() {
         deleteInventoryEntriesFromTargetAndSource();
