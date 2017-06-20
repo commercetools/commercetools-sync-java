@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class CategoryServiceImpl implements CategoryService {
     private final SphereClient ctpClient;
     private final Map<String, String> externalIdToIdCache = new ConcurrentHashMap<>();
+    private boolean invalidCache = false;
 
     public CategoryServiceImpl(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
@@ -31,7 +32,7 @@ public final class CategoryServiceImpl implements CategoryService {
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String externalId) {
-        if (externalIdToIdCache.isEmpty()) {
+        if (externalIdToIdCache.isEmpty() || invalidCache) {
             return cacheAndFetch(externalId);
         }
         return CompletableFuture.completedFuture(Optional.ofNullable(externalIdToIdCache.get(externalId)));
@@ -66,5 +67,10 @@ public final class CategoryServiceImpl implements CategoryService {
                                                     @Nonnull final List<UpdateAction<Category>> updateActions) {
         final CategoryUpdateCommand categoryUpdateCommand = CategoryUpdateCommand.of(category, updateActions);
         return ctpClient.execute(categoryUpdateCommand);
+    }
+
+    @Override
+    public void invalidateCache() {
+        invalidCache = true;
     }
 }

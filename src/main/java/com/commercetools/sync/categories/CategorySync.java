@@ -41,6 +41,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         + "CategoryDraft with externalId:'%s'. Reason: %s";
 
     private final CategoryService categoryService;
+    private final TypeService typeService;
     private final CategoryReferenceResolver referenceResolver;
 
     /**
@@ -75,6 +76,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                  @Nonnull final CategoryService categoryService) {
         super(new CategorySyncStatistics(), syncOptions);
         this.categoryService = categoryService;
+        this.typeService = typeService;
         this.referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
     }
 
@@ -110,6 +112,12 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             statistics.incrementProcessed();
         }
         return CompletableFuture.completedFuture(statistics);
+    }
+
+    @Override
+    public void invalidateServiceCaches() {
+        categoryService.invalidateCache();
+        typeService.invalidateCache();
     }
 
     /**
