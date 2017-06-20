@@ -33,6 +33,7 @@ import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_SOURCE_
 import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
 import static com.commercetools.sync.commons.utils.SphereClientUtils.fetchAndProcess;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 public class CategoryITUtils {
@@ -67,6 +68,26 @@ public class CategoryITUtils {
             getMockCategoryDraft(Locale.GERMAN, "draft15", "slug15", "16"),
             getMockCategoryDraft(Locale.GERMAN, "draft16", "slug16", "17"),
             getMockCategoryDraft(Locale.GERMAN, "draft17", "slug17", "18"));
+    }
+
+    /**
+     * Builds a list of CategoryDraft objects (with a customised {@code prefix} to each category's name with the
+     * supplied {@code locale}. They can be used for integration tests to mock existing categories in
+     * a target CTP project for example.
+     *
+     * @return a list of CategoryDrafts.
+     */
+    public static List<CategoryDraft> getMockCategoryDraftsWithNamePrefix(@Nonnull final Locale locale,
+                                                                           @Nonnull final String prefix) {
+        List<CategoryDraft> categoryDrafts = new ArrayList<>();
+        for (CategoryDraft categoryDraft : getMockCategoryDrafts()) {
+            final LocalizedString newCategoryName = LocalizedString.of(locale,
+                format("%s%s", prefix, categoryDraft.getName().get(locale)));
+            final CategoryDraftBuilder categoryDraftBuilder = CategoryDraftBuilder.of(categoryDraft)
+                                                                                  .name(newCategoryName);
+            categoryDrafts.add(categoryDraftBuilder.build());
+        }
+        return categoryDrafts;
     }
 
     /**
