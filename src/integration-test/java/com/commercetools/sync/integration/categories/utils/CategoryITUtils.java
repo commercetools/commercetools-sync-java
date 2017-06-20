@@ -36,9 +36,9 @@ import static com.commercetools.sync.commons.utils.SphereClientUtils.fetchAndPro
 import static java.util.Arrays.asList;
 
 public class CategoryITUtils {
-    private static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
-    private static final String OLD_CATEGORY_CUSTOM_TYPE_NAME = "old_type_name";
-    private static final Locale OLD_CATEGORY_CUSTOM_TYPE_LOCALE = Locale.ENGLISH;
+    public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
+    public static final String OLD_CATEGORY_CUSTOM_TYPE_NAME = "old_type_name";
+    public static final Locale OLD_CATEGORY_CUSTOM_TYPE_LOCALE = Locale.ENGLISH;
     public static final String LOCALISED_STRING_CUSTOM_FIELD_NAME = "backgroundColor";
     public static final String BOOLEAN_CUSTOM_FIELD_NAME = "invisibleInShop";
 
