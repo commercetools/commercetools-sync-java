@@ -20,20 +20,22 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
+import static com.commercetools.sync.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.CUSTOM_FIELD_NAME;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.CUSTOM_TYPE;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.EXPECTED_DELIVERY_1;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.EXPECTED_DELIVERY_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.QUANTITY_ON_STOCK_1;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.QUANTITY_ON_STOCK_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.RESTOCKABLE_IN_DAYS_1;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.RESTOCKABLE_IN_DAYS_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SKU_1;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.deleteInventoryRelatedResources;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.getInventoryEntryBySkuAndSupplyChannel;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.getTypeByKey;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.populateTargetProject;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.CUSTOM_FIELD_NAME;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.CUSTOM_TYPE;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.EXPECTED_DELIVERY_1;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.EXPECTED_DELIVERY_2;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.QUANTITY_ON_STOCK_1;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.QUANTITY_ON_STOCK_2;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_1;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_2;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.SKU_1;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.deleteChannelsFromTargetAndSource;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.deleteInventoryEntriesFromTargetAndSource;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.getInventoryEntryBySkuAndSupplyChannel;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.getTypeByKey;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.populateTargetProject;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildChangeQuantityAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetExpectedDeliveryAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetRestockableInDaysAction;
@@ -50,13 +52,17 @@ public class InventoryUpdateActionUtilsItTest {
      */
     @Before
     public void setup() {
-        deleteInventoryRelatedResources();
+        deleteInventoryEntriesFromTargetAndSource();
+        deleteTypesFromTargetAndSource();
+        deleteChannelsFromTargetAndSource();
         populateTargetProject();
     }
 
     @AfterClass
     public static void delete() {
-        deleteInventoryRelatedResources();
+        deleteInventoryEntriesFromTargetAndSource();
+        deleteTypesFromTargetAndSource();
+        deleteChannelsFromTargetAndSource();
     }
 
     @Test

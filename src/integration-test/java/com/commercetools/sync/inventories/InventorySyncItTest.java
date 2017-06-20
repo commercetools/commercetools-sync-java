@@ -1,5 +1,6 @@
 package com.commercetools.sync.inventories;
 
+import com.commercetools.sync.commons.utils.ITUtils;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
@@ -26,23 +27,25 @@ import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
+import static com.commercetools.sync.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.EXPECTED_DELIVERY_1;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.EXPECTED_DELIVERY_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.QUANTITY_ON_STOCK_1;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.QUANTITY_ON_STOCK_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.RESTOCKABLE_IN_DAYS_1;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.RESTOCKABLE_IN_DAYS_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SKU_1;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SKU_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SUPPLY_CHANNEL_KEY_1;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SUPPLY_CHANNEL_KEY_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.deleteInventoryRelatedResources;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.getChannelByKey;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.getInventoryEntryBySkuAndSupplyChannel;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.populateSourceProject;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.populateTargetProject;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.EXPECTED_DELIVERY_1;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.EXPECTED_DELIVERY_2;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.QUANTITY_ON_STOCK_1;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.QUANTITY_ON_STOCK_2;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_1;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_2;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.SKU_1;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.SKU_2;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_1;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_2;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.deleteChannelsFromTargetAndSource;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.deleteInventoryEntriesFromTargetAndSource;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.getChannelByKey;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.getInventoryEntryBySkuAndSupplyChannel;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.populateSourceProject;
+import static com.commercetools.sync.inventories.utils.InventoryITUtils.populateTargetProject;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,14 +61,18 @@ public class InventorySyncItTest {
      */
     @Before
     public void setup() {
-        deleteInventoryRelatedResources();
+        deleteInventoryEntriesFromTargetAndSource();
+        deleteTypesFromTargetAndSource();
+        deleteChannelsFromTargetAndSource();
         populateSourceProject();
         populateTargetProject();
     }
 
     @AfterClass
     public static void delete() {
-        deleteInventoryRelatedResources();
+        deleteInventoryEntriesFromTargetAndSource();
+        deleteTypesFromTargetAndSource();
+        deleteChannelsFromTargetAndSource();
     }
 
     @Test
@@ -81,6 +88,7 @@ public class InventorySyncItTest {
             .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, null).build();
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
+
 
         //Sync and ensure that proper statistics were returned.
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(singletonList(newInventoryDraft))
