@@ -1,12 +1,12 @@
-package com.commercetools.sync.commons;
+package com.commercetools.sync.integration.commons;
 
 import com.commercetools.sync.commons.utils.ClientConfigurationUtils;
-import com.commercetools.sync.commons.utils.SphereClientUtils;
+import com.commercetools.sync.integration.commons.utils.SphereClientUtils;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ClientConfigurationUtilsItTest {
+public class ClientConfigurationUtilsIT {
 
     @Test
     public void createClient_WithSameConfig_ReturnsSameClient() {

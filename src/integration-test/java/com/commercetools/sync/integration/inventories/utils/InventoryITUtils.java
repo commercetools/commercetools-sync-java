@@ -1,5 +1,6 @@
-package com.commercetools.sync.inventories.utils;
+package com.commercetools.sync.integration.inventories.utils;
 
+import com.commercetools.sync.integration.commons.utils.SphereClientUtils;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
 import io.sphere.sdk.channels.ChannelRole;
@@ -33,10 +34,10 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.fetchAndProcess;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.fetchAndProcess;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
@@ -67,7 +68,7 @@ public class InventoryITUtils {
         .plusPredicates(queryModel -> queryModel.roles().containsAny(singleton(ChannelRole.INVENTORY_SUPPLY)));
 
     /**
-     * Deletes up to {@link com.commercetools.sync.commons.utils.SphereClientUtils#QUERY_MAX_LIMIT} inventory entries
+     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} inventory entries
      * from CTP project, represented by provided {@code sphereClient}.
      *
      * @param sphereClient sphere client used to execute requests
@@ -77,7 +78,7 @@ public class InventoryITUtils {
     }
 
     /**
-     * Deletes up to {@link com.commercetools.sync.commons.utils.SphereClientUtils#QUERY_MAX_LIMIT} channels containing
+     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} channels containing
      * {@link ChannelRole#INVENTORY_SUPPLY} role from CTP project, represented by provided {@code sphereClient}.
      *
      * @param sphereClient sphere client used to execute requests
@@ -87,7 +88,7 @@ public class InventoryITUtils {
     }
 
     /**
-     * Deletes up to {@link com.commercetools.sync.commons.utils.SphereClientUtils#QUERY_MAX_LIMIT} inventory entries
+     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} inventory entries
      * from CTP projects {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
      */
     public static void deleteInventoryEntriesFromTargetAndSource() {
@@ -96,7 +97,7 @@ public class InventoryITUtils {
     }
 
     /**
-     * Deletes up to {@link com.commercetools.sync.commons.utils.SphereClientUtils#QUERY_MAX_LIMIT} supply channels
+     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} supply channels
      * from CTP projects {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
      */
     public static void deleteChannelsFromTargetAndSource() {

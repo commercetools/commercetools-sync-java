@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.categories.utils;
 
+import com.commercetools.sync.integration.commons.utils.SphereClientUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
@@ -29,10 +30,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.fetchAndProcess;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.fetchAndProcess;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
@@ -227,7 +228,7 @@ public class CategoryITUtils {
     }
 
     /**
-     * Deletes up to {@link com.commercetools.sync.commons.utils.SphereClientUtils#QUERY_MAX_LIMIT} categories from CTP
+     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} categories from CTP
      * projects {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
      */
     public static void deleteCategoriesFromTargetAndSource() {
@@ -236,7 +237,7 @@ public class CategoryITUtils {
     }
 
     /**
-     * Deletes up to {@link com.commercetools.sync.commons.utils.SphereClientUtils#QUERY_MAX_LIMIT} categories from CTP
+     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} categories from CTP
      * projects defined by the {@code sphereClient}.
      *
      * @param sphereClient defines the CTP project to delete the categories from.

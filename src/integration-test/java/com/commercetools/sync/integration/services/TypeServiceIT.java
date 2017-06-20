@@ -1,6 +1,7 @@
-package com.commercetools.sync.services;
+package com.commercetools.sync.integration.services;
 
 
+import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
@@ -14,8 +15,8 @@ import org.junit.Test;
 import java.util.Locale;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.categories.utils.CategoryITUtils.createCategoriesCustomType;
 import static org.assertj.core.api.Assertions.assertThat;
 

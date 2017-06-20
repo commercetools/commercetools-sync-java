@@ -1,5 +1,6 @@
-package com.commercetools.sync.commons.utils;
+package com.commercetools.sync.integration.commons.utils;
 
+import com.commercetools.sync.commons.utils.ClientConfigurationUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.client.SphereRequest;

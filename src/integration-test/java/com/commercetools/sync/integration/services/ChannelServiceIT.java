@@ -1,5 +1,6 @@
-package com.commercetools.sync.services;
+package com.commercetools.sync.integration.services;
 
+import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
@@ -14,11 +15,11 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.deleteChannelsFromTargetAndSource;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.deleteInventoryEntriesFromTargetAndSource;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.populateTargetProject;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteChannelsFromTargetAndSource;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteInventoryEntriesFromTargetAndSource;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateTargetProject;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ChannelServiceIT {

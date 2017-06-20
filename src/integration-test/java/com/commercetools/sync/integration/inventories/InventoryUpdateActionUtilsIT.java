@@ -1,5 +1,7 @@
-package com.commercetools.sync.inventories;
+package com.commercetools.sync.integration.inventories;
 
+import com.commercetools.sync.inventories.InventorySyncOptions;
+import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
 import io.sphere.sdk.channels.ChannelRole;
@@ -20,29 +22,29 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
-import static com.commercetools.sync.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.CUSTOM_FIELD_NAME;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.CUSTOM_TYPE;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.EXPECTED_DELIVERY_1;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.EXPECTED_DELIVERY_2;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.QUANTITY_ON_STOCK_1;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.QUANTITY_ON_STOCK_2;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_1;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_2;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.SKU_1;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.deleteChannelsFromTargetAndSource;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.deleteInventoryEntriesFromTargetAndSource;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.getInventoryEntryBySkuAndSupplyChannel;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.getTypeByKey;
-import static com.commercetools.sync.inventories.utils.InventoryITUtils.populateTargetProject;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.CUSTOM_FIELD_NAME;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.CUSTOM_TYPE;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.EXPECTED_DELIVERY_1;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.EXPECTED_DELIVERY_2;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.QUANTITY_ON_STOCK_1;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.QUANTITY_ON_STOCK_2;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_1;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_2;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SKU_1;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteChannelsFromTargetAndSource;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteInventoryEntriesFromTargetAndSource;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.getInventoryEntryBySkuAndSupplyChannel;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.getTypeByKey;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateTargetProject;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildChangeQuantityAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetExpectedDeliveryAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetRestockableInDaysAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetSupplyChannelAction;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class InventoryUpdateActionUtilsItTest {
+public class InventoryUpdateActionUtilsIT {
 
     private static final String CUSTOM_FIELD_VALUE = "custom-value-1";
 

@@ -1,7 +1,8 @@
-package com.commercetools.sync.services;
+package com.commercetools.sync.integration.services;
 
 
 import com.commercetools.sync.integration.categories.utils.CategoryITUtils;
+import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -17,8 +18,8 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.categories.utils.CategoryITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.categories.utils.CategoryITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.categories.utils.CategoryITUtils.createCategories;

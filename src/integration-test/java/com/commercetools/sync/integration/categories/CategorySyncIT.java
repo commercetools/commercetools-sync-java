@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.Locale;
 
-import static com.commercetools.sync.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.categories.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.categories.utils.CategoryITUtils.createCategories;
 import static com.commercetools.sync.integration.categories.utils.CategoryITUtils.deleteCategoriesFromTargetAndSource;
