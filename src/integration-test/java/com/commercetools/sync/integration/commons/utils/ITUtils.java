@@ -6,6 +6,9 @@ import io.sphere.sdk.types.queries.TypeQuery;
 
 import javax.annotation.Nonnull;
 
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.fetchAndProcess;
+
 public class ITUtils {
 
     /**
@@ -15,7 +18,7 @@ public class ITUtils {
      * @param sphereClient defines the CTP project to delete the Types from.
      */
     public static void deleteTypes(@Nonnull final SphereClient sphereClient) {
-        SphereClientUtils.fetchAndProcess(sphereClient, TypeQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT), TypeDeleteCommand::of);
+        fetchAndProcess(sphereClient, TypeQuery.of().withLimit(QUERY_MAX_LIMIT), TypeDeleteCommand::of);
     }
 
     /**
