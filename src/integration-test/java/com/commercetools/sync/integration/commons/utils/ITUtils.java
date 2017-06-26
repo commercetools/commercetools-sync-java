@@ -6,6 +6,8 @@ import io.sphere.sdk.types.queries.TypeQuery;
 
 import javax.annotation.Nonnull;
 
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.fetchAndProcess;
 
@@ -26,7 +28,7 @@ public class ITUtils {
      * projects defined by the {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
      */
     public static void deleteTypesFromTargetAndSource() {
-        deleteTypes(SphereClientUtils.CTP_TARGET_CLIENT);
-        deleteTypes(SphereClientUtils.CTP_SOURCE_CLIENT);
+        deleteTypes(CTP_TARGET_CLIENT);
+        deleteTypes(CTP_SOURCE_CLIENT);
     }
 }
