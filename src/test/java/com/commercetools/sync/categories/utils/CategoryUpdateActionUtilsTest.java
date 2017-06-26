@@ -220,7 +220,7 @@ public class CategoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeParentnUpdateAction_WithNullValues_ShouldNotBuildUpdateActionAndCallCallback() {
+    public void buildChangeParentUpdateAction_WithNullValues_ShouldNotBuildUpdateActionAndCallCallback() {
         when(MOCK_OLD_CATEGORY.getId()).thenReturn("oldCatId");
         final CategoryDraft newCategory = mock(CategoryDraft.class);
         when(newCategory.getParent()).thenReturn(null);
