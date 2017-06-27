@@ -13,7 +13,6 @@ import io.sphere.sdk.inventory.commands.InventoryEntryUpdateCommand;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
-import io.sphere.sdk.types.Type;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +35,6 @@ import static com.commercetools.sync.integration.inventories.utils.InventoryITUt
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteChannelsFromTargetAndSource;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteInventoryEntriesFromTargetAndSource;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.getInventoryEntryBySkuAndSupplyChannel;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.getTypeByKey;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateTargetProject;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildChangeQuantityAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetExpectedDeliveryAction;
