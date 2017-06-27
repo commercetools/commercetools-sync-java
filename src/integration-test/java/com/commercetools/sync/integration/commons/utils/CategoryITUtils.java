@@ -134,7 +134,8 @@ public class CategoryITUtils {
         final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
         customFieldsJsons.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false));
         customFieldsJsons
-            .put(LOCALISED_STRING_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+            .put(LOCALISED_STRING_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.objectNode()
+                                                                             .put("de", "rot").put("en", "red"));
         return customFieldsJsons;
     }
 

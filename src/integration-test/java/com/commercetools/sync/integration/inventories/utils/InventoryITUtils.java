@@ -1,6 +1,8 @@
 package com.commercetools.sync.integration.inventories.utils;
 
 import com.commercetools.sync.integration.commons.utils.SphereClientUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
 import io.sphere.sdk.channels.ChannelRole;
@@ -17,6 +19,7 @@ import io.sphere.sdk.inventory.commands.InventoryEntryDeleteCommand;
 import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.FieldDefinition;
 import io.sphere.sdk.types.StringFieldType;
 import io.sphere.sdk.types.Type;
@@ -31,8 +34,12 @@ import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -129,12 +136,17 @@ public class InventoryITUtils {
         final Reference<Channel> supplyChannelReference1 = Channel.referenceOfId(channelId1);
         final Reference<Channel> supplyChannelReference2 = Channel.referenceOfId(channelId2);
 
-        final InventoryEntryDraft draft1 = InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_ON_STOCK_1,
-            EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1, null).build();
-        final InventoryEntryDraft draft2 = InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_ON_STOCK_2,
-            EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, supplyChannelReference1).build();
-        final InventoryEntryDraft draft3 = InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_ON_STOCK_2,
-            EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, supplyChannelReference2).build();
+        createInventoriesCustomType(CTP_SOURCE_CLIENT);
+
+        final InventoryEntryDraft draft1 = InventoryEntryDraftBuilder
+            .of(SKU_1, QUANTITY_ON_STOCK_1, EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1, null)
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE, getMockCustomFieldsJsons())).build();
+        final InventoryEntryDraft draft2 = InventoryEntryDraftBuilder
+            .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, supplyChannelReference1)
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE, getMockCustomFieldsJsons())).build();
+        final InventoryEntryDraft draft3 = InventoryEntryDraftBuilder
+            .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, supplyChannelReference2)
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE, getMockCustomFieldsJsons())).build();
 
         CTP_SOURCE_CLIENT.execute(InventoryEntryCreateCommand.of(draft1)).toCompletableFuture().join();
         CTP_SOURCE_CLIENT.execute(InventoryEntryCreateCommand.of(draft2)).toCompletableFuture().join();
@@ -156,20 +168,35 @@ public class InventoryITUtils {
             .toCompletableFuture().join().getId();
         final Reference<Channel> supplyChannelReference = Channel.referenceOfId(channelId);
 
-        final InventoryEntryDraft draft1 = InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_ON_STOCK_1,
-            EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1, null).build();
-        final InventoryEntryDraft draft2 = InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_ON_STOCK_1,
-            EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1, supplyChannelReference).build();
+        createInventoriesCustomType(CTP_TARGET_CLIENT);
+
+        final InventoryEntryDraft draft1 = InventoryEntryDraftBuilder
+            .of(SKU_1, QUANTITY_ON_STOCK_1, EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1, null)
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE, getMockCustomFieldsJsons()))
+            .build();
+        final InventoryEntryDraft draft2 = InventoryEntryDraftBuilder
+            .of(SKU_1, QUANTITY_ON_STOCK_1, EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1, supplyChannelReference)
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE, getMockCustomFieldsJsons()))
+            .build();
 
         CTP_TARGET_CLIENT.execute(InventoryEntryCreateCommand.of(draft1)).toCompletableFuture().join();
         CTP_TARGET_CLIENT.execute(InventoryEntryCreateCommand.of(draft2)).toCompletableFuture().join();
+    }
 
+    private static Type createInventoriesCustomType(@Nonnull final SphereClient ctpClient) {
         final FieldDefinition fieldDefinition = FieldDefinition
             .of(StringFieldType.of(), CUSTOM_FIELD_NAME, LocalizedString.of(Locale.ENGLISH, CUSTOM_FIELD_NAME), false);
         final TypeDraft typeDraft = TypeDraftBuilder.of(CUSTOM_TYPE, LocalizedString.of(Locale.ENGLISH, CUSTOM_TYPE),
             Collections.singleton(InventoryEntry.resourceTypeId())).fieldDefinitions(singletonList(fieldDefinition))
-            .build();
-        CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(typeDraft)).toCompletableFuture().join();
+                                                    .build();
+        return ctpClient.execute(TypeCreateCommand.of(typeDraft)).toCompletableFuture().join();
+    }
+
+    private static Map<String, JsonNode> getMockCustomFieldsJsons() {
+        final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
+        customFieldsJsons
+            .put(CUSTOM_FIELD_NAME, JsonNodeFactory.instance.textNode("customValue"));
+        return customFieldsJsons;
     }
 
     /**
@@ -219,5 +246,32 @@ public class InventoryITUtils {
         final TypeQuery typeQuery = TypeQueryBuilder.of().plusPredicates(typeQueryModel ->
             typeQueryModel.key().is(typeKey)).build();
         return sphereClient.execute(typeQuery).toCompletableFuture().join().head();
+    }
+
+    /**
+     * Takes a list of inventoryEntries that are supposed to have their custom type reference expanded
+     * in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return
+     * a new list of inventory entry drafts with their references containing keys instead of the ids.
+     *
+     * @param inventoryEntries the categories to replace their reference ids with keys
+     * @return a list of inventoryEntry drafts with keys instead of ids for references.
+     */
+    public static List<InventoryEntryDraft> replaceReferenceIdsWithKeys(@Nonnull final List<InventoryEntry>
+                                                                            inventoryEntries) {
+        return inventoryEntries
+            .stream()
+            .map(inventoryEntry -> {
+                CustomFieldsDraft customFieldsDraft = null;
+
+                if (inventoryEntry.getCustom() != null && inventoryEntry.getCustom().getType().getObj() != null) {
+                    customFieldsDraft = CustomFieldsDraft
+                        .ofTypeIdAndJson(inventoryEntry.getCustom().getType().getObj().getKey(),
+                            inventoryEntry.getCustom().getFieldsJsonMap());
+                }
+                return InventoryEntryDraftBuilder.of(inventoryEntry)
+                                           .custom(customFieldsDraft)
+                                           .build();
+            })
+            .collect(Collectors.toList());
     }
 }
