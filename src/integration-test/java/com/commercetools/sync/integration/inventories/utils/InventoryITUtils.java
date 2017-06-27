@@ -11,6 +11,7 @@ import io.sphere.sdk.channels.commands.ChannelDeleteCommand;
 import io.sphere.sdk.channels.queries.ChannelQuery;
 import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
@@ -212,7 +213,9 @@ public class InventoryITUtils {
                                                                                   @Nonnull final String sku,
                                                                                   @Nullable final Reference<Channel>
                                                                                       supplyChannel) {
-        InventoryEntryQuery query = InventoryEntryQuery.of().plusPredicates(inventoryEntryQueryModel ->
+        InventoryEntryQuery query = InventoryEntryQuery.of()
+                                                       .withExpansionPaths(ExpansionPath.of("custom.type"))
+                                                       .plusPredicates(inventoryEntryQueryModel ->
             inventoryEntryQueryModel.sku().is(sku));
         query = supplyChannel == null
             ? query.plusPredicates(inventoryEntryQueryModel -> inventoryEntryQueryModel.supplyChannel().isNotPresent())

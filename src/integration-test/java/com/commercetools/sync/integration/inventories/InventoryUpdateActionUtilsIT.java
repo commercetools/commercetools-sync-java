@@ -189,20 +189,18 @@ public class InventoryUpdateActionUtilsIT {
 
     @Test
     public void buildCustomUpdateActions_ShouldBuildActionThatSetCustomField() {
-        //Fetch old inventory and ensure it has no custom fields.
+        //Fetch old inventory and ensure it has custom fields.
         final Optional<InventoryEntry> oldInventoryOptional =
             getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);
         assertThat(oldInventoryOptional).isNotEmpty();
         final InventoryEntry oldInventoryBeforeSync = oldInventoryOptional.get();
-        assertThat(oldInventoryBeforeSync.getCustom()).isNull();
-
-        //Fetch type and ensure it is present.
-        final Optional<Type> type = getTypeByKey(CTP_TARGET_CLIENT, CUSTOM_TYPE);
-        assertThat(type).isNotEmpty();
-        assertThat(type.get().getKey()).isEqualTo(CUSTOM_TYPE);
+        assertThat(oldInventoryBeforeSync.getCustom()).isNotNull();
+        assertThat(oldInventoryBeforeSync.getCustom().getType().getObj()).isNotNull();
+        assertThat(oldInventoryBeforeSync.getCustom().getType().getObj().getKey()).isEqualTo(CUSTOM_TYPE);
 
         //Prepare draft with updated data.
-        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraftBuilder.ofType(type.get())
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraftBuilder
+            .ofTypeId(oldInventoryBeforeSync.getCustom().getType().getId())
             .addObject(CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE).build();
         final InventoryEntryDraft newInventory =
             InventoryEntryDraft.of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, null)
