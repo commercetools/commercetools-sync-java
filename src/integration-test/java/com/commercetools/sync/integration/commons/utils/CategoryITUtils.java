@@ -207,7 +207,7 @@ public class CategoryITUtils {
 
     private static boolean typeExists(@Nonnull final String typeKey, @Nonnull final SphereClient ctpClient) {
         final Optional<Type> typeOptional = ctpClient
-            .execute(TypeQueryBuilder.of().predicates(QueryPredicate.of("key=\"" + typeKey + "\"")).build())
+            .execute(TypeQueryBuilder.of().predicates(QueryPredicate.of(format("key=\"%s\"", typeKey))).build())
             .toCompletableFuture()
             .join().head();
         return typeOptional.isPresent();
