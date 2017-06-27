@@ -10,6 +10,7 @@ import io.sphere.sdk.categories.commands.CategoryDeleteCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.types.BooleanFieldType;
 import io.sphere.sdk.types.CustomFieldsDraft;
@@ -31,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -44,6 +46,7 @@ public class CategoryITUtils {
     public static final String LOCALISED_STRING_CUSTOM_FIELD_NAME = "backgroundColor";
     public static final String BOOLEAN_CUSTOM_FIELD_NAME = "invisibleInShop";
     private static final String ROOT_CATEGORY_EXTERNAL_ID = "rootCategoryExternalId";
+    private static final String ROOT_CATEGORY_ORDER_HINT = "0.1";
 
     /**
      * Builds a list of the supplied number ({@code numberOfCategories}) of CategoryDraft objects that can be used for
@@ -62,10 +65,12 @@ public class CategoryITUtils {
             final LocalizedString slug = LocalizedString.of(Locale.ENGLISH, format("slug%s", i));
             final LocalizedString description = LocalizedString.of(Locale.ENGLISH, format("desc%s", i));
             final String externalId = format("externalId%s", i + 1);
+            final String orderHint = format("0.%s", i);
             final CategoryDraft categoryDraft = CategoryDraftBuilder.of(name, slug)
                                                                     .parent(parentCategory)
                                                                     .description(description)
                                                                     .externalId(externalId)
+                                                                    .orderHint(orderHint)
                                                                     .custom(getMockCustomFieldsDraft())
                                                                     .build();
             categoryDrafts.add(categoryDraft);
@@ -168,7 +173,9 @@ public class CategoryITUtils {
         final CategoryDraft rootCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "rootCategory"),
                 LocalizedString.of(Locale.ENGLISH, "root-category", Locale.GERMAN, "root-category"))
+            .description(LocalizedString.of(Locale.ENGLISH, "root Category"))
             .externalId(ROOT_CATEGORY_EXTERNAL_ID)
+            .orderHint(ROOT_CATEGORY_ORDER_HINT)
             .build();
         return ctpClient.execute(CategoryCreateCommand.of(rootCategoryDraft))
                         .toCompletableFuture()
