@@ -9,9 +9,11 @@ import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.queries.ChannelQuery;
 import io.sphere.sdk.client.QueueSphereClientDecorator;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
+import io.sphere.sdk.inventory.expansion.InventoryEntryExpansionModel;
 import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.models.Reference;
 import org.junit.AfterClass;
@@ -48,6 +50,7 @@ import static com.commercetools.sync.integration.inventories.utils.InventoryITUt
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.getInventoryEntryBySkuAndSupplyChannel;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateSourceProject;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateTargetProject;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.replaceReferenceIdsWithKeys;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -296,10 +299,13 @@ public class InventorySyncIT {
     @Test
     public void sync_FromSourceToTargetProjectWithChannelsEnsured_ShouldReturnProperStatistics() {
         //Fetch new inventories from source project. Convert them to drafts.
-        final List<InventoryEntryDraft> newInventories = CTP_SOURCE_CLIENT.execute(InventoryEntryQuery.of()
-            .withExpansionPaths(inventoryEntryExpansionModel -> inventoryEntryExpansionModel.supplyChannel()))
-            .toCompletableFuture().join().getResults().stream()
-            .map(newInventory -> InventoryEntryDraftBuilder.of(newInventory).build()).collect(toList());
+        final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
+            .execute(InventoryEntryQuery.of()
+                                        .withExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
+                                        .plusExpansionPaths(ExpansionPath.of("custom.type")))
+            .toCompletableFuture().join().getResults();
+
+        final List<InventoryEntryDraft> newInventories = replaceReferenceIdsWithKeys(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -313,10 +319,13 @@ public class InventorySyncIT {
     @Test
     public void sync_FromSourceToTargetWithoutChannelsEnsured_ShouldReturnProperStatistics() {
         //Fetch new inventories from source project. Convert them to drafts.
-        final List<InventoryEntryDraft> newInventories = CTP_SOURCE_CLIENT.execute(InventoryEntryQuery.of()
-            .withExpansionPaths(inventoryEntryExpansionModel -> inventoryEntryExpansionModel.supplyChannel()))
-            .toCompletableFuture().join().getResults().stream()
-            .map(newInventory -> InventoryEntryDraftBuilder.of(newInventory).build()).collect(toList());
+        final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
+            .execute(InventoryEntryQuery.of()
+                                        .withExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
+                                        .plusExpansionPaths(ExpansionPath.of("custom.type")))
+            .toCompletableFuture().join().getResults();
+
+        final List<InventoryEntryDraft> newInventories = replaceReferenceIdsWithKeys(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -357,10 +366,13 @@ public class InventorySyncIT {
     @Test
     public void sync_WithSphereClientDecorator_ShouldReturnProperStatistics() {
         //Fetch new inventories from source project. Convert them to drafts.
-        final List<InventoryEntryDraft> newInventories = CTP_SOURCE_CLIENT.execute(InventoryEntryQuery.of()
-            .withExpansionPaths(inventoryEntryExpansionModel -> inventoryEntryExpansionModel.supplyChannel()))
-            .toCompletableFuture().join().getResults().stream()
-            .map(newInventory -> InventoryEntryDraftBuilder.of(newInventory).build()).collect(toList());
+        final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
+            .execute(InventoryEntryQuery.of()
+                                        .withExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
+                                        .plusExpansionPaths(ExpansionPath.of("custom.type")))
+            .toCompletableFuture().join().getResults();
+
+        final List<InventoryEntryDraft> newInventories = replaceReferenceIdsWithKeys(inventoryEntries);
 
         /*
          * Prepare sync options and perform sync of draft to target project.
@@ -378,10 +390,13 @@ public class InventorySyncIT {
     @Test
     public void sync_ShouldReturnProperStatisticsObject() {
         //Fetch new inventories from source project. Convert them to drafts.
-        final List<InventoryEntryDraft> newInventories = CTP_SOURCE_CLIENT.execute(InventoryEntryQuery.of()
-            .withExpansionPaths(inventoryEntryExpansionModel -> inventoryEntryExpansionModel.supplyChannel()))
-            .toCompletableFuture().join().getResults().stream()
-            .map(newInventory -> InventoryEntryDraftBuilder.of(newInventory).build()).collect(toList());
+        final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
+            .execute(InventoryEntryQuery.of()
+                                        .withExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
+                                        .plusExpansionPaths(ExpansionPath.of("custom.type")))
+            .toCompletableFuture().join().getResults();
+
+        final List<InventoryEntryDraft> newInventories = replaceReferenceIdsWithKeys(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -403,10 +418,13 @@ public class InventorySyncIT {
     @Test
     public void sync_WithCustomErrorCallback_ShouldExecuteCallbackOnError() {
         //Fetch new inventories from source project. Convert them to drafts.
-        final List<InventoryEntryDraft> newInventories = CTP_SOURCE_CLIENT.execute(InventoryEntryQuery.of()
-            .withExpansionPaths(inventoryEntryExpansionModel -> inventoryEntryExpansionModel.supplyChannel()))
-            .toCompletableFuture().join().getResults().stream()
-            .map(newInventory -> InventoryEntryDraftBuilder.of(newInventory).build()).collect(toList());
+        final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
+            .execute(InventoryEntryQuery.of()
+                                        .withExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
+                                        .plusExpansionPaths(ExpansionPath.of("custom.type")))
+            .toCompletableFuture().join().getResults();
+
+        final List<InventoryEntryDraft> newInventories = replaceReferenceIdsWithKeys(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final AtomicInteger invocationCounter = new AtomicInteger(0);
