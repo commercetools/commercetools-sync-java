@@ -13,6 +13,7 @@ import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.models.Reference;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -314,6 +315,7 @@ public class InventorySyncItTest {
         assertStatistics(inventorySyncStatistics, 3, 0,1, 1);
     }
 
+    @Ignore
     @Test
     public void sync_WithBatchProcessing_ShouldCreateAllGivenInventories() {
         //Ensure inventory entries amount in target project before sync.
