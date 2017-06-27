@@ -22,7 +22,7 @@ public interface TypeService {
      * @param key the key by which a {@link io.sphere.sdk.types.Type} id should be fetched from the CTP project.
      * @return {@link CompletionStage&lt;Optional&lt;String&gt;&gt;} in which the result of it's completion could
      *      contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no {@link Channel} was
-     *      found in the CTP project with this external id.
+     *      found in the CTP project with this key.
      */
     @Nonnull
     CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key);

@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class CategoryServiceImpl implements CategoryService {
     private final SphereClient ctpClient;
-    private final Map<String, String> externalIdToIdCache = new ConcurrentHashMap<>();
+    private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
     public CategoryServiceImpl(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
@@ -30,26 +30,28 @@ public final class CategoryServiceImpl implements CategoryService {
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String externalId) {
-        if (externalIdToIdCache.isEmpty()) {
-            return cacheAndFetch(externalId);
+    public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String key) {
+        if (keyToIdCache.isEmpty()) {
+            return cacheAndFetch(key);
         }
-        return CompletableFuture.completedFuture(Optional.ofNullable(externalIdToIdCache.get(externalId)));
+        return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
     }
 
-    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String externalId) {
+    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
         return QueryExecutionUtils.queryAll(ctpClient, CategoryQuery.of())
                                   .thenApply(categories -> {
                                       categories.forEach(category ->
-                                          externalIdToIdCache.put(category.getExternalId(), category.getId()));
-                                      return Optional.ofNullable(externalIdToIdCache.get(externalId));
+                                          keyToIdCache.put(category.getKey(), category.getId()));
+                                      return Optional.ofNullable(keyToIdCache.get(key));
                                   });
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<Category>> fetchCategoryByExternalId(@Nonnull final String externalId) {
-        final CategoryQuery categoryQuery = CategoryQuery.of().byExternalId(externalId);
+    public CompletionStage<Optional<Category>> fetchCategoryByKey(@Nonnull final String key) {
+        final CategoryQuery categoryQuery = CategoryQuery.of()
+                                                         .withPredicates(categoryQueryModel ->
+                                                             categoryQueryModel.key().is(key));
         return ctpClient.execute(categoryQuery).thenApply(PagedResult::head);
     }
 

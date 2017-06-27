@@ -10,6 +10,7 @@ import io.sphere.sdk.categories.commands.updateactions.ChangeOrderHint;
 import io.sphere.sdk.categories.commands.updateactions.ChangeParent;
 import io.sphere.sdk.categories.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.categories.commands.updateactions.SetDescription;
+import io.sphere.sdk.categories.commands.updateactions.SetExternalId;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaTitle;
@@ -29,6 +30,7 @@ import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeParentUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeSlugUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetDescriptionUpdateAction;
+import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetExternalIdUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaDescriptionUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction;
@@ -43,6 +45,7 @@ public class CategoryUpdateActionUtilsTest {
     private static final String MOCK_OLD_CATEGORY_PARENT_ID = "1";
     private static final String MOCK_OLD_CATEGORY_NAME = "categoryName";
     private static final String MOCK_OLD_CATEGORY_SLUG = "categorySlug";
+    private static final String MOCK_OLD_CATEGORY_KEY = "categoryKey";
     private static final String MOCK_OLD_CATEGORY_EXTERNAL_ID = "externalId";
     private static final String MOCK_OLD_CATEGORY_DESCRIPTION = "categoryDesc";
     private static final String MOCK_OLD_CATEGORY_META_DESCRIPTION = "categoryMetaDesc";
@@ -52,6 +55,7 @@ public class CategoryUpdateActionUtilsTest {
     private static final Category MOCK_OLD_CATEGORY = getMockCategory(LOCALE,
         MOCK_OLD_CATEGORY_NAME,
         MOCK_OLD_CATEGORY_SLUG,
+        MOCK_OLD_CATEGORY_KEY,
         MOCK_OLD_CATEGORY_EXTERNAL_ID,
         MOCK_OLD_CATEGORY_DESCRIPTION,
         MOCK_OLD_CATEGORY_META_DESCRIPTION,
@@ -413,5 +417,45 @@ public class CategoryUpdateActionUtilsTest {
 
         assertThat(setMetaDescriptionUpdateAction).isNotNull();
         assertThat(setMetaDescriptionUpdateAction).isNotPresent();
+    }
+
+    @Test
+    public void buildSetExternalIdUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        when(newCategoryDraft.getExternalId()).thenReturn("newExternalId");
+
+        final UpdateAction<Category> setExternalIdUpdateAction =
+            buildSetExternalIdUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft).orElse(null);
+
+        assertThat(setExternalIdUpdateAction).isNotNull();
+        assertThat(setExternalIdUpdateAction.getAction()).isEqualTo("setExternalId");
+        assertThat(((SetExternalId) setExternalIdUpdateAction).getExternalId())
+            .isEqualTo("newExternalId");
+    }
+
+    @Test
+    public void buildSetExternalIdUpdateAction_WithNullValues_ShouldBuildUpdateAction() {
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        when(newCategoryDraft.getExternalId()).thenReturn(null);
+
+        final UpdateAction<Category> setExternalIdUpdateAction =
+            buildSetExternalIdUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft).orElse(null);
+
+        assertThat(setExternalIdUpdateAction).isNotNull();
+        assertThat(setExternalIdUpdateAction.getAction()).isEqualTo("setExternalId");
+        assertThat(((SetExternalId) setExternalIdUpdateAction).getExternalId())
+            .isNull();
+    }
+
+    @Test
+    public void buildSetExternalIdUpdateAction_WithSameValues_ShouldBuildUpdateAction() {
+        final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
+        when(newCategoryDraft.getExternalId()).thenReturn(MOCK_OLD_CATEGORY_EXTERNAL_ID);
+
+        final Optional<UpdateAction<Category>> setExternalIdUpdateAction =
+            buildSetExternalIdUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft);
+
+        assertThat(setExternalIdUpdateAction).isNotNull();
+        assertThat(setExternalIdUpdateAction).isNotPresent();
     }
 }

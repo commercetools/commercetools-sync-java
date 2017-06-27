@@ -48,7 +48,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
     /**
      * Given a {@link CategoryDraft} this method attempts to resolve the parent category reference to return
      * a {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * parent category reference. The externalId of the parent category is either taken from the expanded object or
+     * parent category reference. The key of the parent category is either taken from the expanded object or
      * taken from the id field of the reference.
      *
      * @param categoryDraft the categoryDraft to resolve it's parent reference.
@@ -61,10 +61,10 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
         final Reference<Category> parentCategoryReference = categoryDraft.getParent();
         if (parentCategoryReference != null) {
             try {
-                final String keyFromExpansion = getExternalIdFromExpansion(parentCategoryReference);
-                final String parentCategoryExternalId = getKeyFromExpansionOrReference(
+                final String keyFromExpansion = getKeyFromExpansion(parentCategoryReference);
+                final String parentCategoryKey = getKeyFromExpansionOrReference(
                     keyFromExpansion, parentCategoryReference);
-                return fetchAndResolveParentReference(categoryDraft, parentCategoryExternalId);
+                return fetchAndResolveParentReference(categoryDraft, parentCategoryKey);
             } catch (ReferenceResolutionException exception) {
                 return CompletableFutureUtils.exceptionallyCompletedFuture(exception);
             }
@@ -73,21 +73,21 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
     }
 
     /**
-     * Given a {@link CategoryDraft} and a {@code parentCategoryExternalId} this method fetches the actual id of the
-     * category corresponding to this external id, ideally from a cache. Then it sets this id on the parent reference
+     * Given a {@link CategoryDraft} and a {@code parentCategoryKey} this method fetches the actual id of the
+     * category corresponding to this key, ideally from a cache. Then it sets this id on the parent reference
      * id. If the id is not found in cache nor the CTP project, the resultant draft would remain exactly the same as
      * the passed category draft (without parent reference resolution).
      *
      * @param categoryDraft the categoryDraft to resolve it's parent reference.
-     * @param parentCategoryExternalId the parent category external id of to resolve it's actual id on the draft.
+     * @param parentCategoryKey the parent category key of to resolve it's actual id on the draft.
      * @return a {@link CompletionStage} that contains as a result a new categoryDraft instance with resolved parent
      *      category references or an exception.
      */
     @Nonnull
     private CompletionStage<CategoryDraft> fetchAndResolveParentReference(
         @Nonnull final CategoryDraft categoryDraft,
-        @Nonnull final String parentCategoryExternalId) {
-        return categoryService.fetchCachedCategoryId(parentCategoryExternalId)
+        @Nonnull final String parentCategoryKey) {
+        return categoryService.fetchCachedCategoryId(parentCategoryKey)
                               .thenApply(resolvedParentIdOptional -> resolvedParentIdOptional
                                   .map(resolvedParentId ->
                                       CategoryDraftBuilder.of(categoryDraft)
@@ -97,15 +97,15 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
     }
 
     /**
-     * Helper method that returns the value of the external id field from the passed category {@link Reference} object,
+     * Helper method that returns the value of the key field from the passed category {@link Reference} object,
      * if expanded. Otherwise, returns null.
      *
-     * @return the value of the external id field from the passed category {@link Reference} object, if expanded.
+     * @return the value of the key field from the passed category {@link Reference} object, if expanded.
      *          Otherwise, returns null.
      */
     @Nullable
-    private static String getExternalIdFromExpansion(@Nonnull final Reference<Category> parentCategoryReference) {
-        return isReferenceExpanded(parentCategoryReference) ? parentCategoryReference.getObj().getExternalId() : null;
+    private static String getKeyFromExpansion(@Nonnull final Reference<Category> parentCategoryReference) {
+        return isReferenceExpanded(parentCategoryReference) ? parentCategoryReference.getObj().getKey() : null;
     }
 
 }

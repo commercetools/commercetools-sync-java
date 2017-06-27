@@ -6,13 +6,14 @@ import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
+import io.sphere.sdk.categories.commands.updateactions.ChangeOrderHint;
+import io.sphere.sdk.categories.commands.updateactions.ChangeParent;
 import io.sphere.sdk.categories.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.categories.commands.updateactions.SetDescription;
-import io.sphere.sdk.categories.commands.updateactions.ChangeParent;
-import io.sphere.sdk.categories.commands.updateactions.ChangeOrderHint;
-import io.sphere.sdk.categories.commands.updateactions.SetMetaTitle;
+import io.sphere.sdk.categories.commands.updateactions.SetExternalId;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaKeywords;
+import io.sphere.sdk.categories.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
@@ -37,6 +38,7 @@ public class CategorySyncUtilsTest {
     private static final String CATEGORY_PARENT_ID = "1";
     private static final String CATEGORY_NAME = "categoryName";
     private static final String CATEGORY_SLUG = "categorySlug";
+    private static final String CATEGORY_KEY = "categoryKey";
     private static final String CATEGORY_EXTERNAL_ID = "externalId";
     private static final String CATEGORY_DESC = "categoryDesc";
     private static final String CATEGORY_META_DESC = "categoryMetaDesc";
@@ -55,6 +57,7 @@ public class CategorySyncUtilsTest {
         mockOldCategory = getMockCategory(LOCALE,
             CATEGORY_NAME,
             CATEGORY_SLUG,
+            CATEGORY_KEY,
             CATEGORY_EXTERNAL_ID,
             CATEGORY_DESC,
             CATEGORY_META_DESC,
@@ -69,6 +72,7 @@ public class CategorySyncUtilsTest {
         final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
             "differentName",
             CATEGORY_SLUG,
+            CATEGORY_KEY,
             CATEGORY_EXTERNAL_ID,
             CATEGORY_DESC,
             CATEGORY_META_DESC,
@@ -92,7 +96,8 @@ public class CategorySyncUtilsTest {
         final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
             "differentName",
             "differentSlug",
-            CATEGORY_EXTERNAL_ID,
+            CATEGORY_KEY,
+            "differentExternalId",
             "differentDescription",
             "differentMetaDescription",
             "differentMetaTitle",
@@ -103,7 +108,7 @@ public class CategorySyncUtilsTest {
         final List<UpdateAction<Category>> updateActions =
             CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions);
         assertThat(updateActions).isNotNull();
-        assertThat(updateActions).hasSize(8);
+        assertThat(updateActions).hasSize(9);
 
         final UpdateAction<Category> nameUpdateAction = updateActions.get(0);
         assertThat(nameUpdateAction.getAction()).isEqualTo("changeName");
@@ -113,30 +118,34 @@ public class CategorySyncUtilsTest {
         assertThat(slugUpdateAction.getAction()).isEqualTo("changeSlug");
         assertThat(((ChangeSlug) slugUpdateAction).getSlug()).isEqualTo(LocalizedString.of(LOCALE, "differentSlug"));
 
-        final UpdateAction<Category> descriptionUpdateAction = updateActions.get(2);
+        final UpdateAction<Category> setExternalIdUpdateAction = updateActions.get(2);
+        assertThat(setExternalIdUpdateAction.getAction()).isEqualTo("setExternalId");
+        assertThat(((SetExternalId) setExternalIdUpdateAction).getExternalId()).isEqualTo("differentExternalId");
+
+        final UpdateAction<Category> descriptionUpdateAction = updateActions.get(3);
         assertThat(descriptionUpdateAction.getAction()).isEqualTo("setDescription");
         assertThat(((SetDescription) descriptionUpdateAction).getDescription())
             .isEqualTo(LocalizedString.of(LOCALE, "differentDescription"));
 
-        final UpdateAction<Category> parentUpdateAction = updateActions.get(3);
+        final UpdateAction<Category> parentUpdateAction = updateActions.get(4);
         assertThat(parentUpdateAction.getAction()).isEqualTo("changeParent");
         assertThat(((ChangeParent) parentUpdateAction).getParent().getId()).isEqualTo("differentParentId");
 
-        final UpdateAction<Category> orderHintUpdateAction = updateActions.get(4);
+        final UpdateAction<Category> orderHintUpdateAction = updateActions.get(5);
         assertThat(orderHintUpdateAction.getAction()).isEqualTo("changeOrderHint");
         assertThat(((ChangeOrderHint) orderHintUpdateAction).getOrderHint()).isEqualTo("differentOrderHint");
 
-        final UpdateAction<Category> metaTitleUpdateAction = updateActions.get(5);
+        final UpdateAction<Category> metaTitleUpdateAction = updateActions.get(6);
         assertThat(metaTitleUpdateAction.getAction()).isEqualTo("setMetaTitle");
         assertThat(((SetMetaTitle) metaTitleUpdateAction).getMetaTitle())
             .isEqualTo(LocalizedString.of(LOCALE, "differentMetaTitle"));
 
-        final UpdateAction<Category> metaDescriptionUpdateAction = updateActions.get(6);
+        final UpdateAction<Category> metaDescriptionUpdateAction = updateActions.get(7);
         assertThat(metaDescriptionUpdateAction.getAction()).isEqualTo("setMetaDescription");
         assertThat(((SetMetaDescription) metaDescriptionUpdateAction).getMetaDescription())
             .isEqualTo(LocalizedString.of(LOCALE, "differentMetaDescription"));
 
-        final UpdateAction<Category> metaKeywordsUpdateAction = updateActions.get(7);
+        final UpdateAction<Category> metaKeywordsUpdateAction = updateActions.get(8);
         assertThat(metaKeywordsUpdateAction.getAction()).isEqualTo("setMetaKeywords");
         assertThat(((SetMetaKeywords) metaKeywordsUpdateAction).getMetaKeywords())
             .isEqualTo(LocalizedString.of(LOCALE, "differentMetaKeywords"));
@@ -147,7 +156,8 @@ public class CategorySyncUtilsTest {
         final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
             "differentName",
             "differentSlug",
-            CATEGORY_EXTERNAL_ID,
+            CATEGORY_KEY,
+            "differentExternalId",
             "differentDescription",
             "differentMetaDescription",
             "differentMetaTitle",
@@ -168,7 +178,7 @@ public class CategorySyncUtilsTest {
         final List<UpdateAction<Category>> updateActions =
             CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions);
         assertThat(updateActions).isNotNull();
-        assertThat(updateActions).hasSize(8);
+        assertThat(updateActions).hasSize(9);
 
         final UpdateAction<Category> metaKeywordsUpdateAction = updateActions.get(0);
         assertThat(metaKeywordsUpdateAction.getAction()).isEqualTo("setMetaKeywords");
@@ -198,11 +208,15 @@ public class CategorySyncUtilsTest {
         assertThat(((SetDescription) descriptionUpdateAction).getDescription())
             .isEqualTo(LocalizedString.of(LOCALE, "differentDescription"));
 
-        final UpdateAction<Category> slugUpdateAction = updateActions.get(6);
+        final UpdateAction<Category> setExternalIdUpdateAction = updateActions.get(6);
+        assertThat(setExternalIdUpdateAction.getAction()).isEqualTo("setExternalId");
+        assertThat(((SetExternalId) setExternalIdUpdateAction).getExternalId()).isEqualTo("differentExternalId");
+
+        final UpdateAction<Category> slugUpdateAction = updateActions.get(7);
         assertThat(slugUpdateAction.getAction()).isEqualTo("changeSlug");
         assertThat(((ChangeSlug) slugUpdateAction).getSlug()).isEqualTo(LocalizedString.of(LOCALE, "differentSlug"));
 
-        final UpdateAction<Category> nameUpdateAction = updateActions.get(7);
+        final UpdateAction<Category> nameUpdateAction = updateActions.get(8);
         assertThat(nameUpdateAction.getAction()).isEqualTo("changeName");
         assertThat(((ChangeName) nameUpdateAction).getName()).isEqualTo(LocalizedString.of(LOCALE, "differentName"));
     }
@@ -212,6 +226,7 @@ public class CategorySyncUtilsTest {
         final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
             "differentName",
             CATEGORY_SLUG,
+            CATEGORY_KEY,
             CATEGORY_EXTERNAL_ID,
             CATEGORY_DESC,
             CATEGORY_META_DESC,
@@ -235,7 +250,8 @@ public class CategorySyncUtilsTest {
         final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
             "differentName",
             "differentSlug",
-            CATEGORY_EXTERNAL_ID,
+            CATEGORY_KEY,
+            "differentExternalId",
             "differentDescription",
             "differentMetaDescription",
             "differentMetaTitle",
@@ -246,7 +262,7 @@ public class CategorySyncUtilsTest {
         final List<UpdateAction<Category>> updateActions =
             CategorySyncUtils.buildCoreActions(mockOldCategory, newCategoryDraft, categorySyncOptions);
         assertThat(updateActions).isNotNull();
-        assertThat(updateActions).hasSize(8);
+        assertThat(updateActions).hasSize(9);
 
         final UpdateAction<Category> nameUpdateAction = updateActions.get(0);
         assertThat(nameUpdateAction.getAction()).isEqualTo("changeName");
@@ -256,30 +272,34 @@ public class CategorySyncUtilsTest {
         assertThat(slugUpdateAction.getAction()).isEqualTo("changeSlug");
         assertThat(((ChangeSlug) slugUpdateAction).getSlug()).isEqualTo(LocalizedString.of(LOCALE, "differentSlug"));
 
-        final UpdateAction<Category> descriptionUpdateAction = updateActions.get(2);
+        final UpdateAction<Category> setExternalIdUpdateAction = updateActions.get(2);
+        assertThat(setExternalIdUpdateAction.getAction()).isEqualTo("setExternalId");
+        assertThat(((SetExternalId) setExternalIdUpdateAction).getExternalId()).isEqualTo("differentExternalId");
+
+        final UpdateAction<Category> descriptionUpdateAction = updateActions.get(3);
         assertThat(descriptionUpdateAction.getAction()).isEqualTo("setDescription");
         assertThat(((SetDescription) descriptionUpdateAction).getDescription())
             .isEqualTo(LocalizedString.of(LOCALE, "differentDescription"));
 
-        final UpdateAction<Category> parentUpdateAction = updateActions.get(3);
+        final UpdateAction<Category> parentUpdateAction = updateActions.get(4);
         assertThat(parentUpdateAction.getAction()).isEqualTo("changeParent");
         assertThat(((ChangeParent) parentUpdateAction).getParent().getId()).isEqualTo("differentParentId");
 
-        final UpdateAction<Category> orderHintUpdateAction = updateActions.get(4);
+        final UpdateAction<Category> orderHintUpdateAction = updateActions.get(5);
         assertThat(orderHintUpdateAction.getAction()).isEqualTo("changeOrderHint");
         assertThat(((ChangeOrderHint) orderHintUpdateAction).getOrderHint()).isEqualTo("differentOrderHint");
 
-        final UpdateAction<Category> metaTitleUpdateAction = updateActions.get(5);
+        final UpdateAction<Category> metaTitleUpdateAction = updateActions.get(6);
         assertThat(metaTitleUpdateAction.getAction()).isEqualTo("setMetaTitle");
         assertThat(((SetMetaTitle) metaTitleUpdateAction).getMetaTitle())
             .isEqualTo(LocalizedString.of(LOCALE, "differentMetaTitle"));
 
-        final UpdateAction<Category> metaDescriptionUpdateAction = updateActions.get(6);
+        final UpdateAction<Category> metaDescriptionUpdateAction = updateActions.get(7);
         assertThat(metaDescriptionUpdateAction.getAction()).isEqualTo("setMetaDescription");
         assertThat(((SetMetaDescription) metaDescriptionUpdateAction).getMetaDescription())
             .isEqualTo(LocalizedString.of(LOCALE, "differentMetaDescription"));
 
-        final UpdateAction<Category> metaKeywordsUpdateAction = updateActions.get(7);
+        final UpdateAction<Category> metaKeywordsUpdateAction = updateActions.get(8);
         assertThat(metaKeywordsUpdateAction.getAction()).isEqualTo("setMetaKeywords");
         assertThat(((SetMetaKeywords) metaKeywordsUpdateAction).getMetaKeywords())
             .isEqualTo(LocalizedString.of(LOCALE, "differentMetaKeywords"));
@@ -290,6 +310,7 @@ public class CategorySyncUtilsTest {
         final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
             CATEGORY_NAME,
             CATEGORY_SLUG,
+            CATEGORY_KEY,
             CATEGORY_EXTERNAL_ID,
             CATEGORY_DESC,
             CATEGORY_META_DESC,
