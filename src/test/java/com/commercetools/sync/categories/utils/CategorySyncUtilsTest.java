@@ -37,6 +37,7 @@ public class CategorySyncUtilsTest {
     private static final String CATEGORY_PARENT_ID = "1";
     private static final String CATEGORY_NAME = "categoryName";
     private static final String CATEGORY_SLUG = "categorySlug";
+    private static final String CATEGORY_KEY = "categoryKey";
     private static final String CATEGORY_EXTERNAL_ID = "externalId";
     private static final String CATEGORY_DESC = "categoryDesc";
     private static final String CATEGORY_META_DESC = "categoryMetaDesc";
@@ -55,6 +56,7 @@ public class CategorySyncUtilsTest {
         mockOldCategory = getMockCategory(LOCALE,
             CATEGORY_NAME,
             CATEGORY_SLUG,
+            CATEGORY_KEY,
             CATEGORY_EXTERNAL_ID,
             CATEGORY_DESC,
             CATEGORY_META_DESC,
@@ -69,6 +71,7 @@ public class CategorySyncUtilsTest {
         final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
             "differentName",
             CATEGORY_SLUG,
+            CATEGORY_KEY,
             CATEGORY_EXTERNAL_ID,
             CATEGORY_DESC,
             CATEGORY_META_DESC,
@@ -92,6 +95,7 @@ public class CategorySyncUtilsTest {
         final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
             "differentName",
             "differentSlug",
+            CATEGORY_KEY,
             CATEGORY_EXTERNAL_ID,
             "differentDescription",
             "differentMetaDescription",
@@ -147,6 +151,7 @@ public class CategorySyncUtilsTest {
         final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
             "differentName",
             "differentSlug",
+            CATEGORY_KEY,
             CATEGORY_EXTERNAL_ID,
             "differentDescription",
             "differentMetaDescription",
@@ -212,6 +217,7 @@ public class CategorySyncUtilsTest {
         final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
             "differentName",
             CATEGORY_SLUG,
+            CATEGORY_KEY,
             CATEGORY_EXTERNAL_ID,
             CATEGORY_DESC,
             CATEGORY_META_DESC,
@@ -235,6 +241,7 @@ public class CategorySyncUtilsTest {
         final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
             "differentName",
             "differentSlug",
+            CATEGORY_KEY,
             CATEGORY_EXTERNAL_ID,
             "differentDescription",
             "differentMetaDescription",
@@ -290,6 +297,7 @@ public class CategorySyncUtilsTest {
         final CategoryDraft newCategoryDraft = getMockCategoryDraft(LOCALE,
             CATEGORY_NAME,
             CATEGORY_SLUG,
+            CATEGORY_KEY,
             CATEGORY_EXTERNAL_ID,
             CATEGORY_DESC,
             CATEGORY_META_DESC,

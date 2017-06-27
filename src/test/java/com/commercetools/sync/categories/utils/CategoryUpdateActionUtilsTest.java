@@ -43,6 +43,7 @@ public class CategoryUpdateActionUtilsTest {
     private static final String MOCK_OLD_CATEGORY_PARENT_ID = "1";
     private static final String MOCK_OLD_CATEGORY_NAME = "categoryName";
     private static final String MOCK_OLD_CATEGORY_SLUG = "categorySlug";
+    private static final String MOCK_OLD_CATEGORY_KEY = "categoryKey";
     private static final String MOCK_OLD_CATEGORY_EXTERNAL_ID = "externalId";
     private static final String MOCK_OLD_CATEGORY_DESCRIPTION = "categoryDesc";
     private static final String MOCK_OLD_CATEGORY_META_DESCRIPTION = "categoryMetaDesc";
@@ -52,6 +53,7 @@ public class CategoryUpdateActionUtilsTest {
     private static final Category MOCK_OLD_CATEGORY = getMockCategory(LOCALE,
         MOCK_OLD_CATEGORY_NAME,
         MOCK_OLD_CATEGORY_SLUG,
+        MOCK_OLD_CATEGORY_KEY,
         MOCK_OLD_CATEGORY_EXTERNAL_ID,
         MOCK_OLD_CATEGORY_DESCRIPTION,
         MOCK_OLD_CATEGORY_META_DESCRIPTION,

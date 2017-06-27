@@ -90,9 +90,9 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithADraftWithNoSetExternalID_ShouldFailSync() {
+    public void sync_WithADraftWithNoSetKey_ShouldFailSync() {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "noExternalIdDraft", "no-external-id-draft", null));
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "noKeyDraft", "no-key-id-draft", null));
 
         categorySync.sync(categoryDrafts);
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
@@ -104,7 +104,7 @@ public class CategorySyncTest {
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo("CategoryDraft with name: LocalizedString(en ->"
-            + " noExternalIdDraft) doesn't have an externalId.");
+            + " noKeyDraft) doesn't have a key.");
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
     }
@@ -112,12 +112,12 @@ public class CategorySyncTest {
     @Test
     public void sync_WithNoExistingCategory_ShouldCreateCategory() {
         final CategoryService categoryService = getMockCategoryService();
-        when(categoryService.fetchCategoryByExternalId(anyString()))
+        when(categoryService.fetchCategoryByKey(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
                                                            categoryService);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", "parentExternalId",
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
             "customTypeId", new HashMap<>()));
 
 
@@ -136,7 +136,7 @@ public class CategorySyncTest {
     @Test
     public void sync_WithExistingCategory_ShouldUpdateCategory() {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "externalId"));
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "key"));
 
         categorySync.sync(categoryDrafts);
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
@@ -155,6 +155,7 @@ public class CategorySyncTest {
         final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH,
             "name",
             "slug",
+            "key",
             "externalId",
             "description",
             "metaDescription",
@@ -184,11 +185,11 @@ public class CategorySyncTest {
             throw new SphereException();
         });
         final CategoryService categoryService = getMockCategoryService();
-        when(categoryService.fetchCategoryByExternalId(anyString())).thenReturn(futureThrowingSphereException);
+        when(categoryService.fetchCategoryByKey(anyString())).thenReturn(futureThrowingSphereException);
 
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(), categoryService);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "externalId"));
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "key"));
 
 
         categorySync.sync(categoryDrafts);
@@ -200,7 +201,7 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Failed to fetch category with externalId:'externalId'");
+        assertThat(errorCallBackMessages.get(0)).contains("Failed to fetch category with key:'key'");
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
     }
@@ -211,13 +212,13 @@ public class CategorySyncTest {
             throw new SphereException();
         });
         final CategoryService categoryService = getMockCategoryService();
-        when(categoryService.fetchCategoryByExternalId(anyString()))
+        when(categoryService.fetchCategoryByKey(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
         when(categoryService.createCategory(any())).thenReturn(futureThrowingSphereException);
 
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(), categoryService);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "externalId"));
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "key"));
 
 
         categorySync.sync(categoryDrafts);
@@ -229,7 +230,7 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Failed to create category with externalId:'externalId'");
+        assertThat(errorCallBackMessages.get(0)).contains("Failed to create category with key:'key'");
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
     }
@@ -243,7 +244,7 @@ public class CategorySyncTest {
         when(categoryService.updateCategory(any(), any())).thenReturn(futureThrowingSphereException);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(), categoryService);
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "externalId"));
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "key"));
 
         categorySync.sync(categoryDrafts);
         assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
@@ -254,7 +255,7 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Failed to update category with externalId:'externalId'");
+        assertThat(errorCallBackMessages.get(0)).contains("Failed to update category with key:'key'");
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
     }
@@ -266,7 +267,7 @@ public class CategorySyncTest {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
 
         final String parentUuid = String.valueOf(UUID.randomUUID());
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", parentUuid,
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", parentUuid,
             "customTypeId", new HashMap<>()));
 
         categorySync.sync(categoryDrafts);
@@ -279,7 +280,7 @@ public class CategorySyncTest {
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve parent reference on CategoryDraft"
-            + " with externalId:'externalId'. Reason: %s: Found a UUID in the id field. Expecting a key without a UUID"
+            + " with key:'key'. Reason: %s: Found a UUID in the id field. Expecting a key without a UUID"
             + " value. If you want to allow UUID values for reference keys, please use the setAllowUuidKeys(true)"
             + " option in the sync options.", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
@@ -293,7 +294,7 @@ public class CategorySyncTest {
             getMockCategoryService());
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
 
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", null,
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", null,
             "customTypeId", new HashMap<>()));
 
         categorySync.sync(categoryDrafts);
@@ -306,7 +307,7 @@ public class CategorySyncTest {
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve parent reference on CategoryDraft"
-            + " with externalId:'externalId'. Reason: %s: Key is blank (null/empty) on both expanded reference object"
+            + " with key:'key'. Reason: %s: Key is blank (null/empty) on both expanded reference object"
             + " and reference id field.", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -319,7 +320,7 @@ public class CategorySyncTest {
             getMockCategoryService());
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
 
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", "",
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "",
             "customTypeId", new HashMap<>()));
 
         categorySync.sync(categoryDrafts);
@@ -332,7 +333,7 @@ public class CategorySyncTest {
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve parent reference on CategoryDraft"
-            + " with externalId:'externalId'. Reason: %s: Key is blank (null/empty) on both expanded reference object"
+            + " with key:'key'. Reason: %s: Key is blank (null/empty) on both expanded reference object"
             + " and reference id field.", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -345,7 +346,7 @@ public class CategorySyncTest {
             getMockCategoryService());
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
 
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", "parentExternalId",
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
             "", new HashMap<>()));
 
         categorySync.sync(categoryDrafts);
@@ -358,7 +359,7 @@ public class CategorySyncTest {
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve custom type reference on "
-            + "CategoryDraft with externalId:'externalId'. Reason: %s: Reference 'id' field value is blank (null/"
+            + "CategoryDraft with key:'key'. Reason: %s: Reference 'id' field value is blank (null/"
             + "empty).", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -372,7 +373,7 @@ public class CategorySyncTest {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
 
         final String uuidCustomTypeKey = UUID.randomUUID().toString();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", "parentExternalId",
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
             uuidCustomTypeKey, new HashMap<>()));
 
         categorySync.sync(categoryDrafts);
@@ -385,7 +386,7 @@ public class CategorySyncTest {
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve custom type reference on"
-            + " CategoryDraft with externalId:'externalId'. Reason: %s: Found a UUID in the id field. Expecting a key"
+            + " CategoryDraft with key:'key'. Reason: %s: Found a UUID in the id field. Expecting a key"
             + " without a UUID value. If you want to allow UUID values for reference keys, please use the"
             + " setAllowUuidKeys(true) option in the sync options.",
             ReferenceResolutionException.class.getCanonicalName()));
@@ -404,7 +405,7 @@ public class CategorySyncTest {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
 
         final String uuidCustomTypeKey = UUID.randomUUID().toString();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "externalId", "parentExternalId",
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
             uuidCustomTypeKey, new HashMap<>()));
 
         categorySync.sync(categoryDrafts);
