@@ -281,7 +281,7 @@ public class CategoryITUtils {
 
     /**
      * Takes a list of Categories that are supposed to have their custom type and parent category reference expanded
-     * inorder to be able to fetch the keys and replace the reference ids with the correspnding keys and then return
+     * in order to be able to fetch the keys and replace the reference ids with the correspnding keys and then return
      * a new list of category drafts with their references containing keys instead of the ids.
      *
      * @param categories the categories to replace their reference ids with keys
