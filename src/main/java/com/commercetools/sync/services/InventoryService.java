@@ -1,11 +1,15 @@
 package com.commercetools.sync.services;
 
+import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
+import io.sphere.sdk.models.Referenceable;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
@@ -19,6 +23,18 @@ public interface InventoryService {
      */
     @Nonnull
     CompletionStage<List<InventoryEntry>> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus);
+
+    /**
+     * Queries existing {@link InventoryEntry} against the SKU and the {@code supplyChannel} reference.
+     *
+     * @param sku sku used in search predicate
+     * @param supplyChannel reference used in search predicate, if null then inventory without any supply channels will
+     *                      be searched
+     * @return {@link Optional} containing found inventory or an empty optional when there was no matching inventory
+     */
+    @Nonnull
+    CompletionStage<Optional<InventoryEntry>> fetchInventoryEntry(@Nonnull final String sku,
+                                                                  @Nullable final Referenceable<Channel> supplyChannel);
 
     /**
      * Creates new inventory entry from {@code inventoryEntryDraft}.

@@ -6,6 +6,8 @@ import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.InventoryService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.client.ConcurrentModificationException;
+import io.sphere.sdk.client.NotFoundException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -27,11 +29,12 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
+import static com.commercetools.sync.inventories.InventorySync.ATTEMPTS_ON_409_LIMIT;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static io.sphere.sdk.utils.CompletableFutureUtils.failed;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -42,7 +45,10 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class InventorySyncTest {
@@ -117,11 +123,7 @@ public class InventorySyncTest {
                 .toCompletableFuture()
                 .join();
         final InventorySyncStatistics stats = inventorySync.getStatistics();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(9);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(3);
-        assertThat(stats.getUpdated()).isEqualTo(3);
+        verifyStatistics(stats, 9, 0, 3, 3);
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
@@ -132,11 +134,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(emptyList())
                 .toCompletableFuture()
                 .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(0);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 0, 0, 0, 0);
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
@@ -149,10 +147,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNewChannel))
                 .toCompletableFuture()
                 .join();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 0, 1, 0);
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
@@ -175,10 +170,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNewChannel))
                 .toCompletableFuture()
                 .join();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve supply channel reference on"
             + " InventoryEntryDraft with sku:'%s'. Reason: %s: Channel with key '%s' does not exist.", SKU_3,
@@ -206,10 +198,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNewChannel))
                                                            .toCompletableFuture()
                                                            .join();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve supply channel reference on "
             + "InventoryEntryDraft with sku:'%s'. Reason: "
@@ -229,10 +218,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNullSku))
                 .toCompletableFuture()
                 .join();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process inventory entry without sku.");
         assertThat(errorCallBackExceptions).hasSize(1);
@@ -246,10 +232,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithEmptySku))
                 .toCompletableFuture()
                 .join();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process inventory entry without sku.");
         assertThat(errorCallBackExceptions).hasSize(1);
@@ -265,7 +248,7 @@ public class InventorySyncTest {
 
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
         when(inventoryService.fetchInventoryEntriesBySkus(singleton(SKU_1)))
-            .thenReturn(getCompletionStageWithException());
+            .thenReturn(exceptionallyCompletedFuture(new SphereException()));
 
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
             mock(TypeService.class));
@@ -274,11 +257,7 @@ public class InventorySyncTest {
                 .toCompletableFuture()
                 .join();
 
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(9);
-        assertThat(stats.getFailed()).isEqualTo(3);
-        assertThat(stats.getCreated()).isEqualTo(5);
-        assertThat(stats.getUpdated()).isEqualTo(1);
+        verifyStatistics(stats, 9, 3, 5, 1);
         assertThat(errorCallBackMessages).hasSize(3);
         assertThat(errorCallBackExceptions).hasSize(3);
     }
@@ -288,8 +267,10 @@ public class InventorySyncTest {
         final InventorySyncOptions options = getInventorySyncOptions(3, false, true);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
-        when(inventoryService.createInventoryEntry(any())).thenReturn(getCompletionStageWithException());
-        when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(getCompletionStageWithException());
+        when(inventoryService.createInventoryEntry(any())).thenReturn(
+            exceptionallyCompletedFuture(new SphereException()));
+        when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(
+            exceptionallyCompletedFuture(new SphereException()));
 
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_2, KEY_2));
 
@@ -298,11 +279,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(drafts)
                 .toCompletableFuture()
                 .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(9);
-        assertThat(stats.getFailed()).isEqualTo(6);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 9, 6, 0, 0);
         assertThat(errorCallBackMessages).hasSize(6);
         assertThat(errorCallBackExceptions).hasSize(6);
     }
@@ -312,7 +289,8 @@ public class InventorySyncTest {
         final InventorySyncOptions options = getInventorySyncOptions(3, false, true);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
-        when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(getCompletionStageWithException());
+        when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(
+            exceptionallyCompletedFuture(new SphereException()));
 
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_1, KEY_1));
 
@@ -325,17 +303,12 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(Collections.singletonList(inventoryEntryDraft))
                                                            .toCompletableFuture()
                                                            .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(
             format("Failed to update inventory entry of sku '%s' and supply channel id '%s'.", SKU_1, REF_1));
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(RuntimeException.class);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(SphereException.class);
     }
 
     @Test
@@ -343,7 +316,8 @@ public class InventorySyncTest {
         final InventorySyncOptions options = getInventorySyncOptions(3, false, true);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
-        when(inventoryService.createInventoryEntry(any())).thenReturn(getCompletionStageWithException());
+        when(inventoryService.createInventoryEntry(any())).thenReturn(
+            exceptionallyCompletedFuture(new SphereException()));
 
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_1, KEY_1));
 
@@ -356,17 +330,13 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(Collections.singletonList(inventoryEntryDraft))
                                                            .toCompletableFuture()
                                                            .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(
             format("Failed to create inventory entry of sku '%s' and supply channel id '%s'.", SKU_3, REF_1));
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(RuntimeException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(SphereException.class);
     }
 
     @Test
@@ -388,10 +358,7 @@ public class InventorySyncTest {
         newDrafts.add(draftWithNullCustomTypeId);
 
         inventorySync.sync(newDrafts);
-        assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
+        verifyStatistics(inventorySync.getStatistics(), 1, 1, 0, 0);
         assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 inventory entries were processed in total "
                 + "(0 created, 0 updated and 1 failed to sync).");
@@ -425,10 +392,7 @@ public class InventorySyncTest {
         newDrafts.add(draftWithNullCustomTypeId);
 
         inventorySync.sync(newDrafts);
-        assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
+        verifyStatistics(inventorySync.getStatistics(), 1, 1, 0, 0);
         assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 inventory entries were processed in total "
                 + "(0 created, 0 updated and 1 failed to sync).");
@@ -469,17 +433,14 @@ public class InventorySyncTest {
         newDrafts.add(draftWithNullCustomTypeId);
 
         inventorySync.sync(newDrafts);
-        assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
+        verifyStatistics(inventorySync.getStatistics(), 1, 0, 0, 1);
         assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
             "Summary: 1 inventory entries were processed in total "
                 + "(0 created, 1 updated and 0 failed to sync).");
     }
 
     @Test
-    public void syncDrafts_WithNewSupplyChannelAndEnsure_ShouldSync() {
+    public void sync_WithNewSupplyChannelAndEnsure_ShouldSync() {
         final InventorySyncOptions options = getInventorySyncOptions(3, true, false);
 
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
@@ -497,17 +458,13 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(newInventoryDraft))
                                                            .toCompletableFuture()
                                                            .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(1);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 0, 1, 0);
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
     }
 
     @Test
-    public void syncDrafts_WithExceptionWhenCreatingNewSupplyChannel_ShouldTriggerErrorCallbackAndIncrementFailed() {
+    public void sync_WithExceptionWhenCreatingNewSupplyChannel_ShouldTriggerErrorCallbackAndIncrementFailed() {
         final InventorySyncOptions options = getInventorySyncOptions(3, true, false);
 
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
@@ -526,11 +483,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(newInventoryDraft))
             .toCompletableFuture()
             .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve supply channel reference on"
                 + " InventoryEntryDraft with sku:'%s'.", SKU_1));
@@ -540,7 +493,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void syncDrafts_WithNullInInputList_ShouldIncrementFailedStatistics() {
+    public void sync_WithNullInInputList_ShouldIncrementFailedStatistics() {
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
 
@@ -553,15 +506,131 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(null))
             .toCompletableFuture()
             .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        verifyStatistics(stats, 1, 1, 0, 0);
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process null inventory draft.");
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
+    }
+
+    @Test
+    public void sync_With409ErrorDuringUpdate_ShouldRetryUpdate() {
+        final InventoryEntry oldInventory =
+            getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, null, null);
+        final InventoryEntry oldInventoryUpdated =
+            getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_2, DATE_1, null, null);
+        final InventoryEntryDraft newEntry = InventoryEntryDraft.of(SKU_1, QUANTITY_2, DATE_1, RESTOCKABLE_1, null);
+
+        final InventorySyncOptions options = getInventorySyncOptions(1, false, false);
+        final InventoryService service = getMockInventoryService(singletonList(oldInventory),
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+        when(service.fetchInventoryEntry(SKU_1, null))
+            .thenReturn(completedFuture(Optional.of(oldInventoryUpdated)));
+        when(service.updateInventoryEntry(eq(oldInventory), any()))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()));
+        when(service.updateInventoryEntry(eq(oldInventoryUpdated), any()))
+            .thenReturn(completedFuture(mock(InventoryEntry.class)));
+
+        final InventorySync inventorySync = new InventorySync(options, service, mock(ChannelService.class),
+            mock(TypeService.class));
+        final InventorySyncStatistics stats = inventorySync.sync(singletonList(newEntry)).toCompletableFuture()
+            .join();
+
+        verifyStatistics(stats, 1, 0, 0, 1);
+        verify(service, times(1)).fetchInventoryEntry(eq(SKU_1), any());
+        verify(service, times(2)).updateInventoryEntry(any(), any());
+        verify(service, times(1)).updateInventoryEntry(eq(oldInventory), any());
+        verify(service, times(1)).updateInventoryEntry(eq(oldInventoryUpdated), any());
+    }
+
+    @Test
+    public void sync_With409ErrorDuringUpdateAndThenOtherErrorDuringRetry_ShouldFail() {
+        final InventoryEntry oldInventory =
+            getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, null, null);
+        final InventoryEntry oldInventoryUpdated =
+            getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_2, DATE_1, null, null);
+        final InventoryEntryDraft newEntry = InventoryEntryDraft.of(SKU_1, QUANTITY_2, DATE_1, RESTOCKABLE_1, null);
+
+        final InventorySyncOptions options = getInventorySyncOptions(1, false, false);
+        final InventoryService service = getMockInventoryService(singletonList(oldInventory),
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+        when(service.fetchInventoryEntry(SKU_1, null))
+            .thenReturn(completedFuture(Optional.of(oldInventoryUpdated)));
+        when(service.updateInventoryEntry(eq(oldInventory), any()))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()));
+        when(service.updateInventoryEntry(eq(oldInventoryUpdated), any()))
+            .thenReturn(exceptionallyCompletedFuture(new NotFoundException()));
+
+        final InventorySync inventorySync = new InventorySync(options, service, mock(ChannelService.class),
+            mock(TypeService.class));
+        final InventorySyncStatistics stats = inventorySync.sync(singletonList(newEntry)).toCompletableFuture()
+            .join();
+
+        verifyStatistics(stats, 1, 1, 0, 0);
+        verify(service, times(1)).fetchInventoryEntry(eq(SKU_1), any());
+        verify(service, times(2)).updateInventoryEntry(any(), any());
+        verify(service, times(1)).updateInventoryEntry(eq(oldInventory), any());
+        verify(service, times(1)).updateInventoryEntry(eq(oldInventoryUpdated), any());
+    }
+
+    @Test
+    public void sync_With409ErrorDuringUpdateAndThenNotFoundLatestVersion_ShouldFail() {
+        final InventoryEntry oldInventory =
+            getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, null, null);
+        final InventoryEntryDraft newEntry = InventoryEntryDraft.of(SKU_1, QUANTITY_2, DATE_1, RESTOCKABLE_1, null);
+
+        final InventorySyncOptions options = getInventorySyncOptions(1, false, false);
+        final InventoryService service = getMockInventoryService(singletonList(oldInventory),
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+        when(service.fetchInventoryEntry(SKU_1, null))
+            .thenReturn(completedFuture(Optional.empty()));
+        when(service.updateInventoryEntry(eq(oldInventory), any()))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()));
+
+        final InventorySync inventorySync = new InventorySync(options, service, mock(ChannelService.class),
+            mock(TypeService.class));
+        final InventorySyncStatistics stats = inventorySync.sync(singletonList(newEntry)).toCompletableFuture()
+            .join();
+
+        verifyStatistics(stats, 1, 1, 0, 0);
+        verify(service, times(1)).fetchInventoryEntry(eq(SKU_1), any());
+        verify(service, times(1)).updateInventoryEntry(any(), any());
+        verify(service, times(1)).updateInventoryEntry(eq(oldInventory), any());
+    }
+
+    @Test
+    public void sync_WithConstant409ErrorDuringUpdate_ShouldEventuallyFail() {
+        final InventoryEntry oldInventory =
+            getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, null, null);
+        final InventoryEntry oldInventoryUpdated =
+            getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_2, DATE_1, null, null);
+        final InventoryEntryDraft newEntry = InventoryEntryDraft.of(SKU_1, QUANTITY_2, DATE_1, RESTOCKABLE_1, null);
+
+        final InventorySyncOptions options = getInventorySyncOptions(1, false, false);
+        final InventoryService service = getMockInventoryService(singletonList(oldInventory),
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+        when(service.fetchInventoryEntry(SKU_1, null))
+            .thenReturn(completedFuture(Optional.of(oldInventoryUpdated)));
+        when(service.updateInventoryEntry(any(), any()))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()));
+
+        final InventorySync inventorySync = new InventorySync(options, service, mock(ChannelService.class),
+            mock(TypeService.class));
+        final InventorySyncStatistics stats = inventorySync.sync(singletonList(newEntry)).toCompletableFuture()
+            .join();
+
+        verifyStatistics(stats, 1, 1, 0, 0);
+        verify(service, times(ATTEMPTS_ON_409_LIMIT)).fetchInventoryEntry(eq(SKU_1), any());
+        verify(service, times(ATTEMPTS_ON_409_LIMIT + 1)).updateInventoryEntry(any(), any());
+    }
+
+    private void verifyStatistics(final InventorySyncStatistics statistics, final int expectedProcessed,
+                                  final int expectedFailed, final int expectedCreated, final int expectedUpdated) {
+        assertThat(statistics).isNotNull();
+        assertThat(statistics.getProcessed()).isEqualTo(expectedProcessed);
+        assertThat(statistics.getFailed()).isEqualTo(expectedFailed);
+        assertThat(statistics.getCreated()).isEqualTo(expectedCreated);
+        assertThat(statistics.getUpdated()).isEqualTo(expectedUpdated);
     }
 
     private InventorySync getInventorySync(int batchSize, boolean ensureChannels) {
