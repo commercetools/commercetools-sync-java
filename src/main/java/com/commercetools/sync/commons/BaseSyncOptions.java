@@ -7,6 +7,8 @@ import javax.annotation.Nullable;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.getRetryOn5xxClient;
+
 public class BaseSyncOptions {
     private final SphereClient ctpClient;
     private final BiConsumer<String, Throwable> errorCallBack;
@@ -25,7 +27,7 @@ public class BaseSyncOptions {
                               final boolean removeOtherCollectionEntries,
                               final boolean removeOtherProperties,
                               final boolean allowUuid) {
-        this.ctpClient = ctpClient;
+        this.ctpClient = getRetryOn5xxClient(ctpClient);
         this.errorCallBack = errorCallBack;
         this.warningCallBack = warningCallBack;
         this.removeOtherLocales = removeOtherLocales;
