@@ -45,7 +45,7 @@ public class CategoryITUtils {
     private static final Locale LOCALE = Locale.ENGLISH;
     public static final String LOCALISED_STRING_CUSTOM_FIELD_NAME = "backgroundColor";
     public static final String BOOLEAN_CUSTOM_FIELD_NAME = "invisibleInShop";
-    private static final String ROOT_CATEGORY_EXTERNAL_ID = "rootCategoryExternalId";
+    private static final String ROOT_CATEGORY_KEY = "rootCategoryKey";
     private static final String ROOT_CATEGORY_ORDER_HINT = "0.1";
 
     /**
@@ -64,12 +64,12 @@ public class CategoryITUtils {
             final LocalizedString name = LocalizedString.of(Locale.ENGLISH, format("draft%s", i));
             final LocalizedString slug = LocalizedString.of(Locale.ENGLISH, format("slug%s", i));
             final LocalizedString description = LocalizedString.of(Locale.ENGLISH, format("desc%s", i));
-            final String externalId = format("externalId%s", i + 1);
+            final String key = format("key%s", i + 1);
             final String orderHint = format("0.%s", i);
             final CategoryDraft categoryDraft = CategoryDraftBuilder.of(name, slug)
                                                                     .parent(parentCategory)
                                                                     .description(description)
-                                                                    .externalId(externalId)
+                                                                    .key(key)
                                                                     .orderHint(orderHint)
                                                                     .custom(getMockCustomFieldsDraft())
                                                                     .build();
@@ -175,7 +175,7 @@ public class CategoryITUtils {
             .of(LocalizedString.of(Locale.ENGLISH, "rootCategory"),
                 LocalizedString.of(Locale.ENGLISH, "root-category", Locale.GERMAN, "root-category"))
             .description(LocalizedString.of(Locale.ENGLISH, "root Category"))
-            .externalId(ROOT_CATEGORY_EXTERNAL_ID)
+            .key(ROOT_CATEGORY_KEY)
             .orderHint(ROOT_CATEGORY_ORDER_HINT)
             .build();
         return ctpClient.execute(CategoryCreateCommand.of(rootCategoryDraft))
@@ -272,7 +272,8 @@ public class CategoryITUtils {
      * @param ctpClient defines the CTP project to delete the categories from.
      */
     public static void deleteRootCategory(@Nonnull final SphereClient ctpClient) {
-        ctpClient.execute(CategoryQuery.of().byExternalId(ROOT_CATEGORY_EXTERNAL_ID))
+        ctpClient.execute(CategoryQuery.of().withPredicates(categoryQueryModel ->
+            categoryQueryModel.key().is(ROOT_CATEGORY_KEY)))
                  .thenAccept(result -> result.head()
                                              .ifPresent(category -> ctpClient
                                                  .execute(CategoryDeleteCommand.of(category))
@@ -302,7 +303,7 @@ public class CategoryITUtils {
                 }
 
                 if (category.getParent() != null && category.getParent().getObj() != null) {
-                    parentReference = Category.referenceOfId(category.getParent().getObj().getExternalId());
+                    parentReference = Category.referenceOfId(category.getParent().getObj().getKey());
                 }
                 return CategoryDraftBuilder.of(category)
                                            .custom(customFieldsDraft)

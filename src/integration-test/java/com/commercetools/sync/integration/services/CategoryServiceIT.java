@@ -46,7 +46,7 @@ public class CategoryServiceIT {
         // Create a mock new category in the target project.
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture"))
-            .externalId("oldCategoryExternalId")
+            .key("oldCategoryKey")
             .parent(targetProjectRootCategory)
             .custom(getMockCustomFieldsDraft())
             .build();
@@ -68,7 +68,7 @@ public class CategoryServiceIT {
 
     @Test
     public void fetchCachedCategoryId_WithNonExistingCategory_ShouldNotFetchACategory() {
-        final Optional<String> categoryId = categoryService.fetchCachedCategoryId("non-existing-category-external-id")
+        final Optional<String> categoryId = categoryService.fetchCachedCategoryId("non-existing-category-key")
                                                            .toCompletableFuture()
                                                            .join();
         assertThat(categoryId).isEmpty();
@@ -76,7 +76,7 @@ public class CategoryServiceIT {
 
     @Test
     public void fetchCachedCategoryId_WithExistingCategory_ShouldFetchCategoryAndCache() {
-        final Optional<String> categoryId = categoryService.fetchCachedCategoryId(oldCategory.getExternalId())
+        final Optional<String> categoryId = categoryService.fetchCachedCategoryId(oldCategory.getKey())
                                                            .toCompletableFuture()
                                                            .join();
         assertThat(categoryId).isNotEmpty();
@@ -86,21 +86,21 @@ public class CategoryServiceIT {
     @Test
     public void fetchCachedCategoryId_WithNonInvalidatedCache_ShouldFetchCategoryAndCache() {
         // Fetch any category to populate cache
-        categoryService.fetchCachedCategoryId("anyExternalId").toCompletableFuture().join();
+        categoryService.fetchCachedCategoryId("anyKey").toCompletableFuture().join();
 
         // Create new category
-        final String newCategoryExternalId = "newCategoryExternalId";
+        final String newCategoryKey = "newCategoryKey";
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
-            .externalId(newCategoryExternalId)
+            .key(newCategoryKey)
             .parent(targetProjectRootCategory)
             .build();
 
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft)).toCompletableFuture().join();
 
         final Optional<String> newCategoryId =
-            categoryService.fetchCachedCategoryId(newCategoryExternalId).toCompletableFuture().join();
+            categoryService.fetchCachedCategoryId(newCategoryKey).toCompletableFuture().join();
 
         assertThat(newCategoryId).isEmpty();
     }
@@ -108,15 +108,15 @@ public class CategoryServiceIT {
     @Test
     public void fetchCachedCategoryId_WithInvalidatedCache_ShouldFetchCategoryAndCache() {
         // Fetch any category to populate cache
-        categoryService.fetchCachedCategoryId("anyExternalId").toCompletableFuture().join();
+        categoryService.fetchCachedCategoryId("anyKey").toCompletableFuture().join();
 
         // Create new category
-        final String newCategoryExternalId = "newCategoryExternalId";
+        final String newCategoryKey = "newCategoryKey";
 
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
-            .externalId(newCategoryExternalId)
+            .key(newCategoryKey)
             .parent(targetProjectRootCategory)
             .build();
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft)).toCompletableFuture().join();
@@ -124,15 +124,15 @@ public class CategoryServiceIT {
         categoryService.invalidateCache();
 
         final Optional<String> newCategoryId =
-            categoryService.fetchCachedCategoryId(newCategoryExternalId).toCompletableFuture().join();
+            categoryService.fetchCachedCategoryId(newCategoryKey).toCompletableFuture().join();
 
         assertThat(newCategoryId).isNotEmpty();
     }
 
     @Test
-    public void fetchCategoryByExternalId_WithExistingCategoryExternalId_ShouldFetchCategory() {
+    public void fetchCategoryByKey_WithExistingCategoryKey_ShouldFetchCategory() {
         final Optional<Category> categoryOptional = categoryService
-            .fetchCategoryByExternalId(oldCategory.getExternalId()).toCompletableFuture().join();
+            .fetchCategoryByKey(oldCategory.getKey()).toCompletableFuture().join();
 
         assertThat(categoryOptional).isNotEmpty();
         final Category category = categoryOptional.get();
@@ -150,20 +150,20 @@ public class CategoryServiceIT {
     }
 
     @Test
-    public void fetchCategoryByExternalId_WithNonExistingCategoryExternalId_ShouldNotFetchACategory() {
+    public void fetchCategoryByKey_WithNonExistingCategoryKey_ShouldNotFetchACategory() {
         final Optional<Category> categoryOptional = categoryService
-            .fetchCategoryByExternalId("nonExistingExternalId").toCompletableFuture().join();
+            .fetchCategoryByKey("nonExistingKey").toCompletableFuture().join();
 
         assertThat(categoryOptional).isEmpty();
     }
 
     @Test
     public void createCategory_ShouldCreateCorrectCategory() {
-        final String newCategoryExternalId = "newCategoryExternalId";
+        final String newCategoryKey = "newCategoryKey";
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
-            .externalId(newCategoryExternalId)
+            .key(newCategoryKey)
             .custom(getMockCustomFieldsDraft())
             .parent(targetProjectRootCategory)
             .build();
@@ -171,7 +171,8 @@ public class CategoryServiceIT {
 
         //assert CTP state
         final Optional<Category> categoryOptional = CTP_TARGET_CLIENT
-            .execute(CategoryQuery.of().byExternalId(newCategoryExternalId))
+            .execute(CategoryQuery.of()
+                                  .withPredicates(categoryQueryModel -> categoryQueryModel.key().is(newCategoryKey)))
             .toCompletableFuture().join().head();
 
         assertThat(categoryOptional).isNotEmpty();
@@ -180,13 +181,15 @@ public class CategoryServiceIT {
         assertThat(fetchedCategory.getSlug()).isEqualTo(category.getSlug());
         assertThat(fetchedCategory.getParent()).isEqualTo(Category.reference(targetProjectRootCategory.getId()));
         assertThat(fetchedCategory.getCustom()).isNotNull();
-        assertThat(fetchedCategory.getExternalId()).isEqualTo(newCategoryExternalId);
+        assertThat(fetchedCategory.getKey()).isEqualTo(newCategoryKey);
     }
 
     @Test
     public void updateCategory_ShouldUpdateCategoryCorrectly() {
         final Optional<Category> categoryOptional = CTP_TARGET_CLIENT
-            .execute(CategoryQuery.of().byExternalId(oldCategory.getExternalId()))
+            .execute(CategoryQuery
+                .of()
+                .withPredicates(categoryQueryModel -> categoryQueryModel.key().is(oldCategory.getKey())))
             .toCompletableFuture().join().head();
 
         final String newCategoryName = "This is my new name!";
@@ -199,7 +202,9 @@ public class CategoryServiceIT {
 
         //assert CTP state
         final Optional<Category> fetchedCategoryOptional = CTP_TARGET_CLIENT
-            .execute(CategoryQuery.of().byExternalId(oldCategory.getExternalId()))
+            .execute(CategoryQuery
+                .of()
+                .withPredicates(categoryQueryModel -> categoryQueryModel.key().is(oldCategory.getKey())))
             .toCompletableFuture().join().head();
 
         assertThat(fetchedCategoryOptional).isNotEmpty();
@@ -208,6 +213,6 @@ public class CategoryServiceIT {
         assertThat(updatedCategory.getSlug()).isEqualTo(oldCategory.getSlug());
         assertThat(fetchedCategory.getParent()).isEqualTo(Category.reference(targetProjectRootCategory.getId()));
         assertThat(fetchedCategory.getCustom()).isNotNull();
-        assertThat(fetchedCategory.getExternalId()).isEqualTo(oldCategory.getExternalId());
+        assertThat(fetchedCategory.getKey()).isEqualTo(oldCategory.getKey());
     }
 }

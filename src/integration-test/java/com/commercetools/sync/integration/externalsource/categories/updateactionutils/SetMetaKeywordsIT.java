@@ -21,7 +21,6 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SetMetaKeywordsIT {
-    private static Category targetProjectRootCategory;
     private static Category oldCategory;
 
     /**
@@ -31,7 +30,7 @@ public class SetMetaKeywordsIT {
     public static void setup() {
         deleteRootCategory(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
-        targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
+        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
         // Create a mock old category in the target project.
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(
@@ -70,7 +69,7 @@ public class SetMetaKeywordsIT {
 
         // Build set MetaKeywords update action
         final UpdateAction<Category> setMetaDescriptionUpdateAction =
-            buildSetMetaDescriptionUpdateAction(targetProjectRootCategory, newCategory).orElse(null);
+            buildSetMetaDescriptionUpdateAction(oldCategory, newCategory).orElse(null);
 
 
         assertThat(setMetaDescriptionUpdateAction).isNotNull();

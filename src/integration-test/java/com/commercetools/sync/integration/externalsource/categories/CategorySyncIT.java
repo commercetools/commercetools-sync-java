@@ -34,7 +34,7 @@ public class CategorySyncIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategorySyncIT.class);
     private CategorySync categorySync;
     private Category targetProjectRootCategory;
-    private final String oldCategoryExternalId = "oldCategoryExternalId";
+    private final String oldCategoryKey = "oldCategoryKey";
 
     /**
      * Deletes Categories and Types from target CTP project, then it populates it with category test data.
@@ -54,7 +54,7 @@ public class CategorySyncIT {
         // Create a mock in the target project.
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture"))
-            .externalId(oldCategoryExternalId)
+            .key(oldCategoryKey)
             .parent(targetProjectRootCategory)
             .custom(getMockCustomFieldsDraft())
             .build();
@@ -85,7 +85,7 @@ public class CategorySyncIT {
         // Category draft coming from external source.
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture"))
-            .externalId("newCategoryExternalId")
+            .key("newCategoryKey")
             .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
@@ -101,7 +101,7 @@ public class CategorySyncIT {
         // Category draft coming from external source.
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture"))
-            .externalId("newCategoryExternalId")
+            .key("newCategoryKey")
             .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
@@ -118,7 +118,7 @@ public class CategorySyncIT {
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
-            .externalId(oldCategoryExternalId)
+            .key(oldCategoryKey)
             .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();

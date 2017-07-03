@@ -161,17 +161,17 @@ public class CategorySyncIT {
                 + " failed to sync).", 3, 0, 0, 2));
         assertThat(callBackErrorResponses).hasSize(2);
         assertThat(callBackErrorResponses.get(0)).isEqualTo(format("Failed to resolve custom type reference on "
-                + "CategoryDraft with externalId:'%s'. "
+                + "CategoryDraft with key:'%s'. "
                 + "Reason: com.commercetools.sync.commons.exceptions.ReferenceResolutionException: "
                 + "Found a UUID in the id field. Expecting a key without a UUID value. If you want to allow UUID values"
                 + " for reference keys, please use the setAllowUuidKeys(true) option in the sync options.",
-            categoryDrafts.get(1).getExternalId()));
+            categoryDrafts.get(1).getKey()));
         assertThat(callBackErrorResponses.get(1)).isEqualTo(format("Failed to resolve custom type reference on "
-                + "CategoryDraft with externalId:'%s'. "
+                + "CategoryDraft with key:'%s'. "
                 + "Reason: com.commercetools.sync.commons.exceptions.ReferenceResolutionException: "
                 + "Found a UUID in the id field. Expecting a key without a UUID value. If you want to allow UUID values"
                 + " for reference keys, please use the setAllowUuidKeys(true) option in the sync options.",
-            categoryDrafts.get(2).getExternalId()));
+            categoryDrafts.get(2).getKey()));
 
         assertThat(callBackExceptions).hasSize(2);
         assertThat(callBackExceptions.get(0)).isInstanceOf(CompletionException.class);
