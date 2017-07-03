@@ -24,21 +24,21 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
-    private static final String CTP_CATEGORY_UPDATE_FAILED = "Failed to update category with externalId:'%s'."
+    private static final String CTP_CATEGORY_UPDATE_FAILED = "Failed to update category with key:'%s'."
         + " Reason: %s";
-    private static final String CTP_CATEGORY_FETCH_FAILED = "Failed to fetch category with externalId:'%s'."
+    private static final String CTP_CATEGORY_FETCH_FAILED = "Failed to fetch category with key:'%s'."
         + " Reason: %s";
-    private static final String CTP_CATEGORY_CREATE_FAILED = "Failed to create category with externalId:'%s'."
+    private static final String CTP_CATEGORY_CREATE_FAILED = "Failed to create category with key:'%s'."
         + " Reason: %s";
-    private static final String CTP_CATEGORY_SYNC_FAILED = "Failed to sync category with externalId:'%s'."
+    private static final String CTP_CATEGORY_SYNC_FAILED = "Failed to sync category with key:'%s'."
         + " Reason: %s";
-    private static final String CATEGORY_DRAFT_EXTERNAL_ID_NOT_SET = "CategoryDraft with name: %s doesn't have an"
-        + " externalId.";
+    private static final String CATEGORY_DRAFT_KEY_NOT_SET = "CategoryDraft with name: %s doesn't have a"
+        + " key.";
     private static final String CATEGORY_DRAFT_IS_NULL = "CategoryDraft is null.";
     private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
-        + "CategoryDraft with externalId:'%s'. Reason: %s";
+        + "CategoryDraft with key:'%s'. Reason: %s";
     private static final String FAILED_TO_RESOLVE_PARENT = "Failed to resolve parent reference on "
-        + "CategoryDraft with externalId:'%s'. Reason: %s";
+        + "CategoryDraft with key:'%s'. Reason: %s";
 
     private final CategoryService categoryService;
     private final TypeService typeService;
@@ -82,9 +82,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     /**
      * Traverses a {@link List} of {@link CategoryDraft} objects and tries to fetch a category, from the CTP
-     * project with the configuration stored in the {@code syncOptions} instance of this class, using the external id.
+     * project with the configuration stored in the {@code syncOptions} instance of this class, using its key.
      * If a category exists, this category is synced to be the same as the new category draft in this list. If no
-     * category exist with such external id, a new category, identical to this new category draft is created.
+     * category exist with such key, a new category, identical to this new category draft is created.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried out
      * successfully or not. If an exception was thrown on executing the request to CTP, the optional error callback
@@ -99,11 +99,11 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<CategoryDraft> categoryDrafts) {
         for (CategoryDraft categoryDraft : categoryDrafts) {
             if (categoryDraft != null) {
-                final String externalId = categoryDraft.getExternalId();
-                if (isNotBlank(externalId)) {
+                final String categoryKey = categoryDraft.getKey();
+                if (isNotBlank(categoryKey)) {
                     resolveReferencesAndSync(categoryDraft);
                 } else {
-                    final String errorMessage = format(CATEGORY_DRAFT_EXTERNAL_ID_NOT_SET, categoryDraft.getName());
+                    final String errorMessage = format(CATEGORY_DRAFT_KEY_NOT_SET, categoryDraft.getName());
                     handleError(errorMessage, null);
                 }
             } else {
@@ -121,10 +121,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     }
 
     /**
-     * Given a category draft {@link CategoryDraft} with an externalId, this method blocks execution to first resolve
+     * Given a category draft {@link CategoryDraft} with key, this method blocks execution to first resolve
      * the references on the category draft (custom type reference and the parent category reference). Then it tries
      * to fetch the existing category from CTP project stored in the {@code syncOptions} instance of this class. If
-     * successful, it either blocks to create a new category, if none exist with the same external id, or blocks to
+     * successful, it either blocks to create a new category, if none exist with the same key, or blocks to
      * update the existing category.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried out
@@ -134,38 +134,38 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param categoryDraft the category draft where we get the new data.
      */
     private void resolveReferencesAndSync(@Nonnull final CategoryDraft categoryDraft) {
-        final String externalId = categoryDraft.getExternalId();
+        final String categoryKey = categoryDraft.getKey();
         try {
             referenceResolver.resolveCustomTypeReference(categoryDraft)
                              .thenCompose(draftWithResolvedCustomTypeReference -> referenceResolver
                                  .resolveParentReference(draftWithResolvedCustomTypeReference)
                                  .thenCompose(resolvedDraft ->
-                                     categoryService.fetchCategoryByExternalId(externalId)
+                                     categoryService.fetchCategoryByKey(categoryKey)
                                                     .thenCompose(fetchedCategoryOptional -> fetchedCategoryOptional
                                                         .map(category ->
                                                             buildUpdateActionsAndUpdate(category, resolvedDraft))
                                                         .orElseGet(() -> createCategory(resolvedDraft)))
                                                     .exceptionally(exception -> {
                                                         final String errorMessage = format(CTP_CATEGORY_FETCH_FAILED,
-                                                            categoryDraft.getExternalId(), exception.getMessage());
+                                                            categoryDraft.getKey(), exception.getMessage());
                                                         handleError(errorMessage, exception);
                                                         return null;
                                                     }))
                                  .exceptionally(exception -> {
-                                     final String errorMessage = format(FAILED_TO_RESOLVE_PARENT, externalId,
+                                     final String errorMessage = format(FAILED_TO_RESOLVE_PARENT, categoryKey,
                                          exception.getMessage());
                                      handleError(errorMessage, exception);
                                      return null;
                                  }))
                              .exceptionally(exception -> {
-                                 final String errorMessage = format(FAILED_TO_RESOLVE_CUSTOM_TYPE, externalId,
+                                 final String errorMessage = format(FAILED_TO_RESOLVE_CUSTOM_TYPE, categoryKey,
                                      exception.getMessage());
                                  handleError(errorMessage, exception);
                                  return null;
                              })
                              .toCompletableFuture().get();
         } catch (InterruptedException | ExecutionException exception) {
-            final String errorMessage = format(CTP_CATEGORY_SYNC_FAILED, categoryDraft.getExternalId(),
+            final String errorMessage = format(CTP_CATEGORY_SYNC_FAILED, categoryDraft.getKey(),
                 exception.getMessage());
             handleError(errorMessage, exception);
         }
@@ -187,7 +187,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                               .thenAccept(createdCategory -> statistics.incrementCreated())
                               .exceptionally(exception -> {
                                   final String errorMessage = format(CTP_CATEGORY_CREATE_FAILED,
-                                      categoryDraft.getExternalId(), exception.getMessage());
+                                      categoryDraft.getKey(), exception.getMessage());
                                   handleError(errorMessage, exception);
                                   return null;
                               });
@@ -233,7 +233,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                               .thenAccept(updatedCategory -> statistics.incrementUpdated())
                               .exceptionally(exception -> {
                                   final String errorMessage = format(CTP_CATEGORY_UPDATE_FAILED,
-                                      category.getExternalId(), exception.getMessage());
+                                      category.getKey(), exception.getMessage());
                                   handleError(errorMessage, exception);
                                   return null;
                               });

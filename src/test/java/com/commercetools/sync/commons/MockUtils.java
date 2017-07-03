@@ -47,7 +47,7 @@ public class MockUtils {
      * Creates a mock {@link CategoryService} that returns a mocked {@link Category} instance whenever any of the
      * following methods are called:
      * <ul>
-     * <li>{@link CategoryService#fetchCategoryByExternalId(String)}</li>
+     * <li>{@link CategoryService#fetchCategoryByKey(String)}</li>
      * <li>{@link CategoryService#createCategory(CategoryDraft)}</li>
      * <li>{@link CategoryService#updateCategory(Category, List)}</li>
      * </ul>
@@ -60,6 +60,7 @@ public class MockUtils {
      * <ul>
      * <li>name: {"en": "name"}</li>
      * <li>slug: {"en": "slug"}</li>
+     * <li>key: "key"</li>
      * <li>externalId: "externalId"</li>
      * <li>description: {"en": "description"}</li>
      * <li>metaDescription: {"en": "metaDescription"}</li>
@@ -75,6 +76,7 @@ public class MockUtils {
         final Category category = getMockCategory(Locale.ENGLISH,
             "name",
             "slug",
+            "key",
             "externalId",
             "description",
             "metaDescription",
@@ -85,7 +87,7 @@ public class MockUtils {
 
 
         final CategoryService categoryService = mock(CategoryService.class);
-        when(categoryService.fetchCategoryByExternalId(anyString()))
+        when(categoryService.fetchCategoryByKey(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.of(category)));
         when(categoryService.updateCategory(any(), any()))
             .thenReturn(CompletableFuture.completedFuture(category));

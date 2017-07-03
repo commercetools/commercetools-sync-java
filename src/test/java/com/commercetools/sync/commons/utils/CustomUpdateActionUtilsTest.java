@@ -70,7 +70,7 @@ public class CustomUpdateActionUtilsTest {
         when(oldCategory.getCustom()).thenReturn(null);
 
         final CategoryDraft newCategoryDraft = CategorySyncMockUtils.getMockCategoryDraft(Locale.ENGLISH, "name",
-            "externalId", "parentId", "customTypeId", new HashMap<>());
+            "key", "parentId", "customTypeId", new HashMap<>());
         final List<UpdateAction<Category>> updateActions =
             buildCustomUpdateActions(oldCategory, newCategoryDraft, CATEGORY_SYNC_OPTIONS);
 
@@ -89,7 +89,7 @@ public class CustomUpdateActionUtilsTest {
         when(oldCategory.toReference()).thenReturn(Category.referenceOfId(oldCategoryId));
 
         final CategoryDraft newCategoryDraft = CategorySyncMockUtils.getMockCategoryDraft(Locale.ENGLISH, "name",
-            "slug", "externalId");
+            "slug", "key");
         final CustomFieldsDraft mockCustomFieldsDraft = CustomFieldsDraft.ofTypeKeyAndJson("key", new HashMap<>());
         when(newCategoryDraft.getCustom()).thenReturn(mockCustomFieldsDraft);
 

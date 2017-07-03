@@ -20,6 +20,7 @@ import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetDescriptionUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeParentUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeOrderHintUpdateAction;
+import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetExternalIdUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaDescriptionUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
@@ -55,8 +56,8 @@ public final class CategorySyncUtils {
     }
 
     /**
-     * Compares the Name, Slug, Description, Parent, OrderHint, MetaTitle, MetaDescription, MetaKeywords and Custom
-     * fields/ type fields of a {@link Category} and a {@link CategoryDraft}. It returns a {@link List} of
+     * Compares the Name, Slug, externalID, Description, Parent, OrderHint, MetaTitle, MetaDescription, MetaKeywords
+     * and Custom fields/ type fields of a {@link Category} and a {@link CategoryDraft}. It returns a {@link List} of
      * {@link UpdateAction&lt;Category&gt;} as a result. If no update action is needed, for example in
      * case where both the {@link Category} and the {@link CategoryDraft} have the same parents, an empty
      * {@link List} is returned.
@@ -76,6 +77,7 @@ public final class CategorySyncUtils {
         final List<UpdateAction<Category>> updateActions = buildUpdateActionsFromOptionals(Arrays.asList(
             buildChangeNameUpdateAction(oldCategory, newCategory),
             buildChangeSlugUpdateAction(oldCategory, newCategory),
+            buildSetExternalIdUpdateAction(oldCategory, newCategory),
             buildSetDescriptionUpdateAction(oldCategory, newCategory, syncOptions),
             buildChangeParentUpdateAction(oldCategory, newCategory, syncOptions),
             buildChangeOrderHintUpdateAction(oldCategory, newCategory, syncOptions),

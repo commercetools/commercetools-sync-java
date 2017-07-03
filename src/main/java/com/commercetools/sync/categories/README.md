@@ -38,17 +38,16 @@ final CategorySync categorySync = new CategorySync(categorySyncOptions);
 // execute the sync on your list of categories
 categorySync.sync(categoryDrafts);
 ````
-**Preconditions:** The sync expects a list of non-null `CategoryDraft` objects that have their `externalId` fields set, otherwise
+**Preconditions:** The sync expects a list of non-null `CategoryDraft` objects that have their `key` fields set, otherwise
  the sync will trigger an `errorCallback` function which is set by the user. More on this option can be found down below
  in the additional `options` explanations.
  
  Every category may have a reference to a `parent category` and a reference to the `Type` of its custom fields. Categories 
- are matched by their `externalId` but Types are matched by their `key` Therefore, in order for the sync to resolve the 
- actual ids of those references, the `key`/`externalId` of the 
- `Type`/parent `Category` has to be supplied in one of two ways:
- - Provide the `key`/`externalId` value on the `id` field of the reference. This means that calling `getId()` on the
- reference would return its `key`/`externalId`. Note that the library will check that this `key`/`externalId` is not 
- provided in `UUID` format by default. However, if you want to provide the `key`/`externalId` in `UUID` format, you can
+and Types are matched by their `key` Therefore, in order for the sync to resolve the 
+ actual ids of those references, the `key` of the `Type`/parent `Category` has to be supplied in one of two ways:
+ - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
+ reference would return its `key`. Note that the library will check that this `key` is not 
+ provided in `UUID` format by default. However, if you want to provide the `key` in `UUID` format, you can
   set it through the sync options. Different example of sync performed that way can be found [here]().
  - Provide the reference expanded. This means that calling `getObj()` on the reference should not return `null`,
   but return the `Type` object, from which the its `key` can be directly accessible. Example of sync performed that 
@@ -96,5 +95,5 @@ a flag, if set to `true`, enables the user to use keys with UUID format for refe
 
 ## Under the hood
 
-The tool matches categories by their `externalId`. Based on that categories are created or 
+The tool matches categories by their `key`. Based on that categories are created or 
 updated. Currently the tool does not support category deletion.
