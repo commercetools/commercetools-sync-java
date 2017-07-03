@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class CategoryServiceImpl implements CategoryService {
     private final SphereClient ctpClient;
+    private boolean invalidCache = false;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
     public CategoryServiceImpl(@Nonnull final SphereClient ctpClient) {
@@ -31,7 +32,7 @@ public final class CategoryServiceImpl implements CategoryService {
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String key) {
-        if (keyToIdCache.isEmpty()) {
+        if (keyToIdCache.isEmpty() || invalidCache) {
             return cacheAndFetch(key);
         }
         return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
@@ -68,5 +69,10 @@ public final class CategoryServiceImpl implements CategoryService {
                                                     @Nonnull final List<UpdateAction<Category>> updateActions) {
         final CategoryUpdateCommand categoryUpdateCommand = CategoryUpdateCommand.of(category, updateActions);
         return ctpClient.execute(categoryUpdateCommand);
+    }
+
+    @Override
+    public void invalidateCache() {
+        invalidCache = true;
     }
 }

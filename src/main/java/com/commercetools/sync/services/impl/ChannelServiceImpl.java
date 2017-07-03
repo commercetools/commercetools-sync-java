@@ -25,6 +25,7 @@ public final class ChannelServiceImpl implements ChannelService {
     private final SphereClient ctpClient;
     private final Set<ChannelRole> channelRoles;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
+    private boolean invalidCache = false;
 
     public ChannelServiceImpl(@Nonnull final SphereClient ctpClient,
                               @Nonnull final Set<ChannelRole> channelRoles) {
@@ -35,7 +36,7 @@ public final class ChannelServiceImpl implements ChannelService {
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key) {
-        if (keyToIdCache.isEmpty()) {
+        if (keyToIdCache.isEmpty() || invalidCache) {
             return cacheAndFetch(key);
         }
         return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
@@ -75,5 +76,10 @@ public final class ChannelServiceImpl implements ChannelService {
     @Override
     public void cacheChannel(@Nonnull final Channel channel) {
         keyToIdCache.put(channel.getKey(), channel.getId());
+    }
+
+    @Override
+    public void invalidateCache() {
+        invalidCache = true;
     }
 }

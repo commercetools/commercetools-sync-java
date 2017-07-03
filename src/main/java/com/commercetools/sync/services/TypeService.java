@@ -26,4 +26,9 @@ public interface TypeService {
      */
     @Nonnull
     CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key);
+
+    /**
+     * Invalidates the state of the cache so that on the next fetch a fresh copy is fetched and cached.
+     */
+    void invalidateCache();
 }

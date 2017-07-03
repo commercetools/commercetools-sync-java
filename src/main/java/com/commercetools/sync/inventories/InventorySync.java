@@ -59,6 +59,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         + "InventoryEntryDraft with sku:'%s'. Reason: %s";
 
     private final InventoryService inventoryService;
+    private final ChannelService channelService;
+    private final TypeService typeService;
     private final InventoryReferenceResolver referenceResolver;
 
     /**
@@ -79,6 +81,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                   @Nonnull final ChannelService channelService, @Nonnull final TypeService typeService) {
         super(new InventorySyncStatistics(), syncOptions);
         this.inventoryService = inventoryService;
+        this.channelService = channelService;
+        this.typeService = typeService;
         this.referenceResolver = new InventoryReferenceResolver(syncOptions, typeService, channelService);
     }
 
@@ -342,5 +346,11 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                              final int failedTimes) {
         syncOptions.applyErrorCallback(errorMessage, exception);
         statistics.incrementFailed(failedTimes);
+    }
+
+    @Override
+    public void invalidateServiceCaches() {
+        channelService.invalidateCache();
+        typeService.invalidateCache();
     }
 }

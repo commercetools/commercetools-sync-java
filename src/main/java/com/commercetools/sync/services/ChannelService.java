@@ -51,4 +51,9 @@ public interface ChannelService {
      * @param channel key of supply channel
      */
     void cacheChannel(@Nonnull final Channel channel);
+
+    /**
+     * Invalidates the state of the cache so that on the next fetch a fresh copy is fetched and cached.
+     */
+    void invalidateCache();
 }

@@ -50,6 +50,7 @@ of concurrent requests to CTP, thus will improve its performance. An example of 
 
 **Preconditions:** The sync expects a list of `InventoryEntryDraft` objects that have their `sku` fields set,
 otherwise the sync will trigger an `errorCallback` function set by the user (more on it can be found down below in the options explanations).
+
 Every inventory entry may have a reference to a supply `Channel` and a reference to the `Type` of its custom fields. These
 references are matched by their `key`. Therefore, in order for the sync to resolve the actual ids of those references,
 their `key`s has to be supplied in one of two ways:

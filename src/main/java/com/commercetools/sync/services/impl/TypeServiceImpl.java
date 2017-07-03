@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class TypeServiceImpl implements TypeService {
     private final SphereClient ctpClient;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
+    private boolean invalidCache = false;
 
     public TypeServiceImpl(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
@@ -29,7 +30,7 @@ public final class TypeServiceImpl implements TypeService {
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key) {
-        if (keyToIdCache.isEmpty()) {
+        if (keyToIdCache.isEmpty() || invalidCache) {
             return cacheAndFetch(key);
         }
         return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
@@ -42,5 +43,10 @@ public final class TypeServiceImpl implements TypeService {
                                       types.forEach(type -> keyToIdCache.put(type.getKey(), type.getId()));
                                       return Optional.ofNullable(keyToIdCache.get(key));
                                   });
+    }
+
+    @Override
+    public void invalidateCache() {
+        invalidCache = true;
     }
 }
