@@ -62,10 +62,4 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
     public U getStatistics() {
         return statistics;
     }
-
-    /**
-     * Invalidates the state of the service caches so that on next fetches after calling this method,
-     * fresh copies are fetched and cached.
-     */
-    public abstract void invalidateServiceCaches();
 }

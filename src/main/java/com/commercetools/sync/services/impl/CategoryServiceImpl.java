@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class CategoryServiceImpl implements CategoryService {
     private final SphereClient ctpClient;
-    private boolean invalidCache = false;
+    private boolean isCached = false;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
     public CategoryServiceImpl(@Nonnull final SphereClient ctpClient) {
@@ -31,19 +31,16 @@ public final class CategoryServiceImpl implements CategoryService {
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String key) {
-        if (keyToIdCache.isEmpty() || invalidCache) {
-            return cacheAndFetch(key);
+    public CompletionStage<Map<String, String>> cacheKeysToIds() {
+        if (isCached) {
+            return CompletableFuture.completedFuture(keyToIdCache);
         }
-        return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
-    }
-
-    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
+        isCached = true;
         return QueryExecutionUtils.queryAll(ctpClient, CategoryQuery.of())
                                   .thenApply(categories -> {
                                       categories.forEach(category ->
                                           keyToIdCache.put(category.getKey(), category.getId()));
-                                      return Optional.ofNullable(keyToIdCache.get(key));
+                                      return keyToIdCache;
                                   });
     }
 
@@ -69,10 +66,5 @@ public final class CategoryServiceImpl implements CategoryService {
                                                     @Nonnull final List<UpdateAction<Category>> updateActions) {
         final CategoryUpdateCommand categoryUpdateCommand = CategoryUpdateCommand.of(category, updateActions);
         return ctpClient.execute(categoryUpdateCommand);
-    }
-
-    @Override
-    public void invalidateCache() {
-        invalidCache = true;
     }
 }

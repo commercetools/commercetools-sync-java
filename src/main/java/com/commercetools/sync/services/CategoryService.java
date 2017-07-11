@@ -69,9 +69,4 @@ public interface CategoryService {
     @Nonnull
     CompletionStage<Category> updateCategory(@Nonnull final Category category,
                                              @Nonnull final List<UpdateAction<Category>> updateActions);
-
-    /**
-     * Invalidates the state of the cache so that on the next fetch a fresh copy is fetched and cached.
-     */
-    void invalidateCache();
 }
