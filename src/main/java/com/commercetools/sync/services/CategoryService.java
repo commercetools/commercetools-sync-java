@@ -6,10 +6,46 @@ import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 public interface CategoryService {
+
+    /**
+     * If not already done once before, it fetches all the category keys from the CTP project defined in a potentially
+     * injected {@link io.sphere.sdk.client.SphereClient} and stores a mapping for every category to id in {@link Map}
+     * and returns this cached map.
+     *
+     * @return {@link CompletionStage&lt;Map&gt;} in which the result of it's completion contains a map of all category
+     * keys -> ids
+     */
+    @Nonnull
+    CompletionStage<Map<String, String>> cacheKeysToIds();
+
+    /**
+     * Given a {@link Set} of category keys, this method fetches a set of all the categories matching this given set of
+     * keys in  the CTP project defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}.
+     *
+     * @param categoryKeys set of category keys to fetch matching categories by.
+     * @return {@link CompletionStage&lt;Map&gt;} in which the result of it's completion contains a {@link Set} of all
+     * matching categories.
+     */
+    @Nonnull
+    CompletionStage<Set<Category>> fetchMatchingCategoriesByKeys(@Nonnull final Set<String> categoryKeys);
+
+    /**
+     * Given a {@link Set} of categoryDrafts, this method creates Categories corresponding to them in the CTP project
+     * defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}.
+     *
+     * @param categoryDrafts set of categoryDrafts to create on the CTP project.
+     * @return {@link CompletionStage&lt;Map&gt;} in which the result of it's completion contains a {@link Set} of all
+     * created categories.
+     */
+    @Nonnull
+    CompletionStage<Set<Category>> createCategories(@Nonnull final Set<CategoryDraft> categoryDrafts);
+
     /**
      * Given a {@code key}, this method first checks if cached map of category keys -> ids is not empty.
      * If not, it returns a completed future that contains an optional that contains what this key maps to in

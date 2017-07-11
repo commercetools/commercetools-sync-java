@@ -13,12 +13,15 @@ import io.sphere.sdk.queries.PagedResult;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public final class CategoryServiceImpl implements CategoryService {
     private final SphereClient ctpClient;
@@ -46,6 +49,47 @@ public final class CategoryServiceImpl implements CategoryService {
 
     @Nonnull
     @Override
+    public CompletionStage<Set<Category>> fetchMatchingCategoriesByKeys(@Nonnull final Set<String> categoryKeys) {
+        if (categoryKeys.isEmpty())
+            return CompletableFuture.completedFuture(Collections.emptySet());
+        return QueryExecutionUtils.queryAll(ctpClient,
+            CategoryQuery.of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys)))
+                                  .thenApply(fetchedCategories ->
+                                      fetchedCategories.stream()
+                                                       .collect(Collectors.toSet()));
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Set<Category>> createCategories(@Nonnull final Set<CategoryDraft> categoryDrafts) {
+        final List<CompletableFuture<Category>> futureCreations = categoryDrafts.stream()
+                                                                        .map(this::createCategory)
+                                                                        .map(CompletionStage::toCompletableFuture)
+                                                                        .collect(Collectors.toList());
+        return CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()]))
+                                .thenApply(result ->
+                                    futureCreations.stream()
+                                                   .map(CompletableFuture::join)
+                                                   .collect(Collectors.toSet())
+                                );
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String key) {
+        if (isCached) {
+            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
+        }
+        return cacheAndFetch(key);
+    }
+
+    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
+        return cacheKeysToIds()
+            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
+    }
+
+    @Nonnull
+    @Override
     public CompletionStage<Optional<Category>> fetchCategoryByKey(@Nonnull final String key) {
         final CategoryQuery categoryQuery = CategoryQuery.of()
                                                          .withPredicates(categoryQueryModel ->
@@ -57,7 +101,11 @@ public final class CategoryServiceImpl implements CategoryService {
     @Override
     public CompletionStage<Category> createCategory(@Nonnull final CategoryDraft categoryDraft) {
         final CategoryCreateCommand categoryCreateCommand = CategoryCreateCommand.of(categoryDraft);
-        return ctpClient.execute(categoryCreateCommand);
+        return ctpClient.execute(categoryCreateCommand)
+                        .thenApply(createdCategory -> {
+                            keyToIdCache.put(createdCategory.getKey(), createdCategory.getId());
+                            return createdCategory;
+                        });
     }
 
     @Nonnull
