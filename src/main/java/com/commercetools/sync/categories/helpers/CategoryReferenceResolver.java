@@ -25,6 +25,8 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
     private CategoryService categoryService;
     private static final String FAILED_TO_RESOLVE_PARENT = "Failed to resolve parent reference on "
         + "CategoryDraft with key:'%s'. Reason: %s";
+    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+        + "CategoryDraft with key:'%s'.";
 
     public CategoryReferenceResolver(@Nonnull final CategorySyncOptions options,
                                      @Nonnull final TypeService typeService,
@@ -43,7 +45,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
     public CompletionStage<CategoryDraft> resolveCustomTypeReference(@Nonnull final CategoryDraft categoryDraft) {
         final CustomFieldsDraft custom = categoryDraft.getCustom();
         if (custom != null) {
-            return getCustomTypeId(categoryDraft)
+            return getCustomTypeId(categoryDraft, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, categoryDraft.getKey()))
                 .thenApply(resolvedTypeIdOptional ->
                     resolvedTypeIdOptional.map(resolvedTypeId ->
                         CategoryDraftBuilder.of(categoryDraft)
@@ -67,7 +69,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
      *      a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    public CompletionStage<CategoryDraft> resolveParentReference(@Nonnull final CategoryDraft categoryDraft) {
+    CompletionStage<CategoryDraft> resolveParentReference(@Nonnull final CategoryDraft categoryDraft) {
         try {
             return getParentCategoryKey(categoryDraft, getOptions().shouldAllowUuidKeys())
                 .map(parentCategoryKey -> fetchAndResolveParentReference(categoryDraft, parentCategoryKey))

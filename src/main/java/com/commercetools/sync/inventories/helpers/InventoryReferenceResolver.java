@@ -21,6 +21,8 @@ import static java.lang.String.format;
 
 public final class InventoryReferenceResolver extends BaseReferenceResolver<InventoryEntryDraft, InventorySyncOptions> {
     private static final String CHANNEL_DOES_NOT_EXIST = "Channel with key '%s' does not exist.";
+    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+        + "InventoryEntry with SKU:'%s'.";
     private ChannelService channelService;
 
     public InventoryReferenceResolver(@Nonnull final InventorySyncOptions options,
@@ -35,12 +37,12 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
     public CompletionStage<InventoryEntryDraft> resolveCustomTypeReference(@Nonnull final InventoryEntryDraft draft) {
         final CustomFieldsDraft custom = draft.getCustom();
         if (custom != null) {
-            return getCustomTypeId(custom).thenApply(resolvedTypeIdOptional ->
-                resolvedTypeIdOptional.map(resolvedTypeId -> InventoryEntryDraftBuilder
-                                          .of(draft)
-                                          .custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields()))
-                                          .build())
-                                      .orElseGet(() -> InventoryEntryDraftBuilder.of(draft).build()));
+            return getCustomTypeId(draft, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draft.getSku()))
+                .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional
+                    .map(resolvedTypeId -> InventoryEntryDraftBuilder
+                        .of(draft).custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields()))
+                        .build())
+                    .orElseGet(() -> InventoryEntryDraftBuilder.of(draft).build()));
         }
         return CompletableFuture.completedFuture(draft);
     }
@@ -69,7 +71,8 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
         if (channelReference != null) {
             try {
                 final String keyFromExpansion = getKeyFromExpansion(channelReference);
-                final String channelKey = getKeyFromExpansionOrReference(keyFromExpansion, channelReference);
+                final String channelKey = getKeyFromExpansionOrReference(getOptions().shouldAllowUuidKeys(),
+                    keyFromExpansion, channelReference);
                 return fetchOrCreateAndResolveReference(draft, channelKey);
             } catch (ReferenceResolutionException exception) {
                 return CompletableFutureUtils.exceptionallyCompletedFuture(exception);
