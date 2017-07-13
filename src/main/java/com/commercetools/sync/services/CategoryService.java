@@ -19,7 +19,7 @@ public interface CategoryService {
      * and returns this cached map.
      *
      * @return {@link CompletionStage&lt;Map&gt;} in which the result of it's completion contains a map of all category
-     * keys -> ids
+     *      keys -> ids
      */
     @Nonnull
     CompletionStage<Map<String, String>> cacheKeysToIds();
@@ -30,7 +30,7 @@ public interface CategoryService {
      *
      * @param categoryKeys set of category keys to fetch matching categories by.
      * @return {@link CompletionStage&lt;Map&gt;} in which the result of it's completion contains a {@link Set} of all
-     * matching categories.
+     *          matching categories.
      */
     @Nonnull
     CompletionStage<Set<Category>> fetchMatchingCategoriesByKeys(@Nonnull final Set<String> categoryKeys);
@@ -41,7 +41,7 @@ public interface CategoryService {
      *
      * @param categoryDrafts set of categoryDrafts to create on the CTP project.
      * @return {@link CompletionStage&lt;Map&gt;} in which the result of it's completion contains a {@link Set} of all
-     * created categories.
+     *          created categories.
      */
     @Nonnull
     CompletionStage<Set<Category>> createCategories(@Nonnull final Set<CategoryDraft> categoryDrafts);
@@ -64,21 +64,6 @@ public interface CategoryService {
     CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String key);
 
     /**
-     * Given an {@code key}, this method tries to fetch a {@link Category} with this {@code key} from the
-     * CTP project defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. This method returns
-     * {@link CompletionStage&lt;Optional&lt;Category&gt;&gt;} in which the result of it's completion could contain an
-     * {@link Optional} with the {@link Category} inside of it or an empty {@link Optional} if no {@link Category} was
-     * found in the CTP project.
-     *
-     * @param key the key by which a {@link Category} should be fetched from the CTP project.
-     * @return {@link CompletionStage&lt;Optional&lt;Category&gt;&gt;} containing as a result of it's completion an
-     *      {@link Optional} with the {@link Category} inside of it or an empty {@link Optional} if no {@link Category}
-     *      was found in the CTP project, or a {@link io.sphere.sdk.models.SphereException}.
-     */
-    @Nonnull
-    CompletionStage<Optional<Category>> fetchCategoryByKey(@Nonnull final String key);
-
-    /**
      * Given a {@link CategoryDraft}, this method creates a {@link Category} based on it in the CTP project defined in
      * a potentially injected {@link io.sphere.sdk.client.SphereClient}. This method returns
      * {@link CompletionStage&lt;Category&gt;} in which the result of it's completion contains an instance of the
@@ -89,7 +74,7 @@ public interface CategoryService {
      *      {@link Category} which was created in the CTP project or a {@link io.sphere.sdk.models.SphereException}.
      */
     @Nonnull
-    CompletionStage<Category> createCategory(@Nonnull final CategoryDraft categoryDraft);
+    CompletionStage<Optional<Category>> createCategory(@Nonnull final CategoryDraft categoryDraft);
 
     /**
      * Given a {@link Category} and a {@link List&lt;UpdateAction&lt;Category&gt;&gt;}, this method issues an update
@@ -103,6 +88,6 @@ public interface CategoryService {
      *      {@link Category} which was updated in the CTP project or a {@link io.sphere.sdk.models.SphereException}.
      */
     @Nonnull
-    CompletionStage<Category> updateCategory(@Nonnull final Category category,
-                                             @Nonnull final List<UpdateAction<Category>> updateActions);
+    CompletionStage<Optional<Category>> updateCategory(@Nonnull final Category category,
+                                                       @Nonnull final List<UpdateAction<Category>> updateActions);
 }
