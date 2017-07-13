@@ -36,7 +36,6 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
     private static final String CTP_CATEGORY_UPDATE_FAILED = "Failed to update category with key:'%s'. Reason: %s";
-    private static final String CTP_CATEGORY_SYNC_FAILED = "An error occurred while syncing categories: %s";
     private static final String CATEGORY_DRAFT_KEY_NOT_SET = "CategoryDraft with name: %s doesn't have a key.";
     private static final String CATEGORY_DRAFT_IS_NULL = "CategoryDraft is null.";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
@@ -130,12 +129,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                                             updateCategoriesSequentially(categoryDraftsToUpdate))
                                                         .thenCompose(result ->
                                                             updateCategoriesInParallel(categoryDraftsToUpdate))
-                                                        .handle((result, exception) -> {
-                                                            if (exception != null) {
-                                                                final String errorMessage = format(
-                                                                    CTP_CATEGORY_SYNC_FAILED, exception.getMessage());
-                                                                handleError(errorMessage, exception);
-                                                            }
+                                                        .thenApply((result) -> {
                                                             statistics.incrementProcessed(numberOfNewDraftsToProcess);
                                                             return statistics;
                                                         });
