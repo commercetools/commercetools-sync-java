@@ -28,9 +28,9 @@ public final class CategoryServiceImpl implements CategoryService {
     private final CategorySyncOptions syncOptions;
     private boolean isCached = false;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
-    private static final String CREATE_FAILED = "Failed to create CategoryDraft with key: '%s'.";
-    private static final String FETCH_FAILED = "Failed to fetch CategoryDrafts with keys: '%s'.";
-    private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'.";
+    private static final String CREATE_FAILED = "Failed to create CategoryDraft with key: '%s'. Reason: %s";
+    private static final String FETCH_FAILED = "Failed to fetch CategoryDrafts with keys: '%s'. Reason: %s";
+    private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
 
     public CategoryServiceImpl(@Nonnull final CategorySyncOptions syncOptions) {
         this.syncOptions = syncOptions;
@@ -62,7 +62,7 @@ public final class CategoryServiceImpl implements CategoryService {
                                   .handle((fetchedCategories, sphereException) -> {
                                       if (sphereException != null) {
                                           syncOptions
-                                              .applyErrorCallback(format(FETCH_FAILED, categoryKeys),
+                                              .applyErrorCallback(format(FETCH_FAILED, categoryKeys, sphereException),
                                                   sphereException);
                                           return Collections.emptySet();
                                       } else {
@@ -110,8 +110,8 @@ public final class CategoryServiceImpl implements CategoryService {
                           .handle((createdCategory, sphereException) -> {
                               if (sphereException != null) {
                                   syncOptions
-                                      .applyErrorCallback(format(CREATE_FAILED, categoryDraft.getKey()),
-                                          sphereException);
+                                      .applyErrorCallback(format(CREATE_FAILED, categoryDraft.getKey(),
+                                          sphereException), sphereException);
                                   return Optional.empty();
                               } else {
                                   keyToIdCache.put(createdCategory.getKey(), createdCategory.getId());
@@ -130,7 +130,8 @@ public final class CategoryServiceImpl implements CategoryService {
                           .handle((updatedCategory, sphereException) -> {
                               if (sphereException != null) {
                                   syncOptions
-                                      .applyErrorCallback(format(UPDATE_FAILED, category.getKey()), sphereException);
+                                      .applyErrorCallback(format(UPDATE_FAILED, category.getKey(), sphereException),
+                                          sphereException);
                                   return Optional.empty();
                               } else {
                                   return Optional.of(updatedCategory);
