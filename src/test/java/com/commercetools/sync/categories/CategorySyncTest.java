@@ -5,7 +5,9 @@ import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.SphereException;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -16,7 +18,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -234,37 +235,6 @@ public class CategorySyncTest {
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
     }
 
-    //TODO
-    @Ignore("Can't mock service needs to be in integration tests")
-    @Test
-    public void sync_WithNoExistingCategoryButExceptionOnCreate_ShouldFailSync() {
-        final CompletableFuture<Optional<Category>> futureThrowingSphereException =
-            CompletableFuture.supplyAsync(() -> {
-                throw new SphereException();
-            });
-        final CategoryService categoryService = getMockCategoryService();
-        when(categoryService.createCategory(any())).thenReturn(futureThrowingSphereException);
-
-        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(), categoryService);
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "newKey"));
-
-
-        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
-
-        assertThat(syncStatistics.getCreated()).isEqualTo(0);
-        assertThat(syncStatistics.getFailed()).isEqualTo(1);
-        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
-        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Failed to create category with key:'key'");
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-    }
-
     @Test
     public void sync_WithExistingCategoryButWithNotAllowedUuidReferenceResolution_ShouldFailSync() {
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
@@ -425,6 +395,46 @@ public class CategorySyncTest {
                 + "(0 created, 1 updated and 0 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
+    }
+
+    @Test
+    public void requiresChangeParentUpdateAction_WithTwoDifferentParents_ShouldReturnTrue() {
+        final String parentId = "parentId";
+        final Category category = mock(Category.class);
+        when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
+
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
+            .parent(Category.referenceOfId("differentParent"))
+            .build();
+        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
+        assertThat(doesRequire).isTrue();
+    }
+
+    @Test
+    public void requiresChangeParentUpdateAction_WithTwoIdenticalParents_ShouldReturnFalse() {
+        final String parentId = "parentId";
+        final Category category = mock(Category.class);
+        when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
+
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
+            .parent(Category.referenceOfId(parentId))
+            .build();
+        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
+        assertThat(doesRequire).isFalse();
+    }
+
+    @Test
+    public void requiresChangeParentUpdateAction_WithNonExistingParents_ShouldReturnFalse() {
+        final Category category = mock(Category.class);
+        when(category.getParent()).thenReturn(null);
+
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
+            .build();
+        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
+        assertThat(doesRequire).isFalse();
     }
 
 }

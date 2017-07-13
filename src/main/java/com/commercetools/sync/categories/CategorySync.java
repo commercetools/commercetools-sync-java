@@ -455,9 +455,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @return true or false whether a {@link io.sphere.sdk.categories.commands.updateactions.ChangeParent} is needed to
      *          sync the draft to the category.
      */
-    private boolean requiresChangeParentUpdateAction(@Nonnull final Category category,
+    static boolean requiresChangeParentUpdateAction(@Nonnull final Category category,
                                                      @Nonnull final CategoryDraft categoryDraft) {
-        return Objects.equals(category.getParent(), categoryDraft.getParent());
+        return !Objects.equals(category.getParent(), categoryDraft.getParent());
     }
 
     /**
