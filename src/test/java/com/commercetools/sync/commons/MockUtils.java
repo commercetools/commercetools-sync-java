@@ -12,11 +12,14 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
@@ -47,9 +50,11 @@ public class MockUtils {
      * Creates a mock {@link CategoryService} that returns a mocked {@link Category} instance whenever any of the
      * following methods are called:
      * <ul>
-     * <li>{@link CategoryService#fetchCategoryByKey(String)}</li>
      * <li>{@link CategoryService#createCategory(CategoryDraft)}</li>
      * <li>{@link CategoryService#updateCategory(Category, List)}</li>
+     * <li>{@link CategoryService#createCategories(Set)}</li>
+     * <li>{@link CategoryService#fetchMatchingCategoriesByKeys(Set)}</li>
+     *
      * </ul>
      * or returns a dummy category id of value "parentId" whenever the following method is called on the service:
      * <ul>
@@ -87,14 +92,23 @@ public class MockUtils {
 
 
         final CategoryService categoryService = mock(CategoryService.class);
-        when(categoryService.fetchCategoryByKey(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.of(category)));
         when(categoryService.updateCategory(any(), any()))
-            .thenReturn(CompletableFuture.completedFuture(category));
+            .thenReturn(CompletableFuture.completedFuture(Optional.of(category)));
         when(categoryService.createCategory(any()))
-            .thenReturn(CompletableFuture.completedFuture(category));
+            .thenReturn(CompletableFuture.completedFuture(Optional.of(category)));
         when(categoryService.fetchCachedCategoryId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.of("parentId")));
+        when(categoryService.createCategories(any()))
+            .thenReturn(CompletableFuture.completedFuture(Collections.singleton(category)));
+        when(categoryService.createCategories(Collections.emptySet()))
+            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
+        when(categoryService.fetchMatchingCategoriesByKeys(any()))
+            .thenReturn(CompletableFuture.completedFuture(Collections.singleton(category)));
+
+        Map<String, String> mockCategoryKeyToIdCache = new HashMap<>();
+        mockCategoryKeyToIdCache.put(category.getKey(), String.valueOf(UUID.randomUUID()));
+        when(categoryService.cacheKeysToIds())
+            .thenReturn(CompletableFuture.completedFuture(mockCategoryKeyToIdCache));
         return categoryService;
     }
 
