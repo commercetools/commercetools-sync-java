@@ -238,7 +238,8 @@ public class CategoryServiceIT {
 
         assertThat(errorCallBackExceptions).hasSize(2);
         assertThat(errorCallBackMessages).hasSize(2);
-        // Since the order of creation is not ensured by allOf, so we and assert in list of error messages together:
+        // Since the order of creation is not ensured by allOf, so we assert in list of error messages (as string):
+        System.out.println(errorCallBackMessages.toString());
         assertThat(errorCallBackMessages.toString()).contains("Invalid category key '1'. Category keys may only contain"
             + " alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
         assertThat(errorCallBackMessages.toString()).contains(" A duplicate value '\"furniture\"' exists for field "
