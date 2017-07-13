@@ -3,6 +3,7 @@ package com.commercetools.sync.integration.ctpprojectsource.categories;
 import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
+import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.integration.commons.utils.SphereClientUtils;
 import io.sphere.sdk.categories.Category;
@@ -33,10 +34,8 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 public class CategorySyncIT {
     private CategorySync categorySync;
-    private Category targetProjectRootCategory;
     private Category sourceProjectRootCategory;
 
     private List<String> callBackErrorResponses = new ArrayList<>();
@@ -52,7 +51,7 @@ public class CategorySyncIT {
         deleteRootCategoriesFromTargetAndSource();
         deleteTypesFromTargetAndSource();
 
-        targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
+        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
         createCategories(CTP_TARGET_CLIENT, getMockCategoryDrafts(targetProjectRootCategory, 2));
 
         sourceProjectRootCategory = createRootCategory(CTP_SOURCE_CLIENT);
@@ -96,9 +95,9 @@ public class CategorySyncIT {
         // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = replaceReferenceIdsWithKeys(categories);
 
-        categorySync.sync(categoryDrafts);
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-        assertThat(categorySync.getStatistics().getReportMessage())
+        assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
                 + " failed to sync).", 3, 0, 2, 0));
 
@@ -125,9 +124,9 @@ public class CategorySyncIT {
         // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = replaceReferenceIdsWithKeys(categories);
 
-        categorySync.sync(categoryDrafts);
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-        assertThat(categorySync.getStatistics().getReportMessage())
+        assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
                 + " failed to sync).", 4, 1, 2, 0));
         assertThat(callBackErrorResponses).isEmpty();
@@ -154,9 +153,9 @@ public class CategorySyncIT {
                                                              .map(category -> CategoryDraftBuilder.of(category).build())
                                                              .collect(Collectors.toList());
 
-        categorySync.sync(categoryDrafts);
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-        assertThat(categorySync.getStatistics().getReportMessage())
+        assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
                 + " failed to sync).", 3, 0, 0, 2));
         assertThat(callBackErrorResponses).hasSize(2);
