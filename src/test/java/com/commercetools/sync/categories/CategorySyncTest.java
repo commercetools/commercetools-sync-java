@@ -266,32 +266,6 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithExistingCategoryButExceptionOnUpdate_ShouldFailSync() {
-        final CompletableFuture<Optional<Category>> futureThrowingSphereException =
-            CompletableFuture.supplyAsync(() -> {
-                throw new SphereException();
-            });
-        final CategoryService categoryService = getMockCategoryService();
-        when(categoryService.updateCategory(any(), any())).thenReturn(futureThrowingSphereException);
-        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(), categoryService);
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "key"));
-
-        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
-        assertThat(syncStatistics.getCreated()).isEqualTo(0);
-        assertThat(syncStatistics.getFailed()).isEqualTo(1);
-        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
-        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Failed to update category with key:'key'");
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-    }
-
-    @Test
     public void sync_WithExistingCategoryButWithNotAllowedUuidReferenceResolution_ShouldFailSync() {
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
             getMockCategoryService());
