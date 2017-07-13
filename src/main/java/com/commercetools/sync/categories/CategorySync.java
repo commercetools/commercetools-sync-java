@@ -94,13 +94,12 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     /**
      * Given a list of {@code CategoryDraft} that represent a batch of category drafts, this method for the first batch
      * only caches a list of all the categories in the CTP project in a cached map that representing each category's
-     * key to the id. It then validates the category drafts, then resolves all the references
+     * key to the id. It then validates the category drafts, then resolves all the references. Then it creates all
+     * categories that need to be created in parallel while keeping track of the categories that have their
+     * non-existing parents. Then it does update actions that don't require parent changes in parallel. Then in a
+     * blocking fashion issues update actions that don't involve parent changes sequentially.
      *
-     * Then it creates all categories that need to be created in parallel while keeping track of
-     * the categories that have their non-existing parents. Then it does update actions that don't require parent changes
-     * in parallel. Then in a blocking fashion issues update actions that don't involve parent changes sequentially.
-     *
-     * More on the exact implementation of how the sync works here:
+     * <p>More on the exact implementation of how the sync works here:
      * https://sphere.atlassian.net/wiki/spaces/PS/pages/145193124/Category+Parallelisation+Technical+Concept
      *
      *
@@ -447,18 +446,18 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     }
 
     /**
-     * Given a category and a categoryDraft checks whether a
+     * Compares the parent references of a category and a categoryDraft to check whether a
      * {@link io.sphere.sdk.categories.commands.updateactions.ChangeParent} update action is required to sync the
-     * draft to the category.
+     * draft to the category or not
      *
      * @param category      the old category to sync to.
      * @param categoryDraft the new category draft to sync.
      * @return true or false whether a {@link io.sphere.sdk.categories.commands.updateactions.ChangeParent} is needed to
-     * sync the draft to the category.
+     *          sync the draft to the category.
      */
     private boolean requiresChangeParentUpdateAction(@Nonnull final Category category,
                                                      @Nonnull final CategoryDraft categoryDraft) {
-        return buildChangeParentUpdateAction(category, categoryDraft, syncOptions).isPresent();
+        return Objects.equals(category.getParent(), categoryDraft.getParent());
     }
 
     /**
