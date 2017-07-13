@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
@@ -296,6 +297,143 @@ public class CategorySyncIT {
                     + "categories failed to sync).", 6, 5, 1, 0));
     }
 
+    @Test
+    public void syncDrafts_WithSameSlugDraftDraft_ShouldNotSyncIt() {
+        final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
+
+        // Category draft coming from external source.
+        final CategoryDraft categoryDraft1 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
+            .key(oldCategoryKey)
+            .parent(targetProjectRootCategory)
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+
+        // Same slug draft
+        final CategoryDraft categoryDraft2 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "cat1"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
+            .key("cat1")
+            .parent(targetProjectRootCategory)
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+
+        final CategoryDraft categoryDraft3 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "cat2"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
+            .key("cat2")
+            .parent(Category.referenceOfId("cat1"))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+
+        final CategoryDraft categoryDraft4 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "cat3"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
+            .key("cat3")
+            .parent(Category.referenceOfId("cat1"))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+
+        final CategoryDraft categoryDraft5 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "cat4"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture4"))
+            .key("cat4")
+            .parent(targetProjectRootCategory)
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+
+        final CategoryDraft categoryDraft6 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "cat5"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture5"))
+            .key("cat5")
+            .parent(Category.referenceOfId("cat4"))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+
+        newCategoryDrafts.add(categoryDraft1);
+        newCategoryDrafts.add(categoryDraft2);
+        newCategoryDrafts.add(categoryDraft3);
+        newCategoryDrafts.add(categoryDraft4);
+        newCategoryDrafts.add(categoryDraft5);
+        newCategoryDrafts.add(categoryDraft6);
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
+
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format(
+                "Summary: %d categories were processed in total (%d created, %d updated and %d "
+                    + "categories failed to sync).", 6, 5, 0, 1));
+    }
+
+    @Test
+    public void syncDrafts_WithDraftWithInvalidParentKey_ShouldNotSyncIt() {
+        final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
+
+        // Category draft coming from external source.
+        final CategoryDraft categoryDraft1 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
+            .key(oldCategoryKey)
+            .parent(targetProjectRootCategory)
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+
+        final CategoryDraft categoryDraft2 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "cat1"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture1"))
+            .key("cat1")
+            .parent(targetProjectRootCategory)
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+
+        // With invalid parent key
+        final CategoryDraft categoryDraft3 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "cat2"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
+            .key("cat2")
+            .parent(Category.referenceOfId(UUID.randomUUID().toString()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+
+        final CategoryDraft categoryDraft4 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "cat3"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
+            .key("cat3")
+            .parent(Category.referenceOfId("cat1"))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+
+        final CategoryDraft categoryDraft5 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "cat4"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture4"))
+            .key("cat4")
+            .parent(targetProjectRootCategory)
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+
+        final CategoryDraft categoryDraft6 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "cat5"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture5"))
+            .key("cat5")
+            .parent(Category.referenceOfId("cat4"))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+
+        newCategoryDrafts.add(categoryDraft1);
+        newCategoryDrafts.add(categoryDraft2);
+        newCategoryDrafts.add(categoryDraft3);
+        newCategoryDrafts.add(categoryDraft4);
+        newCategoryDrafts.add(categoryDraft5);
+        newCategoryDrafts.add(categoryDraft6);
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
+
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format(
+                "Summary: %d categories were processed in total (%d created, %d updated and %d "
+                    + "categories failed to sync).", 6, 4, 1, 1));
+    }
 
 
 }
