@@ -22,7 +22,9 @@ import static java.lang.String.format;
 public final class InventoryReferenceResolver extends BaseReferenceResolver<InventoryEntryDraft, InventorySyncOptions> {
     private static final String CHANNEL_DOES_NOT_EXIST = "Channel with key '%s' does not exist.";
     private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
-        + "InventoryEntry with SKU:'%s'.";
+        + "InventoryEntryDraft with SKU:'%s'.";
+    private static final String FAILED_TO_RESOLVE_SUPPLY_CHANNEL = "Failed to resolve supply channel reference on "
+        + "InventoryEntryDraft with SKU:'%s'. Reason: %s";
     private ChannelService channelService;
 
     public InventoryReferenceResolver(@Nonnull final InventorySyncOptions options,
@@ -32,17 +34,34 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
         this.channelService = channelService;
     }
 
+    /**
+     * Given a {@link InventoryEntryDraft} this method attempts to resolve the custom type and supply channel
+     * references to return a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * references. The keys of the references are either taken from the expanded references or
+     * taken from the id field of the references.
+     *
+     * @param draft the inventoryEntryDraft to resolve it's references.
+     * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance with resolved
+     *          references or, in case an error occurs during reference resolution,
+     *          a {@link ReferenceResolutionException}.
+     */
+    public CompletionStage<InventoryEntryDraft> resolveReferences(@Nonnull final InventoryEntryDraft draft) {
+        return resolveCustomTypeReference(draft)
+            .thenCompose(this::resolveSupplyChannelReference);
+    }
+
     @Override
     @Nonnull
-    public CompletionStage<InventoryEntryDraft> resolveCustomTypeReference(@Nonnull final InventoryEntryDraft draft) {
+    protected CompletionStage<InventoryEntryDraft> resolveCustomTypeReference(@Nonnull final
+                                                                                  InventoryEntryDraft draft) {
         final CustomFieldsDraft custom = draft.getCustom();
         if (custom != null) {
             return getCustomTypeId(draft, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draft.getSku()))
                 .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional
                     .map(resolvedTypeId -> InventoryEntryDraftBuilder
                         .of(draft).custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields()))
-                        .build())
-                    .orElseGet(() -> InventoryEntryDraftBuilder.of(draft).build()));
+                                          .build())
+                                      .orElseGet(() -> InventoryEntryDraftBuilder.of(draft).build()));
         }
         return CompletableFuture.completedFuture(draft);
     }
@@ -65,7 +84,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
      *          a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    public CompletionStage<InventoryEntryDraft> resolveSupplyChannelReference(
+    CompletionStage<InventoryEntryDraft> resolveSupplyChannelReference(
         @Nonnull final InventoryEntryDraft draft) {
         final Reference<Channel> channelReference = draft.getSupplyChannel();
         if (channelReference != null) {
@@ -75,7 +94,9 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
                     keyFromExpansion, channelReference);
                 return fetchOrCreateAndResolveReference(draft, channelKey);
             } catch (ReferenceResolutionException exception) {
-                return CompletableFutureUtils.exceptionallyCompletedFuture(exception);
+                return CompletableFutureUtils.exceptionallyCompletedFuture(
+                    new ReferenceResolutionException(format(FAILED_TO_RESOLVE_SUPPLY_CHANNEL, draft.getSku(),
+                        exception.getMessage()), exception));
             }
         }
         return CompletableFuture.completedFuture(draft);
@@ -98,10 +119,25 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
     private CompletionStage<InventoryEntryDraft> fetchOrCreateAndResolveReference(
         @Nonnull final InventoryEntryDraft draft,
         @Nonnull final String channelKey) {
-        return channelService.fetchCachedChannelId(channelKey)
-                             .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
-                                 .map(resolvedChannelId -> setChannelReference(resolvedChannelId, draft))
-                                 .orElseGet(() -> createChannelAndSetReference(channelKey, draft)));
+        final CompletionStage<InventoryEntryDraft> inventoryEntryDraftCompletionStage = channelService
+            .fetchCachedChannelId(channelKey)
+            .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
+                .map(resolvedChannelId -> setChannelReference(resolvedChannelId, draft))
+                .orElseGet(() -> createChannelAndSetReference(channelKey, draft)));
+
+        final CompletableFuture<InventoryEntryDraft> result = new CompletableFuture<>();
+        inventoryEntryDraftCompletionStage
+            .whenComplete((resolvedDraft, exception) -> {
+                if (exception != null) {
+                    result.completeExceptionally(
+                        new ReferenceResolutionException(format(FAILED_TO_RESOLVE_SUPPLY_CHANNEL, draft.getSku(),
+                            exception.getCause().getMessage()), exception));
+                } else {
+                    result.complete(resolvedDraft);
+                }
+            });
+        return result;
+
     }
 
     /**

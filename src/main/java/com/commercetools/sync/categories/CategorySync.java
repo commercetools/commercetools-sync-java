@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
@@ -111,7 +112,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     @Override
     protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<CategoryDraft> categoryDrafts) {
         final int numberOfNewDraftsToProcess = getNumberOfProcessedCategories(categoryDrafts);
-
         referencesResolvedDrafts = new HashSet<>();
         existingCategoryDrafts = new HashSet<>();
         newCategoryDrafts = new HashSet<>();
@@ -134,16 +134,16 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                                             updateCategoriesSequentially(categoryDraftsToUpdate))
                                                         .thenCompose(result ->
                                                             updateCategoriesInParallel(categoryDraftsToUpdate))
-                                                        .thenAccept(result -> statistics
-                                                            .incrementProcessed(numberOfNewDraftsToProcess))
-                                                        .exceptionally(exception -> {
-                                                            final String errorMessage = format(CTP_CATEGORY_SYNC_FAILED,
-                                                                exception.getMessage());
-                                                            handleError(errorMessage, exception);
-                                                            return null;
+                                                        .handle((result, exception) -> {
+                                                            if (exception != null) {
+                                                                final String errorMessage = format(
+                                                                    CTP_CATEGORY_SYNC_FAILED, exception.getMessage());
+                                                                handleError(errorMessage, exception);
+                                                            }
+                                                            statistics.incrementProcessed(numberOfNewDraftsToProcess);
+                                                            return statistics;
                                                         });
-                              })
-                              .thenApply(result -> statistics);
+                              });
     }
 
     /**
@@ -193,24 +193,27 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     try {
                         categoryDraft = updateCategoriesWithMissingParents(categoryDraft, keyToIdCache);
                         referenceResolver.resolveReferences(categoryDraft)
-                                         .whenComplete((referencesResolvedDraft, referenceResolutionException) -> {
-                                             if (referenceResolutionException != null) {
-                                                 final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
-                                                     categoryKey,
-                                                     referenceResolutionException.getMessage());
-                                                 handleError(errorMessage, referenceResolutionException);
+                                         .thenAccept(referencesResolvedDraft -> {
+                                             referencesResolvedDrafts.add(referencesResolvedDraft);
+                                             if (keyToIdCache.containsKey(categoryKey)) {
+                                                 existingCategoryDrafts.add(referencesResolvedDraft);
                                              } else {
-                                                 referencesResolvedDrafts.add(referencesResolvedDraft);
-                                                 if (keyToIdCache.containsKey(categoryKey)) {
-                                                     existingCategoryDrafts.add(referencesResolvedDraft);
-                                                 } else {
-                                                     newCategoryDrafts.add(referencesResolvedDraft);
-                                                 }
+                                                 newCategoryDrafts.add(referencesResolvedDraft);
                                              }
+                                         })
+                                         .exceptionally(referenceResolutionException -> {
+                                             Throwable actualException = referenceResolutionException;
+                                             if (referenceResolutionException instanceof CompletionException) {
+                                                 actualException = referenceResolutionException.getCause();
+                                             }
+                                             final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
+                                                 categoryKey, actualException);
+                                             handleError(errorMessage, referenceResolutionException);
+                                             return null;
                                          }).toCompletableFuture().join();
                     } catch (ReferenceResolutionException referenceResolutionException) {
                         final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, categoryKey,
-                            referenceResolutionException.getMessage());
+                            referenceResolutionException);
                         handleError(errorMessage, referenceResolutionException);
                     }
                 } else {

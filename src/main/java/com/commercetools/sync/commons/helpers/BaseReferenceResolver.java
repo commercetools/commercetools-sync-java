@@ -18,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.regex.Pattern;
 
+import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
@@ -37,6 +38,7 @@ public abstract class BaseReferenceResolver<T extends CustomDraft, S extends Bas
     private static final String KEY_NOT_SET_ON_EXPANSION_OR_ID_FIELD = "Key is blank (null/empty) on both expanded"
         + " reference object and reference id field.";
     private static final String UUID_REGEX = "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}";
+    private static final String CUSTOM_TYPE_REFERENCE_RESOLUTION_ERROR = "%s Reason: %s";
 
     private TypeService typeService;
     private S options;
@@ -89,7 +91,9 @@ public abstract class BaseReferenceResolver<T extends CustomDraft, S extends Bas
                 return typeService.fetchCachedTypeId(customTypeKey);
             } catch (ReferenceResolutionException exception) {
                 return CompletableFutureUtils.exceptionallyCompletedFuture(
-                    new ReferenceResolutionException(referenceResolutionErrorMessage, exception));
+                    new ReferenceResolutionException(
+                        format(CUSTOM_TYPE_REFERENCE_RESOLUTION_ERROR, referenceResolutionErrorMessage,
+                            exception.getMessage()), exception));
             }
         } else {
             return CompletableFuture.completedFuture(Optional.empty());

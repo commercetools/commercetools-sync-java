@@ -47,16 +47,14 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public final class InventorySync extends BaseSync<InventoryEntryDraft, InventorySyncStatistics, InventorySyncOptions> {
 
     private static final String CTP_INVENTORY_FETCH_FAILED = "Failed to fetch existing inventory entries of SKUs %s.";
-    private static final String CTP_INVENTORY_ENTRY_UPDATE_FAILED = "Failed to update inventory entry of sku '%s' and "
+    private static final String CTP_INVENTORY_ENTRY_UPDATE_FAILED = "Failed to update inventory entry of SKU '%s' and "
         + "supply channel id '%s'.";
-    private static final String INVENTORY_DRAFT_HAS_NO_SKU = "Failed to process inventory entry without sku.";
+    private static final String INVENTORY_DRAFT_HAS_NO_SKU = "Failed to process inventory entry without SKU.";
     private static final String INVENTORY_DRAFT_IS_NULL = "Failed to process null inventory draft.";
-    private static final String CTP_INVENTORY_ENTRY_CREATE_FAILED = "Failed to create inventory entry of sku '%s' "
+    private static final String CTP_INVENTORY_ENTRY_CREATE_FAILED = "Failed to create inventory entry of SKU '%s' "
         + "and supply channel id '%s'.";
-    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
-        + "InventoryEntryDraft with sku:'%s'. Reason: %s";
-    private static final String FAILED_TO_RESOLVE_SUPPLY_CHANNEL = "Failed to resolve supply channel reference on "
-        + "InventoryEntryDraft with sku:'%s'. Reason: %s";
+    private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
+        + "InventoryEntryDraft with SKU:'%s'. Reason: %s";
 
     private final InventoryService inventoryService;
     private final InventoryReferenceResolver referenceResolver;
@@ -209,10 +207,17 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             .stream().collect(toMap(InventoryEntryIdentifier::of, identity()));
         final List<CompletableFuture<Void>> futures = new ArrayList<>(inventoryEntryDrafts.size());
         inventoryEntryDrafts.forEach(inventoryEntryDraft ->
-            futures.add(resolveReferences(inventoryEntryDraft)
-                .thenCompose(resolvedDraftOptional -> resolvedDraftOptional
-                    .map(resolvedDraft -> syncDraft(identifierToOldInventoryEntry, resolvedDraft))
-                    .orElseGet(() -> completedFuture(null)))));
+            futures.add(referenceResolver.resolveReferences(inventoryEntryDraft)
+                                         .thenCompose(resolvedDraft ->
+                                             syncDraft(identifierToOldInventoryEntry, resolvedDraft))
+                                         .exceptionally(referenceResolutionException -> {
+                                             final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
+                                                 inventoryEntryDraft.getSku(),
+                                                 referenceResolutionException.getMessage());
+                                             handleError(errorMessage, referenceResolutionException, 1);
+                                             return null;
+                                         })
+                                         .toCompletableFuture()));
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
     }
 
@@ -226,35 +231,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         return inventories.stream()
             .map(InventoryEntryDraft::getSku)
             .collect(Collectors.toSet());
-    }
-
-    /**
-     * Given an inventory entry {@code draft}, this method resolves all references on the draft. If the the references
-     * resolution was successful this method returns a future which contains an {@link Optional} containing resolved
-     * inventory entry draft. Otherwise an error is handled and a future containing an empty optional is returned.
-     *
-     * @param inventoryEntryDraft an inventory entry draft which references has to be resolved
-     * @return a future which may contain the resolved inventory entry draft
-     */
-    private CompletableFuture<Optional<InventoryEntryDraft>> resolveReferences(@Nonnull final InventoryEntryDraft
-                                                                                   inventoryEntryDraft) {
-        return referenceResolver.resolveCustomTypeReference(inventoryEntryDraft)
-            .thenCompose(draftWithResolvedCustomTypeReference -> referenceResolver
-                .resolveSupplyChannelReference(draftWithResolvedCustomTypeReference)
-                .thenApply(Optional::of)
-                .exceptionally(exception -> {
-                    final String errorMessage = format(FAILED_TO_RESOLVE_SUPPLY_CHANNEL,
-                        inventoryEntryDraft.getSku(), exception.getMessage());
-                    handleError(errorMessage, exception, 1);
-                    return Optional.empty();
-                }))
-            .exceptionally(exception -> {
-                final String errorMessage = format(FAILED_TO_RESOLVE_CUSTOM_TYPE,
-                    inventoryEntryDraft.getSku(), exception.getMessage());
-                handleError(errorMessage, exception, 1);
-                return Optional.empty();
-            })
-            .toCompletableFuture();
     }
 
     /**

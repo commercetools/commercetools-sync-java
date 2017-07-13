@@ -35,6 +35,17 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
         this.categoryService = categoryService;
     }
 
+    /**
+     * Given a {@link CategoryDraft} this method attempts to resolve the custom type and parent category references to
+     * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * references. The keys of the references are either taken from the expanded references or
+     * taken from the id field of the references.
+     *
+     * @param categoryDraft the categoryDraft to resolve it's references.
+     * @return a {@link CompletionStage} that contains as a result a new categoryDraft instance with resolved category
+     *          references or, in case an error occurs during reference resolution,
+     *          a {@link ReferenceResolutionException}.
+     */
     public CompletionStage<CategoryDraft> resolveReferences(@Nonnull final CategoryDraft categoryDraft) {
         return resolveCustomTypeReference(categoryDraft)
             .thenCompose(this::resolveParentReference);
@@ -42,7 +53,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
 
     @Override
     @Nonnull
-    public CompletionStage<CategoryDraft> resolveCustomTypeReference(@Nonnull final CategoryDraft categoryDraft) {
+    protected CompletionStage<CategoryDraft> resolveCustomTypeReference(@Nonnull final CategoryDraft categoryDraft) {
         final CustomFieldsDraft custom = categoryDraft.getCustom();
         if (custom != null) {
             return getCustomTypeId(categoryDraft, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, categoryDraft.getKey()))
@@ -76,8 +87,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
                 .orElseGet(() -> CompletableFuture.completedFuture(categoryDraft));
         } catch (ReferenceResolutionException referenceResolutionException) {
             return CompletableFutureUtils
-                .exceptionallyCompletedFuture(new ReferenceResolutionException(format(FAILED_TO_RESOLVE_PARENT,
-                    categoryDraft.getKey(), referenceResolutionException), referenceResolutionException));
+                .exceptionallyCompletedFuture(referenceResolutionException);
         }
     }
 
@@ -128,7 +138,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
                     .of(getKeyFromExpansionOrReference(shouldAllowUuidKeys, keyFromExpansion, parentCategoryReference));
             } catch (ReferenceResolutionException referenceResolutionException) {
                 throw new ReferenceResolutionException(format(FAILED_TO_RESOLVE_PARENT, categoryDraft.getKey(),
-                    referenceResolutionException), referenceResolutionException);
+                    referenceResolutionException.getMessage()), referenceResolutionException);
             }
         }
         return Optional.empty();
