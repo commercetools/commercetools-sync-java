@@ -511,15 +511,25 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         final String categoryKey = category.getKey();
         return categoryService.updateCategory(category, updateActions)
                               .thenAccept(updatedCategory -> {
-                                  // TODO: GH ISSUE #30, #31: check if updated category is empty, it means an error
-                                  // TODO: occurred during update.
-                                  if (!processedCategoryKeys.contains(categoryKey)) {
-                                      statistics.incrementUpdated();
-                                      processedCategoryKeys.add(categoryKey);
+                                  if (updatedCategory.isPresent()) {
+                                      if (!processedCategoryKeys.contains(categoryKey)) {
+                                          statistics.incrementUpdated();
+                                          processedCategoryKeys.add(categoryKey);
+                                      }
+                                      if (categoryKeysWithResolvedParents.contains(categoryKey)) {
+                                          removeUpdatedCategoryFromMissingParentsMap(categoryKey);
+                                      }
+                                  } else {
+                                      // TODO: GH ISSUE #30, #31: check if updated category is empty, it means an error
+                                      // TODO: occurred during update.
+                                      if (!processedCategoryKeys.contains(categoryKey)) {
+                                          statistics.incrementFailed();
+                                          processedCategoryKeys.add(categoryKey);
+                                      }
                                   }
-                                  if (categoryKeysWithResolvedParents.contains(categoryKey)) {
-                                      removeUpdatedCategoryFromMissingParentsMap(categoryKey);
-                                  }
+
+
+
                               });
     }
 
