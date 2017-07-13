@@ -160,18 +160,20 @@ public class CategorySyncIT {
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
                 + " failed to sync).", 3, 0, 0, 2));
         assertThat(callBackErrorResponses).hasSize(2);
-        assertThat(callBackErrorResponses.get(0)).isEqualTo(format("Failed to resolve custom type reference on "
+        final String key1 = categoryDrafts.get(1).getKey();
+        assertThat(callBackErrorResponses.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+                + " key:'%s'. Reason: %s: Failed to resolve custom type reference on "
                 + "CategoryDraft with key:'%s'. "
-                + "Reason: com.commercetools.sync.commons.exceptions.ReferenceResolutionException: "
+                + "Reason: Found a UUID in the id field. Expecting a key without a UUID value. If you want to allow"
+                + " UUID values for reference keys, please use the setAllowUuidKeys(true) option in the sync options.",
+            key1, ReferenceResolutionException.class.getCanonicalName(), key1));
+        final String key2 = categoryDrafts.get(2).getKey();
+        assertThat(callBackErrorResponses.get(1)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+                + " key:'%s'. Reason: %s: Failed to resolve custom type reference on "
+                + "CategoryDraft with key:'%s'. Reason: "
                 + "Found a UUID in the id field. Expecting a key without a UUID value. If you want to allow UUID values"
                 + " for reference keys, please use the setAllowUuidKeys(true) option in the sync options.",
-            categoryDrafts.get(1).getKey()));
-        assertThat(callBackErrorResponses.get(1)).isEqualTo(format("Failed to resolve custom type reference on "
-                + "CategoryDraft with key:'%s'. "
-                + "Reason: com.commercetools.sync.commons.exceptions.ReferenceResolutionException: "
-                + "Found a UUID in the id field. Expecting a key without a UUID value. If you want to allow UUID values"
-                + " for reference keys, please use the setAllowUuidKeys(true) option in the sync options.",
-            categoryDrafts.get(2).getKey()));
+            key2, ReferenceResolutionException.class.getCanonicalName(), key2));
 
         assertThat(callBackExceptions).hasSize(2);
         assertThat(callBackExceptions.get(0)).isInstanceOf(CompletionException.class);

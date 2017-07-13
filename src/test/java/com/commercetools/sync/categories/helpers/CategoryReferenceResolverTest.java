@@ -92,9 +92,11 @@ public class CategoryReferenceResolverTest {
                                  .exceptionally(exception -> {
                                      assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                                      assertThat(exception.getMessage())
-                                         .isEqualTo("Found a UUID in the id field. Expecting a key without a UUID"
-                                             + " value. If you want to allow UUID values for reference keys, please"
-                                             + " use the setAllowUuidKeys(true) option in the sync options.");
+                                         .isEqualTo("Failed to resolve parent reference on CategoryDraft with"
+                                                 + " key:'key'. Reason: Found a UUID in the id field. Expecting a"
+                                                 + " key without a UUID value. If you want to allow UUID values for"
+                                                 + " reference keys, please use the setAllowUuidKeys(true) option in"
+                                                 + " the sync options.");
                                      return null;
                                  }).toCompletableFuture().join();
     }
@@ -154,9 +156,11 @@ public class CategoryReferenceResolverTest {
                                      assertThat(exception.getCause())
                                          .isExactlyInstanceOf(ReferenceResolutionException.class);
                                      assertThat(exception.getCause().getMessage())
-                                         .isEqualTo("Found a UUID in the id field. Expecting a key without a UUID "
-                                             + "value. If you want to allow UUID values for reference keys, please use"
-                                             + " the setAllowUuidKeys(true) option in the sync options.");
+                                         .isEqualTo("Failed to resolve custom type reference on CategoryDraft"
+                                             + " with key:'key'. Reason: Found a UUID in the id field. Expecting"
+                                             + " a key without a UUID value. If you want to allow UUID values for"
+                                             + " reference keys, please use the setAllowUuidKeys(true) option in"
+                                             + " the sync options.");
                                      return null;
                                  }).toCompletableFuture().join();
     }
@@ -193,8 +197,9 @@ public class CategoryReferenceResolverTest {
                                  .exceptionally(exception -> {
                                      assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                                      assertThat(exception.getMessage())
-                                         .isEqualTo("Key is blank (null/empty) on both expanded reference object and "
-                                             + "reference id field.");
+                                         .isEqualTo("Failed to resolve parent reference on CategoryDraft"
+                                             + " with key:'key'. Reason: Key is blank (null/empty) on both expanded"
+                                             + " reference object and reference id field.");
                                      return null;
                                  }).toCompletableFuture().join();
     }
@@ -202,6 +207,7 @@ public class CategoryReferenceResolverTest {
     @Test
     public void resolveParentReference_WithNullIdOnParentReference_ShouldNotResolveParentReference() {
         final CategoryDraft categoryDraft = mock(CategoryDraft.class);
+        when(categoryDraft.getKey()).thenReturn("key");
         final Reference<Category> parentCategoryReference = Category.referenceOfId(null);
         when(categoryDraft.getParent()).thenReturn(parentCategoryReference);
 
@@ -212,8 +218,9 @@ public class CategoryReferenceResolverTest {
                                  .exceptionally(exception -> {
                                      assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                                      assertThat(exception.getMessage())
-                                         .isEqualTo("Key is blank (null/empty) on both expanded reference object and "
-                                             + "reference id field.");
+                                         .isEqualTo("Failed to resolve parent reference on CategoryDraft"
+                                             + " with key:'key'. Reason: Key is blank (null/empty) on both expanded"
+                                             + " reference object and reference id field.");
                                      return null;
                                  }).toCompletableFuture().join();
     }
@@ -238,7 +245,9 @@ public class CategoryReferenceResolverTest {
                                      assertThat(exception.getCause())
                                          .isExactlyInstanceOf(ReferenceResolutionException.class);
                                      assertThat(exception.getCause().getMessage())
-                                         .isEqualTo("Reference 'id' field value is blank (null/empty).");
+                                         .isEqualTo("Failed to resolve custom type reference on CategoryDraft"
+                                                 + " with key:'key'. Reason: Reference 'id' field value is blank"
+                                                 + " (null/empty).");
                                      return null;
                                  }).toCompletableFuture().join();
     }
@@ -263,7 +272,9 @@ public class CategoryReferenceResolverTest {
                                      assertThat(exception.getCause())
                                          .isExactlyInstanceOf(ReferenceResolutionException.class);
                                      assertThat(exception.getCause().getMessage())
-                                         .isEqualTo("Reference 'id' field value is blank (null/empty).");
+                                         .isEqualTo("Failed to resolve custom type reference on CategoryDraft"
+                                                 + " with key:'key'. Reason: Reference 'id' field value is blank"
+                                                 + " (null/empty).");
                                      return null;
                                  }).toCompletableFuture().join();
     }

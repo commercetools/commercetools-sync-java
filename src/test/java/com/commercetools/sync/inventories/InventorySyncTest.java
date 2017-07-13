@@ -180,9 +180,10 @@ public class InventorySyncTest {
         assertThat(stats.getCreated()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve supply channel reference on"
-            + " InventoryEntryDraft with sku:'%s'. Reason: %s: Channel with key '%s' does not exist.", SKU_3,
-            ReferenceResolutionException.class.getCanonicalName(), KEY_3));
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on InventoryEntryDraft"
+                + " with SKU:'%s'. Reason: %s: Failed to resolve supply channel reference on InventoryEntryDraft with"
+                + " SKU:'%s'. Reason: Channel with key '%s' does not exist.", SKU_3,
+            ReferenceResolutionException.class.getCanonicalName(), SKU_3, KEY_3));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -211,12 +212,11 @@ public class InventorySyncTest {
         assertThat(stats.getCreated()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve supply channel reference on "
-            + "InventoryEntryDraft with sku:'%s'. Reason: "
-            + "%s: Found a UUID in the id field."
-            + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please use"
-            + " the setAllowUuidKeys(true) option in the sync options.", SKU_3,
-            ReferenceResolutionException.class.getCanonicalName()));
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on InventoryEntryDraft"
+                + " with SKU:'%s'. Reason: %s: Failed to resolve supply channel reference on InventoryEntryDraft with"
+                + " SKU:'%s'. Reason: Found a UUID in the id field. Expecting a key without a UUID value. If you want"
+                + " to allow UUID values for reference keys, please use the setAllowUuidKeys(true) option in the sync"
+                + " options.", SKU_3, ReferenceResolutionException.class.getCanonicalName(), SKU_3));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -396,9 +396,9 @@ public class InventorySyncTest {
             "Summary: 1 inventory entries were processed in total "
                 + "(0 created, 0 updated and 1 failed to sync).");
         assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve custom type reference on"
-            + " InventoryEntryDraft with sku:'%s'. Reason:"
-            + " %s: Reference 'id' field value is"
+        assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve references on"
+            + " InventoryEntryDraft with SKU:'%s'. Reason: %s: Failed to resolve custom type reference on "
+            + "InventoryEntryDraft with SKU:'1000'. Reason: Reference 'id' field value is"
             + " blank (null/empty).", SKU_1, ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -433,12 +433,13 @@ public class InventorySyncTest {
             "Summary: 1 inventory entries were processed in total "
                 + "(0 created, 0 updated and 1 failed to sync).");
         assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve custom type reference on"
-            + " InventoryEntryDraft with sku:'%s'. Reason:"
-            + " %s: Found a UUID in the id field."
-            + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please use"
-            + " the setAllowUuidKeys(true) option in the sync options.", SKU_1,
-            ReferenceResolutionException.class.getCanonicalName()));
+        assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve references on"
+                + " InventoryEntryDraft with SKU:'%s'. Reason: %s: Failed to resolve custom type reference on"
+                + " InventoryEntryDraft with SKU:'%s'. Reason:"
+                + " Found a UUID in the id field."
+                + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please"
+                + " use the setAllowUuidKeys(true) option in the sync options.", SKU_1,
+            ReferenceResolutionException.class.getCanonicalName(), SKU_1));
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -536,7 +537,10 @@ public class InventorySyncTest {
                 + " InventoryEntryDraft with sku:'%s'.", SKU_1));
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(SphereException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause().getCause()).isExactlyInstanceOf(CompletionException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()
+                                          .getCause().getCause()).isExactlyInstanceOf(SphereException.class);
     }
 
     @Test

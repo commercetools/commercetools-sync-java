@@ -279,8 +279,9 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve parent reference on CategoryDraft"
-            + " with key:'key'. Reason: %s: Found a UUID in the id field. Expecting a key without a UUID"
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+            + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
+            + " with key:'key'. Reason: Found a UUID in the id field. Expecting a key without a UUID"
             + " value. If you want to allow UUID values for reference keys, please use the setAllowUuidKeys(true)"
             + " option in the sync options.", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
@@ -306,8 +307,9 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve parent reference on CategoryDraft"
-            + " with key:'key'. Reason: %s: Key is blank (null/empty) on both expanded reference object"
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+            + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
+            + " with key:'key'. Reason: Key is blank (null/empty) on both expanded reference object"
             + " and reference id field.", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -332,8 +334,9 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve parent reference on CategoryDraft"
-            + " with key:'key'. Reason: %s: Key is blank (null/empty) on both expanded reference object"
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+            + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
+            + " with key:'key'. Reason: Key is blank (null/empty) on both expanded reference object"
             + " and reference id field.", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -358,8 +361,9 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve custom type reference on "
-            + "CategoryDraft with key:'key'. Reason: %s: Reference 'id' field value is blank (null/"
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+            + " key:'key'. Reason: %s: Failed to resolve custom type reference on "
+            + "CategoryDraft with key:'key'. Reason: Reference 'id' field value is blank (null/"
             + "empty).", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -385,8 +389,9 @@ public class CategorySyncTest {
             "Summary: 1 categories were processed in total "
                 + "(0 created, 0 updated and 1 categories failed to sync).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve custom type reference on"
-            + " CategoryDraft with key:'key'. Reason: %s: Found a UUID in the id field. Expecting a key"
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+            + " key:'key'. Reason: %s: Failed to resolve custom type reference on "
+            + "CategoryDraft with key:'key'. Reason: Found a UUID in the id field. Expecting a key"
             + " without a UUID value. If you want to allow UUID values for reference keys, please use the"
             + " setAllowUuidKeys(true) option in the sync options.",
             ReferenceResolutionException.class.getCanonicalName()));
