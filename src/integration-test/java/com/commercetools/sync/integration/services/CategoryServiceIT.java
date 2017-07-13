@@ -1,6 +1,8 @@
 package com.commercetools.sync.integration.services;
 
 
+import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import io.sphere.sdk.categories.Category;
@@ -18,8 +20,6 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Optional;
 
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategoriesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCustomFieldsDraft;
@@ -41,6 +41,8 @@ public class CategoryServiceIT {
         deleteRootCategoriesFromTargetAndSource();
         deleteTypesFromTargetAndSource();
 
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                                                                                  .build();
         targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
 
         // Create a mock new category in the target project.
@@ -54,7 +56,7 @@ public class CategoryServiceIT {
                                        .toCompletableFuture()
                                        .join();
 
-        categoryService = new CategoryServiceImpl(CTP_TARGET_CLIENT);
+        categoryService = new CategoryServiceImpl(categorySyncOptions);
     }
 
     /**
@@ -106,58 +108,6 @@ public class CategoryServiceIT {
     }
 
     @Test
-    public void fetchCachedCategoryId_WithInvalidatedCache_ShouldFetchCategoryAndCache() {
-        // Fetch any category to populate cache
-        categoryService.fetchCachedCategoryId("anyKey").toCompletableFuture().join();
-
-        // Create new category
-        final String newCategoryKey = "newCategoryKey";
-
-        final CategoryDraft categoryDraft = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
-                LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
-            .key(newCategoryKey)
-            .parent(targetProjectRootCategory)
-            .build();
-        CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft)).toCompletableFuture().join();
-
-        categoryService.invalidateCache();
-
-        final Optional<String> newCategoryId =
-            categoryService.fetchCachedCategoryId(newCategoryKey).toCompletableFuture().join();
-
-        assertThat(newCategoryId).isNotEmpty();
-    }
-
-    @Test
-    public void fetchCategoryByKey_WithExistingCategoryKey_ShouldFetchCategory() {
-        final Optional<Category> categoryOptional = categoryService
-            .fetchCategoryByKey(oldCategory.getKey()).toCompletableFuture().join();
-
-        assertThat(categoryOptional).isNotEmpty();
-        final Category category = categoryOptional.get();
-        assertThat(category.getName()).isEqualTo(oldCategory.getName());
-        assertThat(category.getSlug()).isEqualTo(oldCategory.getSlug());
-        assertThat(category.getParent()).isEqualTo(oldCategory.getParent());
-        assertThat(category.getCustom()).isEqualTo(oldCategory.getCustom());
-        final LocalizedString localizedStringCustomField = category
-            .getCustom().getFieldAsLocalizedString(LOCALISED_STRING_CUSTOM_FIELD_NAME);
-        assertThat(localizedStringCustomField).isNotNull();
-        assertThat(localizedStringCustomField.get(Locale.GERMAN)).isEqualTo("rot");
-        final Boolean booleanCustomField = category.getCustom().getFieldAsBoolean(BOOLEAN_CUSTOM_FIELD_NAME);
-        assertThat(booleanCustomField).isNotNull();
-        assertThat(booleanCustomField.booleanValue()).isFalse();
-    }
-
-    @Test
-    public void fetchCategoryByKey_WithNonExistingCategoryKey_ShouldNotFetchACategory() {
-        final Optional<Category> categoryOptional = categoryService
-            .fetchCategoryByKey("nonExistingKey").toCompletableFuture().join();
-
-        assertThat(categoryOptional).isEmpty();
-    }
-
-    @Test
     public void createCategory_ShouldCreateCorrectCategory() {
         final String newCategoryKey = "newCategoryKey";
         final CategoryDraft categoryDraft = CategoryDraftBuilder
@@ -167,7 +117,12 @@ public class CategoryServiceIT {
             .custom(getMockCustomFieldsDraft())
             .parent(targetProjectRootCategory)
             .build();
-        final Category category = categoryService.createCategory(categoryDraft).toCompletableFuture().join();
+
+        final Optional<Category> createdCategoryOptional = categoryService.createCategory(categoryDraft)
+                                                           .toCompletableFuture().join();
+        assertThat(createdCategoryOptional).isNotEmpty();
+        final Category createdCategory = createdCategoryOptional.get();
+
 
         //assert CTP state
         final Optional<Category> categoryOptional = CTP_TARGET_CLIENT
@@ -177,8 +132,8 @@ public class CategoryServiceIT {
 
         assertThat(categoryOptional).isNotEmpty();
         final Category fetchedCategory = categoryOptional.get();
-        assertThat(fetchedCategory.getName()).isEqualTo(category.getName());
-        assertThat(fetchedCategory.getSlug()).isEqualTo(category.getSlug());
+        assertThat(fetchedCategory.getName()).isEqualTo(createdCategory.getName());
+        assertThat(fetchedCategory.getSlug()).isEqualTo(createdCategory.getSlug());
         assertThat(fetchedCategory.getParent()).isEqualTo(Category.reference(targetProjectRootCategory.getId()));
         assertThat(fetchedCategory.getCustom()).isNotNull();
         assertThat(fetchedCategory.getKey()).isEqualTo(newCategoryKey);
@@ -196,9 +151,12 @@ public class CategoryServiceIT {
         final ChangeName changeNameUpdateAction = ChangeName
             .of(LocalizedString.of(Locale.GERMAN, newCategoryName));
 
-        final Category updatedCategory = categoryService
+        final Optional<Category> updatedCategoryOptional = categoryService
             .updateCategory(categoryOptional.get(), Collections.singletonList(changeNameUpdateAction))
             .toCompletableFuture().join();
+        assertThat(updatedCategoryOptional).isNotEmpty();
+
+        final Category updatedCategory = updatedCategoryOptional.get();
 
         //assert CTP state
         final Optional<Category> fetchedCategoryOptional = CTP_TARGET_CLIENT
@@ -209,10 +167,10 @@ public class CategoryServiceIT {
 
         assertThat(fetchedCategoryOptional).isNotEmpty();
         final Category fetchedCategory = fetchedCategoryOptional.get();
-        assertThat(fetchedCategory.getName().get(Locale.GERMAN)).isEqualTo(newCategoryName);
-        assertThat(updatedCategory.getSlug()).isEqualTo(oldCategory.getSlug());
-        assertThat(fetchedCategory.getParent()).isEqualTo(Category.reference(targetProjectRootCategory.getId()));
-        assertThat(fetchedCategory.getCustom()).isNotNull();
-        assertThat(fetchedCategory.getKey()).isEqualTo(oldCategory.getKey());
+        assertThat(fetchedCategory.getName()).isEqualTo(updatedCategory.getName());
+        assertThat(fetchedCategory.getSlug()).isEqualTo(updatedCategory.getSlug());
+        assertThat(fetchedCategory.getParent()).isEqualTo(updatedCategory.getParent());
+        assertThat(fetchedCategory.getCustom()).isEqualTo(updatedCategory.getCustom());
+        assertThat(fetchedCategory.getKey()).isEqualTo(updatedCategory.getKey());
     }
 }
