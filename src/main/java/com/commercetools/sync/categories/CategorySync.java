@@ -317,6 +317,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param createdCategories the set of created categories that needs to be processed.
      */
     private void processCreatedCategories(@Nonnull final Set<Category> createdCategories) {
+        final int numberOfFailedCategories = newCategoryDrafts.size() - createdCategories.size();
+        statistics.incrementFailed(numberOfFailedCategories);
+
         statistics.incrementCreated(createdCategories.size());
         createdCategories.forEach(createdCategory -> {
             final String createdCategoryKey = createdCategory.getKey();
