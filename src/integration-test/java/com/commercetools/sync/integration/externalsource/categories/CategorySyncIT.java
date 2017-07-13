@@ -4,6 +4,8 @@ import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -19,11 +21,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategory;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCustomFieldsDraft;
@@ -435,5 +442,63 @@ public class CategorySyncIT {
                     + "categories failed to sync).", 6, 4, 1, 1));
     }
 
+    @Test
+    public void syncDrafts_WithValidAndInvalidCustomTypeKeys_ShouldSyncCorrectly() {
+        final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
+        final String newCustomTypeKey = "newKey";
+        createCategoriesCustomType(newCustomTypeKey, Locale.ENGLISH, "newCustomTypeName", CTP_TARGET_CLIENT);
+
+        final CategoryDraft categoryDraft1 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
+            .key(oldCategoryKey)
+            .parent(targetProjectRootCategory)
+            .custom(CustomFieldsDraft.ofTypeIdAndJson("nonExistingKey", getMockCustomFieldsJsons()))
+            .build();
+
+        final CategoryDraft categoryDraft2 = CategoryDraftBuilder.of(targetProjectRootCategory)
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(newCustomTypeKey, getMockCustomFieldsJsons()))
+            .build();
+
+        newCategoryDrafts.add(categoryDraft1);
+        newCategoryDrafts.add(categoryDraft2);
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
+
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format(
+                "Summary: %d categories were processed in total (%d created, %d updated and %d "
+                    + "categories failed to sync).", 2, 0, 1, 1));
+    }
+
+    @Test
+    public void syncDrafts_WithValidCustomFieldsChange_ShouldSyncIt() {
+        final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
+
+        final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
+        customFieldsJsons.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false));
+        customFieldsJsons
+            .put(LOCALISED_STRING_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.objectNode()
+                                                                             .put("de", "rot")
+                                                                             .put("en", "red")
+                                                                             .put("it", "rosso"));
+
+        final CategoryDraft categoryDraft1 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
+            .key(oldCategoryKey)
+            .parent(targetProjectRootCategory)
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, customFieldsJsons))
+            .build();
+
+        newCategoryDrafts.add(categoryDraft1);
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
+
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format(
+                "Summary: %d categories were processed in total (%d created, %d updated and %d "
+                    + "categories failed to sync).", 1, 0, 1, 0));
+    }
 
 }
