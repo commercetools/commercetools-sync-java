@@ -103,9 +103,7 @@ public class CategorySyncIT {
 
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
-        assertThat(callBackWarningResponses).hasSize(1);
-        assertThat(callBackWarningResponses.get(0)).isEqualTo(format("Cannot unset 'parent' field of category with id"
-            + " '%s'.", targetProjectRootCategory.getId()));
+        assertThat(callBackWarningResponses).isEmpty();
     }
 
     @Test
@@ -131,9 +129,7 @@ public class CategorySyncIT {
                 + " failed to sync).", 4, 1, 2, 0));
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
-        assertThat(callBackWarningResponses).hasSize(1);
-        assertThat(callBackWarningResponses.get(0)).isEqualTo(format("Cannot unset 'parent' field of category with id"
-            + " '%s'.", targetProjectRootCategory.getId()));
+        assertThat(callBackWarningResponses).isEmpty();
     }
 
     @Test
@@ -182,9 +178,7 @@ public class CategorySyncIT {
         assertThat(callBackExceptions.get(1)).isInstanceOf(CompletionException.class);
         assertThat(callBackExceptions.get(1).getCause()).isInstanceOf(ReferenceResolutionException.class);
 
-        assertThat(callBackWarningResponses).hasSize(1);
-        assertThat(callBackWarningResponses.get(0)).isEqualTo(format("Cannot unset 'parent' field of category with id"
-            + " '%s'.", targetProjectRootCategory.getId()));
+        assertThat(callBackWarningResponses).isEmpty();
     }
 
 

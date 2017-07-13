@@ -117,7 +117,7 @@ public final class CategoryUpdateActionUtils {
         @Nonnull final Category oldCategory,
         @Nonnull final CategoryDraft newCategory,
         @Nonnull final CategorySyncOptions syncOptions) {
-        if (newCategory.getParent() == null) {
+        if (newCategory.getParent() == null && oldCategory.getParent() != null) {
             syncOptions.applyWarningCallback(format(CATEGORY_CHANGE_PARENT_EMPTY_PARENT, oldCategory.getId()));
             return Optional.empty();
         }
@@ -145,7 +145,7 @@ public final class CategoryUpdateActionUtils {
         @Nonnull final Category oldCategory,
         @Nonnull final CategoryDraft newCategory,
         @Nonnull final CategorySyncOptions syncOptions) {
-        if (newCategory.getOrderHint() == null) {
+        if (newCategory.getOrderHint() == null && oldCategory.getOrderHint() != null) {
             syncOptions.applyWarningCallback(
                 format(CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT, oldCategory.getId()));
             return Optional.empty();
