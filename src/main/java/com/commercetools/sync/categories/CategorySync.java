@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeParentUpdateAction;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -65,9 +64,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *                    configuration and other sync-specific options.
      */
     public CategorySync(@Nonnull final CategorySyncOptions syncOptions) {
-        this(syncOptions,
-            new TypeServiceImpl(syncOptions.getCtpClient()),
-            new CategoryServiceImpl(syncOptions.getCtpClient()));
+        this(syncOptions, new TypeServiceImpl(syncOptions.getCtpClient()), new CategoryServiceImpl(syncOptions));
     }
 
     /**
