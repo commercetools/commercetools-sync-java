@@ -525,12 +525,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                   if (categoryKeysWithResolvedParents.contains(categoryKey)) {
                                       removeUpdatedCategoryFromMissingParentsMap(categoryKey);
                                   }
-                              })
-                              .exceptionally(exception -> {
-                                  final String errorMessage = format(CTP_CATEGORY_UPDATE_FAILED,
-                                      categoryKey, exception.getMessage());
-                                  handleError(errorMessage, exception);
-                                  return null;
                               });
     }
 
