@@ -48,7 +48,7 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CategorySyncIT {
-    private static Logger LOGGER = LoggerFactory.getLogger(CategorySyncIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CategorySyncIT.class);
     private CategorySync categorySync;
     private Category sourceProjectRootCategory;
 

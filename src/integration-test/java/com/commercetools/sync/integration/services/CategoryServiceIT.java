@@ -16,6 +16,8 @@ import io.sphere.sdk.models.LocalizedString;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +36,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CategoryServiceIT {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CategoryServiceIT.class);
     private CategoryService categoryService;
     private Category targetProjectRootCategory;
     private Category oldCategory;
@@ -239,7 +242,7 @@ public class CategoryServiceIT {
         assertThat(errorCallBackExceptions).hasSize(2);
         assertThat(errorCallBackMessages).hasSize(2);
         // Since the order of creation is not ensured by allOf, so we assert in list of error messages (as string):
-        System.out.println(errorCallBackMessages.toString());
+        LOGGER.debug(errorCallBackMessages.toString());
         assertThat(errorCallBackMessages.toString()).contains("Invalid category key '1'. Category keys may only contain"
             + " alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
         assertThat(errorCallBackMessages.toString()).contains(" A duplicate value '\"furniture\"' exists for field "
