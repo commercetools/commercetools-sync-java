@@ -6,6 +6,8 @@ import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.integration.commons.utils.SphereClientUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -15,26 +17,38 @@ import io.sphere.sdk.expansion.ExpansionPath;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.batchCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createChildren;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategoriesFromTargetAndSource;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategory;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCategoryDraftsWithPrefix;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.replaceReferenceIdsWithKeys;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.syncBatches;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.getStatisticsAsJSONString;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CategorySyncIT {
+    private static Logger LOGGER = LoggerFactory.getLogger(CategorySyncIT.class);
     private CategorySync categorySync;
     private Category sourceProjectRootCategory;
 
@@ -53,6 +67,7 @@ public class CategorySyncIT {
 
         final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
         createCategories(CTP_TARGET_CLIENT, getMockCategoryDrafts(targetProjectRootCategory, 2));
+        createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH, "anyName", CTP_TARGET_CLIENT);
 
         sourceProjectRootCategory = createRootCategory(CTP_SOURCE_CLIENT);
         callBackErrorResponses = new ArrayList<>();
@@ -64,8 +79,12 @@ public class CategorySyncIT {
             .setErrorCallBack((errorMessage, exception) -> {
                 callBackErrorResponses.add(errorMessage);
                 callBackExceptions.add(exception);
+                LOGGER.error(errorMessage, exception);
             })
-            .setWarningCallBack(callBackWarningResponses::add)
+            .setWarningCallBack((warningMessage) -> {
+                callBackWarningResponses.add(warningMessage);
+                LOGGER.warn(warningMessage);
+            })
             .build();
         categorySync = new CategorySync(categorySyncOptions);
     }
@@ -182,4 +201,199 @@ public class CategorySyncIT {
     }
 
 
+    @Test
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    public void syncDrafts_withNewShuffledBatchOfCategories_ShouldCreateCategories() {
+        //-----------------Test Setup------------------------------------
+        // Delete all categories in target project
+        deleteRootCategory(CTP_TARGET_CLIENT);
+
+        // Create a total of 131 categories in the source project
+        final List<Category> subFamily =
+            createChildren(5, sourceProjectRootCategory,
+                sourceProjectRootCategory.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+
+        for (final Category child : subFamily) {
+            final List<Category> subsubFamily =
+                createChildren(5, child, child.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+            for (final Category subChild : subsubFamily) {
+                createChildren(4, subChild, subChild.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+            }
+        }
+        //---------------------------------------------------------------
+
+        // Fetch categories from source project
+        final List<Category> categories = CTP_SOURCE_CLIENT
+            .execute(CategoryQuery.of()
+                                  .withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
+                                  .withExpansionPaths(ExpansionPath.of("custom.type"))
+                                  .plusExpansionPaths(CategoryExpansionModel::parent)
+            )
+            .toCompletableFuture().join().getResults();
+
+        // Put the keys in the reference ids to prepare for reference resolution
+        final List<CategoryDraft> categoryDrafts = replaceReferenceIdsWithKeys(categories);
+        Collections.shuffle(categoryDrafts);
+
+        final List<List<CategoryDraft>> batches = batchCategories(categoryDrafts, 13);
+
+        final long startTime = System.currentTimeMillis();
+        LOGGER.info("Starting to sync categories:");
+        final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
+            CompletableFuture.completedFuture(null)).toCompletableFuture().join();
+        LOGGER.info(syncStatistics.getReportMessage());
+        try {
+            LOGGER.info(getStatisticsAsJSONString(syncStatistics));
+        } catch (JsonProcessingException exception) {
+            LOGGER.error("Failed to build JSON String of summary.", exception);
+        }
+        final long syncTimeTaken = System.currentTimeMillis() - startTime;
+        LOGGER.info("Syncing categories took: " + syncTimeTaken + "ms");
+
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
+                + " failed to sync).", 131, 131, 0, 0));
+        assertThat(callBackErrorResponses).isEmpty();
+        assertThat(callBackExceptions).isEmpty();
+        assertThat(callBackWarningResponses).isEmpty();
+    }
+
+    @Test
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    public void syncDrafts_withExistingShuffledCategoriesWithChangingCategoryHeirarchachy_ShouldUpdateCategories() {
+        //-----------------Test Setup------------------------------------
+        // Delete all categories in target project
+        deleteRootCategory(CTP_TARGET_CLIENT);
+        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
+
+        // Create a total of 131 categories in the target project
+        final List<Category> subFamily =
+            createChildren(5, targetProjectRootCategory,
+                targetProjectRootCategory.getName().get(Locale.ENGLISH), CTP_TARGET_CLIENT);
+
+        for (final Category child : subFamily) {
+            final List<Category> subsubFamily =
+                createChildren(5, child, child.getName().get(Locale.ENGLISH), CTP_TARGET_CLIENT);
+            for (final Category subChild : subsubFamily) {
+                createChildren(4, subChild, subChild.getName().get(Locale.ENGLISH), CTP_TARGET_CLIENT);
+            }
+        }
+        //---------------------------------------------------------------
+
+        // Create a total of 131 categories in the source project
+        final List<Category> sourceSubFamily =
+            createChildren(5, sourceProjectRootCategory,
+                sourceProjectRootCategory.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+
+        for (final Category child : sourceSubFamily) {
+            final List<Category> subsubFamily =
+                createChildren(5, sourceProjectRootCategory,
+                    child.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+            for (final Category subChild : subsubFamily) {
+                createChildren(4, sourceProjectRootCategory,
+                    subChild.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+            }
+        }
+        //---------------------------------------------------------------
+
+        // Fetch categories from source project
+        final List<Category> categories = CTP_SOURCE_CLIENT
+            .execute(CategoryQuery.of()
+                                  .withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
+                                  .withExpansionPaths(ExpansionPath.of("custom.type"))
+                                  .plusExpansionPaths(CategoryExpansionModel::parent)
+            )
+            .toCompletableFuture().join().getResults();
+
+        // Put the keys in the reference ids to prepare for reference resolution
+        final List<CategoryDraft> categoryDrafts = replaceReferenceIdsWithKeys(categories);
+        Collections.shuffle(categoryDrafts);
+
+        final List<List<CategoryDraft>> batches = batchCategories(categoryDrafts, 13);
+
+        final long startTime = System.currentTimeMillis();
+        LOGGER.info("Starting to sync categories:");
+        final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
+            CompletableFuture.completedFuture(null)).toCompletableFuture().join();
+        LOGGER.info(syncStatistics.getReportMessage());
+        try {
+            LOGGER.info(getStatisticsAsJSONString(syncStatistics));
+        } catch (JsonProcessingException exception) {
+            LOGGER.error("Failed to build JSON String of summary.", exception);
+        }
+        final long syncTimeTaken = System.currentTimeMillis() - startTime;
+        LOGGER.info("Syncing categories took: " + syncTimeTaken + "ms");
+
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
+                + " failed to sync).", 0, 130, 0, 0));
+        assertThat(callBackErrorResponses).isEmpty();
+        assertThat(callBackExceptions).isEmpty();
+        assertThat(callBackWarningResponses).isEmpty();
+    }
+
+    @Test
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    public void syncDrafts_withExistingCategoriesThatChangeParents_ShouldUpdateCategories() {
+        //-----------------Test Setup------------------------------------
+        // Delete all categories in target project
+        deleteRootCategory(CTP_TARGET_CLIENT);
+        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
+
+        // Create a total of 2 categories in the target project
+        final List<Category> subFamily =
+            createChildren(1, targetProjectRootCategory,
+                targetProjectRootCategory.getName().get(Locale.ENGLISH), CTP_TARGET_CLIENT);
+
+        for (final Category child : subFamily) {
+            createChildren(1, child, child.getName().get(Locale.ENGLISH), CTP_TARGET_CLIENT);
+        }
+        //---------------------------------------------------------------
+
+        // Create a total of 2 categories in the source project
+        final List<Category> sourceSubFamily =
+            createChildren(1, sourceProjectRootCategory,
+                sourceProjectRootCategory.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+
+        for (final Category child : sourceSubFamily) {
+            createChildren(1, sourceProjectRootCategory,
+                child.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+        }
+        //---------------------------------------------------------------
+
+        // Fetch categories from source project
+        final List<Category> categories = CTP_SOURCE_CLIENT
+            .execute(CategoryQuery.of()
+                                  .withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
+                                  .withExpansionPaths(ExpansionPath.of("custom.type"))
+                                  .plusExpansionPaths(CategoryExpansionModel::parent)
+            )
+            .toCompletableFuture().join().getResults();
+
+        // Put the keys in the reference ids to prepare for reference resolution
+        final List<CategoryDraft> categoryDrafts = replaceReferenceIdsWithKeys(categories);
+        Collections.shuffle(categoryDrafts);
+
+        final List<List<CategoryDraft>> batches = batchCategories(categoryDrafts, 1);
+
+        final long startTime = System.currentTimeMillis();
+        LOGGER.info("Starting to sync categories:");
+        final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
+            CompletableFuture.completedFuture(null)).toCompletableFuture().join();
+        LOGGER.info(syncStatistics.getReportMessage());
+        try {
+            LOGGER.info(getStatisticsAsJSONString(syncStatistics));
+        } catch (JsonProcessingException exception) {
+            LOGGER.error("Failed to build JSON String of summary.", exception);
+        }
+        final long syncTimeTaken = System.currentTimeMillis() - startTime;
+        LOGGER.info("Syncing categories took: " + syncTimeTaken + "ms");
+
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
+                + " failed to sync).", 3, 0, 2, 0));
+        assertThat(callBackErrorResponses).isEmpty();
+        assertThat(callBackExceptions).isEmpty();
+        assertThat(callBackWarningResponses).isEmpty();
+    }
 }
