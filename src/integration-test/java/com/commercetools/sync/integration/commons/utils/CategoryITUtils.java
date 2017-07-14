@@ -1,5 +1,7 @@
 package com.commercetools.sync.integration.commons.utils;
 
+import com.commercetools.sync.categories.CategorySync;
+import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
@@ -32,6 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
@@ -107,6 +110,41 @@ public class CategoryITUtils {
             categoryDrafts.add(categoryDraftBuilder.build());
         }
         return categoryDrafts;
+    }
+
+    /**
+     * This method creates (in a blocking fashion) a {@code numberOfCategories} categories under as children to the
+     * supplied {@code parent} category in the supplied {@link SphereClient} project. It assigns them a key, and an
+     * {@code Locale.ENGLISH} name and slug of the value of the supplied {@code prefix} appended to the
+     * (index of the child + 1). For example, if the prefix supplied is {@code "cat"}, the key and the english locales
+     * of the name and the slug would be {@code "cat1"} for the first child.
+     *
+     * @param numberOfChildren the number of children categories to create.
+     * @param parent           the parent category to assign these children to.
+     * @param prefix           a prefix to string to prepend to index of the children, to assign it as a key, name and
+     *                         slug to each of the created categories.
+     * @param ctpClient        the ctpClient that defines the CTP project to create the categories on.
+     * @return the list of Categories created.
+     */
+    public static List<Category> createChildren(final int numberOfChildren,
+                                                @Nonnull final Category parent,
+                                                @Nonnull final String prefix,
+                                                @Nonnull final SphereClient ctpClient) {
+        final List<Category> children = new ArrayList<>();
+        for (int i = 0; i < numberOfChildren; i++) {
+            final String categoryName = prefix + (i + 1);
+            CategoryDraft child = CategoryDraftBuilder
+                .of(LocalizedString.of(Locale.ENGLISH, categoryName),
+                    LocalizedString.of(Locale.ENGLISH, categoryName))
+                .key(categoryName)
+                .parent(parent)
+                .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+                .build();
+            final Category createdChild = ctpClient.execute(CategoryCreateCommand.of(child))
+                                                   .toCompletableFuture().join();
+            children.add(createdChild);
+        }
+        return children;
     }
 
     /**
@@ -283,7 +321,7 @@ public class CategoryITUtils {
 
     /**
      * Takes a list of Categories that are supposed to have their custom type and parent category reference expanded
-     * in order to be able to fetch the keys and replace the reference ids with the correspnding keys and then return
+     * in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return
      * a new list of category drafts with their references containing keys instead of the ids.
      *
      * @param categories the categories to replace their reference ids with keys
@@ -311,5 +349,53 @@ public class CategoryITUtils {
                                            .build();
             })
             .collect(Collectors.toList());
+    }
+
+    /**
+     * Given a list of {@link CategoryDraft} elements and a {@code batchSize}, this method separates the drafts into
+     * batches with the {@code batchSize}. Each batch is represented by a {@link List}&lt;{@link CategoryDraft}&gt;
+     * and all the batches are grouped and represented by an
+     * {@link List}&lt;{@link List}&lt;{@link CategoryDraft}&gt;&gt;, which is returned by the method.
+     *
+     * @param categoryDrafts the list of drafts to split into batches.
+     * @param batchSize      the size of each batch.
+     * @return a {@link List}&lt;{@link List}&lt;{@link CategoryDraft}&gt;&gt; where each
+     *          {@link List}&lt;{@link CategoryDraft}&gt; represents a batch of {@link CategoryDraft}.
+     */
+    public static List<List<CategoryDraft>> batchCategories(@Nonnull final List<CategoryDraft> categoryDrafts,
+                                                            final int batchSize) {
+        List<List<CategoryDraft>> batches = new ArrayList<>();
+        for (int i = 0; i < categoryDrafts.size(); i += batchSize) {
+            batches.add(categoryDrafts.subList(i,
+                Math.min(i + batchSize, categoryDrafts.size())));
+        }
+        return batches;
+    }
+
+    /**
+     * Given a list of {@link CategoryDraft} batches represented by a
+     * {@link List}&lt;{@link List}&lt;{@link CategoryDraft}&gt;&gt; and an instance of {@link CategorySync}, this
+     * method recursively calls sync by the instance of {@link CategorySync} on each batch, then removes it, until
+     * there are no more batches, in other words, all batches have been synced.
+     *
+     * @param categorySync the categorySync instance to sync with each batch of {@link CategoryDraft}
+     * @param batches      the batches of {@link CategoryDraft} to sync.
+     * @param result       in the first call of this recursive method, this result is normally a completed future, it
+     *                     used from within the method to recursively sync each batch once the previous batch has
+     *                     finished syncing.
+     * @return an instance of {@link CompletionStage} which contains as a result an instance of
+     *          {@link CategorySyncStatistics} representing the {@code statistics} of the sync process executed on the
+     *          given list of batches.
+     */
+    public static CompletionStage<CategorySyncStatistics> syncBatches(@Nonnull final CategorySync categorySync,
+                                                                      @Nonnull final List<List<CategoryDraft>> batches,
+                                                                      @Nonnull final
+                                                                      CompletionStage<CategorySyncStatistics> result) {
+        if (batches.isEmpty()) {
+            return result;
+        }
+        final List<CategoryDraft> firstBatch = batches.remove(0);
+        return syncBatches(categorySync, batches, result
+            .thenCompose(subResult -> categorySync.sync(firstBatch)));
     }
 }
