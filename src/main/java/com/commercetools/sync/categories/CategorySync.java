@@ -367,8 +367,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 final String parentKey = getMissingParentKey(fetchedCategoryKey);
                 final String parentId = keyToIdCache.get(parentKey);
                 categoryDraftBuilder.parent(Category.referenceOfId(parentId));
-            } else {
-                categoryDraftBuilder.parent(fetchedCategory.getParent());
             }
             categoryDraftsToUpdate.put(categoryDraftBuilder.build(), fetchedCategory);
         });
