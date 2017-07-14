@@ -326,7 +326,7 @@ public class CategorySyncIT {
 
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
-                + " failed to sync).", 0, 0, 130, 0));
+                + " failed to sync).", 131, 0, 130, 0));
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
