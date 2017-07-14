@@ -24,8 +24,6 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static java.lang.String.format;
 
 public final class CategoryUpdateActionUtils {
-    private static final String CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION = "Cannot unset 'description' field of "
-        + "category with id '%s'.";
     private static final String CATEGORY_CHANGE_PARENT_EMPTY_PARENT = "Cannot unset 'parent' field of category with id"
         + " '%s'.";
     private static final String CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT = "Cannot unset 'orderHint' field of "
@@ -73,25 +71,14 @@ public final class CategoryUpdateActionUtils {
      * and the {@link CategoryDraft} have the same description, then no update action is needed and hence an empty
      * {@link Optional} is returned.
      *
-     * <p>Note: If the description of the new {@link CategoryDraft} is null, an empty {@link Optional} is returned with
-     * no update actions and a custom callback function, if set on the supplied {@link CategorySyncOptions}, is called.
-     *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new description.
-     * @param syncOptions the sync syncOptions with which a custom callback function is called in case the
-     *                    description is null.
      * @return A filled optional with the update action or an empty optional if the descriptions are identical.
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildSetDescriptionUpdateAction(
         @Nonnull final Category oldCategory,
-        @Nonnull final CategoryDraft newCategory,
-        @Nonnull final CategorySyncOptions syncOptions) {
-        if (newCategory.getDescription() == null) {
-            syncOptions.applyWarningCallback(
-                format(CATEGORY_SET_DESCRIPTION_EMPTY_DESCRIPTION, (oldCategory.getId())));
-            return Optional.empty();
-        }
+        @Nonnull final CategoryDraft newCategory) {
         return buildUpdateAction(oldCategory.getDescription(),
             newCategory.getDescription(), () -> SetDescription.of(newCategory.getDescription()));
     }

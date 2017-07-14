@@ -1,7 +1,5 @@
 package com.commercetools.sync.integration.externalsource.categories.updateactionutils;
 
-import com.commercetools.sync.categories.CategorySyncOptions;
-import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -10,12 +8,9 @@ import io.sphere.sdk.categories.commands.updateactions.SetDescription;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetDescriptionUpdateAction;
@@ -23,13 +18,10 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.c
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategory;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SetDescriptionIT {
     private static Category oldCategory;
-    private List<String> callBackResponses = new ArrayList<>();
-    private CategorySyncOptions categorySyncOptions;
 
     /**
      * Deletes Categories and Types from the target CTP projects, then it populates it with category test data.
@@ -61,16 +53,6 @@ public class SetDescriptionIT {
         deleteTypes(CTP_TARGET_CLIENT);
     }
 
-    /**
-     * Cleans the callback response collector.
-     */
-    @Before
-    public void setupTest() {
-        callBackResponses = new ArrayList<>();
-        categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                        .setWarningCallBack(callBackResponses::add)
-                                                        .build();
-    }
 
     @Test
     public void buildSetDescriptionUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
@@ -82,13 +64,12 @@ public class SetDescriptionIT {
 
         // Build set description update action
         final UpdateAction<Category> setDescriptionUpdateAction =
-            buildSetDescriptionUpdateAction(oldCategory, newCategory, categorySyncOptions).orElse(null);
+            buildSetDescriptionUpdateAction(oldCategory, newCategory).orElse(null);
 
         assertThat(setDescriptionUpdateAction).isNotNull();
         assertThat(setDescriptionUpdateAction.getAction()).isEqualTo("setDescription");
         assertThat(((SetDescription) setDescriptionUpdateAction).getDescription())
             .isEqualTo(LocalizedString.of(Locale.ENGLISH, "amazing description"));
-        assertThat(callBackResponses).isEmpty();
     }
 
     @Test
@@ -102,10 +83,9 @@ public class SetDescriptionIT {
 
         // Build set description update action
         final UpdateAction<Category> setDescriptionUpdateAction =
-            buildSetDescriptionUpdateAction(oldCategory, newCategory, categorySyncOptions).orElse(null);
+            buildSetDescriptionUpdateAction(oldCategory, newCategory).orElse(null);
 
         assertThat(setDescriptionUpdateAction).isNull();
-        assertThat(callBackResponses).isEmpty();
     }
 
     @Test
@@ -118,10 +98,9 @@ public class SetDescriptionIT {
 
         // Build set description update action
         final UpdateAction<Category> setDescriptionUpdateAction =
-            buildSetDescriptionUpdateAction(oldCategory, newCategory, categorySyncOptions).orElse(null);
+            buildSetDescriptionUpdateAction(oldCategory, newCategory).orElse(null);
 
         assertThat(setDescriptionUpdateAction).isNull();
-        assertThat(callBackResponses).isEmpty();
     }
 
     @Test
@@ -133,12 +112,12 @@ public class SetDescriptionIT {
 
         // Build set description update action
         final UpdateAction<Category> setDescriptionUpdateAction =
-            buildSetDescriptionUpdateAction(oldCategory, newCategory, categorySyncOptions).orElse(null);
+            buildSetDescriptionUpdateAction(oldCategory, newCategory).orElse(null);
 
-        assertThat(setDescriptionUpdateAction).isNull();
-        assertThat(callBackResponses).hasSize(1);
-        assertThat(callBackResponses.get(0)).isEqualTo(
-            format("Cannot unset 'description' field of category with id '%s'.", oldCategory.getId()));
+        assertThat(setDescriptionUpdateAction).isNotNull();
+        assertThat(setDescriptionUpdateAction.getAction()).isEqualTo("setDescription");
+        assertThat(((SetDescription) setDescriptionUpdateAction).getDescription())
+            .isEqualTo(null);
     }
 
 }

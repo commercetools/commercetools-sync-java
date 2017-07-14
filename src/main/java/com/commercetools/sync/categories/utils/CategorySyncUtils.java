@@ -78,7 +78,7 @@ public final class CategorySyncUtils {
             buildChangeNameUpdateAction(oldCategory, newCategory),
             buildChangeSlugUpdateAction(oldCategory, newCategory),
             buildSetExternalIdUpdateAction(oldCategory, newCategory),
-            buildSetDescriptionUpdateAction(oldCategory, newCategory, syncOptions),
+            buildSetDescriptionUpdateAction(oldCategory, newCategory),
             buildChangeParentUpdateAction(oldCategory, newCategory, syncOptions),
             buildChangeOrderHintUpdateAction(oldCategory, newCategory, syncOptions),
             buildSetMetaTitleUpdateAction(oldCategory, newCategory),
