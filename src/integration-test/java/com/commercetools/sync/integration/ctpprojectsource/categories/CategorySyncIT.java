@@ -233,8 +233,11 @@ public class CategorySyncIT {
 
         // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = replaceReferenceIdsWithKeys(categories);
+
+        // Make sure there is no hierarchical order
         Collections.shuffle(categoryDrafts);
 
+        // Simulate batches of categories where not all parent references are supplied at once.
         final List<List<CategoryDraft>> batches = batchCategories(categoryDrafts, 13);
 
         final long startTime = System.currentTimeMillis();
