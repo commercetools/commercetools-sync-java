@@ -536,9 +536,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                           processedCategoryKeys.add(categoryKey);
                                       }
                                   }
-
-
-
                               });
     }
 
