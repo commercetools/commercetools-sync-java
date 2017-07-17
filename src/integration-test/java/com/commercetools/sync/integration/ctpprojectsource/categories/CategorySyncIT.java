@@ -11,9 +11,13 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
+import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.expansion.ExpansionPath;
+import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.queries.ResourceQueryModel;
+import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +42,7 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.d
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategory;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCategoryDraftsWithPrefix;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCustomFieldsJsons;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.replaceReferenceIdsWithKeys;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.syncBatches;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
@@ -395,6 +400,95 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
                 + " failed to sync).", 3, 0, 2, 0));
+        assertThat(callBackErrorResponses).isEmpty();
+        assertThat(callBackExceptions).isEmpty();
+        assertThat(callBackWarningResponses).isEmpty();
+    }
+
+    @Test
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    public void syncDrafts_withANonExistingNewParent_ShouldUpdateCategories() {
+        //-----------------Test Setup------------------------------------
+        // Delete all categories in target project
+        deleteRootCategory(CTP_TARGET_CLIENT);
+        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
+
+        // Create a total of 2 categories in the target project.
+        final CategoryDraft parentDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "parent"),
+                LocalizedString.of(Locale.ENGLISH, "parent"))
+            .key("parent")
+            .parent(targetProjectRootCategory)
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+        final Category parentCreated = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(parentDraft))
+                                                        .toCompletableFuture().join();
+
+        final CategoryDraft childDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "child"),
+                LocalizedString.of(Locale.ENGLISH, "child"))
+            .key("child")
+            .parent(parentCreated)
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+        CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(childDraft)).toCompletableFuture().join();
+        //------------------------------------------------------------------------------------------------------------
+        // Create a total of 2 categories in the source project
+
+        final CategoryDraft sourceParentDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "new-parent"),
+                LocalizedString.of(Locale.ENGLISH, "new-parent"))
+            .key("new-parent")
+            .parent(sourceProjectRootCategory)
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+        final Category sourceParentCreated = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(sourceParentDraft))
+                                                        .toCompletableFuture().join();
+
+        final CategoryDraft sourceChildDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "child-new-name"),
+                LocalizedString.of(Locale.ENGLISH, "child"))
+            .key("child")
+            .parent(sourceParentCreated)
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+        CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(sourceChildDraft)).toCompletableFuture().join();
+        //---------------------------------------------------------------
+
+        // Fetch categories from source project
+        final List<Category> categories = CTP_SOURCE_CLIENT
+            .execute(CategoryQuery.of()
+                                  .withSort(sorting -> sorting.createdAt().sort().asc())
+                                  .withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
+                                  .withExpansionPaths(ExpansionPath.of("custom.type"))
+                                  .plusExpansionPaths(CategoryExpansionModel::parent)
+            )
+            .toCompletableFuture().join().getResults();
+
+        // Put the keys in the reference ids to prepare for reference resolution
+        final List<CategoryDraft> categoryDrafts = replaceReferenceIdsWithKeys(categories);
+
+        // To simulate the new parent coming in a later draft
+        Collections.reverse(categoryDrafts);
+
+        final List<List<CategoryDraft>> batches = batchCategories(categoryDrafts, 1);
+
+        final long startTime = System.currentTimeMillis();
+        LOGGER.info("Starting to sync categories:");
+        final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
+            CompletableFuture.completedFuture(null)).toCompletableFuture().join();
+        LOGGER.info(syncStatistics.getReportMessage());
+        try {
+            LOGGER.info(getStatisticsAsJSONString(syncStatistics));
+        } catch (JsonProcessingException exception) {
+            LOGGER.error("Failed to build JSON String of summary.", exception);
+        }
+        final long syncTimeTaken = System.currentTimeMillis() - startTime;
+        LOGGER.info("Syncing categories took: " + syncTimeTaken + "ms");
+
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
+                + " failed to sync).", 3, 1, 1, 0));
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();

@@ -12,6 +12,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
+import io.sphere.sdk.categories.CategoryDraftDsl;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
@@ -337,13 +338,17 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     /**
      * Given a {@code Set} of categories which have just been fetched, this method does the following on each category:
      * <ol>
-     * <li>If the the draft exists in the input list, a copy is created from it. If not, the draft is copied from
-     * the fetched category. </li>
-     * <li>If the key of this draft exists in the {@code categoryKeysWithResolvedParents}, then this parent
-     * is now available, therefore the parent field of this draft is set from the parent saved in
-     * {@code categoryKeysWithMissingParents} for the draft</li>
-     * <li>If the key didn't exist in {@code categoryKeysWithResolvedParents}, then the parent from the fetched
-     * category is used.</li>
+     * <li>If the the draft exists in the input list:
+     *   <ol>
+     *       <li>a copy is created from it.</li>
+     *       <li>If the parent reference on the draft is null, It means the parent might not yet be created, therefore
+     *       the parent from the fetched category is used. This is to avoid having the error callback being called for
+     *       un setting a parent (which is not possible by the CTP API).</li>
+     *   </ol>
+     * </li>
+     * <li>If not, the draft is copied from the fetched category. </li>
+     * <li>If the key of this draft exists in the {@code categoryKeysWithResolvedParents}, overwrite the parent with
+     * the parent saved in {@code categoryKeysWithMissingParents} for the draft.</li>
      * <li>After a draft has been created, it is added to {@code categoryDraftsToUpdate} map as a key and
      * the value is the fetched {@link Category}.</li>
      * </ol>
@@ -361,7 +366,13 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             final Optional<CategoryDraft> draftByKeyIfExists =
                 getDraftByKeyIfExists(resolvedReferencesDrafts, fetchedCategoryKey);
             final CategoryDraftBuilder categoryDraftBuilder =
-                draftByKeyIfExists.map(CategoryDraftBuilder::of)
+                draftByKeyIfExists.map(categoryDraft -> {
+                    if (categoryDraft.getParent() == null) {
+                        return CategoryDraftBuilder.of(categoryDraft)
+                                                   .parent(fetchedCategory.getParent());
+                    }
+                    return CategoryDraftBuilder.of(categoryDraft);
+                })
                                   .orElseGet(() -> CategoryDraftBuilder.of(fetchedCategory));
             if (categoryKeysWithResolvedParents.contains(fetchedCategoryKey)) {
                 final String parentKey = getMissingParentKey(fetchedCategoryKey);
