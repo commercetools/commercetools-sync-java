@@ -16,7 +16,6 @@ import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.queries.ResourceQueryModel;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.AfterClass;
 import org.junit.Before;

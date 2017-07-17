@@ -12,7 +12,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.categories.CategoryDraftDsl;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
