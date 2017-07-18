@@ -4,12 +4,15 @@ import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
+import io.sphere.sdk.categories.commands.CategoryDeleteCommand;
+import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.After;
@@ -36,6 +39,7 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.d
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCustomFieldsDraft;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCustomFieldsJsons;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.getStatisticsAsJSONString;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -501,4 +505,58 @@ public class CategorySyncIT {
                     + "categories failed to sync).", 1, 0, 1, 0));
     }
 
+    @Test
+    public void syncDrafts_WithDraftWithAMissingParentKey_ShouldNotSyncIt() {
+        // Category draft coming from external source.
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture"))
+            .key("newCategoryKey")
+            .parent(targetProjectRootCategory)
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+
+        final String nonExistingParentKey = "nonExistingParent";
+        final CategoryDraft categoryDraftWithMissingParent = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture1"))
+            .key("cat1")
+            .parent(Category.referenceOfId(nonExistingParentKey))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .build();
+
+        final List<CategoryDraft> categoryDrafts = new ArrayList<>();
+        categoryDrafts.add(categoryDraft);
+        categoryDrafts.add(categoryDraftWithMissingParent);
+
+        final long startTime = System.currentTimeMillis();
+        LOGGER.info("Starting to sync categories:");
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts)
+                                                                  .toCompletableFuture().join();
+        LOGGER.info(syncStatistics.getReportMessage());
+        try {
+            LOGGER.info(getStatisticsAsJSONString(syncStatistics));
+        } catch (JsonProcessingException exception) {
+            LOGGER.error("Failed to build JSON String of summary.", exception);
+        }
+        final long syncTimeTaken = System.currentTimeMillis() - startTime;
+        LOGGER.info("Syncing categories took: " + syncTimeTaken + "ms");
+
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
+                + " failed to sync).", 2, 2, 0, 0));
+        assertThat(syncStatistics.getCategoryKeysWithMissingParents()).hasSize(1);
+        final ArrayList<String> missingParentsChildren = syncStatistics.getCategoryKeysWithMissingParents()
+                                                                       .get(nonExistingParentKey);
+        assertThat(missingParentsChildren).hasSize(1);
+        final String childrenKeys = missingParentsChildren.get(0);
+        assertThat(childrenKeys).isEqualTo(categoryDraftWithMissingParent.getKey());
+
+        // Delete the category manually since its not a child of the root category, so it won't be delete automatically.
+        CTP_TARGET_CLIENT.execute(CategoryQuery.of().withPredicates(categoryQueryModel ->
+            categoryQueryModel.key().is(nonExistingParentKey)))
+                 .thenAccept(result -> result.head()
+                                             .ifPresent(category -> CTP_TARGET_CLIENT
+                                                 .execute(CategoryDeleteCommand.of(category))
+                                                 .toCompletableFuture().join()))
+                 .toCompletableFuture().join();
+    }
 }
