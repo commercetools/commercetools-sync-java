@@ -44,4 +44,11 @@ public class CategorySyncOptionsTest {
         assertThat(updateActions).isNotEmpty();
         assertThat(resultantList).isEmpty();
     }
+
+    @Test
+    public void build_WithOnlyRequiredFieldsSet_ShouldReturnProperOptionsInstance() {
+        final CategorySyncOptions options = CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        assertThat(options).isNotNull();
+        assertThat(options.getBatchSize()).isEqualTo(CategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+    }
 }
