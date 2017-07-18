@@ -10,12 +10,9 @@ import javax.annotation.Nonnull;
  */
 public final class InventorySyncOptionsBuilder extends
         BaseSyncOptionsBuilder<InventorySyncOptionsBuilder, InventorySyncOptions> {
-
+    static final int BATCH_SIZE_DEFAULT = 150;
     static final boolean ENSURE_CHANNELS_DEFAULT = false;
-    static final int BATCH_SIZE_DEFAULT = 30;
-
     private boolean ensureChannels = ENSURE_CHANNELS_DEFAULT;
-    private int batchSize = BATCH_SIZE_DEFAULT;
 
     private InventorySyncOptionsBuilder(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
@@ -23,34 +20,14 @@ public final class InventorySyncOptionsBuilder extends
 
     /**
      * Creates a new instance of {@link InventorySyncOptionsBuilder} given a {@link SphereClient} responsible for
-     * interaction with the target CTP project.
+     * interaction with the target CTP project, with the dafult batch size ({@code BATCH_SIZE_DEFAULT} = 150).
      *
      * @param ctpClient {@link SphereClient} responsible for interaction with the target CTP project.
      * @return new instance of {@link InventorySyncOptionsBuilder}
      */
     public static InventorySyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
-        return new InventorySyncOptionsBuilder(ctpClient);
-    }
-
-    /**
-     * Set option that indicates batch size for sync process. During the sync there is a need for fetching existing
-     * inventory entries, so that they can be compared with entries provided in input. That's why input is sliced into
-     * batches and then processed. It allows to reduce API calls by fetching existing inventories responding to
-     * inventories from processed batch in one call.
-     * E.g. value of 30 means that 30 entries from input list would be accumulated and one API call will be performed
-     * for fetching entries responding to them. Then comparision and sync are performed.
-     *
-     * <p>This property is {@link InventorySyncOptionsBuilder#BATCH_SIZE_DEFAULT} by default.
-     *
-     * @param batchSize int that indicates capacity of batch of processed inventory entries. Has to be positive
-     *                  or else will be ignored.
-     * @return {@code this} instance of {@link InventorySyncOptionsBuilder}
-     */
-    public InventorySyncOptionsBuilder setBatchSize(final int batchSize) {
-        if (batchSize > 0) {
-            this.batchSize = batchSize;
-        }
-        return this;
+        return new InventorySyncOptionsBuilder(ctpClient)
+            .setBatchSize(BATCH_SIZE_DEFAULT);
     }
 
     /**
@@ -81,13 +58,13 @@ public final class InventorySyncOptionsBuilder extends
             this.ctpClient,
             this.errorCallBack,
             this.warningCallBack,
+            this.batchSize,
             this.removeOtherLocales,
             this.removeOtherSetEntries,
             this.removeOtherCollectionEntries,
             this.removeOtherProperties,
             this.allowUuid,
-            this.ensureChannels,
-            this.batchSize);
+            this.ensureChannels);
     }
 
     /**

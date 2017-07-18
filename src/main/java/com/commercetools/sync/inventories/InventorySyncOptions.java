@@ -11,28 +11,27 @@ public final class InventorySyncOptions extends BaseSyncOptions {
 
     private final boolean ensureChannels;
 
-    private final int batchSize;
-
     InventorySyncOptions(@Nonnull final SphereClient ctpClient,
                          final BiConsumer<String, Throwable> updateActionErrorCallBack,
                          final Consumer<String> updateActionWarningCallBack,
+                         final int batchSize,
                          final boolean removeOtherLocales,
                          final boolean removeOtherSetEntries,
                          final boolean removeOtherCollectionEntries,
                          final boolean removeOtherProperties,
                          final boolean allowUuid,
-                         boolean ensureChannels,
-                         int batchSize) {
+                         boolean ensureChannels) {
         super(ctpClient,
             updateActionErrorCallBack,
             updateActionWarningCallBack,
+            batchSize,
             removeOtherLocales,
             removeOtherSetEntries,
             removeOtherCollectionEntries,
             removeOtherProperties,
             allowUuid);
         this.ensureChannels = ensureChannels;
-        this.batchSize = batchSize;
+
     }
 
     /**
@@ -43,11 +42,5 @@ public final class InventorySyncOptions extends BaseSyncOptions {
         return ensureChannels;
     }
 
-    /**
-     * @return option that indicates capacity of batch of processed inventory entries.
-     * @see InventorySyncOptionsBuilder#setBatchSize(int)
-     */
-    public int getBatchSize() {
-        return batchSize;
-    }
+
 }
