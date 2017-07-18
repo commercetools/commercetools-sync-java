@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.helpers;
 
 import io.netty.util.internal.StringUtil;
+
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
@@ -26,8 +27,9 @@ public abstract class BaseSyncStatistics {
     }
 
     /**
-     * Stores the current time of instantiation in the {@code latestBatchStartTime} instance variable that will be used later
-     * when {@link BaseSyncStatistics#calculateProcessingTime()} is called to calculate the total time of processing.
+     * Stores the current time of instantiation in the {@code latestBatchStartTime} instance variable that will be used
+     * later when {@link BaseSyncStatistics#calculateProcessingTime()} is called to calculate the total time of
+     * processing.
      */
     public void startTimer() {
         latestBatchStartTime = System.currentTimeMillis();
@@ -129,9 +131,10 @@ public abstract class BaseSyncStatistics {
      * Calculates the processing time taken by the subtracting the time, when the
      * {@link BaseSyncStatistics#startTimer()} method of this instance was called, from the current time in
      * Milliseconds. It also sets the processing time in all the units {@code latestBatchProcessingTimeInDays},
-     * {@code latestBatchProcessingTimeInHours}, {@code latestBatchProcessingTimeInMinutes}, {@code latestBatchProcessingTimeInSeconds} and
-     * {@code latestBatchProcessingTimeInMillis}. It also builds a human readable processing time, as string, in the following
-     * format @{code "0d, 0h, 0m, 2s, 545ms"} and stores it in the publicly exposed
+     * {@code latestBatchProcessingTimeInHours}, {@code latestBatchProcessingTimeInMinutes},
+     * {@code latestBatchProcessingTimeInSeconds} and
+     * {@code latestBatchProcessingTimeInMillis}. It also builds a human readable processing time, as string, in the
+     * following format @{code "0d, 0h, 0m, 2s, 545ms"} and stores it in the publicly exposed
      * variable {@code latestBatchHumanReadableProcessingTime}.
      */
     public void calculateProcessingTime() {
@@ -142,7 +145,8 @@ public abstract class BaseSyncStatistics {
     /**
      * Calculates the processing time taken by the subtracting the time when this {@link BaseSyncStatistics} instance
      * was instantiated from the current time in Milliseconds. It sets the processing time in all the units
-     * {@code latestBatchProcessingTimeInDays}, {@code latestBatchProcessingTimeInHours}, {@code latestBatchProcessingTimeInMinutes},
+     * {@code latestBatchProcessingTimeInDays}, {@code latestBatchProcessingTimeInHours},
+     * {@code latestBatchProcessingTimeInMinutes},
      * {@code latestBatchProcessingTimeInSeconds} and {@code latestBatchProcessingTimeInMillis}.
      */
     private void setProcessingTimeInAllUnits() {
