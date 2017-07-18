@@ -436,5 +436,4 @@ public class CategorySyncTest {
         final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
         assertThat(doesRequire).isFalse();
     }
-
 }
