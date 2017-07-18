@@ -91,22 +91,25 @@ public class BaseSyncStatisticsTest {
     @Test
     public void calculateProcessingTime_ShouldSetProcessingTimeInAllUnitsAndHumanReadableString() throws
         InterruptedException {
-        assertThat(baseSyncStatistics.getProcessingTimeInMillis()).isEqualTo(0);
-        assertThat(baseSyncStatistics.getHumanReadableProcessingTime()).isEqualTo(StringUtil.EMPTY_STRING);
+        assertThat(baseSyncStatistics.getLatestBatchProcessingTimeInMillis()).isEqualTo(0);
+        assertThat(baseSyncStatistics.getLatestBatchHumanReadableProcessingTime()).isEqualTo(StringUtil.EMPTY_STRING);
 
         final int waitingTimeInMillis = 100;
         Thread.sleep(waitingTimeInMillis);
         baseSyncStatistics.calculateProcessingTime();
 
-        assertThat(baseSyncStatistics.getProcessingTimeInDays()).isGreaterThanOrEqualTo(0);
-        assertThat(baseSyncStatistics.getProcessingTimeInHours()).isGreaterThanOrEqualTo(0);
-        assertThat(baseSyncStatistics.getProcessingTimeInMinutes()).isGreaterThanOrEqualTo(0);
-        assertThat(baseSyncStatistics.getProcessingTimeInSeconds()).isGreaterThanOrEqualTo(waitingTimeInMillis / 1000);
-        assertThat(baseSyncStatistics.getProcessingTimeInMillis()).isGreaterThanOrEqualTo(waitingTimeInMillis);
+        assertThat(baseSyncStatistics.getLatestBatchProcessingTimeInDays()).isGreaterThanOrEqualTo(0);
+        assertThat(baseSyncStatistics.getLatestBatchProcessingTimeInHours()).isGreaterThanOrEqualTo(0);
+        assertThat(baseSyncStatistics.getLatestBatchProcessingTimeInMinutes()).isGreaterThanOrEqualTo(0);
+        assertThat(baseSyncStatistics.getLatestBatchProcessingTimeInSeconds())
+            .isGreaterThanOrEqualTo(waitingTimeInMillis / 1000);
+        assertThat(baseSyncStatistics.getLatestBatchProcessingTimeInMillis())
+            .isGreaterThanOrEqualTo(waitingTimeInMillis);
 
-        final long remainingMillis = baseSyncStatistics.getProcessingTimeInMillis()
-            - TimeUnit.SECONDS.toMillis(baseSyncStatistics.getProcessingTimeInSeconds());
-        assertThat(baseSyncStatistics.getHumanReadableProcessingTime()).contains(format(", %dms", remainingMillis));
+        final long remainingMillis = baseSyncStatistics.getLatestBatchProcessingTimeInMillis()
+            - TimeUnit.SECONDS.toMillis(baseSyncStatistics.getLatestBatchProcessingTimeInSeconds());
+        assertThat(baseSyncStatistics.getLatestBatchHumanReadableProcessingTime())
+            .contains(format(", %dms", remainingMillis));
     }
 
     @Test
@@ -129,12 +132,17 @@ public class BaseSyncStatisticsTest {
                 + "created\":1,\""
                 + "failed\":1,\""
                 + "processed\":3,\""
-                + "processingTimeInDays\":" + baseSyncStatistics.getProcessingTimeInDays() + ",\""
-                + "processingTimeInHours\":" + baseSyncStatistics.getProcessingTimeInHours() + ",\""
-                + "processingTimeInMinutes\":" + baseSyncStatistics.getProcessingTimeInMinutes() + ",\""
-                + "processingTimeInSeconds\":" + baseSyncStatistics.getProcessingTimeInSeconds() + ",\""
-                + "processingTimeInMillis\":" + baseSyncStatistics.getProcessingTimeInMillis() + ",\""
-                + "humanReadableProcessingTime\":\"" + baseSyncStatistics.getHumanReadableProcessingTime() + "\"}");
+                + "latestBatchProcessingTimeInDays\":" + baseSyncStatistics.getLatestBatchProcessingTimeInDays() + ",\""
+                + "latestBatchProcessingTimeInHours\":" + baseSyncStatistics.getLatestBatchProcessingTimeInHours()
+                + ",\""
+                + "latestBatchProcessingTimeInMinutes\":" + baseSyncStatistics.getLatestBatchProcessingTimeInMinutes()
+                + ",\""
+                + "latestBatchProcessingTimeInSeconds\":" + baseSyncStatistics.getLatestBatchProcessingTimeInSeconds()
+                + ",\""
+                + "latestBatchProcessingTimeInMillis\":" + baseSyncStatistics.getLatestBatchProcessingTimeInMillis()
+                + ",\""
+                + "latestBatchHumanReadableProcessingTime\":\"" + baseSyncStatistics
+                .getLatestBatchHumanReadableProcessingTime() + "\"}");
     }
 
     @Test
@@ -159,11 +167,16 @@ public class BaseSyncStatisticsTest {
                 + "created\":1,\""
                 + "failed\":1,\""
                 + "processed\":3,\""
-                + "processingTimeInDays\":" + baseSyncStatistics.getProcessingTimeInDays() + ",\""
-                + "processingTimeInHours\":" + baseSyncStatistics.getProcessingTimeInHours() + ",\""
-                + "processingTimeInMinutes\":" + baseSyncStatistics.getProcessingTimeInMinutes() + ",\""
-                + "processingTimeInSeconds\":" + baseSyncStatistics.getProcessingTimeInSeconds() + ",\""
-                + "processingTimeInMillis\":" + baseSyncStatistics.getProcessingTimeInMillis() + ",\""
-                + "humanReadableProcessingTime\":\"" + baseSyncStatistics.getHumanReadableProcessingTime() + "\"}");
+                + "latestBatchProcessingTimeInDays\":" + baseSyncStatistics.getLatestBatchProcessingTimeInDays() + ",\""
+                + "latestBatchProcessingTimeInHours\":" + baseSyncStatistics.getLatestBatchProcessingTimeInHours()
+                + ",\""
+                + "latestBatchProcessingTimeInMinutes\":" + baseSyncStatistics.getLatestBatchProcessingTimeInMinutes()
+                + ",\""
+                + "latestBatchProcessingTimeInSeconds\":" + baseSyncStatistics.getLatestBatchProcessingTimeInSeconds()
+                + ",\""
+                + "latestBatchProcessingTimeInMillis\":" + baseSyncStatistics.getLatestBatchProcessingTimeInMillis()
+                + ",\""
+                + "latestBatchHumanReadableProcessingTime\":\"" + baseSyncStatistics
+                .getLatestBatchHumanReadableProcessingTime() + "\"}");
     }
 }

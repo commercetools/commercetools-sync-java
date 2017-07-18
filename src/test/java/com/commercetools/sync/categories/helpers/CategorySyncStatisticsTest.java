@@ -68,23 +68,23 @@ public class CategorySyncStatisticsTest {
     @Test
     public void calculateProcessingTime_ShouldSetProcessingTimeInAllUnitsAndHumanReadableString() throws
         InterruptedException {
-        assertThat(categorySyncStatistics.getProcessingTimeInMillis()).isEqualTo(0);
-        assertThat(categorySyncStatistics.getHumanReadableProcessingTime()).isEqualTo(StringUtil.EMPTY_STRING);
+        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInMillis()).isEqualTo(0);
+        assertThat(categorySyncStatistics.getLatestBatchHumanReadableProcessingTime()).isEqualTo(StringUtil.EMPTY_STRING);
 
         final int waitingTimeInMillis = 100;
         Thread.sleep(waitingTimeInMillis);
         categorySyncStatistics.calculateProcessingTime();
 
-        assertThat(categorySyncStatistics.getProcessingTimeInDays()).isGreaterThanOrEqualTo(0);
-        assertThat(categorySyncStatistics.getProcessingTimeInHours()).isGreaterThanOrEqualTo(0);
-        assertThat(categorySyncStatistics.getProcessingTimeInMinutes()).isGreaterThanOrEqualTo(0);
-        assertThat(categorySyncStatistics.getProcessingTimeInSeconds()).isGreaterThanOrEqualTo(waitingTimeInMillis
+        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInDays()).isGreaterThanOrEqualTo(0);
+        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInHours()).isGreaterThanOrEqualTo(0);
+        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInMinutes()).isGreaterThanOrEqualTo(0);
+        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInSeconds()).isGreaterThanOrEqualTo(waitingTimeInMillis
             / 1000);
-        assertThat(categorySyncStatistics.getProcessingTimeInMillis()).isGreaterThanOrEqualTo(waitingTimeInMillis);
+        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInMillis()).isGreaterThanOrEqualTo(waitingTimeInMillis);
 
-        final long remainingMillis = categorySyncStatistics.getProcessingTimeInMillis()
-            - TimeUnit.SECONDS.toMillis(categorySyncStatistics.getProcessingTimeInSeconds());
-        assertThat(categorySyncStatistics.getHumanReadableProcessingTime()).contains(format(", %dms", remainingMillis));
+        final long remainingMillis = categorySyncStatistics.getLatestBatchProcessingTimeInMillis()
+            - TimeUnit.SECONDS.toMillis(categorySyncStatistics.getLatestBatchProcessingTimeInSeconds());
+        assertThat(categorySyncStatistics.getLatestBatchHumanReadableProcessingTime()).contains(format(", %dms", remainingMillis));
     }
 
     @Test
@@ -106,14 +106,20 @@ public class CategorySyncStatisticsTest {
                   + "updated\":1,\""
                   + "created\":1,\""
                   + "failed\":1,\""
-                  + "processed\":3,\""
-                  + "processingTimeInDays\":" + categorySyncStatistics.getProcessingTimeInDays() + ",\""
-                  + "processingTimeInHours\":" + categorySyncStatistics.getProcessingTimeInHours() + ",\""
-                  + "processingTimeInMinutes\":" + categorySyncStatistics.getProcessingTimeInMinutes() + ",\""
-                  + "processingTimeInSeconds\":" + categorySyncStatistics.getProcessingTimeInSeconds() + ",\""
-                  + "processingTimeInMillis\":" + categorySyncStatistics.getProcessingTimeInMillis() + ",\""
-                  + "humanReadableProcessingTime\":\"" + categorySyncStatistics.getHumanReadableProcessingTime()
-                  + "\"}");
+                    + "processed\":3,\""
+                    + "latestBatchProcessingTimeInDays\":" + categorySyncStatistics.getLatestBatchProcessingTimeInDays()
+                    + ",\""
+                    + "latestBatchProcessingTimeInHours\":" + categorySyncStatistics
+                    .getLatestBatchProcessingTimeInHours() + ",\""
+                    + "latestBatchProcessingTimeInMinutes\":" + categorySyncStatistics
+                    .getLatestBatchProcessingTimeInMinutes() + ",\""
+                    + "latestBatchProcessingTimeInSeconds\":" + categorySyncStatistics
+                    .getLatestBatchProcessingTimeInSeconds() + ",\""
+                    + "latestBatchProcessingTimeInMillis\":" + categorySyncStatistics
+                    .getLatestBatchProcessingTimeInMillis() + ",\""
+                    + "latestBatchHumanReadableProcessingTime\":\"" + categorySyncStatistics
+                    .getLatestBatchHumanReadableProcessingTime()
+                    + "\"}");
     }
 
     @Test
@@ -138,11 +144,17 @@ public class CategorySyncStatisticsTest {
                 + "created\":1,\""
                 + "failed\":1,\""
                 + "processed\":3,\""
-                + "processingTimeInDays\":" + categorySyncStatistics.getProcessingTimeInDays() + ",\""
-                + "processingTimeInHours\":" + categorySyncStatistics.getProcessingTimeInHours() + ",\""
-                + "processingTimeInMinutes\":" + categorySyncStatistics.getProcessingTimeInMinutes() + ",\""
-                + "processingTimeInSeconds\":" + categorySyncStatistics.getProcessingTimeInSeconds() + ",\""
-                + "processingTimeInMillis\":" + categorySyncStatistics.getProcessingTimeInMillis() + ",\""
-                + "humanReadableProcessingTime\":\"" + categorySyncStatistics.getHumanReadableProcessingTime() + "\"}");
+                + "latestBatchProcessingTimeInDays\":" + categorySyncStatistics.getLatestBatchProcessingTimeInDays()
+                + ",\""
+                + "latestBatchProcessingTimeInHours\":" + categorySyncStatistics.getLatestBatchProcessingTimeInHours()
+                + ",\""
+                + "latestBatchProcessingTimeInMinutes\":" + categorySyncStatistics
+                .getLatestBatchProcessingTimeInMinutes() + ",\""
+                + "latestBatchProcessingTimeInSeconds\":" + categorySyncStatistics
+                .getLatestBatchProcessingTimeInSeconds() + ",\""
+                + "latestBatchProcessingTimeInMillis\":" + categorySyncStatistics.getLatestBatchProcessingTimeInMillis()
+                + ",\""
+                + "latestBatchHumanReadableProcessingTime\":\"" + categorySyncStatistics
+                .getLatestBatchHumanReadableProcessingTime() + "\"}");
     }
 }

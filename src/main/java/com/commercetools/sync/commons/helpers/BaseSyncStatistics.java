@@ -11,26 +11,26 @@ public abstract class BaseSyncStatistics {
     private int created;
     private int failed;
     private int processed;
-    private long startTime;
-    private long processingTimeInDays;
-    private long processingTimeInHours;
-    private long processingTimeInMinutes;
-    private long processingTimeInSeconds;
-    private long processingTimeInMillis;
-    private String humanReadableProcessingTime;
+    private long latestBatchStartTime;
+    private long latestBatchProcessingTimeInDays;
+    private long latestBatchProcessingTimeInHours;
+    private long latestBatchProcessingTimeInMinutes;
+    private long latestBatchProcessingTimeInSeconds;
+    private long latestBatchProcessingTimeInMillis;
+    private String latestBatchHumanReadableProcessingTime;
 
 
     public BaseSyncStatistics() {
         reportMessage = StringUtil.EMPTY_STRING;
-        humanReadableProcessingTime = StringUtil.EMPTY_STRING;
+        latestBatchHumanReadableProcessingTime = StringUtil.EMPTY_STRING;
     }
 
     /**
-     * Stores the current time of instantiation in the {@code startTime} instance variable that will be used later
+     * Stores the current time of instantiation in the {@code latestBatchStartTime} instance variable that will be used later
      * when {@link BaseSyncStatistics#calculateProcessingTime()} is called to calculate the total time of processing.
      */
     public void startTimer() {
-        startTime = System.currentTimeMillis();
+        latestBatchStartTime = System.currentTimeMillis();
     }
 
     /**
@@ -128,11 +128,11 @@ public abstract class BaseSyncStatistics {
     /**
      * Calculates the processing time taken by the subtracting the time, when the
      * {@link BaseSyncStatistics#startTimer()} method of this instance was called, from the current time in
-     * Milliseconds. It also sets the processing time in all the units {@code processingTimeInDays},
-     * {@code processingTimeInHours}, {@code processingTimeInMinutes}, {@code processingTimeInSeconds} and
-     * {@code processingTimeInMillis}. It also builds a human readable processing time, as string, in the following
+     * Milliseconds. It also sets the processing time in all the units {@code latestBatchProcessingTimeInDays},
+     * {@code latestBatchProcessingTimeInHours}, {@code latestBatchProcessingTimeInMinutes}, {@code latestBatchProcessingTimeInSeconds} and
+     * {@code latestBatchProcessingTimeInMillis}. It also builds a human readable processing time, as string, in the following
      * format @{code "0d, 0h, 0m, 2s, 545ms"} and stores it in the publicly exposed
-     * variable {@code humanReadableProcessingTime}.
+     * variable {@code latestBatchHumanReadableProcessingTime}.
      */
     public void calculateProcessingTime() {
         setProcessingTimeInAllUnits();
@@ -142,34 +142,34 @@ public abstract class BaseSyncStatistics {
     /**
      * Calculates the processing time taken by the subtracting the time when this {@link BaseSyncStatistics} instance
      * was instantiated from the current time in Milliseconds. It sets the processing time in all the units
-     * {@code processingTimeInDays}, {@code processingTimeInHours}, {@code processingTimeInMinutes},
-     * {@code processingTimeInSeconds} and {@code processingTimeInMillis}.
+     * {@code latestBatchProcessingTimeInDays}, {@code latestBatchProcessingTimeInHours}, {@code latestBatchProcessingTimeInMinutes},
+     * {@code latestBatchProcessingTimeInSeconds} and {@code latestBatchProcessingTimeInMillis}.
      */
     private void setProcessingTimeInAllUnits() {
-        processingTimeInMillis = System.currentTimeMillis() - this.startTime;
-        processingTimeInDays = TimeUnit.MILLISECONDS.toDays(processingTimeInMillis);
-        processingTimeInHours = TimeUnit.MILLISECONDS.toHours(processingTimeInMillis);
-        processingTimeInMinutes = TimeUnit.MILLISECONDS.toMinutes(processingTimeInHours);
-        processingTimeInSeconds = TimeUnit.MILLISECONDS.toSeconds(processingTimeInMillis);
+        latestBatchProcessingTimeInMillis = System.currentTimeMillis() - this.latestBatchStartTime;
+        latestBatchProcessingTimeInDays = TimeUnit.MILLISECONDS.toDays(latestBatchProcessingTimeInMillis);
+        latestBatchProcessingTimeInHours = TimeUnit.MILLISECONDS.toHours(latestBatchProcessingTimeInMillis);
+        latestBatchProcessingTimeInMinutes = TimeUnit.MILLISECONDS.toMinutes(latestBatchProcessingTimeInHours);
+        latestBatchProcessingTimeInSeconds = TimeUnit.MILLISECONDS.toSeconds(latestBatchProcessingTimeInMillis);
     }
 
     /**
      * Builds a human readable processing time, as string, in the following format @{code "0d, 0h, 0m, 2s, 545ms"}
-     * and stores it in the publicly exposed variable {@code humanReadableProcessingTime}.
+     * and stores it in the publicly exposed variable {@code latestBatchHumanReadableProcessingTime}.
      */
     private void setHumanReadableProcessingTime() {
-        final long completeDaysInHours = TimeUnit.DAYS.toHours(processingTimeInDays);
-        final long completeHoursInMinutes = TimeUnit.HOURS.toMinutes(processingTimeInHours);
-        final long completeMinutesInSeconds = TimeUnit.MINUTES.toSeconds(processingTimeInMinutes);
-        final long completeSecondsInMillis = TimeUnit.SECONDS.toMillis(processingTimeInSeconds);
+        final long completeDaysInHours = TimeUnit.DAYS.toHours(latestBatchProcessingTimeInDays);
+        final long completeHoursInMinutes = TimeUnit.HOURS.toMinutes(latestBatchProcessingTimeInHours);
+        final long completeMinutesInSeconds = TimeUnit.MINUTES.toSeconds(latestBatchProcessingTimeInMinutes);
+        final long completeSecondsInMillis = TimeUnit.SECONDS.toMillis(latestBatchProcessingTimeInSeconds);
 
-        final long remainingHours = processingTimeInHours - completeDaysInHours;
-        final long remainingMinutes = processingTimeInMinutes - completeHoursInMinutes;
-        final long remainingSeconds = processingTimeInSeconds - completeMinutesInSeconds;
-        final long remainingMillis = processingTimeInMillis - completeSecondsInMillis;
+        final long remainingHours = latestBatchProcessingTimeInHours - completeDaysInHours;
+        final long remainingMinutes = latestBatchProcessingTimeInMinutes - completeHoursInMinutes;
+        final long remainingSeconds = latestBatchProcessingTimeInSeconds - completeMinutesInSeconds;
+        final long remainingMillis = latestBatchProcessingTimeInMillis - completeSecondsInMillis;
 
-        humanReadableProcessingTime = format("%dd, %dh, %dm, %ds, %dms",
-          processingTimeInDays,
+        latestBatchHumanReadableProcessingTime = format("%dd, %dh, %dm, %ds, %dms",
+            latestBatchProcessingTimeInDays,
           remainingHours,
           remainingMinutes,
           remainingSeconds,
@@ -182,8 +182,8 @@ public abstract class BaseSyncStatistics {
      *
      * @return the human readable processing time in the following format @{code "0d, 0h, 0m, 2s, 545ms"}
      */
-    public String getHumanReadableProcessingTime() {
-        return humanReadableProcessingTime;
+    public String getLatestBatchHumanReadableProcessingTime() {
+        return latestBatchHumanReadableProcessingTime;
     }
 
     /**
@@ -191,8 +191,8 @@ public abstract class BaseSyncStatistics {
      *
      * @return number of days taken to process.
      */
-    public long getProcessingTimeInDays() {
-        return processingTimeInDays;
+    public long getLatestBatchProcessingTimeInDays() {
+        return latestBatchProcessingTimeInDays;
     }
 
     /**
@@ -200,8 +200,8 @@ public abstract class BaseSyncStatistics {
      *
      * @return number of hours taken to process.
      */
-    public long getProcessingTimeInHours() {
-        return processingTimeInHours;
+    public long getLatestBatchProcessingTimeInHours() {
+        return latestBatchProcessingTimeInHours;
     }
 
     /**
@@ -209,8 +209,8 @@ public abstract class BaseSyncStatistics {
      *
      * @return number of minutes taken to process.
      */
-    public long getProcessingTimeInMinutes() {
-        return processingTimeInMinutes;
+    public long getLatestBatchProcessingTimeInMinutes() {
+        return latestBatchProcessingTimeInMinutes;
     }
 
     /**
@@ -218,8 +218,8 @@ public abstract class BaseSyncStatistics {
      *
      * @return number of seconds taken to process.
      */
-    public long getProcessingTimeInSeconds() {
-        return processingTimeInSeconds;
+    public long getLatestBatchProcessingTimeInSeconds() {
+        return latestBatchProcessingTimeInSeconds;
     }
 
     /**
@@ -227,8 +227,8 @@ public abstract class BaseSyncStatistics {
      *
      * @return number of milliseconds taken to process.
      */
-    public long getProcessingTimeInMillis() {
-        return processingTimeInMillis;
+    public long getLatestBatchProcessingTimeInMillis() {
+        return latestBatchProcessingTimeInMillis;
     }
 
     /**
