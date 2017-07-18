@@ -62,4 +62,23 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
     public U getStatistics() {
         return statistics;
     }
+
+    /**
+     * Given a list of resource (e.g. categories, products, etc..  batches represented by a
+     * {@link List}&lt;{@link List}&gt; of resources, this method recursively calls
+     * {@link this#processBatch(List)} on each batch, then removes it, until there are no more batches, in other words,
+     * all batches have been synced.
+     *
+     * @param batches the batches of resources to sync.
+     * @param result  in the first call of this recursive method, this result is normally a completed future, it
+     *                used from within the method to recursively sync each batch once the previous batch has
+     *                finished syncing.
+     * @return an instance of {@link CompletionStage} which contains as a result an instance of
+     *      {@link BaseSyncStatistics} representing the {@code statistics} of the sync process executed on the
+     *      given list of batches.
+     */
+    protected abstract CompletionStage<U> syncBatches(@Nonnull final List<List<T>> batches,
+                                                      @Nonnull final CompletionStage<U> result);
+
+    protected abstract CompletionStage<U> processBatch(@Nonnull final List<T> batch);
 }

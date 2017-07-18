@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
+import static com.commercetools.sync.commons.utils.BaseSyncUtils.batchDrafts;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -105,6 +106,40 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     @Override
     protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<CategoryDraft> categoryDrafts) {
+        final List<List<CategoryDraft>> batches = batchDrafts(categoryDrafts, syncOptions.getBatchSize());
+        return syncBatches(batches, CompletableFuture.completedFuture(statistics));
+    }
+
+    @Override
+    protected CompletionStage<CategorySyncStatistics> syncBatches(@Nonnull final List<List<CategoryDraft>> batches,
+                                                                  @Nonnull final
+                                                                  CompletionStage<CategorySyncStatistics> result) {
+        if (batches.isEmpty()) {
+            return result;
+        }
+        final List<CategoryDraft> firstBatch = batches.remove(0);
+        return syncBatches(batches, result.thenCompose(subResult -> processBatch(firstBatch)));
+    }
+
+    /**
+     * Given a list of {@code CategoryDraft} that represent a batch of category drafts, this method for the first batch
+     * only caches a list of all the categories in the CTP project in a cached map that representing each category's
+     * key to the id. It then validates the category drafts, then resolves all the references. Then it creates all
+     * categories that need to be created in parallel while keeping track of the categories that have their
+     * non-existing parents. Then it does update actions that don't require parent changes in parallel. Then in a
+     * blocking fashion issues update actions that don't involve parent changes sequentially.
+     *
+     * <p>More on the exact implementation of how the sync works here:
+     * https://sphere.atlassian.net/wiki/spaces/PS/pages/145193124/Category+Parallelisation+Technical+Concept
+     *
+     *
+     * @param categoryDrafts the list of new category drafts to sync to the CTP project.
+     * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of
+     * {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
+     * {@link this} {@link CategorySync}.
+     */
+    @Override
+    protected CompletionStage<CategorySyncStatistics> processBatch(@Nonnull final List<CategoryDraft> categoryDrafts) {
         final int numberOfNewDraftsToProcess = getNumberOfProcessedCategories(categoryDrafts);
         referencesResolvedDrafts = new HashSet<>();
         existingCategoryDrafts = new HashSet<>();
