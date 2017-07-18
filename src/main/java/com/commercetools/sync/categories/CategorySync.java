@@ -85,6 +85,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         super(new CategorySyncStatistics(), syncOptions);
         this.categoryService = categoryService;
         this.referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
+        this.statistics.setCategoryKeysWithMissingParents(categoryKeysWithMissingParents);
     }
 
     /**
