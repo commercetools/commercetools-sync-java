@@ -74,7 +74,7 @@ public class CategorySyncTest {
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getProcessed()).isEqualTo(0);
         assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 0 categories were processed in "
-            + "total (0 created, 0 updated and 0 categories failed to sync).");
+            + "total (0 created, 0 updated, 0 failed to sync and 0 categories with a missing parent).");
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
     }
@@ -97,8 +97,8 @@ public class CategorySyncTest {
         assertThat(syncStatistics.getFailed()).isEqualTo(1);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed"
-            + " in total (0 created, 0 updated and 1 categories failed to sync).");
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 1 failed to sync and 0 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo("CategoryDraft is null.");
         assertThat(errorCallBackExceptions).hasSize(1);
@@ -124,8 +124,8 @@ public class CategorySyncTest {
         assertThat(syncStatistics.getFailed()).isEqualTo(1);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed"
-            + " in total (0 created, 0 updated and 1 categories failed to sync).");
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 1 failed to sync and 0 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo("CategoryDraft with name: "
             + "LocalizedString(en -> noKeyDraft) doesn't have a key.");
@@ -153,8 +153,8 @@ public class CategorySyncTest {
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed"
-            + " in total (1 created, 0 updated and 0 categories failed to sync).");
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (1 created, 0 updated, 0 failed to sync and 1 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
@@ -171,8 +171,8 @@ public class CategorySyncTest {
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(1);
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed"
-            + " in total (0 created, 1 updated and 0 categories failed to sync).");
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 1 updated, 0 failed to sync and 1 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
@@ -199,8 +199,8 @@ public class CategorySyncTest {
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed"
-            + " in total (0 created, 0 updated and 0 categories failed to sync).");
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 0 failed to sync and 1 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
@@ -250,9 +250,8 @@ public class CategorySyncTest {
         assertThat(syncStatistics.getFailed()).isEqualTo(1);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 1 failed to sync and 0 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
             + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
@@ -277,9 +276,8 @@ public class CategorySyncTest {
         assertThat(syncStatistics.getFailed()).isEqualTo(1);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 1 failed to sync and 0 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
             + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
@@ -303,9 +301,8 @@ public class CategorySyncTest {
         assertThat(syncStatistics.getFailed()).isEqualTo(1);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 1 failed to sync and 0 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
             + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
@@ -329,9 +326,8 @@ public class CategorySyncTest {
         assertThat(syncStatistics.getFailed()).isEqualTo(1);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 1 failed to sync and 1 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
             + " key:'key'. Reason: %s: Failed to resolve custom type reference on "
@@ -357,9 +353,8 @@ public class CategorySyncTest {
         assertThat(syncStatistics.getFailed()).isEqualTo(1);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 1 failed to sync and 1 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
             + " key:'key'. Reason: %s: Failed to resolve custom type reference on "
@@ -390,9 +385,8 @@ public class CategorySyncTest {
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(1);
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 1 updated and 0 categories failed to sync).");
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 1 updated, 0 failed to sync and 1 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }

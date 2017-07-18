@@ -75,8 +75,10 @@ public class BaseSyncTest {
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getProcessed()).isEqualTo(categoryDrafts.size());
         assertThat(syncStatistics.getReportMessage()).isEqualTo(format("Summary: %s categories were processed"
-                + " in total (%s created, 0 updated and 0 categories failed to sync).", categoryDrafts.size(),
-            expectedNumberOfCategoriesCreated));
+                + " in total (%s created, 0 updated, 0 failed to sync and %s categories with a missing parent).",
+            categoryDrafts.size(),
+            expectedNumberOfCategoriesCreated,
+            categoryDrafts.size()));
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
 
@@ -111,9 +113,9 @@ public class BaseSyncTest {
         assertThat(syncStatisticsWithDefaultBatchSize.getUpdated()).isEqualTo(0);
         assertThat(syncStatisticsWithDefaultBatchSize.getProcessed()).isEqualTo(categoryDrafts.size());
         assertThat(syncStatisticsWithDefaultBatchSize.getReportMessage())
-            .isEqualTo(format("Summary: %s categories were processed in total (%s created, 0 updated and %s categories"
-                    + " failed to sync).", categoryDrafts.size(), expectedNumberOfCategoriesCreated,
-                expectedFailedCategories));
+            .isEqualTo(format("Summary: %s categories were processed in total (%s created, 0 updated, %s failed to sync"
+                    + " and %s categories with a missing parent).", categoryDrafts.size(),
+                expectedNumberOfCategoriesCreated, expectedFailedCategories, categoryDrafts.size()));
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
