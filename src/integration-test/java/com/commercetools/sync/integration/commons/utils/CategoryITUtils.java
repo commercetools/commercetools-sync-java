@@ -53,8 +53,8 @@ public class CategoryITUtils {
 
     /**
      * Builds a list of the supplied number ({@code numberOfCategories}) of CategoryDraft objects that can be used for
-     * integration tests to mimic existing categories in a target CTP project for example. All the newly created category
-     * drafts will have {@code parentCategory} as a parent.
+     * integration tests to mimic existing categories in a target CTP project for example. All the newly created
+     * category drafts will have {@code parentCategory} as a parent.
      *
      * @param numberOfCategories the number of category drafts to create.
      * @param parentCategory     the parent of the drafts.
@@ -149,8 +149,8 @@ public class CategoryITUtils {
     }
 
     /**
-     * Creates a dummy instance of {@link CustomFieldsDraft} with the key defined by {@code OLD_CATEGORY_CUSTOM_TYPE_KEY}
-     * and two custom fields 'invisibleInShop' and'backgroundColor'.
+     * Creates a dummy instance of {@link CustomFieldsDraft} with the key defined by
+     * {@code OLD_CATEGORY_CUSTOM_TYPE_KEY} and two custom fields 'invisibleInShop' and'backgroundColor'.
      *
      * <p>The 'invisibleInShop' field is of type {@code boolean} and has value {@code false} and the
      * the 'backgroundColor' field is of type {@code localisedString} and has the values {"de": "rot", "en": "red"}
