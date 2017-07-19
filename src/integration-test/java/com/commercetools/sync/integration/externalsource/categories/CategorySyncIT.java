@@ -108,8 +108,8 @@ public class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
                                                         .toCompletableFuture().join();
         assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
-                + " failed to sync).", 1, 1, 0, 0));
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                + " sync and %d categories with a missing parent).", 1, 1, 0, 0, 0));
     }
 
     @Test
@@ -125,8 +125,8 @@ public class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
                                                         .toCompletableFuture().join();
         assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
-                + " failed to sync).", 1, 0, 0, 1));
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                + " sync and %d categories with a missing parent).", 1, 0, 0, 1, 0));
     }
 
     @Test
@@ -143,8 +143,8 @@ public class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
                                                         .toCompletableFuture().join();
         assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
-                + " failed to sync).", 1, 0, 1, 0));
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
     }
 
     @Test
@@ -234,9 +234,9 @@ public class CategorySyncIT {
                                                         .toCompletableFuture()
                                                         .join();
 
-        assertThat(syncStatistics.getReportMessage()).isEqualTo(format(
-                "Summary: %d categories were processed in total (%d created, %d updated and %d "
-                    + "categories failed to sync).", 4, 3, 1, 0));
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                + " sync and %d categories with a missing parent).", 4, 3, 1, 0, 0));
     }
 
     @Test
@@ -303,9 +303,8 @@ public class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
 
         assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format(
-                "Summary: %d categories were processed in total (%d created, %d updated and %d "
-                    + "categories failed to sync).", 6, 5, 1, 0));
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                + " sync and %d categories with a missing parent).", 6, 5, 1, 0, 0));
     }
 
     @Test
@@ -372,9 +371,8 @@ public class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
 
         assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format(
-                "Summary: %d categories were processed in total (%d created, %d updated and %d "
-                    + "categories failed to sync).", 6, 5, 0, 1));
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                + " sync and %d categories with a missing parent).", 6, 5, 0, 1, 0));
     }
 
     @Test
@@ -441,9 +439,8 @@ public class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
 
         assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format(
-                "Summary: %d categories were processed in total (%d created, %d updated and %d "
-                    + "categories failed to sync).", 6, 4, 1, 1));
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                + " sync and %d categories with a missing parent).", 6, 4, 1, 1, 0));
     }
 
     @Test
@@ -470,9 +467,8 @@ public class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
 
         assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format(
-                "Summary: %d categories were processed in total (%d created, %d updated and %d "
-                    + "categories failed to sync).", 2, 0, 1, 1));
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                + " sync and %d categories with a missing parent).", 2, 0, 1, 1, 0));
     }
 
     @Test
@@ -500,9 +496,8 @@ public class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
 
         assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format(
-                "Summary: %d categories were processed in total (%d created, %d updated and %d "
-                    + "categories failed to sync).", 1, 0, 1, 0));
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
     }
 
     @Test
@@ -541,8 +536,10 @@ public class CategorySyncIT {
         LOGGER.info("Syncing categories took: " + syncTimeTaken + "ms");
 
         assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated and %d categories"
-                + " failed to sync).", 2, 2, 0, 0));
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                + " sync and %d categories with a missing parent).", 2, 2, 0, 0, 1));
+
+
         assertThat(syncStatistics.getCategoryKeysWithMissingParents()).hasSize(1);
         final ArrayList<String> missingParentsChildren = syncStatistics.getCategoryKeysWithMissingParents()
                                                                        .get(nonExistingParentKey);
