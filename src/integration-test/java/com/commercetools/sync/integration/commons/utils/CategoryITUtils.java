@@ -139,6 +139,7 @@ public class CategoryITUtils {
                 .key(categoryName)
                 .parent(parent)
                 .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+                .orderHint("sameOrderHint")
                 .build();
             final Category createdChild = ctpClient.execute(CategoryCreateCommand.of(child))
                                                    .toCompletableFuture().join();
