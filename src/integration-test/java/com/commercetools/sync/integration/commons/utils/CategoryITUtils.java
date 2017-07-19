@@ -9,10 +9,12 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.CategoryDeleteCommand;
+import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.types.BooleanFieldType;
 import io.sphere.sdk.types.CustomFieldsDraft;
@@ -28,28 +30,26 @@ import io.sphere.sdk.types.queries.TypeQueryBuilder;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 public class CategoryITUtils {
     public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
-    private static final String OLD_CATEGORY_CUSTOM_TYPE_NAME = "old_type_name";
-    private static final Locale LOCALE = Locale.ENGLISH;
+    public static final String OLD_CATEGORY_CUSTOM_TYPE_NAME = "old_type_name";
     public static final String LOCALISED_STRING_CUSTOM_FIELD_NAME = "backgroundColor";
     public static final String BOOLEAN_CUSTOM_FIELD_NAME = "invisibleInShop";
-    private static final String ROOT_CATEGORY_KEY = "rootCategoryKey";
-    private static final String ROOT_CATEGORY_ORDER_HINT = "0.1";
 
     /**
      * Builds a list of the supplied number ({@code numberOfCategories}) of CategoryDraft objects that can be used for
@@ -127,7 +127,7 @@ public class CategoryITUtils {
      * @return the list of Categories created.
      */
     public static List<Category> createChildren(final int numberOfChildren,
-                                                @Nonnull final Category parent,
+                                                @Nullable final Category parent,
                                                 @Nonnull final String prefix,
                                                 @Nonnull final SphereClient ctpClient) {
         final List<Category> children = new ArrayList<>();
@@ -199,26 +199,6 @@ public class CategoryITUtils {
         }
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
                          .toCompletableFuture().join();
-    }
-
-    /**
-     * it also creates a custom type for which the created categories can use for their custom
-     * fields.
-     *
-     * @param ctpClient defines the CTP project to create the root category in.
-     */
-    public static Category createRootCategory(@Nonnull final SphereClient ctpClient) {
-        createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, LOCALE, OLD_CATEGORY_CUSTOM_TYPE_NAME, ctpClient);
-        final CategoryDraft rootCategoryDraft = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "rootCategory"),
-                LocalizedString.of(Locale.ENGLISH, "root-category", Locale.GERMAN, "root-category"))
-            .description(LocalizedString.of(Locale.ENGLISH, "root Category"))
-            .key(ROOT_CATEGORY_KEY)
-            .orderHint(ROOT_CATEGORY_ORDER_HINT)
-            .build();
-        return ctpClient.execute(CategoryCreateCommand.of(rootCategoryDraft))
-                        .toCompletableFuture()
-                        .join();
     }
 
     /**
@@ -294,29 +274,43 @@ public class CategoryITUtils {
 
     }
 
-    /**
-     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} categories from CTP
-     * projects {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
-     */
-    public static void deleteRootCategoriesFromTargetAndSource() {
-        deleteRootCategory(CTP_TARGET_CLIENT);
-        deleteRootCategory(CTP_SOURCE_CLIENT);
-    }
 
     /**
      * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} categories from CTP
-     * projects defined by the {@code ctpClient}.
+     * projects defined by the {@code ctpClient}. Only issues delete request action to a category in the case that none
+     * of its ancestors was already deleted or not to avoid trying to delete a category which would have been already
+     * deleted, due to deletion of an ancestor of it. As a performance improvement, this method sorts categories by
+     * least ancestors for faster deletion (due to deletion ancestors always first, which in turn deletes all the
+     * children and grand children.
+     *
      *
      * @param ctpClient defines the CTP project to delete the categories from.
      */
-    public static void deleteRootCategory(@Nonnull final SphereClient ctpClient) {
-        ctpClient.execute(CategoryQuery.of().withPredicates(categoryQueryModel ->
-            categoryQueryModel.key().is(ROOT_CATEGORY_KEY)))
-                 .thenAccept(result -> result.head()
-                                             .ifPresent(category -> ctpClient
-                                                 .execute(CategoryDeleteCommand.of(category))
-                                                 .toCompletableFuture().join()))
-                 .toCompletableFuture().join();
+    public static void deleteAllCategories(@Nonnull final SphereClient ctpClient) {
+        final Set<String> keys = new HashSet<>();
+        QueryExecutionUtils.queryAll(ctpClient,
+            CategoryQuery.of().withExpansionPaths(CategoryExpansionModel::ancestors))
+                           .thenAccept(results -> sortCategoriesByLeastAncestors(results)
+                               .forEach(category -> {
+                                   final String categoryKey = category.getKey();
+                                   if (!hasADeletedAncestor(category, keys)) {
+                                       ctpClient.execute(CategoryDeleteCommand.of(category))
+                                                .thenAccept(deletedCategory -> keys.add(categoryKey))
+                                                .toCompletableFuture().join();
+                                   }
+                               })).toCompletableFuture().join();
+    }
+
+    private static List<Category> sortCategoriesByLeastAncestors(@Nonnull final List<Category> categories) {
+        categories.sort(Comparator.comparingInt(category -> category.getAncestors().size()));
+        return categories;
+    }
+
+    private static boolean hasADeletedAncestor(@Nonnull final Category category,
+                                               @Nonnull final Set<String> keysOfDeletedAncestors) {
+        final List<Reference<Category>> categoryAncestors = category.getAncestors();
+        return categoryAncestors.stream().anyMatch(ancestor ->
+            keysOfDeletedAncestors.contains(ancestor.getObj().getKey()));
     }
 
     /**
