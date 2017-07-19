@@ -15,16 +15,13 @@ import org.junit.Test;
 import java.util.Locale;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetDescriptionUpdateAction;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategoriesFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategory;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SetDescriptionIT {
-    private Category sourceProjectRootCategory;
     private static Category oldCategory;
 
     /**
@@ -33,15 +30,14 @@ public class SetDescriptionIT {
      */
     @BeforeClass
     public static void setup() {
-        deleteRootCategoriesFromTargetAndSource();
+        deleteAllCategories(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
 
-        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture"))
             .description(LocalizedString.of(Locale.ENGLISH, "nice description", Locale.GERMAN, "nett Beschreibung"))
-            .parent(targetProjectRootCategory)
             .build();
 
         oldCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
@@ -50,12 +46,11 @@ public class SetDescriptionIT {
     }
 
     /**
-     * Cleans the source CTP project, callback response collector and creates a new root category in the source.
+     * Deletes all the categories in the source CTP project.
      */
     @Before
     public void setupTest() {
-        deleteRootCategory(CTP_SOURCE_CLIENT);
-        sourceProjectRootCategory = createRootCategory(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_SOURCE_CLIENT);
     }
 
     /**
@@ -63,7 +58,8 @@ public class SetDescriptionIT {
      */
     @AfterClass
     public static void tearDown() {
-        deleteRootCategoriesFromTargetAndSource();
+        deleteAllCategories(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
     }
 
@@ -72,7 +68,6 @@ public class SetDescriptionIT {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
             .description(LocalizedString.of(Locale.ENGLISH, "cool description"))
-            .parent(sourceProjectRootCategory)
             .build();
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
                                                       .toCompletableFuture()
@@ -95,7 +90,6 @@ public class SetDescriptionIT {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
             .description(oldCategory.getDescription())
-            .parent(sourceProjectRootCategory)
             .build();
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
                                                       .toCompletableFuture()
@@ -117,7 +111,6 @@ public class SetDescriptionIT {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
             .description(LocalizedString.of(Locale.GERMAN, "nett Beschreibung", Locale.ENGLISH, "nice description"))
-            .parent(sourceProjectRootCategory)
             .build();
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
                                                       .toCompletableFuture()
@@ -137,7 +130,6 @@ public class SetDescriptionIT {
     public void buildChangeDescriptionUpdateAction_WithNullValue_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
-            .parent(sourceProjectRootCategory)
             .build();
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
                                                       .toCompletableFuture()

@@ -16,16 +16,13 @@ import org.junit.Test;
 import java.util.Locale;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeSlugUpdateAction;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategoriesFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategory;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ChangeSlugIT {
-    private Category sourceProjectRootCategory;
     private static Category oldCategory;
 
     /**
@@ -34,14 +31,13 @@ public class ChangeSlugIT {
      */
     @BeforeClass
     public static void setup() {
-        deleteRootCategoriesFromTargetAndSource();
+        deleteAllCategories(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
 
-        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture", Locale.GERMAN, "klassische moebel"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
-            .parent(targetProjectRootCategory)
             .build();
 
         oldCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
@@ -50,12 +46,11 @@ public class ChangeSlugIT {
     }
 
     /**
-     * Cleans the source CTP project and creates a new root category.
+     * Deletes all the categories in the source CTP project.
      */
     @Before
     public void setupTest() {
-        deleteRootCategory(CTP_SOURCE_CLIENT);
-        sourceProjectRootCategory = createRootCategory(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_SOURCE_CLIENT);
     }
 
     /**
@@ -63,7 +58,8 @@ public class ChangeSlugIT {
      */
     @AfterClass
     public static void tearDown() {
-        deleteRootCategoriesFromTargetAndSource();
+        deleteAllCategories(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
     }
 
@@ -72,7 +68,6 @@ public class ChangeSlugIT {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "modern classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "new-classic-furniture", Locale.GERMAN, "neue-klassische-moebel"))
-            .parent(sourceProjectRootCategory)
             .build();
 
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
@@ -96,7 +91,6 @@ public class ChangeSlugIT {
     public void buildChangeSlugUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
-            .parent(sourceProjectRootCategory)
             .build();
 
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
@@ -118,7 +112,6 @@ public class ChangeSlugIT {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "modern classic furniture"),
                 LocalizedString.of(Locale.GERMAN, "klassische-moebel", Locale.ENGLISH, "classic-furniture"))
-            .parent(sourceProjectRootCategory)
             .build();
 
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))

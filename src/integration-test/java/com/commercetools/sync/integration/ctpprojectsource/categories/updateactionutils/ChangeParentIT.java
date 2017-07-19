@@ -19,9 +19,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeParentUpdateAction;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategoriesFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategory;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -29,9 +27,8 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ChangeParentIT {
-    private Category sourceProjectRootCategory;
-    private static Category targetProjectRootCategory;
     private static Category oldCategory;
+    private static Category oldCategoryParent;
     private List<String> callBackResponses = new ArrayList<>();
     private CategorySyncOptions categorySyncOptions;
 
@@ -41,14 +38,23 @@ public class ChangeParentIT {
      */
     @BeforeClass
     public static void setup() {
-        deleteRootCategoriesFromTargetAndSource();
+        deleteAllCategories(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
 
-        targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
+        final CategoryDraft oldCategoryDraftParent = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "classic furniture-parent"),
+                LocalizedString.of(Locale.ENGLISH, "classic-furniture-parent"))
+            .build();
+
+        oldCategoryParent = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraftParent))
+                                                            .toCompletableFuture()
+                                                            .join();
+
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture"))
-            .parent(targetProjectRootCategory)
+            .parent(oldCategoryParent)
             .build();
 
         oldCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
@@ -57,12 +63,11 @@ public class ChangeParentIT {
     }
 
     /**
-     * Cleans the source CTP project, callback response collector and creates a new root category in the source.
+     * Deletes all the categories in the source CTP project and the callback response collector.
      */
     @Before
     public void setupTest() {
-        deleteRootCategory(CTP_SOURCE_CLIENT);
-        sourceProjectRootCategory = createRootCategory(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_SOURCE_CLIENT);
         callBackResponses = new ArrayList<>();
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                                         .setWarningCallBack(callBackResponses::add)
@@ -74,22 +79,29 @@ public class ChangeParentIT {
      */
     @AfterClass
     public static void tearDown() {
-        deleteRootCategoriesFromTargetAndSource();
+        deleteAllCategories(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
     }
 
     @Test
     public void buildChangeParentUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
+        final CategoryDraft newCategoryDraftParent = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "parent-name"), LocalizedString.of(Locale.ENGLISH, "parent-slug"))
+            .build();
+
+        final Category parentCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraftParent))
+                                                         .toCompletableFuture()
+                                                         .join();
+
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
-            .parent(sourceProjectRootCategory)
+            .parent(parentCategory)
             .build();
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
                                                       .toCompletableFuture()
                                                       .join();
 
-        // Prepare new category draft with a different parent. The parent is substituted with the target project's
-        // parnet id, because the utils assume reference resolution has already been done at this point.
         final CategoryDraft draftFromCategory = CategoryDraftBuilder.of(newCategory)
                                                                     .build();
 
@@ -108,7 +120,6 @@ public class ChangeParentIT {
     public void buildChangeParentUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
-            .parent(sourceProjectRootCategory)
             .build();
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
                                                       .toCompletableFuture()
@@ -117,7 +128,7 @@ public class ChangeParentIT {
         // Prepare new category draft with a same parent. The parent is substituted with the target project's
         // parnet id, because the utils assume reference resolution has already been done at this point.
         final CategoryDraft draftFromCategory = CategoryDraftBuilder.of(newCategory)
-                                                                    .parent(targetProjectRootCategory)
+                                                                    .parent(oldCategoryParent)
                                                                     .build();
 
         // Build change parent update action
@@ -131,7 +142,14 @@ public class ChangeParentIT {
     @Test
     public void buildChangeParentUpdateAction_WithNullValue_ShouldTriggerCallback() {
         // Prepare new category draft from source project's root category which has no parent.
-        final CategoryDraft draftFromCategory = CategoryDraftBuilder.of(sourceProjectRootCategory)
+        final CategoryDraft newCategoryDraft = CategoryDraftBuilder
+            .of(oldCategory.getName(), oldCategory.getSlug())
+            .build();
+        final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
+                                                      .toCompletableFuture()
+                                                      .join();
+
+        final CategoryDraft draftFromCategory = CategoryDraftBuilder.of(newCategory)
                                                                     .build();
 
         // Build change parent update action

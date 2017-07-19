@@ -11,13 +11,12 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
-import io.sphere.sdk.categories.commands.CategoryDeleteCommand;
-import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +32,9 @@ import java.util.UUID;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategory;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCustomFieldsDraft;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCustomFieldsJsons;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
@@ -48,17 +47,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CategorySyncIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategorySyncIT.class);
     private CategorySync categorySync;
-    private Category targetProjectRootCategory;
     private final String oldCategoryKey = "oldCategoryKey";
+
+    /**
+     * Delete all categories and types from target project. Then create custom types for target CTP project categories.
+     */
+    @BeforeClass
+    public static void setup() {
+        deleteAllCategories(CTP_TARGET_CLIENT);
+        deleteTypes(CTP_TARGET_CLIENT);
+        createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
+            OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
+    }
 
     /**
      * Deletes Categories and Types from target CTP project, then it populates it with category test data.
      */
     @Before
     public void setupTest() {
-        deleteRootCategory(CTP_TARGET_CLIENT);
-        deleteTypes(CTP_TARGET_CLIENT);
-        targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                                                                   .setErrorCallBack(LOGGER::error)
@@ -70,7 +77,6 @@ public class CategorySyncIT {
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture"))
             .key(oldCategoryKey)
-            .parent(targetProjectRootCategory)
             .custom(getMockCustomFieldsDraft())
             .build();
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
@@ -83,7 +89,7 @@ public class CategorySyncIT {
      */
     @After
     public void tearDownTest() {
-        deleteRootCategory(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
     }
 
     /**
@@ -91,7 +97,7 @@ public class CategorySyncIT {
      */
     @AfterClass
     public static void tearDown() {
-        deleteRootCategory(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
     }
 
@@ -101,7 +107,6 @@ public class CategorySyncIT {
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture"))
             .key("newCategoryKey")
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -118,7 +123,6 @@ public class CategorySyncIT {
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture"))
             .key("newCategoryKey")
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -136,7 +140,6 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -153,7 +156,6 @@ public class CategorySyncIT {
         final CategoryDraft oldCategoryDraft1 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat1"), LocalizedString.of(Locale.ENGLISH, "furniture1"))
             .key("cat1")
-            .parent(targetProjectRootCategory)
             .custom(getMockCustomFieldsDraft())
             .build();
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft1))
@@ -162,7 +164,6 @@ public class CategorySyncIT {
         final CategoryDraft oldCategoryDraft2 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat2"), LocalizedString.of(Locale.ENGLISH, "furniture2"))
             .key("cat2")
-            .parent(targetProjectRootCategory)
             .custom(getMockCustomFieldsDraft())
             .build();
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft2))
@@ -171,7 +172,6 @@ public class CategorySyncIT {
         final CategoryDraft oldCategoryDraft3 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat3"), LocalizedString.of(Locale.ENGLISH, "furniture3"))
             .key("cat3")
-            .parent(targetProjectRootCategory)
             .custom(getMockCustomFieldsDraft())
             .build();
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft3))
@@ -198,7 +198,6 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat7"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture1"))
             .key("cat7")
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -220,7 +219,6 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat5"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
             .key("cat5")
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -248,7 +246,6 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -257,7 +254,6 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat1"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture1"))
             .key("cat1")
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -281,7 +277,6 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat4"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture4"))
             .key("cat4")
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -316,7 +311,6 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -325,7 +319,6 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat1"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key("cat1")
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -349,7 +342,6 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat4"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture4"))
             .key("cat4")
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -384,7 +376,6 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -392,7 +383,6 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat1"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture1"))
             .key("cat1")
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -417,7 +407,6 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat4"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture4"))
             .key("cat4")
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -453,11 +442,13 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson("nonExistingKey", getMockCustomFieldsJsons()))
             .build();
 
-        final CategoryDraft categoryDraft2 = CategoryDraftBuilder.of(targetProjectRootCategory)
+        final CategoryDraft categoryDraft2 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture-2"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture-2"))
+            .key("newCategoryKey")
             .custom(CustomFieldsDraft.ofTypeIdAndJson(newCustomTypeKey, getMockCustomFieldsJsons()))
             .build();
 
@@ -468,7 +459,7 @@ public class CategorySyncIT {
 
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 2, 0, 1, 1, 0));
+                + " sync and %d categories with a missing parent).", 2, 1, 0, 1, 0));
     }
 
     @Test
@@ -487,7 +478,6 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, customFieldsJsons))
             .build();
 
@@ -506,7 +496,6 @@ public class CategorySyncIT {
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture"))
             .key("newCategoryKey")
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
 
@@ -547,13 +536,6 @@ public class CategorySyncIT {
         final String childrenKeys = missingParentsChildren.get(0);
         assertThat(childrenKeys).isEqualTo(categoryDraftWithMissingParent.getKey());
 
-        // Delete the category manually since its not a child of the root category, so it won't be delete automatically.
-        CTP_TARGET_CLIENT.execute(CategoryQuery.of().withPredicates(categoryQueryModel ->
-            categoryQueryModel.key().is(nonExistingParentKey)))
-                 .thenAccept(result -> result.head()
-                                             .ifPresent(category -> CTP_TARGET_CLIENT
-                                                 .execute(CategoryDeleteCommand.of(category))
-                                                 .toCompletableFuture().join()))
-                 .toCompletableFuture().join();
+
     }
 }

@@ -15,8 +15,7 @@ import org.junit.Test;
 import java.util.Locale;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaDescriptionUpdateAction;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategory;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,9 +28,8 @@ public class SetMetaDescriptionIT {
      */
     @BeforeClass
     public static void setup() {
-        deleteRootCategory(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
-        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
 
         // Create a mock old category in the target project.
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
@@ -41,7 +39,6 @@ public class SetMetaDescriptionIT {
             .metaDescription(
                 LocalizedString.of(Locale.ENGLISH, "classic furniture meta desc",
                     Locale.GERMAN, "Klassische Möbel Meta desc"))
-            .parent(targetProjectRootCategory)
             .build();
         oldCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
                                        .toCompletableFuture()
@@ -53,7 +50,7 @@ public class SetMetaDescriptionIT {
      */
     @AfterClass
     public static void tearDown() {
-        deleteRootCategory(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
     }
 

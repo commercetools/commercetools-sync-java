@@ -19,6 +19,7 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,9 +37,7 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.b
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createChildren;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategoriesFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategory;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCategoryDraftsWithPrefix;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCustomFieldsJsons;
@@ -54,26 +53,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CategorySyncIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategorySyncIT.class);
     private CategorySync categorySync;
-    private Category sourceProjectRootCategory;
 
     private List<String> callBackErrorResponses = new ArrayList<>();
     private List<Throwable> callBackExceptions = new ArrayList<>();
     private List<String> callBackWarningResponses = new ArrayList<>();
 
     /**
+     * Delete all categories and types from source and target project. Then create custom types for source and target
+     * CTP project categories.
+     */
+    @BeforeClass
+    public static void setup() {
+        deleteAllCategories(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_SOURCE_CLIENT);
+        deleteTypesFromTargetAndSource();
+        createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH, "anyName", CTP_TARGET_CLIENT);
+        createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH, "anyName", CTP_SOURCE_CLIENT);
+    }
+
+    /**
      * Deletes Categories and Types from source and target CTP projects, then it populates target CTP project with
      * category test data.
      */
     @Before
-    public void setup() {
-        deleteRootCategoriesFromTargetAndSource();
-        deleteTypesFromTargetAndSource();
+    public void setupTest() {
+        deleteAllCategories(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_SOURCE_CLIENT);
 
-        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
-        createCategories(CTP_TARGET_CLIENT, getMockCategoryDrafts(targetProjectRootCategory, 2));
-        createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH, "anyName", CTP_TARGET_CLIENT);
+        createCategories(CTP_TARGET_CLIENT, getMockCategoryDrafts(null, 2));
 
-        sourceProjectRootCategory = createRootCategory(CTP_SOURCE_CLIENT);
         callBackErrorResponses = new ArrayList<>();
         callBackExceptions = new ArrayList<>();
         callBackWarningResponses = new ArrayList<>();
@@ -98,14 +106,15 @@ public class CategorySyncIT {
      */
     @AfterClass
     public static void tearDown() {
-        deleteRootCategoriesFromTargetAndSource();
+        deleteAllCategories(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_SOURCE_CLIENT);
         deleteTypesFromTargetAndSource();
     }
 
     @Test
     public void syncDrafts_withChangesOnly_ShouldUpdateCategories() {
         createCategories(CTP_SOURCE_CLIENT, getMockCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
-            sourceProjectRootCategory, 2));
+            null, 2));
 
         final List<Category> categories = CTP_SOURCE_CLIENT
             .execute(CategoryQuery.of()
@@ -122,7 +131,7 @@ public class CategorySyncIT {
 
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 3, 0, 2, 0, 0));
+                + "sync and %s categories with a missing parent).", 2, 0, 2, 0, 0));
 
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
@@ -132,7 +141,7 @@ public class CategorySyncIT {
     @Test
     public void syncDrafts_withNewCategories_ShouldCreateCategories() {
         createCategories(CTP_SOURCE_CLIENT, getMockCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
-            sourceProjectRootCategory, 3));
+            null, 3));
 
         final List<Category> categories = CTP_SOURCE_CLIENT
             .execute(CategoryQuery.of()
@@ -149,7 +158,7 @@ public class CategorySyncIT {
 
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 4, 1, 2, 0, 0));
+                + "sync and %s categories with a missing parent).", 3, 1, 2, 0, 0));
 
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
@@ -159,7 +168,7 @@ public class CategorySyncIT {
     @Test
     public void syncDrafts_WithUpdatedCategoriesWithoutReferenceKeys_ShouldNotSyncCategories() {
         createCategories(CTP_SOURCE_CLIENT, getMockCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
-            sourceProjectRootCategory, 2));
+            null, 2));
 
         final List<Category> categories = CTP_SOURCE_CLIENT
             .execute(CategoryQuery.of()
@@ -177,16 +186,16 @@ public class CategorySyncIT {
 
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 3, 0, 0, 2, 0));
+                + "sync and %s categories with a missing parent).", 2, 0, 0, 2, 0));
         assertThat(callBackErrorResponses).hasSize(2);
-        final String key1 = categoryDrafts.get(1).getKey();
+        final String key1 = categoryDrafts.get(0).getKey();
         assertThat(callBackErrorResponses.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
                 + " key:'%s'. Reason: %s: Failed to resolve custom type reference on "
                 + "CategoryDraft with key:'%s'. "
                 + "Reason: Found a UUID in the id field. Expecting a key without a UUID value. If you want to allow"
                 + " UUID values for reference keys, please use the setAllowUuidKeys(true) option in the sync options.",
             key1, ReferenceResolutionException.class.getCanonicalName(), key1));
-        final String key2 = categoryDrafts.get(2).getKey();
+        final String key2 = categoryDrafts.get(1).getKey();
         assertThat(callBackErrorResponses.get(1)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
                 + " key:'%s'. Reason: %s: Failed to resolve custom type reference on "
                 + "CategoryDraft with key:'%s'. Reason: "
@@ -211,12 +220,10 @@ public class CategorySyncIT {
     public void syncDrafts_withNewShuffledBatchOfCategories_ShouldCreateCategories() {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
-        deleteRootCategory(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
 
-        // Create a total of 131 categories in the source project
-        final List<Category> subFamily =
-            createChildren(5, sourceProjectRootCategory,
-                sourceProjectRootCategory.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+        // Create a total of 130 categories in the source project
+        final List<Category> subFamily = createChildren(5, null, "root", CTP_SOURCE_CLIENT);
 
         for (final Category child : subFamily) {
             final List<Category> subsubFamily =
@@ -260,7 +267,7 @@ public class CategorySyncIT {
 
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 131, 131, 0, 0, 0));
+                + "sync and %s categories with a missing parent).", 130, 130, 0, 0, 0));
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
@@ -271,13 +278,11 @@ public class CategorySyncIT {
     public void syncDrafts_withExistingShuffledCategoriesWithChangingCategoryHeirarchachy_ShouldUpdateCategories() {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
-        deleteRootCategory(CTP_TARGET_CLIENT);
-        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
 
-        // Create a total of 131 categories in the target project
+        // Create a total of 130 categories in the target project
         final List<Category> subFamily =
-            createChildren(5, targetProjectRootCategory,
-                targetProjectRootCategory.getName().get(Locale.ENGLISH), CTP_TARGET_CLIENT);
+            createChildren(5, null, "root", CTP_TARGET_CLIENT);
 
         for (final Category child : subFamily) {
             final List<Category> subsubFamily =
@@ -288,17 +293,16 @@ public class CategorySyncIT {
         }
         //---------------------------------------------------------------
 
-        // Create a total of 131 categories in the source project
+        // Create a total of 130 categories in the source project
         final List<Category> sourceSubFamily =
-            createChildren(5, sourceProjectRootCategory,
-                sourceProjectRootCategory.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+            createChildren(5, null, "root", CTP_SOURCE_CLIENT);
 
         for (final Category child : sourceSubFamily) {
             final List<Category> subsubFamily =
-                createChildren(5, sourceProjectRootCategory,
+                createChildren(5, sourceSubFamily.get(0),
                     child.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
             for (final Category subChild : subsubFamily) {
-                createChildren(4, sourceProjectRootCategory,
+                createChildren(4, sourceSubFamily.get(0),
                     subChild.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
             }
         }
@@ -334,7 +338,7 @@ public class CategorySyncIT {
 
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 131, 0, 130, 0, 0));
+                + "sync and %s categories with a missing parent).", 130, 0, 120, 0, 0));
 
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
@@ -346,28 +350,23 @@ public class CategorySyncIT {
     public void syncDrafts_withExistingCategoriesThatChangeParents_ShouldUpdateCategories() {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
-        deleteRootCategory(CTP_TARGET_CLIENT);
-        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
 
-        // Create a total of 2 categories in the target project
+        // Create a total of 3 categories in the target project (2 roots and 1 child to the first root)
         final List<Category> subFamily =
-            createChildren(1, targetProjectRootCategory,
-                targetProjectRootCategory.getName().get(Locale.ENGLISH), CTP_TARGET_CLIENT);
+            createChildren(2, null, "root", CTP_TARGET_CLIENT);
 
-        for (final Category child : subFamily) {
-            createChildren(1, child, child.getName().get(Locale.ENGLISH), CTP_TARGET_CLIENT);
-        }
+        final Category firstRoot = subFamily.get(0);
+        createChildren(1, firstRoot, "child", CTP_TARGET_CLIENT);
+
         //---------------------------------------------------------------
 
-        // Create a total of 2 categories in the source project
+        // Create a total of 2 categories in the source project (2 roots and 1 child to the second root)
         final List<Category> sourceSubFamily =
-            createChildren(1, sourceProjectRootCategory,
-                sourceProjectRootCategory.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+            createChildren(2, null, "root", CTP_SOURCE_CLIENT);
 
-        for (final Category child : sourceSubFamily) {
-            createChildren(1, sourceProjectRootCategory,
-                child.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
-        }
+        final Category secondRoot = sourceSubFamily.get(1);
+        createChildren(1, secondRoot, "child", CTP_SOURCE_CLIENT);
         //---------------------------------------------------------------
 
         // Fetch categories from source project
@@ -400,7 +399,7 @@ public class CategorySyncIT {
 
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 3, 0, 2, 0, 0));
+                + "sync and %s categories with a missing parent).", 3, 0, 1, 0, 0));
 
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
@@ -412,15 +411,13 @@ public class CategorySyncIT {
     public void syncDrafts_withANonExistingNewParent_ShouldUpdateCategories() {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
-        deleteRootCategory(CTP_TARGET_CLIENT);
-        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
 
         // Create a total of 2 categories in the target project.
         final CategoryDraft parentDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "parent"),
                 LocalizedString.of(Locale.ENGLISH, "parent"))
             .key("parent")
-            .parent(targetProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
         final Category parentCreated = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(parentDraft))
@@ -441,7 +438,6 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "new-parent"),
                 LocalizedString.of(Locale.ENGLISH, "new-parent"))
             .key("new-parent")
-            .parent(sourceProjectRootCategory)
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
             .build();
         final Category sourceParentCreated = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(sourceParentDraft))
@@ -490,7 +486,7 @@ public class CategorySyncIT {
 
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 3, 1, 1, 0, 0));
+                + "sync and %s categories with a missing parent).", 2, 1, 1, 0, 0));
 
 
         assertThat(callBackErrorResponses).isEmpty();

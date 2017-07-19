@@ -15,16 +15,13 @@ import org.junit.Test;
 import java.util.Locale;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeNameUpdateAction;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategoriesFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategory;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ChangeNameIT {
-    private Category sourceProjectRootCategory;
     private static Category oldCategory;
 
     /**
@@ -33,14 +30,13 @@ public class ChangeNameIT {
      */
     @BeforeClass
     public static void setup() {
-        deleteRootCategoriesFromTargetAndSource();
+        deleteAllCategories(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
 
-        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture", Locale.GERMAN, "klassische moebel"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
-            .parent(targetProjectRootCategory)
             .build();
 
         oldCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
@@ -49,12 +45,11 @@ public class ChangeNameIT {
     }
 
     /**
-     * Cleans the source CTP project and creates a new root category.
+     * Cleans the source CTP project.
      */
     @Before
     public void setupTest() {
-        deleteRootCategory(CTP_SOURCE_CLIENT);
-        sourceProjectRootCategory = createRootCategory(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_SOURCE_CLIENT);
     }
 
     /**
@@ -62,7 +57,8 @@ public class ChangeNameIT {
      */
     @AfterClass
     public static void tearDown() {
-        deleteRootCategoriesFromTargetAndSource();
+        deleteAllCategories(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
     }
 
@@ -71,7 +67,6 @@ public class ChangeNameIT {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "modern classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
-            .parent(sourceProjectRootCategory)
             .build();
 
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
@@ -96,7 +91,6 @@ public class ChangeNameIT {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
-            .parent(sourceProjectRootCategory)
             .build();
 
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
@@ -119,7 +113,6 @@ public class ChangeNameIT {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.GERMAN, "klassische moebel",
                 Locale.ENGLISH, "classic furniture"), oldCategory.getSlug())
-            .parent(sourceProjectRootCategory)
             .build();
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
                                                       .toCompletableFuture()
