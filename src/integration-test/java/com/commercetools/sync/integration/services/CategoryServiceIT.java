@@ -32,7 +32,7 @@ import java.util.Set;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCustomFieldsDraft;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,7 +80,7 @@ public class CategoryServiceIT {
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture"))
             .key("oldCategoryKey")
-            .custom(getMockCustomFieldsDraft())
+            .custom(getCustomFieldsDraft())
             .build();
         oldCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
                                        .toCompletableFuture()
@@ -291,7 +291,7 @@ public class CategoryServiceIT {
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
             .key(newCategoryKey)
-            .custom(getMockCustomFieldsDraft())
+            .custom(getCustomFieldsDraft())
             .build();
 
         final Optional<Category> createdCategoryOptional = categoryService.createCategory(categoryDraft)
@@ -324,7 +324,7 @@ public class CategoryServiceIT {
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
             .key(newCategoryKey)
-            .custom(getMockCustomFieldsDraft())
+            .custom(getCustomFieldsDraft())
             .build();
 
         final Optional<Category> createdCategoryOptional = categoryService.createCategory(categoryDraft)
@@ -386,7 +386,7 @@ public class CategoryServiceIT {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture1"))
             .key("newCategory")
-            .custom(getMockCustomFieldsDraft())
+            .custom(getCustomFieldsDraft())
             .build();
         final Category newCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
                                                .toCompletableFuture().join();

@@ -38,9 +38,9 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.c
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createChildren;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCategoryDrafts;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCategoryDraftsWithPrefix;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCustomFieldsJsons;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDraftsWithPrefix;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsJsons;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.replaceReferenceIdsWithKeys;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.syncBatches;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
@@ -80,7 +80,7 @@ public class CategorySyncIT {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteAllCategories(CTP_SOURCE_CLIENT);
 
-        createCategories(CTP_TARGET_CLIENT, getMockCategoryDrafts(null, 2));
+        createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
 
         callBackErrorResponses = new ArrayList<>();
         callBackExceptions = new ArrayList<>();
@@ -113,7 +113,7 @@ public class CategorySyncIT {
 
     @Test
     public void syncDrafts_withChangesOnly_ShouldUpdateCategories() {
-        createCategories(CTP_SOURCE_CLIENT, getMockCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
+        createCategories(CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, 2));
 
         final List<Category> categories = CTP_SOURCE_CLIENT
@@ -140,7 +140,7 @@ public class CategorySyncIT {
 
     @Test
     public void syncDrafts_withNewCategories_ShouldCreateCategories() {
-        createCategories(CTP_SOURCE_CLIENT, getMockCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
+        createCategories(CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, 3));
 
         final List<Category> categories = CTP_SOURCE_CLIENT
@@ -167,7 +167,7 @@ public class CategorySyncIT {
 
     @Test
     public void syncDrafts_WithUpdatedCategoriesWithoutReferenceKeys_ShouldNotSyncCategories() {
-        createCategories(CTP_SOURCE_CLIENT, getMockCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
+        createCategories(CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, 2));
 
         final List<Category> categories = CTP_SOURCE_CLIENT
@@ -418,7 +418,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "parent"),
                 LocalizedString.of(Locale.ENGLISH, "parent"))
             .key("parent")
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
         final Category parentCreated = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(parentDraft))
                                                         .toCompletableFuture().join();
@@ -428,7 +428,7 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "child"))
             .key("child")
             .parent(parentCreated)
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(childDraft)).toCompletableFuture().join();
         //------------------------------------------------------------------------------------------------------------
@@ -438,7 +438,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "new-parent"),
                 LocalizedString.of(Locale.ENGLISH, "new-parent"))
             .key("new-parent")
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
         final Category sourceParentCreated = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(sourceParentDraft))
                                                         .toCompletableFuture().join();
@@ -448,7 +448,7 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "child"))
             .key("child")
             .parent(sourceParentCreated)
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
         CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(sourceChildDraft)).toCompletableFuture().join();
         //---------------------------------------------------------------

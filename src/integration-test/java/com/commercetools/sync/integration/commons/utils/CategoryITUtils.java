@@ -53,15 +53,15 @@ public class CategoryITUtils {
 
     /**
      * Builds a list of the supplied number ({@code numberOfCategories}) of CategoryDraft objects that can be used for
-     * integration tests to mock existing categories in a target CTP project for example. All the newly created category
+     * integration tests to mimic existing categories in a target CTP project for example. All the newly created category
      * drafts will have {@code parentCategory} as a parent.
      *
      * @param numberOfCategories the number of category drafts to create.
      * @param parentCategory     the parent of the drafts.
      * @return a list of CategoryDrafts.
      */
-    public static List<CategoryDraft> getMockCategoryDrafts(@Nullable final Category parentCategory,
-                                                            final int numberOfCategories) {
+    public static List<CategoryDraft> getCategoryDrafts(@Nullable final Category parentCategory,
+                                                        final int numberOfCategories) {
         List<CategoryDraft> categoryDrafts = new ArrayList<>();
         for (int i = 0; i < numberOfCategories; i++) {
             final LocalizedString name = LocalizedString.of(Locale.ENGLISH, format("draft%s", i));
@@ -74,7 +74,7 @@ public class CategoryITUtils {
                                                                     .description(description)
                                                                     .key(key)
                                                                     .orderHint(orderHint)
-                                                                    .custom(getMockCustomFieldsDraft())
+                                                                    .custom(getCustomFieldsDraft())
                                                                     .build();
             categoryDrafts.add(categoryDraft);
         }
@@ -83,7 +83,7 @@ public class CategoryITUtils {
 
     /**
      * Builds a list of the supplied number ({@code numberOfCategories}) of CategoryDraft objects (with a customized
-     * prefix string for the name, slug and description) that can be used for integration tests to mock existing
+     * prefix string for the name, slug and description) that can be used for integration tests to mimic existing
      * categories in a target CTP project for example. All the newly created category drafts will have
      * {@code parentCategory} as a parent.
      *
@@ -91,12 +91,12 @@ public class CategoryITUtils {
      * @param parentCategory     the parent of the drafts.
      * @return a list of CategoryDrafts.
      */
-    public static List<CategoryDraft> getMockCategoryDraftsWithPrefix(@Nonnull final Locale locale,
-                                                                      @Nonnull final String prefix,
-                                                                      @Nullable final Category parentCategory,
-                                                                      final int numberOfCategories) {
+    public static List<CategoryDraft> getCategoryDraftsWithPrefix(@Nonnull final Locale locale,
+                                                                  @Nonnull final String prefix,
+                                                                  @Nullable final Category parentCategory,
+                                                                  final int numberOfCategories) {
         List<CategoryDraft> categoryDrafts = new ArrayList<>();
-        for (CategoryDraft categoryDraft : getMockCategoryDrafts(parentCategory, numberOfCategories)) {
+        for (CategoryDraft categoryDraft : getCategoryDrafts(parentCategory, numberOfCategories)) {
             final LocalizedString newCategoryName = LocalizedString.of(locale,
                 format("%s%s", prefix, categoryDraft.getName().get(locale)));
             final LocalizedString newCategorySlug = LocalizedString.of(locale,
@@ -138,7 +138,7 @@ public class CategoryITUtils {
                     LocalizedString.of(Locale.ENGLISH, categoryName))
                 .key(categoryName)
                 .parent(parent)
-                .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+                .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
                 .orderHint("sameOrderHint")
                 .build();
             final Category createdChild = ctpClient.execute(CategoryCreateCommand.of(child))
@@ -149,27 +149,27 @@ public class CategoryITUtils {
     }
 
     /**
-     * Creates a mock instance of {@link CustomFieldsDraft} with the key defined by {@code OLD_CATEGORY_CUSTOM_TYPE_KEY}
+     * Creates a dummy instance of {@link CustomFieldsDraft} with the key defined by {@code OLD_CATEGORY_CUSTOM_TYPE_KEY}
      * and two custom fields 'invisibleInShop' and'backgroundColor'.
      *
      * <p>The 'invisibleInShop' field is of type {@code boolean} and has value {@code false} and the
      * the 'backgroundColor' field is of type {@code localisedString} and has the values {"de": "rot", "en": "red"}
      *
-     * @return a mock instance of {@link CustomFieldsDraft} with some hardcoded custom fields and key.
+     * @return a dummy instance of {@link CustomFieldsDraft} with some hardcoded custom fields and key.
      */
-    public static CustomFieldsDraft getMockCustomFieldsDraft() {
-        return CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons());
+    public static CustomFieldsDraft getCustomFieldsDraft() {
+        return CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons());
     }
 
     /**
-     * Builds a mock {@link Map} for the custom fields to their {@link JsonNode} values that looks like that in JSON
+     * Builds a {@link Map} for the custom fields to their {@link JsonNode} values that looks like that in JSON
      * format:
      *
      * <p>"fields": {"invisibleInShop": false, "backgroundColor": { "en": "red", "de": "rot"}}
      *
-     * @return a Map of the custom fields to their JSON values with mock data.
+     * @return a Map of the custom fields to their JSON values with dummy data.
      */
-    public static Map<String, JsonNode> getMockCustomFieldsJsons() {
+    public static Map<String, JsonNode> getCustomFieldsJsons() {
         final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
         customFieldsJsons.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false));
         customFieldsJsons

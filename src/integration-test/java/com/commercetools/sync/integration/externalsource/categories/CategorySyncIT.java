@@ -35,8 +35,8 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.O
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCustomFieldsDraft;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCustomFieldsJsons;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsJsons;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.getStatisticsAsJSONString;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -77,7 +77,7 @@ public class CategorySyncIT {
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture"))
             .key(oldCategoryKey)
-            .custom(getMockCustomFieldsDraft())
+            .custom(getCustomFieldsDraft())
             .build();
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
                          .toCompletableFuture()
@@ -107,7 +107,7 @@ public class CategorySyncIT {
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture"))
             .key("newCategoryKey")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
@@ -123,7 +123,7 @@ public class CategorySyncIT {
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture"))
             .key("newCategoryKey")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
@@ -140,7 +140,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
@@ -156,7 +156,7 @@ public class CategorySyncIT {
         final CategoryDraft oldCategoryDraft1 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat1"), LocalizedString.of(Locale.ENGLISH, "furniture1"))
             .key("cat1")
-            .custom(getMockCustomFieldsDraft())
+            .custom(getCustomFieldsDraft())
             .build();
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft1))
                          .toCompletableFuture()
@@ -164,7 +164,7 @@ public class CategorySyncIT {
         final CategoryDraft oldCategoryDraft2 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat2"), LocalizedString.of(Locale.ENGLISH, "furniture2"))
             .key("cat2")
-            .custom(getMockCustomFieldsDraft())
+            .custom(getCustomFieldsDraft())
             .build();
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft2))
                          .toCompletableFuture()
@@ -172,7 +172,7 @@ public class CategorySyncIT {
         final CategoryDraft oldCategoryDraft3 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat3"), LocalizedString.of(Locale.ENGLISH, "furniture3"))
             .key("cat3")
-            .custom(getMockCustomFieldsDraft())
+            .custom(getCustomFieldsDraft())
             .build();
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft3))
                          .toCompletableFuture()
@@ -188,7 +188,7 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
             .parent(Category.referenceOfId("cat7"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final List<CategoryDraft> batch1 = new ArrayList<>();
@@ -198,7 +198,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat7"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture1"))
             .key("cat7")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final List<CategoryDraft> batch2 = new ArrayList<>();
@@ -209,7 +209,7 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
             .key("cat6")
             .parent(Category.referenceOfId("cat5"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final List<CategoryDraft> batch3 = new ArrayList<>();
@@ -219,7 +219,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat5"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
             .key("cat5")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final List<CategoryDraft> batch4 = new ArrayList<>();
@@ -246,7 +246,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
 
@@ -254,7 +254,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat1"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture1"))
             .key("cat1")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategoryDraft categoryDraft3 = CategoryDraftBuilder
@@ -262,7 +262,7 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
             .key("cat2")
             .parent(Category.referenceOfId("cat1"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategoryDraft categoryDraft4 = CategoryDraftBuilder
@@ -270,14 +270,14 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
             .key("cat3")
             .parent(Category.referenceOfId("cat1"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategoryDraft categoryDraft5 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat4"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture4"))
             .key("cat4")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategoryDraft categoryDraft6 = CategoryDraftBuilder
@@ -285,7 +285,7 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture5"))
             .key("cat5")
             .parent(Category.referenceOfId("cat4"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         newCategoryDrafts.add(categoryDraft1);
@@ -311,7 +311,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         // Same slug draft
@@ -319,7 +319,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat1"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key("cat1")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategoryDraft categoryDraft3 = CategoryDraftBuilder
@@ -327,7 +327,7 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
             .key("cat2")
             .parent(Category.referenceOfId("cat1"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategoryDraft categoryDraft4 = CategoryDraftBuilder
@@ -335,14 +335,14 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
             .key("cat3")
             .parent(Category.referenceOfId("cat1"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategoryDraft categoryDraft5 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat4"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture4"))
             .key("cat4")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategoryDraft categoryDraft6 = CategoryDraftBuilder
@@ -350,7 +350,7 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture5"))
             .key("cat5")
             .parent(Category.referenceOfId("cat4"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         newCategoryDrafts.add(categoryDraft1);
@@ -376,14 +376,14 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategoryDraft categoryDraft2 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat1"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture1"))
             .key("cat1")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         // With invalid parent key
@@ -392,7 +392,7 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
             .key("cat2")
             .parent(Category.referenceOfId(UUID.randomUUID().toString()))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategoryDraft categoryDraft4 = CategoryDraftBuilder
@@ -400,14 +400,14 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
             .key("cat3")
             .parent(Category.referenceOfId("cat1"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategoryDraft categoryDraft5 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat4"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture4"))
             .key("cat4")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final CategoryDraft categoryDraft6 = CategoryDraftBuilder
@@ -415,7 +415,7 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture5"))
             .key("cat5")
             .parent(Category.referenceOfId("cat4"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         newCategoryDrafts.add(categoryDraft1);
@@ -442,14 +442,14 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson("nonExistingKey", getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson("nonExistingKey", getCustomFieldsJsons()))
             .build();
 
         final CategoryDraft categoryDraft2 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture-2"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture-2"))
             .key("newCategoryKey")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(newCustomTypeKey, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(newCustomTypeKey, getCustomFieldsJsons()))
             .build();
 
         newCategoryDrafts.add(categoryDraft1);
@@ -496,7 +496,7 @@ public class CategorySyncIT {
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture"))
             .key("newCategoryKey")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final String nonExistingParentKey = "nonExistingParent";
@@ -504,7 +504,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture1"))
             .key("cat1")
             .parent(Category.referenceOfId(nonExistingParentKey))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
             .build();
 
         final List<CategoryDraft> categoryDrafts = new ArrayList<>();
