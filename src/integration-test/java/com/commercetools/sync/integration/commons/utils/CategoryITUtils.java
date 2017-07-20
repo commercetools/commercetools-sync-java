@@ -40,7 +40,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -314,58 +313,6 @@ public class CategoryITUtils {
             keysOfDeletedAncestors.contains(ancestor.getObj().getKey()));
     }
 
-    /**
-     * Takes a list of Categories that are supposed to have their custom type and parent category reference expanded
-     * in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return
-     * a new list of category drafts with their references containing keys instead of the ids.
-     *
-     * @param categories the categories to replace their reference ids with keys
-     * @return a list of category drafts with keys instead of ids for references.
-     */
-    public static List<CategoryDraft> replaceReferenceIdsWithKeys(@Nonnull final List<Category> categories) {
-        return categories
-            .stream()
-            .map(category -> {
-                CustomFieldsDraft customFieldsDraft = null;
-                Reference<Category> parentReference = null;
-
-                if (category.getCustom() != null && category.getCustom().getType().getObj() != null) {
-                    customFieldsDraft = CustomFieldsDraft
-                        .ofTypeIdAndJson(category.getCustom().getType().getObj().getKey(),
-                            category.getCustom().getFieldsJsonMap());
-                }
-
-                if (category.getParent() != null && category.getParent().getObj() != null) {
-                    parentReference = Category.referenceOfId(category.getParent().getObj().getKey());
-                }
-                return CategoryDraftBuilder.of(category)
-                                           .custom(customFieldsDraft)
-                                           .parent(parentReference)
-                                           .build();
-            })
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * Given a list of {@link CategoryDraft} elements and a {@code batchSize}, this method separates the drafts into
-     * batches with the {@code batchSize}. Each batch is represented by a {@link List}&lt;{@link CategoryDraft}&gt;
-     * and all the batches are grouped and represented by an
-     * {@link List}&lt;{@link List}&lt;{@link CategoryDraft}&gt;&gt;, which is returned by the method.
-     *
-     * @param categoryDrafts the list of drafts to split into batches.
-     * @param batchSize      the size of each batch.
-     * @return a {@link List}&lt;{@link List}&lt;{@link CategoryDraft}&gt;&gt; where each
-     *          {@link List}&lt;{@link CategoryDraft}&gt; represents a batch of {@link CategoryDraft}.
-     */
-    public static List<List<CategoryDraft>> batchCategories(@Nonnull final List<CategoryDraft> categoryDrafts,
-                                                            final int batchSize) {
-        List<List<CategoryDraft>> batches = new ArrayList<>();
-        for (int i = 0; i < categoryDrafts.size(); i += batchSize) {
-            batches.add(categoryDrafts.subList(i,
-                Math.min(i + batchSize, categoryDrafts.size())));
-        }
-        return batches;
-    }
 
     /**
      * Given a list of {@link CategoryDraft} batches represented by a
