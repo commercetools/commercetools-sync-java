@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
 import io.sphere.sdk.client.BlockingSphereClient;
+import io.sphere.sdk.client.QueueSphereClientDecorator;
 import io.sphere.sdk.client.SphereAccessTokenSupplier;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
@@ -34,7 +35,8 @@ public class ClientConfigurationUtils {
             final SphereAccessTokenSupplier tokenSupplier =
                 SphereAccessTokenSupplier.ofAutoRefresh(clientConfig, httpClient, false);
             final SphereClient underlying = SphereClient.of(clientConfig, httpClient, tokenSupplier);
-            delegatesCache.put(clientConfig, underlying);
+            final SphereClient limitedParallelRequestsClient = withLimitedParallelRequests(underlying);
+            delegatesCache.put(clientConfig, limitedParallelRequestsClient);
         }
         return BlockingSphereClient.of(delegatesCache.get(clientConfig), timeout, timeUnit);
     }
@@ -62,5 +64,9 @@ public class ClientConfigurationUtils {
             httpClient = AsyncHttpClientAdapter.of(asyncHttpClient);
         }
         return httpClient;
+    }
+    private static SphereClient withLimitedParallelRequests(final SphereClient delegate) {
+        final int maxParallelRequests = 20;
+        return QueueSphereClientDecorator.of(delegate, maxParallelRequests);
     }
 }
