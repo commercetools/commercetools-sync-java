@@ -131,7 +131,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * blocking fashion issues update actions that don't involve parent changes sequentially.
      *
      * <p>More on the exact implementation of how the sync works here:
-     * https://sphere.atlassian.net/wiki/spaces/PS/pages/145193124/Category+Parallelisation+Technical+Concept
+     * https://github.com/commercetools/commercetools-sync-java/wiki/Category-Sync-Underlying-Concept
      *
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
