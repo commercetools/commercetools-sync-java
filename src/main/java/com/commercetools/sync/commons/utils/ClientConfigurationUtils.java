@@ -67,6 +67,7 @@ public class ClientConfigurationUtils {
         }
         return httpClient;
     }
+
     private static SphereClient withLimitedParallelRequests(final SphereClient delegate) {
         final int maxParallelRequests = 20;
         return QueueSphereClientDecorator.of(delegate, maxParallelRequests);
