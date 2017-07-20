@@ -9,7 +9,6 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -87,7 +86,6 @@ public class SyncUtilsTest {
         assertThat(customFieldsDraft.getType().getId()).isEqualTo(typeKey);
     }
 
-    @Ignore("This test should pass but its a bug in JVM SDK, should be fixed.")
     @Test
     public void replaceCustomTypeIdWithKeys_WithNonExpandedCategory_ShouldReturnReferenceWithoutReplacedKey() {
         final Category mockCategory = mock(Category.class);
@@ -181,7 +179,6 @@ public class SyncUtilsTest {
         }
     }
 
-    @Ignore("This test should pass but its a bug in JVM SDK, should be fixed.")
     @Test
     public void
         replaceCategoryReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
@@ -252,7 +249,6 @@ public class SyncUtilsTest {
         }
     }
 
-    @Ignore("This test should pass but its a bug in JVM SDK, should be fixed.")
     @Test
     public void
         replaceInventoriesReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {

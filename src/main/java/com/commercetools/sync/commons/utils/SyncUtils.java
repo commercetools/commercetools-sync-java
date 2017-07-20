@@ -11,6 +11,7 @@ import io.sphere.sdk.types.Custom;
 import io.sphere.sdk.types.CustomDraft;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,7 +48,7 @@ public final class SyncUtils {
                 return CustomFieldsDraft.ofTypeIdAndJson(custom.getType().getObj().getKey(),
                     custom.getFieldsJsonMap());
             }
-            return CustomFieldsDraft.ofCustomFields(custom);
+            return CustomFieldsDraftBuilder.of(custom).build();
         }
         return null;
     }
