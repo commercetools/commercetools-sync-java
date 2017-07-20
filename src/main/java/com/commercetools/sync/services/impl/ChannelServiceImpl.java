@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.helpers.CtpQueryUtils;
 import com.commercetools.sync.services.ChannelService;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
@@ -9,15 +10,16 @@ import io.sphere.sdk.channels.commands.ChannelCreateCommand;
 import io.sphere.sdk.channels.queries.ChannelQuery;
 import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 
 public final class ChannelServiceImpl implements ChannelService {
@@ -47,12 +49,12 @@ public final class ChannelServiceImpl implements ChannelService {
             ChannelQueryBuilder.of()
                                .plusPredicates(channelQueryModel -> channelQueryModel.roles().containsAny(channelRoles))
                                .build();
-        return QueryExecutionUtils.queryAll(ctpClient, query)
-                                  .thenApply(channels -> {
-                                      channels.forEach(channel ->
-                                          keyToIdCache.put(channel.getKey(), channel.getId()));
-                                      return Optional.ofNullable(keyToIdCache.get(key));
-                                  });
+
+        final Consumer<List<Channel>> channelPageConsumer = channelsPage ->
+            channelsPage.forEach(channel -> keyToIdCache.put(channel.getKey(), channel.getId()));
+
+        return CtpQueryUtils.queryAll(ctpClient, query, channelPageConsumer)
+                            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 
     @Nonnull

@@ -2,6 +2,7 @@ package com.commercetools.sync.services.impl;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.commons.helpers.CtpQueryUtils;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -20,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -42,13 +44,13 @@ public final class CategoryServiceImpl implements CategoryService {
         if (isCached) {
             return CompletableFuture.completedFuture(keyToIdCache);
         }
-        isCached = true;
-        return QueryExecutionUtils.queryAll(syncOptions.getCtpClient(), CategoryQuery.of())
-                                  .thenApply(categories -> {
-                                      categories.forEach(category ->
-                                          keyToIdCache.put(category.getKey(), category.getId()));
-                                      return keyToIdCache;
-                                  });
+
+        final Consumer<List<Category>> categoryPageConsumer = categoriesPage ->
+            categoriesPage.forEach(category -> keyToIdCache.put(category.getKey(), category.getId()));
+
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), CategoryQuery.of(), categoryPageConsumer)
+                            .thenAccept(result -> isCached = true)
+                            .thenApply(result -> keyToIdCache);
     }
 
     @Nonnull
