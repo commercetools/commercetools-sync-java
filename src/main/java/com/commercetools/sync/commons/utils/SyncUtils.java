@@ -74,7 +74,7 @@ public final class SyncUtils {
      * @return a list of category drafts with keys instead of ids for references.
      */
     @Nonnull
-    public static List<CategoryDraft> replaceCategoryReferenceIdsWithKeys(@Nonnull final List<Category> categories) {
+    public static List<CategoryDraft> replaceCategoriesReferenceIdsWithKeys(@Nonnull final List<Category> categories) {
         return categories
             .stream()
             .map(category -> {

@@ -20,7 +20,7 @@ import java.util.UUID;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchDrafts;
-import static com.commercetools.sync.commons.utils.SyncUtils.replaceCategoryReferenceIdsWithKeys;
+import static com.commercetools.sync.commons.utils.SyncUtils.replaceCategoriesReferenceIdsWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceCustomTypeIdWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceInventoriesReferenceIdsWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
@@ -173,7 +173,7 @@ public class SyncUtilsTest {
             assertThat(category.getParent().getId()).isEqualTo(parentId);
             assertThat(category.getCustom().getType().getId()).isEqualTo(customTypeId);
         }
-        final List<CategoryDraft> referenceReplacedDrafts = replaceCategoryReferenceIdsWithKeys(mockCategories);
+        final List<CategoryDraft> referenceReplacedDrafts = replaceCategoriesReferenceIdsWithKeys(mockCategories);
 
         for (int i = 0; i < referenceReplacedDrafts.size(); i++) {
             assertThat(referenceReplacedDrafts.get(i).getParent().getId()).isEqualTo("parentKey" + i);
@@ -211,7 +211,7 @@ public class SyncUtilsTest {
             assertThat(category.getParent().getId()).isEqualTo(parentId);
             assertThat(category.getCustom().getType().getId()).isEqualTo(customTypeId);
         }
-        final List<CategoryDraft> referenceReplacedDrafts = replaceCategoryReferenceIdsWithKeys(mockCategories);
+        final List<CategoryDraft> referenceReplacedDrafts = replaceCategoriesReferenceIdsWithKeys(mockCategories);
 
         for (CategoryDraft referenceReplacedDraft : referenceReplacedDrafts) {
             assertThat(referenceReplacedDraft.getParent().getId()).isEqualTo(parentId);
