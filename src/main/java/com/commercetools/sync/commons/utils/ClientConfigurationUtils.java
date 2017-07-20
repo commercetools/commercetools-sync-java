@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit;
 
 public class ClientConfigurationUtils {
     private static HttpClient httpClient;
-    private static final long DEFAULT_TIMEOUT = 30;
-    private static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
+    private static final long DEFAULT_TIMEOUT = 30000;
+    private static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.MILLISECONDS;
     private static Map<SphereClientConfig, SphereClient> delegatesCache = new HashMap<>();
 
     /**
@@ -60,7 +60,9 @@ public class ClientConfigurationUtils {
         if (httpClient == null) {
             final AsyncHttpClient asyncHttpClient =
                 new DefaultAsyncHttpClient(
-                    new DefaultAsyncHttpClientConfig.Builder().setAcceptAnyCertificate(true).build());
+                    new DefaultAsyncHttpClientConfig.Builder().setAcceptAnyCertificate(true)
+                                                              .setHandshakeTimeout((int) DEFAULT_TIMEOUT)
+                                                              .build());
             httpClient = AsyncHttpClientAdapter.of(asyncHttpClient);
         }
         return httpClient;
