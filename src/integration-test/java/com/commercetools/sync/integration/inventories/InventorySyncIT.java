@@ -32,6 +32,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.replaceInventoriesReferenceIdsWithKeys;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -51,7 +52,6 @@ import static com.commercetools.sync.integration.inventories.utils.InventoryITUt
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.getInventoryEntryBySkuAndSupplyChannel;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateSourceProject;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateTargetProject;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.replaceReferenceIdsWithKeys;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -306,7 +306,7 @@ public class InventorySyncIT {
                                         .plusExpansionPaths(ExpansionPath.of("custom.type")))
             .toCompletableFuture().join().getResults();
 
-        final List<InventoryEntryDraft> newInventories = replaceReferenceIdsWithKeys(inventoryEntries);
+        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -326,7 +326,7 @@ public class InventorySyncIT {
                                         .plusExpansionPaths(ExpansionPath.of("custom.type")))
             .toCompletableFuture().join().getResults();
 
-        final List<InventoryEntryDraft> newInventories = replaceReferenceIdsWithKeys(inventoryEntries);
+        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -374,7 +374,7 @@ public class InventorySyncIT {
                                         .plusExpansionPaths(ExpansionPath.of("custom.type")))
             .toCompletableFuture().join().getResults();
 
-        final List<InventoryEntryDraft> newInventories = replaceReferenceIdsWithKeys(inventoryEntries);
+        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
 
         /*
          * Prepare sync options and perform sync of draft to target project.
@@ -398,7 +398,7 @@ public class InventorySyncIT {
                                         .plusExpansionPaths(ExpansionPath.of("custom.type")))
             .toCompletableFuture().join().getResults();
 
-        final List<InventoryEntryDraft> newInventories = replaceReferenceIdsWithKeys(inventoryEntries);
+        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -426,7 +426,7 @@ public class InventorySyncIT {
                                         .plusExpansionPaths(ExpansionPath.of("custom.type")))
             .toCompletableFuture().join().getResults();
 
-        final List<InventoryEntryDraft> newInventories = replaceReferenceIdsWithKeys(inventoryEntries);
+        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final AtomicInteger invocationCounter = new AtomicInteger(0);

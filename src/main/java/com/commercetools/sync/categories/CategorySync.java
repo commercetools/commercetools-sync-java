@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
-import static com.commercetools.sync.commons.utils.BaseSyncUtils.batchDrafts;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchDrafts;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
