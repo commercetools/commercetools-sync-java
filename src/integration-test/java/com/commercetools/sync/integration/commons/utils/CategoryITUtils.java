@@ -63,11 +63,11 @@ public class CategoryITUtils {
                                                         final int numberOfCategories) {
         List<CategoryDraft> categoryDrafts = new ArrayList<>();
         for (int i = 0; i < numberOfCategories; i++) {
-            final LocalizedString name = LocalizedString.of(Locale.ENGLISH, format("draft%s", i));
-            final LocalizedString slug = LocalizedString.of(Locale.ENGLISH, format("slug%s", i));
-            final LocalizedString description = LocalizedString.of(Locale.ENGLISH, format("desc%s", i));
+            final LocalizedString name = LocalizedString.of(Locale.ENGLISH, format("draft%s", i + 1));
+            final LocalizedString slug = LocalizedString.of(Locale.ENGLISH, format("slug%s", i + 1));
+            final LocalizedString description = LocalizedString.of(Locale.ENGLISH, format("desc%s", i + 1));
             final String key = format("key%s", i + 1);
-            final String orderHint = format("0.%s", i);
+            final String orderHint = format("0.%s", i + 1);
             final CategoryDraft categoryDraft = CategoryDraftBuilder.of(name, slug)
                                                                     .parent(parentCategory)
                                                                     .description(description)
@@ -94,8 +94,9 @@ public class CategoryITUtils {
                                                                   @Nonnull final String prefix,
                                                                   @Nullable final Category parentCategory,
                                                                   final int numberOfCategories) {
-        List<CategoryDraft> categoryDrafts = new ArrayList<>();
-        for (CategoryDraft categoryDraft : getCategoryDrafts(parentCategory, numberOfCategories)) {
+        final List<CategoryDraft> categoryDraftsWithPrefix = new ArrayList<>();
+        final List<CategoryDraft> categoryDrafts = getCategoryDrafts(parentCategory, numberOfCategories);
+        for (CategoryDraft categoryDraft : categoryDrafts) {
             final LocalizedString newCategoryName = LocalizedString.of(locale,
                 format("%s%s", prefix, categoryDraft.getName().get(locale)));
             final LocalizedString newCategorySlug = LocalizedString.of(locale,
@@ -106,9 +107,9 @@ public class CategoryITUtils {
                                                                                   .name(newCategoryName)
                                                                                   .slug(newCategorySlug)
                                                                                   .description(newCategoryDescription);
-            categoryDrafts.add(categoryDraftBuilder.build());
+            categoryDraftsWithPrefix.add(categoryDraftBuilder.build());
         }
-        return categoryDrafts;
+        return categoryDraftsWithPrefix;
     }
 
     /**

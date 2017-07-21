@@ -2,6 +2,7 @@ package com.commercetools.sync.integration.commons;
 
 
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -72,8 +73,10 @@ public class CtpQueryUtilsIT {
     @Test
     public void queryAll_WithKeyCollectorConsumerOn600Categories_ShouldCollectKeys() {
         final int numberOfCategories = 600;
-        createCategories(CTP_TARGET_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
-            null, numberOfCategories));
+        final List<CategoryDraft> categoryDrafts = getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
+            null, numberOfCategories);
+        createCategories(CTP_TARGET_CLIENT, categoryDrafts);
+
         final List<String> categoryKeys = new ArrayList<>();
 
         final Consumer<List<Category>> categoryPageConsumer = categoryPageResults ->
