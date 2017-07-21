@@ -2,7 +2,7 @@ package com.commercetools.sync.services.impl;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
-import com.commercetools.sync.commons.helpers.CtpQueryUtils;
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;

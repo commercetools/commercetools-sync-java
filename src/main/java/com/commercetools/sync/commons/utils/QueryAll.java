@@ -1,4 +1,4 @@
-package com.commercetools.sync.commons.helpers;
+package com.commercetools.sync.commons.utils;
 
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.queries.PagedQueryResult;

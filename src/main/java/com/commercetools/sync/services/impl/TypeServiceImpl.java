@@ -1,7 +1,7 @@
 package com.commercetools.sync.services.impl;
 
 
-import com.commercetools.sync.commons.helpers.CtpQueryUtils;
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.types.Type;

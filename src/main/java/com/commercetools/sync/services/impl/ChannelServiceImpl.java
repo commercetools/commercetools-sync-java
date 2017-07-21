@@ -1,6 +1,6 @@
 package com.commercetools.sync.services.impl;
 
-import com.commercetools.sync.commons.helpers.CtpQueryUtils;
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.ChannelService;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;

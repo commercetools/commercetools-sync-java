@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
-import static com.commercetools.sync.commons.helpers.CtpQueryUtils.queryAll;
+import static com.commercetools.sync.commons.utils.CtpQueryUtils.queryAll;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
