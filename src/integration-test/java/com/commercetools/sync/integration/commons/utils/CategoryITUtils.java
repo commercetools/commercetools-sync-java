@@ -288,17 +288,18 @@ public class CategoryITUtils {
      */
     public static void deleteAllCategories(@Nonnull final SphereClient ctpClient) {
         final Set<String> keys = new HashSet<>();
-        QueryExecutionUtils.queryAll(ctpClient,
+        final List<Category> categories = QueryExecutionUtils.queryAll(ctpClient,
             CategoryQuery.of().withExpansionPaths(CategoryExpansionModel::ancestors))
-                           .thenAccept(results -> sortCategoriesByLeastAncestors(results)
-                               .forEach(category -> {
-                                   final String categoryKey = category.getKey();
-                                   if (!hasADeletedAncestor(category, keys)) {
-                                       ctpClient.execute(CategoryDeleteCommand.of(category))
-                                                .thenAccept(deletedCategory -> keys.add(categoryKey))
-                                                .toCompletableFuture().join();
-                                   }
-                               })).toCompletableFuture().join();
+                                                             .thenApply(CategoryITUtils::sortCategoriesByLeastAncestors)
+                                                             .toCompletableFuture().join();
+        categories.forEach(category -> {
+            final String categoryKey = category.getKey();
+            if (!hasADeletedAncestor(category, keys)) {
+                ctpClient.execute(CategoryDeleteCommand.of(category))
+                         .thenAccept(deletedCategory -> keys.add(categoryKey))
+                         .toCompletableFuture().join();
+            }
+        });
     }
 
     private static List<Category> sortCategoriesByLeastAncestors(@Nonnull final List<Category> categories) {
