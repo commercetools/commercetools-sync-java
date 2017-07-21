@@ -9,8 +9,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static com.commercetools.sync.commons.utils.CtpQueryUtils.queryAll;
@@ -82,7 +84,50 @@ public class CtpQueryUtilsIT {
     }
 
     @Test
-    public void queryAll_WithKeyCollectorCallbackOn600Categories_ShouldFetchAllCategories() {
+    public void queryAll_WithCategoryCollectorCallbackWithUniformPageSplitting_ShouldFetchAllCategories() {
+        final int numberOfCategories = 10;
+        createCategories(CTP_TARGET_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
+            null, numberOfCategories));
+
+        final List<List<Category>> categoryPages =
+            queryAll(CTP_TARGET_CLIENT, CategoryQuery.of(), (categories -> categories), 2)
+                .toCompletableFuture().join();
+
+        assertThat(categoryPages).hasSize(5);
+
+        categoryPages.forEach(page -> assertThat(page.size()).isEqualTo(2));
+
+        // Assert that all categories created are fetched.
+        final Set<String> pageCategoryKeys = new HashSet<>();
+        categoryPages.forEach(page -> {
+            assertThat(page.size()).isEqualTo(2);
+            page.forEach(category -> {
+                pageCategoryKeys.add(category.getKey());
+            });
+        });
+        assertThat(pageCategoryKeys).hasSize(numberOfCategories);
+    }
+
+    @Test
+    public void queryAll_WithCategoryCollectorCallbackWithNonUniformPageSplitting_ShouldFetchAllCategories() {
+        final int numberOfCategories = 7;
+        createCategories(CTP_TARGET_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
+            null, numberOfCategories));
+
+        final List<List<Category>> categoryPages =
+            queryAll(CTP_TARGET_CLIENT, CategoryQuery.of(), (categories -> categories), 2)
+                .toCompletableFuture().join();
+
+        assertThat(categoryPages).hasSize(4);
+
+        // Assert that all categories created are fetched.
+        final Set<String> pageCategoryKeys = new HashSet<>();
+        categoryPages.forEach(page -> page.forEach(category -> pageCategoryKeys.add(category.getKey())));
+        assertThat(pageCategoryKeys).hasSize(numberOfCategories);
+    }
+
+    @Test
+    public void queryAll_WithCategoryCollectorCallbackOn600Categories_ShouldFetchAllCategories() {
         final int numberOfCategories = 600;
         createCategories(CTP_TARGET_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, numberOfCategories));
