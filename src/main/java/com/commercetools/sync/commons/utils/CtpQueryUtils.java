@@ -3,6 +3,7 @@ package com.commercetools.sync.commons.utils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.queries.QueryDsl;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
@@ -29,8 +30,10 @@ public class CtpQueryUtils {
      * @param <S>      type of the returned result of the callback function on every page.
      * @return elements
      */
+    @Nonnull
     public static <T, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
-        queryAll(final SphereClient client, final QueryDsl<T, C> query, final Function<List<T>, S> callBack) {
+        queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
+                 @Nonnull final Function<List<T>, S> callBack) {
         return queryAll(client, query, callBack, DEFAULT_PAGE_SIZE);
     }
 
@@ -45,9 +48,10 @@ public class CtpQueryUtils {
      * @param <C>    type of the query
      * @return elements
      */
-    public static <T, C extends QueryDsl<T, C>> CompletionStage<Void> queryAll(final SphereClient client,
-                                                                               final QueryDsl<T, C> query,
-                                                                               final Consumer<List<T>> consumer) {
+    @Nonnull
+    public static <T, C extends QueryDsl<T, C>> CompletionStage<Void>
+        queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
+                 @Nonnull final Consumer<List<T>> consumer) {
         return queryAll(client, query, consumer, DEFAULT_PAGE_SIZE);
     }
 
@@ -65,12 +69,10 @@ public class CtpQueryUtils {
      * @param <S>      type of the returned result of the callback function on every page.
      * @return elements
      */
-
-    public static <T, C extends QueryDsl<T, C>, S> CompletionStage<List<S>> queryAll(final SphereClient client,
-                                                                                     final QueryDsl<T, C> query,
-                                                                                     final Function<List<T>, S>
-                                                                                         callback,
-                                                                                     final int pageSize) {
+    @Nonnull
+    public static <T, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
+        queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
+                 @Nonnull final Function<List<T>, S> callback, final int pageSize) {
         return QueryAll.of(query, pageSize).run(client, callback);
     }
 
@@ -85,10 +87,10 @@ public class CtpQueryUtils {
      * @param <C>    type of the query
      * @return elements
      */
-    public static <T, C extends QueryDsl<T, C>> CompletionStage<Void> queryAll(final SphereClient client,
-                                                                                     final QueryDsl<T, C> query,
-                                                                                     final Consumer<List<T>> consumer,
-                                                                                     final int pageSize) {
+    @Nonnull
+    public static <T, C extends QueryDsl<T, C>> CompletionStage<Void>
+        queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
+                 @Nonnull final Consumer<List<T>> consumer, final int pageSize) {
         return QueryAll.of(query, pageSize).run(client, consumer);
     }
 }

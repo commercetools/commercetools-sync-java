@@ -5,6 +5,7 @@ import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.queries.QueryDsl;
 import io.sphere.sdk.queries.QuerySort;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -26,6 +27,7 @@ final class QueryAll<T, C extends QueryDsl<T, C>> {
         this.pageSize = pageSize;
     }
 
+    @Nonnull
     <S> CompletionStage<List<S>> run(final SphereClient client, final Function<List<T>, S> callback) {
         return queryPage(client, 0).thenCompose(result -> {
             final List<CompletableFuture<S>> futureResults = new ArrayList<>();
@@ -40,6 +42,7 @@ final class QueryAll<T, C extends QueryDsl<T, C>> {
         });
     }
 
+    @Nonnull
     CompletionStage<Void> run(final SphereClient client, final Consumer<List<T>> consumer) {
         return queryPage(client, 0).thenCompose(result -> {
             final List<CompletableFuture<Void>> futureResults = new ArrayList<>();
@@ -49,6 +52,7 @@ final class QueryAll<T, C extends QueryDsl<T, C>> {
         });
     }
 
+    @Nonnull
     private List<CompletableFuture<Void>> queryNextPages(final SphereClient client, final long totalElements,
                                                          final Consumer<List<T>> consumer) {
         final long totalPages = getTotalNumberOfPages(totalElements);
@@ -60,6 +64,7 @@ final class QueryAll<T, C extends QueryDsl<T, C>> {
                          .collect(toList());
     }
 
+    @Nonnull
     private <S> List<CompletableFuture<S>> queryNextPages(final SphereClient client, final long totalElements,
                                                           final Function<List<T>, S> callback) {
         final long totalPages = getTotalNumberOfPages(totalElements);
@@ -71,10 +76,11 @@ final class QueryAll<T, C extends QueryDsl<T, C>> {
                          .collect(toList());
     }
 
-    long getTotalNumberOfPages(final long totalElements){
+    long getTotalNumberOfPages(final long totalElements) {
         return (long) Math.ceil((double) totalElements / pageSize);
     }
 
+    @Nonnull
     private CompletionStage<PagedQueryResult<T>> queryPage(final SphereClient client, final long pageNumber) {
         final QueryDsl<T, C> query = baseQuery
             .withOffset(pageNumber * pageSize)
@@ -82,6 +88,7 @@ final class QueryAll<T, C extends QueryDsl<T, C>> {
         return client.execute(query);
     }
 
+    @Nonnull
     private <S> CompletableFuture<List<S>> transformListOfFuturesToFutureOfLists(
         final List<CompletableFuture<S>> futures) {
         final CompletableFuture[] futuresAsArray = futures.toArray(new CompletableFuture[futures.size()]);
@@ -91,7 +98,9 @@ final class QueryAll<T, C extends QueryDsl<T, C>> {
                                                        .collect(Collectors.toList()));
     }
 
-    static <T, C extends QueryDsl<T, C>> QueryAll<T, C> of(final QueryDsl<T, C> baseQuery, final int pageSize) {
+    @Nonnull
+    static <T, C extends QueryDsl<T, C>> QueryAll<T, C> of(@Nonnull final QueryDsl<T, C> baseQuery,
+                                                           final int pageSize) {
         return new QueryAll<>(baseQuery, pageSize);
     }
 }

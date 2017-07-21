@@ -4,6 +4,7 @@ package com.commercetools.sync.commons.utils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,6 +28,11 @@ public class QueryAllTest {
     private static final String CATEGORY_ID = UUID.randomUUID().toString();
     private static final SphereClient sphereClient = mock(SphereClient.class);
 
+    /**
+     * Prepares mock data for unit testing the CTP QueryAll utilities; specifically stubs a {@link SphereClient}
+     * to always return a {@link PagedQueryResult} containing 4 identical mock categories on every call of
+     * {@link SphereClient#execute(SphereRequest)}.
+     */
     @BeforeClass
     public static void setup() {
         final Category mockCategory = mock(Category.class);
@@ -43,7 +49,7 @@ public class QueryAllTest {
         final QueryAll<Category, CategoryQuery> query = QueryAll.of(CategoryQuery.of(), 1);
 
         final Function<List<Category>, Optional<Category>> getFirstCategoryInPage =
-            categoryPage -> categoryPage.isEmpty()? Optional.empty() : Optional.of(categoryPage.get(0));
+            categoryPage -> categoryPage.isEmpty() ? Optional.empty() : Optional.of(categoryPage.get(0));
 
         final List<Optional<Category>> firstCategories = query.run(sphereClient, getFirstCategoryInPage)
                                                    .toCompletableFuture()
