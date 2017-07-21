@@ -59,7 +59,7 @@ public class CtpQueryUtils {
      *
      * @param client   commercetools client
      * @param query    query containing predicates and expansion paths
-     * @param callBack callback function that is called on every page queried.
+     * @param callback callback function that is called on every page queried.
      * @param <T>      type of one query result element
      * @param <C>      type of the query
      * @param <S>      type of the returned result of the callback function on every page.
@@ -69,9 +69,9 @@ public class CtpQueryUtils {
     public static <T, C extends QueryDsl<T, C>, S> CompletionStage<List<S>> queryAll(final SphereClient client,
                                                                                      final QueryDsl<T, C> query,
                                                                                      final Function<List<T>, S>
-                                                                                         callBack,
+                                                                                         callback,
                                                                                      final int pageSize) {
-        return QueryAll.of(query, pageSize).run(client, callBack);
+        return QueryAll.of(query, pageSize).run(client, callback);
     }
 
     /**

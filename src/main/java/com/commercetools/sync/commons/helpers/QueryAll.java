@@ -29,10 +29,13 @@ final class QueryAll<T, C extends QueryDsl<T, C>, S> {
     public CompletionStage<List<S>> run(final SphereClient client, final Function<List<T>, S> callback) {
         return queryPage(client, 0).thenCompose(result -> {
             final List<CompletableFuture<S>> futureResults = new ArrayList<>();
-            final S callBackResult = callback.apply(result.getResults());
-            futureResults.add(completedFuture(callBackResult));
 
-            futureResults.addAll(queryNextPages(client, result.getTotal(), callback));
+            final S callbackResult = callback.apply(result.getResults());
+            final List<CompletableFuture<S>> nextPagesCallbackResults =
+                queryNextPages(client, result.getTotal(), callback);
+
+            futureResults.add(completedFuture(callbackResult));
+            futureResults.addAll(nextPagesCallbackResults);
             return transformListOfFuturesToFutureOfLists(futureResults);
         });
     }
