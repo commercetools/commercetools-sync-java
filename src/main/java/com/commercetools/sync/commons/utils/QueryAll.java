@@ -51,23 +51,28 @@ final class QueryAll<T, C extends QueryDsl<T, C>> {
 
     private List<CompletableFuture<Void>> queryNextPages(final SphereClient client, final long totalElements,
                                                          final Consumer<List<T>> consumer) {
-        final long totalPages = totalElements / pageSize;
-        return LongStream.rangeClosed(1, totalPages)
+        final long totalPages = getTotalNumberOfPages(totalElements);
+        return LongStream.range(1, totalPages)
                          .mapToObj(page -> queryPage(client, page)
                              .thenApply(PagedQueryResult::getResults)
                              .thenAccept(consumer)
-                             .toCompletableFuture()).collect(toList());
+                             .toCompletableFuture())
+                         .collect(toList());
     }
 
     private <S> List<CompletableFuture<S>> queryNextPages(final SphereClient client, final long totalElements,
                                                           final Function<List<T>, S> callback) {
-        final long totalPages = totalElements / pageSize;
-        return LongStream.rangeClosed(1, totalPages)
+        final long totalPages = getTotalNumberOfPages(totalElements);
+        return LongStream.range(1, totalPages)
                          .mapToObj(page -> queryPage(client, page)
                              .thenApply(PagedQueryResult::getResults)
                              .thenApply(callback)
                              .toCompletableFuture())
                          .collect(toList());
+    }
+
+    long getTotalNumberOfPages(final long totalElements){
+        return (long) Math.ceil((double) totalElements / pageSize);
     }
 
     private CompletionStage<PagedQueryResult<T>> queryPage(final SphereClient client, final long pageNumber) {
