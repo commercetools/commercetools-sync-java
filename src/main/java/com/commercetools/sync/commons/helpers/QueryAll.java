@@ -17,7 +17,7 @@ import java.util.stream.LongStream;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
-final class QueryAll<T, C extends QueryDsl<T, C>, S> {
+final class QueryAll<T, C extends QueryDsl<T, C>> {
     private final QueryDsl<T, C> baseQuery;
     private final long pageSize;
 
@@ -26,7 +26,7 @@ final class QueryAll<T, C extends QueryDsl<T, C>, S> {
         this.pageSize = pageSize;
     }
 
-    public CompletionStage<List<S>> run(final SphereClient client, final Function<List<T>, S> callback) {
+    <S> CompletionStage<List<S>> run(final SphereClient client, final Function<List<T>, S> callback) {
         return queryPage(client, 0).thenCompose(result -> {
             final List<CompletableFuture<S>> futureResults = new ArrayList<>();
 
@@ -40,7 +40,7 @@ final class QueryAll<T, C extends QueryDsl<T, C>, S> {
         });
     }
 
-    public CompletionStage<Void> run(final SphereClient client, final Consumer<List<T>> consumer) {
+    CompletionStage<Void> run(final SphereClient client, final Consumer<List<T>> consumer) {
         return queryPage(client, 0).thenCompose(result -> {
             final List<CompletableFuture<Void>> futureResults = new ArrayList<>();
             consumer.accept(result.getResults());
@@ -50,7 +50,7 @@ final class QueryAll<T, C extends QueryDsl<T, C>, S> {
     }
 
     private List<CompletableFuture<Void>> queryNextPages(final SphereClient client, final long totalElements,
-                                final Consumer<List<T>> consumer) {
+                                                         final Consumer<List<T>> consumer) {
         final long totalPages = totalElements / pageSize;
         return LongStream.rangeClosed(1, totalPages)
                          .mapToObj(page -> queryPage(client, page)
@@ -59,8 +59,8 @@ final class QueryAll<T, C extends QueryDsl<T, C>, S> {
                              .toCompletableFuture()).collect(toList());
     }
 
-    private List<CompletableFuture<S>> queryNextPages(final SphereClient client, final long totalElements,
-                                                      final Function<List<T>, S> callback) {
+    private <S> List<CompletableFuture<S>> queryNextPages(final SphereClient client, final long totalElements,
+                                                          final Function<List<T>, S> callback) {
         final long totalPages = totalElements / pageSize;
         return LongStream.rangeClosed(1, totalPages)
                          .mapToObj(page -> queryPage(client, page)
@@ -77,7 +77,8 @@ final class QueryAll<T, C extends QueryDsl<T, C>, S> {
         return client.execute(query);
     }
 
-    private CompletableFuture<List<S>> transformListOfFuturesToFutureOfLists(final List<CompletableFuture<S>> futures) {
+    private <S> CompletableFuture<List<S>> transformListOfFuturesToFutureOfLists(
+        final List<CompletableFuture<S>> futures) {
         final CompletableFuture[] futuresAsArray = futures.toArray(new CompletableFuture[futures.size()]);
         return CompletableFuture.allOf(futuresAsArray)
                                 .thenApply(x -> futures.stream()
@@ -85,7 +86,7 @@ final class QueryAll<T, C extends QueryDsl<T, C>, S> {
                                                        .collect(Collectors.toList()));
     }
 
-    static <T, C extends QueryDsl<T, C>> QueryAll of(final QueryDsl<T, C> baseQuery, final int pageSize) {
+    static <T, C extends QueryDsl<T, C>> QueryAll<T, C> of(final QueryDsl<T, C> baseQuery, final int pageSize) {
         return new QueryAll<>(baseQuery, pageSize);
     }
 }
