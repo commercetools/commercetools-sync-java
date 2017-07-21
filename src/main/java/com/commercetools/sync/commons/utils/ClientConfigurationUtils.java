@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static io.sphere.sdk.http.HttpStatusCode.BAD_GATEWAY_502;
@@ -83,11 +84,28 @@ public class ClientConfigurationUtils {
     private static SphereClient withRetry(final SphereClient delegate) {
         final int maxAttempts = 5;
         final RetryAction scheduledRetry = RetryAction
-            .ofScheduledRetry(maxAttempts, context -> Duration.ofSeconds(context.getAttempt() * 2));
+            .ofScheduledRetry(maxAttempts, context -> calculateVariableDelay(context.getAttempt()));
         final RetryPredicate http5xxMatcher = RetryPredicate
             .ofMatchingStatusCodes(BAD_GATEWAY_502, SERVICE_UNAVAILABLE_503, GATEWAY_TIMEOUT_504);
         final List<RetryRule> retryRules = Collections.singletonList(RetryRule.of(http5xxMatcher, scheduledRetry));
         return RetrySphereClientDecorator.of(delegate, retryRules);
+    }
+
+    /**
+     * Computes a variable delay in seconds (grows with attempts count with a random component).
+     *
+     * @param triedAttempts the number of attempts already tried by the client.
+     * @return a computed variable delay in seconds, that grows with the number of attempts with a random component.
+     */
+    private static Duration calculateVariableDelay(final long triedAttempts) {
+        long timeoutInSeconds = TimeUnit.SECONDS.convert(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+        final long randomNumberInRange = getRandomNumberInRange(50, timeoutInSeconds);
+        final long timeoutMultipliedByTriedAttempts = timeoutInSeconds * triedAttempts;
+        return Duration.ofSeconds(timeoutMultipliedByTriedAttempts + randomNumberInRange);
+    }
+
+    private static long getRandomNumberInRange(final long min, final long max) {
+        return new Random().longs(min, (max + 1)).limit(1).findFirst().getAsLong();
     }
 
     private static SphereClient withLimitedParallelRequests(final SphereClient delegate) {
