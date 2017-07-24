@@ -11,7 +11,7 @@ import java.util.function.Function;
 
 import static io.sphere.sdk.queries.QueryExecutionUtils.DEFAULT_PAGE_SIZE;
 
-public class CtpQueryUtils {
+public final class CtpQueryUtils {
 
     private CtpQueryUtils() {
     }
