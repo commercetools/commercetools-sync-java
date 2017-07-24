@@ -355,12 +355,10 @@ public class CategoryServiceIT {
         final ChangeName changeNameUpdateAction = ChangeName
             .of(LocalizedString.of(Locale.GERMAN, newCategoryName));
 
-        final Optional<Category> updatedCategoryOptional = categoryService
+        final Category updatedCategory = categoryService
             .updateCategory(categoryOptional.get(), Collections.singletonList(changeNameUpdateAction))
             .toCompletableFuture().join();
-        assertThat(updatedCategoryOptional).isNotEmpty();
-
-        final Category updatedCategory = updatedCategoryOptional.get();
+        assertThat(updatedCategory).isNotNull();
 
         //assert CTP state
         final Optional<Category> fetchedCategoryOptional = CTP_TARGET_CLIENT
@@ -395,15 +393,15 @@ public class CategoryServiceIT {
         final LocalizedString newSlug = LocalizedString.of(Locale.ENGLISH, "furniture");
         final ChangeSlug changeSlugUpdateAction = ChangeSlug.of(newSlug);
 
-        final Optional<Category> updatedCategoryOptional = categoryService
-            .updateCategory(newCategory, Collections.singletonList(changeSlugUpdateAction))
+        categoryService.updateCategory(newCategory, Collections.singletonList(changeSlugUpdateAction))
+            .exceptionally(exception -> {
+                assertThat(exception).isNotNull();
+                assertThat(exception.getMessage()).contains("A duplicate value '\"furniture\"' exists for field"
+                    + " 'slug.en'");
+                return null;
+            })
             .toCompletableFuture().join();
 
-        assertThat(updatedCategoryOptional).isEmpty();
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("A duplicate value '\"furniture\"' exists for field"
-            + " 'slug.en'");
 
         //assert CTP state
         final Optional<Category> fetchedCategoryOptional = CTP_TARGET_CLIENT

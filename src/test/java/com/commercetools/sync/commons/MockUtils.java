@@ -93,7 +93,7 @@ public class MockUtils {
 
         final CategoryService categoryService = mock(CategoryService.class);
         when(categoryService.updateCategory(any(), any()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.of(category)));
+            .thenReturn(CompletableFuture.completedFuture(category));
         when(categoryService.createCategory(any()))
             .thenReturn(CompletableFuture.completedFuture(Optional.of(category)));
         when(categoryService.fetchCachedCategoryId(anyString()))

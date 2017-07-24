@@ -40,6 +40,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private static final String CATEGORY_DRAFT_IS_NULL = "CategoryDraft is null.";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
         + "CategoryDraft with key:'%s'. Reason: %s";
+    private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
 
     private final CategoryService categoryService;
     private final CategoryReferenceResolver referenceResolver;
