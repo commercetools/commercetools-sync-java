@@ -17,6 +17,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -529,10 +530,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> buildUpdateActionsAndUpdate(@Nonnull final Category oldCategory,
-                                                              @Nonnull final CategoryDraft newCategory) {
+                                                                  @Nonnull final CategoryDraft newCategory) {
         final List<UpdateAction<Category>> updateActions = buildActions(oldCategory, newCategory, syncOptions);
         if (!updateActions.isEmpty()) {
-            return updateCategory(oldCategory, updateActions);
+            return updateCategory(oldCategory, newCategory, updateActions);
         }
         return CompletableFuture.completedFuture(null);
     }
@@ -541,7 +542,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     /**
      * Given a {@link Category} and a {@link List} of {@link UpdateAction} elements, this method issues a request to
      * the CTP project defined by the client configuration stored in the {@code syncOptions} instance
-     * of this class to update the specified category with this list of update actions.
+     * of this class to update the specified category with this list of update actions. If the update request failed
+     * due to a {@link ConcurrentModificationException}, the method recalculates the update actions required for
+     * syncing the {@link Category} amd reissues the update req
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
      * out successfully or not. If an exception was thrown on executing the request to CTP,
@@ -552,11 +555,16 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @return a future which contains an empty result after execution of the update.
      */
     private CompletionStage<Void> updateCategory(@Nonnull final Category category,
+                                                 @Nonnull final CategoryDraft newCategory,
                                                  @Nonnull final List<UpdateAction<Category>> updateActions) {
         final String categoryKey = category.getKey();
         return categoryService.updateCategory(category, updateActions)
-                              .thenAccept(updatedCategory -> {
-                                  if (updatedCategory.isPresent()) {
+                              .handle((updatedCategory, sphereException) -> sphereException)
+                              .thenCompose(sphereException -> {
+                                  if (sphereException != null) {
+                                      return retryIfConcurrentModificationException(sphereException, category,
+                                          newCategory);
+                                  } else {
                                       if (!processedCategoryKeys.contains(categoryKey)) {
                                           statistics.incrementUpdated();
                                           processedCategoryKeys.add(categoryKey);
@@ -564,15 +572,38 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                       if (categoryKeysWithResolvedParents.contains(categoryKey)) {
                                           removeUpdatedCategoryFromMissingParentsMap(categoryKey);
                                       }
-                                  } else {
-                                      // TODO: GH ISSUE #30, #31: check if updated category is empty, it means an error
-                                      // TODO: occurred during update.
-                                      if (!processedCategoryKeys.contains(categoryKey)) {
-                                          statistics.incrementFailed();
-                                          processedCategoryKeys.add(categoryKey);
-                                      }
+                                      return CompletableFuture.completedFuture(null);
                                   }
                               });
+    }
+
+    /**
+     * Given a {@link Throwable sphereException}, an old {@link Category} and a new {@link CategoryDraft} that
+     * an update Request was issued to sync both, this method checks if the exception is an instance of
+     * {@link ConcurrentModificationException}. If it is, then recalls the method
+     * {@link CategorySync#buildUpdateActionsAndUpdate(Category, CategoryDraft)} to rebuild update actions and  re
+     * issue the CTP update request. Otherwise, if it is not an instance of a {@link ConcurrentModificationException}
+     * then it is counted as a failed category to sync.
+     *
+     * @param sphereException the sphere exception thrown after issuing an update request.
+     * @param category the category to update.
+     * @param newCategory the new category draft to sync data from.
+     * @return a future which contains an empty result after execution of the update.
+     */
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    private CompletionStage<Void> retryIfConcurrentModificationException(
+        @Nonnull final Throwable sphereException, @Nonnull final Category category,
+        @Nonnull final CategoryDraft newCategory) {
+        if (sphereException instanceof ConcurrentModificationException) {
+            return buildUpdateActionsAndUpdate(category, newCategory);
+        } else {
+            final String categoryKey = category.getKey();
+            if (!processedCategoryKeys.contains(categoryKey)) {
+                handleError(format(UPDATE_FAILED, categoryKey, sphereException), sphereException);
+                processedCategoryKeys.add(categoryKey);
+            }
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     /**
