@@ -47,9 +47,9 @@ public class ClientConfigurationUtils {
             final SphereAccessTokenSupplier tokenSupplier =
                 SphereAccessTokenSupplier.ofAutoRefresh(clientConfig, httpClient, false);
             final SphereClient underlying = SphereClient.of(clientConfig, httpClient, tokenSupplier);
-            final SphereClient limitedParallelRequestsClient = withLimitedParallelRequests(underlying);
-            final SphereClient retryClient = withRetry(limitedParallelRequestsClient);
-            delegatesCache.put(clientConfig, retryClient);
+            final SphereClient retryClient = withRetry(underlying);
+            final SphereClient limitedParallelRequestsClient = withLimitedParallelRequests(retryClient);
+            delegatesCache.put(clientConfig, limitedParallelRequestsClient);
         }
         return BlockingSphereClient.of(delegatesCache.get(clientConfig), timeout, timeUnit);
     }
