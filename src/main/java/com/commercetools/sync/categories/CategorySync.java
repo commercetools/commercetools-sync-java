@@ -630,7 +630,4 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         syncOptions.applyErrorCallback(errorMessage, exception);
         statistics.incrementFailed();
     }
-
-
-
 }
