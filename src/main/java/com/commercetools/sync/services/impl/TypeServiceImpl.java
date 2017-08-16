@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 
 /**
  * Implementation of TypeService interface.
- * TODO: USE graphQL to get only keys.
+ * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
 public final class TypeServiceImpl implements TypeService {
     private final SphereClient ctpClient;

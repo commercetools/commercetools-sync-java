@@ -25,7 +25,10 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-
+/**
+ * Implementation of CategoryService interface.
+ * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
+ */
 public final class CategoryServiceImpl implements CategoryService {
     private final CategorySyncOptions syncOptions;
     private boolean isCached = false;
