@@ -544,7 +544,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * the CTP project defined by the client configuration stored in the {@code syncOptions} instance
      * of this class to update the specified category with this list of update actions. If the update request failed
      * due to a {@link ConcurrentModificationException}, the method recalculates the update actions required for
-     * syncing the {@link Category} amd reissues the update req
+     * syncing the {@link Category} and reissues the update request.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
      * out successfully or not. If an exception was thrown on executing the request to CTP,
@@ -578,11 +578,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     }
 
     /**
-     * Given a {@link Throwable sphereException}, an old {@link Category} and a new {@link CategoryDraft} that
-     * an update Request was issued to sync both, this method checks if the exception is an instance of
-     * {@link ConcurrentModificationException}. If it is, then recalls the method
-     * {@link CategorySync#buildUpdateActionsAndUpdate(Category, CategoryDraft)} to rebuild update actions and  re
-     * issue the CTP update request. Otherwise, if it is not an instance of a {@link ConcurrentModificationException}
+     * This method checks if the {@code sphereException} (thrown when trying to sync the old {@link Category} and the
+     * new {@link CategoryDraft}) is an instance of {@link ConcurrentModificationException}. If it is, then calls the
+     * method {@link CategorySync#buildUpdateActionsAndUpdate(Category, CategoryDraft)} to rebuild update actions and
+     * reissue the CTP update request. Otherwise, if it is not an instance of a {@link ConcurrentModificationException}
      * then it is counted as a failed category to sync.
      *
      * @param sphereException the sphere exception thrown after issuing an update request.
