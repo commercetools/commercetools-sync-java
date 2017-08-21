@@ -98,7 +98,7 @@ public class ClientConfigurationUtils {
      * @return a computed variable delay in seconds, that grows with the number of attempts with a random component.
      */
     private static Duration calculateVariableDelay(final long triedAttempts) {
-        long timeoutInSeconds = TimeUnit.SECONDS.convert(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+        final long timeoutInSeconds = TimeUnit.SECONDS.convert(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
         final long randomNumberInRange = getRandomNumberInRange(50, timeoutInSeconds);
         final long timeoutMultipliedByTriedAttempts = timeoutInSeconds * triedAttempts;
         return Duration.ofSeconds(timeoutMultipliedByTriedAttempts + randomNumberInRange);
