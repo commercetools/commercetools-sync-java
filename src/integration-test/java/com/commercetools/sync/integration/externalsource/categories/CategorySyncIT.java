@@ -11,6 +11,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
+import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.After;
@@ -27,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
@@ -250,6 +252,43 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
                 + " sync and %d categories with a missing parent).", 4, 3, 1, 0, 0));
+    }
+
+    @Test
+    public void syncDrafts_WithMultipleBatchSyncingWithAlreadyProcessedDrafts_ShouldSync() {
+        // Category draft coming from external source.
+        CategoryDraft categoryDraft1 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "new name"),
+                LocalizedString.of(Locale.ENGLISH, "new-slug"))
+            .key(oldCategoryKey)
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .build();
+
+        final List<CategoryDraft> batch1 = new ArrayList<>();
+        batch1.add(categoryDraft1);
+
+        // Process same draft again in a different batch but with a different name.
+        final LocalizedString anotherNewName = LocalizedString.of(Locale.ENGLISH, "another new name");
+        categoryDraft1 = CategoryDraftBuilder.of(categoryDraft1)
+                                             .name(anotherNewName)
+                                             .build();
+
+        final List<CategoryDraft> batch2 = new ArrayList<>();
+        batch2.add(categoryDraft1);
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(batch1)
+                                                                  .thenCompose(result -> categorySync.sync(batch2))
+                                                                  .toCompletableFuture()
+                                                                  .join();
+
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
+
+        final Optional<Category> optionalResult = CTP_TARGET_CLIENT.execute(CategoryQuery.of().bySlug(Locale.ENGLISH,
+            categoryDraft1.getSlug().get(Locale.ENGLISH))).toCompletableFuture().join().head();
+        assertThat(optionalResult).isNotEmpty();
+        assertThat(optionalResult.get().getName()).isEqualTo(anotherNewName);
     }
 
     @Test
