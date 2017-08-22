@@ -8,6 +8,7 @@ import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
@@ -277,5 +278,22 @@ public class CategoryReferenceResolverTest {
                                                  + " (null/empty).");
                                      return null;
                                  }).toCompletableFuture().join();
+    }
+
+    @Test
+    public void resolveReferences_WithNoCustomTypeReferenceAndNoParentReference_ShouldResolveReferences() {
+        final CategoryDraft categoryDraft = mock(CategoryDraft.class);
+        when(categoryDraft.getName()).thenReturn(LocalizedString.of(Locale.ENGLISH, "myDraft"));
+        when(categoryDraft.getKey()).thenReturn("key");
+
+        final CategoryReferenceResolver categoryReferenceResolver =
+            new CategoryReferenceResolver(syncOptions, typeService, categoryService);
+
+        final CategoryDraft referencesResolvedDraft = categoryReferenceResolver
+            .resolveReferences(categoryDraft)
+            .toCompletableFuture().join();
+
+        assertThat(referencesResolvedDraft.getCustom()).isNull();
+        assertThat(referencesResolvedDraft.getParent()).isNull();
     }
 }
