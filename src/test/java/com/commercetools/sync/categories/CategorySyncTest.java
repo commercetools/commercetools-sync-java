@@ -288,6 +288,30 @@ public class CategorySyncTest {
     }
 
     @Test
+    public void sync_WithExistingCategoryButWithNoCustomType_ShouldSync() {
+        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
+            getMockCategoryService());
+        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
+
+        final CategoryDraft categoryDraft = mock(CategoryDraft.class);
+        when(categoryDraft.getName()).thenReturn(LocalizedString.of(Locale.ENGLISH, "name"));
+        when(categoryDraft.getKey()).thenReturn("key");
+        when(categoryDraft.getCustom()).thenReturn(null);
+
+        categoryDrafts.add(categoryDraft);
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 1 updated, 0 failed to sync and 0 categories with a missing parent).");
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(errorCallBackExceptions).hasSize(0);
+    }
+
+    @Test
     public void sync_WithExistingCategoryButWithEmptyParentReference_ShouldFailSync() {
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
             getMockCategoryService());

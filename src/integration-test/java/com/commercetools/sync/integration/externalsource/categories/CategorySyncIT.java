@@ -151,6 +151,21 @@ public class CategorySyncIT {
     }
 
     @Test
+    public void syncDraft_withARemovedCustomType_ShouldUpdateCategory() {
+        // Category draft coming from external source.
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .build();
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
+                                                                  .toCompletableFuture().join();
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
+    }
+
+    @Test
     public void syncDrafts_WithMultipleBatchSyncing_ShouldSync() {
         // Existing array of [1, 2, 3, oldCategoryKey]
         final CategoryDraft oldCategoryDraft1 = CategoryDraftBuilder
