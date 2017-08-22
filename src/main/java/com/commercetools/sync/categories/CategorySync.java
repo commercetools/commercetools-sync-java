@@ -277,12 +277,14 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                                              @Nonnull final Map<String, String> keyToIdCache)
         throws ReferenceResolutionException {
         return getParentCategoryKey(categoryDraft, syncOptions.shouldAllowUuidKeys())
-            .filter(parentCategoryKey -> categoryExists(parentCategoryKey, keyToIdCache))
             .map(parentCategoryKey -> {
-                addCategoryKeyToMissingParentsMap(categoryDraft.getKey(), parentCategoryKey);
-                return (CategoryDraft) CategoryDraftBuilder.of(categoryDraft)
-                                                           .parent(null)
-                                                           .build();
+                if (isMissingCategory(parentCategoryKey, keyToIdCache)) {
+                    addCategoryKeyToMissingParentsMap(categoryDraft.getKey(), parentCategoryKey);
+                    return CategoryDraftBuilder.of(categoryDraft)
+                                               .parent(null)
+                                               .build();
+                }
+                return categoryDraft;
             }).orElse(categoryDraft);
     }
 
