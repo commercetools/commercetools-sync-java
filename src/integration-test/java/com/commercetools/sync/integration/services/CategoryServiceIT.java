@@ -15,6 +15,7 @@ import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.models.LocalizedString;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,32 +29,42 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategoriesFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getMockCustomFieldsDraft;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CategoryServiceIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategoryServiceIT.class);
     private CategoryService categoryService;
-    private Category targetProjectRootCategory;
     private Category oldCategory;
 
     private List<String> errorCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
 
+
     /**
-     * Deletes Categories and Types from source and target CTP projects, then it populates target CTP project with
-     * category test data.
+     * Delete all categories and types from target project. Then create custom types for target CTP project categories.
+     */
+    @BeforeClass
+    public static void setup() {
+        deleteAllCategories(CTP_TARGET_CLIENT);
+        deleteTypes(CTP_TARGET_CLIENT);
+        createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH, "anyName", CTP_TARGET_CLIENT);
+    }
+
+    /**
+     * Deletes Categories and Types from target CTP projects, then it populates target CTP project with category test
+     * data.
      */
     @Before
-    public void setup() {
+    public void setupTest() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
-        deleteRootCategoriesFromTargetAndSource();
-        deleteTypesFromTargetAndSource();
+        deleteAllCategories(CTP_TARGET_CLIENT);
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                                                                   .setErrorCallBack(
@@ -64,14 +75,12 @@ public class CategoryServiceIT {
                                                                                               .add(exception);
                                                                                       })
                                                                                   .build();
-        targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
 
         // Create a mock new category in the target project.
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture"))
             .key("oldCategoryKey")
-            .parent(targetProjectRootCategory)
-            .custom(getMockCustomFieldsDraft())
+            .custom(getCustomFieldsDraft())
             .build();
         oldCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
                                        .toCompletableFuture()
@@ -81,18 +90,18 @@ public class CategoryServiceIT {
     }
 
     /**
-     * Cleans up the target and source test data that were built in this test class.
+     * Cleans up the target test data that were built in this test class.
      */
     @AfterClass
     public static void tearDown() {
-        deleteRootCategoriesFromTargetAndSource();
-        deleteTypesFromTargetAndSource();
+        deleteAllCategories(CTP_TARGET_CLIENT);
+        deleteTypes(CTP_TARGET_CLIENT);
     }
 
     @Test
     public void cacheKeysToIds_ShouldCacheCategoryKeysOnlyFirstTime() {
         Map<String, String> cache = categoryService.cacheKeysToIds().toCompletableFuture().join();
-        assertThat(cache).hasSize(2);
+        assertThat(cache).hasSize(1);
 
         // Create new category without caching
         final String newCategoryKey = "newCategoryKey";
@@ -100,13 +109,12 @@ public class CategoryServiceIT {
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
             .key(newCategoryKey)
-            .parent(targetProjectRootCategory)
             .build();
 
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft)).toCompletableFuture().join();
 
         cache = categoryService.cacheKeysToIds().toCompletableFuture().join();
-        assertThat(cache).hasSize(2);
+        assertThat(cache).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
     }
@@ -123,11 +131,10 @@ public class CategoryServiceIT {
     @Test
     public void fetchMatchingCategoriesByKeys_WithAllExistingSetOfKeys_ShouldReturnSetOfCategories() {
         final Set<String> keys =  new HashSet<>();
-        keys.add(targetProjectRootCategory.getKey());
         keys.add("oldCategoryKey");
         final Set<Category> fetchedCategories = categoryService.fetchMatchingCategoriesByKeys(keys)
                                                                .toCompletableFuture().join();
-        assertThat(fetchedCategories).hasSize(2);
+        assertThat(fetchedCategories).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
     }
@@ -135,12 +142,11 @@ public class CategoryServiceIT {
     @Test
     public void fetchMatchingCategoriesByKeys_WithSomeExistingSetOfKeys_ShouldReturnSetOfCategories() {
         final Set<String> keys =  new HashSet<>();
-        keys.add(targetProjectRootCategory.getKey());
         keys.add("oldCategoryKey");
         keys.add("new-key");
         final Set<Category> fetchedCategories = categoryService.fetchMatchingCategoriesByKeys(keys)
                                                                .toCompletableFuture().join();
-        assertThat(fetchedCategories).hasSize(2);
+        assertThat(fetchedCategories).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
     }
@@ -161,14 +167,12 @@ public class CategoryServiceIT {
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture1"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture1", Locale.GERMAN, "klassische-moebel1"))
             .key("key1")
-            .parent(targetProjectRootCategory)
             .build();
 
         final CategoryDraft categoryDraft2 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture2"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture2", Locale.GERMAN, "klassische-moebel2"))
             .key("key2")
-            .parent(targetProjectRootCategory)
             .build();
 
         final Set<CategoryDraft> categoryDrafts = new HashSet<>();
@@ -190,14 +194,12 @@ public class CategoryServiceIT {
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture1"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture1", Locale.GERMAN, "klassische-moebel1"))
             .key("1")
-            .parent(targetProjectRootCategory)
             .build();
 
         final CategoryDraft categoryDraft2 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture2"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture2", Locale.GERMAN, "klassische-moebel2"))
             .key("key2")
-            .parent(targetProjectRootCategory)
             .build();
 
         final Set<CategoryDraft> categoryDrafts = new HashSet<>();
@@ -209,7 +211,7 @@ public class CategoryServiceIT {
 
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Invalid category key '1'. Category keys may only contain "
+        assertThat(errorCallBackMessages.get(0)).contains("Invalid key '1'. Keys may only contain "
             + "alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
         assertThat(createdCategories).hasSize(1);
     }
@@ -221,7 +223,6 @@ public class CategoryServiceIT {
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture1"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture1", Locale.GERMAN, "klassische-moebel1"))
             .key("1")
-            .parent(targetProjectRootCategory)
             .build();
 
         // Draft with duplicate slug
@@ -229,7 +230,6 @@ public class CategoryServiceIT {
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture2"),
                 LocalizedString.of(Locale.ENGLISH, "furniture"))
             .key("key2")
-            .parent(targetProjectRootCategory)
             .build();
 
         final Set<CategoryDraft> categoryDrafts = new HashSet<>();
@@ -243,7 +243,7 @@ public class CategoryServiceIT {
         assertThat(errorCallBackMessages).hasSize(2);
         // Since the order of creation is not ensured by allOf, so we assert in list of error messages (as string):
         LOGGER.debug(errorCallBackMessages.toString());
-        assertThat(errorCallBackMessages.toString()).contains("Invalid category key '1'. Category keys may only contain"
+        assertThat(errorCallBackMessages.toString()).contains("Invalid key '1'. Keys may only contain"
             + " alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
         assertThat(errorCallBackMessages.toString()).contains(" A duplicate value '\"furniture\"' exists for field "
             + "'slug.en'");
@@ -272,7 +272,6 @@ public class CategoryServiceIT {
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
             .key(newCategoryKey)
-            .parent(targetProjectRootCategory)
             .build();
 
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft)).toCompletableFuture().join();
@@ -292,8 +291,7 @@ public class CategoryServiceIT {
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
             .key(newCategoryKey)
-            .custom(getMockCustomFieldsDraft())
-            .parent(targetProjectRootCategory)
+            .custom(getCustomFieldsDraft())
             .build();
 
         final Optional<Category> createdCategoryOptional = categoryService.createCategory(categoryDraft)
@@ -315,7 +313,6 @@ public class CategoryServiceIT {
         final Category fetchedCategory = categoryOptional.get();
         assertThat(fetchedCategory.getName()).isEqualTo(createdCategory.getName());
         assertThat(fetchedCategory.getSlug()).isEqualTo(createdCategory.getSlug());
-        assertThat(fetchedCategory.getParent()).isEqualTo(Category.reference(targetProjectRootCategory.getId()));
         assertThat(fetchedCategory.getCustom()).isNotNull();
         assertThat(fetchedCategory.getKey()).isEqualTo(newCategoryKey);
     }
@@ -327,8 +324,7 @@ public class CategoryServiceIT {
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
             .key(newCategoryKey)
-            .custom(getMockCustomFieldsDraft())
-            .parent(targetProjectRootCategory)
+            .custom(getCustomFieldsDraft())
             .build();
 
         final Optional<Category> createdCategoryOptional = categoryService.createCategory(categoryDraft)
@@ -336,7 +332,7 @@ public class CategoryServiceIT {
         assertThat(createdCategoryOptional).isEmpty();
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Invalid category key '1'. Category keys may only contain "
+        assertThat(errorCallBackMessages.get(0)).contains("Invalid key '1'. Keys may only contain "
             + "alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
 
         //assert CTP state
@@ -359,12 +355,10 @@ public class CategoryServiceIT {
         final ChangeName changeNameUpdateAction = ChangeName
             .of(LocalizedString.of(Locale.GERMAN, newCategoryName));
 
-        final Optional<Category> updatedCategoryOptional = categoryService
+        final Category updatedCategory = categoryService
             .updateCategory(categoryOptional.get(), Collections.singletonList(changeNameUpdateAction))
             .toCompletableFuture().join();
-        assertThat(updatedCategoryOptional).isNotEmpty();
-
-        final Category updatedCategory = updatedCategoryOptional.get();
+        assertThat(updatedCategory).isNotNull();
 
         //assert CTP state
         final Optional<Category> fetchedCategoryOptional = CTP_TARGET_CLIENT
@@ -386,24 +380,34 @@ public class CategoryServiceIT {
 
     @Test
     public void updateCategory_WithInvalidChanges_ShouldNotUpdateCategory() {
+        // Create a mock new category in the target project.
+        final CategoryDraft newCategoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture1"))
+            .key("newCategory")
+            .custom(getCustomFieldsDraft())
+            .build();
+        final Category newCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
+                                               .toCompletableFuture().join();
+
+
         final LocalizedString newSlug = LocalizedString.of(Locale.ENGLISH, "furniture");
         final ChangeSlug changeSlugUpdateAction = ChangeSlug.of(newSlug);
 
-        final Optional<Category> updatedCategoryOptional = categoryService
-            .updateCategory(targetProjectRootCategory, Collections.singletonList(changeSlugUpdateAction))
+        categoryService.updateCategory(newCategory, Collections.singletonList(changeSlugUpdateAction))
+            .exceptionally(exception -> {
+                assertThat(exception).isNotNull();
+                assertThat(exception.getMessage()).contains("A duplicate value '\"furniture\"' exists for field"
+                    + " 'slug.en'");
+                return null;
+            })
             .toCompletableFuture().join();
 
-        assertThat(updatedCategoryOptional).isEmpty();
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("A duplicate value '\"furniture\"' exists for field"
-            + " 'slug.en'");
 
         //assert CTP state
         final Optional<Category> fetchedCategoryOptional = CTP_TARGET_CLIENT
             .execute(CategoryQuery
                 .of()
-                .withPredicates(categoryQueryModel -> categoryQueryModel.key().is(targetProjectRootCategory.getKey())))
+                .withPredicates(categoryQueryModel -> categoryQueryModel.key().is(newCategory.getKey())))
             .toCompletableFuture().join().head();
 
         assertThat(fetchedCategoryOptional).isNotEmpty();

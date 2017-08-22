@@ -18,8 +18,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetExternalIdUpdateAction;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategory;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,14 +32,12 @@ public class SetExternalIdIT {
      */
     @BeforeClass
     public static void setup() {
-        deleteRootCategory(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
-        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
             .externalId("oldExternalId")
-            .parent(targetProjectRootCategory)
             .build();
 
         oldCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
@@ -53,7 +50,7 @@ public class SetExternalIdIT {
      */
     @AfterClass
     public static void tearDown() {
-        deleteRootCategory(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
     }
 

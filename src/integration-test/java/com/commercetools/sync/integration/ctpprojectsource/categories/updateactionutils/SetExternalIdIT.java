@@ -17,9 +17,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetExternalIdUpdateAction;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategoriesFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategory;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -27,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 public class SetExternalIdIT {
-    private Category sourceProjectRootCategory;
     private static Category oldCategory;
     private List<String> callBackResponses = new ArrayList<>();
 
@@ -37,15 +34,14 @@ public class SetExternalIdIT {
      */
     @BeforeClass
     public static void setup() {
-        deleteRootCategoriesFromTargetAndSource();
+        deleteAllCategories(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
 
-        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture"))
             .externalId("externalId1")
-            .parent(targetProjectRootCategory)
             .build();
 
         oldCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
@@ -54,12 +50,11 @@ public class SetExternalIdIT {
     }
 
     /**
-     * Cleans the source CTP project, callback response collector and creates a new root category in the source.
+     * Deletes all the categories in the source CTP project and the callback response collector.
      */
     @Before
     public void setupTest() {
-        deleteRootCategory(CTP_SOURCE_CLIENT);
-        sourceProjectRootCategory = createRootCategory(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_SOURCE_CLIENT);
         callBackResponses = new ArrayList<>();
     }
 
@@ -68,7 +63,8 @@ public class SetExternalIdIT {
      */
     @AfterClass
     public static void tearDown() {
-        deleteRootCategoriesFromTargetAndSource();
+        deleteAllCategories(CTP_SOURCE_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
     }
 
@@ -77,7 +73,6 @@ public class SetExternalIdIT {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
             .externalId("externalId2")
-            .parent(sourceProjectRootCategory)
             .build();
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
                                                       .toCompletableFuture()
@@ -102,7 +97,6 @@ public class SetExternalIdIT {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
             .externalId(oldCategory.getExternalId())
-            .parent(sourceProjectRootCategory)
             .build();
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
                                                       .toCompletableFuture()

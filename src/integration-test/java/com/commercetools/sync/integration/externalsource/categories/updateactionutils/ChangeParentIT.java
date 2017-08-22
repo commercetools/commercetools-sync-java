@@ -20,8 +20,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeParentUpdateAction;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createRootCategory;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteRootCategory;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.lang.String.format;
@@ -38,14 +37,21 @@ public class ChangeParentIT {
      */
     @BeforeClass
     public static void setup() {
-        deleteRootCategory(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
 
-        final Category targetProjectRootCategory = createRootCategory(CTP_TARGET_CLIENT);
-        final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
+        final CategoryDraft oldCategoryDraftParent = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture"))
-            .externalId("oldCategoryExternalId")
-            .parent(targetProjectRootCategory)
+            .key("oldCategoryParent")
+            .build();
+        Category oldCategoryParent = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraftParent))
+                                                      .toCompletableFuture()
+                                                      .join();
+
+        final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture1"))
+            .key("oldCategory")
+            .parent(oldCategoryParent)
             .build();
         oldCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
                                        .toCompletableFuture()
@@ -68,7 +74,7 @@ public class ChangeParentIT {
      */
     @AfterClass
     public static void tearDown() {
-        deleteRootCategory(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
     }
 

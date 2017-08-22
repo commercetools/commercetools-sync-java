@@ -2,6 +2,7 @@ package com.commercetools.sync.services.impl;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -20,17 +21,20 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-
+/**
+ * Implementation of CategoryService interface.
+ * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
+ */
 public final class CategoryServiceImpl implements CategoryService {
     private final CategorySyncOptions syncOptions;
     private boolean isCached = false;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private static final String CREATE_FAILED = "Failed to create CategoryDraft with key: '%s'. Reason: %s";
     private static final String FETCH_FAILED = "Failed to fetch CategoryDrafts with keys: '%s'. Reason: %s";
-    private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
 
     public CategoryServiceImpl(@Nonnull final CategorySyncOptions syncOptions) {
         this.syncOptions = syncOptions;
@@ -42,13 +46,13 @@ public final class CategoryServiceImpl implements CategoryService {
         if (isCached) {
             return CompletableFuture.completedFuture(keyToIdCache);
         }
-        isCached = true;
-        return QueryExecutionUtils.queryAll(syncOptions.getCtpClient(), CategoryQuery.of())
-                                  .thenApply(categories -> {
-                                      categories.forEach(category ->
-                                          keyToIdCache.put(category.getKey(), category.getId()));
-                                      return keyToIdCache;
-                                  });
+
+        final Consumer<List<Category>> categoryPageConsumer = categoriesPage ->
+            categoriesPage.forEach(category -> keyToIdCache.put(category.getKey(), category.getId()));
+
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), CategoryQuery.of(), categoryPageConsumer)
+                            .thenAccept(result -> isCached = true)
+                            .thenApply(result -> keyToIdCache);
     }
 
     @Nonnull
@@ -122,20 +126,10 @@ public final class CategoryServiceImpl implements CategoryService {
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<Category>> updateCategory(@Nonnull final Category category,
+    public CompletionStage<Category> updateCategory(@Nonnull final Category category,
                                                               @Nonnull final List<UpdateAction<Category>>
                                                                   updateActions) {
         final CategoryUpdateCommand categoryUpdateCommand = CategoryUpdateCommand.of(category, updateActions);
-        return syncOptions.getCtpClient().execute(categoryUpdateCommand)
-                          .handle((updatedCategory, sphereException) -> {
-                              if (sphereException != null) {
-                                  syncOptions
-                                      .applyErrorCallback(format(UPDATE_FAILED, category.getKey(), sphereException),
-                                          sphereException);
-                                  return Optional.empty();
-                              } else {
-                                  return Optional.of(updatedCategory);
-                              }
-                          });
+        return syncOptions.getCtpClient().execute(categoryUpdateCommand);
     }
 }

@@ -9,10 +9,12 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.CategoryDeleteCommand;
+import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.types.BooleanFieldType;
 import io.sphere.sdk.types.CustomFieldsDraft;
@@ -28,53 +30,50 @@ import io.sphere.sdk.types.queries.TypeQueryBuilder;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 public class CategoryITUtils {
     public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
-    private static final String OLD_CATEGORY_CUSTOM_TYPE_NAME = "old_type_name";
-    private static final Locale LOCALE = Locale.ENGLISH;
+    public static final String OLD_CATEGORY_CUSTOM_TYPE_NAME = "old_type_name";
     public static final String LOCALISED_STRING_CUSTOM_FIELD_NAME = "backgroundColor";
     public static final String BOOLEAN_CUSTOM_FIELD_NAME = "invisibleInShop";
-    private static final String ROOT_CATEGORY_KEY = "rootCategoryKey";
-    private static final String ROOT_CATEGORY_ORDER_HINT = "0.1";
 
     /**
      * Builds a list of the supplied number ({@code numberOfCategories}) of CategoryDraft objects that can be used for
-     * integration tests to mock existing categories in a target CTP project for example. All the newly created category
-     * drafts will have {@code parentCategory} as a parent.
+     * integration tests to mimic existing categories in a target CTP project for example. All the newly created
+     * category drafts will have {@code parentCategory} as a parent.
      *
      * @param numberOfCategories the number of category drafts to create.
      * @param parentCategory     the parent of the drafts.
      * @return a list of CategoryDrafts.
      */
-    public static List<CategoryDraft> getMockCategoryDrafts(@Nullable final Category parentCategory,
-                                                            final int numberOfCategories) {
+    public static List<CategoryDraft> getCategoryDrafts(@Nullable final Category parentCategory,
+                                                        final int numberOfCategories) {
         List<CategoryDraft> categoryDrafts = new ArrayList<>();
         for (int i = 0; i < numberOfCategories; i++) {
-            final LocalizedString name = LocalizedString.of(Locale.ENGLISH, format("draft%s", i));
-            final LocalizedString slug = LocalizedString.of(Locale.ENGLISH, format("slug%s", i));
-            final LocalizedString description = LocalizedString.of(Locale.ENGLISH, format("desc%s", i));
+            final LocalizedString name = LocalizedString.of(Locale.ENGLISH, format("draft%s", i + 1));
+            final LocalizedString slug = LocalizedString.of(Locale.ENGLISH, format("slug%s", i + 1));
+            final LocalizedString description = LocalizedString.of(Locale.ENGLISH, format("desc%s", i + 1));
             final String key = format("key%s", i + 1);
-            final String orderHint = format("0.%s", i);
+            final String orderHint = format("0.%s", i + 1);
             final CategoryDraft categoryDraft = CategoryDraftBuilder.of(name, slug)
                                                                     .parent(parentCategory)
                                                                     .description(description)
                                                                     .key(key)
                                                                     .orderHint(orderHint)
-                                                                    .custom(getMockCustomFieldsDraft())
+                                                                    .custom(getCustomFieldsDraft())
                                                                     .build();
             categoryDrafts.add(categoryDraft);
         }
@@ -83,7 +82,7 @@ public class CategoryITUtils {
 
     /**
      * Builds a list of the supplied number ({@code numberOfCategories}) of CategoryDraft objects (with a customized
-     * prefix string for the name, slug and description) that can be used for integration tests to mock existing
+     * prefix string for the name, slug and description) that can be used for integration tests to mimic existing
      * categories in a target CTP project for example. All the newly created category drafts will have
      * {@code parentCategory} as a parent.
      *
@@ -91,12 +90,13 @@ public class CategoryITUtils {
      * @param parentCategory     the parent of the drafts.
      * @return a list of CategoryDrafts.
      */
-    public static List<CategoryDraft> getMockCategoryDraftsWithPrefix(@Nonnull final Locale locale,
-                                                                      @Nonnull final String prefix,
-                                                                      @Nullable final Category parentCategory,
-                                                                      final int numberOfCategories) {
-        List<CategoryDraft> categoryDrafts = new ArrayList<>();
-        for (CategoryDraft categoryDraft : getMockCategoryDrafts(parentCategory, numberOfCategories)) {
+    public static List<CategoryDraft> getCategoryDraftsWithPrefix(@Nonnull final Locale locale,
+                                                                  @Nonnull final String prefix,
+                                                                  @Nullable final Category parentCategory,
+                                                                  final int numberOfCategories) {
+        final List<CategoryDraft> categoryDraftsWithPrefix = new ArrayList<>();
+        final List<CategoryDraft> categoryDrafts = getCategoryDrafts(parentCategory, numberOfCategories);
+        for (CategoryDraft categoryDraft : categoryDrafts) {
             final LocalizedString newCategoryName = LocalizedString.of(locale,
                 format("%s%s", prefix, categoryDraft.getName().get(locale)));
             final LocalizedString newCategorySlug = LocalizedString.of(locale,
@@ -107,9 +107,9 @@ public class CategoryITUtils {
                                                                                   .name(newCategoryName)
                                                                                   .slug(newCategorySlug)
                                                                                   .description(newCategoryDescription);
-            categoryDrafts.add(categoryDraftBuilder.build());
+            categoryDraftsWithPrefix.add(categoryDraftBuilder.build());
         }
-        return categoryDrafts;
+        return categoryDraftsWithPrefix;
     }
 
     /**
@@ -127,7 +127,7 @@ public class CategoryITUtils {
      * @return the list of Categories created.
      */
     public static List<Category> createChildren(final int numberOfChildren,
-                                                @Nonnull final Category parent,
+                                                @Nullable final Category parent,
                                                 @Nonnull final String prefix,
                                                 @Nonnull final SphereClient ctpClient) {
         final List<Category> children = new ArrayList<>();
@@ -138,7 +138,8 @@ public class CategoryITUtils {
                     LocalizedString.of(Locale.ENGLISH, categoryName))
                 .key(categoryName)
                 .parent(parent)
-                .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons()))
+                .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+                .orderHint("sameOrderHint")
                 .build();
             final Category createdChild = ctpClient.execute(CategoryCreateCommand.of(child))
                                                    .toCompletableFuture().join();
@@ -148,27 +149,27 @@ public class CategoryITUtils {
     }
 
     /**
-     * Creates a mock instance of {@link CustomFieldsDraft} with the key defined by {@code OLD_CATEGORY_CUSTOM_TYPE_KEY}
-     * and two custom fields 'invisibleInShop' and'backgroundColor'.
+     * Creates a dummy instance of {@link CustomFieldsDraft} with the key defined by
+     * {@code OLD_CATEGORY_CUSTOM_TYPE_KEY} and two custom fields 'invisibleInShop' and'backgroundColor'.
      *
      * <p>The 'invisibleInShop' field is of type {@code boolean} and has value {@code false} and the
      * the 'backgroundColor' field is of type {@code localisedString} and has the values {"de": "rot", "en": "red"}
      *
-     * @return a mock instance of {@link CustomFieldsDraft} with some hardcoded custom fields and key.
+     * @return a dummy instance of {@link CustomFieldsDraft} with some hardcoded custom fields and key.
      */
-    public static CustomFieldsDraft getMockCustomFieldsDraft() {
-        return CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsJsons());
+    public static CustomFieldsDraft getCustomFieldsDraft() {
+        return CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons());
     }
 
     /**
-     * Builds a mock {@link Map} for the custom fields to their {@link JsonNode} values that looks like that in JSON
+     * Builds a {@link Map} for the custom fields to their {@link JsonNode} values that looks like that in JSON
      * format:
      *
      * <p>"fields": {"invisibleInShop": false, "backgroundColor": { "en": "red", "de": "rot"}}
      *
-     * @return a Map of the custom fields to their JSON values with mock data.
+     * @return a Map of the custom fields to their JSON values with dummy data.
      */
-    public static Map<String, JsonNode> getMockCustomFieldsJsons() {
+    public static Map<String, JsonNode> getCustomFieldsJsons() {
         final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
         customFieldsJsons.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false));
         customFieldsJsons
@@ -199,26 +200,6 @@ public class CategoryITUtils {
         }
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
                          .toCompletableFuture().join();
-    }
-
-    /**
-     * it also creates a custom type for which the created categories can use for their custom
-     * fields.
-     *
-     * @param ctpClient defines the CTP project to create the root category in.
-     */
-    public static Category createRootCategory(@Nonnull final SphereClient ctpClient) {
-        createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, LOCALE, OLD_CATEGORY_CUSTOM_TYPE_NAME, ctpClient);
-        final CategoryDraft rootCategoryDraft = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "rootCategory"),
-                LocalizedString.of(Locale.ENGLISH, "root-category", Locale.GERMAN, "root-category"))
-            .description(LocalizedString.of(Locale.ENGLISH, "root Category"))
-            .key(ROOT_CATEGORY_KEY)
-            .orderHint(ROOT_CATEGORY_ORDER_HINT)
-            .build();
-        return ctpClient.execute(CategoryCreateCommand.of(rootCategoryDraft))
-                        .toCompletableFuture()
-                        .join();
     }
 
     /**
@@ -294,83 +275,46 @@ public class CategoryITUtils {
 
     }
 
-    /**
-     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} categories from CTP
-     * projects {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
-     */
-    public static void deleteRootCategoriesFromTargetAndSource() {
-        deleteRootCategory(CTP_TARGET_CLIENT);
-        deleteRootCategory(CTP_SOURCE_CLIENT);
-    }
 
     /**
      * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} categories from CTP
-     * projects defined by the {@code ctpClient}.
+     * projects defined by the {@code ctpClient}. Only issues delete request action to a category in the case that none
+     * of its ancestors was already deleted or not to avoid trying to delete a category which would have been already
+     * deleted, due to deletion of an ancestor of it. As a performance improvement, this method sorts categories by
+     * least ancestors for faster deletion (due to deletion ancestors always first, which in turn deletes all the
+     * children and grand children.
+     *
      *
      * @param ctpClient defines the CTP project to delete the categories from.
      */
-    public static void deleteRootCategory(@Nonnull final SphereClient ctpClient) {
-        ctpClient.execute(CategoryQuery.of().withPredicates(categoryQueryModel ->
-            categoryQueryModel.key().is(ROOT_CATEGORY_KEY)))
-                 .thenAccept(result -> result.head()
-                                             .ifPresent(category -> ctpClient
-                                                 .execute(CategoryDeleteCommand.of(category))
-                                                 .toCompletableFuture().join()))
-                 .toCompletableFuture().join();
+    public static void deleteAllCategories(@Nonnull final SphereClient ctpClient) {
+        final Set<String> keys = new HashSet<>();
+        final List<Category> categories = QueryExecutionUtils.queryAll(ctpClient,
+            CategoryQuery.of().withExpansionPaths(CategoryExpansionModel::ancestors))
+                                                             .thenApply(CategoryITUtils::sortCategoriesByLeastAncestors)
+                                                             .toCompletableFuture().join();
+        categories.forEach(category -> {
+            final String categoryKey = category.getKey();
+            if (!hasADeletedAncestor(category, keys)) {
+                ctpClient.execute(CategoryDeleteCommand.of(category))
+                         .thenAccept(deletedCategory -> keys.add(categoryKey))
+                         .toCompletableFuture().join();
+            }
+        });
     }
 
-    /**
-     * Takes a list of Categories that are supposed to have their custom type and parent category reference expanded
-     * in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return
-     * a new list of category drafts with their references containing keys instead of the ids.
-     *
-     * @param categories the categories to replace their reference ids with keys
-     * @return a list of category drafts with keys instead of ids for references.
-     */
-    public static List<CategoryDraft> replaceReferenceIdsWithKeys(@Nonnull final List<Category> categories) {
-        return categories
-            .stream()
-            .map(category -> {
-                CustomFieldsDraft customFieldsDraft = null;
-                Reference<Category> parentReference = null;
-
-                if (category.getCustom() != null && category.getCustom().getType().getObj() != null) {
-                    customFieldsDraft = CustomFieldsDraft
-                        .ofTypeIdAndJson(category.getCustom().getType().getObj().getKey(),
-                            category.getCustom().getFieldsJsonMap());
-                }
-
-                if (category.getParent() != null && category.getParent().getObj() != null) {
-                    parentReference = Category.referenceOfId(category.getParent().getObj().getKey());
-                }
-                return CategoryDraftBuilder.of(category)
-                                           .custom(customFieldsDraft)
-                                           .parent(parentReference)
-                                           .build();
-            })
-            .collect(Collectors.toList());
+    private static List<Category> sortCategoriesByLeastAncestors(@Nonnull final List<Category> categories) {
+        categories.sort(Comparator.comparingInt(category -> category.getAncestors().size()));
+        return categories;
     }
 
-    /**
-     * Given a list of {@link CategoryDraft} elements and a {@code batchSize}, this method separates the drafts into
-     * batches with the {@code batchSize}. Each batch is represented by a {@link List}&lt;{@link CategoryDraft}&gt;
-     * and all the batches are grouped and represented by an
-     * {@link List}&lt;{@link List}&lt;{@link CategoryDraft}&gt;&gt;, which is returned by the method.
-     *
-     * @param categoryDrafts the list of drafts to split into batches.
-     * @param batchSize      the size of each batch.
-     * @return a {@link List}&lt;{@link List}&lt;{@link CategoryDraft}&gt;&gt; where each
-     *          {@link List}&lt;{@link CategoryDraft}&gt; represents a batch of {@link CategoryDraft}.
-     */
-    public static List<List<CategoryDraft>> batchCategories(@Nonnull final List<CategoryDraft> categoryDrafts,
-                                                            final int batchSize) {
-        List<List<CategoryDraft>> batches = new ArrayList<>();
-        for (int i = 0; i < categoryDrafts.size(); i += batchSize) {
-            batches.add(categoryDrafts.subList(i,
-                Math.min(i + batchSize, categoryDrafts.size())));
-        }
-        return batches;
+    private static boolean hasADeletedAncestor(@Nonnull final Category category,
+                                               @Nonnull final Set<String> keysOfDeletedAncestors) {
+        final List<Reference<Category>> categoryAncestors = category.getAncestors();
+        return categoryAncestors.stream().anyMatch(ancestor ->
+            keysOfDeletedAncestors.contains(ancestor.getObj().getKey()));
     }
+
 
     /**
      * Given a list of {@link CategoryDraft} batches represented by a
