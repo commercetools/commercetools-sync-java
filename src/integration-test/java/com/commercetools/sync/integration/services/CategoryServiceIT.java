@@ -211,7 +211,7 @@ public class CategoryServiceIT {
 
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Invalid category key '1'. Category keys may only contain "
+        assertThat(errorCallBackMessages.get(0)).contains("Invalid key '1'. Keys may only contain "
             + "alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
         assertThat(createdCategories).hasSize(1);
     }
@@ -243,7 +243,7 @@ public class CategoryServiceIT {
         assertThat(errorCallBackMessages).hasSize(2);
         // Since the order of creation is not ensured by allOf, so we assert in list of error messages (as string):
         LOGGER.debug(errorCallBackMessages.toString());
-        assertThat(errorCallBackMessages.toString()).contains("Invalid category key '1'. Category keys may only contain"
+        assertThat(errorCallBackMessages.toString()).contains("Invalid key '1'. Keys may only contain"
             + " alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
         assertThat(errorCallBackMessages.toString()).contains(" A duplicate value '\"furniture\"' exists for field "
             + "'slug.en'");
@@ -332,7 +332,7 @@ public class CategoryServiceIT {
         assertThat(createdCategoryOptional).isEmpty();
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Invalid category key '1'. Category keys may only contain "
+        assertThat(errorCallBackMessages.get(0)).contains("Invalid key '1'. Keys may only contain "
             + "alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
 
         //assert CTP state
@@ -355,12 +355,10 @@ public class CategoryServiceIT {
         final ChangeName changeNameUpdateAction = ChangeName
             .of(LocalizedString.of(Locale.GERMAN, newCategoryName));
 
-        final Optional<Category> updatedCategoryOptional = categoryService
+        final Category updatedCategory = categoryService
             .updateCategory(categoryOptional.get(), Collections.singletonList(changeNameUpdateAction))
             .toCompletableFuture().join();
-        assertThat(updatedCategoryOptional).isNotEmpty();
-
-        final Category updatedCategory = updatedCategoryOptional.get();
+        assertThat(updatedCategory).isNotNull();
 
         //assert CTP state
         final Optional<Category> fetchedCategoryOptional = CTP_TARGET_CLIENT
@@ -395,15 +393,15 @@ public class CategoryServiceIT {
         final LocalizedString newSlug = LocalizedString.of(Locale.ENGLISH, "furniture");
         final ChangeSlug changeSlugUpdateAction = ChangeSlug.of(newSlug);
 
-        final Optional<Category> updatedCategoryOptional = categoryService
-            .updateCategory(newCategory, Collections.singletonList(changeSlugUpdateAction))
+        categoryService.updateCategory(newCategory, Collections.singletonList(changeSlugUpdateAction))
+            .exceptionally(exception -> {
+                assertThat(exception).isNotNull();
+                assertThat(exception.getMessage()).contains("A duplicate value '\"furniture\"' exists for field"
+                    + " 'slug.en'");
+                return null;
+            })
             .toCompletableFuture().join();
 
-        assertThat(updatedCategoryOptional).isEmpty();
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("A duplicate value '\"furniture\"' exists for field"
-            + " 'slug.en'");
 
         //assert CTP state
         final Optional<Category> fetchedCategoryOptional = CTP_TARGET_CLIENT

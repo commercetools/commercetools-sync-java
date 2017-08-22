@@ -36,11 +36,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -249,32 +247,5 @@ public class InventoryITUtils {
         final TypeQuery typeQuery = TypeQueryBuilder.of().plusPredicates(typeQueryModel ->
             typeQueryModel.key().is(typeKey)).build();
         return sphereClient.execute(typeQuery).toCompletableFuture().join().head();
-    }
-
-    /**
-     * Takes a list of inventoryEntries that are supposed to have their custom type reference expanded
-     * in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return
-     * a new list of inventory entry drafts with their references containing keys instead of the ids.
-     *
-     * @param inventoryEntries the categories to replace their reference ids with keys
-     * @return a list of inventoryEntry drafts with keys instead of ids for references.
-     */
-    public static List<InventoryEntryDraft> replaceReferenceIdsWithKeys(@Nonnull final List<InventoryEntry>
-                                                                            inventoryEntries) {
-        return inventoryEntries
-            .stream()
-            .map(inventoryEntry -> {
-                CustomFieldsDraft customFieldsDraft = null;
-
-                if (inventoryEntry.getCustom() != null && inventoryEntry.getCustom().getType().getObj() != null) {
-                    customFieldsDraft = CustomFieldsDraft
-                        .ofTypeIdAndJson(inventoryEntry.getCustom().getType().getObj().getKey(),
-                            inventoryEntry.getCustom().getFieldsJsonMap());
-                }
-                return InventoryEntryDraftBuilder.of(inventoryEntry)
-                                           .custom(customFieldsDraft)
-                                           .build();
-            })
-            .collect(Collectors.toList());
     }
 }
