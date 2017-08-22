@@ -12,6 +12,7 @@ import java.util.function.Function;
 
 public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<CategorySyncOptionsBuilder,
     CategorySyncOptions> {
+    public static final int BATCH_SIZE_DEFAULT = 50;
     private Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter;
 
     private CategorySyncOptionsBuilder(@Nonnull final SphereClient ctpClient) {
@@ -20,13 +21,14 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
 
     /**
      * Creates a new instance of {@link CategorySyncOptionsBuilder} given a {@link SphereClient} responsible for
-     * interaction with the target CTP project.
+     * interaction with the target CTP project, with the dafult batch size ({@code BATCH_SIZE_DEFAULT} = 50).
      *
      * @param ctpClient instance of the {@link SphereClient} responsible for interaction with the target CTP project.
      * @return new instance of {@link CategorySyncOptionsBuilder}
      */
     public static CategorySyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
-        return new CategorySyncOptionsBuilder(ctpClient);
+        return new CategorySyncOptionsBuilder(ctpClient)
+            .setBatchSize(BATCH_SIZE_DEFAULT);
     }
 
     /**
@@ -54,6 +56,7 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
             this.ctpClient,
             this.errorCallBack,
             this.warningCallBack,
+            this.batchSize,
             this.removeOtherLocales,
             this.removeOtherSetEntries,
             this.removeOtherCollectionEntries,

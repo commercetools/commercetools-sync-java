@@ -30,6 +30,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
     ProductSyncOptions(@Nonnull final SphereClient ctpClient,
                        @Nonnull final BiConsumer<String, Throwable> errorCallBack,
                        @Nonnull final Consumer<String> warningCallBack,
+                       final int batchSize,
                        final boolean removeOtherLocales,
                        final boolean removeOtherSetEntries,
                        final boolean removeOtherCollectionEntries,
@@ -42,7 +43,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
                        @Nonnull final List<String> blackList,
                        @Nonnull final Function<List<UpdateAction<Product>>,
                            List<UpdateAction<Product>>> filterActions) {
-        super(ctpClient, errorCallBack, warningCallBack, removeOtherLocales, removeOtherSetEntries,
+        super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherLocales, removeOtherSetEntries,
             removeOtherCollectionEntries, removeOtherProperties, allowUuid);
         this.compareStaged = compareStaged;
         this.publish = publish;

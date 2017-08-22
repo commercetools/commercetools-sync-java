@@ -17,6 +17,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchDrafts;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -39,6 +41,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private static final String CATEGORY_DRAFT_IS_NULL = "CategoryDraft is null.";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
         + "CategoryDraft with key:'%s'. Reason: %s";
+    private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
 
     private final CategoryService categoryService;
     private final CategoryReferenceResolver referenceResolver;
@@ -84,6 +87,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         super(new CategorySyncStatistics(), syncOptions);
         this.categoryService = categoryService;
         this.referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
+        this.statistics.setCategoryKeysWithMissingParents(categoryKeysWithMissingParents);
     }
 
     /**
@@ -105,6 +109,40 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     @Override
     protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<CategoryDraft> categoryDrafts) {
+        final List<List<CategoryDraft>> batches = batchDrafts(categoryDrafts, syncOptions.getBatchSize());
+        return syncBatches(batches, CompletableFuture.completedFuture(statistics));
+    }
+
+    @Override
+    protected CompletionStage<CategorySyncStatistics> syncBatches(@Nonnull final List<List<CategoryDraft>> batches,
+                                                                  @Nonnull final
+                                                                  CompletionStage<CategorySyncStatistics> result) {
+        if (batches.isEmpty()) {
+            return result;
+        }
+        final List<CategoryDraft> firstBatch = batches.remove(0);
+        return syncBatches(batches, result.thenCompose(subResult -> processBatch(firstBatch)));
+    }
+
+    /**
+     * Given a list of {@code CategoryDraft} that represent a batch of category drafts, this method for the first batch
+     * only caches a list of all the categories in the CTP project in a cached map that representing each category's
+     * key to the id. It then validates the category drafts, then resolves all the references. Then it creates all
+     * categories that need to be created in parallel while keeping track of the categories that have their
+     * non-existing parents. Then it does update actions that don't require parent changes in parallel. Then in a
+     * blocking fashion issues update actions that don't involve parent changes sequentially.
+     *
+     * <p>More on the exact implementation of how the sync works here:
+     * https://github.com/commercetools/commercetools-sync-java/wiki/Category-Sync-Underlying-Concept
+     *
+     *
+     * @param categoryDrafts the list of new category drafts to sync to the CTP project.
+     * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of
+     * {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
+     * {@link this} {@link CategorySync}.
+     */
+    @Override
+    protected CompletionStage<CategorySyncStatistics> processBatch(@Nonnull final List<CategoryDraft> categoryDrafts) {
         final int numberOfNewDraftsToProcess = getNumberOfProcessedCategories(categoryDrafts);
         referencesResolvedDrafts = new HashSet<>();
         existingCategoryDrafts = new HashSet<>();
@@ -492,10 +530,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> buildUpdateActionsAndUpdate(@Nonnull final Category oldCategory,
-                                                              @Nonnull final CategoryDraft newCategory) {
+                                                                  @Nonnull final CategoryDraft newCategory) {
         final List<UpdateAction<Category>> updateActions = buildActions(oldCategory, newCategory, syncOptions);
         if (!updateActions.isEmpty()) {
-            return updateCategory(oldCategory, updateActions);
+            return updateCategory(oldCategory, newCategory, updateActions);
         }
         return CompletableFuture.completedFuture(null);
     }
@@ -504,7 +542,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     /**
      * Given a {@link Category} and a {@link List} of {@link UpdateAction} elements, this method issues a request to
      * the CTP project defined by the client configuration stored in the {@code syncOptions} instance
-     * of this class to update the specified category with this list of update actions.
+     * of this class to update the specified category with this list of update actions. If the update request failed
+     * due to a {@link ConcurrentModificationException}, the method recalculates the update actions required for
+     * syncing the {@link Category} and reissues the update request.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
      * out successfully or not. If an exception was thrown on executing the request to CTP,
@@ -515,11 +555,16 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @return a future which contains an empty result after execution of the update.
      */
     private CompletionStage<Void> updateCategory(@Nonnull final Category category,
+                                                 @Nonnull final CategoryDraft newCategory,
                                                  @Nonnull final List<UpdateAction<Category>> updateActions) {
         final String categoryKey = category.getKey();
         return categoryService.updateCategory(category, updateActions)
-                              .thenAccept(updatedCategory -> {
-                                  if (updatedCategory.isPresent()) {
+                              .handle((updatedCategory, sphereException) -> sphereException)
+                              .thenCompose(sphereException -> {
+                                  if (sphereException != null) {
+                                      return retryIfConcurrentModificationException(sphereException, category,
+                                          newCategory);
+                                  } else {
                                       if (!processedCategoryKeys.contains(categoryKey)) {
                                           statistics.incrementUpdated();
                                           processedCategoryKeys.add(categoryKey);
@@ -527,15 +572,37 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                       if (categoryKeysWithResolvedParents.contains(categoryKey)) {
                                           removeUpdatedCategoryFromMissingParentsMap(categoryKey);
                                       }
-                                  } else {
-                                      // TODO: GH ISSUE #30, #31: check if updated category is empty, it means an error
-                                      // TODO: occurred during update.
-                                      if (!processedCategoryKeys.contains(categoryKey)) {
-                                          statistics.incrementFailed();
-                                          processedCategoryKeys.add(categoryKey);
-                                      }
+                                      return CompletableFuture.completedFuture(null);
                                   }
                               });
+    }
+
+    /**
+     * This method checks if the {@code sphereException} (thrown when trying to sync the old {@link Category} and the
+     * new {@link CategoryDraft}) is an instance of {@link ConcurrentModificationException}. If it is, then calls the
+     * method {@link CategorySync#buildUpdateActionsAndUpdate(Category, CategoryDraft)} to rebuild update actions and
+     * reissue the CTP update request. Otherwise, if it is not an instance of a {@link ConcurrentModificationException}
+     * then it is counted as a failed category to sync.
+     *
+     * @param sphereException the sphere exception thrown after issuing an update request.
+     * @param category the category to update.
+     * @param newCategory the new category draft to sync data from.
+     * @return a future which contains an empty result after execution of the update.
+     */
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    private CompletionStage<Void> retryIfConcurrentModificationException(
+        @Nonnull final Throwable sphereException, @Nonnull final Category category,
+        @Nonnull final CategoryDraft newCategory) {
+        if (sphereException instanceof ConcurrentModificationException) {
+            return buildUpdateActionsAndUpdate(category, newCategory);
+        } else {
+            final String categoryKey = category.getKey();
+            if (!processedCategoryKeys.contains(categoryKey)) {
+                handleError(format(UPDATE_FAILED, categoryKey, sphereException), sphereException);
+                processedCategoryKeys.add(categoryKey);
+            }
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     /**
@@ -562,7 +629,4 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         syncOptions.applyErrorCallback(errorMessage, exception);
         statistics.incrementFailed();
     }
-
-
-
 }

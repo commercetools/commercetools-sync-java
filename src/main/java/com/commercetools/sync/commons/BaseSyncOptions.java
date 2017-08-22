@@ -11,6 +11,7 @@ public class BaseSyncOptions {
     private final SphereClient ctpClient;
     private final BiConsumer<String, Throwable> errorCallBack;
     private final Consumer<String> warningCallBack;
+    private int batchSize;
     private boolean removeOtherLocales = true;
     private boolean removeOtherSetEntries = true;
     private boolean removeOtherCollectionEntries = true;
@@ -20,6 +21,7 @@ public class BaseSyncOptions {
     protected BaseSyncOptions(@Nonnull final SphereClient ctpClient,
                               final BiConsumer<String, Throwable> errorCallBack,
                               final Consumer<String> warningCallBack,
+                              final int batchSize,
                               final boolean removeOtherLocales,
                               final boolean removeOtherSetEntries,
                               final boolean removeOtherCollectionEntries,
@@ -27,6 +29,7 @@ public class BaseSyncOptions {
                               final boolean allowUuid) {
         this.ctpClient = ctpClient;
         this.errorCallBack = errorCallBack;
+        this.batchSize = batchSize;
         this.warningCallBack = warningCallBack;
         this.removeOtherLocales = removeOtherLocales;
         this.removeOtherSetEntries = removeOtherSetEntries;
@@ -158,5 +161,20 @@ public class BaseSyncOptions {
      */
     public boolean shouldAllowUuidKeys() {
         return allowUuid;
+    }
+
+    /**
+     * Gets the batch size used in the sync process. During the sync there is a need for fetching existing
+     * resources so that they can be compared with the new resource drafts. That's why the input is sliced into
+     * batches and then processed. It allows to reduce the query size for fetching all resources processed in one
+     * batch.
+     * E.g. value of 30 means that 30 entries from input list would be accumulated and one API call will be performed
+     * for fetching entries responding to them. Then comparision and sync are performed.
+     *
+     * <p>This batch size is set to 30 by default.
+     * @return option that indicates capacity of batch of resources to process.
+     */
+    public int getBatchSize() {
+        return batchSize;
     }
 }

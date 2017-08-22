@@ -98,7 +98,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         final List<InventoryEntryDraft> validInventories = inventories.stream()
             .filter(this::validateDraft)
             .collect(toList());
-        final List<CompletableFuture<Void>> completableFutures = IntStream
+        final List<CompletableFuture<InventorySyncStatistics>> completableFutures = IntStream
             .range(0, calculateAmountOfBatches(validInventories.size()))
             .mapToObj(batchIndex -> getBatch(batchIndex, validInventories))
             .map(this::processBatch)
@@ -109,6 +109,17 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 statistics.incrementProcessed(inventories.size());
                 return statistics;
             });
+    }
+
+    @Override
+    protected CompletionStage<InventorySyncStatistics> syncBatches(
+        @Nonnull final List<List<InventoryEntryDraft>> batches,
+        @Nonnull final CompletionStage<InventorySyncStatistics> result) {
+        if (batches.isEmpty()) {
+            return result;
+        }
+        final List<InventoryEntryDraft> firstBatch = batches.remove(0);
+        return syncBatches(batches, result.thenCompose(subResult -> processBatch(firstBatch)));
     }
 
     /**
@@ -163,11 +174,12 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param batchOfDrafts batch of drafts that need to be synced
      * @return {@link CompletionStage} of {@link Void} that indicates method progress.
      */
-    private CompletionStage<Void> processBatch(@Nonnull final List<InventoryEntryDraft> batchOfDrafts) {
+    protected CompletionStage<InventorySyncStatistics> processBatch(
+        @Nonnull final List<InventoryEntryDraft> batchOfDrafts) {
         return fetchExistingInventories(batchOfDrafts)
             .thenCompose(oldInventoriesOptional -> oldInventoriesOptional
                 .map(oldInventories -> syncBatch(oldInventories, batchOfDrafts))
-                .orElseGet(() -> completedFuture(null)));
+                .orElseGet(() -> completedFuture(statistics)));
     }
 
     /**
@@ -201,7 +213,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param inventoryEntryDrafts drafts that need to be synced
      * @return a future which contains an empty result after execution of the update
      */
-    private CompletionStage<Void> syncBatch(@Nonnull final List<InventoryEntry> oldInventories,
+    private CompletionStage<InventorySyncStatistics> syncBatch(@Nonnull final List<InventoryEntry> oldInventories,
                                             @Nonnull final List<InventoryEntryDraft> inventoryEntryDrafts) {
         final Map<InventoryEntryIdentifier , InventoryEntry> identifierToOldInventoryEntry = oldInventories
             .stream().collect(toMap(InventoryEntryIdentifier::of, identity()));
@@ -218,7 +230,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                                              return null;
                                          })
                                          .toCompletableFuture()));
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
+                                .thenApply(result -> statistics);
     }
 
     /**
