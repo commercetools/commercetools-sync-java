@@ -56,7 +56,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
                                                                                   InventoryEntryDraft draft) {
         final CustomFieldsDraft custom = draft.getCustom();
         if (custom != null) {
-            return getCustomTypeId(draft, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draft.getSku()))
+            return getCustomTypeId(custom, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draft.getSku()))
                 .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional
                     .map(resolvedTypeId -> InventoryEntryDraftBuilder
                         .of(draft).custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields()))

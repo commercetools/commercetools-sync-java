@@ -14,7 +14,6 @@ import io.sphere.sdk.utils.CompletableFutureUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.regex.Pattern;
 
@@ -74,29 +73,24 @@ public abstract class BaseReferenceResolver<T extends CustomDraft, S extends Bas
     protected abstract CompletionStage<T> resolveCustomTypeReference(@Nonnull final T draft);
 
     /**
-     * Given a draft of {@link T} (e.g. {@link CategoryDraft}) this method fetches the custom type reference id.
+     * Given a custom fields object this method fetches the custom type reference id.
      *
-     * @param draft                           draft the draft to fetch it's type key.
+     * @param custom                          the custom fields object.
      * @param referenceResolutionErrorMessage the message containing the information about the draft to attach to the
      *                                        {@link ReferenceResolutionException} in case it occurs.
      * @return a {@link CompletionStage} that contains as a result an optional which either contains the custom type id
      *      if it exists or empty if it doesn't.
      */
-    protected CompletionStage<Optional<String>> getCustomTypeId(@Nonnull final T draft,
+    protected CompletionStage<Optional<String>> getCustomTypeId(@Nonnull final CustomFieldsDraft custom,
                                                                 @Nonnull final String referenceResolutionErrorMessage) {
-        final CustomFieldsDraft custom = draft.getCustom();
-        if (custom != null) {
-            try {
-                final String customTypeKey = getKeyFromResourceIdentifier(custom.getType());
-                return typeService.fetchCachedTypeId(customTypeKey);
-            } catch (ReferenceResolutionException exception) {
-                return CompletableFutureUtils.exceptionallyCompletedFuture(
-                    new ReferenceResolutionException(
-                        format(CUSTOM_TYPE_REFERENCE_RESOLUTION_ERROR, referenceResolutionErrorMessage,
-                            exception.getMessage()), exception));
-            }
-        } else {
-            return CompletableFuture.completedFuture(Optional.empty());
+        try {
+            final String customTypeKey = getKeyFromResourceIdentifier(custom.getType());
+            return typeService.fetchCachedTypeId(customTypeKey);
+        } catch (ReferenceResolutionException exception) {
+            return CompletableFutureUtils.exceptionallyCompletedFuture(
+                new ReferenceResolutionException(
+                    format(CUSTOM_TYPE_REFERENCE_RESOLUTION_ERROR, referenceResolutionErrorMessage,
+                        exception.getMessage()), exception));
         }
     }
 

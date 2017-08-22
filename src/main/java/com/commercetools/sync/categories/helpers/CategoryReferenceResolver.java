@@ -56,7 +56,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
     protected CompletionStage<CategoryDraft> resolveCustomTypeReference(@Nonnull final CategoryDraft categoryDraft) {
         final CustomFieldsDraft custom = categoryDraft.getCustom();
         if (custom != null) {
-            return getCustomTypeId(categoryDraft, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, categoryDraft.getKey()))
+            return getCustomTypeId(custom, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, categoryDraft.getKey()))
                 .thenApply(resolvedTypeIdOptional ->
                     resolvedTypeIdOptional.map(resolvedTypeId ->
                         CategoryDraftBuilder.of(categoryDraft)
