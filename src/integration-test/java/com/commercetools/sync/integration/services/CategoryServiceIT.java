@@ -211,7 +211,7 @@ public class CategoryServiceIT {
 
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Invalid category key '1'. Category keys may only contain "
+        assertThat(errorCallBackMessages.get(0)).contains("Invalid key '1'. Keys may only contain "
             + "alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
         assertThat(createdCategories).hasSize(1);
     }
@@ -243,7 +243,7 @@ public class CategoryServiceIT {
         assertThat(errorCallBackMessages).hasSize(2);
         // Since the order of creation is not ensured by allOf, so we assert in list of error messages (as string):
         LOGGER.debug(errorCallBackMessages.toString());
-        assertThat(errorCallBackMessages.toString()).contains("Invalid category key '1'. Category keys may only contain"
+        assertThat(errorCallBackMessages.toString()).contains("Invalid key '1'. Keys may only contain"
             + " alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
         assertThat(errorCallBackMessages.toString()).contains(" A duplicate value '\"furniture\"' exists for field "
             + "'slug.en'");
@@ -332,7 +332,7 @@ public class CategoryServiceIT {
         assertThat(createdCategoryOptional).isEmpty();
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Invalid category key '1'. Category keys may only contain "
+        assertThat(errorCallBackMessages.get(0)).contains("Invalid key '1'. Keys may only contain "
             + "alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
 
         //assert CTP state
