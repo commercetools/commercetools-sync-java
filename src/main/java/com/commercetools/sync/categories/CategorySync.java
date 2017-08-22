@@ -289,16 +289,16 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     }
 
     /**
-     * Checks if the category with the given {@code categoryKey} exists or not, by checking if its key is not null but
-     * also doesn't exist in the {@code keyToIdCache} map.
+     * Checks if the category with the given {@code categoryKey} exists or not, by checking if its key
+     * exists in the {@code keyToIdCache} map.
      *
      * @param categoryKey  the key of the category to check for existence.
      * @param keyToIdCache the cache of existing category keys to ids.
      * @return true or false, whether the category exists or not.
      */
-    private boolean isMissingCategory(@Nullable final String categoryKey,
-                                   @Nonnull final Map<String, String> keyToIdCache) {
-        return categoryKey != null && !keyToIdCache.containsKey(categoryKey);
+    private boolean isMissingCategory(@Nonnull final String categoryKey,
+                                      @Nonnull final Map<String, String> keyToIdCache) {
+        return !keyToIdCache.containsKey(categoryKey);
     }
 
     /**
