@@ -88,6 +88,6 @@ public interface CategoryService {
      *      {@link Category} which was updated in the CTP project or a {@link io.sphere.sdk.models.SphereException}.
      */
     @Nonnull
-    CompletionStage<Optional<Category>> updateCategory(@Nonnull final Category category,
+    CompletionStage<Category> updateCategory(@Nonnull final Category category,
                                                        @Nonnull final List<UpdateAction<Category>> updateActions);
 }

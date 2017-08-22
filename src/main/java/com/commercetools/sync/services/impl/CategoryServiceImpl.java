@@ -35,7 +35,6 @@ public final class CategoryServiceImpl implements CategoryService {
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private static final String CREATE_FAILED = "Failed to create CategoryDraft with key: '%s'. Reason: %s";
     private static final String FETCH_FAILED = "Failed to fetch CategoryDrafts with keys: '%s'. Reason: %s";
-    private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
 
     public CategoryServiceImpl(@Nonnull final CategorySyncOptions syncOptions) {
         this.syncOptions = syncOptions;
@@ -127,20 +126,10 @@ public final class CategoryServiceImpl implements CategoryService {
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<Category>> updateCategory(@Nonnull final Category category,
+    public CompletionStage<Category> updateCategory(@Nonnull final Category category,
                                                               @Nonnull final List<UpdateAction<Category>>
                                                                   updateActions) {
         final CategoryUpdateCommand categoryUpdateCommand = CategoryUpdateCommand.of(category, updateActions);
-        return syncOptions.getCtpClient().execute(categoryUpdateCommand)
-                          .handle((updatedCategory, sphereException) -> {
-                              if (sphereException != null) {
-                                  syncOptions
-                                      .applyErrorCallback(format(UPDATE_FAILED, category.getKey(), sphereException),
-                                          sphereException);
-                                  return Optional.empty();
-                              } else {
-                                  return Optional.of(updatedCategory);
-                              }
-                          });
+        return syncOptions.getCtpClient().execute(categoryUpdateCommand);
     }
 }
