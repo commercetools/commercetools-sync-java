@@ -12,7 +12,10 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.categories.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.categories.queries.CategoryQuery;
+import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -35,7 +38,11 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.d
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 public class CategoryServiceIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategoryServiceIT.class);
@@ -137,6 +144,37 @@ public class CategoryServiceIT {
         assertThat(fetchedCategories).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void fetchMatchingCategoriesByKeys_WithBadGateWayException_ShouldFail() {
+        // Mock sphere client to return BadeGatewayException on any request.
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        when(spyClient.execute(any()))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+        final CategorySyncOptions spyOptions = CategorySyncOptionsBuilder.of(spyClient)
+                                                                           .setErrorCallBack(
+                                                                               (errorMessage, exception) -> {
+                                                                                   errorCallBackMessages
+                                                                                       .add(errorMessage);
+                                                                                   errorCallBackExceptions
+                                                                                       .add(exception);
+                                                                               })
+                                                                         .build();
+        final CategoryService spyCategoryService = new CategoryServiceImpl(spyOptions);
+
+
+        final Set<String> keys =  new HashSet<>();
+        keys.add("oldCategoryKey");
+        final Set<Category> fetchedCategories = spyCategoryService.fetchMatchingCategoriesByKeys(keys)
+                                                                  .toCompletableFuture().join();
+        assertThat(fetchedCategories).hasSize(0);
+        assertThat(errorCallBackExceptions).isNotEmpty();
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorCallBackMessages).isNotEmpty();
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualToIgnoringCase(format("Failed to fetch CategoryDrafts with keys: '%s'. Reason: %s",
+                keys.toString(), errorCallBackExceptions.get(0)));
     }
 
     @Test
@@ -259,7 +297,6 @@ public class CategoryServiceIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
     }
-
 
     @Test
     public void fetchCachedCategoryId_ShouldCacheCategoryKeysOnlyFirstTime() {
