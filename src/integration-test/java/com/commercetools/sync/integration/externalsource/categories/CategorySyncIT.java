@@ -11,9 +11,13 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
+import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
+import io.sphere.sdk.client.ConcurrentModificationException;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -44,6 +48,9 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.getStatis
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 
 public class CategorySyncIT {
@@ -164,6 +171,33 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
                                                                   .toCompletableFuture().join();
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
+    }
+
+    @Test
+    public void syncDrafts_WithChangedCategoryButConcurrentModificationException_ShouldRetryAndUpdateCategory() {
+        // Mock sphere client to return ConcurrentModification on the first update request.
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        when(spyClient.execute(any(CategoryUpdateCommand.class)))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenCallRealMethod();
+        final CategorySyncOptions spyOptions = CategorySyncOptionsBuilder.of(spyClient)
+                                                                         .setErrorCallBack(LOGGER::error)
+                                                                         .build();
+        final CategorySync spyCategorySync = new CategorySync(spyOptions);
+
+        // Category draft coming from external source.
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
+            .key(oldCategoryKey)
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .build();
+
+        final CategorySyncStatistics syncStatistics = spyCategorySync.sync(Collections.singletonList(categoryDraft))
+                                                                     .toCompletableFuture().join();
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
                 + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
