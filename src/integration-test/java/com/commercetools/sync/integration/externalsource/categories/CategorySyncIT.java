@@ -153,6 +153,24 @@ public class CategorySyncIT {
     }
 
     @Test
+    public void syncDrafts_WithNewCategoryWithExistingParent_ShouldCreateCategory() {
+        // Category draft coming from external source.
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
+                LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
+            .key("newCategory")
+            .parent(Category.referenceOfId(oldCategoryKey))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .build();
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
+                                                                  .toCompletableFuture().join();
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                + " sync and %d categories with a missing parent).", 1, 1, 0, 0, 0));
+    }
+
+    @Test
     public void syncDraft_withARemovedCustomType_ShouldUpdateCategory() {
         // Category draft coming from external source.
         final CategoryDraft categoryDraft = CategoryDraftBuilder
