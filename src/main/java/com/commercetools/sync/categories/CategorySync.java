@@ -532,7 +532,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> buildUpdateActionsAndUpdate(@Nonnull final Category oldCategory,
-                                                                  @Nonnull final CategoryDraft newCategory) {
+                                                              @Nonnull final CategoryDraft newCategory) {
         final List<UpdateAction<Category>> updateActions = buildActions(oldCategory, newCategory, syncOptions);
         if (!updateActions.isEmpty()) {
             return updateCategory(oldCategory, newCategory, updateActions);
