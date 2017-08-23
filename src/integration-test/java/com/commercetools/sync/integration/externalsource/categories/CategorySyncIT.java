@@ -163,7 +163,7 @@ public class CategorySyncIT {
             .build();
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
-                                                        .toCompletableFuture().join();
+                                                                  .toCompletableFuture().join();
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
                 + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
