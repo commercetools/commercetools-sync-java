@@ -10,7 +10,6 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -22,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -61,19 +61,22 @@ public final class CategoryServiceImpl implements CategoryService {
         if (categoryKeys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
-        return QueryExecutionUtils.queryAll(syncOptions.getCtpClient(),
-            CategoryQuery.of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys)))
-                                  .handle((fetchedCategories, sphereException) -> {
-                                      if (sphereException != null) {
-                                          syncOptions
-                                              .applyErrorCallback(format(FETCH_FAILED, categoryKeys, sphereException),
-                                                  sphereException);
-                                          return Collections.emptySet();
-                                      } else {
-                                          return fetchedCategories.stream()
-                                                           .collect(Collectors.toSet());
-                                      }
-                                  });
+
+        final Function<List<Category>, List<Category>> categoryPageCallBack = categoriesPage -> categoriesPage;
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(),
+            CategoryQuery.of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys)),
+            categoryPageCallBack)
+                            .handle((fetchedCategories, sphereException) -> {
+                                if (sphereException != null) {
+                                    syncOptions
+                                        .applyErrorCallback(format(FETCH_FAILED, categoryKeys, sphereException),
+                                            sphereException);
+                                    return Collections.emptySet();
+                                }
+                                return fetchedCategories.stream()
+                                                        .flatMap(List::stream)
+                                                        .collect(Collectors.toSet());
+                            });
     }
 
     @Nonnull
