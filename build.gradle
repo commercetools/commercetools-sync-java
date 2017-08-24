@@ -8,35 +8,7 @@ description = "Java library that provides different modules to synchronise your 
 
 
 
-sourceSets {
-    integrationTest {
-        java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-            srcDir 'src/integration-test/java'
-        }
-        resources.srcDir 'src/integration-test/resources'
     }
-}
-
-configurations {
-    integrationTestCompile.extendsFrom compile, testCompile
-    integrationTestRuntime.extendsFrom runtime, testRuntime
-}
-
-task integrationTest(type: Test) {
-    testClassesDir = sourceSets.integrationTest.output.classesDir
-    classpath = sourceSets.integrationTest.runtimeClasspath
-    outputs.upToDateWhen { false }
-}
-
-tasks.withType(Test) {
-    reports.html.destination = file("${reporting.baseDir}/${name}")
-}
-
-check.dependsOn integrationTest
-integrationTest.mustRunAfter test
-
 
 checkstyle {
     toolVersion = checkstyleVersion
