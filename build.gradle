@@ -1,14 +1,30 @@
-
-
-
-
-
+buildscript {
+    ext {
+        bintrayGradlePluginVersion = '1.7.3'
     }
-
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${bintrayGradlePluginVersion}"
     }
 }
 
-    }
-}
-
+apply from: "$rootDir/gradle-scripts/plugins.gradle"
+apply from: "$rootDir/gradle-scripts/package.gradle"
+apply from: "$rootDir/gradle-scripts/extensions.gradle"
+apply from: "$rootDir/gradle-scripts/project-info.gradle"
+apply from: "$rootDir/gradle-scripts/java-compile.gradle"
+apply from: "$rootDir/gradle-scripts/repositories.gradle"
+apply from: "$rootDir/gradle-scripts/integration-tests.gradle"
+apply from: "$rootDir/gradle-scripts/unit-tests.gradle"
+apply from: "$rootDir/gradle-scripts/dependencies.gradle"
+apply from: "$rootDir/gradle-scripts/checkstyle.gradle"
+apply from: "$rootDir/gradle-scripts/pmd.gradle"
+apply from: "$rootDir/gradle-scripts/jacoco.gradle"
+apply from: "$rootDir/gradle-scripts/findbugs.gradle"
+apply from: "$rootDir/gradle-scripts/maven-publish.gradle"
+apply from: "$rootDir/gradle-scripts/bintray-publish.gradle"
+apply from: "$rootDir/gradle-scripts/utils.gradle"
 

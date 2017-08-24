@@ -1,0 +1,10 @@
+ext {
+    scmProjectName = rootProject.name
+    scmRepo = 'github.com'
+    scmProjectPath = "commercetools/${scmProjectName}.git"  // github relative path with .git extension
+    scmProjectUrl = "https://$scmRepo/$scmProjectPath"      // just as web-page
+    scmHttpsUrl = "https://$scmRepo/$scmProjectPath"        // common VCS read access
+    scmSshUrl = "git@$scmRepo:$scmProjectPath"              // developers VCS read-write repo
+    SNAPSHOT_SUFFIX = "-SNAPSHOT"
+    versionWIP = "development$SNAPSHOT_SUFFIX"
+}
