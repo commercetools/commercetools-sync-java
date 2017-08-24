@@ -147,11 +147,12 @@ public class CategoryServiceIT {
     }
 
     @Test
-    public void fetchMatchingCategoriesByKeys_WithBadGateWayException_ShouldFail() {
+    public void fetchMatchingCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadeGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any()))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+        when(spyClient.execute(any(CategoryQuery.class)))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
+            .thenCallRealMethod();
         final CategorySyncOptions spyOptions = CategorySyncOptionsBuilder.of(spyClient)
                                                                            .setErrorCallBack(
                                                                                (errorMessage, exception) -> {
