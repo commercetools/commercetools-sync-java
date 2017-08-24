@@ -5,12 +5,6 @@ version = '1.0-SNAPSHOT'
 description = "Java library that provides different modules to synchronise your new commercetools project data to your " +
         "existing commercetools project."
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-}
 
 
 
