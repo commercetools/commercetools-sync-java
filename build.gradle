@@ -13,10 +13,6 @@ tasks.withType(JavaCompile) {
 }
 
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
 
 sourceSets {
     integrationTest {
