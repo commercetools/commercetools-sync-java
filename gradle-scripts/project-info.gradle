@@ -1,0 +1,4 @@
+group = 'com.commercetools'
+version = System.getProperty('build.version') ?: versionWIP
+description = "Java library that provides different modules to synchronise your new commercetools project data to your " +
+        "existing commercetools project."
