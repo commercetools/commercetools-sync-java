@@ -8,9 +8,7 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.SphereException;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -18,7 +16,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -203,36 +200,6 @@ public class CategorySyncTest {
             + "total (0 created, 0 updated, 0 failed to sync and 1 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
-    }
-
-    //TODO
-    @Ignore("Can't mock service needs to be in integration tests")
-    @Test
-    public void sync_WithExistingCategoryButExceptionOnFetch_ShouldFailSync() {
-        CompletableFuture<Set<Category>> futureThrowingSphereException = CompletableFuture.supplyAsync(() -> {
-            throw new SphereException();
-        });
-        final CategoryService mockCategoryService = getMockCategoryService();
-        when(mockCategoryService.fetchMatchingCategoriesByKeys(any()))
-            .thenReturn(futureThrowingSphereException);
-
-        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
-            mockCategoryService);
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "key"));
-
-        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
-
-        assertThat(syncStatistics.getCreated()).isEqualTo(0);
-        assertThat(syncStatistics.getFailed()).isEqualTo(1);
-        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
-        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
-            + "total (0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Failed to fetch category with key:'key'");
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
     }
 
     @Test
