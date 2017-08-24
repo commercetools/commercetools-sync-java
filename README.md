@@ -59,15 +59,37 @@ For example, `#65: Remove redundant space.`
     - Mark the issue it addresses with the `merged-to-master` label.
     - Close the issue **only** if the change was released.
 
-### Development
+### Build
 ##### Run unit tests
 ````bash
 ./gradlew test
 ````
 
-##### Compile project, run unit tests and assemble main classes into a jar archive
+##### Package JARs
+````bash
+./gradlew clean jar`
+````
+
+##### Package JARs and run tests
+````bash
+./gradlew clean check
+````
+
+##### Full build with tests, but without install to maven local repo (Recommended)
 ````bash
 ./gradlew clean build
 ````
 
-<!--- TODO ### Executing integration tests -->
+##### Install to local maven repo
+````bash
+./gradlew clean install
+````
+
+##### Publish to Bintray
+````bash
+./gradlew clean -Dbuild.version={version} bintrayUpload
+````
+
+<!--- TODO For more info about build and publish process see [BUILD](BUILD.md) documentation -->
+
+<!--- TODO ### Executing integration tests only-->
