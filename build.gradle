@@ -10,54 +10,10 @@ description = "Java library that provides different modules to synchronise your 
 
     }
 
-checkstyle {
-    toolVersion = checkstyleVersion
-    config = rootProject.resources.text.fromFile('config/checkstyle/checkstyle.xml')
-    maxWarnings = 0 // If warnings exceed this number, build should fail.
-}
-
-pmd {
-    toolVersion = pmdVersion
-    ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/pmd.xml')
-    rulePriority = 2 // If a rule priority, with a level greater than or equal this number, is violated; the build should fail.
-}
-
-jacoco {
-    toolVersion = jacocoVersion
-}
-
-jacocoTestCoverageVerification {
-    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
-    violationRules {
-        rule {
-            limit {
-                minimum = 0.8
-            }
-        }
     }
 }
 
-jacocoTestReport {
-    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
-    reports {
-        xml.enabled = true
-        xml.destination = "${buildDir}/reports/jacoco/report.xml"
-        html.enabled = false
-        csv.enabled = false
     }
 }
 
-findbugs {
-    toolVersion = findbugsVersion
-}
 
-tasks.withType(FindBugs) {
-    reports {
-        xml.enabled = false
-        html.enabled =  true
-        html.stylesheet = resources.text.fromFile('config/findbugs/findbugs-custom.xsl')
-    }
-}
-
-check.dependsOn jacocoTestCoverageVerification // Build should fail if jacocoTestCoverageVerification task rules are not fulfilled.
-test.finalizedBy jacocoTestReport
