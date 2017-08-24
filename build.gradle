@@ -1,9 +1,3 @@
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'checkstyle'
-apply plugin: 'pmd'
-apply plugin: 'jacoco'
-apply plugin: 'findbugs'
 
 group = 'com.commercetools'
 version = '1.0-SNAPSHOT'
