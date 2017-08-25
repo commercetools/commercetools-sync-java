@@ -1,0 +1,23 @@
+gitPublish {
+    repoUri = scmSshUrl
+    branch = 'gh-pages'
+    // generally, you don't need to touch this
+    repoDir = file("$buildDir/somewhereelse") // defaults to $buildDir/gitPublish
+
+    // what to publish, this is a standard CopySpec
+    contents {
+        from 'src/pages'
+        from(javadoc) {
+            into 'api'
+        }
+    }
+
+    // what to keep in the existing branch (include=keep)
+    preserve {
+        include '1.0.0/**'
+        exclude '1.0.0/temp.txt'
+    }
+
+    // message used when committing changes
+    commitMessage = 'Publishing a new java doc for $rootProject.version version'
+}
