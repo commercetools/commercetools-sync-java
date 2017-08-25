@@ -67,6 +67,7 @@ public final class CtpQueryUtils {
      * @param <T>      type of one query result element
      * @param <C>      type of the query
      * @param <S>      type of the returned result of the callback function on every page.
+     * @param pageSize the page size.
      * @return elements
      */
     @Nonnull
@@ -85,6 +86,7 @@ public final class CtpQueryUtils {
      * @param consumer that is applied on every page queried.
      * @param <T>    type of one query result element
      * @param <C>    type of the query
+     * @param pageSize the page size.
      * @return elements
      */
     @Nonnull

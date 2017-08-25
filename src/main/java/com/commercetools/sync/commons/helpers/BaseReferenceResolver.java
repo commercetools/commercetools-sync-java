@@ -128,6 +128,7 @@ public abstract class BaseReferenceResolver<T extends CustomDraft, S extends Bas
      * If the key is not valid a {@link ReferenceResolutionException} will be thrown.
      *
      *
+     * @param shouldAllowUuidKeys flag that signals whether the key could be UUID format or not.
      * @param keyFromExpansion the key value fetched after expansion of the {@code reference}.
      * @param reference the reference object to get the key from.
      * @return the key of the referenced object.
@@ -185,6 +186,7 @@ public abstract class BaseReferenceResolver<T extends CustomDraft, S extends Bas
     /**
      * Helper method to check if passed {@link Reference} instance is expanded.
      *
+     * @param reference the reference to check.
      * @return true if the {@link Reference} is expanded.
      */
     protected static boolean isReferenceExpanded(@Nonnull final Reference reference) {

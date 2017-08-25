@@ -27,6 +27,7 @@ public final class SyncUtils {
      * {@link List} of resources and all the batches are grouped and represented by an
      * {@link List}&lt;{@link List}&gt; of resources, which is returned by the method.
      *
+     * @param <T> the type of the draft resources.
      * @param drafts    the list of drafts to split into batches.
      * @param batchSize the size of each batch.
      * @return a list of lists where each list represents a batch of resources.

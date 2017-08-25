@@ -70,7 +70,7 @@ public final class InventorySyncOptionsBuilder extends
     /**
      * Returns {@code this} instance of {@link InventorySyncOptionsBuilder}.
      *
-     * <p><strong>Inherited doc:</strong><br/>
+     * <p><strong>Inherited doc:</strong><br>
      *      {@inheritDoc}
      */
     @Override

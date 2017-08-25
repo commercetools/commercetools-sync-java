@@ -53,6 +53,8 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Increments the total number of resources that were updated by the supplied times.
+     *
+     * @param times the total number of times to increment.
      */
     public void incrementUpdated(final int times) {
         this.updated += times;
@@ -76,6 +78,8 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Increments the total number of resources that were created by the supplied times.
+     *
+     * @param times the total number of times to increment.
      */
     public void incrementCreated(final int times) {
         this.created += times;
@@ -99,6 +103,8 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Increments the total number of resources that were processed/synced by the supplied times.
+     *
+     * @param times the total number of times to increment.
      */
     public void incrementProcessed(final int times) {
         this.processed += times;
@@ -115,6 +121,7 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Increments the total number of resources that failed to sync.
+     *
      */
     public void incrementFailed() {
         this.failed++;
@@ -122,6 +129,8 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Increments the total number of resources that failed to sync by the supplied times.
+     *
+     * @param times the total number of times to increment.
      */
     public void incrementFailed(final int times) {
         this.failed += times;
