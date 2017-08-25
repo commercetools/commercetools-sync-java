@@ -26,3 +26,32 @@ gitPublish {
     // message used when committing changes
     commitMessage = 'Publishing a new java doc for $rootProject.version version'
 }
+
+gitPublishReset {
+    doFirst {
+        /* try to find github publish token in the next order:
+             1) -Dorg.ajoberstar.grgit.auth.username
+             2) $GRGIT_USER
+             3) $GH_TOKEN
+         interrupt the task if neither of them is set.
+        */
+        final authProperty = 'org.ajoberstar.grgit.auth.username'
+        if (!System.getProperty(authProperty)?.trim()) {
+            def githubToken =
+                    System.getProperty(authProperty) ?:
+                            (project.hasProperty(authProperty) ? project.property(authProperty) :
+                                    (System.getenv('GRGIT_USER') ?:
+                                            System.getenv('GH_TOKEN')))
+
+            if (!githubToken?.trim()) {
+                throw new InvalidUserDataException('For github publish GRGIT_USER or GH_TOKEN environment variable\n' +
+                        "or $authProperty Java runtime property must be set\n" +
+                        "or set $authProperty in gradle.properties file")
+            }
+
+            System.setProperty(authProperty, githubToken)
+        }
+
+        validateVersion('Documentation publishing could be performed only with a valid release version')
+    }
+}

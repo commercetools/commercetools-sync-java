@@ -1,2 +1,3 @@
 bintrayUser=<<please ask support for bintray credentials>>
 bintrayKey=<<please ask support for bintray credentials>>
+org.ajoberstar.grgit.auth.username=<<github token to publish javadoc>>
