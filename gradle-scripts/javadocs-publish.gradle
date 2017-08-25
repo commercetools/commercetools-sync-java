@@ -1,4 +1,9 @@
 gitPublish {
+    /*
+    NOTE: $GRGIT_USER environment variable must be set to actual github token
+    http://ajoberstar.org/grgit/index.html
+     */
+
     repoUri = scmSshUrl
     branch = 'gh-pages'
     // generally, you don't need to touch this
