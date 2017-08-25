@@ -22,9 +22,9 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
      * actions on the existing resource if it exists or create it if it doesn't.
      *
      * @param resourceDrafts the list of new resources as drafts.
-     * @return an instance of {@link CompletionStage}&lt;{@link U}&gt; which contains as a result an instance of {@link U} which
-     *      is a subclass of {@link BaseSyncStatistics} representing the {@code statistics} instance attribute of
-     *      {@code this} {@link BaseSync}.
+     * @return an instance of {@link CompletionStage}&lt;{@link U}&gt; which contains as a result an instance of
+     *      {@link U} which is a subclass of {@link BaseSyncStatistics} representing the {@code statistics} instance
+     *      attribute of {@code this} {@link BaseSync}.
      */
     protected abstract CompletionStage<U> process(@Nonnull final List<T> resourceDrafts);
 

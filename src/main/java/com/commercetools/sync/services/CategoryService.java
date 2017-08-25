@@ -81,8 +81,8 @@ public interface CategoryService {
      * Given a {@link Category} and a {@link List}&lt;{@link UpdateAction}&lt;{@link Category}&gt;&gt;, this method
      * issues an update request with these update actions on this {@link Category} in the CTP project defined in a
      * potentially injected {@link io.sphere.sdk.client.SphereClient}. This method returns
-     * {@link CompletionStage}&lt;{@link Category}&gt; in which the result of it's completion contains an instance of the
-     * {@link Category} which was updated in the CTP project.
+     * {@link CompletionStage}&lt;{@link Category}&gt; in which the result of it's completion contains an instance of
+     * the {@link Category} which was updated in the CTP project.
      *
      * @param category      the {@link Category} to update.
      * @param updateActions the update actions to update the {@link Category} with.

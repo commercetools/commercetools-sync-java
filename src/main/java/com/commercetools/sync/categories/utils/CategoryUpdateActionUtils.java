@@ -31,9 +31,9 @@ public final class CategoryUpdateActionUtils {
 
     /**
      * Compares the {@link LocalizedString} names of a {@link Category} and a {@link CategoryDraft} and returns an
-     * {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the {@link Category} and the
-     * {@link CategoryDraft} have the same name, then no update action is needed and hence an empty {@link Optional} is
-     * returned.
+     * {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the {@link Category} and
+     * the {@link CategoryDraft} have the same name, then no update action is needed and hence an empty {@link Optional}
+     * is returned.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new name.
