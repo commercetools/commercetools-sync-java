@@ -1,6 +1,7 @@
 buildscript {
     ext {
         bintrayGradlePluginVersion = '1.7.3'
+        gradleGitPublish = '0.3.0'
     }
     repositories {
         mavenCentral()
@@ -8,6 +9,7 @@ buildscript {
     }
     dependencies {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${bintrayGradlePluginVersion}"
+        classpath "org.ajoberstar:gradle-git-publish:${gradleGitPublish}"
     }
 }
 
@@ -26,5 +28,6 @@ apply from: "$rootDir/gradle-scripts/jacoco.gradle"
 apply from: "$rootDir/gradle-scripts/findbugs.gradle"
 apply from: "$rootDir/gradle-scripts/maven-publish.gradle"
 apply from: "$rootDir/gradle-scripts/bintray-publish.gradle"
+apply from: "$rootDir/gradle-scripts/javadocs-publish.gradle"
 apply from: "$rootDir/gradle-scripts/utils.gradle"
 
