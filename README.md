@@ -79,7 +79,7 @@ For example, `#65: Remove redundant space.`
 
 ##### Package JARs
 ````bash
-./gradlew clean jar`
+./gradlew clean jar
 ````
 
 ##### Package JARs and run tests
