@@ -38,8 +38,6 @@ _Maven Central_. See [Publish workflow](#publish-workflow) below for more detail
 
 ## Full build with tests, documentation publishing and Bintray upload
 
-Replace `X.X.X` in the snippet:
-
 ```
 ./gradlew clean build gitPublishPush bintrayUpload -Dbuild.version=X.X.X
 ```
