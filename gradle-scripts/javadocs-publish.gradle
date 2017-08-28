@@ -42,9 +42,12 @@ gitPublishReset {
                                             System.getenv('GH_TOKEN')))
 
             if (!githubToken?.trim()) {
-                throw new InvalidUserDataException('For github publish GRGIT_USER or GH_TOKEN environment variable\n' +
-                        "or $authProperty Java runtime property must be set\n" +
-                        "or set $authProperty in gradle.properties file")
+                throw new InvalidUserDataException("Unable to authorise git publish. To authorise, please" +
+                        " make sure one of the following is set:\n" +
+                        "1. GRGIT_USER environment variable.\n" +
+                        "2. GH_TOKEN environment variable.\n" +
+                        "3. -D$authProperty Java runtime property is set.\n" +
+                        "4. $authProperty in gradle.properties file.")
             }
 
             System.setProperty(authProperty, githubToken)

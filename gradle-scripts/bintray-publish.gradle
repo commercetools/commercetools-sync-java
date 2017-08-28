@@ -33,10 +33,11 @@ bintrayUpload {
          * https://github.com/bintray/gradle-bintray-plugin/issues/170
          */
         if (!(bintray.user?.trim() && bintray.key?.trim())) {
-            throw new InvalidUserDataException('Bintray User or Key is not set. ' +
-                    'Validate BINTRAY_USER and BINTRAY_KEY environment variables.\n' +
-                    'Or use -DbintrayUser and -DbintrayKey java runtime properties.' +
-                    'Or specify bintrayUser and bintrayKey properties in gradle.properties file')
+            throw new InvalidUserDataException("Bintray User or Key is not set. Please check that one of the following"
+                    + " is set: \n" +
+                    "1. BINTRAY_USER and BINTRAY_KEY environment variables.\n" +
+                    "2. -DbintrayUser and -DbintrayKey java runtime properties.\n" +
+                    "3. bintrayUser and bintrayKey properties in gradle.properties file.")
         }
 
         validateVersion('Bintray upload could be performed only with valid release version')
