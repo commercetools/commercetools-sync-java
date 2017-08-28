@@ -6,8 +6,6 @@ gitPublish {
 
     repoUri = scmSshUrl
     branch = 'gh-pages'
-    // generally, you don't need to touch this
-    repoDir = file("$buildDir/somewhereelse") // defaults to $buildDir/gitPublish
 
     // what to publish, this is a standard CopySpec
     contents {
