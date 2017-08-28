@@ -6,7 +6,6 @@ like [JCenter](https://jcenter.bintray.com/) and [Maven Central](https://search.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents** 
 
 - [Release a new version](#release-a-new-version)
 - [Publish workflow](#publish-workflow)
