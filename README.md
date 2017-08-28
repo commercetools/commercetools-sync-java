@@ -90,6 +90,6 @@ For example, `#65: Remove redundant space.`
 ./gradlew clean -Dbuild.version={version} bintrayUpload
 ````
 
-<!--- TODO For more info about build and publish process see [BUILD](BUILD.md) documentation -->
+For more detailed information on build and release process, see [Build and Release](BUILD.md) documentation.
 
 <!--- TODO ### Executing integration tests only-->
