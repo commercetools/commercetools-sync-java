@@ -7,7 +7,7 @@ uploadArchives {
         def authentication = repositories.mavenDeployer.snapshotRepository.authentication
         if (!(authentication.userName?.trim() && authentication.password?.trim())) {
             throw new InvalidUserDataException('OSS SONATYPE User or API Key is not set. Please ensure one of the ' +
-                    "following is set:" +
+                    "following is set:\n" +
                     "1. OSS_USER and OSS_KEY environment variables.\n" +
                     "2. -DossUser and -DossKey java runtime properties.\n" +
                     "3. ossUser and ossKey properties in gradle.properties file.")
