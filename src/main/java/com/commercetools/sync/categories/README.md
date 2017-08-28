@@ -17,15 +17,22 @@ Utility which provides API for building CTP category update actions and category
 
 ### Build all update actions
 
-<!-- TODO: A code snippet will be added once #14 is resolved -->
+Compares Category with a new CategoryDraft and results in a list of category update actions. 
+```java
+List<UpdateAction<Category>> updateActions = CategorySyncUtils.buildActions(category, categoryDraft, categorySyncOptions);
+```
+
+Examples of its usage can be found in the tests 
+[here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/categories/utils/CategorySyncUtilsTest.java).
+
 
 ### Build particular update action(s)
 
-To build the update action for category name:
+To build the update action for category name for example:
 ````java
 Optional<UpdateAction<Category>> updateAction = buildChangeNameUpdateAction(oldCategory, categoryDraft);
 ````
-For other examples of update actions, please check [here](). <!-- TODO: Add link to Integration tests.-->
+More examples of how to use those update action utils can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/updateactionutils).
 
 ### Sync list of category drafts
 
@@ -44,8 +51,12 @@ then to start the sync:
 final CategorySync categorySync = new CategorySync(categorySyncOptions);
 
 // execute the sync on your list of categories
-categorySync.sync(categoryDrafts);
+CompletionStage<CategorySyncStatistics> syncStatisticsStage = CategorySynccategorySync.sync(categoryDrafts);
 ````
+More examples of how to use the sync 
+1. From another CTP project as source can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
+2. From an external source can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java).
+
 **Preconditions:** The sync expects a list of non-null `CategoryDraft` objects that have their `key` fields set, otherwise
  the sync will trigger an `errorCallback` function which is set by the user. More on this option can be found down below
  in the additional `options` explanations.
@@ -56,10 +67,15 @@ and Types are matched by their `key` Therefore, in order for the sync to resolve
  - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
  reference would return its `key`. Note that the library will check that this `key` is not 
  provided in `UUID` format by default. However, if you want to provide the `key` in `UUID` format, you can
-  set it through the sync options. Different example of sync performed that way can be found [here]().
+  set it through the sync options. <!--TODO Different example of sync performed that way can be found [here]().-->
  - Provide the reference expanded. This means that calling `getObj()` on the reference should not return `null`,
-  but return the `Type` object, from which the its `key` can be directly accessible. Example of sync performed that 
-  way can be found [here]().
+  but return the `Type` object, from which the its `key` can be directly accessible.  
+
+**Note**: This library provides you with a utility method 
+ [`replaceCategoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/0.0.2/com/commercetools/sync/commons/utils/SyncUtils.html#replaceCategoriesReferenceIdsWithKeys-java.util.List-)
+ that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync
+  
+Example of its usage can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L115).
 
 
 In order to get the statistics of the sync process, use the `getStatistics()` method on the sync instance. It is used 
@@ -81,6 +97,7 @@ events.
 - `warningCallBack` 
 a callback that is called whenever an event occurs during the sync process that represents a warning. Currently, these 
 events.
+<!--
 - `removeOtherLocales`
 a flag which enables the sync module to add additional localizations without deleting existing ones, if set to `false`. 
 If set to `true`, which is the default value of the option, it deletes the existing object properties.
@@ -94,12 +111,15 @@ entries.
 - `removeOtherProperties`
 a flag which enables the sync module to add additional object properties (e.g. custom fields, etc..) without deleting 
 existing ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing 
-object properties.
+object properties. -->
 - `updateActionsFilter`
 a filter function which can be applied on generated list of update actions to produce a resultant list after the filter 
 function has been applied.
 - `allowUuid`
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
+
+Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
+ streams, can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java#L79-L82).
 
 ## Under the hood
 
