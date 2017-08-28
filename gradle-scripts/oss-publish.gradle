@@ -13,7 +13,7 @@ uploadArchives {
                     "3. ossUser and ossKey properties in gradle.properties file.")
         }
 
-        validateSnapshotVersion("Publishing to OSS SONATYPE can only be performed for $SNAPSHOT versions")
+        validateSnapshotVersion("Publishing to OSS SONATYPE can only be performed for snapshot versions")
     }
 
     repositories {
