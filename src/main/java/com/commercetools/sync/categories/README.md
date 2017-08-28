@@ -39,7 +39,18 @@ More examples of how to use those update action utils can be found [here](https:
 In order to use the category sync an instance of
 [CategorySyncOptions](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/categories/CategorySyncOptions.java) have to be injected.
 
-In order to instantiate a `CategorySyncOptions`, a `sphereClient` is required:
+In order to instantiate a `CategorySyncOptions`, a `sphereClient` is required.
+
+It is an important responsibility of the user of the library to instantiate a `sphereClient` that has the following properties:
+1. Limits the amount of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with 
+[QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html) 
+2. Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the 
+[RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
+
+You can use the same client instantiating used in the integration tests for this library found 
+[here](https://github.com/commercetools/commercetools-sync-java/blob/documentation/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
+
+
 ````java
 // instantiating a CategorySyncOptions
 final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(sphereClient).build();
