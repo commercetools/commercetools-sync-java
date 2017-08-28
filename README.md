@@ -6,9 +6,21 @@ Java API which exposes utilities for building update actions and automatic synci
  such as CSV, XML, JSON, etc.. or an already existing CTP project into a target project.
 
 
-- [Usage](#usage)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+  - [Usage](#usage)
+    - [Prerequisites](#prerequisites)
+  - [Roadmap](#roadmap)
+  - [Contributing](#contributing)
+    - [Build](#build)
+        - [Run unit tests](#run-unit-tests)
+        - [Package JARs](#package-jars)
+        - [Package JARs and run tests](#package-jars-and-run-tests)
+        - [Full build with tests, but without install to maven local repo (Recommended)](#full-build-with-tests-but-without-install-to-maven-local-repo-recommended)
+        - [Install to local maven repo](#install-to-local-maven-repo)
+        - [Publish to Bintray](#publish-to-bintray)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Usage
 
