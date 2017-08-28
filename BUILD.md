@@ -61,6 +61,24 @@ where `publishToMavenLocal` is a task from
 [`maven-publish`](https://docs.gradle.org/3.3/userguide/publishing_maven.html#publishing_maven:install)
 plugin.
 
+## Publish snapshots to oss.sonatype.org
+
+To publish to [OSS Sonatype snapshots](https://oss.sonatype.org/content/repositories/snapshots/com/commercetools/)
+repo the following command is used:
+
+```bash
+./gradlew clean build uploadArchives -Dbuild.version=X.X.X-SNAPSHOT
+```
+
+The `-SNAPSHOT` suffix is mandatory. 
+
+**Note**: for publishing to OSS Sonatype you need specify **API** User/Key (not login credentials) for  
+`OSS_USER`/`OSS_KEY` environment variables or `ossUser`/`ossKey` gradle build properties 
+(the properties have precedence over environment variables). 
+
+See more configuration details of the oss uploading in [oss-publish.gradle](./gradle-scripts/oss-publish.gradle) file.
+
+
 ## Publish to Bintray
 
 [Bintray documentation about publish process](https://blog.bintray.com/2014/02/11/bintray-as-pain-free-gateway-to-maven-central/)
