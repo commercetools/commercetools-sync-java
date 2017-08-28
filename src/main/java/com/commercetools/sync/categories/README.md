@@ -48,7 +48,7 @@ It is an important responsibility of the user of the library to instantiate a `s
 [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
 
 You can use the same client instantiating used in the integration tests for this library found 
-[here](https://github.com/commercetools/commercetools-sync-java/blob/documentation/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
+[here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
 
 
 ````java
