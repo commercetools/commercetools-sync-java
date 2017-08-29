@@ -20,8 +20,7 @@ like [JCenter](https://jcenter.bintray.com/) and [Maven Central](https://search.
 
 To release the library, you need to create a new git commit tag.
 
-This will trigger a new Travis build before but will create an additional Docker tag with the 
-release version. The tag can be created via command line
+This will trigger a new Travis build. The tag can be created via command line
 
 ```bash
 git tag -a X.X.X -m "Minor text adjustments."
@@ -38,8 +37,6 @@ _Maven Central_. See [Publish workflow](#publish-workflow) below for more detail
 # Publish workflow
 
 ## Full build with tests, documentation publishing and Bintray upload
-
-Replace `X.X.X` in the snippet:
 
 ```
 ./gradlew clean build gitPublishPush bintrayUpload -Dbuild.version=X.X.X
