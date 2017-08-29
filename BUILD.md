@@ -23,7 +23,7 @@ To release the library, you need to create a new git commit tag.
 This will trigger a new Travis build. The tag can be created via command line
 
 ```bash
-git tag -a X.X.X -m "Minor text adjustments."
+git tag -a {version} -m "Minor text adjustments."
 git push --tags
 ```
 
@@ -39,19 +39,19 @@ _Maven Central_. See [Publish workflow](#publish-workflow) below for more detail
 ## Full build with tests, documentation publishing and Bintray upload
 
 ```
-./gradlew clean build gitPublishPush bintrayUpload -Dbuild.version=X.X.X
+./gradlew clean build gitPublishPush bintrayUpload -Dbuild.version={version}
 ```
 
 ## Publish to local maven repo
  
 This step may be used for local test versions:
 ```
-./gradlew clean install -Dbuild.version=X.X.X
+./gradlew clean install -Dbuild.version={version}
 ```
 
 If you want to review full generated `pom.xml` (with license, scm, developers) like it will be published, then use:
 ```
-./gradlew clean publishToMavenLocal -Dbuild.version=X.X.X
+./gradlew clean publishToMavenLocal -Dbuild.version={version}
 ```
 
 where `publishToMavenLocal` is a task from 
@@ -64,7 +64,7 @@ To publish to [OSS Sonatype snapshots](https://oss.sonatype.org/content/reposito
 repo the following command is used:
 
 ```bash
-./gradlew clean build uploadArchives -Dbuild.version=X.X.X-SNAPSHOT
+./gradlew clean build uploadArchives -Dbuild.version={version}-SNAPSHOT
 ```
 
 The `-SNAPSHOT` suffix is mandatory. 
@@ -88,10 +88,10 @@ If you are a new developer in the project - update contributors list in
 
 To initiate publish call:
 ```
-./gradlew clean build bintrayUpload -Dbuild.version=X.X.X
+./gradlew clean build bintrayUpload -Dbuild.version={version}
 ```
 
-**NOTE**: Bintray does not allow to publish snapshots thus `X.X.X` should not contain _SNAPSHOT_.
+**NOTE**: Bintray does not allow to publish snapshots thus `{version}` should not contain _SNAPSHOT_.
 If you wish to use snapshots, https://oss.jfrog.com account should be configured.
 See https://blog.bintray.com/2014/02/11/bintray-as-pain-free-gateway-to-maven-central/ for more info.
 
