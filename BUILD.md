@@ -7,10 +7,12 @@ like [JCenter](https://jcenter.bintray.com/) and [Maven Central](https://search.
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Release a new version](#release-a-new-version)
 - [Publish workflow](#publish-workflow)
   - [Full build with tests, documentation publishing and Bintray upload](#full-build-with-tests-documentation-publishing-and-bintray-upload)
   - [Publish to local maven repo](#publish-to-local-maven-repo)
+  - [Publish snapshots to oss.sonatype.org](#publish-snapshots-to-osssonatypeorg)
   - [Publish to Bintray](#publish-to-bintray)
   - [Publish to Maven](#publish-to-maven)
 
