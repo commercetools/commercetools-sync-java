@@ -141,4 +141,6 @@ More examples of those utils for different fields can be found [here](https://gi
 ## Caveats
 
 1. Categories are either created or updated. Currently the tool does not support category deletion.
-2. Currently the library doesn't sync category assets yet [#3](https://github.com/commercetools/commercetools-sync-java/issues/3), but it will not delete them.
+2. The library doesn't sync category assets yet [#3](https://github.com/commercetools/commercetools-sync-java/issues/3), but it will not delete them.
+3. The library will sync all field types of custom fields, except `ReferenceType`. It will be implemented 
+in version [1.0.0-M3](https://github.com/commercetools/commercetools-sync-java/milestone/5).
