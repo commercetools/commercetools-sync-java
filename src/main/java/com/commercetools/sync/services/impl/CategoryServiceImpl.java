@@ -10,6 +10,7 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.commands.UpdateAction;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -35,6 +36,8 @@ public final class CategoryServiceImpl implements CategoryService {
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private static final String CREATE_FAILED = "Failed to create CategoryDraft with key: '%s'. Reason: %s";
     private static final String FETCH_FAILED = "Failed to fetch CategoryDrafts with keys: '%s'. Reason: %s";
+    private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
+        + "category matching.";
 
     public CategoryServiceImpl(@Nonnull final CategorySyncOptions syncOptions) {
         this.syncOptions = syncOptions;
@@ -48,7 +51,15 @@ public final class CategoryServiceImpl implements CategoryService {
         }
 
         final Consumer<List<Category>> categoryPageConsumer = categoriesPage ->
-            categoriesPage.forEach(category -> keyToIdCache.put(category.getKey(), category.getId()));
+            categoriesPage.forEach(category -> {
+                final String key = category.getKey();
+                final String id = category.getId();
+                if (StringUtils.isNotBlank(key)) {
+                    keyToIdCache.put(key, id);
+                } else {
+                    syncOptions.applyWarningCallback(format(CATEGORY_KEY_NOT_SET, id));
+                }
+            });
 
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), CategoryQuery.of(), categoryPageConsumer)
                             .thenAccept(result -> isCached = true)
