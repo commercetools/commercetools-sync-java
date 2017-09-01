@@ -1,0 +1,64 @@
+// OSS SONATYPE SNAPSHOTS upload configuration
+final snapshotsRepository = 'https://oss.sonatype.org/content/repositories/snapshots/'
+
+uploadArchives {
+    doFirst {
+        logger.info("Verifying OSS SONATYPE credentials:")
+        def authentication = repositories.mavenDeployer.snapshotRepository.authentication
+        if (!(authentication.userName?.trim() && authentication.password?.trim())) {
+            throw new InvalidUserDataException('OSS SONATYPE User or API Key is not set. Please ensure one of the ' +
+                    "following is set:\n" +
+                    "1. OSS_USER and OSS_KEY environment variables.\n" +
+                    "2. -DossUser and -DossKey java runtime properties.\n" +
+                    "3. ossUser and ossKey properties in gradle.properties file.")
+        }
+
+        validateSnapshotVersion("Publishing to OSS SONATYPE can only be performed for snapshot versions")
+    }
+
+    repositories {
+        mavenDeployer {
+            snapshotRepository(url: snapshotsRepository) {
+                authentication(
+                        userName: rootProject.hasProperty('ossUser') ? rootProject.property('ossUser') : System.getenv('OSS_USER'),
+                        password: rootProject.hasProperty('ossKey') ? rootProject.property('ossKey') : System.getenv('OSS_KEY')
+                )
+            }
+
+            pom.project {
+                name rootProject.name
+
+                url scmProjectUrl
+                licenses {
+                    license {
+                        name "The Apache Software License, Version 2.0"
+                        url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        distribution "repo"
+                    }
+                }
+                scm {
+                    connection "scm:git:$scmHttpsUrl"
+                    developerConnection "scm:git:$scmSshUrl"
+                    url "$scmProjectUrl"
+                }
+                developers {
+                    developer {
+                        id 'heshamMassoud'
+                        name 'Hesham Massoud'
+                        url 'https://github.com/heshamMassoud'
+                        email 'hesham.massoud@commercetools.com'
+                    }
+                }
+            }
+        }
+    }
+}
+
+void validateSnapshotVersion(String prefix) throws InvalidUserDataException {
+    // validate version has snapshot suffix to publish it to oss sonatype
+    if (!(rootProject.version?.trim() && rootProject.version.endsWith(SNAPSHOT_SUFFIX))) {
+        throw new InvalidUserDataException(
+                "$prefix.\nPlease, specify -Dbuild.version=<version-name>$SNAPSHOT_SUFFIX as the build argument.\n" +
+                        "Current version is \"$rootProject.version\"")
+    }
+}

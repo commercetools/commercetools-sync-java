@@ -1,0 +1,58 @@
+gitPublish {
+    /*
+    NOTE: $GRGIT_USER environment variable must be set to actual github token
+    http://ajoberstar.org/grgit/index.html
+     */
+
+    repoUri = scmSshUrl
+    branch = 'gh-pages'
+
+    // what to publish, this is a standard CopySpec
+    contents {
+        from 'src/pages'
+        from(javadoc) {
+            into "v/$rootProject.version"
+        }
+    }
+
+    // what to keep in the existing branch (include=keep)
+    preserve {
+        include 'v/**'
+        exclude 'v/$rootProject.version'
+    }
+
+    // message used when committing changes
+    commitMessage = "Publishing a new java doc for $rootProject.version version"
+}
+
+gitPublishReset {
+    doFirst {
+        /* try to find github publish token in the next order:
+             1) -Dorg.ajoberstar.grgit.auth.username
+             2) $GRGIT_USER
+             3) $GH_TOKEN
+         interrupt the task if neither of them is set.
+        */
+        final authProperty = 'org.ajoberstar.grgit.auth.username'
+        if (!System.getProperty(authProperty)?.trim()) {
+            def githubToken =
+                    System.getProperty(authProperty) ?:
+                            (project.hasProperty(authProperty) ? project.property(authProperty) :
+                                    (System.getenv('GRGIT_USER') ?:
+                                            System.getenv('GH_TOKEN')))
+
+            if (!githubToken?.trim()) {
+                throw new InvalidUserDataException("Unable to authorise git publish. To authorise, please" +
+                        " make sure one of the following is set:\n" +
+                        "1. GRGIT_USER environment variable.\n" +
+                        "2. GH_TOKEN environment variable.\n" +
+                        "3. -D$authProperty Java runtime property is set.\n" +
+                        "4. $authProperty in gradle.properties file.")
+            }
+
+            System.setProperty(authProperty, githubToken)
+        }
+
+        validateVersion('Documentation publishing could be performed only with a valid release version')
+    }
+}

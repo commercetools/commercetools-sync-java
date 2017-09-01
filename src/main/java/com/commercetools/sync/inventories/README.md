@@ -2,9 +2,15 @@
 
 Utility which provides API for building CTP inventory update actions and inventory synchronisation.
 
-- [Usage](#usage)
-- [Under the hood](#under-the-hood)
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+  - [Usage](#usage)
+    - [Build all update actions](#build-all-update-actions)
+    - [Build particular update action(s)](#build-particular-update-actions)
+    - [Sync list of inventory entry drafts](#sync-list-of-inventory-entry-drafts)
+  - [Under the hood](#under-the-hood)
 
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Usage
 
@@ -50,6 +56,7 @@ of concurrent requests to CTP, thus will improve its performance. An example of 
 
 **Preconditions:** The sync expects a list of `InventoryEntryDraft` objects that have their `sku` fields set,
 otherwise the sync will trigger an `errorCallback` function set by the user (more on it can be found down below in the options explanations).
+
 Every inventory entry may have a reference to a supply `Channel` and a reference to the `Type` of its custom fields. These
 references are matched by their `key`. Therefore, in order for the sync to resolve the actual ids of those references,
 their `key`s has to be supplied in one of two ways:

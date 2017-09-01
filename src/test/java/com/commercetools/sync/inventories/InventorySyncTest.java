@@ -180,9 +180,10 @@ public class InventorySyncTest {
         assertThat(stats.getCreated()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve supply channel reference on"
-            + " InventoryEntryDraft with sku:'%s'. Reason: %s: Channel with key '%s' does not exist.", SKU_3,
-            ReferenceResolutionException.class.getCanonicalName(), KEY_3));
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on InventoryEntryDraft"
+                + " with SKU:'%s'. Reason: %s: Failed to resolve supply channel reference on InventoryEntryDraft with"
+                + " SKU:'%s'. Reason: Channel with key '%s' does not exist.", SKU_3,
+            ReferenceResolutionException.class.getCanonicalName(), SKU_3, KEY_3));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -211,12 +212,11 @@ public class InventorySyncTest {
         assertThat(stats.getCreated()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve supply channel reference on "
-            + "InventoryEntryDraft with sku:'%s'. Reason: "
-            + "%s: Found a UUID in the id field."
-            + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please use"
-            + " the setAllowUuidKeys(true) option in the sync options.", SKU_3,
-            ReferenceResolutionException.class.getCanonicalName()));
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on InventoryEntryDraft"
+                + " with SKU:'%s'. Reason: %s: Failed to resolve supply channel reference on InventoryEntryDraft with"
+                + " SKU:'%s'. Reason: Found a UUID in the id field. Expecting a key without a UUID value. If you want"
+                + " to allow UUID values for reference keys, please use the setAllowUuidKeys(true) option in the sync"
+                + " options.", SKU_3, ReferenceResolutionException.class.getCanonicalName(), SKU_3));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -234,7 +234,7 @@ public class InventorySyncTest {
         assertThat(stats.getCreated()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process inventory entry without sku.");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process inventory entry without SKU.");
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
     }
@@ -251,7 +251,7 @@ public class InventorySyncTest {
         assertThat(stats.getCreated()).isEqualTo(0);
         assertThat(stats.getUpdated()).isEqualTo(0);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process inventory entry without sku.");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process inventory entry without SKU.");
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
     }
@@ -333,7 +333,7 @@ public class InventorySyncTest {
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(
-            format("Failed to update inventory entry of sku '%s' and supply channel id '%s'.", SKU_1, REF_1));
+            format("Failed to update inventory entry of SKU '%s' and supply channel id '%s'.", SKU_1, REF_1));
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(RuntimeException.class);
     }
@@ -364,7 +364,7 @@ public class InventorySyncTest {
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(
-            format("Failed to create inventory entry of sku '%s' and supply channel id '%s'.", SKU_3, REF_1));
+            format("Failed to create inventory entry of SKU '%s' and supply channel id '%s'.", SKU_3, REF_1));
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(RuntimeException.class);
     }
@@ -387,18 +387,18 @@ public class InventorySyncTest {
                                .withCustom(CustomFieldsDraft.ofTypeIdAndJson("", new HashMap<>()));
         newDrafts.add(draftWithNullCustomTypeId);
 
-        inventorySync.sync(newDrafts);
-        assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
+        final InventorySyncStatistics syncStatistics = inventorySync.sync(newDrafts).toCompletableFuture().join();
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(1);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo(
             "Summary: 1 inventory entries were processed in total "
                 + "(0 created, 0 updated and 1 failed to sync).");
         assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve custom type reference on"
-            + " InventoryEntryDraft with sku:'%s'. Reason:"
-            + " %s: Reference 'id' field value is"
+        assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve references on"
+            + " InventoryEntryDraft with SKU:'%s'. Reason: %s: Failed to resolve custom type reference on "
+            + "InventoryEntryDraft with SKU:'1000'. Reason: Reference 'id' field value is"
             + " blank (null/empty).", SKU_1, ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -424,21 +424,22 @@ public class InventorySyncTest {
                                .withCustom(CustomFieldsDraft.ofTypeIdAndJson(uuidCustomTypeKey, new HashMap<>()));
         newDrafts.add(draftWithNullCustomTypeId);
 
-        inventorySync.sync(newDrafts);
-        assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
+        final InventorySyncStatistics syncStatistics = inventorySync.sync(newDrafts).toCompletableFuture().join();
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(1);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo(
             "Summary: 1 inventory entries were processed in total "
                 + "(0 created, 0 updated and 1 failed to sync).");
         assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve custom type reference on"
-            + " InventoryEntryDraft with sku:'%s'. Reason:"
-            + " %s: Found a UUID in the id field."
-            + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please use"
-            + " the setAllowUuidKeys(true) option in the sync options.", SKU_1,
-            ReferenceResolutionException.class.getCanonicalName()));
+        assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve references on"
+                + " InventoryEntryDraft with SKU:'%s'. Reason: %s: Failed to resolve custom type reference on"
+                + " InventoryEntryDraft with SKU:'%s'. Reason:"
+                + " Found a UUID in the id field."
+                + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please"
+                + " use the setAllowUuidKeys(true) option in the sync options.", SKU_1,
+            ReferenceResolutionException.class.getCanonicalName(), SKU_1));
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -533,10 +534,13 @@ public class InventorySyncTest {
         assertThat(stats.getUpdated()).isEqualTo(0);
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve supply channel reference on"
-                + " InventoryEntryDraft with sku:'%s'.", SKU_1));
+                + " InventoryEntryDraft with SKU:'%s'.", SKU_1));
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(SphereException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause().getCause()).isExactlyInstanceOf(CompletionException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()
+                                          .getCause().getCause()).isExactlyInstanceOf(SphereException.class);
     }
 
     @Test

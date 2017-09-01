@@ -19,6 +19,7 @@ public final class CommonTypeUpdateActionUtils {
      * @param oldObject            the object which should be updated.
      * @param newObject            the object with the new information.
      * @param updateActionSupplier the supplier that returns the update action to return in the optional.
+     * @param <T>                  the type of the {@link UpdateAction}
      * @return A filled optional with the update action or an empty optional if the object values are identical.
      */
     @Nonnull

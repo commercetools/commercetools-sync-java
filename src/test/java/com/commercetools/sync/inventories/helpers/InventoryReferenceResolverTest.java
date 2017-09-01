@@ -103,7 +103,9 @@ public class InventoryReferenceResolverTest {
                                  .exceptionally(exception -> {
                                      assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                                      assertThat(exception.getMessage())
-                                         .isEqualTo("Found a UUID in the id field. Expecting a key without a UUID"
+                                         .isEqualTo("Failed to resolve supply channel reference on InventoryEntryDraft"
+                                             + " with SKU:'1000'. Reason: Found a UUID in the id field. Expecting a key"
+                                             + " without a UUID"
                                              + " value. If you want to allow UUID values for reference keys, please"
                                              + " use the setAllowUuidKeys(true) option in the sync options.");
                                      return null;
@@ -125,10 +127,12 @@ public class InventoryReferenceResolverTest {
 
         referenceResolver.resolveSupplyChannelReference(draft)
                          .exceptionally(exception -> {
-                             assertThat(exception).isExactlyInstanceOf(CompletionException.class);
+                             assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getCause())
+                                 .isExactlyInstanceOf(CompletionException.class);
+                             assertThat(exception.getCause().getCause())
                                  .isExactlyInstanceOf(ReferenceResolutionException.class);
-                             assertThat(exception.getCause().getMessage())
+                             assertThat(exception.getCause().getCause().getMessage())
                                  .isEqualTo("Channel with key 'channel-key_1' does not exist.");
                              return null;
                          }).toCompletableFuture().join();
@@ -193,9 +197,10 @@ public class InventoryReferenceResolverTest {
                              assertThat(exception.getCause())
                                  .isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getCause().getMessage())
-                                 .isEqualTo("Found a UUID in the id field. Expecting a key without a UUID value. If you"
-                                     + " want to allow UUID values for reference keys, please use the"
-                                     + " setAllowUuidKeys(true) option in the sync options.");
+                                 .isEqualTo("Failed to resolve custom type reference on InventoryEntryDraft"
+                                         + " with SKU:'1000'. Reason: Found a UUID in the id field. Expecting a key"
+                                         + " without a UUID value. If you want to allow UUID values for reference keys,"
+                                         + " please use the setAllowUuidKeys(true) option in the sync options.");
                              return null;
                          }).toCompletableFuture().join();
     }
@@ -233,7 +238,9 @@ public class InventoryReferenceResolverTest {
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getMessage())
-                                 .isEqualTo("Key is blank (null/empty) on both expanded reference object and reference"
+                                 .isEqualTo("Failed to resolve supply channel reference on InventoryEntryDraft with "
+                                     + "SKU:'1000'. Reason: Key is blank (null/empty) on both expanded reference object"
+                                     + " and reference"
                                      + " id field.");
                              return null;
                          }).toCompletableFuture().join();
@@ -252,8 +259,9 @@ public class InventoryReferenceResolverTest {
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getMessage())
-                                 .isEqualTo("Key is blank (null/empty) on both expanded reference object and reference"
-                                     + " id field.");
+                                 .isEqualTo("Failed to resolve supply channel reference on InventoryEntryDraft with"
+                                     + " SKU:'null'. Reason: Key is blank (null/empty) on both expanded reference"
+                                     + " object and reference id field.");
                              return null;
                          }).toCompletableFuture().join();
     }
@@ -273,7 +281,9 @@ public class InventoryReferenceResolverTest {
                              assertThat(exception.getCause())
                                  .isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getCause().getMessage())
-                                 .isEqualTo("Reference 'id' field value is blank (null/empty).");
+                                 .isEqualTo("Failed to resolve custom type reference on InventoryEntryDraft"
+                                         + " with SKU:'1000'. Reason: Reference 'id' field value is blank"
+                                         + " (null/empty).");
                              return null;
                          }).toCompletableFuture().join();
     }

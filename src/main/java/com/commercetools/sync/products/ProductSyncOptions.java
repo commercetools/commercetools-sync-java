@@ -31,6 +31,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
     ProductSyncOptions(@Nonnull final SphereClient ctpClient,
                        @Nonnull final BiConsumer<String, Throwable> errorCallBack,
                        @Nonnull final Consumer<String> warningCallBack,
+                       final int batchSize,
                        final boolean removeOtherLocales,
                        final boolean removeOtherSetEntries,
                        final boolean removeOtherCollectionEntries,
@@ -40,11 +41,11 @@ public class ProductSyncOptions extends BaseSyncOptions {
                        final boolean publish,
                        final boolean revertStagedChanges,
                        final boolean removeOtherVariants,
-                       final List<String> whiteList,
-                       final List<String> blackList,
-                       final Function<List<UpdateAction<Product>>,
+                       @Nonnull final List<String> whiteList,
+                       @Nonnull final List<String> blackList,
+                       @Nonnull final Function<List<UpdateAction<Product>>,
                            List<UpdateAction<Product>>> actionsFilter) {
-        super(ctpClient, errorCallBack, warningCallBack, removeOtherLocales, removeOtherSetEntries,
+        super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherLocales, removeOtherSetEntries,
             removeOtherCollectionEntries, removeOtherProperties, allowUuid);
         this.updateStaged = updateStaged;
         this.publish = publish;

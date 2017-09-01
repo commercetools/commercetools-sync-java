@@ -1,18 +1,24 @@
-package com.commercetools.sync.inventories;
+package com.commercetools.sync.integration.inventories;
 
+import com.commercetools.sync.inventories.InventorySync;
+import com.commercetools.sync.inventories.InventorySyncOptions;
+import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.queries.ChannelQuery;
 import io.sphere.sdk.client.QueueSphereClientDecorator;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
+import io.sphere.sdk.inventory.expansion.InventoryEntryExpansionModel;
 import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.models.Reference;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -26,23 +32,26 @@ import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
-import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.EXPECTED_DELIVERY_1;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.EXPECTED_DELIVERY_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.QUANTITY_ON_STOCK_1;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.QUANTITY_ON_STOCK_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.RESTOCKABLE_IN_DAYS_1;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.RESTOCKABLE_IN_DAYS_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SKU_1;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SKU_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SUPPLY_CHANNEL_KEY_1;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.SUPPLY_CHANNEL_KEY_2;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.deleteInventoryRelatedResources;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.getChannelByKey;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.getInventoryEntryBySkuAndSupplyChannel;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.populateSourceProject;
-import static com.commercetools.sync.inventories.utils.InventoryItTestUtils.populateTargetProject;
+import static com.commercetools.sync.commons.utils.SyncUtils.replaceInventoriesReferenceIdsWithKeys;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.EXPECTED_DELIVERY_1;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.EXPECTED_DELIVERY_2;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.QUANTITY_ON_STOCK_1;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.QUANTITY_ON_STOCK_2;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_1;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_2;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SKU_1;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SKU_2;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_1;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_2;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteChannelsFromTargetAndSource;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteInventoryEntriesFromTargetAndSource;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.getChannelByKey;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.getInventoryEntryBySkuAndSupplyChannel;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateSourceProject;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateTargetProject;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,7 +59,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Contains integration tests of inventory sync.
  */
-public class InventorySyncItTest {
+public class InventorySyncIT {
 
     /**
      * Deletes inventories and supply channels from source and target CTP projects.
@@ -58,14 +67,22 @@ public class InventorySyncItTest {
      */
     @Before
     public void setup() {
-        deleteInventoryRelatedResources();
+        deleteInventoryEntriesFromTargetAndSource();
+        deleteTypesFromTargetAndSource();
+        deleteChannelsFromTargetAndSource();
         populateSourceProject();
         populateTargetProject();
     }
 
+    /**
+     * Deletes all the test data from the {@code CTP_SOURCE_CLIENT} and the {@code CTP_SOURCE_CLIENT} projects that
+     * were set up in this test class.
+     */
     @AfterClass
-    public static void delete() {
-        deleteInventoryRelatedResources();
+    public static void tearDown() {
+        deleteInventoryEntriesFromTargetAndSource();
+        deleteTypesFromTargetAndSource();
+        deleteChannelsFromTargetAndSource();
     }
 
     @Test
@@ -283,10 +300,13 @@ public class InventorySyncItTest {
     @Test
     public void sync_FromSourceToTargetProjectWithChannelsEnsured_ShouldReturnProperStatistics() {
         //Fetch new inventories from source project. Convert them to drafts.
-        final List<InventoryEntryDraft> newInventories = CTP_SOURCE_CLIENT.execute(InventoryEntryQuery.of()
-            .withExpansionPaths(inventoryEntryExpansionModel -> inventoryEntryExpansionModel.supplyChannel()))
-            .toCompletableFuture().join().getResults().stream()
-            .map(newInventory -> InventoryEntryDraftBuilder.of(newInventory).build()).collect(toList());
+        final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
+            .execute(InventoryEntryQuery.of()
+                                        .withExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
+                                        .plusExpansionPaths(ExpansionPath.of("custom.type")))
+            .toCompletableFuture().join().getResults();
+
+        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -300,10 +320,13 @@ public class InventorySyncItTest {
     @Test
     public void sync_FromSourceToTargetWithoutChannelsEnsured_ShouldReturnProperStatistics() {
         //Fetch new inventories from source project. Convert them to drafts.
-        final List<InventoryEntryDraft> newInventories = CTP_SOURCE_CLIENT.execute(InventoryEntryQuery.of()
-            .withExpansionPaths(inventoryEntryExpansionModel -> inventoryEntryExpansionModel.supplyChannel()))
-            .toCompletableFuture().join().getResults().stream()
-            .map(newInventory -> InventoryEntryDraftBuilder.of(newInventory).build()).collect(toList());
+        final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
+            .execute(InventoryEntryQuery.of()
+                                        .withExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
+                                        .plusExpansionPaths(ExpansionPath.of("custom.type")))
+            .toCompletableFuture().join().getResults();
+
+        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -314,6 +337,7 @@ public class InventorySyncItTest {
         assertStatistics(inventorySyncStatistics, 3, 0,1, 1);
     }
 
+    @Ignore
     @Test
     public void sync_WithBatchProcessing_ShouldCreateAllGivenInventories() {
         //Ensure inventory entries amount in target project before sync.
@@ -344,10 +368,13 @@ public class InventorySyncItTest {
     @Test
     public void sync_WithSphereClientDecorator_ShouldReturnProperStatistics() {
         //Fetch new inventories from source project. Convert them to drafts.
-        final List<InventoryEntryDraft> newInventories = CTP_SOURCE_CLIENT.execute(InventoryEntryQuery.of()
-            .withExpansionPaths(inventoryEntryExpansionModel -> inventoryEntryExpansionModel.supplyChannel()))
-            .toCompletableFuture().join().getResults().stream()
-            .map(newInventory -> InventoryEntryDraftBuilder.of(newInventory).build()).collect(toList());
+        final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
+            .execute(InventoryEntryQuery.of()
+                                        .withExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
+                                        .plusExpansionPaths(ExpansionPath.of("custom.type")))
+            .toCompletableFuture().join().getResults();
+
+        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
 
         /*
          * Prepare sync options and perform sync of draft to target project.
@@ -365,10 +392,13 @@ public class InventorySyncItTest {
     @Test
     public void sync_ShouldReturnProperStatisticsObject() {
         //Fetch new inventories from source project. Convert them to drafts.
-        final List<InventoryEntryDraft> newInventories = CTP_SOURCE_CLIENT.execute(InventoryEntryQuery.of()
-            .withExpansionPaths(inventoryEntryExpansionModel -> inventoryEntryExpansionModel.supplyChannel()))
-            .toCompletableFuture().join().getResults().stream()
-            .map(newInventory -> InventoryEntryDraftBuilder.of(newInventory).build()).collect(toList());
+        final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
+            .execute(InventoryEntryQuery.of()
+                                        .withExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
+                                        .plusExpansionPaths(ExpansionPath.of("custom.type")))
+            .toCompletableFuture().join().getResults();
+
+        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -381,7 +411,7 @@ public class InventorySyncItTest {
         assertThat(inventorySyncStatistics.getCreated()).isEqualTo(1);
         assertThat(inventorySyncStatistics.getUpdated()).isEqualTo(1);
         assertThat(inventorySyncStatistics.getFailed()).isEqualTo(0);
-        assertThat(inventorySyncStatistics.getProcessingTimeInMillis()).isGreaterThan(0L);
+        assertThat(inventorySyncStatistics.getLatestBatchProcessingTimeInMillis()).isGreaterThan(0L);
         assertThat(inventorySyncStatistics.getReportMessage())
             .isEqualTo("Summary: 3 inventory entries were processed in total (1 created, 1 updated and 0 failed to sync"
                 + ").");
@@ -390,10 +420,13 @@ public class InventorySyncItTest {
     @Test
     public void sync_WithCustomErrorCallback_ShouldExecuteCallbackOnError() {
         //Fetch new inventories from source project. Convert them to drafts.
-        final List<InventoryEntryDraft> newInventories = CTP_SOURCE_CLIENT.execute(InventoryEntryQuery.of()
-            .withExpansionPaths(inventoryEntryExpansionModel -> inventoryEntryExpansionModel.supplyChannel()))
-            .toCompletableFuture().join().getResults().stream()
-            .map(newInventory -> InventoryEntryDraftBuilder.of(newInventory).build()).collect(toList());
+        final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
+            .execute(InventoryEntryQuery.of()
+                                        .withExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
+                                        .plusExpansionPaths(ExpansionPath.of("custom.type")))
+            .toCompletableFuture().join().getResults();
+
+        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final AtomicInteger invocationCounter = new AtomicInteger(0);
