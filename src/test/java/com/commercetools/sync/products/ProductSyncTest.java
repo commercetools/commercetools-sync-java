@@ -1,7 +1,7 @@
 package com.commercetools.sync.products;
 
-import com.commercetools.sync.products.actions.ProductUpdateActionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.products.utils.ProductSyncUtils;
 import com.commercetools.sync.services.ProductService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.client.SphereClient;
@@ -74,7 +74,6 @@ public class ProductSyncTest {
     public boolean hasStagedChanges;
 
     private ProductService service;
-    private ProductUpdateActionsBuilder updateActionsBuilder;
 
     /**
      * Initialises dependencies of component under test.
@@ -86,7 +85,6 @@ public class ProductSyncTest {
         when(service.update(any(), anyList())).thenReturn(completedFuture(product));
         when(service.revert(any())).thenReturn(completedFuture(product));
         when(service.publish(any())).thenReturn(completedFuture(null));
-        updateActionsBuilder = mock(ProductUpdateActionsBuilder.class);
         productDraft = productDraft();
         syncOptions = syncOptions();
     }
@@ -96,7 +94,7 @@ public class ProductSyncTest {
         when(service.fetch(any())).thenReturn(completedFuture(Optional.empty()));
         when(service.create(any())).thenReturn(completedFuture(product));
 
-        ProductSync sync = new ProductSync(syncOptions, service, updateActionsBuilder);
+        ProductSync sync = new ProductSync(syncOptions, service);
         ProductSyncStatistics statistics = join(sync.sync(singletonList(productDraft)));
 
         verifyStatistics(statistics, 1, 0, 1);
@@ -104,16 +102,15 @@ public class ProductSyncTest {
         verify(service).create(same(productDraft));
         verifyServicePublish();
         verifyNoMoreInteractions(service);
-        verifyNoMoreInteractions(updateActionsBuilder);
     }
 
     @Test
     public void sync_expectServiceFetchAndUpdateExisting() {
         when(service.fetch(any())).thenReturn(completedFuture(Optional.ofNullable(product)));
         List<UpdateAction<Product>> updateActions = singletonList(ChangeName.of(en("name2")));
-        when(updateActionsBuilder.buildActions(any(), any(), any())).thenReturn(updateActions);
+        when(ProductSyncUtils.buildActions(any(), any(), any())).thenReturn(updateActions);
 
-        ProductSync sync = new ProductSync(syncOptions, service, updateActionsBuilder);
+        ProductSync sync = new ProductSync(syncOptions, service);
         ProductSyncStatistics statistics = join(sync.sync(singletonList(productDraft)));
 
         verifyStatistics(statistics, 1, 1, 0);
@@ -121,18 +118,17 @@ public class ProductSyncTest {
         verify(service).update(same(product), same(updateActions));
         verifyServiceRevert();
         verifyServicePublish();
-        verify(updateActionsBuilder).buildActions(same(product), same(productDraft), same(syncOptions));
+        verify(ProductSyncUtils.buildActions(same(product), same(productDraft), same(syncOptions)));
         verifyNoMoreInteractions(service);
-        verifyNoMoreInteractions(updateActionsBuilder);
     }
 
     @Test
     public void sync_expectServiceFetchAndUpdateExistingAndPublish() {
         when(service.fetch(any())).thenReturn(completedFuture(Optional.of(product)));
         List<UpdateAction<Product>> updateActions = singletonList(ChangeName.of(en("name2")));
-        when(updateActionsBuilder.buildActions(any(), any(), any())).thenReturn(updateActions);
+        when(ProductSyncUtils.buildActions(any(), any(), any())).thenReturn(updateActions);
 
-        ProductSync sync = new ProductSync(syncOptions, service, updateActionsBuilder);
+        ProductSync sync = new ProductSync(syncOptions, service);
         ProductSyncStatistics statistics = join(sync.sync(singletonList(productDraft)));
 
         verifyStatistics(statistics, 1, 1, 0);
@@ -140,26 +136,24 @@ public class ProductSyncTest {
         verify(service).update(same(product), same(updateActions));
         verifyServiceRevert();
         verifyServicePublish();
-        verify(updateActionsBuilder).buildActions(same(product), same(productDraft), same(syncOptions));
+        verify(ProductSyncUtils.buildActions(same(product), same(productDraft), same(syncOptions)));
         verifyNoMoreInteractions(service);
-        verifyNoMoreInteractions(updateActionsBuilder);
     }
 
     @Test
     public void sync_expectServiceFetchAndNoUpdateExistingAsIdentical() {
         when(service.fetch(any())).thenReturn(completedFuture(Optional.of(product)));
-        when(updateActionsBuilder.buildActions(any(), any(), any())).thenReturn(emptyList());
+        when(ProductSyncUtils.buildActions(any(), any(), any())).thenReturn(emptyList());
 
-        ProductSync sync = new ProductSync(syncOptions, service, updateActionsBuilder);
+        ProductSync sync = new ProductSync(syncOptions, service);
         ProductSyncStatistics statistics = join(sync.sync(singletonList(productDraft)));
 
         verifyStatistics(statistics, 1, shouldBePublished() ? 1 : 0, 0);
         verify(service).fetch(eq(productDraft.getKey()));
         verifyServiceRevert();
         verifyServicePublish();
-        verify(updateActionsBuilder).buildActions(same(product), same(productDraft), same(syncOptions));
+        verify(ProductSyncUtils.buildActions(same(product), same(productDraft), same(syncOptions)));
         verifyNoMoreInteractions(service);
-        verifyNoMoreInteractions(updateActionsBuilder);
     }
 
     private ProductSyncOptions syncOptions() {

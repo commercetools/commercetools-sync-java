@@ -22,7 +22,7 @@ public class ProductSyncOptionsBuilderTest {
         Consumer warningCallBack = mock(Consumer.class);
 
         ProductSyncOptions options = ProductSyncOptionsBuilder
-                .of(client, errorCallBack, warningCallBack)
+                .of(client)
                 .build();
 
         assertThat(options.getCtpClient()).isSameAs(client);
@@ -50,14 +50,14 @@ public class ProductSyncOptionsBuilderTest {
         Function actionsFilter = mock(Function.class);
 
         ProductSyncOptions options = ProductSyncOptionsBuilder
-                .of(client, errorCallBack, warningCallBack)
+                .of(client)
                 .updateStaged(false)
                 .publish(true)
                 .revertStagedChanges(true)
                 .removeOtherVariants(false)
                 .whiteList(singletonList("white1"))
                 .blackList(singletonList("black1"))
-                .actionsFilter(actionsFilter)
+                .setUpdateActionsFilter(actionsFilter)
                 .setRemoveOtherLocales(false)
                 .setRemoveOtherSetEntries(false)
                 .setRemoveOtherCollectionEntries(false)

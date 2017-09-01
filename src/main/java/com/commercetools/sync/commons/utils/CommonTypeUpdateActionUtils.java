@@ -5,9 +5,13 @@ import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
+
+import static java.util.Collections.emptyList;
 
 public final class CommonTypeUpdateActionUtils {
 
@@ -23,11 +27,19 @@ public final class CommonTypeUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the object values are identical.
      */
     @Nonnull
-    public static <T> Optional<UpdateAction<T>> buildUpdateAction(@Nullable final Object oldObject,
-                                                                  @Nullable final Object newObject,
+    public static <T, S> Optional<UpdateAction<T>> buildUpdateAction(@Nullable final S oldObject,
+                                                                  @Nullable final S newObject,
                                                                   @Nonnull final Supplier<UpdateAction<T>>
                                                                     updateActionSupplier) {
         return !Objects.equals(oldObject, newObject)
             ? Optional.ofNullable(updateActionSupplier.get()) : Optional.empty();
+    }
+
+    @Nonnull
+    public static <T, S> List<UpdateAction<T>> buildUpdateActions(@Nullable final S oldObject,
+                                                                  @Nullable final S newObject,
+                                                                  @Nonnull final Function<S, List<UpdateAction<T>>>
+                                                                      updateActionSupplier) {
+        return !Objects.equals(oldObject, newObject) ? updateActionSupplier.apply(oldObject) : emptyList();
     }
 }

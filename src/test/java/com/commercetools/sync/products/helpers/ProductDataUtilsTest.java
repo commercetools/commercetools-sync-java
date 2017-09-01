@@ -6,12 +6,12 @@ import io.sphere.sdk.products.ProductCatalogData;
 import io.sphere.sdk.products.ProductData;
 import org.junit.Test;
 
-import static com.commercetools.sync.products.helpers.ProductSyncUtils.masterData;
+import static com.commercetools.sync.products.utils.ProductDataUtils.masterData;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ProductSyncUtilsTest {
+public class ProductDataUtilsTest {
 
     @Test
     public void masterData_test() {

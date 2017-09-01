@@ -12,11 +12,8 @@ import io.sphere.sdk.producttypes.ProductType;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CompletionStage;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
-import static com.commercetools.sync.products.helpers.ProductSyncUtils.masterData;
+import static com.commercetools.sync.products.utils.ProductDataUtils.masterData;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Locale.ENGLISH;
 import static java.util.Objects.isNull;
@@ -46,9 +43,7 @@ public class ProductTestUtils {
     @SuppressWarnings("unchecked")
     public static ProductSyncOptions syncOptions(final SphereClient client, final boolean publish,
                                                  final boolean updateStaged, final boolean revertStagedChanges) {
-        BiConsumer errorCallBack = mock(BiConsumer.class);
-        Consumer warningCallBack = mock(Consumer.class);
-        return ProductSyncOptionsBuilder.of(client, errorCallBack, warningCallBack)
+        return ProductSyncOptionsBuilder.of(client)
             .publish(publish)
             .revertStagedChanges(revertStagedChanges)
             .updateStaged(updateStaged)
@@ -67,10 +62,6 @@ public class ProductTestUtils {
 
     public static Product product(final String resourcePath) {
         return readObjectFromResource(resourcePath, Product.typeReference());
-    }
-
-    static <X> X join(final CompletionStage<X> stage) {
-        return stage.toCompletableFuture().join();
     }
 
     @Nullable

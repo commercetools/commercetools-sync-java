@@ -8,7 +8,6 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.Custom;
-import io.sphere.sdk.types.CustomDraft;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
@@ -32,7 +31,7 @@ public final class SyncUtils {
      * @param batchSize the size of each batch.
      * @return a list of lists where each list represents a batch of resources.
      */
-    public static <T extends CustomDraft> List<List<T>> batchDrafts(@Nonnull final List<T> drafts,
+    public static <T> List<List<T>> batchDrafts(@Nonnull final List<T> drafts,
                                                                        final int batchSize) {
         List<List<T>> batches = new ArrayList<>();
         for (int i = 0; i < drafts.size() && batchSize > 0; i += batchSize) {

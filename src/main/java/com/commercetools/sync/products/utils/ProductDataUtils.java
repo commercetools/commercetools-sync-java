@@ -1,4 +1,4 @@
-package com.commercetools.sync.products.helpers;
+package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.products.ProductSyncOptions;
 import io.sphere.sdk.products.Product;
@@ -6,7 +6,7 @@ import io.sphere.sdk.products.ProductData;
 
 import javax.annotation.Nullable;
 
-public class ProductSyncUtils {
+public class ProductDataUtils {
 
     /**
      * Provides the {@link ProductData} from {@code product} resource for its staged or current projection

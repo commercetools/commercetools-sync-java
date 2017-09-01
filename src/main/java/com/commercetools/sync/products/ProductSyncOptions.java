@@ -80,7 +80,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
         return blackList;
     }
 
-    Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> getActionsFilter() {
+    public Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> getActionsFilter() {
         return actionsFilter;
     }
 }

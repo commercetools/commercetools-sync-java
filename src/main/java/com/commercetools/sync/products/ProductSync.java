@@ -1,10 +1,9 @@
 package com.commercetools.sync.products;
 
 import com.commercetools.sync.commons.BaseSync;
-import com.commercetools.sync.products.actions.ProductUpdateActionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.products.utils.ProductSyncUtils;
 import com.commercetools.sync.services.ProductService;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductCatalogData;
@@ -13,26 +12,24 @@ import io.sphere.sdk.products.ProductDraft;
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.batchDrafts;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
 
     private final ProductService service;
-    private final ProductUpdateActionsBuilder updateActionsBuilder;
 
     public ProductSync(final ProductSyncOptions productSyncOptions) {
-        this(productSyncOptions, ProductService.of(productSyncOptions.getCtpClient()),
-            ProductUpdateActionsBuilder.of());
+        this(productSyncOptions, ProductService.of(productSyncOptions.getCtpClient()));
     }
 
-    ProductSync(final ProductSyncOptions productSyncOptions, final ProductService service,
-                final ProductUpdateActionsBuilder updateActionsBuilder) {
+    ProductSync(final ProductSyncOptions productSyncOptions, final ProductService productService) {
         super(new ProductSyncStatistics(), productSyncOptions);
-        this.service = service;
-        this.updateActionsBuilder = updateActionsBuilder;
+        this.service = productService;
     }
 
     @Override
@@ -52,21 +49,36 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         return completedFuture(statistics);
     }
 
+    @Override
+    protected CompletionStage<ProductSyncStatistics> syncBatches(@Nonnull List<List<ProductDraft>> batches,
+                                                                 @Nonnull CompletionStage<ProductSyncStatistics> result) {
+        if (batches.isEmpty()) {
+            return result;
+        }
+        final List<ProductDraft> firstBatch = batches.remove(0);
+        return syncBatches(batches, result.thenCompose(subResult -> processBatch(firstBatch)));
+    }
+
+    @Override
+    protected CompletionStage<ProductSyncStatistics> processBatch(@Nonnull List<ProductDraft> batch) {
+        final List<List<ProductDraft>> batches = batchDrafts(batch, syncOptions.getBatchSize());
+        return syncBatches(batches, CompletableFuture.completedFuture(statistics));
+    }
+
     private CompletionStage<Void> createProduct(final ProductDraft productDraft) {
         return publishIfNeeded(service.create(productDraft))
             .thenRun(statistics::incrementCreated);
     }
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<Void> syncProduct(final Product product, final ProductDraft productDraft) {
-        return revertIfNeeded(product).thenCompose(preparedProduct -> {
+    private CompletionStage<Void> syncProduct(final Product oldProduct, final ProductDraft newProduct) {
+        return revertIfNeeded(oldProduct).thenCompose(preparedProduct -> {
             List<UpdateAction<Product>> updateActions =
-                updateActionsBuilder.buildActions(product, productDraft, syncOptions);
+                ProductSyncUtils.buildActions(oldProduct, newProduct, syncOptions);
             if (!updateActions.isEmpty()) {
-                return publishIfNeeded(service.update(product, updateActions))
+                return publishIfNeeded(service.update(oldProduct, updateActions))
                     .thenRun(statistics::incrementUpdated);
             }
-            return publishIfNeeded(completedFuture(product)).thenAccept(published -> {
+            return publishIfNeeded(completedFuture(oldProduct)).thenAccept(published -> {
                 if (published) {
                     statistics.incrementUpdated();
                 }
@@ -87,14 +99,15 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private CompletionStage<Boolean> publishIfNeeded(final CompletionStage<Product> productStage) {
         if (syncOptions.shouldPublish()) {
             return productStage.thenCompose(product -> {
-                ProductCatalogData data = product.getMasterData();
+                final ProductCatalogData data = product.getMasterData();
                 if (!data.isPublished() || data.hasStagedChanges()) {
-                    return service.publish(product).thenApply(p -> true);
+                    return service.publish(product)
+                                  .thenApply(publishedProduct -> true);
                 }
-                return productStage.thenApply(p -> false);
+                return productStage.thenApply(publishedProduct -> false);
             });
         }
-        return productStage.thenApply(p -> false);
+        return productStage.thenApply(publishedProduct -> false);
     }
 
 }

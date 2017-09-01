@@ -7,8 +7,6 @@ import io.sphere.sdk.products.Product;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static java.util.Collections.emptyList;
@@ -16,9 +14,7 @@ import static java.util.function.Function.identity;
 
 public final class ProductSyncOptionsBuilder
     extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions> {
-
-    private final BiConsumer<String, Throwable> errorCallBack;
-    private final Consumer<String> warningCallBack;
+    public static final int BATCH_SIZE_DEFAULT = 50;
 
     private boolean updateStaged = true;
     private boolean publish = false;
@@ -29,33 +25,12 @@ public final class ProductSyncOptionsBuilder
     private List<String> blackList = emptyList();
     private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> actionsFilter = identity();
 
-    private ProductSyncOptionsBuilder(final SphereClient ctpClient,
-                                      final BiConsumer<String, Throwable> errorCallBack,
-                                      final Consumer<String> warningCallBack) {
+    private ProductSyncOptionsBuilder(final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
-        this.errorCallBack = errorCallBack;
-        this.warningCallBack = warningCallBack;
     }
 
-    @Override
-    public ProductSyncOptions build() {
-        return new ProductSyncOptions(
-            ctpClient,
-            errorCallBack,
-            warningCallBack,
-            removeOtherLocales,
-            removeOtherSetEntries,
-            removeOtherCollectionEntries,
-            removeOtherProperties,
-            allowUuid,
-            updateStaged,
-            publish,
-            revertStagedChanges,
-            removeOtherVariants,
-            whiteList,
-            blackList,
-            actionsFilter
-        );
+    public static ProductSyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
+        return new ProductSyncOptionsBuilder(ctpClient).setBatchSize(BATCH_SIZE_DEFAULT);
     }
 
     public ProductSyncOptionsBuilder updateStaged(final boolean updateStaged) {
@@ -88,17 +63,34 @@ public final class ProductSyncOptionsBuilder
         return this;
     }
 
-    public ProductSyncOptionsBuilder actionsFilter(final Function<List<UpdateAction<Product>>,
-            List<UpdateAction<Product>>> actionsFilter) {
+    public ProductSyncOptionsBuilder setUpdateActionsFilter(final Function<List<UpdateAction<Product>>,
+        List<UpdateAction<Product>>> actionsFilter) {
         this.actionsFilter = actionsFilter;
         return this;
     }
 
-    public static ProductSyncOptionsBuilder of(@Nonnull final SphereClient ctpClient,
-                                               @Nonnull final BiConsumer<String, Throwable> errorCallBack,
-                                               @Nonnull final Consumer<String> warningCallBack) {
-        return new ProductSyncOptionsBuilder(ctpClient, errorCallBack, warningCallBack);
+    @Override
+    public ProductSyncOptions build() {
+        return new ProductSyncOptions(
+            ctpClient,
+            errorCallBack,
+            warningCallBack,
+            batchSize,
+            removeOtherLocales,
+            removeOtherSetEntries,
+            removeOtherCollectionEntries,
+            removeOtherProperties,
+            allowUuid,
+            updateStaged,
+            publish,
+            revertStagedChanges,
+            removeOtherVariants,
+            whiteList,
+            blackList,
+            actionsFilter
+        );
     }
+
 
     @Override
     protected ProductSyncOptionsBuilder getThis() {
