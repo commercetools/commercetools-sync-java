@@ -11,7 +11,6 @@ import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -21,37 +20,27 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
 
-    private final ProductService service;
+    private final ProductService productService;
 
-    public ProductSync(final ProductSyncOptions productSyncOptions) {
+    public ProductSync(@Nonnull final ProductSyncOptions productSyncOptions) {
         this(productSyncOptions, ProductService.of(productSyncOptions.getCtpClient()));
     }
 
-    ProductSync(final ProductSyncOptions productSyncOptions, final ProductService productService) {
+    ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService) {
         super(new ProductSyncStatistics(), productSyncOptions);
-        this.service = productService;
+        this.productService = productService;
     }
 
     @Override
     protected CompletionStage<ProductSyncStatistics> process(@Nonnull final List<ProductDraft> resourceDrafts) {
-        for (ProductDraft productDraft : resourceDrafts) {
-            try {
-                CompletionStage<Optional<Product>> fetch = service.fetch(productDraft.getKey());
-                fetch.thenCompose(productOptional -> productOptional
-                    .map(product -> syncProduct(product, productDraft))
-                    .orElseGet(() -> createProduct(productDraft))
-                ).toCompletableFuture().get();
-            } catch (InterruptedException | ExecutionException exception) {
-                exception.printStackTrace();
-            }
-            statistics.incrementProcessed();
-        }
-        return completedFuture(statistics);
+        final List<List<ProductDraft>> batches = batchDrafts(resourceDrafts, syncOptions.getBatchSize());
+        return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
 
     @Override
-    protected CompletionStage<ProductSyncStatistics> syncBatches(@Nonnull List<List<ProductDraft>> batches,
-                                                                 @Nonnull CompletionStage<ProductSyncStatistics> result) {
+    protected CompletionStage<ProductSyncStatistics> syncBatches(@Nonnull final List<List<ProductDraft>> batches,
+                                                                 @Nonnull final CompletionStage<ProductSyncStatistics>
+                                                                     result) {
         if (batches.isEmpty()) {
             return result;
         }
@@ -60,54 +49,68 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     @Override
-    protected CompletionStage<ProductSyncStatistics> processBatch(@Nonnull List<ProductDraft> batch) {
-        final List<List<ProductDraft>> batches = batchDrafts(batch, syncOptions.getBatchSize());
-        return syncBatches(batches, CompletableFuture.completedFuture(statistics));
+    protected CompletionStage<ProductSyncStatistics> processBatch(@Nonnull final List<ProductDraft> batch) {
+        for (ProductDraft productDraft : batch) {
+            try {
+                productService.fetch(productDraft.getKey())
+                              .thenCompose(productOptional -> productOptional
+                                  .map(product -> syncProduct(product, productDraft))
+                                  .orElseGet(() -> createProduct(productDraft))
+                              ).toCompletableFuture().get();
+            } catch (InterruptedException | ExecutionException exception) {
+                exception.printStackTrace();
+            }
+            statistics.incrementProcessed();
+        }
+        return completedFuture(statistics);
     }
 
-    private CompletionStage<Void> createProduct(final ProductDraft productDraft) {
-        return publishIfNeeded(service.create(productDraft))
-            .thenRun(statistics::incrementCreated);
-    }
-
-    private CompletionStage<Void> syncProduct(final Product oldProduct, final ProductDraft newProduct) {
+    @Nonnull
+    private CompletionStage<Void> syncProduct(@Nonnull final Product oldProduct,
+                                              @Nonnull final ProductDraft newProduct) {
         return revertIfNeeded(oldProduct).thenCompose(preparedProduct -> {
             List<UpdateAction<Product>> updateActions =
                 ProductSyncUtils.buildActions(oldProduct, newProduct, syncOptions);
             if (!updateActions.isEmpty()) {
-                return publishIfNeeded(service.update(oldProduct, updateActions))
-                    .thenRun(statistics::incrementUpdated);
+                return productService.update(oldProduct, updateActions)
+                                     .thenCompose(this::publishIfNeeded)
+                                     .thenRun(statistics::incrementUpdated);
             }
-            return publishIfNeeded(completedFuture(oldProduct)).thenAccept(published -> {
-                if (published) {
-                    statistics.incrementUpdated();
-                }
-            });
+            return publishIfNeeded(oldProduct)
+                .thenAccept(published -> {
+                    if (published) {
+                        statistics.incrementUpdated();
+                    }
+                });
         });
     }
 
-    private CompletionStage<Product> revertIfNeeded(final Product product) {
-        CompletionStage<Product> productStage = completedFuture(product);
+    @Nonnull
+    private CompletionStage<Product> revertIfNeeded(@Nonnull final Product product) {
         if (syncOptions.shouldRevertStagedChanges()) {
             if (product.getMasterData().hasStagedChanges()) {
-                productStage = service.revert(product);
+                return productService.revert(product);
             }
         }
-        return productStage;
+        return CompletableFuture.completedFuture(product);
     }
 
-    private CompletionStage<Boolean> publishIfNeeded(final CompletionStage<Product> productStage) {
+    @Nonnull
+    private CompletionStage<Boolean> publishIfNeeded(@Nonnull final Product product) {
         if (syncOptions.shouldPublish()) {
-            return productStage.thenCompose(product -> {
-                final ProductCatalogData data = product.getMasterData();
-                if (!data.isPublished() || data.hasStagedChanges()) {
-                    return service.publish(product)
-                                  .thenApply(publishedProduct -> true);
-                }
-                return productStage.thenApply(publishedProduct -> false);
-            });
+            final ProductCatalogData data = product.getMasterData();
+            if (!data.isPublished() || data.hasStagedChanges()) {
+                return productService.publish(product)
+                                     .thenApply(publishedProduct -> true);
+            }
         }
-        return productStage.thenApply(publishedProduct -> false);
+        return CompletableFuture.completedFuture(false);
     }
 
+    @Nonnull
+    private CompletionStage<Void> createProduct(final ProductDraft productDraft) {
+        return productService.create(productDraft)
+                             .thenCompose(this::publishIfNeeded)
+                             .thenRun(statistics::incrementCreated);
+    }
 }
