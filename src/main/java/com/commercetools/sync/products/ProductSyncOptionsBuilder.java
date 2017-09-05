@@ -15,12 +15,10 @@ import static java.util.function.Function.identity;
 public final class ProductSyncOptionsBuilder
     extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions> {
     public static final int BATCH_SIZE_DEFAULT = 50;
-
     private boolean updateStaged = true;
     private boolean publish = false;
     private boolean revertStagedChanges = false;
     private boolean removeOtherVariants = true;
-
     private List<String> whiteList = emptyList();
     private List<String> blackList = emptyList();
     private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> actionsFilter = identity();
@@ -53,17 +51,17 @@ public final class ProductSyncOptionsBuilder
         return this;
     }
 
-    public ProductSyncOptionsBuilder whiteList(final List<String> whiteList) {
+    public ProductSyncOptionsBuilder whiteList(@Nonnull final List<String> whiteList) {
         this.whiteList = whiteList;
         return this;
     }
 
-    public ProductSyncOptionsBuilder blackList(final List<String> blackList) {
+    public ProductSyncOptionsBuilder blackList(@Nonnull final List<String> blackList) {
         this.blackList = blackList;
         return this;
     }
 
-    public ProductSyncOptionsBuilder setUpdateActionsFilter(final Function<List<UpdateAction<Product>>,
+    public ProductSyncOptionsBuilder setUpdateActionsFilter(@Nonnull final Function<List<UpdateAction<Product>>,
         List<UpdateAction<Product>>> actionsFilter) {
         this.actionsFilter = actionsFilter;
         return this;

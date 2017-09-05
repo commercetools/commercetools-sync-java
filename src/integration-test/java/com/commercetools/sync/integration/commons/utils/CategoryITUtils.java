@@ -40,11 +40,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
-public class CategoryITUtils {
+public final class CategoryITUtils {
     public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
     public static final String OLD_CATEGORY_CUSTOM_TYPE_NAME = "old_type_name";
     public static final String LOCALISED_STRING_CUSTOM_FIELD_NAME = "backgroundColor";
@@ -188,7 +189,7 @@ public class CategoryITUtils {
      * @param ctpClient      defines the CTP project to create the categories on.
      * @param categoryDrafts the drafts to build the categories from.
      */
-    public static void createCategories(@Nonnull final SphereClient ctpClient,
+    public static List<Category> createCategories(@Nonnull final SphereClient ctpClient,
                                         @Nonnull final List<CategoryDraft> categoryDrafts) {
         final List<CompletableFuture<Category>> futures = new ArrayList<>();
         for (CategoryDraft categoryDraft : categoryDrafts) {
@@ -200,6 +201,11 @@ public class CategoryITUtils {
         }
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
                          .toCompletableFuture().join();
+        return futures.stream()
+                      .map(CompletableFuture::toCompletableFuture)
+                      .map(CompletableFuture::join)
+                      .collect(Collectors.toList());
+
     }
 
     /**

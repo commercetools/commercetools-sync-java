@@ -12,8 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * This Class is a WIP and should be reimplemented when the Product Sync module is implemented.
- * It is just provided as a skeleton/reminder for the options it should include in the future.
+ * TODO: removeOtherVariants, whiteList, blackList
  */
 public class ProductSyncOptions extends BaseSyncOptions {
     private final boolean updateStaged; // whether to compare and update the staged or current projection data.
@@ -21,7 +20,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
     private final boolean revertStagedChanges; // whether to revert potential staged changes before synchronization.
     private final boolean removeOtherVariants; // whether to remove other product variants or not.
 
-    // defines which attributes
+    // defines which attributes to calculate update actions for
     private final List<String> whiteList;
     private final List<String> blackList;
 
@@ -29,8 +28,8 @@ public class ProductSyncOptions extends BaseSyncOptions {
     private final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> actionsFilter;
 
     ProductSyncOptions(@Nonnull final SphereClient ctpClient,
-                       @Nonnull final BiConsumer<String, Throwable> errorCallBack,
-                       @Nonnull final Consumer<String> warningCallBack,
+                       final BiConsumer<String, Throwable> errorCallBack,
+                       final Consumer<String> warningCallBack,
                        final int batchSize,
                        final boolean removeOtherLocales,
                        final boolean removeOtherSetEntries,
@@ -41,9 +40,9 @@ public class ProductSyncOptions extends BaseSyncOptions {
                        final boolean publish,
                        final boolean revertStagedChanges,
                        final boolean removeOtherVariants,
-                       @Nonnull final List<String> whiteList,
-                       @Nonnull final List<String> blackList,
-                       @Nonnull final Function<List<UpdateAction<Product>>,
+                       final List<String> whiteList,
+                       final List<String> blackList,
+                       final Function<List<UpdateAction<Product>>,
                            List<UpdateAction<Product>>> actionsFilter) {
         super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherLocales, removeOtherSetEntries,
             removeOtherCollectionEntries, removeOtherProperties, allowUuid);

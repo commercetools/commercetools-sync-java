@@ -1,6 +1,6 @@
 package com.commercetools.sync.services;
 
-import com.commercetools.sync.products.ProductTestUtils;
+import com.commercetools.sync.products.ProductSyncMockUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
@@ -56,7 +56,7 @@ public class ProductServiceTest {
         when(ctpClient.execute(any())).thenReturn(completedFuture(mock));
 
         List<UpdateAction<Product>> updateActions =
-            singletonList(ChangeName.of(ProductTestUtils.en("new name")));
+            singletonList(ChangeName.of(ProductSyncMockUtils.en("new name")));
         Product product = service.update(mock, updateActions).toCompletableFuture().join();
 
         assertThat(product).isSameAs(mock);
