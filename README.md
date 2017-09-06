@@ -18,6 +18,7 @@ Java API which exposes utilities for building update actions and automatic synci
       - [Package JARs and run tests](#package-jars-and-run-tests)
       - [Full build with tests, but without install to maven local repo (Recommended)](#full-build-with-tests-but-without-install-to-maven-local-repo-recommended)
       - [Install to local maven repo](#install-to-local-maven-repo)
+      - [Build and publish JavaDoc](#build-and-publish-javadoc)
       - [Publish to Bintray](#publish-to-bintray)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -96,6 +97,11 @@ For example, `#65: Remove redundant space.`
 ##### Install to local maven repo
 ````bash
 ./gradlew clean install
+````
+
+##### Build and publish JavaDoc
+````bash
+./gradlew clean -Dbuild.version={version} gitPublishPush
 ````
 
 ##### Publish to Bintray
