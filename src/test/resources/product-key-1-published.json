@@ -18,6 +18,15 @@
       "slug": {
         "en": "rehruecken-o-kn"
       },
+      "categories": [
+        {
+          "typeId": "category",
+          "id": "1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        }
+      ],
+      "categoryOrderHints": {
+        "1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.43"
+      },
       "masterVariant": {
         "id": 1,
         "sku": "3065833",
