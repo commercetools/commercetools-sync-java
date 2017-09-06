@@ -10,6 +10,9 @@ Java API which exposes utilities for building update actions and automatic synci
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 - [Usage](#usage)
   - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+    - [Maven](#maven)
+    - [Gradle](#gradle)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
   - [Build](#build)
@@ -47,14 +50,29 @@ Currently this library supports synchronising
  - install Java 8
  - a target CTP project to which your source of data would be synced to.
 
-<!--- TODO 
+
 ### Installation
-
+There are multiple ways to download the commercetools sync dependency, based on your dependency manager. Here are the 
+most popular ones:
 #### Maven 
-
-#### SBT 
-
-#### Gradle -->
+````xml
+<dependency>
+  <groupId>com.commercetools</groupId>
+  <artifactId>commercetools-sync-java</artifactId>
+  <version>v1.0.0-M1</version>
+  <type>pom</type>
+</dependency>
+````
+#### Gradle
+````groovy
+compile 'com.commercetools:commercetools-sync-java:v1.0.0-M1'
+````
+<!-- TODO #### SBT 
+````java
+libraryDependencies ++= Seq(
+    "com.commercetools" % "commercetools-sync-java" % "v1.0.0-M1",
+ )
+````-->
 
 ## Roadmap
 https://github.com/commercetools/commercetools-sync-java/milestones
