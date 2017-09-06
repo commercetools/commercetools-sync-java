@@ -24,16 +24,16 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.c
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.buildProductDraft;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.buildProductType;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.buildRandomCategoryOrderHints;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProducts;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.buildRandomCategoryOrderHints;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductSyncIT {
-    private static final String PRODUCT_KEY_1_RESOURCE_PATH = "product-key-1.json";
     private static final String PRODUCT_KEY_1_CHANGED_RESOURCE_PATH = "product-key-1-changed.json";
     private static final String PRODUCT_KEY_2_RESOURCE_PATH = "product-key-2.json";
     private static final String PRODUCT_TYPE_RESOURCE_PATH = "product-type.json";
@@ -71,7 +71,7 @@ public class ProductSyncIT {
                                         .updateStaged(false)
                                         .build();
 
-        final ProductDraft productDraft = buildProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
+        final ProductDraft productDraft = buildProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
             productType, categories, buildRandomCategoryOrderHints(categories), syncOptions);
         product = CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft))
                                    .toCompletableFuture().join();
@@ -97,7 +97,7 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withEqualProduct_shouldNotUpdateProduct() {
-        final ProductDraft productDraft = buildProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
+        final ProductDraft productDraft = buildProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
             productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints(), syncOptions);
 
         final ProductSync productSync = new ProductSync(syncOptions);
