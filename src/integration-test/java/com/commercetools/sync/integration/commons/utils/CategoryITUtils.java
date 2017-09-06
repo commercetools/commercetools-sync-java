@@ -150,10 +150,10 @@ public class CategoryITUtils {
 
     /**
      * Creates a dummy instance of {@link CustomFieldsDraft} with the key defined by
-     * {@code OLD_CATEGORY_CUSTOM_TYPE_KEY} and two custom fields 'invisibleInShop' and'backgroundColor'.
+     * {@code OLD_CATEGORY_CUSTOM_TYPE_KEY} and two custom fields 'invisibleInShop' & 'backgroundColor'.
      *
-     * <p>The 'invisibleInShop' field is of type {@code boolean} and has value {@code false} and the
-     * the 'backgroundColor' field is of type {@code localisedString} and has the values {"de": "rot", "en": "red"}
+     * <p>The 'invisibleInShop' field is of type {@code boolean} and has value {@code false}. The 'backgroundColor'
+     * field is of type {@code localisedString} and has the values {"de": "rot", "en": "red"}.
      *
      * @return a dummy instance of {@link CustomFieldsDraft} with some hardcoded custom fields and key.
      */
