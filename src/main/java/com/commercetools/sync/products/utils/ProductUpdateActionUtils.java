@@ -37,11 +37,32 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toSet;
 
 public final class ProductUpdateActionUtils {
-    public static Optional<UpdateAction<Product>> buildChangeNameUpdateAction(final Product product, final ProductDraft draft,
-                                                                       final ProductSyncOptions syncOptions) {
-        final LocalizedString draftName = draft.getName();
-        return buildProductDataUpdateAction(product, syncOptions, ProductData::getName, draftName,
-            () -> ChangeName.of(draftName, syncOptions.shouldUpdateStaged()));
+
+    /**
+     *
+     * Compares the {@link LocalizedString} names of a {@link ProductDraft} and a {@link Product}. The name of the
+     * product is either fetched from it's current or staged projection based on the whether the {@code updateStaged}
+     * flag configured in the {@code syncOptions} supplied as a parameter to the method. If the {@code updateStaged} is
+     * set to {@code true}, then the staged projection of the product is used for comparison. If the {@code updateStaged} is
+     * set to {@code false}, then the current projection of the product is used for comparison.
+     *
+     * <p>Then it returns an {@link UpdateAction}&lt;{@link Product}&gt; as a result in an {@link Optional}.
+     * If both the {@link Product} and the {@link ProductDraft} have the same name, then no update action is needed and
+     * hence an empty {@link Optional} is returned.
+     *
+     * @param oldProduct the category which should be updated.
+     * @param newProduct the category draft where we get the new name.
+     * @param syncOptions used to decide on which projection of the product to compare the existing name from.
+     * @return A filled optional with the update action or an empty optional if the names are identical.
+     */
+    @Nonnull
+    public static Optional<UpdateAction<Product>> buildChangeNameUpdateAction(@Nonnull final Product oldProduct,
+                                                                              @Nonnull final ProductDraft newProduct,
+                                                                              @Nonnull final ProductSyncOptions
+                                                                                  syncOptions) {
+        final LocalizedString newProductName = newProduct.getName();
+        return buildProductDataUpdateAction(oldProduct, syncOptions, ProductData::getName, newProductName,
+            () -> ChangeName.of(newProductName, syncOptions.shouldUpdateStaged()));
     }
 
     @Nonnull
