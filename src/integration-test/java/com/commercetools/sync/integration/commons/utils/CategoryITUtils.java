@@ -162,7 +162,7 @@ public class CategoryITUtils {
     }
 
     /**
-     * Builds a {@link Map} for the custom fields to their {@link JsonNode} values that looks like that in JSON
+     * Builds a {@link Map} for the custom fields to their {@link JsonNode} values that looks as follows in JSON
      * format:
      *
      * <p>"fields": {"invisibleInShop": false, "backgroundColor": { "en": "red", "de": "rot"}}
