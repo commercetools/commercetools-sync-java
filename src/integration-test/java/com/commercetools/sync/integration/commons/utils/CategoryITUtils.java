@@ -281,7 +281,7 @@ public class CategoryITUtils {
      * projects defined by the {@code ctpClient}. Only issues delete request action to a category in the case that none
      * of its ancestors was already deleted or not to avoid trying to delete a category which would have been already
      * deleted, due to deletion of an ancestor of it. As a performance improvement, this method sorts categories by
-     * least ancestors for faster deletion (due to deletion ancestors always first, which in turn deletes all the
+     * least ancestors for faster deletion (due to deletion of ancestors always first, which in turn deletes all the
      * children and grand children.
      *
      *
