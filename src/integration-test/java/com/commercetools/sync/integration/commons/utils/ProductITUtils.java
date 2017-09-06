@@ -20,18 +20,14 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
-import static java.lang.String.valueOf;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
@@ -48,7 +44,7 @@ public final class ProductITUtils {
     public static ProductType buildProductType(@Nonnull final String resourceAsJsonString,
                                                @Nonnull final SphereClient sphereClient) {
         final ProductType productTypeFromJson = readObjectFromResource(resourceAsJsonString,
-            ProductType.typeReference());
+            ProductType.class);
         final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder.of(productTypeFromJson)
                                                                          .build();
         return sphereClient.execute(ProductTypeCreateCommand.of(productTypeDraft))

@@ -43,7 +43,7 @@ public class ProductSyncMockUtils {
     public static ProductDraftBuilder createProductDraftBuilder(@Nonnull final String resourceAsJsonString,
                                                                 @Nonnull final ProductType productType,
                                                                 @Nonnull final ProductSyncOptions syncOptions) {
-        final Product productFromJson = readObjectFromResource(resourceAsJsonString, Product.typeReference());
+        final Product productFromJson = readObjectFromResource(resourceAsJsonString, Product.class);
         final ProductData productData = masterData(productFromJson, syncOptions);
 
         @SuppressWarnings("ConstantConditions")
