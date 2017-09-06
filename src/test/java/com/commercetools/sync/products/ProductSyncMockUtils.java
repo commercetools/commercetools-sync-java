@@ -63,4 +63,12 @@ public class ProductSyncMockUtils {
             .categories(productData.getCategories())
             .categoryOrderHints(productData.getCategoryOrderHints());
     }
+    public static CategoryOrderHints buildRandomCategoryOrderHints(@Nonnull final List<Category> categories) {
+        final Map<String, String> categoryOrderHints = new HashMap<>();
+        categories.forEach(category -> {
+            final double randomDouble = ThreadLocalRandom.current().nextDouble(0, 1);
+            categoryOrderHints.put(category.getId(), valueOf(randomDouble ));
+        });
+        return CategoryOrderHints.of(categoryOrderHints);
+    }
 }
