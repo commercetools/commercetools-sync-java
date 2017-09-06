@@ -2,9 +2,15 @@
 
 Utility which provides API for building CTP inventory update actions and inventory synchronisation.
 
-- [Usage](#usage)
-- [Under the hood](#under-the-hood)
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+  - [Usage](#usage)
+    - [Build all update actions](#build-all-update-actions)
+    - [Build particular update action(s)](#build-particular-update-actions)
+    - [Sync list of inventory entry drafts](#sync-list-of-inventory-entry-drafts)
+  - [Under the hood](#under-the-hood)
 
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Usage
 

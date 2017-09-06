@@ -14,6 +14,7 @@ import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
 import io.sphere.sdk.categories.queries.CategoryQuery;
+import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.CustomFieldsDraft;
@@ -41,6 +42,7 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.c
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDraftsWithPrefix;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsJsons;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.syncBatches;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
@@ -275,7 +277,7 @@ public class CategorySyncIT {
 
     @Test
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    public void syncDrafts_withExistingShuffledCategoriesWithChangingCategoryHeirarchachy_ShouldUpdateCategories() {
+    public void syncDrafts_withExistingShuffledCategoriesWithChangingCategoryHierarchy_ShouldUpdateCategories() {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
         deleteAllCategories(CTP_TARGET_CLIENT);
@@ -492,5 +494,75 @@ public class CategorySyncIT {
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
+    }
+
+    @Test
+    public void syncDrafts_fromCategoriesWithoutKeys_ShouldNotUpdateCategories() {
+        final CategoryDraft oldCategoryDraft1 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "cat1"), LocalizedString.of(Locale.ENGLISH, "furniture1"))
+            .custom(getCustomFieldsDraft())
+            .key("newKey1")
+            .build();
+
+        final CategoryDraft oldCategoryDraft2 = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "cat2"), LocalizedString.of(Locale.ENGLISH, "furniture2"))
+            .custom(getCustomFieldsDraft())
+            .key("newKey2")
+            .build();
+
+        // Create two categories in the source with Keys.
+        List<CompletableFuture<Category>> futureCreations = new ArrayList<>();
+        futureCreations.add(CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft1))
+                                             .toCompletableFuture());
+        futureCreations.add(CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft2))
+                                             .toCompletableFuture());
+        CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()])).join();
+
+        // Create two categories in the target without Keys.
+        futureCreations = new ArrayList<>();
+        final CategoryDraft newCategoryDraft1 = CategoryDraftBuilder.of(oldCategoryDraft1).key(null).build();
+        final CategoryDraft newCategoryDraft2 = CategoryDraftBuilder.of(oldCategoryDraft2).key(null).build();
+        futureCreations.add(CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft1))
+                                             .toCompletableFuture());
+        futureCreations.add(CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft2))
+                                             .toCompletableFuture());
+
+        CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()])).join();
+
+        //---------
+
+        final List<Category> categories = CTP_SOURCE_CLIENT
+            .execute(CategoryQuery.of()
+                                  .withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
+                                  .withExpansionPaths(ExpansionPath.of("custom.type"))
+                                  .plusExpansionPaths(CategoryExpansionModel::parent)
+            )
+            .toCompletableFuture().join().getResults();
+
+        // Put the keys in the reference ids to prepare for reference resolution
+        final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
+                + "sync and %s categories with a missing parent).", 2, 0, 0, 2, 0));
+
+        assertThat(callBackErrorResponses).hasSize(2);
+        assertThat(callBackErrorResponses.get(0))
+            .containsPattern("A duplicate value '.*' exists for field 'slug\\.en' on ");
+        assertThat(callBackErrorResponses.get(1))
+            .containsPattern("A duplicate value '.*' exists for field 'slug\\.en' on ");
+
+        assertThat(callBackExceptions).hasSize(2);
+        assertThat(callBackExceptions.get(0)).isExactlyInstanceOf(ErrorResponseException.class);
+        assertThat(callBackExceptions.get(1)).isExactlyInstanceOf(ErrorResponseException.class);
+
+        assertThat(callBackWarningResponses).hasSize(2);
+        assertThat(callBackWarningResponses.get(0))
+            .matches("Category with id: '.*' has no key set. Keys are required for category matching.");
+        assertThat(callBackWarningResponses.get(1))
+            .matches("Category with id: '.*' has no key set. Keys are required for category matching.");
+
     }
 }

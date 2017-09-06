@@ -50,6 +50,7 @@ public class CategoryServiceIT {
     private Category oldCategory;
 
     private List<String> errorCallBackMessages;
+    private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
 
 
@@ -71,6 +72,7 @@ public class CategoryServiceIT {
     public void setupTest() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
+        warningCallBackMessages = new ArrayList<>();
         deleteAllCategories(CTP_TARGET_CLIENT);
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -81,6 +83,9 @@ public class CategoryServiceIT {
                                                                                           errorCallBackExceptions
                                                                                               .add(exception);
                                                                                       })
+                                                                                  .setWarningCallBack(warningMessage ->
+                                                                                      warningCallBackMessages
+                                                                                          .add(warningMessage))
                                                                                   .build();
 
         // Create a mock new category in the target project.
@@ -124,6 +129,26 @@ public class CategoryServiceIT {
         assertThat(cache).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void cacheKeysToIds_WithTargetCategoriesWithNoKeys_ShouldGiveAWarningAboutKeyNotSetAndNotCacheKey() {
+        // Create new category without key
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
+                LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
+            .build();
+
+        final Category createdCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft))
+                                                          .toCompletableFuture().join();
+
+        final Map<String, String> cache = categoryService.cacheKeysToIds().toCompletableFuture().join();
+        assertThat(cache).hasSize(1);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(warningCallBackMessages).hasSize(1);
+        assertThat(warningCallBackMessages.get(0)).isEqualTo(format("Category with id: '%s' has no key set. Keys are"
+                + " required for category matching.", createdCategory.getId()));
     }
 
     @Test

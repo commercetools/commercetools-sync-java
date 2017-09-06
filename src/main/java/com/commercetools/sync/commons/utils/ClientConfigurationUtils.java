@@ -37,7 +37,10 @@ public class ClientConfigurationUtils {
     /**
      * Creates a {@link BlockingSphereClient} with a custom {@code timeout} with a custom {@link TimeUnit}.
      *
-     * @return the instanted {@link BlockingSphereClient}.
+     * @param clientConfig the client configuration for the client.
+     * @param timeout the timeout value for the client requests.
+     * @param timeUnit the timeout time unit.
+     * @return the instantiated {@link BlockingSphereClient}.
      */
     public static synchronized SphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
                                                          final long timeout,
@@ -57,6 +60,7 @@ public class ClientConfigurationUtils {
     /**
      * Creates a {@link BlockingSphereClient} with a default {@code timeout} value of 30 seconds.
      *
+     * @param clientConfig the client configuration for the client.
      * @return the instanted {@link BlockingSphereClient}.
      */
     public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {

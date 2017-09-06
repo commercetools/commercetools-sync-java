@@ -28,7 +28,7 @@ public final class InventorySyncUtils {
     /**
      * Compares the quantityOnStock, the restockableInDays, the expectedDelivery, the supply channel and Custom
      * fields/ type fields of an {@link InventoryEntry} and an {@link InventoryEntryDraft}. It returns a {@link List} of
-     * {@link UpdateAction&lt;InventoryEntry&gt;} as a result. If no update action is needed an empty
+     * {@link UpdateAction}&lt;{@link InventoryEntry}&gt; as a result. If no update action is needed an empty
      * {@link List} is returned.
      *
      * @param oldEntry    the inventory entry which should be updated

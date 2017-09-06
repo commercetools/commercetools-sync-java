@@ -38,13 +38,14 @@ public final class CategorySyncOptions extends BaseSyncOptions {
     }
 
     /**
-     * Returns the {@code updateActionsFilter} {@link Function&lt;List&lt;UpdateAction&lt;Category&gt;&gt;,
-     * List&lt;UpdateAction&lt;Category&gt;&gt;&gt;} function set to {@code this} {@link CategorySyncOptions}.
-     * It represents a filter function which can be applied on generated list of update actions to produce a
-     * resultant list after the filter function has been applied.
+     * Returns the {@code updateActionsFilter} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
+     * {@link Category}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@link Category}&gt;&gt;&gt; function set to
+     * {@code this} {@link CategorySyncOptions}. It represents a filter function which can be applied on generated list
+     * of update actions to produce a resultant list after the filter function has been applied.
      *
-     * @return the {@code updateActionsFilter} {@link Function&lt;List&lt;UpdateAction&lt;Category&gt;&gt;,
-     * List&lt;UpdateAction&lt;Category&gt;&gt;&gt;} function set to {@code this} {@link CategorySyncOptions}.
+     * @return the {@code updateActionsFilter} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
+     *         {@link Category}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@link Category}&gt;&gt;&gt; function
+     *         set to {@code this} {@link CategorySyncOptions}.
      */
     public Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> getUpdateActionsFilter() {
         return updateActionsFilter;

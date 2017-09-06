@@ -78,7 +78,7 @@ public class CategorySyncIT {
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                                                                   .setErrorCallBack(LOGGER::error)
-                                                                                  .setErrorCallBack(LOGGER::warn)
+                                                                                  .setWarningCallBack(LOGGER::warn)
                                                                                   .build();
         categorySync = new CategorySync(categorySyncOptions);
 

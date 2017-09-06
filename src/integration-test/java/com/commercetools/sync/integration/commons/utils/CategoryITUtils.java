@@ -113,8 +113,8 @@ public class CategoryITUtils {
     }
 
     /**
-     * This method creates (in a blocking fashion) a {@code numberOfCategories} categories under as children to the
-     * supplied {@code parent} category in the supplied {@link SphereClient} project. It assigns them a key, and an
+     * This method creates {@code numberOfChildren} categories as children to the supplied {@code parent} category in
+     * the supplied {@link SphereClient} project in a blocking fashion. It assigns them a key, and an
      * {@code Locale.ENGLISH} name and slug of the value of the supplied {@code prefix} appended to the
      * (index of the child + 1). For example, if the prefix supplied is {@code "cat"}, the key and the english locales
      * of the name and the slug would be {@code "cat1"} for the first child.
@@ -150,10 +150,10 @@ public class CategoryITUtils {
 
     /**
      * Creates a dummy instance of {@link CustomFieldsDraft} with the key defined by
-     * {@code OLD_CATEGORY_CUSTOM_TYPE_KEY} and two custom fields 'invisibleInShop' and'backgroundColor'.
+     * {@code OLD_CATEGORY_CUSTOM_TYPE_KEY} and two custom fields 'invisibleInShop' & 'backgroundColor'.
      *
-     * <p>The 'invisibleInShop' field is of type {@code boolean} and has value {@code false} and the
-     * the 'backgroundColor' field is of type {@code localisedString} and has the values {"de": "rot", "en": "red"}
+     * <p>The 'invisibleInShop' field is of type {@code boolean} and has value {@code false}. The 'backgroundColor'
+     * field is of type {@code localisedString} and has the values {"de": "rot", "en": "red"}.
      *
      * @return a dummy instance of {@link CustomFieldsDraft} with some hardcoded custom fields and key.
      */
@@ -162,7 +162,7 @@ public class CategoryITUtils {
     }
 
     /**
-     * Builds a {@link Map} for the custom fields to their {@link JsonNode} values that looks like that in JSON
+     * Builds a {@link Map} for the custom fields to their {@link JsonNode} values that looks as follows in JSON
      * format:
      *
      * <p>"fields": {"invisibleInShop": false, "backgroundColor": { "en": "red", "de": "rot"}}
@@ -281,7 +281,7 @@ public class CategoryITUtils {
      * projects defined by the {@code ctpClient}. Only issues delete request action to a category in the case that none
      * of its ancestors was already deleted or not to avoid trying to delete a category which would have been already
      * deleted, due to deletion of an ancestor of it. As a performance improvement, this method sorts categories by
-     * least ancestors for faster deletion (due to deletion ancestors always first, which in turn deletes all the
+     * least ancestors for faster deletion (due to deletion of ancestors always first, which in turn deletes all the
      * children and grand children.
      *
      *

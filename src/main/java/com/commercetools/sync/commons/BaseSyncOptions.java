@@ -48,23 +48,23 @@ public class BaseSyncOptions {
     }
 
     /**
-     * Returns the {@code errorCallBack} {@link BiConsumer&lt;String, Throwable&gt;} function set to {@code this}
-     * {@link BaseSyncOptions}. It represents the callback that is called whenever an event occurs during the sync
-     * process that represents an error.
+     * Returns the {@code errorCallBack} {@link BiConsumer}&lt;{@link String}, {@link Throwable}&gt; function set to
+     * {@code this} {@link BaseSyncOptions}. It represents the callback that is called whenever an event occurs during
+     * the sync process that represents an error.
      *
-     * @return the {@code errorCallBack} {@link BiConsumer&lt;String, Throwable&gt;} function set to {@code this}
-     *      {@link BaseSyncOptions}
+     * @return the {@code errorCallBack} {@link BiConsumer}&lt;{@link String}, {@link Throwable}&gt; function set to
+     *      {@code this} {@link BaseSyncOptions}
      */
     public BiConsumer<String, Throwable> getErrorCallBack() {
         return errorCallBack;
     }
 
     /**
-     * Returns the {@code warningCallBack} {@link Consumer&lt;String&gt;} function set to {@code this}
+     * Returns the {@code warningCallBack} {@link Consumer}&lt;{@link String}&gt; function set to {@code this}
      * {@link BaseSyncOptions}. It represents the callback that is called whenever an event occurs
      * during the sync process that represents a warning.
      *
-     * @return the {@code warningCallBack} {@link Consumer&lt;String&gt;} function set to {@code this}
+     * @return the {@code warningCallBack} {@link Consumer}&lt;{@link String}&gt; function set to {@code this}
      *      {@link BaseSyncOptions}
      */
     public Consumer<String> getWarningCallBack() {

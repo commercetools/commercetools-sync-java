@@ -31,9 +31,9 @@ public final class CategoryUpdateActionUtils {
 
     /**
      * Compares the {@link LocalizedString} names of a {@link Category} and a {@link CategoryDraft} and returns an
-     * {@link UpdateAction&lt;Category&gt;} as a result in an {@link Optional}. If both the {@link Category} and the
-     * {@link CategoryDraft} have the same name, then no update action is needed and hence an empty {@link Optional} is
-     * returned.
+     * {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the {@link Category} and
+     * the {@link CategoryDraft} have the same name, then no update action is needed and hence an empty {@link Optional}
+     * is returned.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new name.
@@ -49,9 +49,9 @@ public final class CategoryUpdateActionUtils {
 
     /**
      * Compares the {@link LocalizedString} slugs of a {@link Category} and a {@link CategoryDraft} and returns an
-     * {@link UpdateAction&lt;Category&gt;} as a result in an {@link Optional}. If both the {@link Category} and the
-     * {@link CategoryDraft} have the same slug, then no update action is needed and hence an empty {@link Optional} is
-     * returned.
+     * {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the {@link Category} and
+     * the {@link CategoryDraft} have the same slug, then no update action is needed and hence an empty {@link Optional}
+     * is returned.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new slug.
@@ -67,9 +67,9 @@ public final class CategoryUpdateActionUtils {
 
     /**
      * Compares the {@link LocalizedString} descriptions of a {@link Category} and a {@link CategoryDraft} and
-     * returns an {@link UpdateAction&lt;Category&gt;} as a result in an {@link Optional}. If both the {@link Category}
-     * and the {@link CategoryDraft} have the same description, then no update action is needed and hence an empty
-     * {@link Optional} is returned.
+     * returns an {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the
+     * {@link Category} and the {@link CategoryDraft} have the same description, then no update action is needed and
+     * hence an empty {@link Optional} is returned.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new description.
@@ -84,13 +84,13 @@ public final class CategoryUpdateActionUtils {
     }
 
     /**
-     * Compares the parents {@link Reference&lt;Category&gt;} of a {@link Category} and a {@link CategoryDraft} and
-     * returns an {@link UpdateAction&lt;Category&gt;} as a result in an {@link Optional}. If both the {@link Category}
-     * and the {@link CategoryDraft} have the same parents, then no update action is needed and hence an empty
-     * {@link Optional} is returned.
+     * Compares the parents {@link Reference}&lt;{@link Category}&gt; of a {@link Category} and a {@link CategoryDraft}
+     * and returns an {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the
+     * {@link Category} and the {@link CategoryDraft} have the same parents, then no update action is needed and hence
+     * an empty {@link Optional} is returned.
      *
-     * <p>Note: If the parent {@link Reference&lt;Category&gt;} of the new {@link CategoryDraft} is null, an empty
-     * {@link Optional} is returned with no update actions and a custom callback function, if set on the
+     * <p>Note: If the parent {@link Reference}&lt;{@link Category}&gt; of the new {@link CategoryDraft} is null, an
+     * empty {@link Optional} is returned with no update actions and a custom callback function, if set on the
      * supplied {@link CategorySyncOptions}, is called.
      *
      * @param oldCategory the category which should be updated.
@@ -114,8 +114,8 @@ public final class CategoryUpdateActionUtils {
 
     /**
      * Compares the orderHint values of a {@link Category} and a {@link CategoryDraft} and returns an
-     * {@link UpdateAction&lt;Category&gt;} as a result in an {@link Optional}. If both the {@link Category} and the
-     * {@link CategoryDraft} have the same orderHint, then no update action is needed and hence an empty
+     * {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the {@link Category} and
+     * the {@link CategoryDraft} have the same orderHint, then no update action is needed and hence an empty
      * {@link Optional} is returned.
      *
      * <p>Note: If the orderHint of the new {@link CategoryDraft} is null, an empty {@link Optional} is returned with
@@ -143,8 +143,8 @@ public final class CategoryUpdateActionUtils {
 
     /**
      * Compares the {@link LocalizedString} meta title of a {@link Category} and a {@link CategoryDraft} and returns an
-     * {@link UpdateAction&lt;Category&gt;} as a result in an {@link Optional}. If both the {@link Category} and the
-     * {@link CategoryDraft} have the same metatitle, then no update action is needed and hence an empty
+     * {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the {@link Category} and
+     * the {@link CategoryDraft} have the same meta title, then no update action is needed and hence an empty
      * {@link Optional} is returned.
      *
      * @param oldCategory the category which should be updated.
@@ -161,9 +161,9 @@ public final class CategoryUpdateActionUtils {
 
     /**
      * Compares the {@link LocalizedString} meta keywords of a {@link Category} and a {@link CategoryDraft} and
-     * returns an {@link UpdateAction&lt;Category&gt;} as a result in an {@link Optional}. If both the {@link Category}
-     * and the {@link CategoryDraft} have the same meta keywords, then no update action is needed and hence an empty
-     * {@link Optional} is returned.
+     * returns an {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the
+     * {@link Category} and the {@link CategoryDraft} have the same meta keywords, then no update action is needed and
+     * hence an empty {@link Optional} is returned.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new meta keywords.
@@ -179,9 +179,9 @@ public final class CategoryUpdateActionUtils {
 
     /**
      * Compares the {@link LocalizedString} meta description of a {@link Category} and a {@link CategoryDraft} and
-     * returns an {@link UpdateAction&lt;Category&gt;} as a result in an {@link Optional}. If both the {@link Category}
-     * and the {@link CategoryDraft} have the same meta description, then no update action is needed and hence an empty
-     * {@link Optional} is returned.
+     * returns an {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the
+     * {@link Category} and the {@link CategoryDraft} have the same meta description, then no update action is needed
+     * and hence an empty {@link Optional} is returned.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new meta description.
@@ -198,8 +198,8 @@ public final class CategoryUpdateActionUtils {
 
     /**
      * Compares the externalId values of a {@link Category} and a {@link CategoryDraft} and returns an
-     * {@link UpdateAction&lt;Category&gt;} as a result in an {@link Optional}. If both the {@link Category} and the
-     * {@link CategoryDraft} have the same externalId, then no update action is needed and hence an empty
+     * {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the {@link Category} and
+     * the {@link CategoryDraft} have the same externalId, then no update action is needed and hence an empty
      * {@link Optional} is returned.
      *
      * @param oldCategory the category which should be updated.

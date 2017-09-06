@@ -31,7 +31,7 @@ public final class CategorySyncUtils {
     /**
      * Compares the Name, Slug, Description, Parent, OrderHint, MetaTitle, MetaDescription, MetaKeywords and Custom
      * fields/ type fields and assets of a {@link Category} and a {@link CategoryDraft}. It returns a {@link List} of
-     * {@link UpdateAction&lt;Category&gt;} as a result. If no update action is needed, for example in
+     * {@link UpdateAction}&lt;{@link Category}&gt; as a result. If no update action is needed, for example in
      * case where both the {@link Category} and the {@link CategoryDraft} have the same parents, an empty
      * {@link List} is returned.
      *
@@ -58,7 +58,7 @@ public final class CategorySyncUtils {
     /**
      * Compares the Name, Slug, externalID, Description, Parent, OrderHint, MetaTitle, MetaDescription, MetaKeywords
      * and Custom fields/ type fields of a {@link Category} and a {@link CategoryDraft}. It returns a {@link List} of
-     * {@link UpdateAction&lt;Category&gt;} as a result. If no update action is needed, for example in
+     * {@link UpdateAction}&lt;{@link Category}&gt; as a result. If no update action is needed, for example in
      * case where both the {@link Category} and the {@link CategoryDraft} have the same parents, an empty
      * {@link List} is returned.
      *

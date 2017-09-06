@@ -112,6 +112,12 @@ public class GenericCustomActionBuilderFactory<T extends Custom & Resource<T>,
      * @throws BuildUpdateActionException exception thrown in case a concrete implementation of the the
      *                                    {@link GenericCustomActionBuilder} for the provided resource type is not
      *                                    implemented yet.
+     * @throws IllegalAccessException     thrown by {@link #getBuilder(Custom)} if the {@code resource} class or its
+     *                                    nullary constructor is not accessible.
+     * @throws InstantiationException     thrown by {@link #getBuilder(Custom)} if {@code resource} {@code Class}
+     *                                    represents an abstract class, an interface, an array class, a primitive type,
+     *                                    or void; or if the {@code resource} class has no nullary constructor;
+     *                                    or if the instantiation fails for some other reason.
      */
     public static <U extends Custom & Resource<U>> GenericCustomActionBuilder of(@Nonnull final U resource)
         throws BuildUpdateActionException, InstantiationException, IllegalAccessException {

@@ -103,9 +103,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
-     * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of
-     * {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
-     * {@link this} {@link CategorySync}.
+     * @return an instance of {@link CompletionStage}&lt;{@link CategorySyncStatistics}&gt; which contains as a result
+     *         an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
+     *         {@code this} {@link CategorySync}.
      */
     @Override
     protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<CategoryDraft> categoryDrafts) {
@@ -137,9 +137,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
-     * @return an instance of {@link CompletionStage&lt;U&gt;} which contains as a result an instance of
-     * {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
-     * {@link this} {@link CategorySync}.
+     * @return an instance of {@link CompletionStage}&lt;{@link CategorySyncStatistics}&gt; which contains as a result
+     *         an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
+     *         {@code this} {@link CategorySync}.
      */
     @Override
     protected CompletionStage<CategorySyncStatistics> processBatch(@Nonnull final List<CategoryDraft> categoryDrafts) {

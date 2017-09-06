@@ -1,0 +1,42 @@
+// maven-specific publishing settings
+def pomConfig = {
+    licenses {
+        license {
+            name "The Apache Software License, Version 2.0"
+            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            distribution "repo"
+        }
+    }
+    scm {
+        connection "scm:git:$scmHttpsUrl"
+        developerConnection "scm:git:$scmSshUrl"
+        url "$scmProjectUrl"
+    }
+    developers {
+        developer {
+            id 'heshamMassoud'
+            name 'Hesham Massoud'
+            url 'https://github.com/heshamMassoud'
+            email 'hesham.massoud@commercetools.com'
+        }
+    }
+}
+publishing {
+    publications {
+        Production(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            groupId rootProject.group
+            artifactId project.name
+            version rootProject.version
+
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', project.description)
+                root.appendNode('name', project.name)
+                root.appendNode('url', scmHttpsUrl)
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
