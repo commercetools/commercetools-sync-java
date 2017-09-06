@@ -18,7 +18,6 @@ gitPublish {
     // what to keep in the existing branch (include=keep)
     preserve {
         include 'v/**'
-        exclude 'v/$rootProject.version'
     }
 
     // message used when committing changes
