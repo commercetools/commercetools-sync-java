@@ -10,6 +10,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     protected SphereClient ctpClient;
     protected BiConsumer<String, Throwable> errorCallBack;
     protected Consumer<String> warningCallBack;
+    protected int batchSize = 30;
     protected boolean removeOtherLocales = true;
     protected boolean removeOtherSetEntries = true;
     protected boolean removeOtherCollectionEntries = true;
@@ -37,6 +38,27 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      */
     public T setWarningCallBack(@Nonnull final Consumer<String> warningCallBack) {
         this.warningCallBack = warningCallBack;
+        return getThis();
+    }
+
+    /**
+     * Set option that indicates batch size for sync process. During the sync there is a need for fetching existing
+     * resources so that they can be compared with the new resource drafts. That's why the input is sliced into
+     * batches and then processed. It allows to reduce the query size for fetching all resources processed in one
+     * batch.
+     * E.g. value of 30 means that 30 entries from input list would be accumulated and one API call will be performed
+     * for fetching entries responding to them. Then comparision and sync are performed.
+     *
+     * <p>This batch size is set to 30 by default.
+     *
+     * @param batchSize int that indicates batch size of resources to process. Has to be positive
+     *                  or else will be ignored and default value of 30 would be used.
+     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
+     */
+    public T setBatchSize(final int batchSize) {
+        if (batchSize > 0) {
+            this.batchSize = batchSize;
+        }
         return getThis();
     }
 

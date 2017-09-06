@@ -1,21 +1,22 @@
 package com.commercetools.sync.categories;
 
+import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.SphereException;
+import io.sphere.sdk.models.LocalizedString;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
-import java.util.HashMap;
 import java.util.UUID;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -25,7 +26,6 @@ import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -56,33 +56,46 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithEmptyListOfDrafts_ShouldNotProcessAnyCategories() {
-        categorySync.sync(new ArrayList<>());
+        final CategoryService mockCategoryService = getMockCategoryService();
+        when(mockCategoryService.fetchMatchingCategoriesByKeys(any()))
+            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
 
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 0 categories were processed in total "
-                + "(0 created, 0 updated and 0 categories failed to sync).");
-        assertThat(errorCallBackMessages).hasSize(0);
-        assertThat(errorCallBackExceptions).hasSize(0);
+        final CategorySync mockCategorySync =
+            new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
 
+        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(new ArrayList<>())
+                                                                      .toCompletableFuture().join();
+
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(0);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 0 categories were processed in "
+            + "total (0 created, 0 updated, 0 failed to sync and 0 categories with a missing parent).");
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
     }
 
     @Test
     public void sync_WithANullDraft_ShouldBeCountedAsFailed() {
+        final CategoryService mockCategoryService = getMockCategoryService();
+        when(mockCategoryService.fetchMatchingCategoriesByKeys(any()))
+            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
+
+        final CategorySync mockCategorySync =
+            new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
+
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(null);
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(categoryDrafts)
+                                                                      .toCompletableFuture().join();
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(1);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 1 failed to sync and 0 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo("CategoryDraft is null.");
         assertThat(errorCallBackExceptions).hasSize(1);
@@ -91,44 +104,54 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithADraftWithNoSetKey_ShouldFailSync() {
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "noKeyDraft", "no-key-id-draft", null));
+        final CategoryService mockCategoryService = getMockCategoryService();
+        when(mockCategoryService.fetchMatchingCategoriesByKeys(any()))
+            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+        final CategorySync mockCategorySync =
+            new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
+
+        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "noKeyDraft", "no-key-id-draft",null));
+
+
+        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(categoryDrafts)
+                                                                      .toCompletableFuture().join();
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(1);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 1 failed to sync and 0 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("CategoryDraft with name: LocalizedString(en ->"
-            + " noKeyDraft) doesn't have a key.");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("CategoryDraft with name: "
+            + "LocalizedString(en -> noKeyDraft) doesn't have a key.");
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
     }
 
     @Test
     public void sync_WithNoExistingCategory_ShouldCreateCategory() {
-        final CategoryService categoryService = getMockCategoryService();
-        when(categoryService.fetchCategoryByKey(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
-        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
-                                                           categoryService);
+        final CategoryService mockCategoryService = getMockCategoryService();
+        when(mockCategoryService.fetchMatchingCategoriesByKeys(any()))
+            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
+
+        final CategorySync mockCategorySync =
+            new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
+
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "newKey", "parentKey",
             "customTypeId", new HashMap<>()));
 
+        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(categoryDrafts)
+                                                                      .toCompletableFuture().join();
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(1 created, 0 updated and 0 categories failed to sync).");
+        assertThat(syncStatistics.getCreated()).isEqualTo(1);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (1 created, 0 updated, 0 failed to sync and 1 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
@@ -136,16 +159,17 @@ public class CategorySyncTest {
     @Test
     public void sync_WithExistingCategory_ShouldUpdateCategory() {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "key"));
+        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
+            "customTypeId", new HashMap<>()));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 1 updated and 0 categories failed to sync).");
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts)
+                                                                  .toCompletableFuture().join();
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 1 updated, 0 failed to sync and 1 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
@@ -166,98 +190,16 @@ public class CategorySyncTest {
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
         categoryDrafts.add(categoryDraft);
 
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 0 categories failed to sync).");
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 0 failed to sync and 1 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
-    }
-
-    @Test
-    public void sync_WithExistingCategoryButExceptionOnFetch_ShouldFailSync() {
-        CompletableFuture<Optional<Category>> futureThrowingSphereException = CompletableFuture.supplyAsync(() -> {
-            throw new SphereException();
-        });
-        final CategoryService categoryService = getMockCategoryService();
-        when(categoryService.fetchCategoryByKey(anyString())).thenReturn(futureThrowingSphereException);
-
-        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(), categoryService);
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "key"));
-
-
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Failed to fetch category with key:'key'");
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-    }
-
-    @Test
-    public void sync_WithNoExistingCategoryButExceptionOnCreate_ShouldFailSync() {
-        final CompletableFuture<Category> futureThrowingSphereException = CompletableFuture.supplyAsync(() -> {
-            throw new SphereException();
-        });
-        final CategoryService categoryService = getMockCategoryService();
-        when(categoryService.fetchCategoryByKey(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
-        when(categoryService.createCategory(any())).thenReturn(futureThrowingSphereException);
-
-        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(), categoryService);
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "key"));
-
-
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Failed to create category with key:'key'");
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-    }
-
-    @Test
-    public void sync_WithExistingCategoryButExceptionOnUpdate_ShouldFailSync() {
-        final CompletableFuture<Category> futureThrowingSphereException = CompletableFuture.supplyAsync(() -> {
-            throw new SphereException();
-        });
-        final CategoryService categoryService = getMockCategoryService();
-        when(categoryService.updateCategory(any(), any())).thenReturn(futureThrowingSphereException);
-        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(), categoryService);
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "slug", "key"));
-
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Failed to update category with key:'key'");
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
     }
 
     @Test
@@ -270,22 +212,21 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", parentUuid,
             "customTypeId", new HashMap<>()));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(1);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 1 failed to sync and 0 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve parent reference on CategoryDraft"
-            + " with key:'key'. Reason: %s: Found a UUID in the id field. Expecting a key without a UUID"
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+            + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
+            + " with key:'key'. Reason: Found a UUID in the id field. Expecting a key without a UUID"
             + " value. If you want to allow UUID values for reference keys, please use the setAllowUuidKeys(true)"
             + " option in the sync options.", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -297,21 +238,44 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", null,
             "customTypeId", new HashMap<>()));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(1);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 1 failed to sync and 0 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve parent reference on CategoryDraft"
-            + " with key:'key'. Reason: %s: Key is blank (null/empty) on both expanded reference object"
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+            + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
+            + " with key:'key'. Reason: Key is blank (null/empty) on both expanded reference object"
             + " and reference id field.", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
+    }
+
+    @Test
+    public void sync_WithExistingCategoryButWithNoCustomType_ShouldSync() {
+        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
+            getMockCategoryService());
+        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
+
+        final CategoryDraft categoryDraft = mock(CategoryDraft.class);
+        when(categoryDraft.getName()).thenReturn(LocalizedString.of(Locale.ENGLISH, "name"));
+        when(categoryDraft.getKey()).thenReturn("key");
+        when(categoryDraft.getCustom()).thenReturn(null);
+
+        categoryDrafts.add(categoryDraft);
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 1 updated, 0 failed to sync and 0 categories with a missing parent).");
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(errorCallBackExceptions).hasSize(0);
     }
 
     @Test
@@ -323,21 +287,20 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "",
             "customTypeId", new HashMap<>()));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(1);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 1 failed to sync and 0 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve parent reference on CategoryDraft"
-            + " with key:'key'. Reason: %s: Key is blank (null/empty) on both expanded reference object"
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+            + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
+            + " with key:'key'. Reason: Key is blank (null/empty) on both expanded reference object"
             + " and reference id field.", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
 
     @Test
@@ -349,17 +312,17 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
             "", new HashMap<>()));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(1);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 1 failed to sync and 1 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve custom type reference on "
-            + "CategoryDraft with key:'key'. Reason: %s: Reference 'id' field value is blank (null/"
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+            + " key:'key'. Reason: %s: Failed to resolve custom type reference on "
+            + "CategoryDraft with key:'key'. Reason: Reference 'id' field value is blank (null/"
             + "empty).", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -376,17 +339,17 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
             uuidCustomTypeKey, new HashMap<>()));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 0 updated and 1 categories failed to sync).");
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(1);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 0 updated, 1 failed to sync and 1 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve custom type reference on"
-            + " CategoryDraft with key:'key'. Reason: %s: Found a UUID in the id field. Expecting a key"
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+            + " key:'key'. Reason: %s: Failed to resolve custom type reference on "
+            + "CategoryDraft with key:'key'. Reason: Found a UUID in the id field. Expecting a key"
             + " without a UUID value. If you want to allow UUID values for reference keys, please use the"
             + " setAllowUuidKeys(true) option in the sync options.",
             ReferenceResolutionException.class.getCanonicalName()));
@@ -408,16 +371,54 @@ public class CategorySyncTest {
         categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
             uuidCustomTypeKey, new HashMap<>()));
 
-        categorySync.sync(categoryDrafts);
-        assertThat(categorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getFailed()).isEqualTo(0);
-        assertThat(categorySync.getStatistics().getUpdated()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(categorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 categories were processed in total "
-                + "(0 created, 1 updated and 0 categories failed to sync).");
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
+            + "total (0 created, 1 updated, 0 failed to sync and 1 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
 
+    @Test
+    public void requiresChangeParentUpdateAction_WithTwoDifferentParents_ShouldReturnTrue() {
+        final String parentId = "parentId";
+        final Category category = mock(Category.class);
+        when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
+
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
+            .parent(Category.referenceOfId("differentParent"))
+            .build();
+        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
+        assertThat(doesRequire).isTrue();
+    }
+
+    @Test
+    public void requiresChangeParentUpdateAction_WithTwoIdenticalParents_ShouldReturnFalse() {
+        final String parentId = "parentId";
+        final Category category = mock(Category.class);
+        when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
+
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
+            .parent(Category.referenceOfId(parentId))
+            .build();
+        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
+        assertThat(doesRequire).isFalse();
+    }
+
+    @Test
+    public void requiresChangeParentUpdateAction_WithNonExistingParents_ShouldReturnFalse() {
+        final Category category = mock(Category.class);
+        when(category.getParent()).thenReturn(null);
+
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
+            .build();
+        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
+        assertThat(doesRequire).isFalse();
+    }
 }

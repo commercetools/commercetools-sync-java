@@ -37,15 +37,15 @@ public final class CustomUpdateActionUtils {
      * Compares the {@link CustomFields} of an old resource {@link T} (for example {@link Category},
      * {@link io.sphere.sdk.products.Product}, etc..), to the {@link CustomFieldsDraft}, of a new
      * resource draft {@link S} (for example {@link CategoryDraft}, {@link io.sphere.sdk.products.ProductVariantDraft},
-     * etc..), and returns a {@link List&lt;UpdateAction&gt;} as a result. If no update action is needed,
+     * etc..), and returns a {@link List}&lt;{@link UpdateAction}&gt; as a result. If no update action is needed,
      * for example in the case where both the {@link CustomFields} and the {@link CustomFieldsDraft} are null, an empty
-     * {@link List&lt;UpdateAction&gt;} is returned. A {@link BaseSyncOptions} instance is injected into the
+     * {@link List}&lt;{@link UpdateAction}&gt; is returned. A {@link BaseSyncOptions} instance is injected into the
      * method which is responsible for supplying the sync options to the sync utility method. For example, custom error
      * callbacks for errors. The {@link TypeService} is injected also for fetching the key of the old resource type
      * from it's cache (see {@link CustomUpdateActionUtils#buildNonNullCustomFieldsUpdateActions(CustomFields,
      * CustomFieldsDraft, Custom, BaseSyncOptions)}).
      *
-     * <p><p>An update action will be added to the result list in the following cases:-
+     * <p>An update action will be added to the result list in the following cases:-
      * <ol>
      * <li>If the new resources's custom type is set, but old resources's custom type is not. A "setCustomType" update
      * actions is added, which sets the custom type (and all it's fields to the old resource).</li>
@@ -60,7 +60,7 @@ public final class CustomUpdateActionUtils {
      * not set.</li>
      * </ol>
      *
-     * <p>An update action will <bold>not</bold> be added to the result list in the following cases:-
+     * <p>An update action will <b>not</b> be added to the result list in the following cases:-
      * <ol>
      * <li>If both the resources' custom types are not set.</li>
      * <li>If both the resources' custom type keys are not set.</li>
@@ -69,6 +69,8 @@ public final class CustomUpdateActionUtils {
      * <li>Custom field values are identical.</li>
      * </ol>
      *
+     * @param <T> the type of the {@link Resource}
+     * @param <S> the subtype of the {@link CustomDraft}
      * @param oldResource the resource which should be updated.
      * @param newResource the resource draft where we get the new custom fields.
      * @param syncOptions responsible for supplying the sync options to the sync utility method.

@@ -7,6 +7,7 @@ import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.types.CustomDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 
@@ -16,6 +17,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.regex.Pattern;
 
+import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
@@ -27,7 +29,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * @param <S> a subclass implementation of {@link BaseSyncOptions} that is used to allow/deny some specific options,
  *            specified by the user, on reference resolution.
  */
-public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
+public abstract class BaseReferenceResolver<T extends CustomDraft, S extends BaseSyncOptions> {
     private static final String UUID_NOT_ALLOWED = "Found a UUID in the id field. Expecting a key without a UUID value."
         + " If you want to allow UUID values for reference keys, please use the setAllowUuidKeys(true) option in the"
         + " sync options.";
@@ -35,6 +37,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     private static final String KEY_NOT_SET_ON_EXPANSION_OR_ID_FIELD = "Key is blank (null/empty) on both expanded"
         + " reference object and reference id field.";
     private static final String UUID_REGEX = "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}";
+    private static final String CUSTOM_TYPE_REFERENCE_RESOLUTION_ERROR = "%s Reason: %s";
 
     private TypeService typeService;
     private S options;
@@ -70,19 +73,24 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     protected abstract CompletionStage<T> resolveCustomTypeReference(@Nonnull final T draft);
 
     /**
-     * Given a {@link CustomFieldsDraft} this method fetches the custom type reference id.
+     * Given a custom fields object this method fetches the custom type reference id.
      *
-     * @param customFieldsDraft the custom fields object to fetch it's type key.
-     * @return a {@link CompletionStage} that contains as a result a new Category draft instance with resolved custom
-     *      type references or, in case an error occurs during reference resolution,
-     *      a {@link ReferenceResolutionException}.
+     * @param custom                          the custom fields object.
+     * @param referenceResolutionErrorMessage the message containing the information about the draft to attach to the
+     *                                        {@link ReferenceResolutionException} in case it occurs.
+     * @return a {@link CompletionStage} that contains as a result an optional which either contains the custom type id
+     *      if it exists or empty if it doesn't.
      */
-    protected CompletionStage<Optional<String>> getCustomTypeId(@Nonnull final CustomFieldsDraft customFieldsDraft) {
+    protected CompletionStage<Optional<String>> getCustomTypeId(@Nonnull final CustomFieldsDraft custom,
+                                                                @Nonnull final String referenceResolutionErrorMessage) {
         try {
-            final String customTypeKey = getKeyFromResourceIdentifier(customFieldsDraft.getType());
+            final String customTypeKey = getKeyFromResourceIdentifier(custom.getType());
             return typeService.fetchCachedTypeId(customTypeKey);
         } catch (ReferenceResolutionException exception) {
-            return CompletableFutureUtils.exceptionallyCompletedFuture(exception);
+            return CompletableFutureUtils.exceptionallyCompletedFuture(
+                new ReferenceResolutionException(
+                    format(CUSTOM_TYPE_REFERENCE_RESOLUTION_ERROR, referenceResolutionErrorMessage,
+                        exception.getMessage()), exception));
         }
     }
 
@@ -104,7 +112,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     private String getKeyFromResourceIdentifier(@Nonnull final ResourceIdentifier resourceIdentifier)
         throws ReferenceResolutionException {
         final String key = resourceIdentifier.getId();
-        validateKey(key, UNSET_ID_FIELD);
+        validateKey(key, options.shouldAllowUuidKeys(), UNSET_ID_FIELD);
         return key;
     }
 
@@ -120,17 +128,19 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      * If the key is not valid a {@link ReferenceResolutionException} will be thrown.
      *
      *
+     * @param shouldAllowUuidKeys flag that signals whether the key could be UUID format or not.
      * @param keyFromExpansion the key value fetched after expansion of the {@code reference}.
      * @param reference the reference object to get the key from.
      * @return the key of the referenced object.
      * @throws ReferenceResolutionException thrown if the key is not valid.
      */
     @Nonnull
-    protected String getKeyFromExpansionOrReference(@Nullable final String keyFromExpansion,
-                                                    @Nonnull final Reference reference)
+    protected static String getKeyFromExpansionOrReference(final boolean shouldAllowUuidKeys,
+                                                           @Nullable final String keyFromExpansion,
+                                                           @Nonnull final Reference reference)
         throws ReferenceResolutionException {
         final String key = isBlank(keyFromExpansion) ? reference.getId() : keyFromExpansion;
-        validateKey(key, KEY_NOT_SET_ON_EXPANSION_OR_ID_FIELD);
+        validateKey(key, shouldAllowUuidKeys, KEY_NOT_SET_ON_EXPANSION_OR_ID_FIELD);
         return key;
     }
 
@@ -143,17 +153,20 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      * to have UUID keys, the key is returned.</li>
      * </ul>
      *
-     * @param key          the key to validate.
-     * @param errorMessage the error message to pass to the {@link ReferenceResolutionException} that will be thrown
-     *                     if the key is blank (null/empty).
+     * @param key                 the key to validate.
+     * @param shouldAllowUuidKeys isUUID allowed
+     * @param errorMessage        the error message to pass to the {@link ReferenceResolutionException} that will be
+     *                            thrown if the key is blank (null/empty).
      * @throws ReferenceResolutionException thrown if the key is not valid.
      */
-    private void validateKey(@Nullable final String key, @Nonnull final String errorMessage)
+    private static void validateKey(@Nullable final String key,
+                                    final boolean shouldAllowUuidKeys,
+                                    @Nonnull final String errorMessage)
         throws ReferenceResolutionException {
         if (isBlank(key)) {
             throw new ReferenceResolutionException(errorMessage);
         } else {
-            if (!options.shouldAllowUuidKeys() && isUuid(key)) {
+            if (!shouldAllowUuidKeys && isUuid(key)) {
                 throw new ReferenceResolutionException(UUID_NOT_ALLOWED);
             }
         }
@@ -173,6 +186,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     /**
      * Helper method to check if passed {@link Reference} instance is expanded.
      *
+     * @param reference the reference to check.
      * @return true if the {@link Reference} is expanded.
      */
     protected static boolean isReferenceExpanded(@Nonnull final Reference reference) {

@@ -15,11 +15,18 @@ import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import static java.lang.String.format;
+
 public final class CategoryReferenceResolver extends BaseReferenceResolver<CategoryDraft, CategorySyncOptions> {
     private CategoryService categoryService;
+    private static final String FAILED_TO_RESOLVE_PARENT = "Failed to resolve parent reference on "
+        + "CategoryDraft with key:'%s'. Reason: %s";
+    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+        + "CategoryDraft with key:'%s'.";
 
     public CategoryReferenceResolver(@Nonnull final CategorySyncOptions options,
                                      @Nonnull final TypeService typeService,
@@ -28,18 +35,34 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
         this.categoryService = categoryService;
     }
 
+    /**
+     * Given a {@link CategoryDraft} this method attempts to resolve the custom type and parent category references to
+     * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * references. The keys of the references are either taken from the expanded references or
+     * taken from the id field of the references.
+     *
+     * @param categoryDraft the categoryDraft to resolve it's references.
+     * @return a {@link CompletionStage} that contains as a result a new categoryDraft instance with resolved category
+     *          references or, in case an error occurs during reference resolution,
+     *          a {@link ReferenceResolutionException}.
+     */
+    public CompletionStage<CategoryDraft> resolveReferences(@Nonnull final CategoryDraft categoryDraft) {
+        return resolveCustomTypeReference(categoryDraft)
+            .thenCompose(this::resolveParentReference);
+    }
+
     @Override
     @Nonnull
-    public CompletionStage<CategoryDraft> resolveCustomTypeReference(@Nonnull final CategoryDraft categoryDraft) {
+    protected CompletionStage<CategoryDraft> resolveCustomTypeReference(@Nonnull final CategoryDraft categoryDraft) {
         final CustomFieldsDraft custom = categoryDraft.getCustom();
         if (custom != null) {
-            return getCustomTypeId(custom)
+            return getCustomTypeId(custom, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, categoryDraft.getKey()))
                 .thenApply(resolvedTypeIdOptional ->
                     resolvedTypeIdOptional.map(resolvedTypeId ->
-                                              CategoryDraftBuilder.of(categoryDraft)
-                                                                  .custom(CustomFieldsDraft.ofTypeIdAndJson(
-                                                                      resolvedTypeId, custom.getFields()))
-                                                                  .build())
+                        CategoryDraftBuilder.of(categoryDraft)
+                                            .custom(CustomFieldsDraft.ofTypeIdAndJson(
+                                                resolvedTypeId, custom.getFields()))
+                                            .build())
                                           .orElseGet(() -> CategoryDraftBuilder.of(categoryDraft).build()));
         }
         return CompletableFuture.completedFuture(categoryDraft);
@@ -57,19 +80,15 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
      *      a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    public CompletionStage<CategoryDraft> resolveParentReference(@Nonnull final CategoryDraft categoryDraft) {
-        final Reference<Category> parentCategoryReference = categoryDraft.getParent();
-        if (parentCategoryReference != null) {
-            try {
-                final String keyFromExpansion = getKeyFromExpansion(parentCategoryReference);
-                final String parentCategoryKey = getKeyFromExpansionOrReference(
-                    keyFromExpansion, parentCategoryReference);
-                return fetchAndResolveParentReference(categoryDraft, parentCategoryKey);
-            } catch (ReferenceResolutionException exception) {
-                return CompletableFutureUtils.exceptionallyCompletedFuture(exception);
-            }
+    CompletionStage<CategoryDraft> resolveParentReference(@Nonnull final CategoryDraft categoryDraft) {
+        try {
+            return getParentCategoryKey(categoryDraft, getOptions().shouldAllowUuidKeys())
+                .map(parentCategoryKey -> fetchAndResolveParentReference(categoryDraft, parentCategoryKey))
+                .orElseGet(() -> CompletableFuture.completedFuture(categoryDraft));
+        } catch (ReferenceResolutionException referenceResolutionException) {
+            return CompletableFutureUtils
+                .exceptionallyCompletedFuture(referenceResolutionException);
         }
-        return CompletableFuture.completedFuture(categoryDraft);
     }
 
     /**
@@ -84,9 +103,8 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
      *      category references or an exception.
      */
     @Nonnull
-    private CompletionStage<CategoryDraft> fetchAndResolveParentReference(
-        @Nonnull final CategoryDraft categoryDraft,
-        @Nonnull final String parentCategoryKey) {
+    private CompletionStage<CategoryDraft> fetchAndResolveParentReference(@Nonnull final CategoryDraft categoryDraft,
+                                                                          @Nonnull final String parentCategoryKey) {
         return categoryService.fetchCachedCategoryId(parentCategoryKey)
                               .thenApply(resolvedParentIdOptional -> resolvedParentIdOptional
                                   .map(resolvedParentId ->
@@ -94,6 +112,36 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
                                                           .parent(Category.referenceOfId(resolvedParentId))
                                                           .build())
                                   .orElseGet(() -> CategoryDraftBuilder.of(categoryDraft).build()));
+    }
+
+    /**
+     * Given a categoryDraft, this method first checks if there is a parent category reference set. If there is,
+     * the method tries to get the key of the parent either from the expanded object or gets it from the id value on
+     * the reference in an optional. If the id value has a UUID format and the supplied boolean value
+     * {@code shouldAllowUuidKeys} is false, then a {@link ReferenceResolutionException} is thrown. If there is a parent
+     * reference but an blank (null/empty) key value, then a {@link ReferenceResolutionException} is also thrown. If
+     * there is no parent reference set, then an empty optional is returned.
+     *
+     * @param categoryDraft       the category draft that it's parent key should be returned.
+     * @param shouldAllowUuidKeys a flag that specifies whether the key could be in UUID format or not.
+     * @return an optional containing the id or an empty optional if there is no parent reference.
+     * @throws ReferenceResolutionException thrown if the key is invalid (empty/null/in UUID when the flag is false).
+     */
+    public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraft categoryDraft,
+                                                        final boolean shouldAllowUuidKeys)
+        throws ReferenceResolutionException {
+        final Reference<Category> parentCategoryReference = categoryDraft.getParent();
+        if (parentCategoryReference != null) {
+            final String keyFromExpansion = getKeyFromExpansion(parentCategoryReference);
+            try {
+                return Optional
+                    .of(getKeyFromExpansionOrReference(shouldAllowUuidKeys, keyFromExpansion, parentCategoryReference));
+            } catch (ReferenceResolutionException referenceResolutionException) {
+                throw new ReferenceResolutionException(format(FAILED_TO_RESOLVE_PARENT, categoryDraft.getKey(),
+                    referenceResolutionException.getMessage()), referenceResolutionException);
+            }
+        }
+        return Optional.empty();
     }
 
     /**

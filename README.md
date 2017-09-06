@@ -6,10 +6,23 @@ Java API which exposes utilities for building update actions and automatic synci
  such as CSV, XML, JSON, etc.. or an already existing CTP project into a target project.
 
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 - [Usage](#usage)
+  - [Prerequisites](#prerequisites)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
+  - [Build](#build)
+      - [Run unit tests](#run-unit-tests)
+      - [Package JARs](#package-jars)
+      - [Package JARs and run tests](#package-jars-and-run-tests)
+      - [Full build with tests, but without install to maven local repo (Recommended)](#full-build-with-tests-but-without-install-to-maven-local-repo-recommended)
+      - [Install to local maven repo](#install-to-local-maven-repo)
+      - [Publish to Bintray](#publish-to-bintray)
 
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+- [Javadocs](https://commercetools.github.io/commercetools-sync-java/v/0.0.2/)
 ## Usage
 
 commercetools sync is a Java library that could be used to synchronise CTP data in any of the following ways:
@@ -23,9 +36,9 @@ commercetools sync is a Java library that could be used to synchronise CTP data 
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
 
-Currently this library supports synchronising [Categories](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories#commercetools-category-sync)
-and [InventoryEntries](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/inventories#commercetools-inventory-sync).
-
+Currently this library supports synchronising
+ - [Categories](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories#commercetools-category-sync)
+ - [InventoryEntries](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/inventories#commercetools-inventory-sync). (_Beta_: Not recommended for production use yet.)
 
 
 ### Prerequisites
@@ -59,15 +72,37 @@ For example, `#65: Remove redundant space.`
     - Mark the issue it addresses with the `merged-to-master` label.
     - Close the issue **only** if the change was released.
 
-### Development
+### Build
 ##### Run unit tests
 ````bash
 ./gradlew test
 ````
 
-##### Compile project, run unit tests and assemble main classes into a jar archive
+##### Package JARs
+````bash
+./gradlew clean jar
+````
+
+##### Package JARs and run tests
+````bash
+./gradlew clean check
+````
+
+##### Full build with tests, but without install to maven local repo (Recommended)
 ````bash
 ./gradlew clean build
 ````
 
-<!--- TODO ### Executing integration tests -->
+##### Install to local maven repo
+````bash
+./gradlew clean install
+````
+
+##### Publish to Bintray
+````bash
+./gradlew clean -Dbuild.version={version} bintrayUpload
+````
+
+For more detailed information on build and release process, see [Build and Release](BUILD.md) documentation.
+
+<!--- TODO ### Executing integration tests only-->

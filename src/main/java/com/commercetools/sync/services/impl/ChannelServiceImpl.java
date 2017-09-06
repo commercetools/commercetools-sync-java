@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.ChannelService;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
@@ -9,15 +10,16 @@ import io.sphere.sdk.channels.commands.ChannelCreateCommand;
 import io.sphere.sdk.channels.queries.ChannelQuery;
 import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 
 public final class ChannelServiceImpl implements ChannelService {
@@ -25,6 +27,7 @@ public final class ChannelServiceImpl implements ChannelService {
     private final SphereClient ctpClient;
     private final Set<ChannelRole> channelRoles;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
+    private boolean invalidCache = false;
 
     public ChannelServiceImpl(@Nonnull final SphereClient ctpClient,
                               @Nonnull final Set<ChannelRole> channelRoles) {
@@ -35,7 +38,7 @@ public final class ChannelServiceImpl implements ChannelService {
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key) {
-        if (keyToIdCache.isEmpty()) {
+        if (keyToIdCache.isEmpty() || invalidCache) {
             return cacheAndFetch(key);
         }
         return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
@@ -46,12 +49,12 @@ public final class ChannelServiceImpl implements ChannelService {
             ChannelQueryBuilder.of()
                                .plusPredicates(channelQueryModel -> channelQueryModel.roles().containsAny(channelRoles))
                                .build();
-        return QueryExecutionUtils.queryAll(ctpClient, query)
-                                  .thenApply(channels -> {
-                                      channels.forEach(channel ->
-                                          keyToIdCache.put(channel.getKey(), channel.getId()));
-                                      return Optional.ofNullable(keyToIdCache.get(key));
-                                  });
+
+        final Consumer<List<Channel>> channelPageConsumer = channelsPage ->
+            channelsPage.forEach(channel -> keyToIdCache.put(channel.getKey(), channel.getId()));
+
+        return CtpQueryUtils.queryAll(ctpClient, query, channelPageConsumer)
+                            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 
     @Nonnull
@@ -75,5 +78,10 @@ public final class ChannelServiceImpl implements ChannelService {
     @Override
     public void cacheChannel(@Nonnull final Channel channel) {
         keyToIdCache.put(channel.getKey(), channel.getId());
+    }
+
+    @Override
+    public void invalidateCache() {
+        invalidCache = true;
     }
 }

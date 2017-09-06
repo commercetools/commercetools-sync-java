@@ -1,5 +1,6 @@
-package com.commercetools.sync.commons.utils;
+package com.commercetools.sync.integration.commons.utils;
 
+import com.commercetools.sync.commons.utils.ClientConfigurationUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.client.SphereRequest;
@@ -42,21 +43,23 @@ public class SphereClientUtils {
      * {@link io.sphere.sdk.inventory.InventoryEntry}, and a function that returns delete command for given
      * inventory entry. It would result in deleting all inventory entries from the given CTP.
      *
-     * @param client sphere client used to executing requests
-     * @param query query of resources that need to be processed
+     * @param client     sphere client used to executing requests
+     * @param query      query of resources that need to be processed
      * @param ctpRequest function that takes resource and returns sphere request
-     * @param <T> type of resource
+     * @param <T>        type of resource
      */
     public static <T> void fetchAndProcess(@Nonnull final SphereClient client,
                                            @Nonnull final SphereRequest<PagedQueryResult<T>> query,
                                            @Nonnull final Function<T, SphereRequest<T>> ctpRequest) {
         client.execute(query)
-            .thenCompose(pagedQueryResult -> allOf(
-                pagedQueryResult.getResults().stream()
-                    .map(item -> client.execute(ctpRequest.apply(item)))
-                    .map(CompletionStage::toCompletableFuture)
-                    .collect(Collectors.toList())
-                    .toArray(new CompletableFuture[pagedQueryResult.getResults().size()]))
-            ).toCompletableFuture().join();
+              .thenCompose(pagedQueryResult -> allOf(
+                  pagedQueryResult.getResults().stream()
+                                  .map(item -> client.execute(ctpRequest.apply(item)))
+                                  .map(CompletionStage::toCompletableFuture)
+                                  .collect(Collectors.toList())
+                                  .toArray(new CompletableFuture[pagedQueryResult.getResults().size()]))
+              ).toCompletableFuture().join();
     }
+
 }
+

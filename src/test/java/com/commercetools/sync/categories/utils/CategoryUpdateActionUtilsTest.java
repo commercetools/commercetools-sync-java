@@ -148,8 +148,7 @@ public class CategoryUpdateActionUtilsTest {
         when(newCategoryDraft.getDescription()).thenReturn(LocalizedString.of(LOCALE, "newDescription"));
 
         final UpdateAction<Category> setDescriptionUpdateAction =
-            buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft,
-                CATEGORY_SYNC_OPTIONS).orElse(null);
+            buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft).orElse(null);
 
         assertThat(setDescriptionUpdateAction).isNotNull();
         assertThat(setDescriptionUpdateAction.getAction()).isEqualTo("setDescription");
@@ -164,8 +163,7 @@ public class CategoryUpdateActionUtilsTest {
             .thenReturn(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_DESCRIPTION));
 
         final Optional<UpdateAction<Category>> setDescriptionUpdateAction =
-            buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameDescription,
-                CATEGORY_SYNC_OPTIONS);
+            buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameDescription);
 
         assertThat(setDescriptionUpdateAction).isNotNull();
         assertThat(setDescriptionUpdateAction).isNotPresent();
@@ -178,22 +176,15 @@ public class CategoryUpdateActionUtilsTest {
         when(newCategory.getDescription()).thenReturn(null);
 
         final ArrayList<Object> callBackResponse = new ArrayList<>();
-        final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
 
-        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .setWarningCallBack(
-                                                                                      updateActionWarningCallBack)
-                                                                                  .build();
-
-        final Optional<UpdateAction<Category>> setDescriptionUpdateAction =
-            buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategory,
-                categorySyncOptions);
+        final UpdateAction<Category> setDescriptionUpdateAction =
+            buildSetDescriptionUpdateAction(MOCK_OLD_CATEGORY, newCategory).orElse(null);
 
         assertThat(setDescriptionUpdateAction).isNotNull();
-        assertThat(setDescriptionUpdateAction).isNotPresent();
-        assertThat(callBackResponse).hasSize(1);
-        assertThat(callBackResponse.get(0))
-            .isEqualTo("Cannot unset 'description' field of category with id 'oldCatId'.");
+        assertThat(setDescriptionUpdateAction.getAction()).isEqualTo("setDescription");
+        assertThat(((SetDescription) setDescriptionUpdateAction).getDescription())
+            .isEqualTo(null);
+        assertThat(callBackResponse).isEmpty();
     }
 
     @Test
@@ -224,7 +215,7 @@ public class CategoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeParentnUpdateAction_WithNullValues_ShouldNotBuildUpdateActionAndCallCallback() {
+    public void buildChangeParentUpdateAction_WithNullValues_ShouldNotBuildUpdateActionAndCallCallback() {
         when(MOCK_OLD_CATEGORY.getId()).thenReturn("oldCatId");
         final CategoryDraft newCategory = mock(CategoryDraft.class);
         when(newCategory.getParent()).thenReturn(null);
@@ -245,6 +236,30 @@ public class CategoryUpdateActionUtilsTest {
         assertThat(changeParentUpdateAction).isNotPresent();
         assertThat(callBackResponse).hasSize(1);
         assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset 'parent' field of category with id 'oldCatId'.");
+    }
+
+    @Test
+    public void buildChangeParentUpdateAction_WithBothNullValues_ShouldNotBuildUpdateActionAndNotCallCallback() {
+        when(MOCK_OLD_CATEGORY.getId()).thenReturn("oldCatId");
+        when(MOCK_OLD_CATEGORY.getParent()).thenReturn(null);
+        final CategoryDraft newCategory = mock(CategoryDraft.class);
+        when(newCategory.getParent()).thenReturn(null);
+
+        final ArrayList<Object> callBackResponse = new ArrayList<>();
+        final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
+
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                  .setWarningCallBack(
+                                                                                      updateActionWarningCallBack)
+                                                                                  .build();
+
+        final Optional<UpdateAction<Category>> changeParentUpdateAction =
+            buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategory,
+                categorySyncOptions);
+
+        assertThat(changeParentUpdateAction).isNotNull();
+        assertThat(changeParentUpdateAction).isNotPresent();
+        assertThat(callBackResponse).isEmpty();
     }
 
     @Test
@@ -296,6 +311,30 @@ public class CategoryUpdateActionUtilsTest {
         assertThat(changeOrderHintUpdateAction).isNotPresent();
         assertThat(callBackResponse).hasSize(1);
         assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset 'orderHint' field of category with id 'oldCatId'.");
+    }
+
+    @Test
+    public void buildChangeOrderHintUpdateAction_WithBothNullValues_ShouldNotBuildUpdateActionAndNotCallCallback() {
+        when(MOCK_OLD_CATEGORY.getId()).thenReturn("oldCatId");
+        when(MOCK_OLD_CATEGORY.getOrderHint()).thenReturn(null);
+        final CategoryDraft newCategory = mock(CategoryDraft.class);
+        when(newCategory.getOrderHint()).thenReturn(null);
+
+        final ArrayList<Object> callBackResponse = new ArrayList<>();
+        final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
+
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                  .setWarningCallBack(
+                                                                                      updateActionWarningCallBack)
+                                                                                  .build();
+
+        final Optional<UpdateAction<Category>> changeOrderHintUpdateAction =
+            buildChangeOrderHintUpdateAction(MOCK_OLD_CATEGORY, newCategory,
+                categorySyncOptions);
+
+        assertThat(changeOrderHintUpdateAction).isNotNull();
+        assertThat(changeOrderHintUpdateAction).isNotPresent();
+        assertThat(callBackResponse).isEmpty();
     }
 
     @Test

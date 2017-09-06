@@ -1,0 +1,45 @@
+// bintray-specific upload configuration
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayKey') ? project.property('bintrayKey') : System.getenv('BINTRAY_KEY')
+    publications = ['Production']
+    pkg {
+        repo = 'maven'
+        userOrg = bintray.user
+        name = rootProject.name
+        desc = rootProject.description
+        licenses = ['Apache-2.0']
+        vcsUrl = scmHttpsUrl
+        publicDownloadNumbers = true
+
+        version {
+            name = rootProject.version
+            released = new Date()
+            gpg {
+                sign = true
+                /** if private GPG key is not set in Bintray, Bintray's own key would be used,
+                 * see https://blog.bintray.com/2013/08/06/fight-crime-with-gpg/ for more details
+                 */
+            }
+        }
+    }
+}
+
+// validate values before bintray upload starting
+bintrayUpload {
+    doFirst {
+        /** validate credentials before trying to upload to bintray
+         * this check is mandatory because of "bintrayUpload silently fails" issue of the plugin
+         * https://github.com/bintray/gradle-bintray-plugin/issues/170
+         */
+        if (!(bintray.user?.trim() && bintray.key?.trim())) {
+            throw new InvalidUserDataException("Bintray User or Key is not set. Please check that one of the following"
+                    + " is set: \n" +
+                    "1. BINTRAY_USER and BINTRAY_KEY environment variables.\n" +
+                    "2. -DbintrayUser and -DbintrayKey java runtime properties.\n" +
+                    "3. bintrayUser and bintrayKey properties in gradle.properties file.")
+        }
+
+        validateVersion('Bintray upload could be performed only with valid release version')
+    }
+}
