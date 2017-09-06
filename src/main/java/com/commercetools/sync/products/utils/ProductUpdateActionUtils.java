@@ -21,6 +21,7 @@ import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.products.commands.updateactions.SetSearchKeywords;
 import io.sphere.sdk.search.SearchKeywords;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -43,48 +44,62 @@ public final class ProductUpdateActionUtils {
             () -> ChangeName.of(draftName, syncOptions.shouldUpdateStaged()));
     }
 
-    public static Optional<UpdateAction<Product>> buildSetDescriptionUpdateAction(final Product product,
-                                                                           final ProductDraft draft,
-                                                                           final ProductSyncOptions syncOptions) {
-        final LocalizedString draftDescription = draft.getDescription();
-        return buildProductDataUpdateAction(product, syncOptions, ProductData::getDescription, draftDescription,
-            () -> SetDescription.of(draftDescription, syncOptions.shouldUpdateStaged()));
+    @Nonnull
+    public static Optional<UpdateAction<Product>> buildSetDescriptionUpdateAction(@Nonnull final Product oldProduct,
+                                                                                  @Nonnull final ProductDraft newProduct,
+                                                                                  @Nonnull final ProductSyncOptions
+                                                                                      syncOptions) {
+        final LocalizedString newProductDescription = newProduct.getDescription();
+        return buildProductDataUpdateAction(oldProduct, syncOptions, ProductData::getDescription, newProductDescription,
+            () -> SetDescription.of(newProductDescription, syncOptions.shouldUpdateStaged()));
     }
 
-    public static Optional<UpdateAction<Product>> buildChangeSlugUpdateAction(final Product product, final ProductDraft draft,
-                                                                       final ProductSyncOptions syncOptions) {
-        final LocalizedString draftSlug = draft.getSlug();
-        return buildProductDataUpdateAction(product, syncOptions, ProductData::getSlug, draftSlug,
-            () -> ChangeSlug.of(draftSlug, syncOptions.shouldUpdateStaged()));
+    @Nonnull
+    public static Optional<UpdateAction<Product>> buildChangeSlugUpdateAction(@Nonnull final Product oldProduct,
+                                                                              @Nonnull final ProductDraft newProduct,
+                                                                              @Nonnull final ProductSyncOptions
+                                                                                      syncOptions) {
+        final LocalizedString newProductSlug = newProduct.getSlug();
+        return buildProductDataUpdateAction(oldProduct, syncOptions, ProductData::getSlug, newProductSlug,
+            () -> ChangeSlug.of(newProductSlug, syncOptions.shouldUpdateStaged()));
     }
 
 
-    public static List<UpdateAction<Product>> buildAddToCategoryUpdateActions(final Product product, final ProductDraft draft,
-                                                                       final ProductSyncOptions syncOptions) {
-        final Set<Reference<Category>> draftCategories = draft.getCategories();
-        return buildProductDataUpdateActions(product, syncOptions,
-            ProductData::getCategories, draftCategories, (oldCategories) -> {
+    @Nonnull
+    public static List<UpdateAction<Product>> buildAddToCategoryUpdateActions(@Nonnull final Product oldProduct,
+                                                                              @Nonnull final ProductDraft newProduct,
+                                                                              @Nonnull final ProductSyncOptions
+                                                                                      syncOptions) {
+        final Set<Reference<Category>> newProductCategories = newProduct.getCategories();
+        return buildProductDataUpdateActions(oldProduct, syncOptions,
+            ProductData::getCategories, newProductCategories, (oldCategories) -> {
                 final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-                subtract(draftCategories, oldCategories).forEach(c ->
+                subtract(newProductCategories, oldCategories).forEach(c ->
                     updateActions.add(AddToCategory.of(c, syncOptions.shouldUpdateStaged())));
                 return updateActions;
             });
     }
 
-    public static List<UpdateAction<Product>> buildSetCategoryOrderHintsUpdateAction(final Product product, final ProductDraft draft,
-                                                                              final ProductSyncOptions syncOptions) {
-        final CategoryOrderHints draftCategoryOrderHints = draft.getCategoryOrderHints();
-        return buildProductDataUpdateActions(product, syncOptions,
-            ProductData::getCategoryOrderHints, draftCategoryOrderHints, (oldCategoryOrderHints) -> {
+    @Nonnull
+    public static List<UpdateAction<Product>> buildSetCategoryOrderHintUpdateActions(@Nonnull final Product oldProduct,
+                                                                                     @Nonnull final ProductDraft
+                                                                                         newProduct,
+                                                                                     @Nonnull final ProductSyncOptions
+                                                                                             syncOptions) {
+        final CategoryOrderHints newProductCategoryOrderHints = newProduct.getCategoryOrderHints();
+        return buildProductDataUpdateActions(oldProduct, syncOptions,
+            ProductData::getCategoryOrderHints, newProductCategoryOrderHints, (oldCategoryOrderHints) -> {
 
-                final Set<String> newCategoryIds = draft.getCategories().stream()
-                                                        .map(Reference::getId)
-                                                        .collect(toSet());
+                final Set<String> newCategoryIds = newProduct.getCategories().stream()
+                                                             .map(Reference::getId)
+                                                             .collect(toSet());
 
                 final List<UpdateAction<Product>> updateActions = new ArrayList<>();
 
-                final Map<String, String> newMap = nonNull(draftCategoryOrderHints) ? draftCategoryOrderHints.getAsMap() : emptyMap();
-                final Map<String, String> oldMap = nonNull(oldCategoryOrderHints) ? oldCategoryOrderHints.getAsMap() : emptyMap();
+                final Map<String, String> newMap = nonNull(newProductCategoryOrderHints) ? newProductCategoryOrderHints
+                    .getAsMap() : emptyMap();
+                final Map<String, String> oldMap = nonNull(oldCategoryOrderHints) ? oldCategoryOrderHints
+                    .getAsMap() : emptyMap();
 
                 // remove category hints present in old product if they are absent in draft but only if product
                 // is or will be assigned to given category
@@ -105,57 +120,75 @@ public final class ProductUpdateActionUtils {
             });
     }
 
-    public static List<UpdateAction<Product>> buildRemoveFromCategoryUpdateActions(final Product product, final ProductDraft draft,
-                                                                            final ProductSyncOptions syncOptions) {
-        final Set<Reference<Category>> draftCategories = draft.getCategories();
-        return buildProductDataUpdateActions(product, syncOptions,
-            ProductData::getCategories, draftCategories, (oldCategories) -> {
+    @Nonnull
+    public static List<UpdateAction<Product>> buildRemoveFromCategoryUpdateActions(@Nonnull final Product oldProduct,
+                                                                                   @Nonnull final ProductDraft
+                                                                                       newProduct,
+                                                                                   @Nonnull final ProductSyncOptions
+                                                                                           syncOptions) {
+        final Set<Reference<Category>> newProductCategories = newProduct.getCategories();
+        return buildProductDataUpdateActions(oldProduct, syncOptions,
+            ProductData::getCategories, newProductCategories, (oldCategories) -> {
                 final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-                subtract(draftCategories, oldCategories).forEach(c ->
-                    updateActions.add(AddToCategory.of(c, syncOptions.shouldUpdateStaged())));
-                subtract(oldCategories, draftCategories).forEach(c ->
+                subtract(oldCategories, newProductCategories).forEach(c ->
                     updateActions.add(RemoveFromCategory.of(c, syncOptions.shouldUpdateStaged())));
                 return updateActions;
             });
     }
 
-    private static Set<Reference<Category>> subtract(final Set<Reference<Category>> set1,
-                                                     final Set<Reference<Category>> set2) {
-        Set<Reference<Category>> difference = new HashSet<>(set1);
+    @Nonnull
+    private static Set<Reference<Category>> subtract(@Nonnull final Set<Reference<Category>> set1,
+                                                     @Nonnull final Set<Reference<Category>> set2) {
+        final Set<Reference<Category>> difference = new HashSet<>(set1);
         difference.removeAll(set2);
         return difference;
     }
 
-    public static Optional<UpdateAction<Product>> buildSetSearchKeywordsUpdateAction(final Product product,
-                                                                              final ProductDraft draft,
-                                                                              final ProductSyncOptions syncOptions) {
-        final SearchKeywords draftSearchKeywords = draft.getSearchKeywords();
-        return buildProductDataUpdateAction(product, syncOptions, ProductData::getSearchKeywords, draftSearchKeywords,
-            () -> SetSearchKeywords.of(draftSearchKeywords, syncOptions.shouldUpdateStaged()));
+    @Nonnull
+    public static Optional<UpdateAction<Product>> buildSetSearchKeywordsUpdateAction(@Nonnull final Product oldProduct,
+                                                                                     @Nonnull final ProductDraft
+                                                                                         newProduct,
+                                                                                     @Nonnull final ProductSyncOptions
+                                                                                             syncOptions) {
+        final SearchKeywords newProductSearchKeywords = newProduct.getSearchKeywords();
+        return buildProductDataUpdateAction(oldProduct, syncOptions, ProductData::getSearchKeywords,
+            newProductSearchKeywords, () -> SetSearchKeywords.of(newProductSearchKeywords,
+                syncOptions.shouldUpdateStaged()));
     }
 
-    public static Optional<UpdateAction<Product>> buildSetMetaDescriptionUpdateAction(final Product product, final ProductDraft draft,
-                                                                               final ProductSyncOptions syncOptions) {
-        final LocalizedString draftMetaDescription = draft.getMetaDescription();
-        return buildProductDataUpdateAction(product, syncOptions, ProductData::getMetaDescription, draftMetaDescription,
-            () -> SetMetaDescription.of(draftMetaDescription));
+    @Nonnull
+    public static Optional<UpdateAction<Product>> buildSetMetaDescriptionUpdateAction(@Nonnull final Product oldProduct,
+                                                                                      @Nonnull final ProductDraft
+                                                                                          newProduct,
+                                                                                      @Nonnull final ProductSyncOptions
+                                                                                              syncOptions) {
+        final LocalizedString newProductMetaDescription = newProduct.getMetaDescription();
+        return buildProductDataUpdateAction(oldProduct, syncOptions, ProductData::getMetaDescription,
+            newProductMetaDescription, () -> SetMetaDescription.of(newProductMetaDescription));
     }
 
-    public static Optional<UpdateAction<Product>> buildSetMetaKeywordsUpdateAction(final Product product, final ProductDraft draft,
-                                                                            final ProductSyncOptions syncOptions) {
-        final LocalizedString draftMetaKeywords = draft.getMetaKeywords();
-        return buildProductDataUpdateAction(product, syncOptions, ProductData::getMetaKeywords, draftMetaKeywords,
-            () -> SetMetaKeywords.of(draftMetaKeywords));
+    @Nonnull
+    public static Optional<UpdateAction<Product>> buildSetMetaKeywordsUpdateAction(@Nonnull final Product oldProduct,
+                                                                                   @Nonnull final ProductDraft
+                                                                                       newProduct,
+                                                                                   @Nonnull final ProductSyncOptions
+                                                                                           syncOptions) {
+        final LocalizedString newProductMetaKeywords = newProduct.getMetaKeywords();
+        return buildProductDataUpdateAction(oldProduct, syncOptions, ProductData::getMetaKeywords,
+            newProductMetaKeywords, () -> SetMetaKeywords.of(newProductMetaKeywords));
     }
 
-    public static Optional<UpdateAction<Product>> buildSetMetaTitleUpdateAction(final Product product, final ProductDraft draft,
-                                                                         final ProductSyncOptions syncOptions) {
-        final LocalizedString draftMetaTitle = draft.getMetaTitle();
-        return buildProductDataUpdateAction(product, syncOptions, ProductData::getMetaTitle, draftMetaTitle,
-            () -> SetMetaTitle.of(draftMetaTitle));
+    @Nonnull
+    public static Optional<UpdateAction<Product>> buildSetMetaTitleUpdateAction(@Nonnull final Product oldProduct,
+                                                                                @Nonnull final ProductDraft newProduct,
+                                                                                @Nonnull final ProductSyncOptions
+                                                                                        syncOptions) {
+        final LocalizedString newProductMetaTitle = newProduct.getMetaTitle();
+        return buildProductDataUpdateAction(oldProduct, syncOptions, ProductData::getMetaTitle, newProductMetaTitle,
+            () -> SetMetaTitle.of(newProductMetaTitle));
     }
 
-    /*static Optional<UpdateAction<Product>> buildSetSkuUpdateAction(final Product product, final ProductDraft draft,
+    /*static Optional<UpdateAction<Product>> buildSetSkuUpdateAction(final Product oldProduct, final ProductDraft newProduct,
                                                                final ProductSyncOptions syncOptions) {
 
         final ProductData productData = masterData(product, syncOptions);
