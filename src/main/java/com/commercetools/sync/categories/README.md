@@ -35,15 +35,15 @@ matched.
      but return the `Type` object, from which the its `key` can be directly accessible.  
    
    **Note**: This library provides you with a utility method 
-    [`replaceCategoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/0.0.2/com/commercetools/sync/commons/utils/SyncUtils.html#replaceCategoriesReferenceIdsWithKeys-java.util.List-)
+    [`replaceCategoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/0.0.1/com/commercetools/sync/commons/utils/SyncUtils.html#replaceCategoriesReferenceIdsWithKeys-java.util.List-)
     that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
     ````java
     // Puts the keys in the reference id fields to prepare for reference resolution
     final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
     ````
      
-   Example of its usage can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L115).
-1. It is an important responsibility of the user of the library to instantiate a `sphereClient` that has the following properties:
+   Example of its usage can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130).
+3. It is an important responsibility of the user of the library to instantiate a `sphereClient` that has the following properties:
     - Limits the amount of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with 
    [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html) 
     - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the 
@@ -52,13 +52,13 @@ matched.
    You can use the same client instantiating used in the integration tests for this library found 
    [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
 
-2. After the `sphereClient` is setup, a `CategorySyncOptions` should be be built as follows: 
+4. After the `sphereClient` is setup, a `CategorySyncOptions` should be be built as follows: 
 ````java
 // instantiating a CategorySyncOptions
 final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(sphereClient).build();
 ````
 
-The options can be used to provide additional optional configuration for the sync as well :
+The options can be used to provide additional optional configuration for the sync as well:
 - `errorCallBack`
 a callback that is called whenever an event occurs during the sync process that represents an error. Currently, these 
 events.
