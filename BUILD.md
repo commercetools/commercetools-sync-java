@@ -86,7 +86,7 @@ Bintray publish is performed by [`gradle-bintray-plugin`](https://github.com/bin
 The artifacts are published to [bintray commercetools maven repo](https://bintray.com/commercetools/maven/commercetools-sync-java).
 
 If you are a new developer in the project - update contributors list in 
-[`maven-publish.gradle`](/maven-publish.gradle)`-> pomConfig -> developers`.
+[`maven-publish.gradle`](https://github.com/commercetools/commercetools-sync-java/blob/master/gradle-scripts/maven-publish.gradle)`-> pomConfig -> developers`.
 
 To initiate publish call:
 ```
