@@ -113,8 +113,8 @@ public class CategoryITUtils {
     }
 
     /**
-     * This method creates (in a blocking fashion) a {@code numberOfCategories} categories under as children to the
-     * supplied {@code parent} category in the supplied {@link SphereClient} project. It assigns them a key, and an
+     * This method creates {@code numberOfChildren} categories as children to the supplied {@code parent} category in
+     * the supplied {@link SphereClient} project in a blocking fashion. It assigns them a key, and an
      * {@code Locale.ENGLISH} name and slug of the value of the supplied {@code prefix} appended to the
      * (index of the child + 1). For example, if the prefix supplied is {@code "cat"}, the key and the english locales
      * of the name and the slug would be {@code "cat1"} for the first child.
