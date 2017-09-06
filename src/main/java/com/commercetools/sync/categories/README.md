@@ -35,7 +35,7 @@ matched.
      but return the `Type` object, from which the its `key` can be directly accessible.  
    
    **Note**: This library provides you with a utility method 
-    [`replaceCategoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/0.0.1/com/commercetools/sync/commons/utils/SyncUtils.html#replaceCategoriesReferenceIdsWithKeys-java.util.List-)
+    [`replaceCategoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M1/com/commercetools/sync/commons/utils/SyncUtils.html#replaceCategoriesReferenceIdsWithKeys-java.util.List-)
     that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
     ````java
     // Puts the keys in the reference id fields to prepare for reference resolution

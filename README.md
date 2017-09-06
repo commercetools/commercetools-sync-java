@@ -23,7 +23,7 @@ Java API which exposes utilities for building update actions and automatic synci
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-- [Javadocs](https://commercetools.github.io/commercetools-sync-java/v/0.0.1/)
+- [Javadocs](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M1/)
 ## Usage
 
 commercetools sync is a Java library that could be used to synchronise CTP data in any of the following ways:
