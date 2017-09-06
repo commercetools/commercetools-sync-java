@@ -21,7 +21,7 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeNameUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeSlugUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildRemoveFromCategoryUpdateActions;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetCategoryOrderHintsUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetCategoryOrderHintUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetDescriptionUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaDescriptionUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
@@ -86,7 +86,7 @@ public class ProductSyncUtils {
         ));
 
         updateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct, syncOptions));
-        updateActions.addAll(buildSetCategoryOrderHintsUpdateAction(oldProduct, newProduct, syncOptions));
+        updateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct, syncOptions));
         updateActions.addAll(buildRemoveFromCategoryUpdateActions(oldProduct, newProduct, syncOptions));
 
         return updateActions;
