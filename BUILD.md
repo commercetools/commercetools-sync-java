@@ -109,7 +109,7 @@ but still not available in [JCenter](https://jcenter.bintray.com/com/commercetoo
 To publish the artifacts to JCenter do the next:
   1. On the version page go to the Maven Central tab.
   2. Enter the commercetools Sonatype Maven Central API Key and password.
-  3. Click “Sync” and you’re done! 
+  3. Click _Sync_ and you’re done! 
   
 Your package should now be available in [JCenter commercetools-sync-java](https://jcenter.bintray.com/com/commercetools/commercetools-sync-java/) 
 and will be synced to Maven Central (and they usually take their time). In case of a sync problem, Bintray will automatically take care of any needed cleanup. 
