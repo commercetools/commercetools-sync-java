@@ -32,6 +32,7 @@ public class CategorySyncOptionsBuilderTest {
         assertThat(categorySyncOptions.shouldRemoveOtherProperties()).isTrue();
         assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isTrue();
         assertThat(categorySyncOptions.shouldRemoveOtherLocales()).isTrue();
+        assertThat(categorySyncOptions.shouldAllowUuidKeys()).isFalse();
         assertThat(categorySyncOptions.getUpdateActionsFilter()).isNull();
         assertThat(categorySyncOptions.getErrorCallBack()).isNull();
         assertThat(categorySyncOptions.getWarningCallBack()).isNull();
