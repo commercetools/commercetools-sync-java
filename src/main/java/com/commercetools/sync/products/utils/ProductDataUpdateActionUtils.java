@@ -16,16 +16,18 @@ import static com.commercetools.sync.products.utils.ProductDataUtils.masterData;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 
-public final class ProductDataUpdateActionUtils {
+final class ProductDataUpdateActionUtils {
 
     private ProductDataUpdateActionUtils() {
     }
 
     static <T> Optional<UpdateAction<Product>> buildProductDataUpdateAction(final Product product,
                                                                             final ProductSyncOptions syncOptions,
-                                                                            final Function<ProductData, T> oldValueGetter,
+                                                                            final Function<ProductData, T>
+                                                                                oldValueGetter,
                                                                             final T newValue,
-                                                                            final Supplier<UpdateAction<Product>> action) {
+                                                                            final Supplier<UpdateAction<Product>>
+                                                                                action) {
         final ProductData productData = masterData(product, syncOptions);
         return isNull(productData)
             ? Optional.empty() : buildUpdateAction(oldValueGetter.apply(productData), newValue, action);
@@ -35,7 +37,8 @@ public final class ProductDataUpdateActionUtils {
                                                                          final ProductSyncOptions syncOptions,
                                                                          final Function<ProductData, T> oldValueGetter,
                                                                          final T newValue,
-                                                                         final Function<T, List<UpdateAction<Product>>> actions) {
+                                                                         final Function<T, List<UpdateAction<Product>>>
+                                                                             actions) {
         final ProductData productData = masterData(product, syncOptions);
         return isNull(productData)
             ? emptyList() : buildUpdateActions(oldValueGetter.apply(productData), newValue, actions);

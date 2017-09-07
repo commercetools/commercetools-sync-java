@@ -1,8 +1,8 @@
 package com.commercetools.sync.services;
 
-import com.commercetools.sync.products.ProductSyncMockUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
@@ -18,10 +18,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Collections.singletonList;
+import static java.util.Locale.ENGLISH;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -56,7 +57,7 @@ public class ProductServiceTest {
         when(ctpClient.execute(any())).thenReturn(completedFuture(mock));
 
         List<UpdateAction<Product>> updateActions =
-            singletonList(ChangeName.of(ProductSyncMockUtils.en("new name")));
+            singletonList(ChangeName.of(LocalizedString.of(ENGLISH, "new name")));
         Product product = service.update(mock, updateActions).toCompletableFuture().join();
 
         assertThat(product).isSameAs(mock);

@@ -40,7 +40,8 @@ public class BuildSetMetaDescriptionUpdateActionTest {
 
         assertThat(setMetaDescriptionUpdateAction).isNotNull();
         assertThat(setMetaDescriptionUpdateAction.getAction()).isEqualTo("setMetaDescription");
-        assertThat(((SetMetaDescription) setMetaDescriptionUpdateAction).getMetaDescription()).isEqualTo(newDescription);
+        assertThat(((SetMetaDescription) setMetaDescriptionUpdateAction).getMetaDescription())
+            .isEqualTo(newDescription);
     }
 
     @Test
@@ -60,7 +61,8 @@ public class BuildSetMetaDescriptionUpdateActionTest {
 
         assertThat(setMetaDescriptionUpdateAction).isNotNull();
         assertThat(setMetaDescriptionUpdateAction.getAction()).isEqualTo("setMetaDescription");
-        assertThat(((SetMetaDescription) setMetaDescriptionUpdateAction).getMetaDescription()).isEqualTo(newDescription);
+        assertThat(((SetMetaDescription) setMetaDescriptionUpdateAction).getMetaDescription())
+            .isEqualTo(newDescription);
     }
 
     @Test
@@ -80,7 +82,8 @@ public class BuildSetMetaDescriptionUpdateActionTest {
 
         assertThat(setMetaDescriptionUpdateAction).isNotNull();
         assertThat(setMetaDescriptionUpdateAction.getAction()).isEqualTo("setMetaDescription");
-        assertThat(((SetMetaDescription) setMetaDescriptionUpdateAction).getMetaDescription()).isEqualTo(newDescription);
+        assertThat(((SetMetaDescription) setMetaDescriptionUpdateAction).getMetaDescription())
+            .isEqualTo(newDescription);
     }
 
     @Test

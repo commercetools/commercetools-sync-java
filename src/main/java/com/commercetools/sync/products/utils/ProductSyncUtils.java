@@ -119,7 +119,7 @@ public class ProductSyncUtils {
      * @param updateActions       the list of update actions to apply the filter on.
      * @param updateActionsFilter the filter functions to apply on the list of update actions
      * @return a new resultant list from applying the filter function, if not null, on the supplied list. If the filter
-     * function supplied was null, the same supplied list is returned as is.
+     *      function supplied was null, the same supplied list is returned as is.
      */
     @Nonnull
     private static List<UpdateAction<Product>> filterUpdateActions(

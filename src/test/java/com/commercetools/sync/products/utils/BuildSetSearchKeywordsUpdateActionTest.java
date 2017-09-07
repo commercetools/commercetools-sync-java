@@ -43,7 +43,8 @@ public class BuildSetSearchKeywordsUpdateActionTest {
 
         assertThat(setSearchKeywordsUpdateAction).isNotNull();
         assertThat(setSearchKeywordsUpdateAction.getAction()).isEqualTo("setSearchKeywords");
-        assertThat(((SetSearchKeywords) setSearchKeywordsUpdateAction).getSearchKeywords()).isEqualTo(newProductSearchKeywords);
+        assertThat(((SetSearchKeywords) setSearchKeywordsUpdateAction).getSearchKeywords())
+            .isEqualTo(newProductSearchKeywords);
     }
 
     @Test
@@ -88,7 +89,8 @@ public class BuildSetSearchKeywordsUpdateActionTest {
 
         assertThat(setSearchKeywordsUpdateAction).isNotNull();
         assertThat(setSearchKeywordsUpdateAction.getAction()).isEqualTo("setSearchKeywords");
-        assertThat(((SetSearchKeywords) setSearchKeywordsUpdateAction).getSearchKeywords()).isEqualTo(newProductSearchKeywords);
+        assertThat(((SetSearchKeywords) setSearchKeywordsUpdateAction).getSearchKeywords())
+            .isEqualTo(newProductSearchKeywords);
     }
 
     @Test

@@ -40,7 +40,8 @@ public class BuildRemoveFromCategoryUpdateActionsTest {
             getRemoveFromCategoryUpdateActions(MOCK_OLD_PUBLISHED_PRODUCT, Collections.emptySet(), true);
 
         assertThat(removeFromCategoryUpdateActions).hasSize(4);
-        removeFromCategoryUpdateActions.forEach(updateAction -> assertThat(updateAction.getAction()).isEqualTo("removeFromCategory"));
+        removeFromCategoryUpdateActions
+            .forEach(updateAction -> assertThat(updateAction.getAction()).isEqualTo("removeFromCategory"));
     }
 
     @Test
@@ -85,7 +86,8 @@ public class BuildRemoveFromCategoryUpdateActionsTest {
             getRemoveFromCategoryUpdateActions(MOCK_OLD_UNPUBLISHED_PRODUCT, Collections.emptySet(), true);
 
         assertThat(removeFromCategoryUpdateActions).hasSize(4);
-        removeFromCategoryUpdateActions.forEach(updateAction -> assertThat(updateAction.getAction()).isEqualTo("removeFromCategory"));
+        removeFromCategoryUpdateActions
+            .forEach(updateAction -> assertThat(updateAction.getAction()).isEqualTo("removeFromCategory"));
     }
 
     @Test

@@ -1,12 +1,8 @@
 package com.commercetools.sync.integration.commons.utils;
 
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
-import com.commercetools.sync.products.ProductSyncOptions;
-import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductDeleteCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
@@ -26,78 +22,76 @@ import java.util.function.Consumer;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
-import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
 
 public final class ProductITUtils {
 
 
-    public static void deleteProductSyncTestData(@Nonnull final SphereClient sphereClient) {
-        deleteProducts(sphereClient);
-        deleteProductTypes(sphereClient);
-        deleteAllCategories(sphereClient);
-        deleteTypes(sphereClient);
-    }
-
-    public static ProductType buildProductType(@Nonnull final String resourceAsJsonString,
-                                               @Nonnull final SphereClient sphereClient) {
-        final ProductType productTypeFromJson = readObjectFromResource(resourceAsJsonString,
+    /**
+     * This method blocks to create a product type, which is defined by the JSON resource found in the supplied
+     * {@code jsonResourcePath}, in the CTP project defined by the supplied {@code ctpClient}.
+     *
+     * @param jsonResourcePath defines the path of the JSON resource of the product type.
+     * @param ctpClient        defines the CTP project to create the categories on.
+     */
+    public static ProductType createProductType(@Nonnull final String jsonResourcePath,
+                                                @Nonnull final SphereClient ctpClient) {
+        final ProductType productTypeFromJson = readObjectFromResource(jsonResourcePath,
             ProductType.class);
         final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder.of(productTypeFromJson)
                                                                          .build();
-        return sphereClient.execute(ProductTypeCreateCommand.of(productTypeDraft))
-                           .toCompletableFuture().join();
+        return ctpClient.execute(ProductTypeCreateCommand.of(productTypeDraft))
+                        .toCompletableFuture().join();
     }
 
-
-    public static ProductDraft buildProductDraft(@Nonnull final String resourceAsJsonString,
-                                                 @Nonnull final ProductType productType,
-                                                 @Nonnull final ProductSyncOptions syncOptions) {
-        return createProductDraftBuilder(resourceAsJsonString, productType, syncOptions)
-            .categories(emptyList())
-            .categoryOrderHints(null)
-            .build();
+    /**
+     * Deletes all products, product types, categories and types from the CTP project defined by the {@code ctpClient}.
+     *
+     * @param ctpClient defines the CTP project to delete the categories from.
+     */
+    public static void deleteProductSyncTestData(@Nonnull final SphereClient ctpClient) {
+        deleteAllProducts(ctpClient);
+        deleteProductTypes(ctpClient);
+        deleteAllCategories(ctpClient);
+        deleteTypes(ctpClient);
     }
 
-    public static ProductDraft buildProductDraft(@Nonnull final String resourceAsJsonString,
-                                          @Nonnull final ProductType productType,
-                                          @Nonnull final List<Category> categories,
-                                          @Nonnull final CategoryOrderHints categoryOrderHints,
-                                          @Nonnull final ProductSyncOptions syncOptions) {
-        return createProductDraftBuilder(resourceAsJsonString, productType, syncOptions)
-            .categories(categories.stream().map(Category::toReference).collect(toList()))
-            .categoryOrderHints(categoryOrderHints)
-            .build();
-    }
-
-    public static void deleteProducts(@Nonnull final SphereClient sphereClient) {
+    /**
+     * Deletes all products from the CTP project defined by the {@code ctpClient}.
+     *
+     * @param ctpClient defines the CTP project to delete the categories from.
+     */
+    public static void deleteAllProducts(@Nonnull final SphereClient ctpClient) {
         final List<CompletableFuture> productDeleteFutures = new ArrayList<>();
         final Consumer<List<Product>> productPageDelete = products -> products.forEach(product -> {
             if (product.getMasterData().isPublished()) {
-                product = sphereClient.execute(ProductUpdateCommand.of(product, Unpublish.of()))
-                                                 .toCompletableFuture().join();
+                product = ctpClient.execute(ProductUpdateCommand.of(product, Unpublish.of()))
+                                   .toCompletableFuture().join();
             }
-            productDeleteFutures.add(sphereClient.execute(ProductDeleteCommand.of(product))
-                                                 .toCompletableFuture());
+            productDeleteFutures.add(ctpClient.execute(ProductDeleteCommand.of(product))
+                                              .toCompletableFuture());
         });
 
-        CtpQueryUtils.queryAll(sphereClient, ProductQuery.of(), productPageDelete)
+        CtpQueryUtils.queryAll(ctpClient, ProductQuery.of(), productPageDelete)
                      .thenCompose(result -> CompletableFuture
                          .allOf(productDeleteFutures.toArray(new CompletableFuture[productDeleteFutures.size()])))
                      .toCompletableFuture().join();
     }
 
-    private static void deleteProductTypes(@Nonnull final SphereClient sphereClient) {
+    /**
+     * Deletes all product types from the CTP project defined by the {@code ctpClient}.
+     *
+     * @param ctpClient defines the CTP project to delete the categories from.
+     */
+    private static void deleteProductTypes(@Nonnull final SphereClient ctpClient) {
         final List<CompletableFuture> productTypeDeleteFutures = new ArrayList<>();
         final Consumer<List<ProductType>> productTypePageDelete = productTypes -> productTypes.forEach(productType -> {
             final CompletableFuture<ProductType> deleteFuture =
-                sphereClient.execute(ProductTypeDeleteCommand.of(productType)).toCompletableFuture();
+                ctpClient.execute(ProductTypeDeleteCommand.of(productType)).toCompletableFuture();
             productTypeDeleteFutures.add(deleteFuture);
         });
 
-        CtpQueryUtils.queryAll(sphereClient, ProductTypeQuery.of(), productTypePageDelete)
+        CtpQueryUtils.queryAll(ctpClient, ProductTypeQuery.of(), productTypePageDelete)
                      .thenCompose(result -> CompletableFuture
                          .allOf(productTypeDeleteFutures
                              .toArray(new CompletableFuture[productTypeDeleteFutures.size()])))

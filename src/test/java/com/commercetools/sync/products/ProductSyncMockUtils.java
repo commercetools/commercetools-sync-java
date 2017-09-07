@@ -1,31 +1,24 @@
 package com.commercetools.sync.products;
 
 import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.producttypes.ProductType;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.commercetools.sync.products.utils.ProductDataUtils.masterData;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.lang.String.valueOf;
-import static java.util.Locale.ENGLISH;
-import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class ProductSyncMockUtils {
     public static final String PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH = "product-key-1-published.json";
@@ -35,33 +28,21 @@ public class ProductSyncMockUtils {
     public static final String CATEGORY_KEY_3_RESOURCE_PATH = "category-key-3.json";
 
     /**
-     * Wraps provided string in {@link LocalizedString} of English {@link Locale}.
+     * Builds a {@link ProductDraftBuilder} based on the current projection of the product JSON resource located at the
+     * {@code jsonResourcePath} and based on the supplied {@code productType}.
+     *
+     * @param jsonResourcePath the path of the JSON resource to build the product draft from.
+     * @param productType      the product type that the product draft belongs to.
+     * @return a {@link ProductDraftBuilder} instance containing the data from the current projection of the specified
+     *          JSON resource and the product type.
      */
-    @Nullable
-    public static LocalizedString en(@Nullable final String string) {
-        return localizedString(string, ENGLISH);
-    }
+    public static ProductDraftBuilder createProductDraftBuilder(@Nonnull final String jsonResourcePath,
+                                                                @Nonnull final ProductType productType) {
+        final Product productFromJson = readObjectFromResource(jsonResourcePath, Product.class);
+        final ProductData productData = productFromJson.getMasterData().getCurrent();
 
-    @Nullable
-    private static LocalizedString localizedString(final @Nullable String string, final Locale locale) {
-        return isNull(string)
-            ? null
-            : LocalizedString.of(locale, string);
-    }
-
-    /**
-     * Provides {@link ProductDraftBuilder} built on product template read from {@code resourcePath},
-     * based on {@code productType} with {@code syncOptions} applied and category order hints set if {@code category}
-     * is not null.
-     */
-    public static ProductDraftBuilder createProductDraftBuilder(@Nonnull final String resourceAsJsonString,
-                                                                @Nonnull final ProductType productType,
-                                                                @Nonnull final ProductSyncOptions syncOptions) {
-        final Product productFromJson = readObjectFromResource(resourceAsJsonString, Product.class);
-        final ProductData productData = masterData(productFromJson, syncOptions);
-
-        @SuppressWarnings("ConstantConditions")
-        final List<ProductVariantDraft> allVariants = productData.getAllVariants().stream()
+        @SuppressWarnings("ConstantConditions") final List<ProductVariantDraft> allVariants = productData
+            .getAllVariants().stream()
             .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
             .collect(toList());
 
@@ -78,31 +59,48 @@ public class ProductSyncMockUtils {
             .categoryOrderHints(productData.getCategoryOrderHints());
     }
 
-    /**
-     * Given a {@code locale}, {@code name}, {@code slug}, {@code externalId}, {@code description},
-     * {@code metaDescription}, {@code metaTitle}, {@code metaKeywords}, {@code orderHint} and
-     * {@code parentId}; this method creates a mock of {@link Category} with all those supplied fields. All the supplied
-     * arguments are given as {@link String} and the method internally converts them to their required types.
-     * For example, for all the fields that require a {@link LocalizedString} as a value type; the method creates an
-     * instance of a {@link LocalizedString} with the given {@link String} and {@link Locale}.
-     *
-     * @param locale          the locale to create with all the {@link LocalizedString} instances.
-     * @param name            the name of the category.
-     * @return an instance {@link Category} with all the given fields set in the given {@link Locale}.
-     */
-    public static Product getMockProduct(@Nonnull final Locale locale,
-                                           @Nonnull final String name) {
-        final Product oldProduct = mock(Product.class);
-        when(oldProduct.getMasterData().getCurrent().getName()).thenReturn(LocalizedString.of(locale, name));
-        return oldProduct;
-    }
 
-    public static CategoryOrderHints buildRandomCategoryOrderHints(@Nonnull final List<Category> categories) {
+    /**
+     * Given a {@link List} of {@link Category}, this method returns an instance of {@link CategoryOrderHints}
+     * containing a {@link Map}, in which each entry has category id from the supplied {@link List} as a key and a
+     * random categoryOrderHint which is a {@link String} containing a random double value between 0 and 1 (exclusive).
+     *
+     * <p>Note: The random double value is generated by the {@link ThreadLocalRandom#current()} nextDouble method.
+     *
+     * @param categories list of categories to build categoryOrderHints for.
+     * @return an instance of {@link CategoryOrderHints} containing a categoryOrderHint for each category in the
+     *          supplied list of categories.
+     */
+    public static CategoryOrderHints createRandomCategoryOrderHints(@Nonnull final List<Category> categories) {
         final Map<String, String> categoryOrderHints = new HashMap<>();
         categories.forEach(category -> {
             final double randomDouble = ThreadLocalRandom.current().nextDouble(0, 1);
-            categoryOrderHints.put(category.getId(), valueOf(randomDouble ));
+            categoryOrderHints.put(category.getId(), valueOf(randomDouble));
         });
         return CategoryOrderHints.of(categoryOrderHints);
+    }
+
+    /**
+     * Builds a {@link ProductDraft} based on the current projection of the product JSON resource located at the
+     * {@code jsonResourcePath} and based on the supplied {@code productType}. The method also attaches the created
+     * {@link ProductDraft} to all the {@code categories} specified and assigns {@code categoryOrderHints} for it for
+     * each category assigned.
+     *
+     * @param jsonResourcePath   the path of the JSON resource to build the product draft from.
+     * @param productType        the product type that the product draft belongs to.
+     * @param categories         the categories to attach this product draft to.
+     * @param categoryOrderHints the categoryOrderHint for each category this product belongs to.
+     * @return a {@link ProductDraft} instance containing the data from the current projection of the specified
+     *          JSON resource and the product type. The draft would be assigned also to the specified {@code categories}
+     *          with the supplied {@code categoryOrderHints}.
+     */
+    public static ProductDraft buildProductDraft(@Nonnull final String jsonResourcePath,
+                                                 @Nonnull final ProductType productType,
+                                                 @Nonnull final List<Category> categories,
+                                                 @Nonnull final CategoryOrderHints categoryOrderHints) {
+        return createProductDraftBuilder(jsonResourcePath, productType)
+            .categories(categories.stream().map(Category::toReference).collect(toList()))
+            .categoryOrderHints(categoryOrderHints)
+            .build();
     }
 }

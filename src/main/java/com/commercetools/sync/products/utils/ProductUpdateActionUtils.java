@@ -39,14 +39,13 @@ import static java.util.stream.Collectors.toSet;
 public final class ProductUpdateActionUtils {
 
     /**
-     *
      * Compares the {@link LocalizedString} names of a {@link ProductDraft} and a {@link Product}. The name of the
      * product is either fetched from it's current or staged projection based on the whether the {@code updateStaged}
      * flag configured in the {@code syncOptions} supplied as a parameter to the method. If the {@code updateStaged} is
-     * set to {@code true}, then the staged projection of the product is used for comparison. If the {@code updateStaged} is
-     * set to {@code false}, then the current projection of the product is used for comparison.
+     * set to {@code true}, then the staged projection of the product is used for comparison. If the
+     * {@code updateStaged} is set to {@code false}, then the current projection of the product is used for comparison.
      *
-     * <p>Then it returns an {@link UpdateAction}&lt;{@link Product}&gt; as a result in an {@link Optional}.
+     * <p>Then it returns an {@link ChangeName} as a result in an {@link Optional}.
      * If both the {@link Product} and the {@link ProductDraft} have the same name, then no update action is needed and
      * hence an empty {@link Optional} is returned.
      *
@@ -65,9 +64,27 @@ public final class ProductUpdateActionUtils {
             () -> ChangeName.of(newProductName, syncOptions.shouldUpdateStaged()));
     }
 
+    /**
+     * Compares the {@link LocalizedString} descriptions of a {@link ProductDraft} and a {@link Product}. The 
+     * description of the product is either fetched from it's current or staged projection based on the whether the 
+     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the 
+     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
+     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for 
+     * comparison.
+     *
+     * <p>Then it returns an {@link SetDescription} as a result in an {@link Optional}.
+     * If both the {@link Product} and the {@link ProductDraft} have the same description, then no update action is 
+     * needed and hence an empty {@link Optional} is returned.
+     *
+     * @param oldProduct the category which should be updated.
+     * @param newProduct the category draft where we get the new description.
+     * @param syncOptions used to decide on which projection of the product to compare the existing description from.
+     * @return A filled optional with the update action or an empty optional if the descriptions are identical.
+     */
     @Nonnull
     public static Optional<UpdateAction<Product>> buildSetDescriptionUpdateAction(@Nonnull final Product oldProduct,
-                                                                                  @Nonnull final ProductDraft newProduct,
+                                                                                  @Nonnull final ProductDraft
+                                                                                      newProduct,
                                                                                   @Nonnull final ProductSyncOptions
                                                                                       syncOptions) {
         final LocalizedString newProductDescription = newProduct.getDescription();
@@ -75,6 +92,23 @@ public final class ProductUpdateActionUtils {
             () -> SetDescription.of(newProductDescription, syncOptions.shouldUpdateStaged()));
     }
 
+    /**
+     * Compares the {@link LocalizedString} slugs of a {@link ProductDraft} and a {@link Product}. The 
+     * slug of the product is either fetched from it's current or staged projection based on the whether the 
+     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the 
+     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
+     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for 
+     * comparison.
+     *
+     * <p>Then it returns a {@link ChangeSlug} update action as a result in an {@link Optional}.
+     * If both the {@link Product} and the {@link ProductDraft} have the same slug, then no update action is 
+     * needed and hence an empty {@link Optional} is returned.
+     *
+     * @param oldProduct the category which should be updated.
+     * @param newProduct the category draft where we get the new slug.
+     * @param syncOptions used to decide on which projection of the product to compare the existing slug from.
+     * @return A filled optional with the update action or an empty optional if the slugs are identical.
+     */
     @Nonnull
     public static Optional<UpdateAction<Product>> buildChangeSlugUpdateAction(@Nonnull final Product oldProduct,
                                                                               @Nonnull final ProductDraft newProduct,
@@ -85,7 +119,24 @@ public final class ProductUpdateActionUtils {
             () -> ChangeSlug.of(newProductSlug, syncOptions.shouldUpdateStaged()));
     }
 
-
+    /**
+     * Compares the {@link Set} of {@link Category} {@link Reference}s of a {@link ProductDraft} and a {@link Product}.
+     * The categories of the product is either fetched from it's current or staged projection based on the whether the 
+     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the 
+     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
+     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for 
+     * comparison.
+     *
+     * <p>Then it returns a {@link List} of {@link AddToCategory} update actions as a result, if the old product 
+     * needs to be added to a category to have the same set of categories as the new product.
+     * If both the {@link Product} and the {@link ProductDraft} have the same set of categories, then no update action 
+     * is  needed and hence an empty {@link List} is returned.
+     *
+     * @param oldProduct the category which should be updated.
+     * @param newProduct the category draft where we get the new slug.
+     * @param syncOptions used to decide on which projection of the product to compare the existing category set from.
+     * @return A list containing the update actions or an empty list if the category sets are identical.
+     */
     @Nonnull
     public static List<UpdateAction<Product>> buildAddToCategoryUpdateActions(@Nonnull final Product oldProduct,
                                                                               @Nonnull final ProductDraft newProduct,
@@ -101,6 +152,24 @@ public final class ProductUpdateActionUtils {
             });
     }
 
+    /**
+     * Compares the {@link CategoryOrderHints} of a {@link ProductDraft} and a {@link Product}. The categoryOrderHints
+     * of the  product is either fetched from it's current or staged projection based on the whether the
+     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the
+     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
+     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for
+     * comparison.
+     *
+     * <p>Then it returns a {@link SetCategoryOrderHint} update action as a result in an {@link List}.
+     * If both the {@link Product} and the {@link ProductDraft} have the same categoryOrderHints, then no update action
+     * is needed and hence an empty {@link List} is returned.
+     *
+     * @param oldProduct the category which should be updated.
+     * @param newProduct the category draft where we get the new categoryOrderHints.
+     * @param syncOptions used to decide on which projection of the product to compare the existing categoryOrderHints 
+     *                    from.
+     * @return A list containing the update actions or an empty list if the categoryOrderHints are identical.
+     */
     @Nonnull
     public static List<UpdateAction<Product>> buildSetCategoryOrderHintUpdateActions(@Nonnull final Product oldProduct,
                                                                                      @Nonnull final ProductDraft
@@ -141,6 +210,24 @@ public final class ProductUpdateActionUtils {
             });
     }
 
+    /**
+     * Compares the {@link Set} of {@link Category} {@link Reference}s of a {@link ProductDraft} and a {@link Product}.
+     * The categories of the product is either fetched from it's current or staged projection based on the whether the 
+     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the 
+     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
+     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for 
+     * comparison.
+     *
+     * <p>Then it returns a {@link List} of {@link RemoveFromCategory} update actions as a result, if the old product 
+     * needs to be removed from a category to have the same set of categories as the new product.
+     * If both the {@link Product} and the {@link ProductDraft} have the same set of categories, then no update action 
+     * is  needed and hence an empty {@link List} is returned.
+     *
+     * @param oldProduct the category which should be updated.
+     * @param newProduct the category draft where we get the new slug.
+     * @param syncOptions used to decide on which projection of the product to compare the category set from.
+     * @return A list containing the update actions or an empty list if the category sets are identical.
+     */
     @Nonnull
     public static List<UpdateAction<Product>> buildRemoveFromCategoryUpdateActions(@Nonnull final Product oldProduct,
                                                                                    @Nonnull final ProductDraft
@@ -157,6 +244,13 @@ public final class ProductUpdateActionUtils {
             });
     }
 
+    /**
+     * Returns a set containing everything in {@code set1} but not in {@code set2}.
+     * 
+     * @param set1 defines the first set.
+     * @param set2 defines the second set.
+     * @return a set containing everything in {@code set1} but not in {@code set2}.
+     */
     @Nonnull
     private static Set<Reference<Category>> subtract(@Nonnull final Set<Reference<Category>> set1,
                                                      @Nonnull final Set<Reference<Category>> set2) {
@@ -165,6 +259,23 @@ public final class ProductUpdateActionUtils {
         return difference;
     }
 
+    /**
+     * Compares the {@link SearchKeywords} of a {@link ProductDraft} and a {@link Product}. The search keywords of the 
+     * product is either fetched from it's current or staged projection based on the whether the {@code updateStaged}
+     * flag configured in the {@code syncOptions} supplied as a parameter to the method. If the {@code updateStaged} is 
+     * set to {@code true}, then the staged projection of the product is used for comparison. If the 
+     * {@code updateStaged} is set to {@code false}, then the current projection of the product is used for comparison.
+     *
+     * <p>Then it returns a {@link SetSearchKeywords} update action as a result in an {@link Optional}.
+     * If both the {@link Product} and the {@link ProductDraft} have the same search keywords, then no update action is 
+     * needed and hence an empty {@link Optional} is returned.
+     *
+     * @param oldProduct the category which should be updated.
+     * @param newProduct the category draft where we get the new search keywords.
+     * @param syncOptions used to decide on which projection of the product to compare the existing search keywords 
+     *                    from.
+     * @return A filled optional with the update action or an empty optional if the search keywords are identical.
+     */
     @Nonnull
     public static Optional<UpdateAction<Product>> buildSetSearchKeywordsUpdateAction(@Nonnull final Product oldProduct,
                                                                                      @Nonnull final ProductDraft
@@ -177,6 +288,24 @@ public final class ProductUpdateActionUtils {
                 syncOptions.shouldUpdateStaged()));
     }
 
+    /**
+     * Compares the {@link LocalizedString} meta descriptions of a {@link ProductDraft} and a {@link Product}. The 
+     * meta description of the product is either fetched from it's current or staged projection based on the whether the
+     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the 
+     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
+     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for 
+     * comparison.
+     *
+     * <p>Then it returns a {@link ChangeSlug} update action as a result in an {@link Optional}.
+     * If both the {@link Product} and the {@link ProductDraft} have the same meta description, then no update action is
+     * needed and hence an empty {@link Optional} is returned.
+     *
+     * @param oldProduct the category which should be updated.
+     * @param newProduct the category draft where we get the new meta description.
+     * @param syncOptions used to decide on which projection of the product to compare the existing meta description 
+     *                    from.
+     * @return A filled optional with the update action or an empty optional if the meta descriptions are identical.
+     */
     @Nonnull
     public static Optional<UpdateAction<Product>> buildSetMetaDescriptionUpdateAction(@Nonnull final Product oldProduct,
                                                                                       @Nonnull final ProductDraft
@@ -188,6 +317,23 @@ public final class ProductUpdateActionUtils {
             newProductMetaDescription, () -> SetMetaDescription.of(newProductMetaDescription));
     }
 
+    /**
+     * Compares the {@link LocalizedString} meta keywordss of a {@link ProductDraft} and a {@link Product}. The 
+     * meta keywords of the product is either fetched from it's current or staged projection based on the whether the 
+     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the 
+     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
+     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for 
+     * comparison.
+     *
+     * <p>Then it returns a {@link ChangeSlug} update action as a result in an {@link Optional}.
+     * If both the {@link Product} and the {@link ProductDraft} have the same meta keywords, then no update action is 
+     * needed and hence an empty {@link Optional} is returned.
+     *
+     * @param oldProduct the category which should be updated.
+     * @param newProduct the category draft where we get the new meta keywords.
+     * @param syncOptions used to decide on which projection of the product to compare the existing meta keywords from.
+     * @return A filled optional with the update action or an empty optional if the meta keywords are identical.
+     */
     @Nonnull
     public static Optional<UpdateAction<Product>> buildSetMetaKeywordsUpdateAction(@Nonnull final Product oldProduct,
                                                                                    @Nonnull final ProductDraft
@@ -199,6 +345,23 @@ public final class ProductUpdateActionUtils {
             newProductMetaKeywords, () -> SetMetaKeywords.of(newProductMetaKeywords));
     }
 
+    /**
+     * Compares the {@link LocalizedString} meta titles of a {@link ProductDraft} and a {@link Product}. The 
+     * meta title of the product is either fetched from it's current or staged projection based on the whether the 
+     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the 
+     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
+     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for 
+     * comparison.
+     *
+     * <p>Then it returns a {@link ChangeSlug} update action as a result in an {@link Optional}.
+     * If both the {@link Product} and the {@link ProductDraft} have the same meta title, then no update action is 
+     * needed and hence an empty {@link Optional} is returned.
+     *
+     * @param oldProduct the category which should be updated.
+     * @param newProduct the category draft where we get the new meta title.
+     * @param syncOptions used to decide on which projection of the product to compare the existing meta title from.
+     * @return A filled optional with the update action or an empty optional if the meta titles are identical.
+     */
     @Nonnull
     public static Optional<UpdateAction<Product>> buildSetMetaTitleUpdateAction(@Nonnull final Product oldProduct,
                                                                                 @Nonnull final ProductDraft newProduct,
@@ -209,7 +372,8 @@ public final class ProductUpdateActionUtils {
             () -> SetMetaTitle.of(newProductMetaTitle));
     }
 
-    /*static Optional<UpdateAction<Product>> buildSetSkuUpdateAction(final Product oldProduct, final ProductDraft newProduct,
+    /*static Optional<UpdateAction<Product>> buildSetSkuUpdateAction(final Product oldProduct, final ProductDraft
+                                                                                                            newProduct,
                                                                final ProductSyncOptions syncOptions) {
 
         final ProductData productData = masterData(product, syncOptions);

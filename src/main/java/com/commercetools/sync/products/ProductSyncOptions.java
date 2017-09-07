@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * TODO: removeOtherVariants, whiteList, blackList
+ * TODO: removeOtherVariants, whiteList, blackList.
  */
 public class ProductSyncOptions extends BaseSyncOptions {
     private final boolean updateStaged; // whether to compare and update the staged or current projection data.
