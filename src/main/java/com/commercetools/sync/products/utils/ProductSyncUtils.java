@@ -53,7 +53,7 @@ public class ProductSyncUtils {
         final List<UpdateAction<Product>> assetUpdateActions =
             buildAssetActions(oldProduct, newProduct, syncOptions);
         updateActions.addAll(assetUpdateActions);
-        return filterUpdateActions(updateActions, syncOptions.getActionsFilter());
+        return filterUpdateActions(updateActions, syncOptions.getUpdateActionsFilter());
     }
 
     /**

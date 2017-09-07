@@ -25,7 +25,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
     private final List<String> blackList;
 
     // optional filter which can be applied on generated list of update actions
-    private final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> actionsFilter;
+    private final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsFilter;
 
     ProductSyncOptions(@Nonnull final SphereClient ctpClient,
                        final BiConsumer<String, Throwable> errorCallBack,
@@ -43,7 +43,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
                        final List<String> whiteList,
                        final List<String> blackList,
                        final Function<List<UpdateAction<Product>>,
-                           List<UpdateAction<Product>>> actionsFilter) {
+                           List<UpdateAction<Product>>> updateActionsFilter) {
         super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherLocales, removeOtherSetEntries,
             removeOtherCollectionEntries, removeOtherProperties, allowUuid);
         this.updateStaged = updateStaged;
@@ -52,7 +52,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
         this.removeOtherVariants = removeOtherVariants;
         this.whiteList = whiteList;
         this.blackList = blackList;
-        this.actionsFilter = actionsFilter;
+        this.updateActionsFilter = updateActionsFilter;
     }
 
     public boolean shouldUpdateStaged() {
@@ -79,7 +79,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
         return blackList;
     }
 
-    public Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> getActionsFilter() {
-        return actionsFilter;
+    public Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> getUpdateActionsFilter() {
+        return updateActionsFilter;
     }
 }

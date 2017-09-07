@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import static java.util.Collections.emptyList;
-import static java.util.function.Function.identity;
 
 public final class ProductSyncOptionsBuilder
     extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions> {
@@ -21,7 +20,7 @@ public final class ProductSyncOptionsBuilder
     private boolean removeOtherVariants = true;
     private List<String> whiteList = emptyList();
     private List<String> blackList = emptyList();
-    private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> actionsFilter = identity();
+    private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsFilter;
 
     private ProductSyncOptionsBuilder(final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
@@ -62,8 +61,8 @@ public final class ProductSyncOptionsBuilder
     }
 
     public ProductSyncOptionsBuilder setUpdateActionsFilter(@Nonnull final Function<List<UpdateAction<Product>>,
-        List<UpdateAction<Product>>> actionsFilter) {
-        this.actionsFilter = actionsFilter;
+        List<UpdateAction<Product>>> updateActionsFilter) {
+        this.updateActionsFilter = updateActionsFilter;
         return this;
     }
 
@@ -85,7 +84,7 @@ public final class ProductSyncOptionsBuilder
             removeOtherVariants,
             whiteList,
             blackList,
-            actionsFilter
+            updateActionsFilter
         );
     }
 
