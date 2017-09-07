@@ -23,6 +23,8 @@ Java API which exposes utilities for building update actions and automatic synci
       - [Install to local maven repo](#install-to-local-maven-repo)
       - [Build and publish JavaDoc](#build-and-publish-javadoc)
       - [Publish to Bintray](#publish-to-bintray)
+  - [Integration Tests](#integration-tests)
+    - [Running](#running)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -129,4 +131,28 @@ For example, `#65: Remove redundant space.`
 
 For more detailed information on build and release process, see [Build and Release](BUILD.md) documentation.
 
-<!--- TODO ### Executing integration tests only-->
+### Integration Tests
+
+1. The integration tests of the library require to have two CTP projects (a source project and a target project) were the 
+data will be tested to be synced on from the source to the target project. 
+2. Running the tests does the following:
+    - Clean all the data in both projects.
+    - Create test data in either/both projects depending on the test.
+    - Execute the tests.
+    - Clean all the data in both projects, leaving them empty.
+
+#### Running 
+Before running the integration tests make sure the following environment variables are set:
+````bash
+export SOURCE_PROJECT_KEY = xxxxxxxxxxxxx
+export SOURCE_CLIENT_ID = xxxxxxxxxxxxxxx
+export SOURCE_CLIENT_SECRET = xxxxxxxxxxx
+export TARGET_PROJECT_KEY = xxxxxxxxxxxxx
+export TARGET_CLIENT_ID = xxxxxxxxxxxxxxx
+export TARGET_CLIENT_SECRET = xxxxxxxxxxx
+````
+
+then run the integration tests:
+````bash
+./gradlew integrationTest
+````
