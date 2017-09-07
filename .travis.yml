@@ -8,7 +8,7 @@ dist: trusty
 jdk:
 - openjdk8
 install: true # skips travis' default installation step which executes gradle assemble.
-script: ./gradlew clean build --info
+script: ./gradlew clean build
 # The before_cache and the cache steps cache the gradle installation on travis.
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -19,5 +19,5 @@ cache:
   - $HOME/.gradle/wrapper/
 after_success:
 - bash <(curl -s https://codecov.io/bash)
-- ./gradlew clean gitPublishPush
+- ./gradlew clean -Dbuild.version=$TRAVIS_TAG gitPublishPush
 - ./travis-build.sh

@@ -277,7 +277,7 @@ public class CategorySyncIT {
 
     @Test
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    public void syncDrafts_withExistingShuffledCategoriesWithChangingCategoryHeirarchachy_ShouldUpdateCategories() {
+    public void syncDrafts_withExistingShuffledCategoriesWithChangingCategoryHierarchy_ShouldUpdateCategories() {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
         deleteAllCategories(CTP_TARGET_CLIENT);

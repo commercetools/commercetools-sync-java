@@ -10,6 +10,9 @@ Java API which exposes utilities for building update actions and automatic synci
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 - [Usage](#usage)
   - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+    - [Maven](#maven)
+    - [Gradle](#gradle)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
   - [Build](#build)
@@ -18,11 +21,14 @@ Java API which exposes utilities for building update actions and automatic synci
       - [Package JARs and run tests](#package-jars-and-run-tests)
       - [Full build with tests, but without install to maven local repo (Recommended)](#full-build-with-tests-but-without-install-to-maven-local-repo-recommended)
       - [Install to local maven repo](#install-to-local-maven-repo)
+      - [Build and publish JavaDoc](#build-and-publish-javadoc)
       - [Publish to Bintray](#publish-to-bintray)
+  - [Integration Tests](#integration-tests)
+    - [Running](#running)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-- [Javadocs](https://commercetools.github.io/commercetools-sync-java/v/0.0.2/)
+- [Javadocs](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M1/)
 ## Usage
 
 commercetools sync is a Java library that could be used to synchronise CTP data in any of the following ways:
@@ -46,14 +52,29 @@ Currently this library supports synchronising
  - install Java 8
  - a target CTP project to which your source of data would be synced to.
 
-<!--- TODO 
+
 ### Installation
-
+There are multiple ways to download the commercetools sync dependency, based on your dependency manager. Here are the 
+most popular ones:
 #### Maven 
-
-#### SBT 
-
-#### Gradle -->
+````xml
+<dependency>
+  <groupId>com.commercetools</groupId>
+  <artifactId>commercetools-sync-java</artifactId>
+  <version>v1.0.0-M1</version>
+  <type>pom</type>
+</dependency>
+````
+#### Gradle
+````groovy
+compile 'com.commercetools:commercetools-sync-java:v1.0.0-M1'
+````
+<!-- TODO #### SBT 
+````java
+libraryDependencies ++= Seq(
+    "com.commercetools" % "commercetools-sync-java" % "v1.0.0-M1",
+ )
+````-->
 
 ## Roadmap
 https://github.com/commercetools/commercetools-sync-java/milestones
@@ -98,6 +119,11 @@ For example, `#65: Remove redundant space.`
 ./gradlew clean install
 ````
 
+##### Build and publish JavaDoc
+````bash
+./gradlew clean -Dbuild.version={version} gitPublishPush
+````
+
 ##### Publish to Bintray
 ````bash
 ./gradlew clean -Dbuild.version={version} bintrayUpload
@@ -105,4 +131,28 @@ For example, `#65: Remove redundant space.`
 
 For more detailed information on build and release process, see [Build and Release](BUILD.md) documentation.
 
-<!--- TODO ### Executing integration tests only-->
+### Integration Tests
+
+1. The integration tests of the library require to have two CTP projects (a source project and a target project) were the 
+data will be tested to be synced on from the source to the target project. 
+2. Running the tests does the following:
+    - Clean all the data in both projects.
+    - Create test data in either/both projects depending on the test.
+    - Execute the tests.
+    - Clean all the data in both projects, leaving them empty.
+
+#### Running 
+Before running the integration tests make sure the following environment variables are set:
+````bash
+export SOURCE_PROJECT_KEY = xxxxxxxxxxxxx
+export SOURCE_CLIENT_ID = xxxxxxxxxxxxxxx
+export SOURCE_CLIENT_SECRET = xxxxxxxxxxx
+export TARGET_PROJECT_KEY = xxxxxxxxxxxxx
+export TARGET_CLIENT_ID = xxxxxxxxxxxxxxx
+export TARGET_CLIENT_SECRET = xxxxxxxxxxx
+````
+
+then run the integration tests:
+````bash
+./gradlew integrationTest
+````
