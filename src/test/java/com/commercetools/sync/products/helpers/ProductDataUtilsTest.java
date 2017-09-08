@@ -15,17 +15,19 @@ public class ProductDataUtilsTest {
 
     @Test
     public void masterData_test() {
-        ProductSyncOptions syncOptions = mock(ProductSyncOptions.class);
-        Product product = mock(Product.class);
-        ProductCatalogData catalogData = mock(ProductCatalogData.class);
+        final Product product = mock(Product.class);
+        final ProductCatalogData catalogData = mock(ProductCatalogData.class);
         when(product.getMasterData()).thenReturn(catalogData);
-        ProductData current = mock(ProductData.class);
-        ProductData staged = mock(ProductData.class);
+
+        final ProductData current = mock(ProductData.class);
+        final ProductData staged = mock(ProductData.class);
         when(catalogData.getCurrent()).thenReturn(current);
         when(catalogData.getStaged()).thenReturn(staged);
 
+        final ProductSyncOptions syncOptions = mock(ProductSyncOptions.class);
         when(syncOptions.shouldUpdateStaged()).thenReturn(true);
         assertThat(masterData(product, syncOptions)).isSameAs(staged);
+
         when(syncOptions.shouldUpdateStaged()).thenReturn(false);
         assertThat(masterData(product, syncOptions)).isSameAs(current);
     }
