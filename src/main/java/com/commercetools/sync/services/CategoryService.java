@@ -26,7 +26,7 @@ public interface CategoryService {
 
     /**
      * Given a {@link Set} of category keys, this method fetches a set of all the categories matching this given set of
-     * keys in  the CTP project defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}.
+     * keys in the CTP project defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}.
      *
      * @param categoryKeys set of category keys to fetch matching categories by.
      * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a {@link Set}
@@ -92,5 +92,5 @@ public interface CategoryService {
      */
     @Nonnull
     CompletionStage<Category> updateCategory(@Nonnull final Category category,
-                                                       @Nonnull final List<UpdateAction<Category>> updateActions);
+                                             @Nonnull final List<UpdateAction<Category>> updateActions);
 }
