@@ -2,28 +2,45 @@ package com.commercetools.sync.products;
 
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.products.utils.ProductSyncUtils;
 import com.commercetools.sync.services.ProductService;
+import com.commercetools.sync.services.impl.ProductServiceImpl;
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductCatalogData;
 import io.sphere.sdk.products.ProductDraft;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchDrafts;
-import static java.util.concurrent.CompletableFuture.completedFuture;
+import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
+import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
-
+    private static final String PRODUCT_DRAFT_KEY_NOT_SET = "ProductDraft with name: %s doesn't have a key.";
+    private static final String PRODUCT_DRAFT_IS_NULL = "ProductDraft is null.";
+    private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
+    private static final String PUBLISH_FAILED = "Failed to publish Product with key: '%s'. Reason: %s";
+    private static final String REVERT_FAILED = "Failed to revert staged changes of Product with key: '%s'. Reason: %s";
     private final ProductService productService;
 
     public ProductSync(@Nonnull final ProductSyncOptions productSyncOptions) {
-        this(productSyncOptions, ProductService.of(productSyncOptions.getCtpClient()));
+        this(productSyncOptions, new ProductServiceImpl(productSyncOptions));
     }
 
     ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService) {
@@ -50,67 +67,205 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     @Override
     protected CompletionStage<ProductSyncStatistics> processBatch(@Nonnull final List<ProductDraft> batch) {
-        for (ProductDraft productDraft : batch) {
-            try {
-                productService.fetch(productDraft.getKey())
-                              .thenCompose(productOptional -> productOptional
-                                  .map(product -> syncProduct(product, productDraft))
-                                  .orElseGet(() -> createProduct(productDraft))
-                              ).toCompletableFuture().get();
-            } catch (InterruptedException | ExecutionException exception) {
-                exception.printStackTrace();
-            }
-            statistics.incrementProcessed();
-        }
-        return completedFuture(statistics);
+        return productService.cacheKeysToIds()
+                             .thenCompose(keyToIdCache -> {
+                                 final Set<String> productDraftKeys = getProductDraftKeys(batch);
+                                 return productService.fetchMatchingProductsByKeys(productDraftKeys)
+                                                      .thenCompose(matchingProducts ->
+                                                          createOrUpdateProducts(matchingProducts, batch))
+                                                      .thenApply(result -> {
+                                                          statistics.incrementProcessed(batch.size());
+                                                          return statistics;
+                                                      });
+                             });
     }
 
     @Nonnull
-    private CompletionStage<Void> syncProduct(@Nonnull final Product oldProduct,
-                                              @Nonnull final ProductDraft newProduct) {
-        return revertIfNeeded(oldProduct).thenCompose(preparedProduct -> {
-            List<UpdateAction<Product>> updateActions =
-                ProductSyncUtils.buildActions(oldProduct, newProduct, syncOptions);
-            if (!updateActions.isEmpty()) {
-                return productService.update(oldProduct, updateActions)
-                                     .thenCompose(this::publishIfNeeded)
-                                     .thenRun(statistics::incrementUpdated);
-            }
-            return publishIfNeeded(oldProduct)
-                .thenAccept(published -> {
-                    if (published) {
-                        statistics.incrementUpdated();
+    private Set<String> getProductDraftKeys(@Nonnull final List<ProductDraft> productDrafts) {
+        return productDrafts.stream()
+                            .map(ProductDraft::getKey)
+                            .filter(StringUtils::isNotBlank)
+                            .collect(Collectors.toSet());
+    }
+
+    @Nonnull
+    private CompletionStage<Void> createOrUpdateProducts(@Nonnull final Set<Product> matchingProducts,
+                                                         @Nonnull final List<ProductDraft> productDrafts) {
+        final Map<ProductDraft, Product> productsToSync = new HashMap<>();
+        final Set<ProductDraft> draftsToCreate = new HashSet<>();
+
+        for (ProductDraft productDraft : productDrafts) {
+            if (productDraft != null) {
+                final String productKey = productDraft.getKey();
+                if (isNotBlank(productKey)) {
+                    final Optional<Product> existingProduct = getProductByKeyIfExists(matchingProducts, productKey);
+                    if (existingProduct.isPresent()) {
+                        productsToSync.put(productDraft, existingProduct.get());
+                    } else {
+                        draftsToCreate.add(productDraft);
                     }
-                });
-        });
+                } else {
+                    final String errorMessage = format(PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName());
+                    handleError(errorMessage, null);
+                }
+            } else {
+                handleError(PRODUCT_DRAFT_IS_NULL, null);
+            }
+        }
+        return productService.createProducts(draftsToCreate)
+                             .thenCompose(createdProducts ->
+                                 processCreatedProducts(createdProducts, draftsToCreate.size()))
+                             .thenCompose(result -> syncProducts(productsToSync));
+
     }
 
     @Nonnull
-    private CompletionStage<Product> revertIfNeeded(@Nonnull final Product product) {
-        if (syncOptions.shouldRevertStagedChanges()) {
-            if (product.getMasterData().hasStagedChanges()) {
-                return productService.revert(product);
+    private static Optional<Product> getProductByKeyIfExists(@Nonnull final Set<Product> products,
+                                                             @Nonnull final String key) {
+        return products.stream()
+                       .filter(product -> Objects.equals(product.getKey(), key))
+                       .findFirst();
+    }
+
+
+    @Nonnull
+    private CompletionStage<Void> processCreatedProducts(@Nonnull final Set<Product> createdProducts,
+                                                         final int totalNumberOfDraftsToCreate) {
+        final int numberOfFailedCreations = totalNumberOfDraftsToCreate - createdProducts.size();
+        statistics.incrementFailed(numberOfFailedCreations);
+        statistics.incrementCreated(createdProducts.size());
+
+        final List<CompletableFuture> futurePublishes = new ArrayList<>();
+        createdProducts.forEach(createdProduct ->
+            futurePublishes.add(publishIfNeeded(createdProduct).toCompletableFuture()));
+        return CompletableFuture.allOf(futurePublishes.toArray(new CompletableFuture[futurePublishes.size()]));
+    }
+
+    @Nonnull
+    private CompletionStage<Product> publishIfNeeded(@Nonnull final Product product) {
+        if (syncOptions.shouldPublish()) {
+            final ProductCatalogData data = product.getMasterData();
+            if (!data.isPublished() || data.hasStagedChanges()) {
+                return productService.publishProduct(product)
+                                     .handle((publishedProduct, sphereException) -> sphereException)
+                                     .thenCompose(sphereException -> {
+                                         if (sphereException != null) {
+                                             return retryRequestIfConcurrentModificationException(sphereException,
+                                                 product, () -> publishIfNeeded(product), PUBLISH_FAILED);
+                                         } else {
+                                             return CompletableFuture.completedFuture(product);
+                                         }
+                                     });
             }
         }
         return CompletableFuture.completedFuture(product);
     }
 
     @Nonnull
-    private CompletionStage<Boolean> publishIfNeeded(@Nonnull final Product product) {
-        if (syncOptions.shouldPublish()) {
-            final ProductCatalogData data = product.getMasterData();
-            if (!data.isPublished() || data.hasStagedChanges()) {
-                return productService.publish(product)
-                                     .thenApply(publishedProduct -> true);
-            }
+    private CompletionStage<Void> syncProducts(@Nonnull final Map<ProductDraft, Product> productsToSync) {
+        final List<CompletableFuture<Product>> futureUpdates =
+            productsToSync.entrySet().stream()
+                          .map(entry -> buildUpdateActionsAndUpdate(entry.getValue(), entry.getKey())
+                              .thenCompose(this::publishIfNeeded))
+                          .map(CompletionStage::toCompletableFuture)
+                          .collect(Collectors.toList());
+        return CompletableFuture.allOf(futureUpdates.toArray(new CompletableFuture[futureUpdates.size()]));
+    }
+
+    /**
+     * Given an existing {@link Product} and a new {@link ProductDraft}, first resolves all references on the category
+     * draft, then it calculates all the updateProduct actions required to synchronize the existing category to be the same as
+     * the new one. If there are updateProduct actions found, a request is made to CTP to updateProduct the existing category,
+     * otherwise it doesn't issue a request.
+     *
+     * @param oldProduct the category which could be updated.
+     * @param newProduct the category draft where we get the new data.
+     * @return a future which contains an empty result after execution of the updateProduct.
+     */
+    @Nonnull
+    private CompletionStage<Product> buildUpdateActionsAndUpdate(@Nonnull final Product oldProduct,
+                                                                 @Nonnull final ProductDraft newProduct) {
+        final List<UpdateAction<Product>> updateActions = buildActions(oldProduct, newProduct, syncOptions);
+        if (!updateActions.isEmpty()) {
+            return revertIfNeededAndUpdate(oldProduct, newProduct, updateActions);
         }
-        return CompletableFuture.completedFuture(false);
+        return CompletableFuture.completedFuture(oldProduct);
     }
 
     @Nonnull
-    private CompletionStage<Void> createProduct(final ProductDraft productDraft) {
-        return productService.create(productDraft)
-                             .thenCompose(this::publishIfNeeded)
-                             .thenRun(statistics::incrementCreated);
+    private CompletionStage<Product> revertIfNeededAndUpdate(@Nonnull final Product oldProduct,
+                                                             @Nonnull final ProductDraft newProduct,
+                                                             @Nonnull final List<UpdateAction<Product>> updateActions) {
+        return revertIfNeeded(oldProduct)
+            .thenCompose(preparedProduct -> productService.updateProduct(oldProduct, updateActions))
+            .handle((updatedProduct, sphereException) -> sphereException)
+            .thenCompose(sphereException -> {
+                if (sphereException != null) {
+                    return retryRequestIfConcurrentModificationException(sphereException, oldProduct,
+                        () -> buildUpdateActionsAndUpdate(oldProduct, newProduct), UPDATE_FAILED);
+                } else {
+                    statistics.incrementUpdated();
+                    return CompletableFuture.completedFuture(oldProduct);
+                }
+            });
+    }
+
+    @Nonnull
+    private CompletionStage<Product> revertIfNeeded(@Nonnull final Product product) {
+        if (syncOptions.shouldRevertStagedChanges()) {
+            if (product.getMasterData().hasStagedChanges()) {
+                return productService.revertProduct(product)
+                                     .handle((revertedProduct, sphereException) -> sphereException)
+                                     .thenCompose(sphereException -> {
+                                         if (sphereException != null) {
+                                             return
+                                                 retryRequestIfConcurrentModificationException(sphereException, product,
+                                                 () -> revertIfNeeded(product), REVERT_FAILED);
+                                         } else {
+                                             return CompletableFuture.completedFuture(product);
+                                         }
+                                     });
+            }
+        }
+        return CompletableFuture.completedFuture(product);
+    }
+
+    /**
+     * This method checks if the {@code sphereException} (thrown when trying to sync the old {@link Product} and the
+     * new {@link ProductDraft}) is an instance of {@link ConcurrentModificationException}. If it is, then calls the
+     * method {@link ProductSync#buildUpdateActionsAndUpdate(Product, ProductDraft)} to rebuild updateProduct actions and
+     * reissue the CTP updateProduct request. Otherwise, if it is not an instance of a {@link ConcurrentModificationException}
+     * then it is counted as a failed oldProduct to sync.
+     *
+     * @param sphereException the sphere exception thrown after issuing an update request.
+     * @param oldProduct         the oldProduct to update.
+     * @param newProduct      the new oldProduct draft to sync data from.
+     * @return a future which contains an empty result after execution of the update.
+     */
+    @Nonnull
+    private CompletionStage<Product> retryRequestIfConcurrentModificationException(
+        @Nonnull final Throwable sphereException, @Nonnull final Product oldProduct,
+        @Nonnull final Supplier<CompletionStage<Product>> request,
+        @Nonnull final String errorMessage) {
+        if (sphereException instanceof ConcurrentModificationException) {
+            return request.get();
+        } else {
+            final String productKey = oldProduct.getKey();
+            handleError(format(errorMessage, productKey, sphereException), sphereException);
+            return CompletableFuture.completedFuture(oldProduct);
+        }
+    }
+
+    /**
+     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
+     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
+     * incrementing the total number of failed products to sync.
+     *
+     * @param errorMessage The error message describing the reason(s) of failure.
+     * @param exception    The exception that called caused the failure, if any.
+     */
+    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
+        syncOptions.applyErrorCallback(errorMessage, exception);
+        statistics.incrementFailed();
     }
 }
