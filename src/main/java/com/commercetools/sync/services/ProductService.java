@@ -48,9 +48,9 @@ public interface ProductService {
     
     /**
      * Given a {@link ProductDraft}, this method creates a {@link Product} based on it in the CTP project defined in
-     * a potentially injected {@link io.sphere.sdk.client.SphereClient}. This method returns
-     * {@link CompletionStage}&lt;{@link Product}&gt; in which the result of it's completion contains an instance of
-     * the {@link Product} which was created in the CTP project.
+     * a potentially injected {@link io.sphere.sdk.client.SphereClient}. The created product's id and key are also
+     * cached. This method returns {@link CompletionStage}&lt;{@link Product}&gt; in which the result of it's
+     * completion contains an instance of the {@link Product} which was created in the CTP project.
      *
      * @param productDraft the {@link ProductDraft} to create a {@link Product} based off of.
      * @return {@link CompletionStage}&lt;{@link Product}&gt; containing as a result of it's completion an instance of

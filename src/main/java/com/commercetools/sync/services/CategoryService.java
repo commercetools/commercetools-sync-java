@@ -65,9 +65,9 @@ public interface CategoryService {
 
     /**
      * Given a {@link CategoryDraft}, this method creates a {@link Category} based on it in the CTP project defined in
-     * a potentially injected {@link io.sphere.sdk.client.SphereClient}. This method returns
-     * {@link CompletionStage}&lt;{@link Category}&gt; in which the result of it's completion contains an instance of
-     * the {@link Category} which was created in the CTP project.
+     * a potentially injected {@link io.sphere.sdk.client.SphereClient}. The created category's id and key are also
+     * cached. This method returns {@link CompletionStage}&lt;{@link Category}&gt; in which the result of it's
+     * completion contains an instance of the {@link Category} which was created in the CTP project.
      *
      * @param categoryDraft the {@link CategoryDraft} to create a {@link Category} based off of.
      * @return {@link CompletionStage}&lt;{@link Category}&gt; containing as a result of it's completion an instance of
