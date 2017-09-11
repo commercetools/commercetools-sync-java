@@ -94,7 +94,7 @@ public class ProductSyncMockUtils {
      *          JSON resource and the product type. The draft would be assigned also to the specified {@code categories}
      *          with the supplied {@code categoryOrderHints}.
      */
-    public static ProductDraft buildProductDraft(@Nonnull final String jsonResourcePath,
+    public static ProductDraft createProductDraft(@Nonnull final String jsonResourcePath,
                                                  @Nonnull final ProductType productType,
                                                  @Nonnull final List<Category> categories,
                                                  @Nonnull final CategoryOrderHints categoryOrderHints) {

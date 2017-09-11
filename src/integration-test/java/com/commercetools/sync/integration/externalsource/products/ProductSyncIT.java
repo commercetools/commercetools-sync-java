@@ -22,12 +22,15 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.O
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.PRODUCT_KEY_1_CHANGED_RESOURCE_PATH;
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.PRODUCT_KEY_2_RESOURCE_PATH;
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.buildProductDraft;
+import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static java.lang.String.format;
@@ -35,9 +38,6 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductSyncIT {
-    private static final String PRODUCT_KEY_1_CHANGED_RESOURCE_PATH = "product-key-1-changed.json";
-    private static final String PRODUCT_KEY_2_RESOURCE_PATH = "product-key-2.json";
-    private static final String PRODUCT_TYPE_RESOURCE_PATH = "product-type.json";
 
     private static ProductType productType;
     private static List<Category> categories;
@@ -45,7 +45,8 @@ public class ProductSyncIT {
     private Product product;
 
     /**
-     * Delete all categories and types from target project. Then create custom types for target CTP project categories.
+     * Delete all product related test data from target project. Then creates custom types for target CTP project
+     * categories.
      */
     @BeforeClass
     public static void setup() {
@@ -57,13 +58,11 @@ public class ProductSyncIT {
     }
 
     /**
-     * Initializes environment for integration test of product synchronization against CT platform.
-     *
-     * <p>It first removes up all related resources. Then creates required product type, categories, products and
-     * associates products to categories.
+     * Deletes Products and Types from target CTP projects, then it populates target CTP project with product test
+     * data.
      */
     @Before
-    public void setUp() {
+    public void setupTest() {
         deleteAllProducts(CTP_TARGET_CLIENT);
 
         syncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -72,7 +71,7 @@ public class ProductSyncIT {
                                         .updateStaged(false)
                                         .build();
 
-        final ProductDraft productDraft = buildProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, productType,
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, productType,
             categories, createRandomCategoryOrderHints(categories));
         product = CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft))
                                    .toCompletableFuture().join();
@@ -99,7 +98,7 @@ public class ProductSyncIT {
     @Test
     public void sync_withEqualProduct_shouldNotUpdateProduct() {
         @SuppressWarnings("ConstantConditions")
-        final ProductDraft productDraft = buildProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
             productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
 
         final ProductSync productSync = new ProductSync(syncOptions);
@@ -113,7 +112,7 @@ public class ProductSyncIT {
     @Test
     public void sync_withChangedProduct_shouldUpdateProduct() {
         @SuppressWarnings("ConstantConditions")
-        final ProductDraft productDraft = buildProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
 
         final ProductSync productSync = new ProductSync(syncOptions);
