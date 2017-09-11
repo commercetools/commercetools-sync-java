@@ -24,6 +24,7 @@ public final class CommonTypeUpdateActionUtils {
      * @param newObject            the object with the new information.
      * @param updateActionSupplier the supplier that returns the update action to return in the optional.
      * @param <T>                  the type of the {@link UpdateAction}
+     * @param <S>                  the type of the objects to compare.
      * @return A filled optional with the update action or an empty optional if the object values are identical.
      */
     @Nonnull
