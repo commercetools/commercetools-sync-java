@@ -25,7 +25,9 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTyp
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 
 public final class ProductITUtils {
-
+    public static final String PRODUCT_KEY_1_CHANGED_RESOURCE_PATH = "product-key-1-changed.json";
+    public static final String PRODUCT_KEY_2_RESOURCE_PATH = "product-key-2.json";
+    public static final String PRODUCT_TYPE_RESOURCE_PATH = "product-type.json";
 
     /**
      * This method blocks to create a product type, which is defined by the JSON resource found in the supplied
