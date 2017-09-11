@@ -82,10 +82,13 @@ public class CategoryServiceIT {
                                                                                               .add(errorMessage);
                                                                                           errorCallBackExceptions
                                                                                               .add(exception);
+                                                                                          LOGGER.error(errorMessage, exception);
                                                                                       })
-                                                                                  .setWarningCallBack(warningMessage ->
-                                                                                      warningCallBackMessages
-                                                                                          .add(warningMessage))
+                                                                                  .setWarningCallBack(warningMessage -> {
+                                                                                          warningCallBackMessages
+                                                                                              .add(warningMessage);
+                                                                                          LOGGER.warn(warningMessage);
+                                                                                      })
                                                                                   .build();
 
         // Create a mock new category in the target project.
@@ -306,7 +309,6 @@ public class CategoryServiceIT {
         assertThat(errorCallBackExceptions).hasSize(2);
         assertThat(errorCallBackMessages).hasSize(2);
         // Since the order of creation is not ensured by allOf, so we assert in list of error messages (as string):
-        LOGGER.debug(errorCallBackMessages.toString());
         assertThat(errorCallBackMessages.toString()).contains("Invalid key '1'. Keys may only contain"
             + " alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
         assertThat(errorCallBackMessages.toString()).contains(" A duplicate value '\"furniture\"' exists for field "
