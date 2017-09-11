@@ -35,7 +35,7 @@ public final class CategoryServiceImpl implements CategoryService {
     private boolean isCached = false;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private static final String CREATE_FAILED = "Failed to create CategoryDraft with key: '%s'. Reason: %s";
-    private static final String FETCH_FAILED = "Failed to fetch CategoryDrafts with keys: '%s'. Reason: %s";
+    private static final String FETCH_FAILED = "Failed to fetch Categories with keys: '%s'. Reason: %s";
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
         + "category matching.";
 
