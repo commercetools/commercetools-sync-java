@@ -1,8 +1,7 @@
-package com.commercetools.sync.services;
+package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.services.impl.ProductServiceImpl;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
@@ -13,9 +12,11 @@ import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.commands.updateactions.RevertStagedChanges;
+import io.sphere.sdk.queries.QueryPredicate;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,7 +32,7 @@ import static org.mockito.Mockito.when;
 
 public class ProductServiceTest {
 
-    private ProductService service;
+    private ProductServiceImpl service;
     private ProductSyncOptions productSyncOptions;
 
     @Before
@@ -41,11 +42,14 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void create() {
+    public void createProduct_WithMockCTPResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
+        when(mock.getKey()).thenReturn("productKey");
+        when(mock.getId()).thenReturn("productId");
+
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
 
-        ProductDraft draft = mock(ProductDraft.class);
+        final ProductDraft draft = mock(ProductDraft.class);
         final Optional<Product> productOptional = service.createProduct(draft).toCompletableFuture().join();
 
         assertThat(productOptional).isNotEmpty();
@@ -54,61 +58,52 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void update() {
-        Product mock = mock(Product.class);
+    public void updateProduct_WithMockCTPResponse_ShouldReturnMock() {
+        final Product mock = mock(Product.class);
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
 
-        List<UpdateAction<Product>> updateActions =
+        final List<UpdateAction<Product>> updateActions =
             singletonList(ChangeName.of(LocalizedString.of(ENGLISH, "new name")));
-        Product product = service.updateProduct(mock, updateActions).toCompletableFuture().join();
+        final Product product = service.updateProduct(mock, updateActions).toCompletableFuture().join();
 
         assertThat(product).isSameAs(mock);
         verify(productSyncOptions.getCtpClient()).execute(eq(ProductUpdateCommand.of(mock, updateActions)));
     }
 
     @Test
-    public void publish() {
-        Product mock = mock(Product.class);
+    public void buildProductKeysQueryPredicate_WithEmptyProductKeysSet_ShouldBuildCorrectQuery() {
+        final QueryPredicate<Product> queryPredicate = service.buildProductKeysQueryPredicate(new HashSet<>());
+        assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in ()");
+    }
+
+    @Test
+    public void buildProductKeysQueryPredicate_WithProductKeysSet_ShouldBuildCorrectQuery() {
+        final HashSet<String> productKeys = new HashSet<>();
+        productKeys.add("key1");
+        productKeys.add("key2");
+        final QueryPredicate<Product> queryPredicate = service.buildProductKeysQueryPredicate(productKeys);
+        assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in (\"key1\", \"key2\")");
+    }
+
+    @Test
+    public void publishProduct_WithMockCTPResponse_ShouldReturnMock() {
+        final Product mock = mock(Product.class);
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
 
-        Product product = service.publishProduct(mock).toCompletableFuture().join();
+        final Product product = service.publishProduct(mock).toCompletableFuture().join();
 
         assertThat(product).isSameAs(mock);
         verify(productSyncOptions.getCtpClient()).execute(eq(ProductUpdateCommand.of(mock, Publish.of())));
     }
 
     @Test
-    public void revert() {
-        Product mock = mock(Product.class);
+    public void revertProduct_WithMockCTPResponse_ShouldReturnMock() {
+        final Product mock = mock(Product.class);
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
 
-        Product product = service.revertProduct(mock).toCompletableFuture().join();
+        final Product product = service.revertProduct(mock).toCompletableFuture().join();
 
         assertThat(product).isSameAs(mock);
         verify(productSyncOptions.getCtpClient()).execute(eq(ProductUpdateCommand.of(mock, RevertStagedChanges.of())));
     }
-
-/*    @Test
-    public void fetch_missing() {
-        PagedQueryResult result = mock(PagedQueryResult.class);
-        when(result.head()).thenReturn(Optional.empty());
-        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(result));
-
-        Optional<Product> productOptional = service.fetchProduct(null).toCompletableFuture().join();
-
-        assertThat(productOptional).isNotPresent();
-    }
-
-    @Test
-    public void fetch_existing() {
-        PagedQueryResult result = mock(PagedQueryResult.class);
-        Product product = mock(Product.class);
-        when(result.head()).thenReturn(Optional.of(product));
-        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(result));
-
-        final Optional<Product> productOptional = service.fetchProduct(null).toCompletableFuture().join();
-
-        assertThat(productOptional).hasValue(product);
-    }*/
-
 }
