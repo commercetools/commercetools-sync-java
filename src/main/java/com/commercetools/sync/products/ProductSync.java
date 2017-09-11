@@ -174,13 +174,13 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     /**
      * Given an existing {@link Product} and a new {@link ProductDraft}, first resolves all references on the category
-     * draft, then it calculates all the updateProduct actions required to synchronize the existing category to be the same as
-     * the new one. If there are updateProduct actions found, a request is made to CTP to updateProduct the existing category,
-     * otherwise it doesn't issue a request.
+     * draft, then it calculates all the update actions required to synchronize the existing category to be the
+     * same as the new one. If there are update actions found, a request is made to CTP to update the
+     * existing category, otherwise it doesn't issue a request.
      *
      * @param oldProduct the category which could be updated.
      * @param newProduct the category draft where we get the new data.
-     * @return a future which contains an empty result after execution of the updateProduct.
+     * @return a future which contains an empty result after execution of the update.
      */
     @Nonnull
     private CompletionStage<Product> buildUpdateActionsAndUpdate(@Nonnull final Product oldProduct,
@@ -220,7 +220,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                          if (sphereException != null) {
                                              return
                                                  retryRequestIfConcurrentModificationException(sphereException, product,
-                                                 () -> revertIfNeeded(product), REVERT_FAILED);
+                                                     () -> revertIfNeeded(product), REVERT_FAILED);
                                          } else {
                                              return CompletableFuture.completedFuture(product);
                                          }
@@ -232,14 +232,13 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     /**
      * This method checks if the {@code sphereException} (thrown when trying to sync the old {@link Product} and the
-     * new {@link ProductDraft}) is an instance of {@link ConcurrentModificationException}. If it is, then calls the
-     * method {@link ProductSync#buildUpdateActionsAndUpdate(Product, ProductDraft)} to rebuild updateProduct actions and
-     * reissue the CTP updateProduct request. Otherwise, if it is not an instance of a {@link ConcurrentModificationException}
-     * then it is counted as a failed oldProduct to sync.
+     * new {@link ProductDraft}) is an instance of {@link ConcurrentModificationException}. If it is, then it executes
+     * the supplied {@code request} to rebuild update actions and reissue the CTP update request. Otherwise, if it is
+     * not an instance of a  {@link ConcurrentModificationException} then it is counted as a failed product to sync.
      *
      * @param sphereException the sphere exception thrown after issuing an update request.
-     * @param oldProduct         the oldProduct to update.
-     * @param newProduct      the new oldProduct draft to sync data from.
+     * @param oldProduct      the product to update.
+     * @param request         the request to re execute in case of a {@link ConcurrentModificationException}.
      * @return a future which contains an empty result after execution of the update.
      */
     @Nonnull

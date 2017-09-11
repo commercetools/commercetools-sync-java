@@ -42,7 +42,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void createProduct_WithMockCTPResponse_ShouldReturnMock() {
+    public void createProduct_WithMockCtpResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
         when(mock.getKey()).thenReturn("productKey");
         when(mock.getId()).thenReturn("productId");
@@ -58,7 +58,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void updateProduct_WithMockCTPResponse_ShouldReturnMock() {
+    public void updateProduct_WithMockCtpResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
 
@@ -86,7 +86,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void publishProduct_WithMockCTPResponse_ShouldReturnMock() {
+    public void publishProduct_WithMockCtpResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
 
@@ -97,7 +97,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void revertProduct_WithMockCTPResponse_ShouldReturnMock() {
+    public void revertProduct_WithMockCtpResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
 

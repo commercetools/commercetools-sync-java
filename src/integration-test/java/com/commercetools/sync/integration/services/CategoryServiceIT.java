@@ -82,9 +82,11 @@ public class CategoryServiceIT {
                                                                                               .add(errorMessage);
                                                                                           errorCallBackExceptions
                                                                                               .add(exception);
-                                                                                          LOGGER.error(errorMessage, exception);
+                                                                                          LOGGER.error(errorMessage,
+                                                                                              exception);
                                                                                       })
-                                                                                  .setWarningCallBack(warningMessage -> {
+                                                                                  .setWarningCallBack(
+                                                                                      warningMessage -> {
                                                                                           warningCallBackMessages
                                                                                               .add(warningMessage);
                                                                                           LOGGER.warn(warningMessage);

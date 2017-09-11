@@ -104,11 +104,11 @@ public class ProductServiceImpl implements ProductService {
     @Nonnull
     @Override
     public CompletionStage<Set<Product>> createProducts(@Nonnull final Set<ProductDraft> productsDrafts) {
-        final List<CompletableFuture<Optional<Product>>> futureCreations = productsDrafts.stream()
-                                                                                         .map(this::createProduct)
-                                                                                         .map(
-                                                                                             CompletionStage::toCompletableFuture)
-                                                                                         .collect(Collectors.toList());
+        final List<CompletableFuture<Optional<Product>>> futureCreations =
+            productsDrafts.stream()
+                          .map(this::createProduct)
+                          .map(CompletionStage::toCompletableFuture)
+                          .collect(Collectors.toList());
         return CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()]))
                                 .thenApply(result -> futureCreations.stream()
                                                                     .map(CompletionStage::toCompletableFuture)

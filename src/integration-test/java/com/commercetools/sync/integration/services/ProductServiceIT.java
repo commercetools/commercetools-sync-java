@@ -93,15 +93,15 @@ public class ProductServiceIT {
 
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                                                                .setErrorCallBack(
-                                                                                      (errorMessage, exception) -> {
-                                                                                          errorCallBackMessages
-                                                                                              .add(errorMessage);
-                                                                                          errorCallBackExceptions
-                                                                                              .add(exception);
-                                                                                      })
+                                                                                   (errorMessage, exception) -> {
+                                                                                       errorCallBackMessages
+                                                                                           .add(errorMessage);
+                                                                                       errorCallBackExceptions
+                                                                                           .add(exception);
+                                                                                   })
                                                                                .setWarningCallBack(warningMessage ->
-                                                                                      warningCallBackMessages
-                                                                                          .add(warningMessage))
+                                                                                   warningCallBackMessages
+                                                                                       .add(warningMessage))
                                                                                .build();
 
         // Create a mock new product in the target project.
@@ -146,7 +146,8 @@ public class ProductServiceIT {
             .key(null)
             .build();
 
-        final ProductDraft productDraftWithEmptyKey = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
+        final ProductDraft productDraftWithEmptyKey = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+            productType)
             .key(StringUtils.EMPTY)
             .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
             .masterVariant(ProductVariantDraftBuilder.of().build())
@@ -324,6 +325,7 @@ public class ProductServiceIT {
             + "'slug.en'");
         assertThat(createdProducts).isEmpty();
     }
+
     @Test
     @SuppressWarnings("ConstantConditions")
     public void createProduct_WithValidProduct_ShouldCreateProduct() {
@@ -430,8 +432,7 @@ public class ProductServiceIT {
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
             .build();
-        final Product newProduct = CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft1))
-                                                      .toCompletableFuture().join();
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft1)).toCompletableFuture().join();
 
 
         final ChangeSlug changeSlugUpdateAction = ChangeSlug.of(productDraft1.getSlug());
