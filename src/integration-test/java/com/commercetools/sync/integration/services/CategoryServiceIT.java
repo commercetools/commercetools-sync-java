@@ -204,7 +204,7 @@ public class CategoryServiceIT {
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0))
-            .isEqualToIgnoringCase(format("Failed to fetch CategoryDrafts with keys: '%s'. Reason: %s",
+            .isEqualToIgnoringCase(format("Failed to fetch Categories with keys: '%s'. Reason: %s",
                 keys.toString(), errorCallBackExceptions.get(0)));
     }
 
