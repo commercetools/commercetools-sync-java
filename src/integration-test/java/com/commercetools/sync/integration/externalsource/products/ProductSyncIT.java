@@ -44,7 +44,6 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static java.lang.String.format;
-import static java.util.Collections.EMPTY_LIST;
 import static java.util.Collections.EMPTY_MAP;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -236,8 +235,8 @@ public class ProductSyncIT {
                          .join();
 
         final ProductDraft key3Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
-            .categories(EMPTY_LIST)
-            .categoryOrderHints(CategoryOrderHints.of(EMPTY_MAP))
+            .categories(new ArrayList<>())
+            .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey3")
             .slug(LocalizedString.of(Locale.ENGLISH, "slug3"))
             .masterVariant(ProductVariantDraftBuilder.of().build())
@@ -256,8 +255,8 @@ public class ProductSyncIT {
         batch1.add(productDraft);
 
         final ProductDraft key4Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
-            .categories(EMPTY_LIST)
-            .categoryOrderHints(CategoryOrderHints.of(EMPTY_MAP))
+            .categories(new ArrayList<>())
+            .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey4")
             .slug(LocalizedString.of(Locale.ENGLISH, "slug4"))
             .masterVariant(ProductVariantDraftBuilder.of().build())
@@ -267,8 +266,8 @@ public class ProductSyncIT {
         batch2.add(key4Draft);
 
         final ProductDraft key3DraftNewSlug = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
-            .categories(EMPTY_LIST)
-            .categoryOrderHints(CategoryOrderHints.of(EMPTY_MAP))
+            .categories(new ArrayList<>())
+            .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey3")
             .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
             .masterVariant(ProductVariantDraftBuilder.of().build())
