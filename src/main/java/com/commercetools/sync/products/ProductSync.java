@@ -9,8 +9,8 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductCatalogData;
 import io.sphere.sdk.products.ProductDraft;
-import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -171,7 +171,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     @Nonnull
     private CompletionStage<Optional<Product>> publishOrRetry(@Nonnull final Product product) {
         return productService.publishProduct(product)
-                             .handle(Pair::new)
+                             .handle(ImmutablePair::new)
                              .thenCompose(publishResponse -> {
                                  final Product publishedProduct = publishResponse.getKey();
                                  final Throwable sphereException = publishResponse.getValue();
@@ -250,7 +250,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 if (revertedProductOptional.isPresent()) {
                     final Product productAfterRevert = revertedProductOptional.get();
                     return productService.updateProduct(productAfterRevert, updateActions)
-                                         .handle(Pair::new)
+                                         .handle(ImmutablePair::new)
                                          .thenCompose(updateResponse -> {
                                              final Product updatedProduct = updateResponse.getKey();
                                              final Throwable sphereException = updateResponse.getValue();
@@ -296,7 +296,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     @Nonnull
     private CompletionStage<Optional<Product>> revertOrRetry(@Nonnull final Product product) {
         return productService.revertProduct(product)
-                             .handle(Pair::new)
+                             .handle(ImmutablePair::new)
                              .thenCompose(revertResponse -> {
                                  final Product revertedProduct = revertResponse.getKey();
                                  final Throwable sphereException = revertResponse.getValue();
