@@ -11,6 +11,7 @@ import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.commands.updateactions.RevertStagedChanges;
 import io.sphere.sdk.products.queries.ProductQuery;
+import io.sphere.sdk.queries.PagedResult;
 import io.sphere.sdk.queries.QueryPredicate;
 import org.apache.commons.lang3.StringUtils;
 
@@ -99,6 +100,22 @@ public class ProductServiceImpl implements ProductService {
                                                       .flatMap(List::stream)
                                                       .collect(Collectors.toSet());
                             });
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Optional<Product>> fetchProduct(@Nonnull final String key) {
+        final QueryPredicate<Product> queryPredicate = buildProductKeysQueryPredicate(Collections.singleton(key));
+        return syncOptions.getCtpClient().execute(ProductQuery.of().withPredicates(queryPredicate))
+                          .thenApply(PagedResult::head)
+                          .handle((fetchedProductOptional, sphereException) -> {
+                              if (sphereException != null) {
+                                  syncOptions
+                                      .applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
+                                  return Optional.empty();
+                              }
+                              return fetchedProductOptional;
+                          });
     }
 
     @Nonnull

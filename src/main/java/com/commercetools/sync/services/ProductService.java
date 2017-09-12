@@ -35,6 +35,19 @@ public interface ProductService {
     @Nonnull
     CompletionStage<Set<Product>> fetchMatchingProductsByKeys(@Nonnull final Set<String> productKeys);
 
+
+    /**
+     * Given a product key, this method fetches a product that matches this given key in the CTP project defined in a
+     * potentially injected {@link SphereClient}. If there is no matching product an empty {@link Optional} will be
+     * returned in the returned future.
+     *
+     * @param key the key of the product to fetch.
+     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
+     *         {@link Optional} that contains the matching {@link Product} if exists, otherwise empty.
+     */
+    @Nonnull
+    CompletionStage<Optional<Product>> fetchProduct(@Nonnull final String key);
+
     /**
      * Given a {@link Set} of productsDrafts, this method creates Products corresponding to them in the CTP project
      * defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}.
@@ -45,7 +58,7 @@ public interface ProductService {
      */
     @Nonnull
     CompletionStage<Set<Product>> createProducts(@Nonnull final Set<ProductDraft> productsDrafts);
-    
+
     /**
      * Given a {@link ProductDraft}, this method creates a {@link Product} based on it in the CTP project defined in
      * a potentially injected {@link io.sphere.sdk.client.SphereClient}. The created product's id and key are also
