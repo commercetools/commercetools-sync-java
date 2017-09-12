@@ -24,8 +24,6 @@ public class ProductSyncMockUtils {
     public static final String PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH = "product-key-1-published.json";
     public static final String PRODUCT_KEY_1_UNPUBLISHED_RESOURCE_PATH = "product-key-1-unpublished.json";
     public static final String CATEGORY_KEY_1_RESOURCE_PATH = "category-key-1.json";
-    public static final String CATEGORY_KEY_2_RESOURCE_PATH = "category-key-2.json";
-    public static final String CATEGORY_KEY_3_RESOURCE_PATH = "category-key-3.json";
 
     /**
      * Builds a {@link ProductDraftBuilder} based on the current projection of the product JSON resource located at the
