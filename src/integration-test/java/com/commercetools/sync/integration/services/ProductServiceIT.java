@@ -458,4 +458,61 @@ public class ProductServiceIT {
         assertThat(fetchedProduct.getMasterData().getCurrent().getSlug()).isNotEqualTo(productDraft1.getSlug());
     }
 
+    @Test
+    @SuppressWarnings("ConstantConditions")
+    public void fetchProduct_WithExistingKey_ShouldReturnProduct() {
+        final Optional<Product> fetchedProductOptional = productService.fetchProduct(product.getKey())
+                                                                       .toCompletableFuture()
+                                                                       .join();
+        assertThat(fetchedProductOptional).isNotEmpty();
+        final Product fetchedProduct = fetchedProductOptional.get();
+        assertThat(fetchedProduct.getId()).isEqualTo(product.getId());
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
+    @SuppressWarnings("ConstantConditions")
+    public void fetchProduct_WithNonExistingKey_ShouldNotReturnProduct() {
+        final Optional<Product> fetchedProductOptional = productService.fetchProduct("someNonExistingKey")
+                                                                       .toCompletableFuture()
+                                                                       .join();
+        assertThat(fetchedProductOptional).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
+    @SuppressWarnings("ConstantConditions")
+    public void fetchProduct_WithBadGatewayException_ShouldFail() {
+        // Mock sphere client to return BadeGatewayException on any request.
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        when(spyClient.execute(any(ProductQuery.class)))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
+            .thenCallRealMethod();
+        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder.of(spyClient)
+                                                                       .setErrorCallBack(
+                                                                           (errorMessage, exception) -> {
+                                                                               errorCallBackMessages
+                                                                                   .add(errorMessage);
+                                                                               errorCallBackExceptions
+                                                                                   .add(exception);
+                                                                           })
+                                                                       .build();
+        final ProductService spyProductService = new ProductServiceImpl(spyOptions);
+
+
+        final String productKey = product.getKey();
+        final Optional<Product> fetchedProductOptional = spyProductService.fetchProduct(productKey)
+                                                                          .toCompletableFuture()
+                                                                          .join();
+        assertThat(fetchedProductOptional).isNotNull();
+        assertThat(fetchedProductOptional).isEmpty();
+        assertThat(errorCallBackExceptions).isNotEmpty();
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorCallBackMessages).isNotEmpty();
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualToIgnoringCase(format("Failed to fetch products with keys: '%s'. Reason: %s", productKey,
+                errorCallBackExceptions.get(0)));
+    }
 }
