@@ -126,11 +126,9 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withNewProductWithExistingSlug_shouldNotCreateProduct() {
-        @SuppressWarnings("ConstantConditions") final ProductDraft productDraft = createProductDraftBuilder(
-            PRODUCT_KEY_2_RESOURCE_PATH, productType)
-            .slug(product.getMasterData().getCurrent().getSlug())
+        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
+            .slug(product.getMasterData().getStaged().getSlug())
             .build();
-
 
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = productSync.sync(singletonList(productDraft))
@@ -142,15 +140,15 @@ public class ProductSyncIT {
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ErrorResponseException.class);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).contains(format("A duplicate value '\\\"%s\\\"' exists for field"
-            + " 'slug.en' on", product.getMasterData().getCurrent().getSlug().get(Locale.ENGLISH)));
+            + " 'slug.en' on", product.getMasterData().getStaged().getSlug().get(Locale.ENGLISH)));
         assertThat(warningCallBackMessages).isEmpty();
     }
 
     @Test
     public void sync_withEqualProduct_shouldNotUpdateProduct() {
-        @SuppressWarnings("ConstantConditions") final ProductDraft productDraft = createProductDraft(
+        final ProductDraft productDraft = createProductDraft(
             PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
-            productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
+            productType, categories, product.getMasterData().getStaged().getCategoryOrderHints());
 
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = productSync.sync(singletonList(productDraft))
@@ -165,9 +163,9 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withChangedProduct_shouldUpdateProduct() {
-        @SuppressWarnings("ConstantConditions") final ProductDraft productDraft = createProductDraft(
+        final ProductDraft productDraft = createProductDraft(
             PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
-            productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
+            productType, categories, product.getMasterData().getStaged().getCategoryOrderHints());
 
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = productSync.sync(singletonList(productDraft))
@@ -203,9 +201,9 @@ public class ProductSyncIT {
 
         final ProductSync spyProductSync = new ProductSync(spyOptions);
 
-        @SuppressWarnings("ConstantConditions") final ProductDraft productDraft = createProductDraft(
+        final ProductDraft productDraft = createProductDraft(
             PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
-            productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
+            productType, categories, product.getMasterData().getStaged().getCategoryOrderHints());
 
         final ProductSyncStatistics syncStatistics = spyProductSync.sync(singletonList(productDraft))
                                                                    .toCompletableFuture().join();
@@ -221,10 +219,9 @@ public class ProductSyncIT {
     public void sync_withMultipleBatchSyncing_ShouldSync() {
         //_-----_-----_-----_-----_-----_PREPARE EXISTING PRODUCTS (productKey1, productKey2, productKey3)------
         //_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----
-        @SuppressWarnings("ConstantConditions")
 
         final ProductDraft key2Draft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH,
-            productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
+            productType, categories, product.getMasterData().getStaged().getCategoryOrderHints());
 
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(key2Draft))
                          .toCompletableFuture()
@@ -245,7 +242,7 @@ public class ProductSyncIT {
         //_-----_-----_-----_-----_-----_PREPARE BATCHES FROM EXTERNAL SOURCE-----_-----_-----_-----_-----_-----
         //_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
-            productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
+            productType, categories, product.getMasterData().getStaged().getCategoryOrderHints());
 
         final List<ProductDraft> batch1 = new ArrayList<>();
         batch1.add(productDraft);
@@ -289,10 +286,9 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withSingleBatchSyncing_ShouldSync() {
-        @SuppressWarnings("ConstantConditions")
         //PREPARE BATCHES FROM EXTERNAL SOURCE
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
-            productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
+            productType, categories, product.getMasterData().getStaged().getCategoryOrderHints());
 
         final ProductDraft key3Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
             .categories(new ArrayList<>())
@@ -347,10 +343,9 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withSameSlugInSingleBatch_ShouldNotSyncIt() {
-        @SuppressWarnings("ConstantConditions")
         //PREPARE BATCHES FROM EXTERNAL SOURCE
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
-            productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
+            productType, categories, product.getMasterData().getStaged().getCategoryOrderHints());
 
         final ProductDraft key3Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
             .categories(new ArrayList<>())
@@ -406,10 +401,9 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withADraftsWithBlankKeysInBatch_ShouldNotSyncItAndTriggerErrorCallBack() {
-        @SuppressWarnings("ConstantConditions")
         //PREPARE BATCHES FROM EXTERNAL SOURCE
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
-            productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
+            productType, categories, product.getMasterData().getStaged().getCategoryOrderHints());
 
         // Draft with null key
         final ProductDraft key3Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
@@ -450,10 +444,9 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withANullDraftInBatch_ShouldNotSyncItAndTriggerErrorCallBack() {
-        @SuppressWarnings("ConstantConditions")
         //PREPARE BATCHES FROM EXTERNAL SOURCE
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
-            productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
+            productType, categories, product.getMasterData().getStaged().getCategoryOrderHints());
 
         final List<ProductDraft> batch = new ArrayList<>();
         batch.add(productDraft);
@@ -475,10 +468,9 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withSameDraftsWithChangesInBatch_ShouldRetryUpdateBecauseOfConcurrentModificationExceptions() {
-        @SuppressWarnings("ConstantConditions")
         //PREPARE BATCHES FROM EXTERNAL SOURCE
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
-            productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
+            productType, categories, product.getMasterData().getStaged().getCategoryOrderHints());
 
         // Draft with same key
         final ProductDraft draftWithSameKey = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)

@@ -11,6 +11,7 @@ import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.producttypes.ProductType;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +96,7 @@ public class ProductSyncMockUtils {
     public static ProductDraft createProductDraft(@Nonnull final String jsonResourcePath,
                                                  @Nonnull final ProductType productType,
                                                  @Nonnull final List<Category> categories,
-                                                 @Nonnull final CategoryOrderHints categoryOrderHints) {
+                                                 @Nullable final CategoryOrderHints categoryOrderHints) {
         return createProductDraftBuilder(jsonResourcePath, productType)
             .categories(categories.stream().map(Category::toReference).collect(toList()))
             .categoryOrderHints(categoryOrderHints)
