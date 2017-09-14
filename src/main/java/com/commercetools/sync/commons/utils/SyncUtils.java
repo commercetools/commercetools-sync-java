@@ -7,6 +7,11 @@ import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductData;
+import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductVariantDraft;
+import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.types.Custom;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
@@ -18,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 public final class SyncUtils {
     /**
@@ -112,5 +119,35 @@ public final class SyncUtils {
                                                  .build();
             })
             .collect(Collectors.toList());
+    }
+
+    /**
+     * Given a {@link Product} this method creates a {@link ProductDraftBuilder} based on the staged projection
+     * values of the supplied product.
+     *
+     * @param product the product to create a {@link ProductDraftBuilder} based on it's staged data.
+     * @return a {@link ProductDraftBuilder} based on the staged projection values of the supplied product.
+     */
+    // TODO: Need to check if a current version should also be checked.
+    // TODO: Test
+    @Nonnull
+    public static ProductDraftBuilder getDraftBuilderFromStagedProduct(@Nonnull final Product product) {
+        final ProductData productData = product.getMasterData().getStaged();
+        final List<ProductVariantDraft> allVariants = productData
+            .getAllVariants().stream()
+            .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
+            .collect(toList());
+
+        return ProductDraftBuilder
+            .of(product.getProductType(), productData.getName(), productData.getSlug(), allVariants)
+            .metaDescription(productData.getMetaDescription())
+            .metaKeywords(productData.getMetaKeywords())
+            .metaTitle(productData.getMetaTitle())
+            .description(productData.getDescription())
+            .searchKeywords(productData.getSearchKeywords())
+            .key(product.getKey())
+            .publish(product.getMasterData().isPublished())
+            .categories(productData.getCategories())
+            .categoryOrderHints(productData.getCategoryOrderHints());
     }
 }
