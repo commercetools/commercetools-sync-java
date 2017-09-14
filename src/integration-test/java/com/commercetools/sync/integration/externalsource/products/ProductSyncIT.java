@@ -330,15 +330,15 @@ public class ProductSyncIT {
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
 
-        final List<ProductDraft> batch1 = new ArrayList<>();
-        batch1.add(productDraft);
-        batch1.add(key3Draft);
-        batch1.add(key4Draft);
-        batch1.add(key5Draft);
-        batch1.add(key6Draft);
+        final List<ProductDraft> batch = new ArrayList<>();
+        batch.add(productDraft);
+        batch.add(key3Draft);
+        batch.add(key4Draft);
+        batch.add(key5Draft);
+        batch.add(key6Draft);
 
         final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics = productSync.sync(batch1)
+        final ProductSyncStatistics syncStatistics = productSync.sync(batch)
                                                                 .toCompletableFuture()
                                                                 .join();
         assertThat(syncStatistics.getReportMessage())
@@ -384,15 +384,15 @@ public class ProductSyncIT {
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
 
-        final List<ProductDraft> batch1 = new ArrayList<>();
-        batch1.add(productDraft);
-        batch1.add(key3Draft);
-        batch1.add(key4Draft);
-        batch1.add(key5Draft);
-        batch1.add(key6Draft);
+        final List<ProductDraft> batch = new ArrayList<>();
+        batch.add(productDraft);
+        batch.add(key3Draft);
+        batch.add(key4Draft);
+        batch.add(key5Draft);
+        batch.add(key6Draft);
 
         final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics = productSync.sync(batch1)
+        final ProductSyncStatistics syncStatistics = productSync.sync(batch)
                                                                 .toCompletableFuture()
                                                                 .join();
         assertThat(syncStatistics.getReportMessage())
