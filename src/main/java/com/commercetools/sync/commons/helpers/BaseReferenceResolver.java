@@ -131,19 +131,20 @@ public abstract class BaseReferenceResolver<T extends CustomDraft, S extends Bas
      * If the key is not valid a {@link ReferenceResolutionException} will be thrown.
      *
      *
-     * @param shouldAllowUuidKeys flag that signals whether the key could be UUID format or not.
+     * @param allowUuidKeys flag that signals whether the key could be UUID format or not.
      * @param keyFromExpansion the key value fetched after expansion of the {@code reference}.
      * @param reference the reference object to get the key from.
      * @return the key of the referenced object.
      * @throws ReferenceResolutionException thrown if the key is not valid.
      */
     @Nonnull
-    protected static String getKeyFromExpansionOrReference(final boolean shouldAllowUuidKeys,
+    @SuppressWarnings("ConstantConditions") //To remove the warning on the key is null, because it can't be null.
+    protected static String getKeyFromExpansionOrReference(final boolean allowUuidKeys,
                                                            @Nullable final String keyFromExpansion,
                                                            @Nonnull final Reference reference)
         throws ReferenceResolutionException {
         final String key = isBlank(keyFromExpansion) ? reference.getId() : keyFromExpansion;
-        validateKey(key, shouldAllowUuidKeys, KEY_NOT_SET_ON_EXPANSION_OR_ID_FIELD);
+        validateKey(key, allowUuidKeys, KEY_NOT_SET_ON_EXPANSION_OR_ID_FIELD);
         return key;
     }
 
