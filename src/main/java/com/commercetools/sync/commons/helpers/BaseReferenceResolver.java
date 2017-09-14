@@ -84,7 +84,7 @@ public abstract class BaseReferenceResolver<T extends CustomDraft, S extends Bas
     protected CompletionStage<Optional<String>> getCustomTypeId(@Nonnull final CustomFieldsDraft custom,
                                                                 @Nonnull final String referenceResolutionErrorMessage) {
         try {
-            final String customTypeKey = getKeyFromResourceIdentifier(custom.getType());
+            final String customTypeKey = getKeyFromResourceIdentifier(custom.getType(), options.shouldAllowUuidKeys());
             return typeService.fetchCachedTypeId(customTypeKey);
         } catch (ReferenceResolutionException exception) {
             return CompletableFutureUtils.exceptionallyCompletedFuture(
@@ -98,21 +98,24 @@ public abstract class BaseReferenceResolver<T extends CustomDraft, S extends Bas
      * This method fetches the id value on the passed {@link ResourceIdentifier}, if valid. If it is not valid, a
      * {@link ReferenceResolutionException} will be thrown. The validity checks are:
      * <ol>
-     * <li>Checks if the id value has a UUID format and the {@link BaseSyncOptions} instance has the
-     * {@code allowUuid} flag set to true, or the id value doesn't have a UUID format.</li>
+     * <li>Checks if the id value has a UUID format and the {@code allowUuidKeys} flag set to true, or the id value
+     * doesn't have a UUID format.</li>
      * <li>Checks if the id value is not null or not empty.</li>
      * </ol>
      * If the above checks pass, the id value is returned. Otherwise a {@link ReferenceResolutionException} is thrown.
      *
      * @param resourceIdentifier the reference from which the id value is validated and returned.
+     * @param allowUuidKeys flag that signals whether the key could be UUID format or not.
      * @return the id value on the {@link ResourceIdentifier}
      * @throws ReferenceResolutionException if any of the validation checks fail.
      */
     @Nonnull
-    private String getKeyFromResourceIdentifier(@Nonnull final ResourceIdentifier resourceIdentifier)
+    @SuppressWarnings("ConstantConditions") //To remove the warning on the key is null, because it can't be null.
+    public static String getKeyFromResourceIdentifier(@Nonnull final ResourceIdentifier resourceIdentifier,
+                                                      final boolean allowUuidKeys)
         throws ReferenceResolutionException {
         final String key = resourceIdentifier.getId();
-        validateKey(key, options.shouldAllowUuidKeys(), UNSET_ID_FIELD);
+        validateKey(key, allowUuidKeys, UNSET_ID_FIELD);
         return key;
     }
 
