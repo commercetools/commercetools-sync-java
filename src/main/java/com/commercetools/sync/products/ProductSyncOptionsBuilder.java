@@ -13,7 +13,7 @@ import static java.util.Collections.emptyList;
 
 public final class ProductSyncOptionsBuilder
     extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions> {
-    public static final int BATCH_SIZE_DEFAULT = 50;
+    public static final int BATCH_SIZE_DEFAULT = 30;
     private boolean removeOtherVariants = true;
     private List<String> whiteList = emptyList();
     private List<String> blackList = emptyList();
