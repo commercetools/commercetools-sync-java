@@ -85,6 +85,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     @Nonnull
     private Set<String> getProductDraftKeys(@Nonnull final List<ProductDraft> productDrafts) {
         return productDrafts.stream()
+                            .filter(Objects::nonNull)
                             .map(ProductDraft::getKey)
                             .filter(StringUtils::isNotBlank)
                             .collect(Collectors.toSet());
