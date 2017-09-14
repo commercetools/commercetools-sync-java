@@ -28,7 +28,8 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaTitleUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetSearchKeywordsUpdateAction;
 
-public class ProductSyncUtils {
+// TODO: FIX DOCUMENTATION AFTER CHANGE OF REMOVAL OF SYNC OPTIONS FOR ONLY COMPARING STAGED.
+public final class ProductSyncUtils {
     /**
      * Compares the Name, Slug, Description, Parent, OrderHint, MetaTitle, MetaDescription, MetaKeywords and Custom
      * fields/ type fields and assets of a {@link Category} and a {@link CategoryDraft}. It returns a {@link List} of
@@ -49,7 +50,7 @@ public class ProductSyncUtils {
                                                            @Nonnull final ProductDraft newProduct,
                                                            @Nonnull final ProductSyncOptions syncOptions) {
         final List<UpdateAction<Product>> updateActions =
-            buildCoreActions(oldProduct, newProduct, syncOptions);
+            buildCoreActions(oldProduct, newProduct);
         final List<UpdateAction<Product>> assetUpdateActions =
             buildAssetActions(oldProduct, newProduct, syncOptions);
         updateActions.addAll(assetUpdateActions);
@@ -65,29 +66,24 @@ public class ProductSyncUtils {
      *
      * @param oldProduct the category which should be updated.
      * @param newProduct the category draft where we get the new data.
-     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied
-     *                    by the user. For example, custom callbacks to call in case of warnings or errors occurring
-     *                    on the build update action process. And other options (See {@link BaseSyncOptions}
-     *                    for more info.
      * @return A list of category-specific update actions.
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildCoreActions(@Nonnull final Product oldProduct,
-                                                               @Nonnull final ProductDraft newProduct,
-                                                               @Nonnull final ProductSyncOptions syncOptions) {
+                                                               @Nonnull final ProductDraft newProduct) {
         final List<UpdateAction<Product>> updateActions = buildUpdateActionsFromOptionals(Arrays.asList(
-            buildChangeNameUpdateAction(oldProduct, newProduct, syncOptions),
-            buildSetDescriptionUpdateAction(oldProduct, newProduct, syncOptions),
-            buildChangeSlugUpdateAction(oldProduct, newProduct, syncOptions),
-            buildSetSearchKeywordsUpdateAction(oldProduct, newProduct, syncOptions),
-            buildSetMetaTitleUpdateAction(oldProduct, newProduct, syncOptions),
-            buildSetMetaDescriptionUpdateAction(oldProduct, newProduct, syncOptions),
-            buildSetMetaKeywordsUpdateAction(oldProduct, newProduct, syncOptions)
+            buildChangeNameUpdateAction(oldProduct, newProduct),
+            buildSetDescriptionUpdateAction(oldProduct, newProduct),
+            buildChangeSlugUpdateAction(oldProduct, newProduct),
+            buildSetSearchKeywordsUpdateAction(oldProduct, newProduct),
+            buildSetMetaTitleUpdateAction(oldProduct, newProduct),
+            buildSetMetaDescriptionUpdateAction(oldProduct, newProduct),
+            buildSetMetaKeywordsUpdateAction(oldProduct, newProduct)
         ));
 
-        updateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct, syncOptions));
-        updateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct, syncOptions));
-        updateActions.addAll(buildRemoveFromCategoryUpdateActions(oldProduct, newProduct, syncOptions));
+        updateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct));
+        updateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));
+        updateActions.addAll(buildRemoveFromCategoryUpdateActions(oldProduct, newProduct));
 
         return updateActions;
     }

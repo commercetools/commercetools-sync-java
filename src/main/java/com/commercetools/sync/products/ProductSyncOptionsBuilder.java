@@ -14,7 +14,6 @@ import static java.util.Collections.emptyList;
 public final class ProductSyncOptionsBuilder
     extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions> {
     public static final int BATCH_SIZE_DEFAULT = 50;
-    private boolean updateStaged = true;
     private boolean publish = false;
     private boolean revertStagedChanges = false;
     private boolean removeOtherVariants = true;
@@ -30,10 +29,6 @@ public final class ProductSyncOptionsBuilder
         return new ProductSyncOptionsBuilder(ctpClient).setBatchSize(BATCH_SIZE_DEFAULT);
     }
 
-    public ProductSyncOptionsBuilder updateStaged(final boolean updateStaged) {
-        this.updateStaged = updateStaged;
-        return this;
-    }
 
     public ProductSyncOptionsBuilder publish(final boolean publish) {
         this.publish = publish;
@@ -78,7 +73,6 @@ public final class ProductSyncOptionsBuilder
             removeOtherCollectionEntries,
             removeOtherProperties,
             allowUuid,
-            updateStaged,
             publish,
             revertStagedChanges,
             removeOtherVariants,

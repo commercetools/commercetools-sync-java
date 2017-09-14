@@ -33,7 +33,6 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.shouldRemoveOtherSetEntries()).isTrue();
         assertThat(productSyncOptions.shouldRemoveOtherLocales()).isTrue();
         assertThat(productSyncOptions.shouldAllowUuidKeys()).isFalse();
-        assertThat(productSyncOptions.shouldUpdateStaged()).isTrue();
         assertThat(productSyncOptions.shouldPublish()).isFalse();
         assertThat(productSyncOptions.shouldRevertStagedChanges()).isFalse();
         assertThat(productSyncOptions.shouldRemoveOtherVariants()).isTrue();
@@ -47,12 +46,6 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void updateStaged_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.updateStaged(false);
-
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.shouldUpdateStaged()).isFalse();
-    }
 
     @Test
     public void publish_WithTrue_ShouldSetFlag() {

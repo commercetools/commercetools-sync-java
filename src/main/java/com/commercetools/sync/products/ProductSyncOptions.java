@@ -15,7 +15,6 @@ import java.util.function.Function;
  * TODO: removeOtherVariants, whiteList, blackList.
  */
 public class ProductSyncOptions extends BaseSyncOptions {
-    private final boolean updateStaged; // whether to compare and update the staged or current projection data.
     private final boolean publish; // whether to auto-publish or not.
     private final boolean revertStagedChanges; // whether to revert potential staged changes before synchronization.
     private final boolean removeOtherVariants; // whether to remove other product variants or not.
@@ -36,7 +35,6 @@ public class ProductSyncOptions extends BaseSyncOptions {
                        final boolean removeOtherCollectionEntries,
                        final boolean removeOtherProperties,
                        final boolean allowUuid,
-                       final boolean updateStaged,
                        final boolean publish,
                        final boolean revertStagedChanges,
                        final boolean removeOtherVariants,
@@ -46,7 +44,6 @@ public class ProductSyncOptions extends BaseSyncOptions {
                            List<UpdateAction<Product>>> updateActionsFilter) {
         super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherLocales, removeOtherSetEntries,
             removeOtherCollectionEntries, removeOtherProperties, allowUuid);
-        this.updateStaged = updateStaged;
         this.publish = publish;
         this.revertStagedChanges = revertStagedChanges;
         this.removeOtherVariants = removeOtherVariants;
@@ -55,9 +52,6 @@ public class ProductSyncOptions extends BaseSyncOptions {
         this.updateActionsFilter = updateActionsFilter;
     }
 
-    public boolean shouldUpdateStaged() {
-        return updateStaged;
-    }
 
     public boolean shouldPublish() {
         return publish;

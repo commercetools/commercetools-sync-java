@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static java.util.Collections.emptyList;
@@ -39,8 +38,8 @@ public final class CommonTypeUpdateActionUtils {
     @Nonnull
     public static <T, S> List<UpdateAction<T>> buildUpdateActions(@Nullable final S oldObject,
                                                                   @Nullable final S newObject,
-                                                                  @Nonnull final Function<S, List<UpdateAction<T>>>
+                                                                  @Nonnull final Supplier<List<UpdateAction<T>>>
                                                                       updateActionSupplier) {
-        return !Objects.equals(oldObject, newObject) ? updateActionSupplier.apply(oldObject) : emptyList();
+        return !Objects.equals(oldObject, newObject) ? updateActionSupplier.get() : emptyList();
     }
 }
