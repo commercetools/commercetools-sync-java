@@ -407,4 +407,104 @@ public class ProductSyncIT {
                         key3Draft.getSlug().get(Locale.ENGLISH))));
         assertThat(warningCallBackMessages).isEmpty();
     }
+
+    @Test
+    public void sync_withADraftsWithBlankKeysInBatch_ShouldNotSyncItAndTriggerErrorCallBack() {
+        @SuppressWarnings("ConstantConditions")
+        //PREPARE BATCHES FROM EXTERNAL SOURCE
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+            productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
+
+        // Draft with null key
+        final ProductDraft key3Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
+            .categories(new ArrayList<>())
+            .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
+            .key(null)
+            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .build();
+
+        // Draft with empty key
+        final ProductDraft key4Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
+            .categories(new ArrayList<>())
+            .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
+            .key("")
+            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .build();
+
+        final List<ProductDraft> batch = new ArrayList<>();
+        batch.add(productDraft);
+        batch.add(key3Draft);
+        batch.add(key4Draft);
+
+        final ProductSync productSync = new ProductSync(syncOptions);
+        final ProductSyncStatistics syncStatistics = productSync.sync(batch)
+                                                                .toCompletableFuture()
+                                                                .join();
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
+                + " failed to sync).", 3, 0, 1, 2));
+        assertThat(errorCallBackExceptions).hasSize(2);
+        assertThat(errorCallBackMessages).hasSize(2);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualToIgnoringCase(format("ProductDraft with name: %s doesn't have a key.", key3Draft.getName()));
+        assertThat(errorCallBackMessages.get(1))
+            .isEqualToIgnoringCase(format("ProductDraft with name: %s doesn't have a key.", key4Draft.getName()));
+        assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void sync_withANullDraftInBatch_ShouldNotSyncItAndTriggerErrorCallBack() {
+        @SuppressWarnings("ConstantConditions")
+        //PREPARE BATCHES FROM EXTERNAL SOURCE
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+            productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
+
+        final List<ProductDraft> batch = new ArrayList<>();
+        batch.add(productDraft);
+        batch.add(null);
+
+        final ProductSync productSync = new ProductSync(syncOptions);
+        final ProductSyncStatistics syncStatistics = productSync.sync(batch)
+                                                                .toCompletableFuture()
+                                                                .join();
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
+                + " failed to sync).", 2, 0, 1, 1));
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualToIgnoringCase("ProductDraft is null.");
+        assertThat(warningCallBackMessages).isEmpty();
+    }
+
+
+    @Test
+    public void sync_withSameDraftsWithChangesInBatch_ShouldRetryUpdateBecauseOfConcurrentModificationExceptions() {
+        @SuppressWarnings("ConstantConditions")
+        //PREPARE BATCHES FROM EXTERNAL SOURCE
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+            productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
+
+        // Draft with same key
+        final ProductDraft draftWithSameKey = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
+            .categories(new ArrayList<>())
+            .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
+            .key(productDraft.getKey())
+            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .build();
+
+        final List<ProductDraft> batch = new ArrayList<>();
+        batch.add(productDraft);
+        batch.add(draftWithSameKey);
+
+        final ProductSync productSync = new ProductSync(syncOptions);
+        final ProductSyncStatistics syncStatistics = productSync.sync(batch)
+                                                                .toCompletableFuture()
+                                                                .join();
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
+                + " failed to sync).", 2, 0, 2, 0));
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+    }
 }
