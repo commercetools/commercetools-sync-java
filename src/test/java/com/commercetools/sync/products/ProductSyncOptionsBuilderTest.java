@@ -33,8 +33,6 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.shouldRemoveOtherSetEntries()).isTrue();
         assertThat(productSyncOptions.shouldRemoveOtherLocales()).isTrue();
         assertThat(productSyncOptions.shouldAllowUuidKeys()).isFalse();
-        assertThat(productSyncOptions.shouldPublish()).isFalse();
-        assertThat(productSyncOptions.shouldRevertStagedChanges()).isFalse();
         assertThat(productSyncOptions.shouldRemoveOtherVariants()).isTrue();
         assertThat(productSyncOptions.getBlackList()).isEmpty();
         assertThat(productSyncOptions.getWhiteList()).isEmpty();
@@ -43,24 +41,6 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getWarningCallBack()).isNull();
         assertThat(productSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
         assertThat(productSyncOptions.getBatchSize()).isEqualTo(ProductSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
-    }
-
-    @Test
-
-    @Test
-    public void publish_WithTrue_ShouldSetFlag() {
-        productSyncOptionsBuilder.publish(true);
-
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.shouldPublish()).isTrue();
-    }
-
-    @Test
-    public void revertStagedChanges_WithTrue_ShouldSetFlag() {
-        productSyncOptionsBuilder.revertStagedChanges(true);
-
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.shouldRevertStagedChanges()).isTrue();
     }
 
     @Test

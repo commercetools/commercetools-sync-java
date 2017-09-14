@@ -7,14 +7,12 @@ import com.commercetools.sync.services.impl.ProductServiceImpl;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductCatalogData;
 import io.sphere.sdk.products.ProductDraft;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,8 +34,6 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private static final String PRODUCT_DRAFT_KEY_NOT_SET = "ProductDraft with name: %s doesn't have a key.";
     private static final String PRODUCT_DRAFT_IS_NULL = "ProductDraft is null.";
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
-    private static final String PUBLISH_FAILED = "Failed to publish Product with key: '%s'. Reason: %s";
-    private static final String REVERT_FAILED = "Failed to revert staged changes of Product with key: '%s'. Reason: %s";
     private static final String UNEXPECTED_DELETE = "Product with key: '%s' was deleted unexpectedly.";
     private final ProductService productService;
 
@@ -116,7 +112,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             }
         }
         return productService.createProducts(draftsToCreate)
-                             .thenCompose(createdProducts ->
+                             .thenAccept(createdProducts ->
                                  processCreatedProducts(createdProducts, draftsToCreate.size()))
                              .thenCompose(result -> syncProducts(productsToSync));
 
@@ -130,71 +126,18 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                        .findFirst();
     }
 
-
-    @Nonnull
-    private CompletionStage<Void> processCreatedProducts(@Nonnull final Set<Product> createdProducts,
-                                                         final int totalNumberOfDraftsToCreate) {
+    private void processCreatedProducts(@Nonnull final Set<Product> createdProducts,
+                                        final int totalNumberOfDraftsToCreate) {
         final int numberOfFailedCreations = totalNumberOfDraftsToCreate - createdProducts.size();
         statistics.incrementFailed(numberOfFailedCreations);
         statistics.incrementCreated(createdProducts.size());
-
-        final List<CompletableFuture> futurePublishes = new ArrayList<>();
-        createdProducts.forEach(createdProduct ->
-            futurePublishes.add(publishIfNeeded(createdProduct, false).toCompletableFuture()));
-        return CompletableFuture.allOf(futurePublishes.toArray(new CompletableFuture[futurePublishes.size()]));
-    }
-
-    @Nonnull
-    @SuppressWarnings("ConstantConditions")
-    private CompletionStage<Optional<Product>> publishIfNeeded(@Nonnull final Product product, final boolean retry) {
-        if (syncOptions.shouldPublish()) {
-            final ProductCatalogData data = product.getMasterData();
-            if (!data.isPublished() || data.hasStagedChanges()) {
-                if (retry) {
-                    final String key = product.getKey();
-                    return productService.fetchProduct(key)
-                                         .thenCompose(productOptional -> {
-                                             if (productOptional.isPresent()) {
-                                                 return publishOrRetry(productOptional.get());
-                                             } else {
-                                                 handleError(format(PUBLISH_FAILED, key, UNEXPECTED_DELETE), null);
-                                                 return CompletableFuture.completedFuture(productOptional);
-                                             }
-                                         });
-                } else {
-                    return publishOrRetry(product);
-                }
-            }
-        }
-        return CompletableFuture.completedFuture(Optional.of(product));
-    }
-
-    @Nonnull
-    private CompletionStage<Optional<Product>> publishOrRetry(@Nonnull final Product product) {
-        return productService.publishProduct(product)
-                             .handle(ImmutablePair::new)
-                             .thenCompose(publishResponse -> {
-                                 final Product publishedProduct = publishResponse.getKey();
-                                 final Throwable sphereException = publishResponse.getValue();
-                                 if (sphereException != null) {
-                                     return
-                                         retryRequestIfConcurrentModificationException(sphereException, product,
-                                             () -> publishIfNeeded(product, true), PUBLISH_FAILED);
-                                 } else {
-                                     return CompletableFuture.completedFuture(Optional.of(publishedProduct));
-                                 }
-                             });
     }
 
     @Nonnull
     private CompletionStage<Void> syncProducts(@Nonnull final Map<ProductDraft, Product> productsToSync) {
         final List<CompletableFuture<Optional<Product>>> futureUpdates =
             productsToSync.entrySet().stream()
-                          .map(entry -> buildUpdateActionsAndUpdate(entry.getValue(), entry.getKey(), false)
-                              .thenCompose(updatedProductOptional ->
-                                  updatedProductOptional.map(product -> publishIfNeeded(product, false))
-                                                        .orElseGet(() ->
-                                                            CompletableFuture.completedFuture(updatedProductOptional))))
+                          .map(entry -> buildUpdateActionsAndUpdate(entry.getValue(), entry.getKey(), false))
                           .map(CompletionStage::toCompletableFuture)
                           .collect(Collectors.toList());
         return CompletableFuture.allOf(futureUpdates.toArray(new CompletableFuture[futureUpdates.size()]));
@@ -224,7 +167,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                          final List<UpdateAction<Product>> updateActions =
                                              buildActions(fetchedProduct, newProduct, syncOptions);
                                          if (!updateActions.isEmpty()) {
-                                             return revertIfNeededAndUpdate(fetchedProduct, newProduct, updateActions);
+                                             return updateProduct(fetchedProduct, newProduct, updateActions);
                                          }
                                          return CompletableFuture.completedFuture(productOptional);
                                      } else {
@@ -235,78 +178,29 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         } else {
             final List<UpdateAction<Product>> updateActions = buildActions(oldProduct, newProduct, syncOptions);
             if (!updateActions.isEmpty()) {
-                return revertIfNeededAndUpdate(oldProduct, newProduct, updateActions);
+                return updateProduct(oldProduct, newProduct, updateActions);
             }
             return CompletableFuture.completedFuture(Optional.of(oldProduct));
         }
     }
 
     @Nonnull
-    private CompletionStage<Optional<Product>> revertIfNeededAndUpdate(@Nonnull final Product oldProduct,
-                                                                       @Nonnull final ProductDraft newProduct,
-                                                                       @Nonnull final List<UpdateAction<Product>>
-                                                                               updateActions) {
-        return revertIfNeeded(oldProduct, false)
-            .thenCompose(revertedProductOptional -> {
-                if (revertedProductOptional.isPresent()) {
-                    final Product productAfterRevert = revertedProductOptional.get();
-                    return productService.updateProduct(productAfterRevert, updateActions)
-                                         .handle(ImmutablePair::new)
-                                         .thenCompose(updateResponse -> {
-                                             final Product updatedProduct = updateResponse.getKey();
-                                             final Throwable sphereException = updateResponse.getValue();
-                                             if (sphereException != null) {
-                                                 return retryRequestIfConcurrentModificationException(
-                                                     sphereException, productAfterRevert,
-                                                     () -> buildUpdateActionsAndUpdate(productAfterRevert, newProduct,
-                                                         true), UPDATE_FAILED);
-                                             } else {
-                                                 statistics.incrementUpdated();
-                                                 return CompletableFuture.completedFuture(Optional.of(updatedProduct));
-                                             }
-                                         });
-                }
-                return CompletableFuture.completedFuture(revertedProductOptional);
-            });
-    }
-
-    @Nonnull
-    @SuppressWarnings("ConstantConditions")
-    private CompletionStage<Optional<Product>> revertIfNeeded(@Nonnull final Product product, final boolean retry) {
-        if (syncOptions.shouldRevertStagedChanges()) {
-            if (product.getMasterData().hasStagedChanges()) {
-                if (retry) {
-                    final String key = product.getKey();
-                    return productService.fetchProduct(key)
-                                         .thenCompose(productOptional -> {
-                                             if (productOptional.isPresent()) {
-                                                 return revertOrRetry(productOptional.get());
-                                             } else {
-                                                 handleError(format(REVERT_FAILED, key, UNEXPECTED_DELETE), null);
-                                                 return CompletableFuture.completedFuture(productOptional);
-                                             }
-                                         });
-                } else {
-                    return revertOrRetry(product);
-                }
-            }
-        }
-        return CompletableFuture.completedFuture(Optional.of(product));
-    }
-
-    @Nonnull
-    private CompletionStage<Optional<Product>> revertOrRetry(@Nonnull final Product product) {
-        return productService.revertProduct(product)
+    private CompletionStage<Optional<Product>> updateProduct(@Nonnull final Product oldProduct,
+                                                             @Nonnull final ProductDraft newProduct,
+                                                             @Nonnull final List<UpdateAction<Product>> updateActions) {
+        return productService.updateProduct(oldProduct, updateActions)
                              .handle(ImmutablePair::new)
-                             .thenCompose(revertResponse -> {
-                                 final Product revertedProduct = revertResponse.getKey();
-                                 final Throwable sphereException = revertResponse.getValue();
+                             .thenCompose(updateResponse -> {
+                                 final Product updatedProduct = updateResponse.getKey();
+                                 final Throwable sphereException = updateResponse.getValue();
                                  if (sphereException != null) {
-                                     return
-                                         retryRequestIfConcurrentModificationException(sphereException, product,
-                                             () -> revertIfNeeded(product, true), REVERT_FAILED);
+                                     return retryRequestIfConcurrentModificationException(
+                                         sphereException, oldProduct,
+                                         () -> buildUpdateActionsAndUpdate(oldProduct, newProduct,
+                                             true), UPDATE_FAILED);
                                  } else {
-                                     return CompletableFuture.completedFuture(Optional.of(revertedProduct));
+                                     statistics.incrementUpdated();
+                                     return CompletableFuture.completedFuture(Optional.of(updatedProduct));
                                  }
                              });
     }

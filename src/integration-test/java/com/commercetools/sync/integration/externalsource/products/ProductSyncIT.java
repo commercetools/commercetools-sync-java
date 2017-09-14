@@ -85,9 +85,6 @@ public class ProductSyncIT {
         deleteAllProducts(CTP_TARGET_CLIENT);
 
         syncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                               .publish(true)
-                                               .revertStagedChanges(true)
-                                               .updateStaged(false)
                                                .setErrorCallBack(
                                                    (errorMessage, exception) -> {
                                                        errorCallBackMessages

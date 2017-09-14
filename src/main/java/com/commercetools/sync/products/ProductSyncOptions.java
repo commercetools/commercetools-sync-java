@@ -12,11 +12,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * TODO: removeOtherVariants, whiteList, blackList.
+ * TODO: removeOtherVariants, whiteList, blackList, auto publish, revert staged changes, update staged.
  */
 public class ProductSyncOptions extends BaseSyncOptions {
-    private final boolean publish; // whether to auto-publish or not.
-    private final boolean revertStagedChanges; // whether to revert potential staged changes before synchronization.
     private final boolean removeOtherVariants; // whether to remove other product variants or not.
 
     // defines which attributes to calculate update actions for
@@ -35,8 +33,6 @@ public class ProductSyncOptions extends BaseSyncOptions {
                        final boolean removeOtherCollectionEntries,
                        final boolean removeOtherProperties,
                        final boolean allowUuid,
-                       final boolean publish,
-                       final boolean revertStagedChanges,
                        final boolean removeOtherVariants,
                        final List<String> whiteList,
                        final List<String> blackList,
@@ -44,21 +40,10 @@ public class ProductSyncOptions extends BaseSyncOptions {
                            List<UpdateAction<Product>>> updateActionsFilter) {
         super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherLocales, removeOtherSetEntries,
             removeOtherCollectionEntries, removeOtherProperties, allowUuid);
-        this.publish = publish;
-        this.revertStagedChanges = revertStagedChanges;
         this.removeOtherVariants = removeOtherVariants;
         this.whiteList = whiteList;
         this.blackList = blackList;
         this.updateActionsFilter = updateActionsFilter;
-    }
-
-
-    public boolean shouldPublish() {
-        return publish;
-    }
-
-    public boolean shouldRevertStagedChanges() {
-        return revertStagedChanges;
     }
 
     boolean shouldRemoveOtherVariants() {

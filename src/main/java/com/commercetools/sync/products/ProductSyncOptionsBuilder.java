@@ -14,8 +14,6 @@ import static java.util.Collections.emptyList;
 public final class ProductSyncOptionsBuilder
     extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions> {
     public static final int BATCH_SIZE_DEFAULT = 50;
-    private boolean publish = false;
-    private boolean revertStagedChanges = false;
     private boolean removeOtherVariants = true;
     private List<String> whiteList = emptyList();
     private List<String> blackList = emptyList();
@@ -27,17 +25,6 @@ public final class ProductSyncOptionsBuilder
 
     public static ProductSyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
         return new ProductSyncOptionsBuilder(ctpClient).setBatchSize(BATCH_SIZE_DEFAULT);
-    }
-
-
-    public ProductSyncOptionsBuilder publish(final boolean publish) {
-        this.publish = publish;
-        return this;
-    }
-
-    public ProductSyncOptionsBuilder revertStagedChanges(final boolean revertStagedChanges) {
-        this.revertStagedChanges = revertStagedChanges;
-        return this;
     }
 
     public ProductSyncOptionsBuilder removeOtherVariants(final boolean removeOtherVariants) {
@@ -73,8 +60,6 @@ public final class ProductSyncOptionsBuilder
             removeOtherCollectionEntries,
             removeOtherProperties,
             allowUuid,
-            publish,
-            revertStagedChanges,
             removeOtherVariants,
             whiteList,
             blackList,
