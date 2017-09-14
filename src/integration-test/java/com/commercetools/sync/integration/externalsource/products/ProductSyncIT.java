@@ -129,8 +129,8 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withNewProductWithExistingSlug_shouldNotCreateProduct() {
-        @SuppressWarnings("ConstantConditions")
-        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
+        @SuppressWarnings("ConstantConditions") final ProductDraft productDraft = createProductDraftBuilder(
+            PRODUCT_KEY_2_RESOURCE_PATH, productType)
             .slug(product.getMasterData().getCurrent().getSlug())
             .build();
 
@@ -151,8 +151,8 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withEqualProduct_shouldNotUpdateProduct() {
-        @SuppressWarnings("ConstantConditions")
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+        @SuppressWarnings("ConstantConditions") final ProductDraft productDraft = createProductDraft(
+            PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
             productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
 
         final ProductSync productSync = new ProductSync(syncOptions);
@@ -168,8 +168,8 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withChangedProduct_shouldUpdateProduct() {
-        @SuppressWarnings("ConstantConditions")
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+        @SuppressWarnings("ConstantConditions") final ProductDraft productDraft = createProductDraft(
+            PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
 
         final ProductSync productSync = new ProductSync(syncOptions);
@@ -192,26 +192,26 @@ public class ProductSyncIT {
             .thenCallRealMethod();
 
         final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder.of(spyClient)
-                                                                .setErrorCallBack(
-                                                                    (errorMessage, exception) -> {
-                                                                        errorCallBackMessages
-                                                                            .add(errorMessage);
-                                                                        errorCallBackExceptions
-                                                                            .add(exception);
-                                                                    })
-                                                                .setWarningCallBack(warningMessage ->
-                                                                    warningCallBackMessages
-                                                                        .add(warningMessage))
-                                                                .build();
+                                                                       .setErrorCallBack(
+                                                                           (errorMessage, exception) -> {
+                                                                               errorCallBackMessages
+                                                                                   .add(errorMessage);
+                                                                               errorCallBackExceptions
+                                                                                   .add(exception);
+                                                                           })
+                                                                       .setWarningCallBack(warningMessage ->
+                                                                           warningCallBackMessages
+                                                                               .add(warningMessage))
+                                                                       .build();
 
         final ProductSync spyProductSync = new ProductSync(spyOptions);
 
-        @SuppressWarnings("ConstantConditions")
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+        @SuppressWarnings("ConstantConditions") final ProductDraft productDraft = createProductDraft(
+            PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             productType, categories, product.getMasterData().getCurrent().getCategoryOrderHints());
 
         final ProductSyncStatistics syncStatistics = spyProductSync.sync(singletonList(productDraft))
-                                                                .toCompletableFuture().join();
+                                                                   .toCompletableFuture().join();
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 1, 0, 1, 0));
@@ -289,7 +289,6 @@ public class ProductSyncIT {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
     }
-
 
     @Test
     public void sync_withSingleBatchSyncing_ShouldSync() {
@@ -403,8 +402,8 @@ public class ProductSyncIT {
             .forEach(exception -> assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class));
         assertThat(errorCallBackMessages).hasSize(3);
         errorCallBackMessages.forEach(errorMessage -> assertThat(errorMessage)
-                .contains(format("A duplicate value '\\\"%s\\\"' exists for field 'slug.en' on",
-                        key3Draft.getSlug().get(Locale.ENGLISH))));
+            .contains(format("A duplicate value '\\\"%s\\\"' exists for field 'slug.en' on",
+                key3Draft.getSlug().get(Locale.ENGLISH))));
         assertThat(warningCallBackMessages).isEmpty();
     }
 
