@@ -28,8 +28,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductVariantUpdateActionUtilsTest {
 
-    public static final String OLD_PROD_WITH_VARIANTS = "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/productOld.json";
-    public static final String NEW_PROD_DRAFT_WITH_VARIANTS = "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/productDraftNew.json";
+    public static final String OLD_PROD_WITH_VARIANTS =
+            "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/productOld.json";
+    public static final String NEW_PROD_DRAFT_WITH_VARIANTS =
+            "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/productDraftNew.json";
 
 
     @Test
@@ -60,9 +62,11 @@ public class ProductVariantUpdateActionUtilsTest {
         Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
         ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS);
 
-        Optional<UpdateAction<Product>> changeMaster = buildChangeMasterVariantUpdateAction(productOld, productDraftNew);
+        Optional<UpdateAction<Product>> changeMaster =
+                buildChangeMasterVariantUpdateAction(productOld, productDraftNew);
         assertThat(changeMaster).isNotEmpty();
-        assertThat(changeMaster.orElse(null)).isEqualTo(ChangeMasterVariant.ofSku(productDraftNew.getMasterVariant().getSku()));
+        assertThat(changeMaster.orElse(null))
+                .isEqualTo(ChangeMasterVariant.ofSku(productDraftNew.getMasterVariant().getSku()));
     }
 
     @Test
