@@ -20,11 +20,11 @@ public final class CollectionUtils {
      * @param includeCondition condition which verifies whether the value should be included to the final result.
      * @param <T>              type of the collection items.
      * @return new filtered stream with items which satisfy {@code includeCondition} predicate. If {@code collection}
-     * is <b>null</b> or empty - empty stream is returned.
+     *     is <b>null</b> or empty - empty stream is returned.
      */
     @Nonnull
     public static <T> Stream<T> filterCollection(@Nullable final Collection<T> collection,
-                                                 @Nonnull Predicate<T> includeCondition) {
+                                                 @Nonnull final Predicate<T> includeCondition) {
 
         return collection == null ? Stream.empty()
                 : collection.stream()
@@ -33,8 +33,8 @@ public final class CollectionUtils {
 
     /**
      * Convert a {@code collection} to a set of values using {@code entityToKey} mapping.
-     * <p>
-     * If the collection has duplicate keys - only one will be stored, which one is not defined though.
+     *
+     * <p>If the collection has duplicate keys - only one will be stored, which one is not defined though.
      *
      * @param collection {@link Collection} to convert
      * @param entityToKey function which converts the collection entry to a key.
@@ -44,8 +44,8 @@ public final class CollectionUtils {
      * {@code entryToKey} function.
      */
     @Nonnull
-    public static <T, K> Set<K> collectionToSet(@Nullable Collection<T> collection,
-                                                @Nonnull Function<T, K> entityToKey) {
+    public static <T, K> Set<K> collectionToSet(@Nullable final Collection<T> collection,
+                                                @Nonnull final Function<T, K> entityToKey) {
         return collection == null ? Collections.emptySet()
                 : collection.stream()
                 .map(entityToKey)
