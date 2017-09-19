@@ -12,6 +12,7 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
@@ -110,7 +111,9 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withNewProduct_shouldCreateProduct() {
-        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType).build();
+        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
+            .productType(ProductType.referenceOfId(productType.getKey()))
+            .build();
 
 
         final ProductSync productSync = new ProductSync(syncOptions);
@@ -128,6 +131,7 @@ public class ProductSyncIT {
     public void sync_withNewProductWithExistingSlug_shouldNotCreateProduct() {
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
             .slug(product.getMasterData().getStaged().getSlug())
+            .productType(ProductType.referenceOfId(productType.getKey()))
             .build();
 
         final ProductSync productSync = new ProductSync(syncOptions);
@@ -149,10 +153,15 @@ public class ProductSyncIT {
         final ProductDraft productDraft = createProductDraft(
             PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
             productType, categories, product.getMasterData().getStaged().getCategoryOrderHints());
+        final ProductDraft productDraftWithProductTypeKeyOnReference =
+            ProductDraftBuilder.of(productDraft)
+                               .productType(ProductType.referenceOfId(productType.getKey()))
+                               .build();
 
         final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics = productSync.sync(singletonList(productDraft))
-                                                                .toCompletableFuture().join();
+        final ProductSyncStatistics syncStatistics =
+            productSync.sync(singletonList(productDraftWithProductTypeKeyOnReference))
+                       .toCompletableFuture().join();
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 1, 0, 0, 0));
@@ -404,6 +413,10 @@ public class ProductSyncIT {
         //PREPARE BATCHES FROM EXTERNAL SOURCE
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             productType, categories, product.getMasterData().getStaged().getCategoryOrderHints());
+        final ProductDraft productDraftWithProductTypeKeyOnReference =
+            ProductDraftBuilder.of(productDraft)
+                               .productType(ProductType.referenceOfId(productType.getKey()))
+                               .build();
 
         // Draft with null key
         final ProductDraft key3Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
@@ -411,6 +424,7 @@ public class ProductSyncIT {
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key(null)
             .masterVariant(ProductVariantDraftBuilder.of().build())
+            .productType(ProductType.referenceOfId(productType.getKey()))
             .build();
 
         // Draft with empty key
