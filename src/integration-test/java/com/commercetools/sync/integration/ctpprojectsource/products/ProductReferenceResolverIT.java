@@ -13,7 +13,6 @@ import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.expansion.ProductExpansionModel;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
-import org.assertj.core.api.Assertions;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -44,6 +43,9 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 public class ProductReferenceResolverIT {
+    private static ProductType productTypeSource;
+    private static ProductType noKeyProductTypeSource;
+
     private static List<Category> categories;
     private ProductSync productSync;
     private List<String> errorCallBackMessages;
@@ -69,6 +71,9 @@ public class ProductReferenceResolverIT {
 
         createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
         createProductType(PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, CTP_TARGET_CLIENT);
+
+        productTypeSource = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_SOURCE_CLIENT);
+        noKeyProductTypeSource = createProductType(PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, CTP_SOURCE_CLIENT);
     }
 
     /**
@@ -107,8 +112,7 @@ public class ProductReferenceResolverIT {
 
     @Test
     public void sync_withNewProductWithExistingCategoryAndProductTypeReferences_ShouldCreateProduct() {
-        final ProductType productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_SOURCE_CLIENT);
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, productType,
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, productTypeSource,
             categories, createRandomCategoryOrderHints(categories));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
@@ -129,16 +133,17 @@ public class ProductReferenceResolverIT {
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 1, 1, 0, 0));
 
-        Assertions.assertThat(errorCallBackMessages).isEmpty();
-        Assertions.assertThat(errorCallBackExceptions).isEmpty();
-        Assertions.assertThat(warningCallBackMessages).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(warningCallBackMessages).hasSize(1);
+        assertThat(warningCallBackMessages.get(0)).matches("ProductType with id: '.*' has no key"
+            + " set. Keys are required for productType matching.");
     }
 
     @Test
-    public void sync_withNewProductWithNoProductTypeKey_ShouldCreateProduct() {
-        final ProductType productType = createProductType(PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, CTP_SOURCE_CLIENT);
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, productType,
-            categories, createRandomCategoryOrderHints(categories));
+    public void sync_withNewProductWithNoProductTypeKey_ShouldFailCreatingTheProduct() {
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+            noKeyProductTypeSource, categories, createRandomCategoryOrderHints(categories));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
         final ProductQuery productQuery = ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
