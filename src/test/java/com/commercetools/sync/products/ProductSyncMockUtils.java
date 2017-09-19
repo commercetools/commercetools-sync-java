@@ -102,4 +102,12 @@ public class ProductSyncMockUtils {
             .categoryOrderHints(categoryOrderHints)
             .build();
     }
+
+    public static Product createProductFromJson(@Nonnull final String jsonResourcePath) {
+        return readObjectFromResource(jsonResourcePath, Product.class);
+    }
+
+    public static ProductDraft createProductDraftFromJson(@Nonnull final String jsonResourcePath) {
+        return readObjectFromResource(jsonResourcePath, ProductDraft.class);
+    }
 }
