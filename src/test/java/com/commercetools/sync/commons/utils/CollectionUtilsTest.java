@@ -42,15 +42,16 @@ public class CollectionUtilsTest {
 
     @Test
     public void collectionToSet_normalCases() throws Exception {
-        List<Pair<String, Integer>> abcd = Arrays.asList(Pair.of("a", 1), Pair.of("b", 2), Pair.of("c", 3), Pair.of("d", 4));
+        List<Pair<String, Integer>> abcd = Arrays.asList(
+                Pair.of("a", 1), Pair.of("b", 2), Pair.of("c", 3), Pair.of("d", 4));
         assertThat(collectionToSet(abcd, Pair::getKey)).containsExactlyInAnyOrder("a", "b", "c", "d");
         assertThat(collectionToSet(abcd, Pair::getValue)).containsExactlyInAnyOrder(1, 2, 3, 4);
     }
 
     @Test
     public void collectionToSet_duplicates() throws Exception {
-        List<Pair<String, Integer>> abcd = Arrays.asList(Pair.of("a", 1), Pair.of("b", 2), Pair.of("c", 3), Pair.of("d", 4),
-                Pair.of("d", 5), Pair.of("b", 6));
+        List<Pair<String, Integer>> abcd = Arrays.asList(
+                Pair.of("a", 1), Pair.of("b", 2), Pair.of("c", 3), Pair.of("d", 4), Pair.of("d", 5), Pair.of("b", 6));
         // 2 duplicate keys should be suppressed
         assertThat(collectionToSet(abcd, Pair::getKey)).containsExactlyInAnyOrder("a", "b", "c", "d");
         // no duplicate values - nothing should be suppressed

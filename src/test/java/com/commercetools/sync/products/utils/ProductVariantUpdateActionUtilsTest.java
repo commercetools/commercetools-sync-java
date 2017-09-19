@@ -1,7 +1,13 @@
 package com.commercetools.sync.products.utils;
 
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.*;
+import io.sphere.sdk.products.Image;
+import io.sphere.sdk.products.PriceDraft;
+import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductVariantDraft;
+import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.ProductVariantDraftDsl;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.updateactions.AddVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
@@ -14,7 +20,10 @@ import java.util.Optional;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftFromJson;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductFromJson;
-import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.*;
+import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildAddVariantUpdateAction;
+import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildAddVariantUpdateActionFromDraft;
+import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildChangeMasterVariantUpdateAction;
+import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildRemoveVariantUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductVariantUpdateActionUtilsTest {
