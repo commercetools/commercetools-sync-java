@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.ctpprojectsource.products;
 
-import com.commercetools.sync.commons.utils.SyncUtils;
 import com.commercetools.sync.integration.commons.utils.SphereClientUtils;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -9,8 +8,8 @@ import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
+import io.sphere.sdk.products.expansion.ProductExpansionModel;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import org.assertj.core.api.Assertions;
@@ -22,13 +21,14 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.replaceProductsReferenceIdsWithKeys;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.PRODUCT_KEY_1_CHANGED_RESOURCE_PATH;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
@@ -42,8 +42,10 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 public class ProductSyncIT {
-    private static ProductType productType;
-    private static List<Category> categories;
+    private static ProductType sourceProductType;
+    private static ProductType targetProductType;
+    private static List<Category> sourceCategories;
+    private static List<Category> targetCategories;
     private ProductSync productSync;
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
@@ -63,11 +65,11 @@ public class ProductSyncIT {
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_SOURCE_CLIENT);
 
-        createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
-        categories = createCategories(CTP_SOURCE_CLIENT, getCategoryDrafts(null, 2));
+        targetCategories = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
+        sourceCategories = createCategories(CTP_SOURCE_CLIENT, getCategoryDrafts(null, 2));
 
-        createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
-        productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_SOURCE_CLIENT);
+        targetProductType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
+        sourceProductType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_SOURCE_CLIENT);
     }
 
     /**
@@ -96,8 +98,6 @@ public class ProductSyncIT {
                                                                           .add(warningMessage))
                                                                   .build();
         productSync = new ProductSync(syncOptions);
-
-
     }
 
     @AfterClass
@@ -108,24 +108,30 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withChangesOnly_ShouldUpdateCategories() {
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, productType,
-            categories, createRandomCategoryOrderHints(categories));
-        CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
+        final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+            targetProductType, targetCategories, createRandomCategoryOrderHints(targetCategories));
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)).toCompletableFuture().join();
 
-        final List<Product> products = CTP_SOURCE_CLIENT
-            .execute(ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT))
-            .toCompletableFuture().join().getResults();
+        final ProductDraft newProductDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+            sourceProductType, sourceCategories, createRandomCategoryOrderHints(sourceCategories));
+        CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft)).toCompletableFuture().join();
 
-        final List<ProductDraft> productDrafts = products.stream()
-                                                         .map(SyncUtils::getDraftBuilderFromStagedProduct)
-                                                         .map(ProductDraftBuilder::build).collect(Collectors.toList());
+        final ProductQuery productQuery = ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
+                                                      .withExpansionPaths(ProductExpansionModel::productType)
+                                                      .plusExpansionPaths(productProductExpansionModel ->
+                                                          productProductExpansionModel.masterData().staged()
+                                                                                      .categories());
 
+        final List<Product> products = CTP_SOURCE_CLIENT.execute(productQuery)
+                                                        .toCompletableFuture().join().getResults();
+
+        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
 
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
 
         assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and  %d products"
-                + " failed to sync).", 1, 0, 0, 0));
+            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
+                + " failed to sync).", 1, 0, 1, 0));
 
         Assertions.assertThat(errorCallBackMessages).isEmpty();
         Assertions.assertThat(errorCallBackExceptions).isEmpty();
