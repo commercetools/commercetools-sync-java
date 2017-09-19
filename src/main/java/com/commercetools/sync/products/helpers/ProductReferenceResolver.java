@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
-public class ProductReferenceResolver extends BaseReferenceResolver<ProductDraft, ProductSyncOptions> {
+public final class ProductReferenceResolver extends BaseReferenceResolver<ProductDraft, ProductSyncOptions> {
     private ProductTypeService productTypeService;
     private CategoryService categoryService;
     private static final String FAILED_TO_RESOLVE_PRODUCT_TYPE = "Failed to resolve product type reference on "
@@ -34,6 +34,17 @@ public class ProductReferenceResolver extends BaseReferenceResolver<ProductDraft
     private static final String FAILED_TO_RESOLVE_CATEGORY = "Failed to resolve category reference on "
         + "ProductDraft with key:'%s'. Reason: %s";
 
+    /**
+     * Takes a {@link ProductSyncOptions} instance, a {@link ProductTypeService} and {@link CategoryService} to
+     * instantiate a {@link ProductReferenceResolver} instance that could be used to resolve the product type and
+     * category references of product drafts in the CTP project specified in the injected {@link ProductSyncOptions}
+     * instance.
+     *
+     * @param productSyncOptions the container of all the options of the sync process including the CTP project client
+     *                           and/or configuration and other sync-specific options.
+     * @param productTypeService the service to fetch the product type for reference resolution.
+     * @param categoryService the service to fetch the categories for reference resolution.
+     */
     public ProductReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final ProductTypeService productTypeService,
                                     @Nonnull final CategoryService categoryService) {
@@ -50,7 +61,7 @@ public class ProductReferenceResolver extends BaseReferenceResolver<ProductDraft
      *
      * @param productDraft the productDraft to resolve it's references.
      * @return a {@link CompletionStage} that contains as a result a new productDraft instance with resolved references
-     * or, in case an error occurs during reference resolution, a {@link ReferenceResolutionException}.
+     *         or, in case an error occurs during reference resolution, a {@link ReferenceResolutionException}.
      */
     @Override
     public CompletionStage<ProductDraft> resolveReferences(@Nonnull final ProductDraft productDraft) {

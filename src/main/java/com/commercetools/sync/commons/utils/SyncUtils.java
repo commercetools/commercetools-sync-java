@@ -144,7 +144,7 @@ public final class SyncUtils {
     public static List<ProductDraft> replaceProductsReferenceIdsWithKeys(@Nonnull final List<Product> products) {
         return products
             .stream()
-            .map(product-> {
+            .map(product -> {
                 // Resolve productType reference
                 final Reference<ProductType> productType = product.getProductType();
                 final Reference<ProductType> productTypeReferenceWithKey = replaceReferenceIdWithKey(productType,

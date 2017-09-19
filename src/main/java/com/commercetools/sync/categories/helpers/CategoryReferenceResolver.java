@@ -148,6 +148,7 @@ public final class CategoryReferenceResolver extends CustomReferenceResolver<Cat
      * Helper method that returns the value of the key field from the passed category {@link Reference} object,
      * if expanded. Otherwise, returns null.
      *
+     * @param categoryReference the category reference to get the key from it's expansion.
      * @return the value of the key field from the passed category {@link Reference} object, if expanded.
      *          Otherwise, returns null.
      */

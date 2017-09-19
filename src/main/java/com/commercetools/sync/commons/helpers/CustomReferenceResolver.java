@@ -24,7 +24,7 @@ import static java.lang.String.format;
  *            specified by the user, on reference resolution.
  */
 public abstract class CustomReferenceResolver<T extends CustomDraft, S extends BaseSyncOptions>
-    extends BaseReferenceResolver<T, S>{
+    extends BaseReferenceResolver<T, S> {
 
     private TypeService typeService;
 

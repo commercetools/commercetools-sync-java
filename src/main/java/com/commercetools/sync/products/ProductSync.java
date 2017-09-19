@@ -49,6 +49,14 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private Map<ProductDraft, Product> productsToSync = new HashMap<>();
     private Set<ProductDraft> draftsToCreate = new HashSet<>();
 
+    /**
+     * Takes a {@link ProductSyncOptions} instance to instantiate a new {@link ProductSync} instance that could be
+     * used to sync product drafts with the given products in the CTP project specified in the injected
+     * {@link ProductSyncOptions} instance.
+     *
+     * @param productSyncOptions the container of all the options of the sync process including the CTP project client
+     *                           and/or configuration and other sync-specific options.
+     */
     public ProductSync(@Nonnull final ProductSyncOptions productSyncOptions) {
         this(productSyncOptions, new ProductServiceImpl(productSyncOptions),
             new ProductTypeServiceImpl(productSyncOptions.getCtpClient()),
