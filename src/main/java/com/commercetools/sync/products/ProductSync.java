@@ -59,8 +59,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
      */
     public ProductSync(@Nonnull final ProductSyncOptions productSyncOptions) {
         this(productSyncOptions, new ProductServiceImpl(productSyncOptions),
-            new ProductTypeServiceImpl(productSyncOptions.getCtpClient()),
-            new CategoryServiceImpl(productSyncOptions));
+            new ProductTypeServiceImpl(productSyncOptions), new CategoryServiceImpl(productSyncOptions));
     }
 
     ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService,
