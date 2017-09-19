@@ -21,3 +21,15 @@ after_success:
 - bash <(curl -s https://codecov.io/bash)
 - ./gradlew clean -Dbuild.version=$TRAVIS_TAG gitPublishPush
 - ./travis-build.sh
+notifications:
+  hipchat:
+    template:
+    - '%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message},
+      <a href="%{compare_url}">Commit diff</a>, <a href="%{build_url}">Build details</a>,
+      Build duration: %{duration}'
+    format: html
+    on_pull_requests: false
+    on_success: change
+    on_failure: always
+    rooms:
+      secure: GamqCH6vg3VJJ8XypH+QvDtlfK8H3z+jhNswp4G1l4TLkkDIBwEC5Iu8GwQm3TjrgrNYGGNAtgcFrDNOJzDdQtsrYv7NyvJnHXzznX4kzjrIa8o+NmYpxw07s7g/2kzcRTzvOC7KvGz++a0BDMLa2Di/0UVM/Q12BFli0JuDxoVEzcD7ubqcv2MjEIjJcDRf7wrx4QPMcTZIvPPBC6Z/h7lU0WnQHeEj5qb3Uim4Z0qdzRgjxSM++37cCsiFxcV85ff0e9BmTeV2sdmS/GmCTY8bJ/FwH1ZuLUhbvwlOikHMJqvVxkeqeDto0p/sECn0tMkdS3dwx/T8L9G4YUHlL4N46khnNLZYISqUk36ncW+lGxe5sQU+kRL9Yv0Lk5BIB3vw00XMpIoKz+lsN7mgkTCyfeMM5+jgFk7gEnR/PtVulO2XIj1xwskip+EnyEZR7G+qzeGGPSMTJs2LzoEWYKwCh2aAQjYOLX4H3Gt6mhHkB4qIR51m2PINQYhQE/WXKGnJ4c+wOHavRo7foSYyWnB7CnyNkZZofqYqlTCQkIumkJ3vTGQmu+rkRSJ+NXoY6h1w0Bzz6GktCVofWd3Yg6h3eZ3Ge2HV73VCsyuPn72BZ4d+8/zpm6cGvLEJ6UnSbzDUrVHybaaAXaJcWYvKL6yVsWjXRR93EVKEp4ajdMs=
