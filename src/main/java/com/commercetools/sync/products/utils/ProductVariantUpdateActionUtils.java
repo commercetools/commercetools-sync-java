@@ -36,8 +36,7 @@ public final class ProductVariantUpdateActionUtils {
     public static List<UpdateAction<Product>> buildRemoveVariantUpdateAction(@Nonnull final Product oldProduct,
                                                                              @Nonnull final ProductDraft newProduct) {
         final List<ProductVariant> oldVariants = oldProduct.getMasterData().getStaged().getVariants();
-        final Set<String> newVariants = collectionToSet(newProduct.getVariants(),
-                ProductVariantDraft::getKey);
+        final Set<String> newVariants = collectionToSet(newProduct.getVariants(), ProductVariantDraft::getKey);
 
         return filterCollection(oldVariants, oldVariant -> !newVariants.contains(oldVariant.getKey()))
                 .map(RemoveVariant::of)
@@ -56,7 +55,7 @@ public final class ProductVariantUpdateActionUtils {
      * @see #buildRemoveVariantUpdateAction(Product, ProductDraft)
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildAddVariantUpdateAction(@Nonnull final Product oldProduct,
+    public static List<AddVariant> buildAddVariantUpdateAction(@Nonnull final Product oldProduct,
                                                                           @Nonnull final ProductDraft newProduct) {
         final List<ProductVariantDraft> newVariants = newProduct.getVariants();
         final Set<String> oldVariantKeys =
@@ -79,7 +78,7 @@ public final class ProductVariantUpdateActionUtils {
      * @return {@link ChangeMasterVariant} if the keys are different.
      */
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildChangeMasterVariantUpdateAction(
+    public static Optional<ChangeMasterVariant> buildChangeMasterVariantUpdateAction(
             @Nonnull final Product oldProduct,
             @Nonnull final ProductDraft newProduct) {
         final String newKey = newProduct.getMasterVariant().getKey();
@@ -87,7 +86,7 @@ public final class ProductVariantUpdateActionUtils {
         return buildUpdateAction(newKey, oldKey,
             // it might be that the new master variant is from new added variants, so CTP variantId is not set yet,
             // thus we can't use ChangeMasterVariant.ofVariantId()
-            () -> ChangeMasterVariant.ofSku(newProduct.getMasterVariant().getSku()));
+            () -> ChangeMasterVariant.ofSku(newProduct.getMasterVariant().getSku(), true));
     }
 
     /**

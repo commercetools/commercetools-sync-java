@@ -51,7 +51,7 @@ public class ProductVariantUpdateActionUtilsTest {
         ProductVariantDraft draft5 = productDraftNew.getVariants().get(1);
         ProductVariantDraft draft6 = productDraftNew.getVariants().get(2);
 
-        List<UpdateAction<Product>> updateActions = buildAddVariantUpdateAction(productOld, productDraftNew);
+        List<AddVariant> updateActions = buildAddVariantUpdateAction(productOld, productDraftNew);
         assertThat(updateActions).containsExactlyInAnyOrder(
                 buildAddVariantUpdateActionFromDraft(draft5),
                 buildAddVariantUpdateActionFromDraft(draft6));
@@ -62,11 +62,10 @@ public class ProductVariantUpdateActionUtilsTest {
         Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
         ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS);
 
-        Optional<UpdateAction<Product>> changeMaster =
-                buildChangeMasterVariantUpdateAction(productOld, productDraftNew);
-        assertThat(changeMaster).isNotEmpty();
-        assertThat(changeMaster.orElse(null))
-                .isEqualTo(ChangeMasterVariant.ofSku(productDraftNew.getMasterVariant().getSku()));
+        Optional<ChangeMasterVariant> changeMasterVariant = buildChangeMasterVariantUpdateAction(productOld, productDraftNew);
+        assertThat(changeMasterVariant).isNotEmpty();
+        assertThat(changeMasterVariant.orElse(null))
+                .isEqualTo(ChangeMasterVariant.ofSku(productDraftNew.getMasterVariant().getSku(), true));
     }
 
     @Test
