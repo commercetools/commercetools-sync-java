@@ -9,6 +9,7 @@ import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
@@ -34,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
@@ -59,7 +61,7 @@ import static org.mockito.Mockito.when;
 public class ProductServiceIT {
     private ProductService productService;
     private static ProductType productType;
-    private static List<Category> categories;
+    private static List<Reference<Category>> categoryReferences;
     private Product product;
 
 
@@ -77,7 +79,8 @@ public class ProductServiceIT {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
-        categories = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
+        categoryReferences = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2))
+            .stream().map(Category::toReference).collect(Collectors.toList());
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
@@ -106,8 +109,8 @@ public class ProductServiceIT {
                                                                                .build();
 
         // Create a mock new product in the target project.
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, productType,
-            categories, createRandomCategoryOrderHints(categories));
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+            productType.toReference(), categoryReferences, createRandomCategoryOrderHints(categoryReferences));
         product = CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft))
                                    .toCompletableFuture().join();
 
@@ -128,8 +131,8 @@ public class ProductServiceIT {
         assertThat(cache).hasSize(1);
 
         // Create new product without caching
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType, categories,
-            createRandomCategoryOrderHints(categories));
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference()
+            , categoryReferences, createRandomCategoryOrderHints(categoryReferences));
 
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
@@ -143,12 +146,13 @@ public class ProductServiceIT {
     @Test
     public void cacheKeysToIds_WithTargetProductsWithBlankKeys_ShouldGiveAWarningAboutKeyNotSetAndNotCacheKey() {
         // Create new product without key
-        final ProductDraft productDraftWithNullKey = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
+        final ProductDraft productDraftWithNullKey = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+            productType.toReference())
             .key(null)
             .build();
 
         final ProductDraft productDraftWithEmptyKey = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-            productType)
+            productType.toReference())
             .key(StringUtils.EMPTY)
             .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
             .masterVariant(ProductVariantDraftBuilder.of().build())
@@ -239,7 +243,8 @@ public class ProductServiceIT {
     public void createProducts_WithAllValidProducts_ShouldCreateProducts() {
         // create a draft based of the same existing product but with different key, slug and master variant SKU since
         // these values should be unique on CTP for the product to be created.
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, productType)
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+            productType.toReference())
             .key("newKey")
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
@@ -247,8 +252,8 @@ public class ProductServiceIT {
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
 
-        final ProductDraft productDraft2 = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType, categories,
-            createRandomCategoryOrderHints(categories));
+        final ProductDraft productDraft2 = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference(),
+            categoryReferences, createRandomCategoryOrderHints(categoryReferences));
 
         final Set<ProductDraft> productDrafts = new HashSet<>();
         productDrafts.add(productDraft1);
@@ -267,7 +272,8 @@ public class ProductServiceIT {
     public void createProducts_WithSomeValidProducts_ShouldCreateProductsAndTriggerCallBack() {
         // create a draft based of the same existing product but with different key, slug and master variant SKU since
         // these values should be unique on CTP for the product to be created.
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, productType)
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+            productType.toReference())
             .key("1")
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
@@ -275,8 +281,8 @@ public class ProductServiceIT {
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
 
-        final ProductDraft productDraft2 = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType, categories,
-            createRandomCategoryOrderHints(categories));
+        final ProductDraft productDraft2 = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference(),
+            categoryReferences, createRandomCategoryOrderHints(categoryReferences));
 
         final Set<ProductDraft> productDrafts = new HashSet<>();
         productDrafts.add(productDraft1);
@@ -296,14 +302,16 @@ public class ProductServiceIT {
     public void createProducts_WithNoneValidProducts_ShouldTriggerCallBack() {
         // create a draft based of the same existing product but with different key, slug and master variant SKU since
         // these values should be unique on CTP for the product to be created.
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, productType)
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+            productType.toReference())
             .key("newKey")
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
 
-        final ProductDraft productDraft2 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, productType)
+        final ProductDraft productDraft2 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+            productType.toReference())
             .key("newKey1")
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
@@ -333,7 +341,8 @@ public class ProductServiceIT {
         // create a draft based of the same existing product but with different key, slug and master variant SKU since
         // these values should be unique on CTP for the product to be created.
         final String newKey = "newKey";
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, productType)
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+            productType.toReference())
             .key(newKey)
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
@@ -369,7 +378,8 @@ public class ProductServiceIT {
     public void createProduct_WithInvalidProduct_ShouldNotCreateProduct() {
         // Create product with same slug as existing product
         final String newKey = "newKey";
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, productType)
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+            productType.toReference())
             .key(newKey)
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
@@ -470,7 +480,8 @@ public class ProductServiceIT {
     @SuppressWarnings("ConstantConditions")
     public void publishProduct_ThatIsUnPublished_ShouldPublishProductCorrectly() {
         final String newKey = "newKey";
-        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
+        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+            productType.toReference())
             .key(newKey)
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
@@ -545,7 +556,8 @@ public class ProductServiceIT {
     @Test
     @SuppressWarnings("ConstantConditions")
     public void updateProduct_WithInvalidChanges_ShouldNotUpdateProduct() {
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType)
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+            productType.toReference())
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
             .build();

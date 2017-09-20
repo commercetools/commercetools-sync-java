@@ -9,6 +9,7 @@ import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -53,7 +54,7 @@ import static org.mockito.Mockito.when;
 
 public class ProductSyncIT {
     private static ProductType productType;
-    private static List<Category> categories;
+    private static List<Reference<Category>> categoryReferences;
     private ProductSyncOptions syncOptions;
     private Product product;
     private List<String> errorCallBackMessages;
@@ -69,7 +70,8 @@ public class ProductSyncIT {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
-        categories = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
+        categoryReferences = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2))
+            .stream().map(Category::toReference).collect(Collectors.toList());
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 

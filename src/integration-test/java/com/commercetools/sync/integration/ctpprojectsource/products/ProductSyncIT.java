@@ -6,6 +6,7 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
@@ -21,6 +22,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceProductsReferenceIdsWithKeys;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
@@ -44,8 +46,8 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 public class ProductSyncIT {
     private static ProductType sourceProductType;
     private static ProductType targetProductType;
-    private static List<Category> sourceCategories;
-    private static List<Category> targetCategories;
+    private static List<Reference<Category>> sourceCategories;
+    private static List<Reference<Category>> targetCategories;
     private ProductSync productSync;
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
@@ -65,8 +67,10 @@ public class ProductSyncIT {
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_SOURCE_CLIENT);
 
-        targetCategories = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
-        sourceCategories = createCategories(CTP_SOURCE_CLIENT, getCategoryDrafts(null, 2));
+        targetCategories = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2))
+            .stream().map(Category::toReference).collect(Collectors.toList());
+        sourceCategories = createCategories(CTP_SOURCE_CLIENT, getCategoryDrafts(null, 2))
+            .stream().map(Category::toReference).collect(Collectors.toList());
 
         targetProductType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
         sourceProductType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_SOURCE_CLIENT);
@@ -109,11 +113,11 @@ public class ProductSyncIT {
     @Test
     public void sync_withChangesOnly_ShouldUpdateCategories() {
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
-            targetProductType, targetCategories, createRandomCategoryOrderHints(targetCategories));
+            targetProductType.toReference(), targetCategories, createRandomCategoryOrderHints(targetCategories));
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)).toCompletableFuture().join();
 
         final ProductDraft newProductDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
-            sourceProductType, sourceCategories, createRandomCategoryOrderHints(sourceCategories));
+            sourceProductType.toReference(), sourceCategories, createRandomCategoryOrderHints(sourceCategories));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft)).toCompletableFuture().join();
 
         final ProductQuery productQuery = ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)

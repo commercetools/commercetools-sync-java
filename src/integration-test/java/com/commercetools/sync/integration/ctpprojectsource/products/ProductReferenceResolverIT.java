@@ -7,6 +7,7 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletionException;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceProductsReferenceIdsWithKeys;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
@@ -46,7 +48,7 @@ public class ProductReferenceResolverIT {
     private static ProductType productTypeSource;
     private static ProductType noKeyProductTypeSource;
 
-    private static List<Category> categories;
+    private static List<Reference<Category>> categoryReferences;
     private ProductSync productSync;
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
@@ -67,7 +69,9 @@ public class ProductReferenceResolverIT {
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_SOURCE_CLIENT);
 
         createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
-        categories = createCategories(CTP_SOURCE_CLIENT, getCategoryDrafts(null, 2));
+        categoryReferences =
+            createCategories(CTP_SOURCE_CLIENT, getCategoryDrafts(null, 2))
+                .stream().map(Category::toReference).collect(Collectors.toList());
 
         createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
         createProductType(PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, CTP_TARGET_CLIENT);
@@ -112,8 +116,8 @@ public class ProductReferenceResolverIT {
 
     @Test
     public void sync_withNewProductWithExistingCategoryAndProductTypeReferences_ShouldCreateProduct() {
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, productTypeSource,
-            categories, createRandomCategoryOrderHints(categories));
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+            productTypeSource.toReference(), categoryReferences, createRandomCategoryOrderHints(categoryReferences));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
         final ProductQuery productQuery = ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
@@ -143,7 +147,8 @@ public class ProductReferenceResolverIT {
     @Test
     public void sync_withNewProductWithNoProductTypeKey_ShouldFailCreatingTheProduct() {
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
-            noKeyProductTypeSource, categories, createRandomCategoryOrderHints(categories));
+            noKeyProductTypeSource.toReference(), categoryReferences,
+            createRandomCategoryOrderHints(categoryReferences));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
         final ProductQuery productQuery = ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
