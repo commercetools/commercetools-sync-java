@@ -150,8 +150,9 @@ public final class SyncUtils {
                 final Reference<ProductType> productTypeReferenceWithKey = replaceReferenceIdWithKey(productType,
                     () -> ProductType.referenceOfId(productType.getObj().getKey()));
 
+                final ProductDraft productDraft = getDraftBuilderFromStagedProduct(product).build();
                 final ProductDraft productDraftWithCategoryKeys =
-                    replaceProductDraftCategoryReferenceIdsWithKeys(product);
+                    replaceProductDraftCategoryReferenceIdsWithKeys(productDraft);
 
                 return ProductDraftBuilder.of(productDraftWithCategoryKeys)
                                           .productType(productTypeReferenceWithKey)
@@ -160,33 +161,63 @@ public final class SyncUtils {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Takes a list of product drafts that are supposed to have their category references expanded in order to be able
+     * to fetch the keys and replace the reference ids with the corresponding keys and then return a new list of product
+     * drafts with their references containing keys instead of the ids. Note that if the references are not expanded
+     * for a product, the reference ids will not be replaced with keys and will still have their ids in place.
+     *
+     * @param productDrafts the product drafts to replace their reference ids with keys
+     * @return a list of products drafts with keys instead of ids for references.
+     */
+    @Nonnull
+    public static List<ProductDraft> replaceProductDraftsCategoryReferenceIdsWithKeys(@Nonnull final List<ProductDraft>
+                                                                                      productDrafts) {
+        return productDrafts.stream()
+                            .map(productDraft -> productDraft != null ?
+                                replaceProductDraftCategoryReferenceIdsWithKeys(productDraft): null
+                            )
+                            .collect(Collectors.toList());
+    }
+
+    /**
+     * Takes a product draft that is supposed to have its category references expanded
+     * in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return
+     * a new product drafts with the references containing keys instead of the ids. Note that if the
+     * references are not expanded for a product draft, the reference ids will not be replaced with keys and will
+     * still have their ids in place.
+     *
+     * @param productDraft the product drafts to replace its reference ids with keys
+     * @return a new products draft with keys instead of ids for references.
+     */
     @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
-    private static ProductDraft replaceProductDraftCategoryReferenceIdsWithKeys(@Nonnull final Product product) {
-        final Set<Reference<Category>> categories = product.getMasterData().getStaged().getCategories();
+    public static ProductDraft replaceProductDraftCategoryReferenceIdsWithKeys(@Nonnull final ProductDraft
+                                                                                        productDraft) {
+        final Set<Reference<Category>> categories = productDraft.getCategories();
+        List<Reference<Category>> categoryReferencesWithKeys = new ArrayList<>();
+        Map<String, String> categoryOrderHintsMapWithKeys = new HashMap<>();
+        if (categories != null) {
+            categoryReferencesWithKeys = categories
+                .stream().map(categoryReference -> replaceReferenceIdWithKey(categoryReference, () -> {
+                    final String categoryId = categoryReference.getId();
+                    final String categoryKey = categoryReference.getObj().getKey();
 
-        final Map<String, String> categoryOrderHints = product.getMasterData().getStaged()
-                                                              .getCategoryOrderHints()
-                                                              .getAsMap();
+                    // Replace categoryOrderHint id with key.
+                    final CategoryOrderHints categoryOrderHints = productDraft.getCategoryOrderHints();
+                    if (categoryOrderHints != null) {
+                        final String categoryOrderHintValue = categoryOrderHints.get(categoryId);
+                        categoryOrderHintsMapWithKeys.put(categoryKey, categoryOrderHintValue);
+                    }
 
-        final Map<String, String> categoryOrderHintsMapWithKeys = new HashMap<>();
-
-        final List<Reference<Category>> categoryReferencesWithKeys =
-            categories.stream().map(categoryReference -> replaceReferenceIdWithKey(categoryReference, () -> {
-                final String categoryId = categoryReference.getId();
-                final String categoryKey = categoryReference.getObj().getKey();
-
-                // Replace categoryOrderHint id with key.
-                final String categoryOrderHintValue = categoryOrderHints.get(categoryId);
-                categoryOrderHintsMapWithKeys.put(categoryKey, categoryOrderHintValue);
-
-                // Replace category reference id with key.
-                return Category.referenceOfId(categoryKey);
-            })).collect(Collectors.toList());
-
+                    // Replace category reference id with key.
+                    return Category.referenceOfId(categoryKey);
+                })).collect(Collectors.toList());
+        }
         final CategoryOrderHints categoryOrderHintsWithKeys = CategoryOrderHints.of(categoryOrderHintsMapWithKeys);
-        return getDraftBuilderFromStagedProduct(product)
-            .categories(categoryReferencesWithKeys)
-            .categoryOrderHints(categoryOrderHintsWithKeys).build();
+        return ProductDraftBuilder.of(productDraft)
+                                  .categories(categoryReferencesWithKeys)
+                                  .categoryOrderHints(categoryOrderHintsWithKeys)
+                                  .build();
     }
 
     /**
