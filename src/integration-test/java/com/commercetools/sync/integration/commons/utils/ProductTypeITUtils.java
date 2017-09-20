@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.commons.utils;
 
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -11,18 +10,14 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
-import io.sphere.sdk.producttypes.commands.ProductTypeDeleteCommand;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Arrays.asList;
@@ -31,25 +26,6 @@ public final class ProductTypeITUtils {
     private static final String LOCALISED_STRING_ATTRIBUTE_NAME = "backgroundColor";
     private static final String BOOLEAN_ATTRIBUTE_NAME = "invisibleInShop";
 
-    /**
-     * Deletes all ProductTypes from CTP projects defined by the {@code sphereClient}.
-     *
-     * @param sphereClient defines the CTP project to delete the ProductTypes from.
-     */
-    private static void deleteProductTypes(@Nonnull final SphereClient sphereClient) {
-        final Consumer<List<ProductType>> productTypePageDeleter =
-            productTypePage -> {
-                final List<CompletableFuture<ProductType>> deletionFutures =
-                    productTypePage.stream()
-                                   .map(ProductTypeDeleteCommand::of)
-                                   .map(sphereClient::execute)
-                                   .map(CompletionStage::toCompletableFuture)
-                                   .collect(Collectors.toList());
-                CompletableFuture.allOf(deletionFutures.toArray(new CompletableFuture[deletionFutures.size()]))
-                                 .join();
-            };
-        CtpQueryUtils.queryAll(sphereClient, ProductTypeQuery.of(), productTypePageDeleter);
-    }
 
     /**
      * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} ProductTypes from CTP

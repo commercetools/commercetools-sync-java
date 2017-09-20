@@ -1,5 +1,7 @@
 package com.commercetools.sync.integration.services;
 
+import com.commercetools.sync.inventories.InventorySyncOptions;
+import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
 import io.sphere.sdk.channels.Channel;
@@ -36,7 +38,10 @@ public class ChannelServiceIT {
         deleteTypesFromTargetAndSource();
         deleteChannelsFromTargetAndSource();
         populateTargetProject();
-        channelService = new ChannelServiceImpl(CTP_TARGET_CLIENT, Collections.singleton(ChannelRole.INVENTORY_SUPPLY));
+        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                                                                                    .build();
+        channelService = new ChannelServiceImpl(inventorySyncOptions,
+            Collections.singleton(ChannelRole.INVENTORY_SUPPLY));
     }
 
     /**

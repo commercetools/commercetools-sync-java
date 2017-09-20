@@ -7,11 +7,14 @@ import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.Custom;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
@@ -20,12 +23,16 @@ import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
+// TODO: Test coverage and JavaDoc of new methods.
 public final class SyncUtils {
     /**
      * Given a list of resource (e.g. categories, products, etc..) drafts and a {@code batchSize}, this method separates
@@ -70,7 +77,6 @@ public final class SyncUtils {
         return reference;
     }
 
-
     /**
      * Takes a list of Categories that are supposed to have their custom type and parent category reference expanded
      * in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return
@@ -82,6 +88,7 @@ public final class SyncUtils {
      * @return a list of category drafts with keys instead of ids for references.
      */
     @Nonnull
+    @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
     public static List<CategoryDraft> replaceCategoriesReferenceIdsWithKeys(@Nonnull final List<Category> categories) {
         return categories
             .stream()
@@ -122,14 +129,105 @@ public final class SyncUtils {
     }
 
     /**
+     * Takes a list of Products that are supposed to have their product type and category references expanded
+     * in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return
+     * a new list of product drafts with their references containing keys instead of the ids. Note that if the
+     * references are not expanded for a product, the reference ids will not be replaced with keys and will still have
+     * their ids in place.
+     *
+     * @param products the products to replace their reference ids with keys
+     * @return a list of products drafts with keys instead of ids for references.
+     */
+    @Nonnull
+    @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
+    public static List<ProductDraft> replaceProductsReferenceIdsWithKeys(@Nonnull final List<Product> products) {
+        return products
+            .stream()
+            .map(product -> {
+                // Resolve productType reference
+                final Reference<ProductType> productType = product.getProductType();
+                final Reference<ProductType> productTypeReferenceWithKey = replaceReferenceIdWithKey(productType,
+                    () -> ProductType.referenceOfId(productType.getObj().getKey()));
+
+                final ProductDraft productDraft = getDraftBuilderFromStagedProduct(product).build();
+                final ProductDraft productDraftWithCategoryKeys =
+                    replaceProductDraftCategoryReferenceIdsWithKeys(productDraft);
+
+                return ProductDraftBuilder.of(productDraftWithCategoryKeys)
+                                          .productType(productTypeReferenceWithKey)
+                                          .build();
+            })
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Takes a list of product drafts that are supposed to have their category references expanded in order to be able
+     * to fetch the keys and replace the reference ids with the corresponding keys and then return a new list of product
+     * drafts with their references containing keys instead of the ids. Note that if the references are not expanded
+     * for a product, the reference ids will not be replaced with keys and will still have their ids in place.
+     *
+     * @param productDrafts the product drafts to replace their reference ids with keys
+     * @return a list of products drafts with keys instead of ids for references.
+     */
+    @Nonnull
+    public static List<ProductDraft> replaceProductDraftsCategoryReferenceIdsWithKeys(@Nonnull final List<ProductDraft>
+                                                                                      productDrafts) {
+        return productDrafts.stream()
+                            .map(productDraft ->
+                                productDraft != null
+                                    ? replaceProductDraftCategoryReferenceIdsWithKeys(productDraft) : null
+                            )
+                            .collect(Collectors.toList());
+    }
+
+    /**
+     * Takes a product draft that is supposed to have its category references expanded
+     * in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return
+     * a new product drafts with the references containing keys instead of the ids. Note that if the
+     * references are not expanded for a product draft, the reference ids will not be replaced with keys and will
+     * still have their ids in place.
+     *
+     * @param productDraft the product drafts to replace its reference ids with keys
+     * @return a new products draft with keys instead of ids for references.
+     */
+    @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
+    @Nonnull
+    public static ProductDraft replaceProductDraftCategoryReferenceIdsWithKeys(@Nonnull final ProductDraft
+                                                                                        productDraft) {
+        final Set<Reference<Category>> categories = productDraft.getCategories();
+        List<Reference<Category>> categoryReferencesWithKeys = new ArrayList<>();
+        Map<String, String> categoryOrderHintsMapWithKeys = new HashMap<>();
+        if (categories != null) {
+            categoryReferencesWithKeys = categories
+                .stream().map(categoryReference -> replaceReferenceIdWithKey(categoryReference, () -> {
+                    final String categoryId = categoryReference.getId();
+                    final String categoryKey = categoryReference.getObj().getKey();
+
+                    // Replace categoryOrderHint id with key.
+                    final CategoryOrderHints categoryOrderHints = productDraft.getCategoryOrderHints();
+                    if (categoryOrderHints != null) {
+                        final String categoryOrderHintValue = categoryOrderHints.get(categoryId);
+                        categoryOrderHintsMapWithKeys.put(categoryKey, categoryOrderHintValue);
+                    }
+
+                    // Replace category reference id with key.
+                    return Category.referenceOfId(categoryKey);
+                })).collect(Collectors.toList());
+        }
+        final CategoryOrderHints categoryOrderHintsWithKeys = CategoryOrderHints.of(categoryOrderHintsMapWithKeys);
+        return ProductDraftBuilder.of(productDraft)
+                                  .categories(categoryReferencesWithKeys)
+                                  .categoryOrderHints(categoryOrderHintsWithKeys)
+                                  .build();
+    }
+
+    /**
      * Given a {@link Product} this method creates a {@link ProductDraftBuilder} based on the staged projection
      * values of the supplied product.
      *
      * @param product the product to create a {@link ProductDraftBuilder} based on it's staged data.
      * @return a {@link ProductDraftBuilder} based on the staged projection values of the supplied product.
      */
-    // TODO: Need to check if a current version should also be checked.
-    // TODO: Test
     @Nonnull
     public static ProductDraftBuilder getDraftBuilderFromStagedProduct(@Nonnull final Product product) {
         final ProductData productData = product.getMasterData().getStaged();

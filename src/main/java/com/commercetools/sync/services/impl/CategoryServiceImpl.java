@@ -1,7 +1,7 @@
 package com.commercetools.sync.services.impl;
 
 
-import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
@@ -31,7 +31,7 @@ import static java.lang.String.format;
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
 public final class CategoryServiceImpl implements CategoryService {
-    private final CategorySyncOptions syncOptions;
+    private final BaseSyncOptions syncOptions;
     private boolean isCached = false;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private static final String CREATE_FAILED = "Failed to create CategoryDraft with key: '%s'. Reason: %s";
@@ -39,7 +39,7 @@ public final class CategoryServiceImpl implements CategoryService {
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
         + "category matching.";
 
-    public CategoryServiceImpl(@Nonnull final CategorySyncOptions syncOptions) {
+    public CategoryServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
         this.syncOptions = syncOptions;
     }
 
@@ -126,6 +126,7 @@ public final class CategoryServiceImpl implements CategoryService {
         final CategoryCreateCommand categoryCreateCommand = CategoryCreateCommand.of(categoryDraft);
         return syncOptions.getCtpClient().execute(categoryCreateCommand)
                           .handle((createdCategory, sphereException) -> {
+                              // TODO: Refactor to reuse below duplicate code and ProductServiceImpl.
                               if (sphereException != null) {
                                   syncOptions
                                       .applyErrorCallback(format(CREATE_FAILED, categoryDraft.getKey(),

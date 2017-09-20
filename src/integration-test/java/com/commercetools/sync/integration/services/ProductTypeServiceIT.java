@@ -1,5 +1,7 @@
 package com.commercetools.sync.integration.services;
 
+import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
@@ -31,7 +33,9 @@ public class ProductTypeServiceIT {
     public void setup() {
         deleteProductTypesFromTargetAndSource();
         createProductType(OLD_PRODUCT_TYPE_KEY, OLD_PRODUCT_TYPE_LOCALE, OLD_PRODUCT_TYPE_NAME, CTP_TARGET_CLIENT);
-        productTypeService = new ProductTypeServiceImpl(CTP_TARGET_CLIENT);
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                                                                               .build();
+        productTypeService = new ProductTypeServiceImpl(productSyncOptions);
     }
 
     /**

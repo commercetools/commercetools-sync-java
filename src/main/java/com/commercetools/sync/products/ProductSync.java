@@ -1,9 +1,14 @@
 package com.commercetools.sync.products;
 
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ProductService;
+import com.commercetools.sync.services.ProductTypeService;
+import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
+import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
@@ -21,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -35,15 +41,33 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private static final String PRODUCT_DRAFT_IS_NULL = "ProductDraft is null.";
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
     private static final String UNEXPECTED_DELETE = "Product with key: '%s' was deleted unexpectedly.";
+    private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
+        + "ProductDraft with key:'%s'. Reason: %s";
     private final ProductService productService;
+    private final ProductReferenceResolver productReferenceResolver;
 
+    private Map<ProductDraft, Product> productsToSync = new HashMap<>();
+    private Set<ProductDraft> draftsToCreate = new HashSet<>();
+
+    /**
+     * Takes a {@link ProductSyncOptions} instance to instantiate a new {@link ProductSync} instance that could be
+     * used to sync product drafts with the given products in the CTP project specified in the injected
+     * {@link ProductSyncOptions} instance.
+     *
+     * @param productSyncOptions the container of all the options of the sync process including the CTP project client
+     *                           and/or configuration and other sync-specific options.
+     */
     public ProductSync(@Nonnull final ProductSyncOptions productSyncOptions) {
-        this(productSyncOptions, new ProductServiceImpl(productSyncOptions));
+        this(productSyncOptions, new ProductServiceImpl(productSyncOptions),
+            new ProductTypeServiceImpl(productSyncOptions), new CategoryServiceImpl(productSyncOptions));
     }
 
-    ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService) {
+    ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService,
+                @Nonnull final ProductTypeService productTypeService, @Nonnull final CategoryService categoryService) {
         super(new ProductSyncStatistics(), productSyncOptions);
         this.productService = productService;
+        this.productReferenceResolver = new ProductReferenceResolver(productSyncOptions, productTypeService,
+            categoryService);
     }
 
     @Override
@@ -65,12 +89,15 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     @Override
     protected CompletionStage<ProductSyncStatistics> processBatch(@Nonnull final List<ProductDraft> batch) {
+        productsToSync = new HashMap<>();
+        draftsToCreate = new HashSet<>();
         return productService.cacheKeysToIds()
                              .thenCompose(keyToIdCache -> {
                                  final Set<String> productDraftKeys = getProductDraftKeys(batch);
                                  return productService.fetchMatchingProductsByKeys(productDraftKeys)
-                                                      .thenCompose(matchingProducts ->
-                                                          createOrUpdateProducts(matchingProducts, batch))
+                                                      .thenAccept(matchingProducts ->
+                                                          processFetchedProducts(matchingProducts, batch))
+                                                      .thenCompose(result -> createOrUpdateProducts())
                                                       .thenApply(result -> {
                                                           statistics.incrementProcessed(batch.size());
                                                           return statistics;
@@ -87,22 +114,32 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                             .collect(Collectors.toSet());
     }
 
-    @Nonnull
-    private CompletionStage<Void> createOrUpdateProducts(@Nonnull final Set<Product> matchingProducts,
-                                                         @Nonnull final List<ProductDraft> productDrafts) {
-        final Map<ProductDraft, Product> productsToSync = new HashMap<>();
-        final Set<ProductDraft> draftsToCreate = new HashSet<>();
-
+    private void processFetchedProducts(@Nonnull final Set<Product> matchingProducts,
+                                        @Nonnull final List<ProductDraft> productDrafts) {
         for (ProductDraft productDraft : productDrafts) {
             if (productDraft != null) {
                 final String productKey = productDraft.getKey();
                 if (isNotBlank(productKey)) {
-                    final Optional<Product> existingProduct = getProductByKeyIfExists(matchingProducts, productKey);
-                    if (existingProduct.isPresent()) {
-                        productsToSync.put(productDraft, existingProduct.get());
-                    } else {
-                        draftsToCreate.add(productDraft);
-                    }
+                    productReferenceResolver.resolveReferences(productDraft)
+                                            .thenAccept(referencesResolvedDraft -> {
+                                                final Optional<Product> existingProduct =
+                                                    getProductByKeyIfExists(matchingProducts, productKey);
+                                                if (existingProduct.isPresent()) {
+                                                    productsToSync.put(referencesResolvedDraft, existingProduct.get());
+                                                } else {
+                                                    draftsToCreate.add(referencesResolvedDraft);
+                                                }
+                                            })
+                                            .exceptionally(referenceResolutionException -> {
+                                                Throwable actualException = referenceResolutionException;
+                                                if (referenceResolutionException instanceof CompletionException) {
+                                                    actualException = referenceResolutionException.getCause();
+                                                }
+                                                final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
+                                                    productDraft.getKey(), actualException);
+                                                handleError(errorMessage, referenceResolutionException);
+                                                return null;
+                                            }).toCompletableFuture().join();
                 } else {
                     final String errorMessage = format(PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName());
                     handleError(errorMessage, null);
@@ -111,11 +148,14 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 handleError(PRODUCT_DRAFT_IS_NULL, null);
             }
         }
+    }
+
+    @Nonnull
+    private CompletionStage<Void> createOrUpdateProducts() {
         return productService.createProducts(draftsToCreate)
                              .thenAccept(createdProducts ->
                                  processCreatedProducts(createdProducts, draftsToCreate.size()))
                              .thenCompose(result -> syncProducts(productsToSync));
-
     }
 
     @Nonnull

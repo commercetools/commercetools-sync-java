@@ -28,6 +28,7 @@ public final class ProductITUtils {
     public static final String PRODUCT_KEY_1_CHANGED_RESOURCE_PATH = "product-key-1-changed.json";
     public static final String PRODUCT_KEY_2_RESOURCE_PATH = "product-key-2.json";
     public static final String PRODUCT_TYPE_RESOURCE_PATH = "product-type.json";
+    public static final String PRODUCT_TYPE_NO_KEY_RESOURCE_PATH = "product-type-no-key.json";
 
     /**
      * This method blocks to create a product type, which is defined by the JSON resource found in the supplied
@@ -85,7 +86,7 @@ public final class ProductITUtils {
      *
      * @param ctpClient defines the CTP project to delete the categories from.
      */
-    private static void deleteProductTypes(@Nonnull final SphereClient ctpClient) {
+    static void deleteProductTypes(@Nonnull final SphereClient ctpClient) {
         final List<CompletableFuture> productTypeDeleteFutures = new ArrayList<>();
         final Consumer<List<ProductType>> productTypePageDelete = productTypes -> productTypes.forEach(productType -> {
             final CompletableFuture<ProductType> deleteFuture =
