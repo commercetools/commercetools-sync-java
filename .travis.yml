@@ -24,9 +24,10 @@ after_success:
 notifications:
   hipchat:
     template:
-    - '%{repository}#%{build_number}<br>(%{branch} - %{commit} : %{author}): %{message}
-      <br><b><a href="%{compare_url}">Commit diff</a><br><b><a href="%{build_url}">Build details</a><b>
-      <br><b>Build duration:<b> %{duration}'
+    - '<b><a href="https://github.com/commercetools/commercetools-sync-java">%{repository}</a></b>
+    #<a href="%{build_url}">%{build_number}</a>
+    <br>(%{branch} - <a href="%{compare_url}">%{commit}</a> : %{author}): <b>%{message}</b>
+      <br><b>Build duration:</b> %{duration}.'
     format: html
     on_pull_requests: false
     on_success: change
