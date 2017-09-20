@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetCategoryOrderHintUpdateActions;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 
 public class BuildSetCategoryOrderHintUpdateActionsTest {
     private static final Product MOCK_OLD_PUBLISHED_PRODUCT = readObjectFromResource(
-        PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, Product.class);
+        PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
 
     @Test
     public void buildSetCategoryOrderHintUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {

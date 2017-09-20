@@ -23,8 +23,7 @@ import static java.lang.String.valueOf;
 import static java.util.stream.Collectors.toList;
 
 public class ProductSyncMockUtils {
-    public static final String PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH = "product-key-1-published.json";
-    public static final String PRODUCT_KEY_1_UNPUBLISHED_RESOURCE_PATH = "product-key-1-unpublished.json";
+    public static final String PRODUCT_KEY_1_RESOURCE_PATH = "product-key-1.json";
     public static final String CATEGORY_KEY_1_RESOURCE_PATH = "category-key-1.json";
 
     /**

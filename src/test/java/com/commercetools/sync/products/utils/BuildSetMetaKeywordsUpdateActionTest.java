@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import java.util.Locale;
 import java.util.Optional;
 
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 
 public class BuildSetMetaKeywordsUpdateActionTest {
     private static final Product MOCK_OLD_PUBLISHED_PRODUCT = readObjectFromResource(
-        PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH, Product.class);
+        PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
 
     @Test
     public void buildSetMetaKeywordsUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
