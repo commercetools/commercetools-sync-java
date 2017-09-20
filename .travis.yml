@@ -24,9 +24,9 @@ after_success:
 notifications:
   hipchat:
     template:
-    - '%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message},
-      <a href="%{compare_url}">Commit diff</a>, <a href="%{build_url}">Build details</a>,
-      Build duration: %{duration}'
+    - '%{repository}#%{build_number}<br>(%{branch} - %{commit} : %{author}): %{message}
+      <br><b><a href="%{compare_url}">Commit diff</a><br><b><a href="%{build_url}">Build details</a><b>
+      <br><b>Build duration:<b> %{duration}'
     format: html
     on_pull_requests: false
     on_success: change
