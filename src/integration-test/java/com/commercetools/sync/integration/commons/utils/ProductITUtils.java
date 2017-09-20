@@ -86,7 +86,7 @@ public final class ProductITUtils {
      *
      * @param ctpClient defines the CTP project to delete the categories from.
      */
-    public static void deleteProductTypes(@Nonnull final SphereClient ctpClient) {
+    static void deleteProductTypes(@Nonnull final SphereClient ctpClient) {
         final List<CompletableFuture> productTypeDeleteFutures = new ArrayList<>();
         final Consumer<List<ProductType>> productTypePageDelete = productTypes -> productTypes.forEach(productType -> {
             final CompletableFuture<ProductType> deleteFuture =
@@ -100,6 +100,4 @@ public final class ProductITUtils {
                              .toArray(new CompletableFuture[productTypeDeleteFutures.size()])))
                      .toCompletableFuture().join();
     }
-
-
 }

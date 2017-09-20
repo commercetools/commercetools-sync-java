@@ -77,7 +77,6 @@ public final class SyncUtils {
         return reference;
     }
 
-
     /**
      * Takes a list of Categories that are supposed to have their custom type and parent category reference expanded
      * in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return
@@ -191,6 +190,7 @@ public final class SyncUtils {
      * @return a new products draft with keys instead of ids for references.
      */
     @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
+    @Nonnull
     public static ProductDraft replaceProductDraftCategoryReferenceIdsWithKeys(@Nonnull final ProductDraft
                                                                                         productDraft) {
         final Set<Reference<Category>> categories = productDraft.getCategories();

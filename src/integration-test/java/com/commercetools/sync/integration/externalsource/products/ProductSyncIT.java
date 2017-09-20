@@ -174,7 +174,6 @@ public class ProductSyncIT {
     }
 
     @Test
-    @SuppressWarnings("ConstantConditions") // categoryOrderHints of product are not null.
     public void sync_withChangedProduct_shouldUpdateProduct() {
         final ProductDraft productDraft =
             createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, ProductType.referenceOfId(productType.getKey()),
@@ -234,7 +233,6 @@ public class ProductSyncIT {
     }
 
     @Test
-    @SuppressWarnings("ConstantConditions") // categoryOrderHints of product are not null.
     public void sync_withMultipleBatchSyncing_ShouldSync() {
         //_-----_-----_-----_-----_-----_PREPARE EXISTING PRODUCTS (productKey1, productKey2, productKey3)------
         //_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----
@@ -444,7 +442,6 @@ public class ProductSyncIT {
     }
 
     @Test
-    @SuppressWarnings("ConstantConditions") // categoryOrderHints of product are not null.
     public void sync_withADraftsWithBlankKeysInBatch_ShouldNotSyncItAndTriggerErrorCallBack() {
         //PREPARE BATCHES FROM EXTERNAL SOURCE
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
