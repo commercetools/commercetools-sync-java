@@ -1,0 +1,89 @@
+{
+  "key": "productKeyKey",
+  "masterVariant": {
+    "key": "var-7-key",
+    "sku": "var-7-sku",
+    "prices": [
+    ],
+    "images": [
+      {
+        "url": "https://xxx.ggg/7.png"
+      }
+    ],
+    "attributes": [
+      {
+        "name": "priceInfo",
+        "value": "64,90/kg"
+      },
+      {
+        "name": "size",
+        "value": "ca. 1 x 1000 g"
+      }
+    ]
+  },
+  "variants": [
+      {
+      "key": "var-4-key",
+      "sku": "var-4-sku",
+      "prices": [
+      ],
+      "images": [
+        {
+          "url": "https://xxx.ggg/4.png"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "priceInfo",
+          "value": "64,90/kg"
+        },
+        {
+          "name": "size",
+          "value": "ca. 1 x 1000 g"
+        }
+      ]
+    },
+    {
+      "key": "var-5-key",
+      "sku": "var-5-sku",
+      "prices": [
+      ],
+      "images": [
+        {
+          "url": "https://xxx.ggg/5.png"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "priceInfo",
+          "value": "64,90/kg"
+        },
+        {
+          "name": "size",
+          "value": "ca. 1 x 1000 g"
+        }
+      ]
+    },
+    {
+      "key": "var-6-key",
+      "sku": "var-6-sku",
+      "prices": [
+      ],
+      "images": [
+        {
+          "url": "https://xxx.ggg/6.png"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "priceInfo",
+          "value": "64,90/kg"
+        },
+        {
+          "name": "size",
+          "value": "ca. 1 x 1000 g"
+        }
+      ]
+    }
+  ]
+}
