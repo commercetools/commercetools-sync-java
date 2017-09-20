@@ -37,7 +37,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductITUtils.de
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static java.lang.String.format;
@@ -112,7 +112,7 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withChangesOnly_ShouldUpdateCategories() {
-        final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+        final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             targetProductType.toReference(), targetCategories, createRandomCategoryOrderHints(targetCategories));
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)).toCompletableFuture().join();
 

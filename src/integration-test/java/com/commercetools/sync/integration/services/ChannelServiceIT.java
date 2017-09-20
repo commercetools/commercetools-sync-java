@@ -38,7 +38,7 @@ public class ChannelServiceIT {
         deleteTypesFromTargetAndSource();
         deleteChannelsFromTargetAndSource();
         populateTargetProject();
-        final InventorySyncOptions inventorySyncOptions= InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                                                                     .build();
         channelService = new ChannelServiceImpl(inventorySyncOptions,
             Collections.singleton(ChannelRole.INVENTORY_SUPPLY));

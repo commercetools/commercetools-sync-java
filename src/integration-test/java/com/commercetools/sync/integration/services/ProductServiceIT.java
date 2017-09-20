@@ -48,7 +48,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductITUtils.cr
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
@@ -109,7 +109,7 @@ public class ProductServiceIT {
                                                                                .build();
 
         // Create a mock new product in the target project.
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             productType.toReference(), categoryReferences, createRandomCategoryOrderHints(categoryReferences));
         product = CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft))
                                    .toCompletableFuture().join();
@@ -131,8 +131,8 @@ public class ProductServiceIT {
         assertThat(cache).hasSize(1);
 
         // Create new product without caching
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference()
-            , categoryReferences, createRandomCategoryOrderHints(categoryReferences));
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference(),
+            categoryReferences, createRandomCategoryOrderHints(categoryReferences));
 
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
@@ -243,7 +243,7 @@ public class ProductServiceIT {
     public void createProducts_WithAllValidProducts_ShouldCreateProducts() {
         // create a draft based of the same existing product but with different key, slug and master variant SKU since
         // these values should be unique on CTP for the product to be created.
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
             productType.toReference())
             .key("newKey")
             .categories(Collections.emptyList())
@@ -272,7 +272,7 @@ public class ProductServiceIT {
     public void createProducts_WithSomeValidProducts_ShouldCreateProductsAndTriggerCallBack() {
         // create a draft based of the same existing product but with different key, slug and master variant SKU since
         // these values should be unique on CTP for the product to be created.
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
             productType.toReference())
             .key("1")
             .categories(Collections.emptyList())
@@ -302,7 +302,7 @@ public class ProductServiceIT {
     public void createProducts_WithNoneValidProducts_ShouldTriggerCallBack() {
         // create a draft based of the same existing product but with different key, slug and master variant SKU since
         // these values should be unique on CTP for the product to be created.
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
             productType.toReference())
             .key("newKey")
             .categories(Collections.emptyList())
@@ -310,7 +310,7 @@ public class ProductServiceIT {
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
 
-        final ProductDraft productDraft2 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+        final ProductDraft productDraft2 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
             productType.toReference())
             .key("newKey1")
             .categories(Collections.emptyList())
@@ -341,7 +341,7 @@ public class ProductServiceIT {
         // create a draft based of the same existing product but with different key, slug and master variant SKU since
         // these values should be unique on CTP for the product to be created.
         final String newKey = "newKey";
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
             productType.toReference())
             .key(newKey)
             .categories(Collections.emptyList())
@@ -378,7 +378,7 @@ public class ProductServiceIT {
     public void createProduct_WithInvalidProduct_ShouldNotCreateProduct() {
         // Create product with same slug as existing product
         final String newKey = "newKey";
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
             productType.toReference())
             .key(newKey)
             .categories(Collections.emptyList())

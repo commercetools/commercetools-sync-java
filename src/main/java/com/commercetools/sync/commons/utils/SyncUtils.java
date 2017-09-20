@@ -173,8 +173,9 @@ public final class SyncUtils {
     public static List<ProductDraft> replaceProductDraftsCategoryReferenceIdsWithKeys(@Nonnull final List<ProductDraft>
                                                                                       productDrafts) {
         return productDrafts.stream()
-                            .map(productDraft -> productDraft != null ?
-                                replaceProductDraftCategoryReferenceIdsWithKeys(productDraft): null
+                            .map(productDraft ->
+                                productDraft != null
+                                    ? replaceProductDraftCategoryReferenceIdsWithKeys(productDraft) : null
                             )
                             .collect(Collectors.toList());
     }

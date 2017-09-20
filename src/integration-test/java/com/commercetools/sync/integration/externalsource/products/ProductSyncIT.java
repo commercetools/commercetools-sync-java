@@ -43,7 +43,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductITUtils.cr
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
@@ -102,7 +102,7 @@ public class ProductSyncIT {
                                                        .add(warningMessage))
                                                .build();
 
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             productType.toReference(), categoryReferences, createRandomCategoryOrderHints(categoryReferences));
         product = CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft))
                                    .toCompletableFuture().join();
@@ -154,7 +154,7 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withEqualProduct_shouldNotUpdateProduct() {
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_PUBLISHED_RESOURCE_PATH,
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             ProductType.referenceOfId(productType.getKey()), categoryReferences,
             product.getMasterData().getStaged().getCategoryOrderHints());
 
@@ -423,7 +423,8 @@ public class ProductSyncIT {
         batch.add(key5Draft);
         batch.add(key6Draft);
 
-        final List<ProductDraft> draftsWithReferenceKeys = SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
+        final List<ProductDraft> draftsWithReferenceKeys =
+            SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = productSync.sync(draftsWithReferenceKeys)
                                                                 .toCompletableFuture()
@@ -475,7 +476,8 @@ public class ProductSyncIT {
         batch.add(key3Draft);
         batch.add(key4Draft);
 
-        final List<ProductDraft> draftsWithReferenceKeys = SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
+        final List<ProductDraft> draftsWithReferenceKeys =
+            SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = productSync.sync(draftsWithReferenceKeys)
                                                                 .toCompletableFuture()
@@ -539,7 +541,8 @@ public class ProductSyncIT {
         batch.add(productDraft);
         batch.add(draftWithSameKey);
 
-        final List<ProductDraft> draftsWithReferenceKeys = SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
+        final List<ProductDraft> draftsWithReferenceKeys =
+            SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
 
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = productSync.sync(draftsWithReferenceKeys)

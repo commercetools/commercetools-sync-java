@@ -69,7 +69,7 @@ public class ProductSyncMockUtils {
      *
      * @param categoriesReferences list of references of categories to build categoryOrderHints for.
      * @return an instance of {@link CategoryOrderHints} containing a categoryOrderHint for each category in the
-     * supplied list of categories.
+     *         supplied list of categories.
      */
     public static CategoryOrderHints createRandomCategoryOrderHints(@Nonnull final List<Reference<Category>>
                                                                         categoriesReferences) {
