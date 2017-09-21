@@ -104,7 +104,7 @@ public final class ProductVariantUpdateActionUtils {
      * @return new {@link AddVariant} update action with properties from {@code draft}
      */
     @Nonnull
-    public static AddVariant buildAddVariantUpdateActionFromDraft(@Nonnull final ProductVariantDraft draft) {
+    static AddVariant buildAddVariantUpdateActionFromDraft(@Nonnull final ProductVariantDraft draft) {
         return AddVariant.of(draft.getAttributes(), draft.getPrices(), draft.getSku())
                 .withKey(draft.getKey())
                 .withImages(draft.getImages());
