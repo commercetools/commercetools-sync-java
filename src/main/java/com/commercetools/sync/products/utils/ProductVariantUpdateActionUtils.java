@@ -24,8 +24,8 @@ public final class ProductVariantUpdateActionUtils {
     /**
      * <b>Note:</b> if you do both add/remove product variants - <b>first always remove the variants</b>,
      * and then - add.
-     * The reason of such restriction: if you add first you could have duplication exception on the keys,
-     * which expected to be removed first.
+     * If you add first, the update action could fail due to having a duplicate {@code key} or {@code sku} with variants
+     * which were expected to be removed anyways. So issuing remove update action first will fix such issue.
      *
      * @param oldProduct old product with variants
      * @param newProduct new product draft with variants <b>with resolved references prices references</b>
