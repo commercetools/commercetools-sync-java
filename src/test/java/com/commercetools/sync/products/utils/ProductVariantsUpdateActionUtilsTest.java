@@ -1,6 +1,5 @@
 package com.commercetools.sync.products.utils;
 
-import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Image;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
@@ -39,7 +38,7 @@ public class ProductVariantsUpdateActionUtilsTest {
         Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
         ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS);
 
-        List<UpdateAction<Product>> updateActions = buildRemoveVariantUpdateAction(productOld, productDraftNew);
+        List<RemoveVariant> updateActions = buildRemoveVariantUpdateAction(productOld, productDraftNew);
         assertThat(updateActions).containsExactlyInAnyOrder(RemoveVariant.of(2), RemoveVariant.of(3));
     }
 
@@ -62,7 +61,8 @@ public class ProductVariantsUpdateActionUtilsTest {
         Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
         ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS);
 
-        Optional<ChangeMasterVariant> changeMasterVariant = buildChangeMasterVariantUpdateAction(productOld, productDraftNew);
+        Optional<ChangeMasterVariant> changeMasterVariant =
+            buildChangeMasterVariantUpdateAction(productOld, productDraftNew);
         assertThat(changeMasterVariant).isNotEmpty();
         assertThat(changeMasterVariant.orElse(null))
                 .isEqualTo(ChangeMasterVariant.ofSku(productDraftNew.getMasterVariant().getSku(), true));
