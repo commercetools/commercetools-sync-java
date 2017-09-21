@@ -401,8 +401,8 @@ public final class ProductUpdateActionUtils {
     /**
      * <b>Note:</b> if you do both add/remove product variants - <b>first always remove the variants</b>,
      * and then - add.
-     * The reason of such restriction: if you add first you could have duplication exception on the keys,
-     * which expected to be removed first.
+     * If you add first, the update action could fail due to having a duplicate {@code key} or {@code sku} with variants
+     * which were expected to be removed anyways. So issuing remove update action first will fix such issue.
      *
      * @param oldProduct old product with variants
      * @param newProduct new product draft with variants <b>with resolved references prices references</b>
@@ -410,11 +410,10 @@ public final class ProductUpdateActionUtils {
      * @see #buildAddVariantUpdateAction(Product, ProductDraft)
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildRemoveVariantUpdateAction(@Nonnull final Product oldProduct,
+    public static List<RemoveVariant> buildRemoveVariantUpdateAction(@Nonnull final Product oldProduct,
                                                                              @Nonnull final ProductDraft newProduct) {
         final List<ProductVariant> oldVariants = oldProduct.getMasterData().getStaged().getVariants();
-        final Set<String> newVariants = collectionToSet(newProduct.getVariants(),
-                ProductVariantDraft::getKey);
+        final Set<String> newVariants = collectionToSet(newProduct.getVariants(), ProductVariantDraft::getKey);
 
         return filterCollection(oldVariants, oldVariant -> !newVariants.contains(oldVariant.getKey()))
                 .map(RemoveVariant::of)
@@ -424,8 +423,8 @@ public final class ProductUpdateActionUtils {
     /**
      * <b>Note:</b> if you do both add/remove product variants - <b>first always remove the variants</b>,
      * and then - add.
-     * The reason of such restriction: if you add first you could have duplication exception on the keys,
-     * which expected to be removed first.
+     * If you add first, the update action could fail due to having a duplicate {@code key} or {@code sku} with variants
+     * which were expected to be removed anyways. So issuing remove update action first will fix such issue.
      *
      * @param oldProduct old product with variants
      * @param newProduct new product draft with variants <b>with resolved references prices references</b>
@@ -433,7 +432,7 @@ public final class ProductUpdateActionUtils {
      * @see ProductUpdateActionUtils#buildRemoveVariantUpdateAction(Product, ProductDraft)
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildAddVariantUpdateAction(@Nonnull final Product oldProduct,
+    public static List<AddVariant> buildAddVariantUpdateAction(@Nonnull final Product oldProduct,
                                                                           @Nonnull final ProductDraft newProduct) {
         final List<ProductVariantDraft> newVariants = newProduct.getVariants();
         final Set<String> oldVariantKeys =
@@ -456,7 +455,7 @@ public final class ProductUpdateActionUtils {
      * @return {@link ChangeMasterVariant} if the keys are different.
      */
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildChangeMasterVariantUpdateAction(
+    public static Optional<ChangeMasterVariant> buildChangeMasterVariantUpdateAction(
             @Nonnull final Product oldProduct,
             @Nonnull final ProductDraft newProduct) {
         final String newKey = newProduct.getMasterVariant().getKey();
@@ -464,7 +463,7 @@ public final class ProductUpdateActionUtils {
         return buildUpdateAction(newKey, oldKey,
             // it might be that the new master variant is from new added variants, so CTP variantId is not set yet,
             // thus we can't use ChangeMasterVariant.ofVariantId()
-            () -> ChangeMasterVariant.ofSku(newProduct.getMasterVariant().getSku()));
+            () -> ChangeMasterVariant.ofSku(newProduct.getMasterVariant().getSku(), true));
     }
 
     /**
@@ -482,7 +481,7 @@ public final class ProductUpdateActionUtils {
      * @return new {@link AddVariant} update action with properties from {@code draft}
      */
     @Nonnull
-    public static AddVariant buildAddVariantUpdateActionFromDraft(@Nonnull final ProductVariantDraft draft) {
+    static AddVariant buildAddVariantUpdateActionFromDraft(@Nonnull final ProductVariantDraft draft) {
         return AddVariant.of(draft.getAttributes(), draft.getPrices(), draft.getSku())
                          .withKey(draft.getKey())
                          .withImages(draft.getImages());
