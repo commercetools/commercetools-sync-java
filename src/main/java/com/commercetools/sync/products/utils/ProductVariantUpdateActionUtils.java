@@ -1,116 +1,76 @@
 package com.commercetools.sync.products.utils;
 
+import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.ProductVariantAttribute;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.commands.updateactions.AddVariant;
-import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
-import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
+import io.sphere.sdk.products.attributes.Attribute;
+import io.sphere.sdk.products.attributes.AttributeDraft;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToSet;
-import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
-import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static java.util.stream.Collectors.toList;
+import java.util.Map;
+import java.util.Objects;
 
 public final class ProductVariantUpdateActionUtils {
 
     /**
-     * <b>Note:</b> if you do both add/remove product variants - <b>first always remove the variants</b>,
-     * and then - add.
-     * The reason of such restriction: if you add first you could have duplication exception on the keys,
-     * which expected to be removed first.
-     *
-     * @param oldProduct old product with variants
-     * @param newProduct new product draft with variants <b>with resolved references prices references</b>
-     * @return list of update actions to remove missing variants.
-     * @see #buildAddVariantUpdateAction(Product, ProductDraft)
+     * TODO: Add JavaDoc
+     * @param oldProductVariant TODO
+     * @param newProductVariant
+     * @param syncOptions
+     * @return
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildRemoveVariantUpdateAction(@Nonnull final Product oldProduct,
-                                                                             @Nonnull final ProductDraft newProduct) {
-        final List<ProductVariant> oldVariants = oldProduct.getMasterData().getStaged().getVariants();
-        final Set<String> newVariants = collectionToSet(newProduct.getVariants(),
-                ProductVariantDraft::getKey);
-
-        return filterCollection(oldVariants, oldVariant -> !newVariants.contains(oldVariant.getKey()))
-                .map(RemoveVariant::of)
-                .collect(toList());
+    public static List<UpdateAction<Product>>
+    buildProductVariantAttributesUpdateActions(@Nonnull final ProductVariant oldProductVariant,
+                                               @Nonnull final ProductVariantDraft newProductVariant,
+                                               @Nonnull final ProductSyncOptions syncOptions,
+                                               @Nonnull final Map<String, ProductVariantAttribute>
+                                                   attributesMetaData) {
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
+        final List<Attribute> oldProductVariantAttributes = oldProductVariant.getAttributes();
+        final List<AttributeDraft> newProductVariantAttributes = newProductVariant.getAttributes();
+        newProductVariantAttributes.stream()
+                                   .filter(Objects::nonNull)
+                                   .forEach(newProductVariantAttribute -> {
+                                       //TODO: IMPLEMENTATION GITHUB ISSUE#98
+                                       final String newProductVariantAttributeName =
+                                           newProductVariantAttribute.getName();
+                                       final JsonNode newProductVariantAttributeValue =
+                                           newProductVariantAttribute.getValue();
+                                   });
+        return updateActions;
     }
 
     /**
-     * <b>Note:</b> if you do both add/remove product variants - <b>first always remove the variants</b>,
-     * and then - add.
-     * The reason of such restriction: if you add first you could have duplication exception on the keys,
-     * which expected to be removed first.
-     *
-     * @param oldProduct old product with variants
-     * @param newProduct new product draft with variants <b>with resolved references prices references</b>
-     * @return list of update actions to add new variants.
-     * @see #buildRemoveVariantUpdateAction(Product, ProductDraft)
+     * TODO: Add JavaDoc
+     * @param oldProductVariant
+     * @param newProductVariant
+     * @param syncOptions
+     * @return
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildAddVariantUpdateAction(@Nonnull final Product oldProduct,
-                                                                          @Nonnull final ProductDraft newProduct) {
-        final List<ProductVariantDraft> newVariants = newProduct.getVariants();
-        final Set<String> oldVariantKeys =
-                collectionToSet(oldProduct.getMasterData().getStaged().getVariants(), ProductVariant::getKey);
-
-        return filterCollection(newVariants, newVariant -> !oldVariantKeys.contains(newVariant.getKey()))
-                .map(ProductVariantUpdateActionUtils::buildAddVariantUpdateActionFromDraft)
-                .collect(toList());
+    public static List<UpdateAction<Product>>
+    buildProductVariantPricesUpdateActions(@Nonnull final ProductVariant oldProductVariant,
+                                           @Nonnull final ProductVariantDraft newProductVariant,
+                                           @Nonnull final ProductSyncOptions syncOptions) {
+        //TODO: IMPLEMENTATION GITHUB ISSUE#99
+        return Collections.emptyList();
     }
 
-    /**
-     * Create update action, if {@code newProduct} has {@code #masterVariant#key} different than {@code oldProduct}
-     * staged {@code #masterVariant#key}.
-     *
-     * <p>If update action is created - it is created of
-     * {@link ProductVariantDraft newProduct.getMasterVariant().getSku()}
-     *
-     * @param oldProduct old product with variants
-     * @param newProduct new product draft with variants <b>with resolved references prices references</b>
-     * @return {@link ChangeMasterVariant} if the keys are different.
-     */
+    // TODO: Add JavaDoc..
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildChangeMasterVariantUpdateAction(
-            @Nonnull final Product oldProduct,
-            @Nonnull final ProductDraft newProduct) {
-        final String newKey = newProduct.getMasterVariant().getKey();
-        final String oldKey = oldProduct.getMasterData().getStaged().getMasterVariant().getKey();
-        return buildUpdateAction(newKey, oldKey,
-            // it might be that the new master variant is from new added variants, so CTP variantId is not set yet,
-            // thus we can't use ChangeMasterVariant.ofVariantId()
-            () -> ChangeMasterVariant.ofSku(newProduct.getMasterVariant().getSku()));
-    }
-
-    /**
-     * Factory method to create {@link AddVariant} action from {@link ProductVariantDraft} instance.
-     *
-     * <p>The {@link AddVariant} will include:<ul>
-     *     <li>sku</li>
-     *     <li>keys</li>
-     *     <li>attributes</li>
-     *     <li>prices</li>
-     *     <li>images</li>
-     * </ul>
-     *
-     * @param draft {@link ProductVariantDraft} which to add.
-     * @return new {@link AddVariant} update action with properties from {@code draft}
-     */
-    @Nonnull
-    public static AddVariant buildAddVariantUpdateActionFromDraft(@Nonnull final ProductVariantDraft draft) {
-        return AddVariant.of(draft.getAttributes(), draft.getPrices(), draft.getSku())
-                .withKey(draft.getKey())
-                .withImages(draft.getImages());
-    }
-
-    private ProductVariantUpdateActionUtils() {
+    public static List<UpdateAction<Product>>
+    buildProductVariantImagesUpdateActions(@Nonnull final ProductVariant oldProductVariant,
+                                           @Nonnull final ProductVariantDraft newProductVariant,
+                                           @Nonnull final ProductSyncOptions syncOptions) {
+        //TODO: IMPLEMENTATION GITHUB ISSUE#100
+        return Collections.emptyList();
     }
 }

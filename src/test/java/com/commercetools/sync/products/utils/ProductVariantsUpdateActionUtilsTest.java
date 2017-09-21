@@ -20,13 +20,13 @@ import java.util.Optional;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftFromJson;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductFromJson;
-import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildAddVariantUpdateAction;
-import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildAddVariantUpdateActionFromDraft;
-import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildChangeMasterVariantUpdateAction;
-import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildRemoveVariantUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddVariantUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddVariantUpdateActionFromDraft;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeMasterVariantUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildRemoveVariantUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductVariantUpdateActionUtilsTest {
+public class ProductVariantsUpdateActionUtilsTest {
 
     public static final String OLD_PROD_WITH_VARIANTS =
             "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/productOld.json";
