@@ -20,19 +20,20 @@ import java.util.Objects;
 public final class ProductVariantUpdateActionUtils {
 
     /**
+     * Compares the attributes of a {@link ProductVariantDraft} and a {@link ProductVariant}.
      * TODO: Add JavaDoc
      * @param oldProductVariant TODO
-     * @param newProductVariant
-     * @param syncOptions
-     * @return
+     * @param newProductVariant TODO
+     * @param syncOptions TODO
+     * @param attributesMetaData TODO
+     * @return TODO
      */
     @Nonnull
-    public static List<UpdateAction<Product>>
-    buildProductVariantAttributesUpdateActions(@Nonnull final ProductVariant oldProductVariant,
-                                               @Nonnull final ProductVariantDraft newProductVariant,
-                                               @Nonnull final ProductSyncOptions syncOptions,
-                                               @Nonnull final Map<String, ProductVariantAttribute>
-                                                   attributesMetaData) {
+    public static List<UpdateAction<Product>> buildProductVariantAttributesUpdateActions(
+        @Nonnull final ProductVariant oldProductVariant,
+        @Nonnull final ProductVariantDraft newProductVariant,
+        @Nonnull final ProductSyncOptions syncOptions,
+        @Nonnull final Map<String, ProductVariantAttribute> attributesMetaData) {
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
         final List<Attribute> oldProductVariantAttributes = oldProductVariant.getAttributes();
         final List<AttributeDraft> newProductVariantAttributes = newProductVariant.getAttributes();
@@ -49,27 +50,35 @@ public final class ProductVariantUpdateActionUtils {
     }
 
     /**
+     * Compares the prices of a {@link ProductVariantDraft} and a {@link ProductVariant}.
      * TODO: Add JavaDoc
-     * @param oldProductVariant
-     * @param newProductVariant
-     * @param syncOptions
-     * @return
+     * @param oldProductVariant TODO
+     * @param newProductVariant TODO
+     * @param syncOptions TODO
+     * @return TODO
      */
     @Nonnull
-    public static List<UpdateAction<Product>>
-    buildProductVariantPricesUpdateActions(@Nonnull final ProductVariant oldProductVariant,
-                                           @Nonnull final ProductVariantDraft newProductVariant,
-                                           @Nonnull final ProductSyncOptions syncOptions) {
+    public static List<UpdateAction<Product>> buildProductVariantPricesUpdateActions(
+        @Nonnull final ProductVariant oldProductVariant,
+        @Nonnull final ProductVariantDraft newProductVariant,
+        @Nonnull final ProductSyncOptions syncOptions) {
         //TODO: IMPLEMENTATION GITHUB ISSUE#99
         return Collections.emptyList();
     }
 
-    // TODO: Add JavaDoc..
+    /**
+     * Compares the images of a {@link ProductVariantDraft} and a {@link ProductVariant}.
+     * TODO: Add JavaDoc..
+     * @param oldProductVariant TODO
+     * @param newProductVariant TODO
+     * @param syncOptions TODO
+     * @return TODO
+     */
     @Nonnull
-    public static List<UpdateAction<Product>>
-    buildProductVariantImagesUpdateActions(@Nonnull final ProductVariant oldProductVariant,
-                                           @Nonnull final ProductVariantDraft newProductVariant,
-                                           @Nonnull final ProductSyncOptions syncOptions) {
+    public static List<UpdateAction<Product>> buildProductVariantImagesUpdateActions(
+        @Nonnull final ProductVariant oldProductVariant,
+        @Nonnull final ProductVariantDraft newProductVariant,
+        @Nonnull final ProductSyncOptions syncOptions) {
         //TODO: IMPLEMENTATION GITHUB ISSUE#100
         return Collections.emptyList();
     }

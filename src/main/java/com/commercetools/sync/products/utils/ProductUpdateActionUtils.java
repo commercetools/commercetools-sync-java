@@ -1,5 +1,7 @@
 package com.commercetools.sync.products.utils;
 
+import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.ProductVariantAttribute;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
@@ -352,18 +354,49 @@ public final class ProductUpdateActionUtils {
         return buildUpdateAction(oldMetaTitle, newMetaTitle, () -> SetMetaTitle.of(newMetaTitle));
     }
 
-    /*static Optional<UpdateAction<Product>> buildSetSkuUpdateAction(final Product oldProduct, final ProductDraft
-                                                                                                            newProduct,
-                                                               final ProductSyncOptions syncOptions) {
+    /**
+     * Compares the variants of a {@link ProductDraft} and a {@link Product}. TODO: CONTINUE DOCUMENTATION.
+     *
+     * @param oldProduct TODO
+     * @param newProduct TODO
+     * @param syncOptions TODO
+     * @param attributesMetaData TODO
+     * @return TODO
+     */
+    @Nonnull
+    public static List<UpdateAction<Product>> buildVariantsUpdateActions(@Nonnull final Product oldProduct,
+                                                                         @Nonnull final ProductDraft
+                                                                            newProduct,
+                                                                         @Nonnull final ProductSyncOptions
+                                                                                 syncOptions,
+                                                                         @Nonnull
+                                                                             final Map<String, ProductVariantAttribute>
+                                                                                 attributesMetaData) {
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
+        final List<ProductVariant> oldProductVariants = oldProduct.getMasterData().getStaged().getAllVariants();
+        final List<ProductVariantDraft> newProductVariants = newProduct.getVariants();
+        newProductVariants.stream()
+                          .filter(Objects::nonNull)
+                          .filter(newProductVariant -> Objects.nonNull(newProductVariant.getKey()))//TODO: WARN NO KEYS!
+                          .forEach(newProductVariant ->
+                              getVariantByKey(oldProductVariants, newProductVariant.getKey())
+                                  .ifPresent(oldProductVariant -> {
+                                      updateActions.addAll(buildProductVariantAttributesUpdateActions(oldProductVariant,
+                                          newProductVariant, syncOptions, attributesMetaData));
+                                      updateActions.addAll(buildProductVariantImagesUpdateActions(oldProductVariant,
+                                          newProductVariant, syncOptions));
+                                      updateActions.addAll(buildProductVariantPricesUpdateActions(oldProductVariant,
+                                          newProductVariant, syncOptions));
+                                  }));
+        return updateActions;
+    }
 
-        final ProductData productData = masterData(product, syncOptions);
-        // productData.getAllVariants() TODO CONTINUTE TRAVERSING ALL VARIANTS..
-        final String draftProductMasterVariantSku = draft.getMasterVariant().getSku();
-        return ProductDataUpdateActionUtils.buildProductDataUpdateAction(product, syncOptions,
-            productData -> productData.getMasterVariant().getSku(), draftProductMasterVariantSku,
-            () -> SetSku.of(masterVariantId, draftProductMasterVariantSku, syncOptions.shouldUpdateStaged()));
-        // TODO beware that this change is staged and needs to be published
-    }*/
+    private static Optional<ProductVariant> getVariantByKey(@Nonnull final List<ProductVariant> productVariants,
+                                                            @Nonnull final String key) {
+        return productVariants.stream()
+                              .filter(productVariant -> Objects.equals(productVariant.getKey(), key))
+                              .findFirst();
+    }
 
     /**
      * <b>Note:</b> if you do both add/remove product variants - <b>first always remove the variants</b>,
