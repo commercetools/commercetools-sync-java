@@ -25,7 +25,6 @@ import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.products.commands.updateactions.SetSearchKeywords;
 import io.sphere.sdk.search.SearchKeywords;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -48,6 +47,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 // TODO: Update JavaDocs according to changes, tests..
 public final class ProductUpdateActionUtils {
@@ -394,7 +394,7 @@ public final class ProductUpdateActionUtils {
             }
 
             final String newProductVariantKey = newProductVariant.getKey();
-            if (StringUtils.isBlank(newProductVariantKey)) {
+            if (isBlank(newProductVariantKey)) {
                 syncOptions.applyErrorCallback(format(FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS,
                         oldProduct.getKey(), BLANK_VARIANT_KEY), null);
                 continue;
