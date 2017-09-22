@@ -235,9 +235,12 @@ public final class SyncUtils {
             .getAllVariants().stream()
             .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
             .collect(toList());
+        final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
+            .of(product.getMasterData().getStaged().getMasterVariant()).build();
 
         return ProductDraftBuilder
             .of(product.getProductType(), productData.getName(), productData.getSlug(), allVariants)
+            .masterVariant(masterVariant)
             .metaDescription(productData.getMetaDescription())
             .metaKeywords(productData.getMetaKeywords())
             .metaTitle(productData.getMetaTitle())
