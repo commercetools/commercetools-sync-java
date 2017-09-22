@@ -111,7 +111,7 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withChangesOnly_ShouldUpdateCategories() {
+    public void sync_withChangesOnly_ShouldUpdateProducts() {
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             targetProductType.toReference(), targetCategories, createRandomCategoryOrderHints(targetCategories));
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)).toCompletableFuture().join();
