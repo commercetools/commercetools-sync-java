@@ -249,7 +249,7 @@ public class ProductSyncIT {
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey3")
             .slug(LocalizedString.of(Locale.ENGLISH, "slug3"))
-            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("v3").build())
             .build();
 
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(key3Draft))
@@ -271,7 +271,7 @@ public class ProductSyncIT {
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey4")
             .slug(LocalizedString.of(Locale.ENGLISH, "slug4"))
-            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("v4").build())
             .build();
 
         final List<ProductDraft> batch2 = new ArrayList<>();
@@ -283,7 +283,7 @@ public class ProductSyncIT {
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey3")
             .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
-            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("v3").build())
             .build();
 
         final List<ProductDraft> batch3 = new ArrayList<>();
@@ -534,7 +534,7 @@ public class ProductSyncIT {
             .categories(new ArrayList<>())
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key(productDraft.getKey())
-            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("v1").build())
             .build();
 
         final List<ProductDraft> batch = new ArrayList<>();

@@ -20,6 +20,7 @@
       },
       "masterVariant": {
         "id": 1,
+        "key": "v2",
         "sku": "1065833",
         "prices": [
         ],
@@ -102,6 +103,7 @@
       },
       "masterVariant": {
         "id": 1,
+        "key": "v2",
         "sku": "1065833",
         "prices": [
         ],

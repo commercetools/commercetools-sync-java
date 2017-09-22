@@ -1,7 +1,8 @@
 package com.commercetools.sync.products.utils;
 
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.products.ProductVariantAttribute;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
@@ -42,14 +43,21 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
+import static java.lang.String.format;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantSkuUpdateActions;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 // TODO: Update JavaDocs according to changes, tests..
 public final class ProductUpdateActionUtils {
+    private static final String FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS = "Failed to build "
+        + "setAttribute/setAttributeInAllVariants update actions for the attributes of a ProductVariantDraft on the"
+        + " product with key '%s'. Reason: %s";
+    private static final String BLANK_VARIANT_KEY = "The variant key is blank.";
+    private static final String NULL_VARIANT = "The variant is null.";
 
     /**
      * Compares the {@link LocalizedString} names of a {@link ProductDraft} and a {@link Product}. The name of the
@@ -371,26 +379,44 @@ public final class ProductUpdateActionUtils {
                                                                          @Nonnull final ProductSyncOptions
                                                                                  syncOptions,
                                                                          @Nonnull
-                                                                             final Map<String, ProductVariantAttribute>
+                                                                             final Map<String, AttributeMetaData>
                                                                                  attributesMetaData) {
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
         final List<ProductVariant> oldProductVariants = oldProduct.getMasterData().getStaged().getAllVariants();
-        final List<ProductVariantDraft> newProductVariants = newProduct.getVariants();
-        newProductVariants.stream()
-                          .filter(Objects::nonNull)
-                          .filter(newProductVariant -> Objects.nonNull(newProductVariant.getKey()))//TODO: WARN NO KEYS!
-                          .forEach(newProductVariant ->
-                              getVariantByKey(oldProductVariants, newProductVariant.getKey())
-                                  .ifPresent(oldProductVariant -> {
-                                      updateActions.addAll(buildProductVariantAttributesUpdateActions(oldProductVariant,
-                                          newProductVariant, syncOptions, attributesMetaData));
-                                      updateActions.addAll(buildProductVariantImagesUpdateActions(oldProductVariant,
-                                          newProductVariant, syncOptions));
-                                      updateActions.addAll(buildProductVariantPricesUpdateActions(oldProductVariant,
-                                          newProductVariant, syncOptions));
-                                      updateActions.addAll(buildProductVariantSkuUpdateActions(oldProductVariant,
-                                              newProductVariant));
-                                  }));
+        final List<ProductVariantDraft> newProductVariants = new ArrayList<>();
+        newProductVariants.addAll(newProduct.getVariants());
+        newProductVariants.add(newProduct.getMasterVariant());
+
+        for (ProductVariantDraft newProductVariant : newProductVariants) {
+            if (newProductVariant == null) {
+                final String errorMessage = format(FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS,
+                    oldProduct.getKey(), NULL_VARIANT);
+                syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
+                continue;
+            }
+
+            final String newProductVariantKey = newProductVariant.getKey();
+            if (isBlank(newProductVariantKey)) {
+                final String errorMessage = format(FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS,
+                    oldProduct.getKey(), BLANK_VARIANT_KEY);
+                syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
+                continue;
+            }
+
+            getVariantByKey(oldProductVariants, newProductVariantKey)
+                .ifPresent(oldProductVariant -> {
+                    updateActions.addAll(buildProductVariantAttributesUpdateActions(
+                        oldProduct.getKey(), oldProductVariant, newProductVariant,
+                        attributesMetaData, syncOptions));
+                    updateActions.addAll(buildProductVariantImagesUpdateActions(oldProductVariant,
+                        newProductVariant, syncOptions));
+                    updateActions.addAll(buildProductVariantPricesUpdateActions(oldProductVariant,
+                        newProductVariant, syncOptions));
+                    updateActions.addAll(buildProductVariantSkuUpdateActions(oldProductVariant,
+                            newProductVariant));
+                });
+
+        }
         return updateActions;
     }
 
