@@ -1,6 +1,7 @@
 package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -13,6 +14,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -27,6 +29,7 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaTitleUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetSearchKeywordsUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
 
 // TODO: FIX DOCUMENTATION AFTER CHANGE OF REMOVAL OF SYNC OPTIONS FOR ONLY COMPARING STAGED.
 public final class ProductSyncUtils {
@@ -43,14 +46,17 @@ public final class ProductSyncUtils {
      *                    the user. For example, custom callbacks to call in case of warnings or errors occurring
      *                    on the build update action process. And other options (See {@link BaseSyncOptions}
      *                    for more info.
+     * @param attributesMetaData TODO
      * @return A list of category-specific update actions.
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildActions(@Nonnull final Product oldProduct,
                                                            @Nonnull final ProductDraft newProduct,
-                                                           @Nonnull final ProductSyncOptions syncOptions) {
+                                                           @Nonnull final ProductSyncOptions syncOptions,
+                                                           @Nonnull final Map<String, AttributeMetaData>
+                                                                   attributesMetaData) {
         final List<UpdateAction<Product>> updateActions =
-            buildCoreActions(oldProduct, newProduct);
+            buildCoreActions(oldProduct, newProduct, syncOptions, attributesMetaData);
         final List<UpdateAction<Product>> assetUpdateActions =
             buildAssetActions(oldProduct, newProduct, syncOptions);
         updateActions.addAll(assetUpdateActions);
@@ -66,11 +72,19 @@ public final class ProductSyncUtils {
      *
      * @param oldProduct the category which should be updated.
      * @param newProduct the category draft where we get the new data.
+     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by
+     *                    the user. For example, custom callbacks to call in case of warnings or errors occurring
+     *                    on the build update action process. And other options (See {@link BaseSyncOptions}
+     *                    for more info.
+     * @param attributesMetaData TODO
      * @return A list of category-specific update actions.
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildCoreActions(@Nonnull final Product oldProduct,
-                                                               @Nonnull final ProductDraft newProduct) {
+                                                               @Nonnull final ProductDraft newProduct,
+                                                               @Nonnull final ProductSyncOptions syncOptions,
+                                                               @Nonnull final Map<String, AttributeMetaData>
+                                                                       attributesMetaData) {
         final List<UpdateAction<Product>> updateActions = buildUpdateActionsFromOptionals(Arrays.asList(
             buildChangeNameUpdateAction(oldProduct, newProduct),
             buildSetDescriptionUpdateAction(oldProduct, newProduct),
@@ -84,7 +98,7 @@ public final class ProductSyncUtils {
         updateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct));
         updateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));
         updateActions.addAll(buildRemoveFromCategoryUpdateActions(oldProduct, newProduct));
-
+        updateActions.addAll(buildVariantsUpdateActions(oldProduct, newProduct, syncOptions, attributesMetaData));
         return updateActions;
     }
 
