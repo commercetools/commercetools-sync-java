@@ -53,6 +53,11 @@ public final class ProductVariantUpdateActionUtils {
 
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
         final List<AttributeDraft> newProductVariantAttributes = newProductVariant.getAttributes();
+        if (newProductVariantAttributes == null) {
+            return updateActions;
+        }
+
+        // TODO: NEED TO HANDLE REMOVED ATTRIBUTES FROM OLD PRODUCT VARIANT.
 
         for (AttributeDraft newProductVariantAttribute : newProductVariantAttributes) {
             if (newProductVariantAttribute == null) {
