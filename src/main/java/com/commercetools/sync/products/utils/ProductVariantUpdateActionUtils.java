@@ -58,7 +58,7 @@ public final class ProductVariantUpdateActionUtils {
             if (newProductVariantAttribute == null) {
                 final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, null,
                     newProductVariant.getKey(), productKey, NULL_PRODUCT_VARIANT_ATTRIBUTE);
-                syncOptions.applyErrorCallback(errorMessage, null);
+                syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
                 continue;
             }
 
@@ -71,7 +71,7 @@ public final class ProductVariantUpdateActionUtils {
                 final String nullSkuErrorMessage = format(BLANK_VARIANT_SKU, oldProductVariant.getKey());
                 final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
                     newProductVariantAttributeName, newProductVariant.getKey(), productKey, nullSkuErrorMessage);
-                syncOptions.applyErrorCallback(errorMessage, null);
+                syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
                 continue;
             }
 
