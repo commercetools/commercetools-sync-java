@@ -65,7 +65,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *                    configuration and other sync-specific options.
      */
     public CategorySync(@Nonnull final CategorySyncOptions syncOptions) {
-        this(syncOptions, new TypeServiceImpl(syncOptions.getCtpClient()), new CategoryServiceImpl(syncOptions));
+        this(syncOptions, new TypeServiceImpl(syncOptions), new CategoryServiceImpl(syncOptions));
     }
 
     /**

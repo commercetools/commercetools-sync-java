@@ -23,6 +23,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
 
     // optional filter which can be applied on generated list of update actions
     private final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsFilter;
+    private final boolean ensurePriceChannels;
 
     ProductSyncOptions(@Nonnull final SphereClient ctpClient,
                        final BiConsumer<String, Throwable> errorCallBack,
@@ -37,13 +38,15 @@ public class ProductSyncOptions extends BaseSyncOptions {
                        final List<String> whiteList,
                        final List<String> blackList,
                        final Function<List<UpdateAction<Product>>,
-                           List<UpdateAction<Product>>> updateActionsFilter) {
+                           List<UpdateAction<Product>>> updateActionsFilter,
+                       boolean ensurePriceChannels) {
         super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherLocales, removeOtherSetEntries,
             removeOtherCollectionEntries, removeOtherProperties, allowUuid);
         this.removeOtherVariants = removeOtherVariants;
         this.whiteList = whiteList;
         this.blackList = blackList;
         this.updateActionsFilter = updateActionsFilter;
+        this.ensurePriceChannels = ensurePriceChannels;
     }
 
     boolean shouldRemoveOtherVariants() {
@@ -60,5 +63,13 @@ public class ProductSyncOptions extends BaseSyncOptions {
 
     public Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> getUpdateActionsFilter() {
         return updateActionsFilter;
+    }
+
+    /**
+     * @return option that indicates whether sync process should create price channel of given key when it doesn't
+     *      exists in a target project yet.
+     */
+    public boolean shouldEnsurePriceChannels() {
+        return ensurePriceChannels;
     }
 }

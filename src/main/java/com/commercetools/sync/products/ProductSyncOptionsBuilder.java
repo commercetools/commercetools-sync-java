@@ -18,6 +18,8 @@ public final class ProductSyncOptionsBuilder
     private List<String> whiteList = emptyList();
     private List<String> blackList = emptyList();
     private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsFilter;
+    static final boolean ENSURE_CHANNELS_DEFAULT = false;
+    private boolean ensurePriceChannels = ENSURE_CHANNELS_DEFAULT;
 
     private ProductSyncOptionsBuilder(final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
@@ -47,6 +49,21 @@ public final class ProductSyncOptionsBuilder
         this.updateActionsFilter = updateActionsFilter;
         return this;
     }
+    /**
+     * Set option that indicates whether sync process should create price channel of given key when it doesn't exists
+     * in a target project yet. If set to {@code true} sync process would try to create new price channel of given key,
+     * otherwise sync process would log error and fail to process draft with given price channel key.
+     *
+     * <p>This property is {@link ProductSyncOptionsBuilder#ENSURE_CHANNELS_DEFAULT} by default.
+     *
+     * @param ensurePriceChannels boolean that indicates whether sync process should create price channel of given key
+     *                            when it doesn't exists in a target project yet
+     * @return {@code this} instance of {@link ProductSyncOptionsBuilder}
+     */
+    public ProductSyncOptionsBuilder ensurePriceChannels(final boolean ensurePriceChannels) {
+        this.ensurePriceChannels = ensurePriceChannels;
+        return this;
+    }
 
     @Override
     public ProductSyncOptions build() {
@@ -63,7 +80,8 @@ public final class ProductSyncOptionsBuilder
             removeOtherVariants,
             whiteList,
             blackList,
-            updateActionsFilter
+            updateActionsFilter,
+            ensurePriceChannels
         );
     }
 

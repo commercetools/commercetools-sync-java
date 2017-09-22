@@ -122,9 +122,11 @@ public class ProductSyncIT {
 
         final ProductQuery productQuery = ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
                                                       .withExpansionPaths(ProductExpansionModel::productType)
-                                                      .plusExpansionPaths(productProductExpansionModel ->
-                                                          productProductExpansionModel.masterData().staged()
-                                                                                      .categories());
+                                                      .plusExpansionPaths(categoryExpansionModel ->
+                                                          categoryExpansionModel.masterData().staged().categories())
+                                                      .plusExpansionPaths(channelExpansionModel ->
+                                                          channelExpansionModel.masterData().staged().allVariants()
+                                                                               .prices().channel());
 
         final List<Product> products = CTP_SOURCE_CLIENT.execute(productQuery)
                                                         .toCompletableFuture().join().getResults();

@@ -4,11 +4,13 @@ import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
+import io.sphere.sdk.products.commands.updateactions.SetPrices;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -113,8 +115,11 @@ public final class ProductVariantUpdateActionUtils {
         @Nonnull final ProductVariant oldProductVariant,
         @Nonnull final ProductVariantDraft newProductVariant,
         @Nonnull final ProductSyncOptions syncOptions) {
-        //TODO: IMPLEMENTATION GITHUB ISSUE#99
-        return Collections.emptyList();
+        //TODO: Right now it always builds SetPrices UpdateAction, comparison should be calculated GITHUB ISSUE#101.
+        final List<PriceDraft> newProductVariantPrices =
+            newProductVariant.getPrices() == null ? new ArrayList<>() : newProductVariant.getPrices();
+        final SetPrices setPricesUpdateAction = SetPrices.of(oldProductVariant.getId(), newProductVariantPrices);
+        return Collections.singletonList(setPricesUpdateAction);
     }
 
     /**
