@@ -29,6 +29,7 @@
       },
       "masterVariant": {
         "id": 1,
+        "key": "v1",
         "sku": "3065833",
         "prices": [
         ],
@@ -85,10 +86,6 @@
           {
             "name": "zubereitung",
             "value": "Grill, Ofen, Niedertemperatur"
-          },
-          {
-            "name": "ean",
-            "value": "2743580000005"
           }
         ],
         "assets": []
@@ -132,6 +129,7 @@
       },
       "masterVariant": {
         "id": 1,
+        "key": "v1",
         "sku": "3065833",
         "prices": [
         ],
@@ -188,10 +186,6 @@
           {
             "name": "zubereitung",
             "value": "Grill, Ofen, Niedertemperatur"
-          },
-          {
-            "name": "ean",
-            "value": "2743580000005"
           }
         ],
         "assets": []
