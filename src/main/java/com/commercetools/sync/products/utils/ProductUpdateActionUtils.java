@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.utils;
 
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import io.sphere.sdk.categories.Category;
@@ -387,16 +388,17 @@ public final class ProductUpdateActionUtils {
 
         for (ProductVariantDraft newProductVariant : newProductVariants) {
             if (newProductVariant == null) {
-                syncOptions.applyErrorCallback(
-                    format(FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS,
-                        oldProduct.getKey(), NULL_VARIANT), null);
+                final String errorMessage = format(FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS,
+                    oldProduct.getKey(), NULL_VARIANT);
+                syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
                 continue;
             }
 
             final String newProductVariantKey = newProductVariant.getKey();
             if (isBlank(newProductVariantKey)) {
-                syncOptions.applyErrorCallback(format(FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS,
-                        oldProduct.getKey(), BLANK_VARIANT_KEY), null);
+                final String errorMessage = format(FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS,
+                    oldProduct.getKey(), BLANK_VARIANT_KEY);
+                syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
                 continue;
             }
 
