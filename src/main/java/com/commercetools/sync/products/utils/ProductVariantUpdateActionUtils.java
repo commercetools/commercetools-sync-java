@@ -17,20 +17,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 // TODO: Add JAVADOC AND TESTS
 public final class ProductVariantUpdateActionUtils {
     private static final String FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION = "Failed to build a "
-        + "setAttribute/setAttributeInAllVariants update action for the attribute with the name '%s' in the "
-        + "ProductVariantDraft with key '%s' on the product with key '%s'. Reason: %s";
+            + "setAttribute/setAttributeInAllVariants update action for the attribute with the name '%s' in the "
+            + "ProductVariantDraft with key '%s' on the product with key '%s'. Reason: %s";
     private static final String BLANK_VARIANT_SKU = "ProductVariant with the key '%s' has a blank SKU.";
     private static final String NULL_PRODUCT_VARIANT_ATTRIBUTE = "AttributeDraft is null.";
 
@@ -49,11 +49,11 @@ public final class ProductVariantUpdateActionUtils {
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantAttributesUpdateActions(
-        @Nullable final String productKey,
-        @Nonnull final ProductVariant oldProductVariant,
-        @Nonnull final ProductVariantDraft newProductVariant,
-        @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
-        @Nonnull final ProductSyncOptions syncOptions) {
+            @Nullable final String productKey,
+            @Nonnull final ProductVariant oldProductVariant,
+            @Nonnull final ProductVariantDraft newProductVariant,
+            @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
+            @Nonnull final ProductSyncOptions syncOptions) {
 
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
         final List<AttributeDraft> newProductVariantAttributes = newProductVariant.getAttributes();
@@ -66,20 +66,20 @@ public final class ProductVariantUpdateActionUtils {
         for (AttributeDraft newProductVariantAttribute : newProductVariantAttributes) {
             if (newProductVariantAttribute == null) {
                 final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, null,
-                    newProductVariant.getKey(), productKey, NULL_PRODUCT_VARIANT_ATTRIBUTE);
+                        newProductVariant.getKey(), productKey, NULL_PRODUCT_VARIANT_ATTRIBUTE);
                 syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
                 continue;
             }
 
             final String newProductVariantAttributeName = newProductVariantAttribute.getName();
             final Optional<Attribute> oldProductVariantAttributeOptional = oldProductVariant
-                .findAttribute(newProductVariantAttributeName);
+                    .findAttribute(newProductVariantAttributeName);
 
             final String oldProductVariantSku = oldProductVariant.getSku();
             if (isBlank(oldProductVariantSku)) {
                 final String nullSkuErrorMessage = format(BLANK_VARIANT_SKU, oldProductVariant.getKey());
                 final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
-                    newProductVariantAttributeName, newProductVariant.getKey(), productKey, nullSkuErrorMessage);
+                        newProductVariantAttributeName, newProductVariant.getKey(), productKey, nullSkuErrorMessage);
                 syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
                 continue;
             }
@@ -89,19 +89,18 @@ public final class ProductVariantUpdateActionUtils {
 
             try {
                 final Optional<UpdateAction<Product>> variantAttributeUpdateActionOptional =
-                    buildProductVariantAttributeUpdateAction(oldProductVariantSku, oldProductVariantAttribute,
-                        newProductVariantAttribute, attributeMetaData);
+                        buildProductVariantAttributeUpdateAction(oldProductVariantSku, oldProductVariantAttribute,
+                                newProductVariantAttribute, attributeMetaData);
                 variantAttributeUpdateActionOptional.ifPresent(updateActions::add);
             } catch (@Nonnull final BuildUpdateActionException buildUpdateActionException) {
                 final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
-                    newProductVariantAttributeName, newProductVariant.getKey(), productKey,
-                    buildUpdateActionException.getMessage());
+                        newProductVariantAttributeName, newProductVariant.getKey(), productKey,
+                        buildUpdateActionException.getMessage());
                 syncOptions.applyErrorCallback(errorMessage, buildUpdateActionException);
             }
         }
         return updateActions;
     }
-
 
     /**
      * Compares the prices of a {@link ProductVariantDraft} and a {@link ProductVariant}.

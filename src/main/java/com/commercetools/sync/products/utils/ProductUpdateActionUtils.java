@@ -43,8 +43,8 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
-import static java.lang.String.format;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantSkuUpdateActions;
+import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
@@ -54,8 +54,8 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 // TODO: Update JavaDocs according to changes, tests..
 public final class ProductUpdateActionUtils {
     private static final String FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS = "Failed to build "
-        + "setAttribute/setAttributeInAllVariants update actions for the attributes of a ProductVariantDraft on the"
-        + " product with key '%s'. Reason: %s";
+            + "setAttribute/setAttributeInAllVariants update actions for the attributes of a ProductVariantDraft on the"
+            + " product with key '%s'. Reason: %s";
     private static final String BLANK_VARIANT_KEY = "The variant key is blank.";
     private static final String NULL_VARIANT = "The variant is null.";
 
@@ -99,9 +99,9 @@ public final class ProductUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the descriptions are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildSetDescriptionUpdateAction(@Nonnull final Product oldProduct,
-                                                                                  @Nonnull final ProductDraft
-                                                                                      newProduct) {
+    public static Optional<UpdateAction<Product>> buildSetDescriptionUpdateAction(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct) {
         final LocalizedString newDescription = newProduct.getDescription();
         final LocalizedString oldDescription = oldProduct.getMasterData().getStaged().getDescription();
         return buildUpdateAction(oldDescription, newDescription, () -> SetDescription.of(newDescription, true));
@@ -179,16 +179,16 @@ public final class ProductUpdateActionUtils {
      * @return A list containing the update actions or an empty list if the categoryOrderHints are identical.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildSetCategoryOrderHintUpdateActions(@Nonnull final Product oldProduct,
-                                                                                     @Nonnull final ProductDraft
-                                                                                         newProduct) {
+    public static List<UpdateAction<Product>> buildSetCategoryOrderHintUpdateActions(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct) {
         final CategoryOrderHints newCategoryOrderHints = newProduct.getCategoryOrderHints();
         final CategoryOrderHints oldCategoryOrderHints = oldProduct.getMasterData().getStaged().getCategoryOrderHints();
         return buildUpdateActions(oldCategoryOrderHints, newCategoryOrderHints, () -> {
 
             final Set<String> newCategoryIds = newProduct.getCategories().stream()
-                                                         .map(Reference::getId)
-                                                         .collect(toSet());
+                .map(Reference::getId)
+                .collect(toSet());
 
             final List<UpdateAction<Product>> updateActions = new ArrayList<>();
 
@@ -234,9 +234,9 @@ public final class ProductUpdateActionUtils {
      * @return A list containing the update actions or an empty list if the category sets are identical.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildRemoveFromCategoryUpdateActions(@Nonnull final Product oldProduct,
-                                                                                   @Nonnull final ProductDraft
-                                                                                       newProduct) {
+    public static List<UpdateAction<Product>> buildRemoveFromCategoryUpdateActions(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct) {
         final Set<Reference<Category>> newCategories = newProduct.getCategories();
         final Set<Reference<Category>> oldCategories = oldProduct.getMasterData().getStaged().getCategories();
         return buildUpdateActions(oldCategories, newCategories, () -> {
@@ -278,9 +278,9 @@ public final class ProductUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the search keywords are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildSetSearchKeywordsUpdateAction(@Nonnull final Product oldProduct,
-                                                                                     @Nonnull final ProductDraft
-                                                                                         newProduct) {
+    public static Optional<UpdateAction<Product>> buildSetSearchKeywordsUpdateAction(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct) {
         final SearchKeywords newSearchKeywords = newProduct.getSearchKeywords();
         final SearchKeywords oldSearchKeywords = oldProduct.getMasterData().getStaged().getSearchKeywords();
         return buildUpdateAction(oldSearchKeywords, newSearchKeywords,
@@ -304,9 +304,9 @@ public final class ProductUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the meta descriptions are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildSetMetaDescriptionUpdateAction(@Nonnull final Product oldProduct,
-                                                                                      @Nonnull final ProductDraft
-                                                                                          newProduct) {
+    public static Optional<UpdateAction<Product>> buildSetMetaDescriptionUpdateAction(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct) {
         final LocalizedString newMetaDescription = newProduct.getMetaDescription();
         final LocalizedString oldMetaDescription = oldProduct.getMasterData().getStaged().getMetaDescription();
         return buildUpdateAction(oldMetaDescription, newMetaDescription,
@@ -330,9 +330,9 @@ public final class ProductUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the meta keywords are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildSetMetaKeywordsUpdateAction(@Nonnull final Product oldProduct,
-                                                                                   @Nonnull final ProductDraft
-                                                                                       newProduct) {
+    public static Optional<UpdateAction<Product>> buildSetMetaKeywordsUpdateAction(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct) {
         final LocalizedString newMetaKeywords = newProduct.getMetaKeywords();
         final LocalizedString oldMetaKeywords = oldProduct.getMasterData().getStaged().getMetaKeywords();
         return buildUpdateAction(oldMetaKeywords, newMetaKeywords, () -> SetMetaKeywords.of(newMetaKeywords));
@@ -355,9 +355,9 @@ public final class ProductUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the meta titles are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildSetMetaTitleUpdateAction(@Nonnull final Product oldProduct,
-                                                                                @Nonnull final ProductDraft
-                                                                                    newProduct) {
+    public static Optional<UpdateAction<Product>> buildSetMetaTitleUpdateAction(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct) {
         final LocalizedString newMetaTitle = newProduct.getMetaTitle();
         final LocalizedString oldMetaTitle = oldProduct.getMasterData().getStaged().getMetaTitle();
         return buildUpdateAction(oldMetaTitle, newMetaTitle, () -> SetMetaTitle.of(newMetaTitle));
@@ -366,21 +366,18 @@ public final class ProductUpdateActionUtils {
     /**
      * Compares the variants of a {@link ProductDraft} and a {@link Product}. TODO: CONTINUE DOCUMENTATION.
      *
-     * @param oldProduct TODO
-     * @param newProduct TODO
-     * @param syncOptions TODO
+     * @param oldProduct         TODO
+     * @param newProduct         TODO
+     * @param syncOptions        TODO
      * @param attributesMetaData TODO
      * @return TODO
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildVariantsUpdateActions(@Nonnull final Product oldProduct,
-                                                                         @Nonnull final ProductDraft
-                                                                            newProduct,
-                                                                         @Nonnull final ProductSyncOptions
-                                                                                 syncOptions,
-                                                                         @Nonnull
-                                                                             final Map<String, AttributeMetaData>
-                                                                                 attributesMetaData) {
+    public static List<UpdateAction<Product>> buildVariantsUpdateActions(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct,
+            @Nonnull final ProductSyncOptions syncOptions,
+            @Nonnull final Map<String, AttributeMetaData> attributesMetaData) {
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
         final List<ProductVariant> oldProductVariants = oldProduct.getMasterData().getStaged().getAllVariants();
         final List<ProductVariantDraft> newProductVariants = new ArrayList<>();
@@ -413,7 +410,7 @@ public final class ProductUpdateActionUtils {
                     updateActions.addAll(buildProductVariantPricesUpdateActions(oldProductVariant,
                         newProductVariant, syncOptions));
                     updateActions.addAll(buildProductVariantSkuUpdateActions(oldProductVariant,
-                            newProductVariant));
+                        newProductVariant));
                 });
 
         }
@@ -423,8 +420,8 @@ public final class ProductUpdateActionUtils {
     private static Optional<ProductVariant> getVariantByKey(@Nonnull final List<ProductVariant> productVariants,
                                                             @Nonnull final String key) {
         return productVariants.stream()
-                              .filter(productVariant -> Objects.equals(productVariant.getKey(), key))
-                              .findFirst();
+            .filter(productVariant -> Objects.equals(productVariant.getKey(), key))
+            .findFirst();
     }
 
     /**
@@ -440,13 +437,13 @@ public final class ProductUpdateActionUtils {
      */
     @Nonnull
     public static List<RemoveVariant> buildRemoveVariantUpdateAction(@Nonnull final Product oldProduct,
-                                                                             @Nonnull final ProductDraft newProduct) {
+                                                                     @Nonnull final ProductDraft newProduct) {
         final List<ProductVariant> oldVariants = oldProduct.getMasterData().getStaged().getVariants();
         final Set<String> newVariants = collectionToSet(newProduct.getVariants(), ProductVariantDraft::getKey);
 
         return filterCollection(oldVariants, oldVariant -> !newVariants.contains(oldVariant.getKey()))
-                .map(RemoveVariant::of)
-                .collect(toList());
+            .map(RemoveVariant::of)
+            .collect(toList());
     }
 
     /**
@@ -462,14 +459,14 @@ public final class ProductUpdateActionUtils {
      */
     @Nonnull
     public static List<AddVariant> buildAddVariantUpdateAction(@Nonnull final Product oldProduct,
-                                                                          @Nonnull final ProductDraft newProduct) {
+                                                               @Nonnull final ProductDraft newProduct) {
         final List<ProductVariantDraft> newVariants = newProduct.getVariants();
         final Set<String> oldVariantKeys =
-                collectionToSet(oldProduct.getMasterData().getStaged().getVariants(), ProductVariant::getKey);
+            collectionToSet(oldProduct.getMasterData().getStaged().getVariants(), ProductVariant::getKey);
 
         return filterCollection(newVariants, newVariant -> !oldVariantKeys.contains(newVariant.getKey()))
-                .map(ProductUpdateActionUtils::buildAddVariantUpdateActionFromDraft)
-                .collect(toList());
+            .map(ProductUpdateActionUtils::buildAddVariantUpdateActionFromDraft)
+            .collect(toList());
     }
 
     /**
@@ -499,11 +496,11 @@ public final class ProductUpdateActionUtils {
      * Factory method to create {@link AddVariant} action from {@link ProductVariantDraft} instance.
      *
      * <p>The {@link AddVariant} will include:<ul>
-     *     <li>sku</li>
-     *     <li>keys</li>
-     *     <li>attributes</li>
-     *     <li>prices</li>
-     *     <li>images</li>
+     * <li>sku</li>
+     * <li>keys</li>
+     * <li>attributes</li>
+     * <li>prices</li>
+     * <li>images</li>
      * </ul>
      *
      * @param draft {@link ProductVariantDraft} which to add.
@@ -512,7 +509,7 @@ public final class ProductUpdateActionUtils {
     @Nonnull
     static AddVariant buildAddVariantUpdateActionFromDraft(@Nonnull final ProductVariantDraft draft) {
         return AddVariant.of(draft.getAttributes(), draft.getPrices(), draft.getSku())
-                         .withKey(draft.getKey())
-                         .withImages(draft.getImages());
+            .withKey(draft.getKey())
+            .withImages(draft.getImages());
     }
 }
