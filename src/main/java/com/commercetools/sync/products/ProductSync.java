@@ -43,7 +43,11 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private static final String UNEXPECTED_DELETE = "Product with key: '%s' was deleted unexpectedly.";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
         + "ProductDraft with key:'%s'. Reason: %s";
+    private static final String FAILED_TO_FETCH_PRODUCT_TYPE = "Failed to fetch a productType for the product to "
+        + "build the products' attributes metadata.";
+
     private final ProductService productService;
+    private final ProductTypeService productTypeService;
     private final ProductReferenceResolver productReferenceResolver;
 
     private Map<ProductDraft, Product> productsToSync = new HashMap<>();
@@ -66,6 +70,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 @Nonnull final ProductTypeService productTypeService, @Nonnull final CategoryService categoryService) {
         super(new ProductSyncStatistics(), productSyncOptions);
         this.productService = productService;
+        this.productTypeService = productTypeService;
         this.productReferenceResolver = new ProductReferenceResolver(productSyncOptions, productTypeService,
             categoryService);
     }
@@ -204,24 +209,39 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                  .thenCompose(productOptional -> {
                                      if (productOptional.isPresent()) {
                                          final Product fetchedProduct = productOptional.get();
-                                         final List<UpdateAction<Product>> updateActions =
-                                             buildActions(fetchedProduct, newProduct, syncOptions);
-                                         if (!updateActions.isEmpty()) {
-                                             return updateProduct(fetchedProduct, newProduct, updateActions);
-                                         }
-                                         return CompletableFuture.completedFuture(productOptional);
-                                     } else {
-                                         handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE), null);
-                                         return CompletableFuture.completedFuture(productOptional);
+                                         return fetchProductAttributesMetadataAndUpdate(fetchedProduct, newProduct);
                                      }
+                                     handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE), null);
+                                     return CompletableFuture.completedFuture(productOptional);
                                  });
         } else {
-            final List<UpdateAction<Product>> updateActions = buildActions(oldProduct, newProduct, syncOptions);
-            if (!updateActions.isEmpty()) {
-                return updateProduct(oldProduct, newProduct, updateActions);
-            }
-            return CompletableFuture.completedFuture(Optional.of(oldProduct));
+            return fetchProductAttributesMetadataAndUpdate(oldProduct, newProduct);
         }
+    }
+
+    @Nonnull
+    private CompletionStage<Optional<Product>> fetchProductAttributesMetadataAndUpdate(@Nonnull final Product
+                                                                                           oldProduct,
+                                                                                       @Nonnull final ProductDraft
+                                                                                           newProduct) {
+        return productTypeService.fetchCachedProductAttributeMetaDataMap(oldProduct.getProductType().getId())
+                          .thenCompose(optionalAttributesMetaDataMap -> {
+                              if (!optionalAttributesMetaDataMap.isPresent()) {
+                                  final String errorMessage = format(UPDATE_FAILED, oldProduct.getKey(),
+                                      FAILED_TO_FETCH_PRODUCT_TYPE);
+                                  handleError(errorMessage, null);
+                                  return CompletableFuture.completedFuture(Optional.of(oldProduct));
+                              } else {
+                                  final Map<String, AttributeMetaData> attributeMetaDataMap =
+                                      optionalAttributesMetaDataMap.get();
+                                  final List<UpdateAction<Product>> updateActions =
+                                      buildActions(oldProduct, newProduct, syncOptions, attributeMetaDataMap);
+                                  if (!updateActions.isEmpty()) {
+                                      return updateProduct(oldProduct, newProduct, updateActions);
+                                  }
+                                  return CompletableFuture.completedFuture(Optional.of(oldProduct));
+                              }
+                          });
     }
 
     @Nonnull
