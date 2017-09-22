@@ -25,7 +25,7 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildRemoveVariantUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductVariantsUpdateActionUtilsTest {
+public class ProductVariantUpdateActionUtilsTest {
 
     public static final String OLD_PROD_WITH_VARIANTS =
             "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/productOld.json";
