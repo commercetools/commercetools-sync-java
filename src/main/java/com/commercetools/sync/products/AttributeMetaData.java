@@ -9,12 +9,12 @@ import javax.annotation.Nonnull;
  * Custom container for product variant attribute information: its name, whether a value is required or not and
  * whether it has the constraint "SameForAll" or not.
  */
-public class ProductVariantAttribute {
+public class AttributeMetaData {
     private String name;
     private boolean isRequired;
     private boolean isSameForAll;
 
-    ProductVariantAttribute(@Nonnull final String name, final boolean isRequired, final boolean isSameForAll) {
+    AttributeMetaData(@Nonnull final String name, final boolean isRequired, final boolean isSameForAll) {
         this.name = name;
         this.isRequired = isRequired;
         this.isSameForAll = isSameForAll;
@@ -22,17 +22,17 @@ public class ProductVariantAttribute {
 
     /**
      * Uses the supplied {@link AttributeDefinition} instance to infer the name, whether a value is required or not and
-     * whether it has the constraint "SameForAll" or not, to instantiate a new {@link ProductVariantAttribute}
+     * whether it has the constraint "SameForAll" or not, to instantiate a new {@link AttributeMetaData}
      * containing the aforementioned information.
      *
      * @param attributeDefinition the instance for which the needed information is used.
-     * @return a new instance of {@link ProductVariantAttribute}.
+     * @return a new instance of {@link AttributeMetaData}.
      */
-    public static ProductVariantAttribute of(@Nonnull final AttributeDefinition attributeDefinition) {
+    public static AttributeMetaData of(@Nonnull final AttributeDefinition attributeDefinition) {
         boolean isSameForAll = attributeDefinition.getAttributeConstraint()
                                                   .equals(AttributeConstraint.SAME_FOR_ALL);
         return new
-            ProductVariantAttribute(attributeDefinition.getName(), attributeDefinition.isRequired(), isSameForAll);
+            AttributeMetaData(attributeDefinition.getName(), attributeDefinition.isRequired(), isSameForAll);
     }
 
     /**
