@@ -29,6 +29,7 @@ import io.sphere.sdk.search.SearchKeywords;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -378,6 +379,7 @@ public final class ProductUpdateActionUtils {
             @Nonnull final ProductDraft newProduct,
             @Nonnull final ProductSyncOptions syncOptions,
             @Nonnull final Map<String, AttributeMetaData> attributesMetaData) {
+
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
         final List<ProductVariant> oldProductVariants = oldProduct.getMasterData().getStaged().getAllVariants();
         final List<ProductVariantDraft> newProductVariants = new ArrayList<>();
@@ -400,21 +402,32 @@ public final class ProductUpdateActionUtils {
                 continue;
             }
 
-            getVariantByKey(oldProductVariants, newProductVariantKey)
-                .ifPresent(oldProductVariant -> {
-                    updateActions.addAll(buildProductVariantAttributesUpdateActions(
-                        oldProduct.getKey(), oldProductVariant, newProductVariant,
-                        attributesMetaData, syncOptions));
-                    updateActions.addAll(buildProductVariantImagesUpdateActions(oldProductVariant,
-                        newProductVariant, syncOptions));
-                    updateActions.addAll(buildProductVariantPricesUpdateActions(oldProductVariant,
-                        newProductVariant, syncOptions));
-                    updateActions.addAll(buildProductVariantSkuUpdateActions(oldProductVariant,
-                        newProductVariant));
-                });
+            List<UpdateAction<Product>> allVariantUpdateActions =
+                getVariantByKey(oldProductVariants, newProductVariantKey)
+                    .map(oldProductVariant -> collectAllVariantUpdateActions(oldProduct, oldProductVariant,
+                        newProductVariant, attributesMetaData, syncOptions))
+                    .orElseGet(Collections::emptyList);
 
+            updateActions.addAll(allVariantUpdateActions);
         }
         return updateActions;
+    }
+
+    private static List<UpdateAction<Product>> collectAllVariantUpdateActions(
+            @Nonnull Product oldProduct,
+            @Nonnull ProductVariant oldProductVariant,
+            @Nonnull ProductVariantDraft newProductVariant,
+            @Nonnull Map<String, AttributeMetaData> attributesMetaData,
+            @Nonnull ProductSyncOptions syncOptions) {
+
+        ArrayList<UpdateAction<Product>> res = new ArrayList<>();
+        res.addAll(buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
+            newProductVariant, attributesMetaData, syncOptions));
+        res.addAll(buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant, syncOptions));
+        res.addAll(buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions));
+        res.addAll(buildProductVariantSkuUpdateActions(oldProductVariant, newProductVariant));
+
+        return res;
     }
 
     private static Optional<ProductVariant> getVariantByKey(@Nonnull final List<ProductVariant> productVariants,
