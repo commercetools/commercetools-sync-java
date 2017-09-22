@@ -42,6 +42,7 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
+import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantSkuUpdateActions;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
@@ -387,6 +388,8 @@ public final class ProductUpdateActionUtils {
                                           newProductVariant, syncOptions));
                                       updateActions.addAll(buildProductVariantPricesUpdateActions(oldProductVariant,
                                           newProductVariant, syncOptions));
+                                      updateActions.addAll(buildProductVariantSkuUpdateActions(oldProductVariant,
+                                              newProductVariant));
                                   }));
         return updateActions;
     }
