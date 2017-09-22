@@ -22,46 +22,48 @@ public final class ProductVariantUpdateActionUtils {
     /**
      * Compares the attributes of a {@link ProductVariantDraft} and a {@link ProductVariant}.
      * TODO: Add JavaDoc
-     * @param oldProductVariant TODO
-     * @param newProductVariant TODO
-     * @param syncOptions TODO
+     *
+     * @param oldProductVariant  TODO
+     * @param newProductVariant  TODO
+     * @param syncOptions        TODO
      * @param attributesMetaData TODO
      * @return TODO
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantAttributesUpdateActions(
-        @Nonnull final ProductVariant oldProductVariant,
-        @Nonnull final ProductVariantDraft newProductVariant,
-        @Nonnull final ProductSyncOptions syncOptions,
-        @Nonnull final Map<String, ProductVariantAttribute> attributesMetaData) {
+            @Nonnull final ProductVariant oldProductVariant,
+            @Nonnull final ProductVariantDraft newProductVariant,
+            @Nonnull final ProductSyncOptions syncOptions,
+            @Nonnull final Map<String, ProductVariantAttribute> attributesMetaData) {
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
         final List<Attribute> oldProductVariantAttributes = oldProductVariant.getAttributes();
         final List<AttributeDraft> newProductVariantAttributes = newProductVariant.getAttributes();
         newProductVariantAttributes.stream()
-                                   .filter(Objects::nonNull)
-                                   .forEach(newProductVariantAttribute -> {
-                                       //TODO: IMPLEMENTATION GITHUB ISSUE#98
-                                       final String newProductVariantAttributeName =
-                                           newProductVariantAttribute.getName();
-                                       final JsonNode newProductVariantAttributeValue =
-                                           newProductVariantAttribute.getValue();
-                                   });
+                .filter(Objects::nonNull)
+                .forEach(newProductVariantAttribute -> {
+                    //TODO: IMPLEMENTATION GITHUB ISSUE#98
+                    final String newProductVariantAttributeName =
+                            newProductVariantAttribute.getName();
+                    final JsonNode newProductVariantAttributeValue =
+                            newProductVariantAttribute.getValue();
+                });
         return updateActions;
     }
 
     /**
      * Compares the prices of a {@link ProductVariantDraft} and a {@link ProductVariant}.
      * TODO: Add JavaDoc
+     *
      * @param oldProductVariant TODO
      * @param newProductVariant TODO
-     * @param syncOptions TODO
+     * @param syncOptions       TODO
      * @return TODO
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantPricesUpdateActions(
-        @Nonnull final ProductVariant oldProductVariant,
-        @Nonnull final ProductVariantDraft newProductVariant,
-        @Nonnull final ProductSyncOptions syncOptions) {
+            @Nonnull final ProductVariant oldProductVariant,
+            @Nonnull final ProductVariantDraft newProductVariant,
+            @Nonnull final ProductSyncOptions syncOptions) {
         //TODO: IMPLEMENTATION GITHUB ISSUE#99
         return Collections.emptyList();
     }
@@ -69,16 +71,17 @@ public final class ProductVariantUpdateActionUtils {
     /**
      * Compares the images of a {@link ProductVariantDraft} and a {@link ProductVariant}.
      * TODO: Add JavaDoc..
+     *
      * @param oldProductVariant TODO
      * @param newProductVariant TODO
-     * @param syncOptions TODO
+     * @param syncOptions       TODO
      * @return TODO
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantImagesUpdateActions(
-        @Nonnull final ProductVariant oldProductVariant,
-        @Nonnull final ProductVariantDraft newProductVariant,
-        @Nonnull final ProductSyncOptions syncOptions) {
+            @Nonnull final ProductVariant oldProductVariant,
+            @Nonnull final ProductVariantDraft newProductVariant,
+            @Nonnull final ProductSyncOptions syncOptions) {
         //TODO: IMPLEMENTATION GITHUB ISSUE#100
         return Collections.emptyList();
     }
