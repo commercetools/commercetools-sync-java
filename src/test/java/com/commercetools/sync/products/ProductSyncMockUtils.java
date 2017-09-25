@@ -39,7 +39,7 @@ public class ProductSyncMockUtils {
                                                                 @Nonnull final Reference<ProductType>
                                                                     productTypeReference) {
         final Product productFromJson = readObjectFromResource(jsonResourcePath, Product.class);
-        final ProductData productData = productFromJson.getMasterData().getCurrent();
+        final ProductData productData = productFromJson.getMasterData().getStaged();
 
         @SuppressWarnings("ConstantConditions") final List<ProductVariantDraft> allVariants = productData
             .getAllVariants().stream()
