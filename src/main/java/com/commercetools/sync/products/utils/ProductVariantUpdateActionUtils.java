@@ -32,6 +32,8 @@ public final class ProductVariantUpdateActionUtils {
     private static final String FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION = "Failed to build a "
         + "setAttribute/setAttributeInAllVariants update action for the attribute with the name '%s' in the "
         + "ProductVariantDraft with key '%s' on the product with key '%s'. Reason: %s";
+    private static final String FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTIONS = "Failed to build attribute update actions"
+        + "for the ProductVariantDraft with key '%s' on the product with key '%s'. Reason: %s";
     private static final String FAILED_TO_BUILD_VARIANT_IMAGES_UPDATE_ACTIONS = "Failed to build "
         + "addExternalImage/removeImage update actions for the ProductVariantDraft with key '%s' on the product with"
         + " key '%s'. Reason: %s";
@@ -44,11 +46,11 @@ public final class ProductVariantUpdateActionUtils {
      * {@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants} update actions.
      * TODO: Add JavaDoc
      *
-     * @param productKey TODO
+     * @param productKey         TODO
      * @param oldProductVariant  TODO
      * @param newProductVariant  TODO
      * @param attributesMetaData TODO
-     * @param syncOptions TODO
+     * @param syncOptions        TODO
      * @return TODO
      */
     @Nonnull
@@ -67,6 +69,15 @@ public final class ProductVariantUpdateActionUtils {
 
         // TODO: NEED TO HANDLE REMOVED ATTRIBUTES FROM OLD PRODUCT VARIANT.
 
+        final String oldProductVariantSku = oldProductVariant.getSku();
+        if (isBlank(oldProductVariantSku)) {
+            final String nullSkuErrorMessage = format(BLANK_VARIANT_SKU, oldProductVariant.getKey());
+            final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTIONS, newProductVariant.getKey(),
+                productKey, nullSkuErrorMessage);
+            syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
+            return updateActions;
+        }
+
         for (AttributeDraft newProductVariantAttribute : newProductVariantAttributes) {
             if (newProductVariantAttribute == null) {
                 final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, null,
@@ -78,15 +89,6 @@ public final class ProductVariantUpdateActionUtils {
             final String newProductVariantAttributeName = newProductVariantAttribute.getName();
             final Optional<Attribute> oldProductVariantAttributeOptional = oldProductVariant
                 .findAttribute(newProductVariantAttributeName);
-
-            final String oldProductVariantSku = oldProductVariant.getSku();
-            if (isBlank(oldProductVariantSku)) {
-                final String nullSkuErrorMessage = format(BLANK_VARIANT_SKU, oldProductVariant.getKey());
-                final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
-                    newProductVariantAttributeName, newProductVariant.getKey(), productKey, nullSkuErrorMessage);
-                syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
-                continue;
-            }
 
             final Attribute oldProductVariantAttribute = oldProductVariantAttributeOptional.orElse(null);
             final AttributeMetaData attributeMetaData = attributesMetaData.get(newProductVariantAttributeName);
