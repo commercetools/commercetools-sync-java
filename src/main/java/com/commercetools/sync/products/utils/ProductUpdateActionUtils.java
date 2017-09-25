@@ -414,11 +414,11 @@ public final class ProductUpdateActionUtils {
     }
 
     private static List<UpdateAction<Product>> collectAllVariantUpdateActions(
-            @Nonnull Product oldProduct,
-            @Nonnull ProductVariant oldProductVariant,
-            @Nonnull ProductVariantDraft newProductVariant,
-            @Nonnull Map<String, AttributeMetaData> attributesMetaData,
-            @Nonnull ProductSyncOptions syncOptions) {
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductVariant oldProductVariant,
+            @Nonnull final ProductVariantDraft newProductVariant,
+            @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
+            @Nonnull final ProductSyncOptions syncOptions) {
 
         ArrayList<UpdateAction<Product>> res = new ArrayList<>();
         res.addAll(buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
