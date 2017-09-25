@@ -185,6 +185,7 @@
       },
       "masterVariant": {
         "id": 1,
+        "key": "v1",
         "sku": "3065831",
         "prices": [
           {
