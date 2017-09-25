@@ -125,12 +125,14 @@ public final class ProductVariantUpdateActionUtils {
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
         final List<Image> oldProductVariantImages = oldProductVariant.getImages();
         final List<Image> newProductVariantImages = newProductVariant.getImages();
-        final Map<String, Image> oldUrlToImageMap = oldProductVariantImages.stream()
-                                                                           .collect(Collectors.toMap(Image::getUrl,
-                                                                               image -> image));
-        final Map<String, Image> newUrlToImageMap = newProductVariantImages.stream()
-                                                                           .collect(Collectors.toMap(Image::getUrl,
-                                                                               image -> image));
+
+        final Map<String, Image> oldUrlToImageMap = oldProductVariantImages != null
+            ? oldProductVariantImages.stream()
+                                     .collect(Collectors.toMap(Image::getUrl, image -> image)) : Collections.emptyMap();
+        final Map<String, Image> newUrlToImageMap = newProductVariantImages != null
+            ? newProductVariantImages.stream()
+                                     .collect(Collectors.toMap(Image::getUrl, image -> image)) : Collections.emptyMap();
+
         final Integer oldProductVariantId = oldProductVariant.getId();
 
         filterCollection(oldProductVariantImages, oldVariantImage ->
