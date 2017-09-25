@@ -476,7 +476,7 @@ public final class ProductUpdateActionUtils {
      * a {@link Publish} or {@link Unpublish} update action as a result in an {@link Optional}. If the new product's
      * 'published' field is null, then the default false value is assumed.
      *
-     * If both the {@link Product} and the {@link ProductDraft} have the same 'published' flag value, then no update
+     * <p>If both the {@link Product} and the {@link ProductDraft} have the same 'published' flag value, then no update
      * action is needed and hence an empty {@link Optional} is returned.
      *
      * @param oldProduct the product which should be updated.
