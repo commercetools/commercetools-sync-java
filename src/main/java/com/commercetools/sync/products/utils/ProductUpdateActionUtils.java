@@ -407,7 +407,7 @@ public final class ProductUpdateActionUtils {
                     updateActions.addAll(buildProductVariantAttributesUpdateActions(
                         oldProduct.getKey(), oldProductVariant, newProductVariant,
                         attributesMetaData, syncOptions));
-                    updateActions.addAll(buildProductVariantImagesUpdateActions(oldProductVariant,
+                    updateActions.addAll(buildProductVariantImagesUpdateActions(oldProduct.getKey(), oldProductVariant,
                         newProductVariant, syncOptions));
                     updateActions.addAll(buildProductVariantPricesUpdateActions(oldProductVariant,
                         newProductVariant, syncOptions));
