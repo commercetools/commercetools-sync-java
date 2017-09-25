@@ -30,7 +30,7 @@ public final class ProductVariantAttributeUpdateActionUtils {
      * {@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants} update actions.
      * TODO: Add JavaDoc
      *
-     * @param variantSku TODO: Add JavaDoc
+     * @param variantId TODO: Add JavaDoc
      * @param oldProductVariantAttribute TODO: Add JavaDoc
      * @param newProductVariantAttribute TODO: Add JavaDoc
      * @param attributeMetaData TODO: Add JavaDoc
@@ -39,7 +39,7 @@ public final class ProductVariantAttributeUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<Product>> buildProductVariantAttributeUpdateAction(
-        @Nonnull final String variantSku,
+        final int variantId,
         @Nullable final Attribute oldProductVariantAttribute,
         @Nonnull final AttributeDraft newProductVariantAttribute,
         @Nullable final AttributeMetaData attributeMetaData)
@@ -63,11 +63,11 @@ public final class ProductVariantAttributeUpdateActionUtils {
                     ? buildUpdateAction(oldProductVariantAttributeValue, newProductVariantAttributeValue,
                         () -> SetAttributeInAllVariants.of(newProductVariantAttribute, true)) :
                     buildUpdateAction(oldProductVariantAttributeValue, newProductVariantAttributeValue,
-                        () -> SetAttribute.ofSku(variantSku, newProductVariantAttribute, true));
+                        () -> SetAttribute.of(variantId, newProductVariantAttribute, true));
             } else {
                 return attributeMetaData.isSameForAll()
                     ? Optional.of(SetAttributeInAllVariants.ofUnsetAttribute(newProductVariantAttributeName, true)) :
-                    Optional.of(SetAttribute.ofUnsetAttributeForSku(variantSku, newProductVariantAttributeName, true));
+                    Optional.of(SetAttribute.ofUnsetAttribute(variantId, newProductVariantAttributeName, true));
             }
         }
 

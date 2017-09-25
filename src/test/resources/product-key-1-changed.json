@@ -179,7 +179,14 @@
         ],
         "images": [
           {
-            "url": "https://53346cfbf3c7e017ed3d-6de74c3efa80f1c837c6a988b57abe66.ssl.cf3.rackcdn.com/16.11.11_rehruecken--O9hsZFH4.png",
+            "url": "https://53346cfbf3c7e017ed3d-6de74c3efa80f1c837c6a988b57abe66.ssl.cf3.rackcdn.com/new-image.png",
+            "dimensions": {
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "url": "https://53346cfbf3c7e017ed3d-6de74c3efa80f1c837c6a988b57abe66.ssl.cf3.rackcdn.com/new-image-2.png",
             "dimensions": {
               "w": 0,
               "h": 0

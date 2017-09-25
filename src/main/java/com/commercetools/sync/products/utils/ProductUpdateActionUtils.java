@@ -418,6 +418,21 @@ public final class ProductUpdateActionUtils {
                         newProductVariant, attributesMetaData, syncOptions))
                     .orElseGet(() -> singletonList(buildAddVariantUpdateActionFromDraft(newProductVariant)));
 
+
+
+//            getVariantByKey(oldProductVariants, newProductVariantKey)
+//                .ifPresent(oldProductVariant -> {
+//                    updateActions.addAll(buildProductVariantAttributesUpdateActions(
+//                        oldProduct.getKey(), oldProductVariant, newProductVariant,
+//                        attributesMetaData, syncOptions));
+//                    updateActions.addAll(buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant));
+//                    updateActions.addAll(buildProductVariantPricesUpdateActions(oldProductVariant,
+//                        newProductVariant, syncOptions));
+//                });
+
+
+
+
             updateActions.addAll(updateOrAddVariant);
         }
 
