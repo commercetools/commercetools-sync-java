@@ -51,7 +51,9 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * @param productSyncOptions the container of all the options of the sync process including the CTP project client
      *                           and/or configuration and other sync-specific options.
      * @param productTypeService the service to fetch the product type for reference resolution.
-     * @param categoryService the service to fetch the categories for reference resolution.
+     * @param categoryService    the service to fetch the categories for reference resolution.
+     * @param typeService        the service to fetch the custom types for reference resolution.
+     * @param channelService     the service to fetch the channels for reference resolution.
      */
     public ProductReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final ProductTypeService productTypeService,

@@ -49,6 +49,7 @@ public final class ProductSyncOptionsBuilder
         this.updateActionsFilter = updateActionsFilter;
         return this;
     }
+
     /**
      * Set option that indicates whether sync process should create price channel of given key when it doesn't exists
      * in a target project yet. If set to {@code true} sync process would try to create new price channel of given key,
