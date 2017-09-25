@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.utils;
 
+import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Image;
@@ -17,11 +18,13 @@ import io.sphere.sdk.products.commands.updateactions.AddVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
+import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,9 +35,9 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeMasterVariantUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildRemoveVariantUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
-import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 public class ProductUpdateActionUtilsTest {
@@ -46,11 +49,19 @@ public class ProductUpdateActionUtilsTest {
 
     @Test
     public void buildVariantsUpdateActions_makesListOfUpdateActions() throws Exception {
-        ProductSyncOptions productSyncOptions = mock(ProductSyncOptions.class);
         Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
         ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS);
+
+        ProductSyncOptions productSyncOptions = mock(ProductSyncOptions.class);
+
+        Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
+        AttributeMetaData priceInfo = mock(AttributeMetaData.class);
+        when(priceInfo.getName()).thenReturn("priceInfo");
+        when(priceInfo.isRequired()).thenReturn(false);
+        attributesMetaData.put("priceInfo", priceInfo);
+
         List<UpdateAction<Product>> updateActions =
-            buildVariantsUpdateActions(productOld, productDraftNew, productSyncOptions, emptyMap());
+            buildVariantsUpdateActions(productOld, productDraftNew, productSyncOptions, attributesMetaData);
 
         // check remove variants are the first in the list
         assertThat(updateActions.subList(0, 3))
@@ -77,6 +88,9 @@ public class ProductUpdateActionUtilsTest {
         assertThat(updateActions.indexOf(removeImage))
             .withFailMessage("Remove image action must be executed before add image action")
             .isLessThan(updateActions.indexOf(addExternalImage));
+
+        // verify attributes changes
+        assertThat(updateActions).contains(SetAttribute.ofVariantId(4, "priceInfo", "44/kg", true));
 
         // change master variant must be always after variants are added/updated,
         // because it is set by SKU and we should be sure the master variant is already added and SKUs are actual
