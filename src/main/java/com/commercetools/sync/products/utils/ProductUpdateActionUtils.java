@@ -37,6 +37,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToSet;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
@@ -48,6 +49,7 @@ import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUt
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -381,7 +383,10 @@ public final class ProductUpdateActionUtils {
             @Nonnull final Map<String, AttributeMetaData> attributesMetaData) {
 
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-        final List<ProductVariant> oldProductVariants = oldProduct.getMasterData().getStaged().getAllVariants();
+
+        final Map<String, ProductVariant> oldProductVariants =
+            collectionToMap(oldProduct.getMasterData().getStaged().getAllVariants(), ProductVariant::getKey);
+
         final List<ProductVariantDraft> newProductVariants = new ArrayList<>(newProduct.getVariants());
         newProductVariants.add(newProduct.getMasterVariant());
 
@@ -401,8 +406,9 @@ public final class ProductUpdateActionUtils {
                 continue;
             }
 
+            // if both old/new variants lists have an item with the same key - create update actions for the item
             List<UpdateAction<Product>> allVariantUpdateActions =
-                getVariantByKey(oldProductVariants, newProductVariantKey)
+                ofNullable(oldProductVariants.get(newProductVariantKey))
                     .map(oldProductVariant -> collectAllVariantUpdateActions(oldProduct, oldProductVariant,
                         newProductVariant, attributesMetaData, syncOptions))
                     .orElseGet(Collections::emptyList);
@@ -427,13 +433,6 @@ public final class ProductUpdateActionUtils {
         res.addAll(buildProductVariantSkuUpdateActions(oldProductVariant, newProductVariant));
 
         return res;
-    }
-
-    private static Optional<ProductVariant> getVariantByKey(@Nonnull final List<ProductVariant> productVariants,
-                                                            @Nonnull final String key) {
-        return productVariants.stream()
-            .filter(productVariant -> Objects.equals(productVariant.getKey(), key))
-            .findFirst();
     }
 
     /**
