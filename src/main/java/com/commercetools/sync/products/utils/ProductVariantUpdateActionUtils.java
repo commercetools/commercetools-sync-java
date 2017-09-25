@@ -4,11 +4,14 @@ import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.products.Image;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
+import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
+import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,7 +20,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -27,6 +32,9 @@ public final class ProductVariantUpdateActionUtils {
     private static final String FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION = "Failed to build a "
         + "setAttribute/setAttributeInAllVariants update action for the attribute with the name '%s' in the "
         + "ProductVariantDraft with key '%s' on the product with key '%s'. Reason: %s";
+    private static final String FAILED_TO_BUILD_VARIANT_IMAGES_UPDATE_ACTIONS = "Failed to build "
+        + "addExternalImage/removeImage update actions for the ProductVariantDraft with key '%s' on the product with"
+        + " key '%s'. Reason: %s";
     private static final String BLANK_VARIANT_SKU = "ProductVariant with the key '%s' has a blank SKU.";
     private static final String NULL_PRODUCT_VARIANT_ATTRIBUTE = "AttributeDraft is null.";
 
@@ -121,6 +129,7 @@ public final class ProductVariantUpdateActionUtils {
      * Compares the images of a {@link ProductVariantDraft} and a {@link ProductVariant}.
      * TODO: Add JavaDoc..
      *
+     * @param productKey        TODO
      * @param oldProductVariant TODO
      * @param newProductVariant TODO
      * @param syncOptions       TODO
@@ -128,10 +137,39 @@ public final class ProductVariantUpdateActionUtils {
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantImagesUpdateActions(
+        @Nullable final String productKey,
         @Nonnull final ProductVariant oldProductVariant,
         @Nonnull final ProductVariantDraft newProductVariant,
         @Nonnull final ProductSyncOptions syncOptions) {
-        //TODO: IMPLEMENTATION GITHUB ISSUE#100
-        return Collections.emptyList();
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
+
+        final String oldProductVariantSku = oldProductVariant.getSku();
+        if (isBlank(oldProductVariantSku)) {
+            final String nullSkuErrorMessage = format(BLANK_VARIANT_SKU, oldProductVariant.getKey());
+            final String errorMessage = format(FAILED_TO_BUILD_VARIANT_IMAGES_UPDATE_ACTIONS,
+                newProductVariant.getKey(), productKey, nullSkuErrorMessage);
+            syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
+            return updateActions;
+        }
+
+        final List<Image> oldProductVariantImages = oldProductVariant.getImages();
+        final List<Image> newProductVariantImages = newProductVariant.getImages();
+        final Map<String, Image> oldUrlToImageMap = oldProductVariantImages.stream()
+                                                                           .collect(Collectors.toMap(Image::getUrl,
+                                                                               image -> image));
+        final Map<String, Image> newUrlToImageMap = newProductVariantImages.stream()
+                                                                           .collect(Collectors.toMap(Image::getUrl,
+                                                                               image -> image));
+
+        filterCollection(oldProductVariantImages, oldVariantImage ->
+            newUrlToImageMap.get(oldVariantImage.getUrl()) == null)
+            .forEach(oldImage ->
+                updateActions.add(RemoveImage.ofSku(oldProductVariant.getSku(), oldImage, true)));
+
+        filterCollection(newProductVariantImages, newVariantImage ->
+            oldUrlToImageMap.get(newVariantImage.getUrl()) == null)
+            .forEach(newImage ->
+                updateActions.add(AddExternalImage.ofSku(oldProductVariant.getSku(), newImage, true)));
+        return updateActions;
     }
 }
