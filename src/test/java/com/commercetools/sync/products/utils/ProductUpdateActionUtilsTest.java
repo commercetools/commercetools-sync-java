@@ -49,18 +49,18 @@ public class ProductUpdateActionUtilsTest {
 
     @Test
     public void buildVariantsUpdateActions_makesListOfUpdateActions() throws Exception {
-        Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
-        ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS);
+        final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+        final ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS);
 
-        ProductSyncOptions productSyncOptions = mock(ProductSyncOptions.class);
+        final ProductSyncOptions productSyncOptions = mock(ProductSyncOptions.class);
 
-        Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
-        AttributeMetaData priceInfo = mock(AttributeMetaData.class);
+        final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
+        final AttributeMetaData priceInfo = mock(AttributeMetaData.class);
         when(priceInfo.getName()).thenReturn("priceInfo");
         when(priceInfo.isRequired()).thenReturn(false);
         attributesMetaData.put("priceInfo", priceInfo);
 
-        List<UpdateAction<Product>> updateActions =
+        final List<UpdateAction<Product>> updateActions =
             buildVariantsUpdateActions(productOld, productDraftNew, productSyncOptions, attributesMetaData);
 
         // check remove variants are the first in the list
