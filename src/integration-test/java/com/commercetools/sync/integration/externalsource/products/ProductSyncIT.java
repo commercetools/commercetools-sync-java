@@ -534,7 +534,8 @@ public class ProductSyncIT {
             .categories(new ArrayList<>())
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key(productDraft.getKey())
-            .masterVariant(ProductVariantDraftBuilder.of().key("v1").build())
+            .masterVariant(ProductVariantDraftBuilder.of(product.getMasterData().getStaged().getMasterVariant())
+                                                     .build())
             .build();
 
         final List<ProductDraft> batch = new ArrayList<>();
