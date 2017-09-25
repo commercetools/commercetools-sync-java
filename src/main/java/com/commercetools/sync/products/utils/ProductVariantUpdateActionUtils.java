@@ -29,7 +29,6 @@ import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdat
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 // TODO: Add JAVADOC AND TESTS
 public final class ProductVariantUpdateActionUtils {

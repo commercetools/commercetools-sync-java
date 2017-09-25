@@ -418,21 +418,6 @@ public final class ProductUpdateActionUtils {
                         newProductVariant, attributesMetaData, syncOptions))
                     .orElseGet(() -> singletonList(buildAddVariantUpdateActionFromDraft(newProductVariant)));
 
-
-
-//            getVariantByKey(oldProductVariants, newProductVariantKey)
-//                .ifPresent(oldProductVariant -> {
-//                    updateActions.addAll(buildProductVariantAttributesUpdateActions(
-//                        oldProduct.getKey(), oldProductVariant, newProductVariant,
-//                        attributesMetaData, syncOptions));
-//                    updateActions.addAll(buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant));
-//                    updateActions.addAll(buildProductVariantPricesUpdateActions(oldProductVariant,
-//                        newProductVariant, syncOptions));
-//                });
-
-
-
-
             updateActions.addAll(updateOrAddVariant);
         }
 
@@ -452,7 +437,7 @@ public final class ProductUpdateActionUtils {
         ArrayList<UpdateAction<Product>> res = new ArrayList<>();
         res.addAll(buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
             newProductVariant, attributesMetaData, syncOptions));
-        res.addAll(buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant, syncOptions));
+        res.addAll(buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant));
         res.addAll(buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions));
         res.addAll(buildProductVariantSkuUpdateActions(oldProductVariant, newProductVariant));
 

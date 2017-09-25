@@ -12,8 +12,10 @@ import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraftDsl;
 import io.sphere.sdk.products.attributes.AttributeDraft;
+import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.AddVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
+import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
 import org.junit.Test;
@@ -54,6 +56,7 @@ public class ProductUpdateActionUtilsTest {
         assertThat(updateActions.subList(0, 3))
             .contains(RemoveVariant.of(1), RemoveVariant.of(2), RemoveVariant.of(3));
 
+        // check add actions
         ProductVariantDraft draftMaster = productDraftNew.getMasterVariant();
         ProductVariantDraft draft5 = productDraftNew.getVariants().get(1);
         ProductVariantDraft draft6 = productDraftNew.getVariants().get(2);
@@ -62,10 +65,21 @@ public class ProductUpdateActionUtilsTest {
             buildAddVariantUpdateActionFromDraft(draft5),
             buildAddVariantUpdateActionFromDraft(draft6));
 
+        // variant 4 sku change
         assertThat(updateActions).containsOnlyOnce(SetSku.of(4, "var-44-sku", true));
 
+        // verify image update of variant 4
+        RemoveImage removeImage = RemoveImage.ofVariantId(4, "https://xxx.ggg/4.png", true);
+        AddExternalImage addExternalImage =
+            AddExternalImage.ofVariantId(4, productDraftNew.getVariants().get(0).getImages().get(0), true);
+        assertThat(updateActions).containsOnlyOnce(removeImage);
+        assertThat(updateActions).containsOnlyOnce(addExternalImage);
+        assertThat(updateActions.indexOf(removeImage))
+            .withFailMessage("Remove image action must be executed before add image action")
+            .isLessThan(updateActions.indexOf(addExternalImage));
+
         // change master variant must be always after variants are added/updated,
-        // because it set by SKU, we should be sure the master variant is already added and SKUs are actual
+        // because it is set by SKU and we should be sure the master variant is already added and SKUs are actual
         assertThat(updateActions.indexOf(ChangeMasterVariant.ofSku("var-7-sku", true)))
             .isEqualTo(updateActions.size() - 1);
     }
