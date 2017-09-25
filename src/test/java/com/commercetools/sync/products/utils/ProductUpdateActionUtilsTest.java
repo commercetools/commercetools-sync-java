@@ -1,5 +1,7 @@
 package com.commercetools.sync.products.utils;
 
+import com.commercetools.sync.products.ProductSyncOptions;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Image;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
@@ -13,6 +15,7 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.updateactions.AddVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
+import io.sphere.sdk.products.commands.updateactions.SetSku;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -26,19 +29,46 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddVariantUpdateActionFromDraft;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeMasterVariantUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildRemoveVariantUpdateActions;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 
 public class ProductUpdateActionUtilsTest {
-    @Test
-    public void buildVariantsUpdateActions() throws Exception {
-        // TODO: add tests
-    }
 
     public static final String OLD_PROD_WITH_VARIANTS =
             "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/productOld.json";
     public static final String NEW_PROD_DRAFT_WITH_VARIANTS =
             "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/productDraftNew.json";
+
+    @Test
+    public void buildVariantsUpdateActions_makesListOfUpdateActions() throws Exception {
+        ProductSyncOptions productSyncOptions = mock(ProductSyncOptions.class);
+        Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+        ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS);
+        List<UpdateAction<Product>> updateActions =
+            buildVariantsUpdateActions(productOld, productDraftNew, productSyncOptions, emptyMap());
+
+        // check remove variants are the first in the list
+        assertThat(updateActions.subList(0, 3))
+            .contains(RemoveVariant.of(1), RemoveVariant.of(2), RemoveVariant.of(3));
+
+        ProductVariantDraft draftMaster = productDraftNew.getMasterVariant();
+        ProductVariantDraft draft5 = productDraftNew.getVariants().get(1);
+        ProductVariantDraft draft6 = productDraftNew.getVariants().get(2);
+        assertThat(updateActions).contains(
+            buildAddVariantUpdateActionFromDraft(draftMaster),
+            buildAddVariantUpdateActionFromDraft(draft5),
+            buildAddVariantUpdateActionFromDraft(draft6));
+
+        assertThat(updateActions).containsOnlyOnce(SetSku.of(4, "var-44-sku", true));
+
+        // change master variant must be always after variants are added/updated,
+        // because it set by SKU, we should be sure the master variant is already added and SKUs are actual
+        assertThat(updateActions.indexOf(ChangeMasterVariant.ofSku("var-7-sku", true)))
+            .isEqualTo(updateActions.size() - 1);
+    }
 
     @Test
     public void buildRemoveVariantUpdateAction_removesMissedVariants() throws Exception {

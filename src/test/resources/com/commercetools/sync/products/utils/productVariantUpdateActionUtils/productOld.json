@@ -92,13 +92,13 @@
           ],
           "images": [
             {
-              "url": "https://xxx.ggg/5.png"
+              "url": "https://xxx.ggg/4.png"
             }
           ],
           "attributes": [
             {
               "name": "priceInfo",
-              "value": "64,90/kg"
+              "value": "4/kg"
             },
             {
               "name": "size",
