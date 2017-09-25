@@ -382,8 +382,7 @@ public final class ProductUpdateActionUtils {
 
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
         final List<ProductVariant> oldProductVariants = oldProduct.getMasterData().getStaged().getAllVariants();
-        final List<ProductVariantDraft> newProductVariants = new ArrayList<>();
-        newProductVariants.addAll(newProduct.getVariants());
+        final List<ProductVariantDraft> newProductVariants = new ArrayList<>(newProduct.getVariants());
         newProductVariants.add(newProduct.getMasterVariant());
 
         for (ProductVariantDraft newProductVariant : newProductVariants) {
