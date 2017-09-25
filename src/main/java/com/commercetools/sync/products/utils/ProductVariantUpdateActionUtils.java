@@ -107,14 +107,12 @@ public final class ProductVariantUpdateActionUtils {
      *
      * @param oldProductVariant TODO
      * @param newProductVariant TODO
-     * @param syncOptions       TODO
      * @return TODO
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantPricesUpdateActions(
         @Nonnull final ProductVariant oldProductVariant,
-        @Nonnull final ProductVariantDraft newProductVariant,
-        @Nonnull final ProductSyncOptions syncOptions) {
+        @Nonnull final ProductVariantDraft newProductVariant) {
         //TODO: Right now it always builds SetPrices UpdateAction, comparison should be calculated GITHUB ISSUE#101.
         final List<PriceDraft> newProductVariantPrices =
             newProductVariant.getPrices() == null ? new ArrayList<>() : newProductVariant.getPrices();

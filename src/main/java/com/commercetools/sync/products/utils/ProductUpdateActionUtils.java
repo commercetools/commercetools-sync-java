@@ -411,8 +411,7 @@ public final class ProductUpdateActionUtils {
                         attributesMetaData, syncOptions));
                     updateActions.addAll(buildProductVariantImagesUpdateActions(oldProductVariant,
                         newProductVariant, syncOptions));
-                    updateActions.addAll(buildProductVariantPricesUpdateActions(oldProductVariant,
-                        newProductVariant, syncOptions));
+                    updateActions.addAll(buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant));
                 });
 
         }
