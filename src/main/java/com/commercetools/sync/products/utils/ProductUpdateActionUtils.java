@@ -17,6 +17,7 @@ import io.sphere.sdk.products.commands.updateactions.AddVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
+import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
 import io.sphere.sdk.products.commands.updateactions.SetCategoryOrderHint;
@@ -25,6 +26,7 @@ import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.products.commands.updateactions.SetSearchKeywords;
+import io.sphere.sdk.products.commands.updateactions.Unpublish;
 import io.sphere.sdk.search.SearchKeywords;
 
 import javax.annotation.Nonnull;
@@ -479,6 +481,30 @@ public final class ProductUpdateActionUtils {
             .map(ProductUpdateActionUtils::buildAddVariantUpdateActionFromDraft)
             .collect(toList());
     }
+
+    /**
+     * Compares the 'published' field of a {@link ProductDraft} and a {@link Product} and accordingly returns
+     * a {@link Publish} or {@link Unpublish} update action as a result in an {@link Optional}. If the new product's
+     * 'published' field is null, then the default false value is assumed.
+     *
+     * <p>If both the {@link Product} and the {@link ProductDraft} have the same 'published' flag value, then no update
+     * action is needed and hence an empty {@link Optional} is returned.
+     *
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new meta description.
+     * @return A filled optional with the update action or an empty optional if the flag values are identical.
+     */
+    @Nonnull
+    public static Optional<UpdateAction<Product>> buildPublishUpdateAction(@Nonnull final Product oldProduct,
+                                                                           @Nonnull final ProductDraft newProduct) {
+        final Boolean isNewProductPublished = newProduct.isPublish();
+        final Boolean isOldProductPublished = oldProduct.getMasterData().isPublished();
+        if (Boolean.TRUE.equals(isNewProductPublished)) {
+            return buildUpdateAction(isOldProductPublished, isNewProductPublished, Publish::of);
+        }
+        return buildUpdateAction(isOldProductPublished, isNewProductPublished, Unpublish::of);
+    }
+
 
     /**
      * Create update action, if {@code newProduct} has {@code #masterVariant#key} different than {@code oldProduct}
