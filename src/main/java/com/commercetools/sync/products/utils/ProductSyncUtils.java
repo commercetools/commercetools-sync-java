@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddToCategoryUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeNameUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeSlugUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildPublishUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildRemoveFromCategoryUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetCategoryOrderHintUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetDescriptionUpdateAction;
@@ -94,11 +95,13 @@ public final class ProductSyncUtils {
             buildSetMetaDescriptionUpdateAction(oldProduct, newProduct),
             buildSetMetaKeywordsUpdateAction(oldProduct, newProduct)
         ));
-
         updateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct));
         updateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));
         updateActions.addAll(buildRemoveFromCategoryUpdateActions(oldProduct, newProduct));
         updateActions.addAll(buildVariantsUpdateActions(oldProduct, newProduct, syncOptions, attributesMetaData));
+
+        // lastly publish/unpublish
+        buildPublishUpdateAction(oldProduct, newProduct).ifPresent(updateActions::add);
         return updateActions;
     }
 
