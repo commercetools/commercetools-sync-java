@@ -43,19 +43,19 @@ import static org.mockito.Mockito.when;
 
 public class ProductUpdateActionUtilsTest {
 
-    private static final String RESOURCES_ROOT = "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/";
-    private static final String OLD_PROD_WITH_VARIANTS = RESOURCES_ROOT + "productOld.json";
+    private static final String RES_ROOT = "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/";
+    private static final String OLD_PROD_WITH_VARIANTS = RES_ROOT + "productOld.json";
 
     // this product's variants don't contain old master variant
     private static final String NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER =
-        RESOURCES_ROOT + "productDraftNew_changeRemoveMasterVariant.json";
+        RES_ROOT + "productDraftNew_changeRemoveMasterVariant.json";
 
     // this product's variants contain old master variant, but not as master any more
     private static final String NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER =
-        RESOURCES_ROOT + "productDraftNew_moveMasterVariant.json";
+        RES_ROOT + "productDraftNew_moveMasterVariant.json";
 
     @Test
-    public void buildVariantsUpdateActions_makesListOfUpdateActions() throws Exception {
+    public void buildVariantsUpdateActions_updatesVariants() throws Exception {
         final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
         final ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
 

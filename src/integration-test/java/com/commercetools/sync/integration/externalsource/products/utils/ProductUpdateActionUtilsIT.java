@@ -32,6 +32,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductUpdateActionUtilsIT {
 
+    private static final String DRAFTS_ROOT = "com/commercetools/sync/integration/externalsource/products/utils/";
+    private static final String NEW_PRODUCT = DRAFTS_ROOT + "productDraftNewIT.json";
+    private static final String OLD_PRODUCT = DRAFTS_ROOT + "productDraftOldIT.json";
+
     private static ProductType targetProductType;
 
     /**
@@ -49,9 +53,12 @@ public class ProductUpdateActionUtilsIT {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
+    /**
+     * Create old product from the draft.
+     */
     @Before
-    public void setUp() throws Exception {
-        ProductDraft productDraftOld = SphereJsonUtils.readObjectFromResource("com/commercetools/sync/integration/externalsource/products/utils/productDraftOldIT.json", ProductDraft.class);
+    public void setUp() {
+        ProductDraft productDraftOld = SphereJsonUtils.readObjectFromResource(OLD_PRODUCT, ProductDraft.class);
         ProductDraft productDraft = ProductDraftBuilder.of(productDraftOld)
             .productType(ResourceIdentifier.ofKey(targetProductType.getKey()))
             .build();
@@ -70,7 +77,7 @@ public class ProductUpdateActionUtilsIT {
 
         final ProductSync productSync = new ProductSync(productSyncOptions);
 
-        final ProductDraft productDraftNew = SphereJsonUtils.readObjectFromResource("com/commercetools/sync/integration/externalsource/products/utils/productDraftNewIT.json", ProductDraft.class);
+        final ProductDraft productDraftNew = SphereJsonUtils.readObjectFromResource(NEW_PRODUCT, ProductDraft.class);
 
         ProductDraft productDraft = ProductDraftBuilder.of(productDraftNew)
             .productType(ResourceIdentifier.ofId(targetProductType.getKey()))
