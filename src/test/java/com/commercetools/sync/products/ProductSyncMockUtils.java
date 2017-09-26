@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
-import static java.lang.String.valueOf;
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 public class ProductSyncMockUtils {
@@ -75,8 +75,8 @@ public class ProductSyncMockUtils {
                                                                         categoriesReferences) {
         final Map<String, String> categoryOrderHints = new HashMap<>();
         categoriesReferences.forEach(categoryReference -> {
-            final double randomDouble = ThreadLocalRandom.current().nextDouble(0, 1);
-            categoryOrderHints.put(categoryReference.getId(), valueOf(randomDouble));
+            final double randomDouble = ThreadLocalRandom.current().nextDouble(1e-8, 1);
+            categoryOrderHints.put(categoryReference.getId(), format("%s", randomDouble));
         });
         return CategoryOrderHints.of(categoryOrderHints);
     }
