@@ -1,6 +1,5 @@
 package com.commercetools.sync.products.helpers;
 
-import com.commercetools.sync.categories.helpers.CategoryReferenceResolver;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -122,38 +121,22 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
     @Nonnull
     private CompletionStage<ProductDraft> resolveCategoryReferences(@Nonnull final ProductDraft productDraft) {
-        final Set<Reference<Category>> categories = productDraft.getCategories();
+        final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = productDraft.getCategories();
         final Set<String> categoryKeys = new HashSet<>();
 
-        categories.forEach(categoryReference -> {
-            if (categoryReference != null) {
+        categoryResourceIdentifiers.forEach(categoryResourceIdentifier -> {
+            if (categoryResourceIdentifier != null) {
                 try {
-                    getCategoryKey(productDraft, categoryReference, options.shouldAllowUuidKeys())
-                        .map(categoryKeys::add);
+                    final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier,
+                        options.shouldAllowUuidKeys());
+                    categoryKeys.add(categoryKey);
                 } catch (ReferenceResolutionException referenceResolutionException) {
                     options.applyErrorCallback(format(FAILED_TO_RESOLVE_CATEGORY, productDraft.getKey(),
                         referenceResolutionException), referenceResolutionException);
                 }
             }
         });
-        return fetchAndResolveCategoryReference(productDraft, categoryKeys);
-    }
-
-
-    @Nonnull
-    private static Optional<String> getCategoryKey(@Nonnull final ProductDraft productDraft,
-                                                   @Nonnull final Reference<Category> categoryReference,
-                                                   final boolean shouldAllowUuidKeys)
-        throws ReferenceResolutionException {
-        final String keyFromExpansion = CategoryReferenceResolver.getKeyFromExpansion(categoryReference);
-        try {
-            final String keyFromExpansionOrReference =
-                getKeyFromExpansionOrReference(shouldAllowUuidKeys, keyFromExpansion, categoryReference);
-            return Optional.of(keyFromExpansionOrReference);
-        } catch (ReferenceResolutionException referenceResolutionException) {
-            throw new ReferenceResolutionException(format(FAILED_TO_RESOLVE_CATEGORY, productDraft.getKey(),
-                referenceResolutionException.getMessage()), referenceResolutionException);
-        }
+        return fetchAndResolveCategoryReferences(productDraft, categoryKeys);
     }
 
     /**
@@ -169,8 +152,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      *          references or an exception.
      */
     @Nonnull
-    private CompletionStage<ProductDraft> fetchAndResolveCategoryReference(@Nonnull final ProductDraft productDraft,
-                                                                           @Nonnull final Set<String> categoryKeys) {
+    private CompletionStage<ProductDraft> fetchAndResolveCategoryReferences(@Nonnull final ProductDraft productDraft,
+                                                                            @Nonnull final Set<String> categoryKeys) {
         final Map<String, String> categoryOrderHintsMap = new HashMap<>();
         final CategoryOrderHints categoryOrderHints = productDraft.getCategoryOrderHints();
 
