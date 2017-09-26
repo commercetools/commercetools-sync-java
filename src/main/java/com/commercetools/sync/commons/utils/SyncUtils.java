@@ -7,6 +7,7 @@ import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
@@ -23,9 +24,11 @@ import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -183,25 +186,27 @@ public final class SyncUtils {
     /**
      * Takes a product draft that is supposed to have its category references expanded
      * in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return
-     * a new product drafts with the references containing keys instead of the ids. Note that if the
-     * references are not expanded for a product draft, the reference ids will not be replaced with keys and will
+     * a new product drafts with the references containing keys instead of the ids. Note that the category references
+     * should be expanded for the productDraft, otherwise the reference ids will not be replaced with keys and will
      * still have their ids in place.
      *
      * @param productDraft the product drafts to replace its reference ids with keys
      * @return a new products draft with keys instead of ids for references.
      */
-    @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
     @Nonnull
     public static ProductDraft replaceProductDraftCategoryReferenceIdsWithKeys(@Nonnull final ProductDraft
                                                                                         productDraft) {
-        final Set<Reference<Category>> categories = productDraft.getCategories();
+        final Set<ResourceIdentifier<Category>> categories = productDraft.getCategories();
         List<Reference<Category>> categoryReferencesWithKeys = new ArrayList<>();
         Map<String, String> categoryOrderHintsMapWithKeys = new HashMap<>();
         if (categories != null) {
             categoryReferencesWithKeys = categories
-                .stream().map(categoryReference -> replaceReferenceIdWithKey(categoryReference, () -> {
-                    final String categoryId = categoryReference.getId();
-                    final String categoryKey = categoryReference.getObj().getKey();
+                .stream().map(categoryResourceIdentifier -> {
+                    final String categoryId = categoryResourceIdentifier.getId();
+                    String categoryKey = categoryResourceIdentifier.getKey();
+                    // If the key is null, keep the id instead.
+                    // TODO: Should the user be notified if the category key is null?
+                    categoryKey = categoryKey == null ? categoryId : categoryKey;
 
                     // Replace categoryOrderHint id with key.
                     final CategoryOrderHints categoryOrderHints = productDraft.getCategoryOrderHints();
@@ -212,7 +217,7 @@ public final class SyncUtils {
 
                     // Replace category reference id with key.
                     return Category.referenceOfId(categoryKey);
-                })).collect(Collectors.toList());
+                }).collect(Collectors.toList());
         }
         final CategoryOrderHints categoryOrderHintsWithKeys = CategoryOrderHints.of(categoryOrderHintsMapWithKeys);
         return ProductDraftBuilder.of(productDraft)
@@ -248,7 +253,31 @@ public final class SyncUtils {
             .searchKeywords(productData.getSearchKeywords())
             .key(product.getKey())
             .publish(product.getMasterData().isPublished())
-            .categories(productData.getCategories())
+            .categories(getCategoryResourceIdentifiers(productData))
             .categoryOrderHints(productData.getCategoryOrderHints());
+    }
+
+    /**
+     * Builds a {@link Set} of Category {@link ResourceIdentifier} given a {@link ProductData} instance which contains
+     * references to those categories.
+     *
+     * @param productData the instance containing the category references.
+     * @return a set of {@link Category} {@link ResourceIdentifier}
+     */
+    @Nonnull
+    @SuppressWarnings("ConstantConditions") // NPE (categoryReference.getObj().getKey()) is being checked in the filter.
+    private static Set<ResourceIdentifier<Category>> getCategoryResourceIdentifiers(@Nonnull final ProductData
+                                                                                        productData) {
+        final Set<Reference<Category>> categoryReferences = productData.getCategories();
+        if (categoryReferences == null) {
+            return Collections.emptySet();
+        }
+        return categoryReferences.stream()
+                                 .filter(Objects::nonNull)
+                                 .filter(categoryReference -> Objects.nonNull(categoryReference.getObj()))
+                                 .map(categoryReference ->
+                                     ResourceIdentifier.<Category>ofIdOrKey(categoryReference.getId(),
+                                         categoryReference.getObj().getKey(), Category.referenceTypeId()))
+                                 .collect(Collectors.toSet());
     }
 }
