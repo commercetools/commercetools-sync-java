@@ -2,6 +2,7 @@ package com.commercetools.sync.products;
 
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
@@ -16,7 +17,9 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.lang.String.valueOf;
@@ -46,6 +49,14 @@ public class ProductSyncMockUtils {
             .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
             .collect(toList());
 
+        final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
+            productData.getCategories()
+                       .stream()
+                       .map(categoryReference ->
+                           ResourceIdentifier.<Category>ofIdOrKey(categoryReference.getId(), categoryReference.getKey(),
+                               Category.referenceTypeId()))
+                       .collect(Collectors.toSet());
+
         return ProductDraftBuilder
             .of(productTypeReference, productData.getName(), productData.getSlug(), allVariants)
             .metaDescription(productData.getMetaDescription())
@@ -55,7 +66,7 @@ public class ProductSyncMockUtils {
             .searchKeywords(productData.getSearchKeywords())
             .key(productFromJson.getKey())
             .publish(productFromJson.getMasterData().isPublished())
-            .categories(productData.getCategories())
+            .categories(categoryResourceIdentifiers)
             .categoryOrderHints(productData.getCategoryOrderHints());
     }
 
