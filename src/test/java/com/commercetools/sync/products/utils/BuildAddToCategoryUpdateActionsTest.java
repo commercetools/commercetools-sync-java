@@ -2,7 +2,7 @@ package com.commercetools.sync.products.utils;
 
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.AddToCategory;
@@ -29,8 +29,8 @@ public class BuildAddToCategoryUpdateActionsTest {
     @Test
     public void buildAddToCategoryUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {
         final Category category = readObjectFromResource(CATEGORY_KEY_1_RESOURCE_PATH, Category.class);
-        final Set<Reference<Category>> newProductCategories = new HashSet<>();
-        newProductCategories.add(category.toReference());
+        final Set<ResourceIdentifier<Category>> newProductCategories = new HashSet<>();
+        newProductCategories.add(category.toResourceIdentifier());
 
         final List<UpdateAction<Product>> addToCategoryUpdateAction =
             getAddToCategoryUpdateActions(MOCK_OLD_PUBLISHED_PRODUCT, newProductCategories);
@@ -49,7 +49,7 @@ public class BuildAddToCategoryUpdateActionsTest {
     }
 
     private List<UpdateAction<Product>> getAddToCategoryUpdateActions(@Nonnull final Product oldProduct,
-                                                                      @Nonnull final Set<Reference<Category>>
+                                                                      @Nonnull final Set<ResourceIdentifier<Category>>
                                                                           newProductCategories) {
         final ProductDraft newProductDraft = mock(ProductDraft.class);
         when(newProductDraft.getCategories()).thenReturn(newProductCategories);
