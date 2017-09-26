@@ -1,5 +1,5 @@
 {
-  "key": "productKeyOld",
+  "key": "productToSyncKey",
   "masterData": {
     "staged": {
       "name": {

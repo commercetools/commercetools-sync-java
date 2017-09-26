@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftFromJson;
@@ -42,15 +43,21 @@ import static org.mockito.Mockito.when;
 
 public class ProductUpdateActionUtilsTest {
 
-    public static final String OLD_PROD_WITH_VARIANTS =
-            "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/productOld.json";
-    public static final String NEW_PROD_DRAFT_WITH_VARIANTS =
-            "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/productDraftNew.json";
+    private static final String RESOURCES_ROOT = "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/";
+    private static final String OLD_PROD_WITH_VARIANTS = RESOURCES_ROOT + "productOld.json";
+
+    // this product's variants don't contain old master variant
+    private static final String NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER =
+        RESOURCES_ROOT + "productDraftNew_changeRemoveMasterVariant.json";
+
+    // this product's variants contain old master variant, but not as master any more
+    private static final String NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER =
+        RESOURCES_ROOT + "productDraftNew_moveMasterVariant.json";
 
     @Test
     public void buildVariantsUpdateActions_makesListOfUpdateActions() throws Exception {
         final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
-        final ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS);
+        final ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
 
         final ProductSyncOptions productSyncOptions = mock(ProductSyncOptions.class);
 
@@ -63,9 +70,9 @@ public class ProductUpdateActionUtilsTest {
         final List<UpdateAction<Product>> updateActions =
             buildVariantsUpdateActions(productOld, productDraftNew, productSyncOptions, attributesMetaData);
 
-        // check remove variants are the first in the list
-        assertThat(updateActions.subList(0, 3))
-            .contains(RemoveVariant.of(1), RemoveVariant.of(2), RemoveVariant.of(3));
+        // check remove variants are the first in the list, but not the master variant
+        assertThat(updateActions.subList(0, 2))
+            .containsExactlyInAnyOrder(RemoveVariant.of(2), RemoveVariant.of(3));
 
         // check add actions
         ProductVariantDraft draftMaster = productDraftNew.getMasterVariant();
@@ -93,15 +100,56 @@ public class ProductUpdateActionUtilsTest {
         assertThat(updateActions).contains(SetAttribute.ofVariantId(4, "priceInfo", "44/kg", true));
 
         // change master variant must be always after variants are added/updated,
-        // because it is set by SKU and we should be sure the master variant is already added and SKUs are actual
-        assertThat(updateActions.indexOf(ChangeMasterVariant.ofSku("var-7-sku", true)))
-            .isEqualTo(updateActions.size() - 1);
+        // because it is set by SKU and we should be sure the master variant is already added and SKUs are actual.
+        // Also, master variant should be removed because it is missing in NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER
+        final int size = updateActions.size();
+        assertThat(updateActions.subList(size - 2, size)).containsExactly(
+            ChangeMasterVariant.ofSku("var-7-sku", true),
+            RemoveVariant.of(productOld.getMasterData().getStaged().getMasterVariant()));
+    }
+
+    @Test
+    public void buildVariantsUpdateActions_doesNotRemoveMaster() throws Exception {
+        final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+        final ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER);
+
+        final ProductSyncOptions productSyncOptions = mock(ProductSyncOptions.class);
+
+        final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
+        final AttributeMetaData priceInfo = mock(AttributeMetaData.class);
+        when(priceInfo.getName()).thenReturn("priceInfo");
+        when(priceInfo.isRequired()).thenReturn(false);
+        attributesMetaData.put("priceInfo", priceInfo);
+
+        final List<UpdateAction<Product>> updateActions =
+            buildVariantsUpdateActions(productOld, productDraftNew, productSyncOptions, attributesMetaData);
+
+        // check remove variants are the first in the list, but not the master variant
+        assertThat(updateActions.subList(0, 3))
+            .containsExactlyInAnyOrder(RemoveVariant.of(2), RemoveVariant.of(3), RemoveVariant.of(4));
+
+        // change master variant must be always after variants are added/updated,
+        // because it is set by SKU and we should be sure the master variant is already added and SKUs are actual.
+        assertThat(updateActions).endsWith(ChangeMasterVariant.ofSku("var-7-sku", true));
+
+        // Old master variant should NOT be removed because it exists in NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER
+        final ProductVariant oldMasterVariant = productOld.getMasterData().getStaged().getMasterVariant();
+        assertThat(updateActions).filteredOn(action -> {
+                // verify old master variant is not removed
+                if (action instanceof RemoveVariant) {
+                    RemoveVariant removeVariantAction = (RemoveVariant)action;
+                    return Objects.equals(oldMasterVariant.getId(), removeVariantAction.getId())
+                        || Objects.equals(oldMasterVariant.getSku(), removeVariantAction.getSku());
+                }
+                return false;
+            }
+        ).isEmpty();
     }
 
     @Test
     public void buildRemoveVariantUpdateAction_removesMissedVariants() throws Exception {
         Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
-        ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS);
+        ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
 
         ProductData oldStaged = productOld.getMasterData().getStaged();
         Map<String, ProductVariant> oldVariants =
@@ -119,13 +167,15 @@ public class ProductUpdateActionUtilsTest {
     @Test
     public void buildChangeMasterVariantUpdateAction_changesMasterVariant() throws Exception {
         Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
-        ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS);
+        ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
 
-        List<ChangeMasterVariant> changeMasterVariant =
+        List<UpdateAction<Product>> changeMasterVariant =
                 buildChangeMasterVariantUpdateAction(productOld, productDraftNew);
-        assertThat(changeMasterVariant).hasSize(1);
+        assertThat(changeMasterVariant).hasSize(2);
         assertThat(changeMasterVariant.get(0))
                 .isEqualTo(ChangeMasterVariant.ofSku(productDraftNew.getMasterVariant().getSku(), true));
+        assertThat(changeMasterVariant.get(1))
+            .isEqualTo(RemoveVariant.of(productOld.getMasterData().getStaged().getMasterVariant()));
     }
 
     @Test

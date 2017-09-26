@@ -385,16 +385,20 @@ public final class ProductUpdateActionUtils {
 
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
 
-        final Map<String, ProductVariant> oldProductVariants =
-            collectionToMap(oldProduct.getMasterData().getStaged().getAllVariants(), ProductVariant::getKey);
+        final Map<String, ProductVariant> oldProductVariantsNoMaster =
+            collectionToMap(oldProduct.getMasterData().getStaged().getVariants(), ProductVariant::getKey);
 
-        final List<ProductVariantDraft> newProductVariants = new ArrayList<>(newProduct.getVariants());
-        newProductVariants.add(newProduct.getMasterVariant());
+        final Map<String, ProductVariant> oldProductVariantsWithMaster = new HashMap<>(oldProductVariantsNoMaster);
+        ProductVariant masterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
+        oldProductVariantsWithMaster.put(masterVariant.getKey(), masterVariant);
 
-        // 1. Remove missing variants
-        updateActions.addAll(buildRemoveVariantUpdateActions(oldProductVariants, newProductVariants));
+        final List<ProductVariantDraft> newAllProductVariants = new ArrayList<>(newProduct.getVariants());
+        newAllProductVariants.add(newProduct.getMasterVariant());
 
-        for (ProductVariantDraft newProductVariant : newProductVariants) {
+        // 1. Remove missing variants, but keep master variant (MV can't be removed)
+        updateActions.addAll(buildRemoveVariantUpdateActions(oldProductVariantsNoMaster, newAllProductVariants));
+
+        for (ProductVariantDraft newProductVariant : newAllProductVariants) {
             if (newProductVariant == null) {
                 final String errorMessage = format(FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS,
                     oldProduct.getKey(), NULL_VARIANT);
@@ -413,7 +417,7 @@ public final class ProductUpdateActionUtils {
             // 2.1 if both old/new variants lists have an item with the same key - create update actions for the variant
             // 2.2 otherwise - add missing variant
             List<UpdateAction<Product>> updateOrAddVariant =
-                ofNullable(oldProductVariants.get(newProductVariantKey))
+                ofNullable(oldProductVariantsWithMaster.get(newProductVariantKey))
                     .map(oldProductVariant -> collectAllVariantUpdateActions(oldProduct, oldProductVariant,
                         newProductVariant, attributesMetaData, syncOptions))
                     .orElseGet(() -> singletonList(buildAddVariantUpdateActionFromDraft(newProductVariant)));
@@ -421,7 +425,7 @@ public final class ProductUpdateActionUtils {
             updateActions.addAll(updateOrAddVariant);
         }
 
-        // 3. change master variant, if necessary
+        // 3. change master variant and remove previous one, if necessary
         updateActions.addAll(buildChangeMasterVariantUpdateAction(oldProduct, newProduct));
 
         return updateActions;
@@ -505,20 +509,39 @@ public final class ProductUpdateActionUtils {
      * <p>If update action is created - it is created of
      * {@link ProductVariantDraft newProduct.getMasterVariant().getSku()}
      *
+     * <p>If old master variant is missing in the new variants list - add {@link RemoveVariant} action at the end.
+     *
      * @param oldProduct old product with variants
      * @param newProduct new product draft with variants <b>with resolved references prices references</b>
-     * @return a list of maximum one element {@link ChangeMasterVariant} if the keys are different.
+     * @return a list of maximum two elements: {@link ChangeMasterVariant} if the keys are different,
+     *     optionally followed by {@link RemoveVariant} if the changed variant does not exist in the new variants list.
      */
     @Nonnull
-    public static List<ChangeMasterVariant> buildChangeMasterVariantUpdateAction(
+    public static List<UpdateAction<Product>> buildChangeMasterVariantUpdateAction(
             @Nonnull final Product oldProduct,
             @Nonnull final ProductDraft newProduct) {
         final String newKey = newProduct.getMasterVariant().getKey();
         final String oldKey = oldProduct.getMasterData().getStaged().getMasterVariant().getKey();
         return buildUpdateActions(newKey, oldKey,
             // it might be that the new master variant is from new added variants, so CTP variantId is not set yet,
-            // thus we can't use ChangeMasterVariant.ofVariantId()
-            () -> singletonList(ChangeMasterVariant.ofSku(newProduct.getMasterVariant().getSku(), true)));
+            // thus we can't use ChangeMasterVariant.ofVariantId(),
+            // but it could be re-factored as soon as ChangeMasterVariant.ofKey() happens in the SDK
+            () -> {
+                final List<UpdateAction<Product>> res = new ArrayList<>(2);
+                res.add(ChangeMasterVariant.ofSku(newProduct.getMasterVariant().getSku(), true));
+
+                // verify whether the old master variant should be removed:
+                // if the new variant list doesn't contain the old master variant key.
+                // Since we can't remove a variant, if it is master, we have to change MV first, and then remove it
+                // (if it does not exist in the new variants list).
+                // We don't need to include new master variant to the iteration stream iteration,
+                // because this body is called only if newKey != oldKey
+                if (newProduct.getVariants().stream()
+                    .noneMatch(variant -> Objects.equals(variant.getKey(), oldKey))) {
+                    res.add(RemoveVariant.of(oldProduct.getMasterData().getStaged().getMasterVariant()));
+                }
+                return res;
+            });
     }
 
     /**
