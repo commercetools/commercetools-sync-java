@@ -53,6 +53,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 // TODO: Update JavaDocs according to changes, tests..
@@ -493,8 +494,8 @@ public final class ProductUpdateActionUtils {
     @Nonnull
     public static Optional<UpdateAction<Product>> buildPublishUpdateAction(@Nonnull final Product oldProduct,
                                                                            @Nonnull final ProductDraft newProduct) {
-        final Boolean isNewProductPublished = newProduct.isPublish();
-        final Boolean isOldProductPublished = oldProduct.getMasterData().isPublished();
+        final Boolean isNewProductPublished = toBoolean(newProduct.isPublish());
+        final Boolean isOldProductPublished = toBoolean(oldProduct.getMasterData().isPublished());
         if (Boolean.TRUE.equals(isNewProductPublished)) {
             return buildUpdateAction(isOldProductPublished, isNewProductPublished, Publish::of);
         }
