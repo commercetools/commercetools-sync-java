@@ -33,7 +33,7 @@ public class SphereClientUtils {
     public static final Long QUERY_MAX_LIMIT = 500L;
 
     /**
-     * Fetches resources of {@link T} using a {@code query}. The {@code ctpRequest} is applied on each resultant
+     * Fetches resources of {@code T} using a {@code query}. The {@code ctpRequest} is applied on each resultant
      * resource from fetching, to make a {@link SphereRequest}. Then each request is executed by {@code client}.
      * Method blocks until above operations were done.
      *
