@@ -193,6 +193,44 @@ public class ProductSyncIT {
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft)).toCompletableFuture().join();
 
         final List<Product> products = CTP_SOURCE_CLIENT.execute(getProductQuery())
+                                                        .toCompletableFuture().join().getResults();
+
+        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+
+        final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
+
+        assertThat(syncStatistics.getReportMessage())
+            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
+                + " failed to sync).", 1, 0, 1, 0));
+
+        Assertions.assertThat(errorCallBackMessages).isEmpty();
+        Assertions.assertThat(errorCallBackExceptions).isEmpty();
+        Assertions.assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void sync_withPriceChannels_ShouldUpdateProducts() {
+        final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
+            targetProductType.toReference(), targetCategoryResourcesWithIds,
+            createRandomCategoryOrderHints(targetCategories));
+
+        final ProductDraft existingDraftWithPriceChannelReferences =
+            getDraftWithPriceChannelReferences(existingProductDraft, targetPriceChannel.toReference());
+
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingDraftWithPriceChannelReferences))
+                         .toCompletableFuture().join();
+
+        final ProductDraft newProductDraft = createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH,
+            sourceProductType.toReference())
+            .categories(sourceCategoryResourcesWithIds)
+            .categoryOrderHints(createRandomCategoryOrderHints(sourceCategories))
+            .publish(false).build();
+
+        final ProductDraft newDraftWithPriceChannelReferences =
+            getDraftWithPriceChannelReferences(newProductDraft, sourcePriceChannel.toReference());
+
+        CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newDraftWithPriceChannelReferences))
+                         .toCompletableFuture().join();
 
         final List<Product> products = CTP_SOURCE_CLIENT.execute(getProductQuery())
                                                         .toCompletableFuture().join().getResults();
