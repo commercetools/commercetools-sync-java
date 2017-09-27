@@ -27,6 +27,13 @@ import static java.util.stream.Collectors.toList;
 
 public class ProductSyncMockUtils {
     public static final String PRODUCT_KEY_1_RESOURCE_PATH = "product-key-1.json";
+    public static final String PRODUCT_KEY_1_CHANGED_RESOURCE_PATH = "product-key-1-changed.json";
+    public static final String PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH = "product-key-1-with-prices.json";
+    public static final String PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH =
+        "product-key-1-changed-with-prices.json";
+    public static final String PRODUCT_KEY_2_RESOURCE_PATH = "product-key-2.json";
+    public static final String PRODUCT_TYPE_RESOURCE_PATH = "product-type.json";
+    public static final String PRODUCT_TYPE_NO_KEY_RESOURCE_PATH = "product-type-no-key.json";
     public static final String CATEGORY_KEY_1_RESOURCE_PATH = "category-key-1.json";
 
     /**

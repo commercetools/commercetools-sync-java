@@ -131,20 +131,6 @@
         "id": 1,
         "key": "v1",
         "sku": "3065833",
-        "prices": [
-          {
-            "value": {
-              "currencyCode": "EUR",
-              "centAmount": 108
-            }
-          },
-          {
-            "value": {
-              "currencyCode": "EGP",
-              "centAmount": 10
-            }
-          }
-        ],
         "images": [
           {
             "url": "https://53346cfbf3c7e017ed3d-6de74c3efa80f1c837c6a988b57abe66.ssl.cf3.rackcdn.com/old-image.png",
