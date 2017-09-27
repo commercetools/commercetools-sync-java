@@ -7,7 +7,7 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
@@ -22,6 +22,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
@@ -31,24 +32,26 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.O
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.PRODUCT_TYPE_NO_KEY_RESOURCE_PATH;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_NO_KEY_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 public class ProductReferenceResolverIT {
     private static ProductType productTypeSource;
     private static ProductType noKeyProductTypeSource;
 
-    private static List<Reference<Category>> categoryReferences;
+    private static Set<ResourceIdentifier<Category>> sourceCategoryResourcesWithIds;
+    private static Set<ResourceIdentifier<Category>> sourceCategories;
     private ProductSync productSync;
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
@@ -69,9 +72,16 @@ public class ProductReferenceResolverIT {
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_SOURCE_CLIENT);
 
         createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
-        categoryReferences =
-            createCategories(CTP_SOURCE_CLIENT, getCategoryDrafts(null, 2))
-                .stream().map(Category::toReference).collect(Collectors.toList());
+        sourceCategories = createCategories(CTP_SOURCE_CLIENT, getCategoryDrafts(null, 2))
+            .stream()
+            .map(category -> ResourceIdentifier.<Category>ofIdOrKey(category.getId(), category.getKey(),
+                Category.referenceTypeId())).collect(Collectors.toSet());
+        sourceCategoryResourcesWithIds =
+            sourceCategories.stream()
+                            .map(categoryResourceIdentifier ->
+                                ResourceIdentifier.<Category>ofId(categoryResourceIdentifier.getId(),
+                                    Category.referenceTypeId()))
+                            .collect(toSet());
 
         createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
         createProductType(PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, CTP_TARGET_CLIENT);
@@ -117,7 +127,8 @@ public class ProductReferenceResolverIT {
     @Test
     public void sync_withNewProductWithExistingCategoryAndProductTypeReferences_ShouldCreateProduct() {
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
-            productTypeSource.toReference(), categoryReferences, createRandomCategoryOrderHints(categoryReferences));
+            productTypeSource.toReference(), sourceCategoryResourcesWithIds,
+            createRandomCategoryOrderHints(sourceCategories));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
         final ProductQuery productQuery = ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
@@ -147,8 +158,8 @@ public class ProductReferenceResolverIT {
     @Test
     public void sync_withNewProductWithNoProductTypeKey_ShouldFailCreatingTheProduct() {
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
-            noKeyProductTypeSource.toReference(), categoryReferences,
-            createRandomCategoryOrderHints(categoryReferences));
+            noKeyProductTypeSource.toReference(), sourceCategoryResourcesWithIds,
+            createRandomCategoryOrderHints(sourceCategories));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
         final ProductQuery productQuery = ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
