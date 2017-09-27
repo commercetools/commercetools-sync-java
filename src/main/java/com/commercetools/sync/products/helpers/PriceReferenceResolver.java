@@ -23,7 +23,7 @@ public final class PriceReferenceResolver extends CustomReferenceResolver<PriceD
     private ChannelService channelService;
     private static final String CHANNEL_DOES_NOT_EXIST = "Channel with key '%s' does not exist.";
     private static final String FAILED_TO_RESOLVE_CHANNEL = "Failed to resolve the channel reference on "
-        + "priceDraft with country:'%s' and value: '%s'. Reason: %s";
+        + "PriceDraft with country:'%s' and value: '%s'. Reason: %s";
     private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
         + "PriceDraft with country:'%s' and value: '%s'.";
 
@@ -129,14 +129,14 @@ public final class PriceReferenceResolver extends CustomReferenceResolver<PriceD
     private CompletionStage<PriceDraft> fetchOrCreateAndResolveReference(
         @Nonnull final PriceDraft draft,
         @Nonnull final String channelKey) {
-        final CompletionStage<PriceDraft> inventoryEntryDraftCompletionStage = channelService
+        final CompletionStage<PriceDraft> priceDraftCompletionStage = channelService
             .fetchCachedChannelId(channelKey)
             .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
                 .map(resolvedChannelId -> setChannelReference(resolvedChannelId, draft))
                 .orElseGet(() -> createChannelAndSetReference(channelKey, draft)));
 
         final CompletableFuture<PriceDraft> result = new CompletableFuture<>();
-        inventoryEntryDraftCompletionStage
+        priceDraftCompletionStage
             .whenComplete((resolvedDraft, exception) -> {
                 if (exception != null) {
                     result.completeExceptionally(
@@ -154,8 +154,8 @@ public final class PriceReferenceResolver extends CustomReferenceResolver<PriceD
      * {@link PriceDraft} object as a result of setting the passed {@code channelId} as the id of channel
      * reference.
      *
-     * @param channelId  the channel id to set on the inventory entry supply channel reference id field.
-     * @param priceDraft the inventory entry draft to resolve it's supply channel reference.
+     * @param channelId  the channel id to set on the price channel reference id field.
+     * @param priceDraft the price draft to resolve it's supply channel reference.
      * @return a completed CompletionStage with a resolved channel reference
      *         {@link PriceDraft} object as a result of setting the passed {@code channelId} as the id of channel
      *         reference.
