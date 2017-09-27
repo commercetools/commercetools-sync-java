@@ -34,9 +34,9 @@ public final class CustomUpdateActionUtils {
     private static final String CUSTOM_TYPE_ID_IS_BLANK = "New resource's custom type id is blank (empty/null).";
 
     /**
-     * Compares the {@link CustomFields} of an old resource {@link T} (for example {@link Category},
+     * Compares the {@link CustomFields} of an old resource {@code T} (for example {@link Category},
      * {@link io.sphere.sdk.products.Product}, etc..), to the {@link CustomFieldsDraft}, of a new
-     * resource draft {@link S} (for example {@link CategoryDraft}, {@link io.sphere.sdk.products.ProductVariantDraft},
+     * resource draft {@code S} (for example {@link CategoryDraft}, {@link io.sphere.sdk.products.ProductVariantDraft},
      * etc..), and returns a {@link List}&lt;{@link UpdateAction}&gt; as a result. If no update action is needed,
      * for example in the case where both the {@link CustomFields} and the {@link CustomFieldsDraft} are null, an empty
      * {@link List}&lt;{@link UpdateAction}&gt; is returned. A {@link BaseSyncOptions} instance is injected into the

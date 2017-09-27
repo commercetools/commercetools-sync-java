@@ -34,7 +34,7 @@ public abstract class CustomReferenceResolver<T extends CustomDraft, S extends B
     }
 
     /**
-     * Given a draft of {@link T} (e.g. {@link CategoryDraft}) this method attempts to resolve it's custom type
+     * Given a draft of {@code T} (e.g. {@link CategoryDraft}) this method attempts to resolve it's custom type
      * reference to return {@link CompletionStage} which contains a new instance of the draft with the resolved
      * custom type reference. The key of the custom type is taken from the from the id field of the reference.
      *
