@@ -1,5 +1,5 @@
 {
-  "key": "productKeyKey",
+  "key": "productToSyncKey",
   "masterVariant": {
     "key": "var-7-key",
     "sku": "var-7-sku",
@@ -22,14 +22,14 @@
     ]
   },
   "variants": [
-      {
-      "key": "var-4-key",
-      "sku": "var-4-sku",
+    {
+      "key": "var-1-key",
+      "sku": "var-1-sku",
       "prices": [
       ],
       "images": [
         {
-          "url": "https://xxx.ggg/4.png"
+          "url": "https://xxx.ggg/1.png"
         }
       ],
       "attributes": [

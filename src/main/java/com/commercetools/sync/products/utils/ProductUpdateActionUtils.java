@@ -31,6 +31,7 @@ import io.sphere.sdk.search.SearchKeywords;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,25 +39,28 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToSet;
-import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
+import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
+import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantSkuUpdateActions;
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 // TODO: Update JavaDocs according to changes, tests..
 public final class ProductUpdateActionUtils {
     private static final String FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS = "Failed to build "
-        + "setAttribute/setAttributeInAllVariants update actions for the attributes of a ProductVariantDraft on the"
-        + " product with key '%s'. Reason: %s";
+            + "setAttribute/setAttributeInAllVariants update actions for the attributes of a ProductVariantDraft on the"
+            + " product with key '%s'. Reason: %s";
     private static final String BLANK_VARIANT_KEY = "The variant key is blank.";
     private static final String NULL_VARIANT = "The variant is null.";
 
@@ -100,9 +104,9 @@ public final class ProductUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the descriptions are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildSetDescriptionUpdateAction(@Nonnull final Product oldProduct,
-                                                                                  @Nonnull final ProductDraft
-                                                                                      newProduct) {
+    public static Optional<UpdateAction<Product>> buildSetDescriptionUpdateAction(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct) {
         final LocalizedString newDescription = newProduct.getDescription();
         final LocalizedString oldDescription = oldProduct.getMasterData().getStaged().getDescription();
         return buildUpdateAction(oldDescription, newDescription, () -> SetDescription.of(newDescription, true));
@@ -180,16 +184,16 @@ public final class ProductUpdateActionUtils {
      * @return A list containing the update actions or an empty list if the categoryOrderHints are identical.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildSetCategoryOrderHintUpdateActions(@Nonnull final Product oldProduct,
-                                                                                     @Nonnull final ProductDraft
-                                                                                         newProduct) {
+    public static List<UpdateAction<Product>> buildSetCategoryOrderHintUpdateActions(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct) {
         final CategoryOrderHints newCategoryOrderHints = newProduct.getCategoryOrderHints();
         final CategoryOrderHints oldCategoryOrderHints = oldProduct.getMasterData().getStaged().getCategoryOrderHints();
         return buildUpdateActions(oldCategoryOrderHints, newCategoryOrderHints, () -> {
 
             final Set<String> newCategoryIds = newProduct.getCategories().stream()
-                                                         .map(Reference::getId)
-                                                         .collect(toSet());
+                .map(Reference::getId)
+                .collect(toSet());
 
             final List<UpdateAction<Product>> updateActions = new ArrayList<>();
 
@@ -235,9 +239,9 @@ public final class ProductUpdateActionUtils {
      * @return A list containing the update actions or an empty list if the category sets are identical.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildRemoveFromCategoryUpdateActions(@Nonnull final Product oldProduct,
-                                                                                   @Nonnull final ProductDraft
-                                                                                       newProduct) {
+    public static List<UpdateAction<Product>> buildRemoveFromCategoryUpdateActions(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct) {
         final Set<Reference<Category>> newCategories = newProduct.getCategories();
         final Set<Reference<Category>> oldCategories = oldProduct.getMasterData().getStaged().getCategories();
         return buildUpdateActions(oldCategories, newCategories, () -> {
@@ -279,9 +283,9 @@ public final class ProductUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the search keywords are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildSetSearchKeywordsUpdateAction(@Nonnull final Product oldProduct,
-                                                                                     @Nonnull final ProductDraft
-                                                                                         newProduct) {
+    public static Optional<UpdateAction<Product>> buildSetSearchKeywordsUpdateAction(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct) {
         final SearchKeywords newSearchKeywords = newProduct.getSearchKeywords();
         final SearchKeywords oldSearchKeywords = oldProduct.getMasterData().getStaged().getSearchKeywords();
         return buildUpdateAction(oldSearchKeywords, newSearchKeywords,
@@ -305,9 +309,9 @@ public final class ProductUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the meta descriptions are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildSetMetaDescriptionUpdateAction(@Nonnull final Product oldProduct,
-                                                                                      @Nonnull final ProductDraft
-                                                                                          newProduct) {
+    public static Optional<UpdateAction<Product>> buildSetMetaDescriptionUpdateAction(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct) {
         final LocalizedString newMetaDescription = newProduct.getMetaDescription();
         final LocalizedString oldMetaDescription = oldProduct.getMasterData().getStaged().getMetaDescription();
         return buildUpdateAction(oldMetaDescription, newMetaDescription,
@@ -331,9 +335,9 @@ public final class ProductUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the meta keywords are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildSetMetaKeywordsUpdateAction(@Nonnull final Product oldProduct,
-                                                                                   @Nonnull final ProductDraft
-                                                                                       newProduct) {
+    public static Optional<UpdateAction<Product>> buildSetMetaKeywordsUpdateAction(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct) {
         final LocalizedString newMetaKeywords = newProduct.getMetaKeywords();
         final LocalizedString oldMetaKeywords = oldProduct.getMasterData().getStaged().getMetaKeywords();
         return buildUpdateAction(oldMetaKeywords, newMetaKeywords, () -> SetMetaKeywords.of(newMetaKeywords));
@@ -356,9 +360,9 @@ public final class ProductUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the meta titles are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildSetMetaTitleUpdateAction(@Nonnull final Product oldProduct,
-                                                                                @Nonnull final ProductDraft
-                                                                                    newProduct) {
+    public static Optional<UpdateAction<Product>> buildSetMetaTitleUpdateAction(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct) {
         final LocalizedString newMetaTitle = newProduct.getMetaTitle();
         final LocalizedString oldMetaTitle = oldProduct.getMasterData().getStaged().getMetaTitle();
         return buildUpdateAction(oldMetaTitle, newMetaTitle, () -> SetMetaTitle.of(newMetaTitle));
@@ -367,28 +371,35 @@ public final class ProductUpdateActionUtils {
     /**
      * Compares the variants of a {@link ProductDraft} and a {@link Product}. TODO: CONTINUE DOCUMENTATION.
      *
-     * @param oldProduct TODO
-     * @param newProduct TODO
-     * @param syncOptions TODO
+     * @param oldProduct         TODO
+     * @param newProduct         TODO
+     * @param syncOptions        TODO
      * @param attributesMetaData TODO
      * @return TODO
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildVariantsUpdateActions(@Nonnull final Product oldProduct,
-                                                                         @Nonnull final ProductDraft
-                                                                            newProduct,
-                                                                         @Nonnull final ProductSyncOptions
-                                                                                 syncOptions,
-                                                                         @Nonnull
-                                                                             final Map<String, AttributeMetaData>
-                                                                                 attributesMetaData) {
-        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-        final List<ProductVariant> oldProductVariants = oldProduct.getMasterData().getStaged().getAllVariants();
-        final List<ProductVariantDraft> newProductVariants = new ArrayList<>();
-        newProductVariants.addAll(newProduct.getVariants());
-        newProductVariants.add(newProduct.getMasterVariant());
+    public static List<UpdateAction<Product>> buildVariantsUpdateActions(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct,
+            @Nonnull final ProductSyncOptions syncOptions,
+            @Nonnull final Map<String, AttributeMetaData> attributesMetaData) {
 
-        for (ProductVariantDraft newProductVariant : newProductVariants) {
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
+
+        final Map<String, ProductVariant> oldProductVariantsNoMaster =
+            collectionToMap(oldProduct.getMasterData().getStaged().getVariants(), ProductVariant::getKey);
+
+        final Map<String, ProductVariant> oldProductVariantsWithMaster = new HashMap<>(oldProductVariantsNoMaster);
+        ProductVariant masterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
+        oldProductVariantsWithMaster.put(masterVariant.getKey(), masterVariant);
+
+        final List<ProductVariantDraft> newAllProductVariants = new ArrayList<>(newProduct.getVariants());
+        newAllProductVariants.add(newProduct.getMasterVariant());
+
+        // 1. Remove missing variants, but keep master variant (MV can't be removed)
+        updateActions.addAll(buildRemoveVariantUpdateActions(oldProductVariantsNoMaster, newAllProductVariants));
+
+        for (ProductVariantDraft newProductVariant : newAllProductVariants) {
             if (newProductVariant == null) {
                 final String errorMessage = format(FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS,
                     oldProduct.getKey(), NULL_VARIANT);
@@ -404,25 +415,38 @@ public final class ProductUpdateActionUtils {
                 continue;
             }
 
-            getVariantByKey(oldProductVariants, newProductVariantKey)
-                .ifPresent(oldProductVariant -> {
-                    updateActions.addAll(buildProductVariantAttributesUpdateActions(
-                        oldProduct.getKey(), oldProductVariant, newProductVariant,
-                        attributesMetaData, syncOptions));
-                    updateActions.addAll(buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant));
-                    updateActions.addAll(buildProductVariantPricesUpdateActions(oldProductVariant,
-                        newProductVariant, syncOptions));
-                });
+            // 2.1 if both old/new variants lists have an item with the same key - create update actions for the variant
+            // 2.2 otherwise - add missing variant
+            List<UpdateAction<Product>> updateOrAddVariant =
+                ofNullable(oldProductVariantsWithMaster.get(newProductVariantKey))
+                    .map(oldProductVariant -> collectAllVariantUpdateActions(oldProduct, oldProductVariant,
+                        newProductVariant, attributesMetaData, syncOptions))
+                    .orElseGet(() -> singletonList(buildAddVariantUpdateActionFromDraft(newProductVariant)));
 
+            updateActions.addAll(updateOrAddVariant);
         }
+
+        // 3. change master variant and remove previous one, if necessary
+        updateActions.addAll(buildChangeMasterVariantUpdateAction(oldProduct, newProduct));
+
         return updateActions;
     }
 
-    private static Optional<ProductVariant> getVariantByKey(@Nonnull final List<ProductVariant> productVariants,
-                                                            @Nonnull final String key) {
-        return productVariants.stream()
-                              .filter(productVariant -> Objects.equals(productVariant.getKey(), key))
-                              .findFirst();
+    private static List<UpdateAction<Product>> collectAllVariantUpdateActions(
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductVariant oldProductVariant,
+            @Nonnull final ProductVariantDraft newProductVariant,
+            @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
+            @Nonnull final ProductSyncOptions syncOptions) {
+
+        ArrayList<UpdateAction<Product>> res = new ArrayList<>();
+        res.addAll(buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
+            newProductVariant, attributesMetaData, syncOptions));
+        res.addAll(buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant));
+        res.addAll(buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions));
+        res.addAll(buildProductVariantSkuUpdateActions(oldProductVariant, newProductVariant));
+
+        return res;
     }
 
     /**
@@ -431,43 +455,28 @@ public final class ProductUpdateActionUtils {
      * If you add first, the update action could fail due to having a duplicate {@code key} or {@code sku} with variants
      * which were expected to be removed anyways. So issuing remove update action first will fix such issue.
      *
-     * @param oldProduct old product with variants
-     * @param newProduct new product draft with variants <b>with resolved references prices references</b>
+     * @param oldProductVariants [variantKey-variant] map of old variants. Master variant must be included.
+     * @param newProductVariants list of new product variants list <b>with resolved references prices references</b>.
+     *                            Master variant must be included.
      * @return list of update actions to remove missing variants.
-     * @see #buildAddVariantUpdateAction(Product, ProductDraft)
      */
     @Nonnull
-    public static List<RemoveVariant> buildRemoveVariantUpdateAction(@Nonnull final Product oldProduct,
-                                                                             @Nonnull final ProductDraft newProduct) {
-        final List<ProductVariant> oldVariants = oldProduct.getMasterData().getStaged().getVariants();
-        final Set<String> newVariants = collectionToSet(newProduct.getVariants(), ProductVariantDraft::getKey);
+    public static List<RemoveVariant> buildRemoveVariantUpdateActions(
+            @Nonnull final Map<String, ProductVariant> oldProductVariants,
+            @Nonnull final List<ProductVariantDraft> newProductVariants) {
 
-        return filterCollection(oldVariants, oldVariant -> !newVariants.contains(oldVariant.getKey()))
-                .map(RemoveVariant::of)
-                .collect(toList());
-    }
+        // copy the map and remove from the copy duplicate items
+        Map<String, ProductVariant> productsToRemove = new HashMap<>(oldProductVariants);
 
-    /**
-     * <b>Note:</b> if you do both add/remove product variants - <b>first always remove the variants</b>,
-     * and then - add.
-     * If you add first, the update action could fail due to having a duplicate {@code key} or {@code sku} with variants
-     * which were expected to be removed anyways. So issuing remove update action first will fix such issue.
-     *
-     * @param oldProduct old product with variants
-     * @param newProduct new product draft with variants <b>with resolved references prices references</b>
-     * @return list of update actions to add new variants.
-     * @see ProductUpdateActionUtils#buildRemoveVariantUpdateAction(Product, ProductDraft)
-     */
-    @Nonnull
-    public static List<AddVariant> buildAddVariantUpdateAction(@Nonnull final Product oldProduct,
-                                                               @Nonnull final ProductDraft newProduct) {
-        final List<ProductVariantDraft> newVariants = newProduct.getVariants();
-        final Set<String> oldVariantKeys =
-                collectionToSet(oldProduct.getMasterData().getStaged().getVariants(), ProductVariant::getKey);
+        for (ProductVariantDraft newVariant : newProductVariants) {
+            if (productsToRemove.containsKey(newVariant.getKey())) {
+                productsToRemove.remove(newVariant.getKey());
+            }
+        } // now productsToRemove contains only items which don't exist in newProductVariants
 
-        return filterCollection(newVariants, newVariant -> !oldVariantKeys.contains(newVariant.getKey()))
-                .map(ProductUpdateActionUtils::buildAddVariantUpdateActionFromDraft)
-                .collect(toList());
+        return productsToRemove.values().stream()
+            .map(RemoveVariant::of)
+            .collect(toList());
     }
 
     /**
@@ -485,8 +494,8 @@ public final class ProductUpdateActionUtils {
     @Nonnull
     public static Optional<UpdateAction<Product>> buildPublishUpdateAction(@Nonnull final Product oldProduct,
                                                                            @Nonnull final ProductDraft newProduct) {
-        final Boolean isNewProductPublished = newProduct.isPublish();
-        final Boolean isOldProductPublished = oldProduct.getMasterData().isPublished();
+        final Boolean isNewProductPublished = toBoolean(newProduct.isPublish());
+        final Boolean isOldProductPublished = toBoolean(oldProduct.getMasterData().isPublished());
         if (Boolean.TRUE.equals(isNewProductPublished)) {
             return buildUpdateAction(isOldProductPublished, isNewProductPublished, Publish::of);
         }
@@ -501,31 +510,50 @@ public final class ProductUpdateActionUtils {
      * <p>If update action is created - it is created of
      * {@link ProductVariantDraft newProduct.getMasterVariant().getSku()}
      *
+     * <p>If old master variant is missing in the new variants list - add {@link RemoveVariant} action at the end.
+     *
      * @param oldProduct old product with variants
      * @param newProduct new product draft with variants <b>with resolved references prices references</b>
-     * @return {@link ChangeMasterVariant} if the keys are different.
+     * @return a list of maximum two elements: {@link ChangeMasterVariant} if the keys are different,
+     *     optionally followed by {@link RemoveVariant} if the changed variant does not exist in the new variants list.
      */
     @Nonnull
-    public static Optional<ChangeMasterVariant> buildChangeMasterVariantUpdateAction(
+    public static List<UpdateAction<Product>> buildChangeMasterVariantUpdateAction(
             @Nonnull final Product oldProduct,
             @Nonnull final ProductDraft newProduct) {
         final String newKey = newProduct.getMasterVariant().getKey();
         final String oldKey = oldProduct.getMasterData().getStaged().getMasterVariant().getKey();
-        return buildUpdateAction(newKey, oldKey,
+        return buildUpdateActions(newKey, oldKey,
             // it might be that the new master variant is from new added variants, so CTP variantId is not set yet,
-            // thus we can't use ChangeMasterVariant.ofVariantId()
-            () -> ChangeMasterVariant.ofSku(newProduct.getMasterVariant().getSku(), true));
+            // thus we can't use ChangeMasterVariant.ofVariantId(),
+            // but it could be re-factored as soon as ChangeMasterVariant.ofKey() happens in the SDK
+            () -> {
+                final List<UpdateAction<Product>> res = new ArrayList<>(2);
+                res.add(ChangeMasterVariant.ofSku(newProduct.getMasterVariant().getSku(), true));
+
+                // verify whether the old master variant should be removed:
+                // if the new variant list doesn't contain the old master variant key.
+                // Since we can't remove a variant, if it is master, we have to change MV first, and then remove it
+                // (if it does not exist in the new variants list).
+                // We don't need to include new master variant to the iteration stream iteration,
+                // because this body is called only if newKey != oldKey
+                if (newProduct.getVariants().stream()
+                    .noneMatch(variant -> Objects.equals(variant.getKey(), oldKey))) {
+                    res.add(RemoveVariant.of(oldProduct.getMasterData().getStaged().getMasterVariant()));
+                }
+                return res;
+            });
     }
 
     /**
      * Factory method to create {@link AddVariant} action from {@link ProductVariantDraft} instance.
      *
      * <p>The {@link AddVariant} will include:<ul>
-     *     <li>sku</li>
-     *     <li>keys</li>
-     *     <li>attributes</li>
-     *     <li>prices</li>
-     *     <li>images</li>
+     * <li>sku</li>
+     * <li>keys</li>
+     * <li>attributes</li>
+     * <li>prices</li>
+     * <li>images</li>
      * </ul>
      *
      * @param draft {@link ProductVariantDraft} which to add.
@@ -534,7 +562,7 @@ public final class ProductUpdateActionUtils {
     @Nonnull
     static AddVariant buildAddVariantUpdateActionFromDraft(@Nonnull final ProductVariantDraft draft) {
         return AddVariant.of(draft.getAttributes(), draft.getPrices(), draft.getSku())
-                         .withKey(draft.getKey())
-                         .withImages(draft.getImages());
+            .withKey(draft.getKey())
+            .withImages(draft.getImages());
     }
 }
