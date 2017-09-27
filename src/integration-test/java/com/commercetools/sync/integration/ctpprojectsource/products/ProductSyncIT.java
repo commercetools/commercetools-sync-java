@@ -121,15 +121,7 @@ public class ProductSyncIT {
             sourceProductType.toReference(), sourceCategories, createRandomCategoryOrderHints(sourceCategories));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft)).toCompletableFuture().join();
 
-        final ProductQuery productQuery = ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
-                                                      .withExpansionPaths(ProductExpansionModel::productType)
-                                                      .plusExpansionPaths(categoryExpansionModel ->
-                                                          categoryExpansionModel.masterData().staged().categories())
-                                                      .plusExpansionPaths(channelExpansionModel ->
-                                                          channelExpansionModel.masterData().staged().allVariants()
-                                                                               .prices().channel());
-
-        final List<Product> products = CTP_SOURCE_CLIENT.execute(productQuery)
+        final List<Product> products = CTP_SOURCE_CLIENT.execute(getProductQuery())
                                                         .toCompletableFuture().join().getResults();
 
         final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
@@ -159,13 +151,9 @@ public class ProductSyncIT {
 
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft)).toCompletableFuture().join();
 
-        final ProductQuery productQuery = ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
-                                                      .withExpansionPaths(ProductExpansionModel::productType)
-                                                      .plusExpansionPaths(productProductExpansionModel ->
-                                                          productProductExpansionModel.masterData().staged()
-                                                                                      .categories());
+        final List<Product> products = CTP_SOURCE_CLIENT.execute(getProductQuery())
 
-        final List<Product> products = CTP_SOURCE_CLIENT.execute(productQuery)
+        final List<Product> products = CTP_SOURCE_CLIENT.execute(getProductQuery())
                                                         .toCompletableFuture().join().getResults();
 
         final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);

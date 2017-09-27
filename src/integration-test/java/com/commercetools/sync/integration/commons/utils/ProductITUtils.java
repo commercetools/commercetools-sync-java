@@ -95,4 +95,17 @@ public final class ProductITUtils {
                              .toArray(new CompletableFuture[productTypeDeleteFutures.size()])))
                      .toCompletableFuture().join();
     }
+
+    /**
+     * Builds the query for fetching products from the source CTP project with all the needed expansions.
+     * @return the query for fetching products from the source CTP project with all the needed expansions.
+     */
+    public static ProductQuery getProductQuery() {
+        return ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
+                           .withExpansionPaths(ProductExpansionModel::productType)
+                           .plusExpansionPaths(productProductExpansionModel ->
+                               productProductExpansionModel.masterData().staged().categories())
+                           .plusExpansionPaths(channelExpansionModel ->
+                               channelExpansionModel.masterData().staged().allVariants().prices().channel());
+    }
 }
