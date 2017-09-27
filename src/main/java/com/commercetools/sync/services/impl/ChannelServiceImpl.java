@@ -13,6 +13,7 @@ import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,6 +41,11 @@ public final class ChannelServiceImpl implements ChannelService {
         this.channelRoles = channelRoles;
     }
 
+    public ChannelServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
+        this.syncOptions = syncOptions;
+        this.channelRoles = Collections.emptySet();
+    }
+
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key) {
@@ -50,11 +56,12 @@ public final class ChannelServiceImpl implements ChannelService {
     }
 
     private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
-        final ChannelQuery query =
-            ChannelQueryBuilder.of()
-                               .plusPredicates(channelQueryModel -> channelQueryModel.roles().containsAny(channelRoles))
-                               .build();
-
+        ChannelQueryBuilder channelQueryBuilder = ChannelQueryBuilder.of();
+        if (!channelRoles.isEmpty()) {
+            channelQueryBuilder = channelQueryBuilder
+                .plusPredicates(channelQueryModel -> channelQueryModel.roles().containsAny(channelRoles));
+        }
+        final ChannelQuery query = channelQueryBuilder.build();
         final Consumer<List<Channel>> channelPageConsumer = channelsPage ->
             channelsPage.forEach(channel -> {
                 final String fetchedChannelKey = channel.getKey();

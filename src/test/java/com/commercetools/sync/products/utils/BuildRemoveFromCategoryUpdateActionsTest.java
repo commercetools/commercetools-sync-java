@@ -2,7 +2,7 @@ package com.commercetools.sync.products.utils;
 
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class BuildRemoveFromCategoryUpdateActionsTest {
 
     @Test
     public void buildRemoveFromCategoryUpdateActions_WithSameStagedValues_ShouldNotBuildUpdateAction() {
-        final Set<Reference<Category>> newProductCategories = new HashSet<>();
+        final Set<ResourceIdentifier<Category>> newProductCategories = new HashSet<>();
         newProductCategories.add(Category.referenceOfId("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"));
         newProductCategories.add(Category.referenceOfId("2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"));
         newProductCategories.add(Category.referenceOfId("3dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"));
@@ -49,7 +49,8 @@ public class BuildRemoveFromCategoryUpdateActionsTest {
     }
 
     private List<UpdateAction<Product>> getRemoveFromCategoryUpdateActions(@Nonnull final Product oldProduct,
-                                                                           @Nonnull final Set<Reference<Category>>
+                                                                           @Nonnull final
+                                                                           Set<ResourceIdentifier<Category>>
                                                                                newProductCategories) {
 
         final ProductDraft newProductDraft = mock(ProductDraft.class);

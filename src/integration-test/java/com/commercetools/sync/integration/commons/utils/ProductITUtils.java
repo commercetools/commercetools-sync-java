@@ -1,11 +1,20 @@
 package com.commercetools.sync.integration.commons.utils;
 
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
+import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.products.PriceDraft;
+import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductVariantDraft;
+import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.commands.ProductDeleteCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
+import io.sphere.sdk.products.expansion.ProductExpansionModel;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
@@ -22,14 +31,11 @@ import java.util.function.Consumer;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteSupplyChannels;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static java.util.stream.Collectors.toList;
 
 public final class ProductITUtils {
-    public static final String PRODUCT_KEY_1_CHANGED_RESOURCE_PATH = "product-key-1-changed.json";
-    public static final String PRODUCT_KEY_2_RESOURCE_PATH = "product-key-2.json";
-    public static final String PRODUCT_TYPE_RESOURCE_PATH = "product-type.json";
-    public static final String PRODUCT_TYPE_NO_KEY_RESOURCE_PATH = "product-type-no-key.json";
-
     /**
      * This method blocks to create a product type, which is defined by the JSON resource found in the supplied
      * {@code jsonResourcePath}, in the CTP project defined by the supplied {@code ctpClient}.
@@ -57,6 +63,7 @@ public final class ProductITUtils {
         deleteProductTypes(ctpClient);
         deleteAllCategories(ctpClient);
         deleteTypes(ctpClient);
+        deleteSupplyChannels(ctpClient);
     }
 
     /**
@@ -99,5 +106,49 @@ public final class ProductITUtils {
                          .allOf(productTypeDeleteFutures
                              .toArray(new CompletableFuture[productTypeDeleteFutures.size()])))
                      .toCompletableFuture().join();
+    }
+
+    /**
+     * Builds the query for fetching products from the source CTP project with all the needed expansions.
+     * @return the query for fetching products from the source CTP project with all the needed expansions.
+     */
+    public static ProductQuery getProductQuery() {
+        return ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
+                           .withExpansionPaths(ProductExpansionModel::productType)
+                           .plusExpansionPaths(productProductExpansionModel ->
+                               productProductExpansionModel.masterData().staged().categories())
+                           .plusExpansionPaths(channelExpansionModel ->
+                               channelExpansionModel.masterData().staged().allVariants().prices().channel());
+    }
+
+    /**
+     * Gets the supplied {@link ProductDraft} with the price channel reference attached.
+     *
+     * @param productDraft TODO
+     * @param channelReference TODO
+     * @return TODO.
+     */
+    public static ProductDraft getDraftWithPriceChannelReferences(@Nonnull final ProductDraft productDraft,
+                                                            @Nonnull final Reference<Channel> channelReference) {
+        final List<ProductVariantDraft> allVariants = productDraft
+            .getVariants().stream().map(productVariant -> {
+                final List<PriceDraft> priceDraftsWithChannelReferences =
+                    productVariant.getPrices().stream()
+                                  .map(price -> PriceDraftBuilder.of(price).channel(channelReference).build())
+                                  .collect(toList());
+                return ProductVariantDraftBuilder.of(productVariant)
+                                                 .prices(priceDraftsWithChannelReferences)
+                                                 .build();
+            })
+            .collect(toList());
+        final List<PriceDraft> masterVariantPriceDrafts = productDraft
+            .getMasterVariant().getPrices().stream().map(price -> PriceDraftBuilder.of(price)
+                                                                                   .channel(channelReference)
+                                                                                   .build()).collect(toList());
+        return ProductDraftBuilder.of(productDraft)
+                                  .masterVariant(ProductVariantDraftBuilder.of(productDraft.getMasterVariant())
+                                                                           .prices(masterVariantPriceDrafts).build())
+                                  .variants(allVariants)
+                                  .build();
     }
 }

@@ -1,26 +1,33 @@
 package com.commercetools.sync.products.helpers;
 
-import com.commercetools.sync.categories.helpers.CategoryReferenceResolver;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.CategoryService;
+import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.ProductTypeService;
+import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
+import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductVariantDraft;
+import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
@@ -29,6 +36,7 @@ import static java.lang.String.format;
 public final class ProductReferenceResolver extends BaseReferenceResolver<ProductDraft, ProductSyncOptions> {
     private ProductTypeService productTypeService;
     private CategoryService categoryService;
+    private PriceReferenceResolver priceReferenceResolver;
     private static final String FAILED_TO_RESOLVE_PRODUCT_TYPE = "Failed to resolve product type reference on "
         + "ProductDraft with key:'%s'.";
     private static final String FAILED_TO_RESOLVE_CATEGORY = "Failed to resolve category reference on "
@@ -43,14 +51,19 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * @param productSyncOptions the container of all the options of the sync process including the CTP project client
      *                           and/or configuration and other sync-specific options.
      * @param productTypeService the service to fetch the product type for reference resolution.
-     * @param categoryService the service to fetch the categories for reference resolution.
+     * @param categoryService    the service to fetch the categories for reference resolution.
+     * @param typeService        the service to fetch the custom types for reference resolution.
+     * @param channelService     the service to fetch the channels for reference resolution.
      */
     public ProductReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final ProductTypeService productTypeService,
-                                    @Nonnull final CategoryService categoryService) {
+                                    @Nonnull final CategoryService categoryService,
+                                    @Nonnull final TypeService typeService,
+                                    @Nonnull final ChannelService channelService) {
         super(productSyncOptions);
         this.productTypeService = productTypeService;
         this.categoryService = categoryService;
+        this.priceReferenceResolver = new PriceReferenceResolver(productSyncOptions, typeService, channelService);
     }
 
     /**
@@ -65,7 +78,69 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      */
     @Override
     public CompletionStage<ProductDraft> resolveReferences(@Nonnull final ProductDraft productDraft) {
-        return resolveProductTypeReference(productDraft).thenCompose(this::resolveCategoryReferences);
+        return resolveProductTypeReference(productDraft)
+            .thenCompose(this::resolveCategoryReferences)
+            .thenCompose(this::resolveProductPricesReferences);
+    }
+
+    @Nonnull
+    private CompletionStage<ProductDraft> resolveProductPricesReferences(@Nonnull final ProductDraft productDraft) {
+        final ProductVariantDraft productDraftMasterVariant = productDraft.getMasterVariant();
+        if (productDraftMasterVariant != null) {
+            return resolveProductVariantPriceReferences(productDraftMasterVariant)
+                .thenApply(resolvedMasterVariant ->
+                    ProductDraftBuilder.of(productDraft)
+                                       .masterVariant(resolvedMasterVariant).build())
+                .thenCompose(this::resolveProductVariantsPriceReferences);
+        }
+        return resolveProductVariantsPriceReferences(productDraft);
+    }
+
+    @Nonnull
+    private CompletionStage<ProductDraft> resolveProductVariantsPriceReferences(
+        @Nonnull final ProductDraft productDraft) {
+        final List<ProductVariantDraft> productDraftVariants = productDraft.getVariants();
+        if (productDraftVariants == null) {
+            return CompletableFuture.completedFuture(productDraft);
+        }
+
+        final List<CompletableFuture<ProductVariantDraft>> resolvedVariantFutures =
+            productDraftVariants.stream()
+                                .filter(Objects::nonNull)
+                                .map(this::resolveProductVariantPriceReferences)
+                                .map(CompletionStage::toCompletableFuture)
+                                .collect(Collectors.toList());
+        return
+            CompletableFuture.allOf(
+                resolvedVariantFutures.toArray(new CompletableFuture[resolvedVariantFutures.size()]))
+                             .thenApply(result -> resolvedVariantFutures.stream()
+                                                                        .map(CompletableFuture::join)
+                                                                        .collect(Collectors.toList()))
+                             .thenApply(resolvedVariants ->
+                                 ProductDraftBuilder.of(productDraft).variants(resolvedVariants).build());
+    }
+
+    private CompletionStage<ProductVariantDraft> resolveProductVariantPriceReferences(
+        @Nonnull final ProductVariantDraft productVariantDraft) {
+        final List<PriceDraft> productVariantDraftPrices = productVariantDraft.getPrices();
+        final ProductVariantDraftBuilder productVariantDraftBuilder =
+            ProductVariantDraftBuilder.of(productVariantDraft);
+
+        if (productVariantDraftPrices == null) {
+            return CompletableFuture.completedFuture(productVariantDraftBuilder.build());
+        }
+
+        final List<CompletableFuture<PriceDraft>> resolvedPriceDraftFutures =
+            productVariantDraftPrices.stream()
+                                     .map(priceReferenceResolver::resolveReferences)
+                                     .map(CompletionStage::toCompletableFuture)
+                                     .collect(Collectors.toList());
+        return CompletableFuture
+            .allOf(resolvedPriceDraftFutures.toArray(new CompletableFuture[resolvedPriceDraftFutures.size()]))
+            .thenApply(result -> resolvedPriceDraftFutures.stream()
+                                                          .map(CompletableFuture::join)
+                                                          .collect(Collectors.toList()))
+            .thenApply(resolvedPriceDrafts -> productVariantDraftBuilder.prices(resolvedPriceDrafts).build());
     }
 
     @Nonnull
@@ -84,38 +159,22 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
     @Nonnull
     private CompletionStage<ProductDraft> resolveCategoryReferences(@Nonnull final ProductDraft productDraft) {
-        final Set<Reference<Category>> categories = productDraft.getCategories();
+        final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = productDraft.getCategories();
         final Set<String> categoryKeys = new HashSet<>();
 
-        categories.forEach(categoryReference -> {
-            if (categoryReference != null) {
+        categoryResourceIdentifiers.forEach(categoryResourceIdentifier -> {
+            if (categoryResourceIdentifier != null) {
                 try {
-                    getCategoryKey(productDraft, categoryReference, options.shouldAllowUuidKeys())
-                        .map(categoryKeys::add);
+                    final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier,
+                        options.shouldAllowUuidKeys());
+                    categoryKeys.add(categoryKey);
                 } catch (ReferenceResolutionException referenceResolutionException) {
                     options.applyErrorCallback(format(FAILED_TO_RESOLVE_CATEGORY, productDraft.getKey(),
                         referenceResolutionException), referenceResolutionException);
                 }
             }
         });
-        return fetchAndResolveCategoryReference(productDraft, categoryKeys);
-    }
-
-
-    @Nonnull
-    private static Optional<String> getCategoryKey(@Nonnull final ProductDraft productDraft,
-                                                   @Nonnull final Reference<Category> categoryReference,
-                                                   final boolean shouldAllowUuidKeys)
-        throws ReferenceResolutionException {
-        final String keyFromExpansion = CategoryReferenceResolver.getKeyFromExpansion(categoryReference);
-        try {
-            final String keyFromExpansionOrReference =
-                getKeyFromExpansionOrReference(shouldAllowUuidKeys, keyFromExpansion, categoryReference);
-            return Optional.of(keyFromExpansionOrReference);
-        } catch (ReferenceResolutionException referenceResolutionException) {
-            throw new ReferenceResolutionException(format(FAILED_TO_RESOLVE_CATEGORY, productDraft.getKey(),
-                referenceResolutionException.getMessage()), referenceResolutionException);
-        }
+        return fetchAndResolveCategoryReferences(productDraft, categoryKeys);
     }
 
     /**
@@ -131,8 +190,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      *          references or an exception.
      */
     @Nonnull
-    private CompletionStage<ProductDraft> fetchAndResolveCategoryReference(@Nonnull final ProductDraft productDraft,
-                                                                           @Nonnull final Set<String> categoryKeys) {
+    private CompletionStage<ProductDraft> fetchAndResolveCategoryReferences(@Nonnull final ProductDraft productDraft,
+                                                                            @Nonnull final Set<String> categoryKeys) {
         final Map<String, String> categoryOrderHintsMap = new HashMap<>();
         final CategoryOrderHints categoryOrderHints = productDraft.getCategoryOrderHints();
 

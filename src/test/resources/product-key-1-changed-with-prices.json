@@ -188,7 +188,28 @@
         "key": "v1",
         "sku": "3065831",
         "key": "v1",
-        "prices": [],
+        "prices": [
+          {
+            "value": {
+              "currencyCode": "EUR",
+              "centAmount": 118
+            },
+            "channel": {
+              "typeId": "channel",
+              "id": "channel-key_1"
+            }
+          },
+          {
+            "value": {
+              "currencyCode": "EGP",
+              "centAmount": 100
+            },
+            "channel": {
+              "typeId": "channel",
+              "id": "channel-key_1"
+            }
+          }
+        ],
         "images": [
           {
             "url": "https://53346cfbf3c7e017ed3d-6de74c3efa80f1c837c6a988b57abe66.ssl.cf3.rackcdn.com/new-image.png",

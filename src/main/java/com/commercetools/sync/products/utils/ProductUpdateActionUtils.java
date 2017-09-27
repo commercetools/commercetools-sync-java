@@ -7,6 +7,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -32,7 +33,6 @@ import io.sphere.sdk.search.SearchKeywords;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -40,6 +40,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
+import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
@@ -156,13 +157,20 @@ public final class ProductUpdateActionUtils {
     @Nonnull
     public static List<UpdateAction<Product>> buildAddToCategoryUpdateActions(@Nonnull final Product oldProduct,
                                                                               @Nonnull final ProductDraft newProduct) {
-        final Set<Reference<Category>> newCategories = newProduct.getCategories();
+        final Set<ResourceIdentifier<Category>> newCategories = newProduct.getCategories();
         final Set<Reference<Category>> oldCategories = oldProduct.getMasterData().getStaged().getCategories();
         return buildUpdateActions(oldCategories, newCategories,
             () -> {
                 final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-                subtract(newCategories, oldCategories).forEach(category ->
-                    updateActions.add(AddToCategory.of(category, true)));
+                final List<ResourceIdentifier<Category>> newCategoriesResourceIdentifiers =
+                    filterCollection(newCategories, newCategoryReference ->
+                        oldCategories.stream()
+                                     .map(Reference::toResourceIdentifier)
+                                     .noneMatch(oldResourceIdentifier ->
+                                         oldResourceIdentifier.equals(newCategoryReference)))
+                        .collect(toList());
+                newCategoriesResourceIdentifiers.forEach(categoryResourceIdentifier ->
+                    updateActions.add(AddToCategory.of(categoryResourceIdentifier, true)));
                 return updateActions;
             });
     }
@@ -192,8 +200,8 @@ public final class ProductUpdateActionUtils {
         return buildUpdateActions(oldCategoryOrderHints, newCategoryOrderHints, () -> {
 
             final Set<String> newCategoryIds = newProduct.getCategories().stream()
-                .map(Reference::getId)
-                .collect(toSet());
+                                                         .map(ResourceIdentifier::getId)
+                                                         .collect(toSet());
 
             final List<UpdateAction<Product>> updateActions = new ArrayList<>();
 
@@ -240,31 +248,19 @@ public final class ProductUpdateActionUtils {
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildRemoveFromCategoryUpdateActions(
-            @Nonnull final Product oldProduct,
-            @Nonnull final ProductDraft newProduct) {
-        final Set<Reference<Category>> newCategories = newProduct.getCategories();
+        @Nonnull final Product oldProduct,
+        @Nonnull final ProductDraft newProduct) {
+        final Set<ResourceIdentifier<Category>> newCategories = newProduct.getCategories();
         final Set<Reference<Category>> oldCategories = oldProduct.getMasterData().getStaged().getCategories();
         return buildUpdateActions(oldCategories, newCategories, () -> {
             final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-            subtract(oldCategories, newCategories).forEach(category ->
-                updateActions.add(RemoveFromCategory.of(category, true)));
+            filterCollection(oldCategories, oldCategoryReference ->
+                !newCategories.contains(oldCategoryReference.toResourceIdentifier()))
+                .forEach(categoryReference ->
+                    updateActions.add(RemoveFromCategory.of(categoryReference.toResourceIdentifier(), true))
+                );
             return updateActions;
         });
-    }
-
-    /**
-     * Returns a set containing everything in {@code set1} but not in {@code set2}.
-     *
-     * @param set1 defines the first set.
-     * @param set2 defines the second set.
-     * @return a set containing everything in {@code set1} but not in {@code set2}.
-     */
-    @Nonnull
-    private static Set<Reference<Category>> subtract(@Nonnull final Set<Reference<Category>> set1,
-                                                     @Nonnull final Set<Reference<Category>> set2) {
-        final Set<Reference<Category>> difference = new HashSet<>(set1);
-        difference.removeAll(set2);
-        return difference;
     }
 
     /**
@@ -443,7 +439,7 @@ public final class ProductUpdateActionUtils {
         res.addAll(buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
             newProductVariant, attributesMetaData, syncOptions));
         res.addAll(buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant));
-        res.addAll(buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions));
+        res.addAll(buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant));
         res.addAll(buildProductVariantSkuUpdateActions(oldProductVariant, newProductVariant));
 
         return res;
