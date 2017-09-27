@@ -13,7 +13,6 @@ import com.commercetools.sync.services.impl.ChannelServiceImpl;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
-import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
@@ -23,7 +22,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -70,8 +68,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     public ProductSync(@Nonnull final ProductSyncOptions productSyncOptions) {
         this(productSyncOptions, new ProductServiceImpl(productSyncOptions),
             new ProductTypeServiceImpl(productSyncOptions), new CategoryServiceImpl(productSyncOptions),
-            new TypeServiceImpl(productSyncOptions), new ChannelServiceImpl(productSyncOptions, Collections.singleton(
-                ChannelRole.PRODUCT_DISTRIBUTION)));
+            new TypeServiceImpl(productSyncOptions), new ChannelServiceImpl(productSyncOptions));
     }
 
     ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService,
