@@ -9,7 +9,7 @@ import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
@@ -53,6 +53,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
@@ -61,7 +62,8 @@ import static org.mockito.Mockito.when;
 public class ProductServiceIT {
     private ProductService productService;
     private static ProductType productType;
-    private static List<Reference<Category>> categoryReferences;
+    private static Set<ResourceIdentifier<Category>> categoryResourceIdentifiers;
+    private static Set<ResourceIdentifier<Category>> categoryResourcesWithIds;
     private Product product;
 
 
@@ -79,8 +81,17 @@ public class ProductServiceIT {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
-        categoryReferences = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2))
-            .stream().map(Category::toReference).collect(Collectors.toList());
+        categoryResourceIdentifiers = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2))
+            .stream()
+            .map(category -> ResourceIdentifier.<Category>ofIdOrKey(category.getId(), category.getKey(),
+                Category.referenceTypeId()))
+            .collect(Collectors.toSet());
+        categoryResourcesWithIds =
+            categoryResourceIdentifiers.stream()
+                            .map(categoryResourceIdentifier ->
+                                ResourceIdentifier.<Category>ofId(categoryResourceIdentifier.getId(),
+                                    Category.referenceTypeId()))
+                            .collect(toSet());
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
@@ -110,7 +121,8 @@ public class ProductServiceIT {
 
         // Create a mock new product in the target project.
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
-            productType.toReference(), categoryReferences, createRandomCategoryOrderHints(categoryReferences));
+            productType.toReference(), categoryResourcesWithIds,
+            createRandomCategoryOrderHints(categoryResourceIdentifiers));
         product = CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft))
                                    .toCompletableFuture().join();
 
@@ -132,7 +144,7 @@ public class ProductServiceIT {
 
         // Create new product without caching
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference(),
-            categoryReferences, createRandomCategoryOrderHints(categoryReferences));
+            categoryResourcesWithIds, createRandomCategoryOrderHints(categoryResourceIdentifiers));
 
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
@@ -253,7 +265,7 @@ public class ProductServiceIT {
             .build();
 
         final ProductDraft productDraft2 = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference(),
-            categoryReferences, createRandomCategoryOrderHints(categoryReferences));
+            categoryResourcesWithIds, createRandomCategoryOrderHints(categoryResourceIdentifiers));
 
         final Set<ProductDraft> productDrafts = new HashSet<>();
         productDrafts.add(productDraft1);
@@ -282,7 +294,7 @@ public class ProductServiceIT {
             .build();
 
         final ProductDraft productDraft2 = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference(),
-            categoryReferences, createRandomCategoryOrderHints(categoryReferences));
+            categoryResourcesWithIds, createRandomCategoryOrderHints(categoryResourceIdentifiers));
 
         final Set<ProductDraft> productDrafts = new HashSet<>();
         productDrafts.add(productDraft1);
