@@ -13,18 +13,34 @@ import io.sphere.sdk.producttypes.ProductType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 public class ProductSyncMockUtils {
     public static final String PRODUCT_KEY_1_RESOURCE_PATH = "product-key-1.json";
     public static final String CATEGORY_KEY_1_RESOURCE_PATH = "category-key-1.json";
+
+    /**
+     * Unfortunately, <a href="http://dev.commercetools.com/http-api-projects-products.html#category-order-hints">
+     * <i>Category Order Hints</i></a> in CTP platform is quite picky: it requires number values as a string
+     * and only without trailing zeros and only in fixed point format.
+     *
+     * @see <a href="http://dev.commercetools.com/http-api-projects-products.html#category-order-hints">
+     * http://dev.commercetools.com/http-api-projects-products.html#category-order-hints</a>
+     */
+    private static final DecimalFormat ORDER_HINT_FORMAT;
+
+    static {
+        ORDER_HINT_FORMAT = new DecimalFormat();
+        ORDER_HINT_FORMAT.setMaximumFractionDigits(Integer.MAX_VALUE);
+        ORDER_HINT_FORMAT.setMaximumIntegerDigits(1);
+    }
 
     /**
      * Builds a {@link ProductDraftBuilder} based on the current projection of the product JSON resource located at the
@@ -76,7 +92,7 @@ public class ProductSyncMockUtils {
         final Map<String, String> categoryOrderHints = new HashMap<>();
         categoriesReferences.forEach(categoryReference -> {
             final double randomDouble = ThreadLocalRandom.current().nextDouble(1e-8, 1);
-            categoryOrderHints.put(categoryReference.getId(), format("%s", randomDouble));
+            categoryOrderHints.put(categoryReference.getId(), ORDER_HINT_FORMAT.format(randomDouble));
         });
         return CategoryOrderHints.of(categoryOrderHints);
     }
