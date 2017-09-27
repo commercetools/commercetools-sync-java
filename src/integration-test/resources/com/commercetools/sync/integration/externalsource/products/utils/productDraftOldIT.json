@@ -1,0 +1,111 @@
+{
+  "key": "productToSyncKey",
+  "name": {
+    "en": "productNameOld"
+  },
+  "slug": {
+    "en": "productSlugOld"
+  },
+  "masterVariant": {
+    "key": "var-1-key",
+    "sku": "var-1-sku",
+    "prices": [
+    ],
+    "images": [
+      {
+        "url": "https://xxx.ggg/1.png",
+        "dimensions":{
+          "w": 10,
+          "h": 10
+        }
+      }
+    ],
+    "attributes": [
+      {
+        "name": "priceInfo",
+        "value": "64,90/kg"
+      },
+      {
+        "name": "size",
+        "value": "ca. 1 x 1000 g"
+      }
+    ]
+  },
+  "variants": [
+    {
+      "key": "var-2-key",
+      "sku": "var-2-sku",
+      "prices": [
+      ],
+      "images": [
+        {
+          "url": "https://xxx.ggg/2.png",
+          "dimensions":{
+            "w": 10,
+            "h": 10
+          }
+        }
+      ],
+      "attributes": [
+        {
+          "name": "priceInfo",
+          "value": "64,90/kg"
+        },
+        {
+          "name": "size",
+          "value": "ca. 1 x 1000 g"
+        }
+      ]
+    },
+    {
+      "key": "var-3-key",
+      "sku": "var-3-sku",
+      "prices": [
+      ],
+      "images": [
+        {
+          "url": "https://xxx.ggg/3.png",
+          "dimensions":{
+            "w": 10,
+            "h": 10
+          }
+        }
+      ],
+      "attributes": [
+        {
+          "name": "priceInfo",
+          "value": "64,90/kg"
+        },
+        {
+          "name": "size",
+          "value": "ca. 1 x 1000 g"
+        }
+      ]
+    },
+    {
+      "key": "var-4-key",
+      "sku": "var-4-sku",
+      "prices": [
+      ],
+      "images": [
+        {
+          "url": "https://xxx.ggg/4.png",
+          "dimensions":{
+            "w": 10,
+            "h": 10
+          }
+        }
+      ],
+      "attributes": [
+        {
+          "name": "priceInfo",
+          "value": "64,90/kg"
+        },
+        {
+          "name": "size",
+          "value": "ca. 1 x 1000 g"
+        }
+      ]
+    }
+  ]
+}

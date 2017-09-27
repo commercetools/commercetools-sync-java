@@ -22,8 +22,8 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
      * actions on the existing resource if it exists or create it if it doesn't.
      *
      * @param resourceDrafts the list of new resources as drafts.
-     * @return an instance of {@link CompletionStage}&lt;{@link U}&gt; which contains as a result an instance of
-     *      {@link U} which is a subclass of {@link BaseSyncStatistics} representing the {@code statistics} instance
+     * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an instance of
+     *      {@code U} which is a subclass of {@link BaseSyncStatistics} representing the {@code statistics} instance
      *      attribute of {@code this} {@link BaseSync}.
      */
     protected abstract CompletionStage<U> process(@Nonnull final List<T> resourceDrafts);
@@ -38,8 +38,8 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
      * container so that the total processing time is computed in the statistics.
      *
      * @param resourceDrafts the list of new resources as drafts.
-     * @return an instance of {@link CompletionStage}&lt;{@link U}&gt; which contains as a result an instance of
-     *      {@link U} which is a subclass of {@link BaseSyncStatistics} representing the {@code statistics} instance
+     * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an instance of
+     *      {@code U} which is a subclass of {@link BaseSyncStatistics} representing the {@code statistics} instance
      *      attribute of {@code this} {@link BaseSync}.
      */
     public CompletionStage<U> sync(@Nonnull final List<T> resourceDrafts) {
@@ -73,7 +73,7 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
      * @param result  in the first call of this recursive method, this result is normally a completed future, it
      *                used from within the method to recursively sync each batch once the previous batch has
      *                finished syncing.
-     * @return an instance of {@link CompletionStage}&lt;{@link U}&gt; which contains as a result an instance of
+     * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an instance of
      *      {@link BaseSyncStatistics} representing the {@code statistics} of the sync process executed on the
      *      given list of batches.
      */
