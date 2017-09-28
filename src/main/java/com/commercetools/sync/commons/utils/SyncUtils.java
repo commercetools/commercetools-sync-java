@@ -217,7 +217,10 @@ public final class SyncUtils {
                         if (categoryOrderHintValue == null) {
                             // to handle case of getting category order hints from another CTP
                             // TODO NEEDS TO BE REFACTORED INTO OWN METHOD.
-                            categoryOrderHintsMapWithKeys.put(categoryKey, categoryOrderHints.get(categoryId));
+                            final String categoryOrderHintValueById = categoryOrderHints.get(categoryId);
+                            if (categoryOrderHintValueById != null) {
+                                categoryOrderHintsMapWithKeys.put(categoryKey, categoryOrderHintValueById);
+                            }
                         } else {
                             categoryOrderHintsMapWithKeys.put(categoryKey, categoryOrderHintValue);
                         }
