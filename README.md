@@ -135,24 +135,49 @@ For more detailed information on build and release process, see [Build and Relea
 
 1. The integration tests of the library require to have two CTP projects (a source project and a target project) were the 
 data will be tested to be synced on from the source to the target project. 
+
 2. Running the tests does the following:
     - Clean all the data in both projects.
     - Create test data in either/both projects depending on the test.
     - Execute the tests.
     - Clean all the data in both projects, leaving them empty.
 
-#### Running 
-Before running the integration tests make sure the following environment variables are set:
-````bash
-export SOURCE_PROJECT_KEY = xxxxxxxxxxxxx
-export SOURCE_CLIENT_ID = xxxxxxxxxxxxxxx
-export SOURCE_CLIENT_SECRET = xxxxxxxxxxx
-export TARGET_PROJECT_KEY = xxxxxxxxxxxxx
-export TARGET_CLIENT_ID = xxxxxxxxxxxxxxx
-export TARGET_CLIENT_SECRET = xxxxxxxxxxx
-````
+#### Running
 
-then run the integration tests:
-````bash
+To run the integration tests with CTP credentials you have 2 options:
+
+  1. Use credentials Java properties file [`it.properties`](/src/integration-test/resources/it.properties):
+    
+  ```properties
+  source.projectKey=aaaaa
+  source.clientId=bbbbbbb
+  source.clientSecret=ccc
+    
+  target.projectKey=ddddd
+  target.clientId=eeeeeee
+  target.clientSecret=fff
+  ```
+    
+  Use [`it.properties.skeleton`](/src/integration-test/resources/it.properties.skeleton) 
+  as a template to setup the credentials.
+  
+  **Note**: the `it.properties` file must be ignored by VCS. 
+   
+   2. Set the following environment variables:
+  ```bash
+  export SOURCE_PROJECT_KEY = xxxxxxxxxxxxx
+  export SOURCE_CLIENT_ID = xxxxxxxxxxxxxxx
+  export SOURCE_CLIENT_SECRET = xxxxxxxxxxx
+  export TARGET_PROJECT_KEY = xxxxxxxxxxxxx
+  export TARGET_CLIENT_ID = xxxxxxxxxxxxxxx
+  export TARGET_CLIENT_SECRET = xxxxxxxxxxx
+  ```
+
+  **Note**: `it.properties` file has precedence over environment variables. If the file exists - 
+  the environment variables are ignored. If the existing `it.properties` file is empty or one of the properties 
+  is missing - exception will be thrown on the tests execution
+
+If one of two options above is set - run the integration tests:
+```bash
 ./gradlew integrationTest
-````
+```
