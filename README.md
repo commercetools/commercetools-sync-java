@@ -146,7 +146,7 @@ data will be tested to be synced on from the source to the target project.
 
 To run the integration tests with CTP credentials you have 2 options:
 
-  1. Use credentials Java properties file [`it.properties`](/src/integration-test/resources/it.properties):
+  1. Use credentials Java properties file `/src/integration-test/resources/it.properties`:
     
   ```properties
   source.projectKey=aaaaa
