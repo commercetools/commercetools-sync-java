@@ -3,6 +3,7 @@ package com.commercetools.sync.products.utils;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.UpdateFilter;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
@@ -32,12 +33,14 @@ import io.sphere.sdk.search.SearchKeywords;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
@@ -434,15 +437,19 @@ public final class ProductUpdateActionUtils {
             @Nonnull final ProductVariantDraft newProductVariant,
             @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
             @Nonnull final ProductSyncOptions syncOptions) {
-
-        ArrayList<UpdateAction<Product>> res = new ArrayList<>();
-        res.addAll(buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
-            newProductVariant, attributesMetaData, syncOptions));
-        res.addAll(buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant));
-        res.addAll(buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant));
-        res.addAll(buildProductVariantSkuUpdateActions(oldProductVariant, newProductVariant));
-
-        return res;
+        final ArrayList<UpdateAction<Product>> updateActions = new ArrayList<>();
+        updateActions.addAll(
+                buildActionsIfNotBlackListed(syncOptions.getBlackList(), UpdateFilter.ATTRIBUTES, () ->
+                        buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
+                                newProductVariant, attributesMetaData, syncOptions)));
+        updateActions.addAll(
+                buildActionsIfNotBlackListed(syncOptions.getBlackList(), UpdateFilter.IMAGES, () ->
+                        buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant)));
+        updateActions.addAll(
+                buildActionsIfNotBlackListed(syncOptions.getBlackList(), UpdateFilter.PRICES, () ->
+                        buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant)));
+        updateActions.addAll(buildProductVariantSkuUpdateActions(oldProductVariant, newProductVariant));
+        return updateActions;
     }
 
     /**
