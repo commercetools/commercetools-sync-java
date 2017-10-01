@@ -15,8 +15,8 @@ public final class ProductSyncOptionsBuilder
     extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions> {
     public static final int BATCH_SIZE_DEFAULT = 30;
     private boolean removeOtherVariants = true;
-    private List<String> whiteList = emptyList();
-    private List<String> blackList = emptyList();
+    private List<UpdateFilter> whiteList = emptyList();
+    private List<UpdateFilter> blackList = emptyList();
     private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsFilter;
     static final boolean ENSURE_CHANNELS_DEFAULT = false;
     private boolean ensurePriceChannels = ENSURE_CHANNELS_DEFAULT;
@@ -34,12 +34,12 @@ public final class ProductSyncOptionsBuilder
         return this;
     }
 
-    public ProductSyncOptionsBuilder whiteList(@Nonnull final List<String> whiteList) {
+    public ProductSyncOptionsBuilder whiteList(@Nonnull final List<UpdateFilter> whiteList) {
         this.whiteList = whiteList;
         return this;
     }
 
-    public ProductSyncOptionsBuilder blackList(@Nonnull final List<String> blackList) {
+    public ProductSyncOptionsBuilder blackList(@Nonnull final List<UpdateFilter> blackList) {
         this.blackList = blackList;
         return this;
     }

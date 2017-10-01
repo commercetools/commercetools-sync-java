@@ -53,22 +53,20 @@ public class ProductSyncOptionsBuilderTest {
 
     @Test
     public void whiteList_WithNonEmptyList_ShouldSetWhiteList() {
-        final String changeNameUpdateAction = "ChangeName";
-        productSyncOptionsBuilder.whiteList(Collections.singletonList(changeNameUpdateAction));
+        productSyncOptionsBuilder.whiteList(Collections.singletonList(UpdateFilter.NAME));
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getWhiteList()).hasSize(1);
-        assertThat(productSyncOptions.getWhiteList().get(0)).isEqualTo(changeNameUpdateAction);
+        assertThat(productSyncOptions.getWhiteList().get(0)).isEqualTo(UpdateFilter.NAME);
     }
 
     @Test
     public void blackList_WithNonEmptyList_ShouldSetBlackList() {
-        final String changeNameUpdateAction = "ChangeName";
-        productSyncOptionsBuilder.blackList(Collections.singletonList(changeNameUpdateAction));
+        productSyncOptionsBuilder.blackList(Collections.singletonList(UpdateFilter.NAME));
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getBlackList()).hasSize(1);
-        assertThat(productSyncOptions.getBlackList().get(0)).isEqualTo(changeNameUpdateAction);
+        assertThat(productSyncOptions.getBlackList().get(0)).isEqualTo(UpdateFilter.NAME);
     }
 
     @Test

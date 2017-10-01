@@ -18,8 +18,8 @@ public class ProductSyncOptions extends BaseSyncOptions {
     private final boolean removeOtherVariants; // whether to remove other product variants or not.
 
     // defines which attributes to calculate update actions for
-    private final List<String> whiteList;
-    private final List<String> blackList;
+    private final List<UpdateFilter> whiteList;
+    private final List<UpdateFilter> blackList;
 
     // optional filter which can be applied on generated list of update actions
     private final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsFilter;
@@ -35,8 +35,8 @@ public class ProductSyncOptions extends BaseSyncOptions {
                        final boolean removeOtherProperties,
                        final boolean allowUuid,
                        final boolean removeOtherVariants,
-                       final List<String> whiteList,
-                       final List<String> blackList,
+                       final List<UpdateFilter> whiteList,
+                       final List<UpdateFilter> blackList,
                        final Function<List<UpdateAction<Product>>,
                            List<UpdateAction<Product>>> updateActionsFilter,
                        boolean ensurePriceChannels) {
@@ -53,14 +53,26 @@ public class ProductSyncOptions extends BaseSyncOptions {
         return removeOtherVariants;
     }
 
-    List<String> getWhiteList() {
+    /**
+     * getWhiteList TODO.
+     * @return TODO
+     */
+    public List<UpdateFilter> getWhiteList() {
         return whiteList;
     }
 
-    List<String> getBlackList() {
+    /**
+     * getBlackList TODO.
+     * @return TODO
+     */
+    public List<UpdateFilter> getBlackList() {
         return blackList;
     }
 
+    /**
+     * getUpdateActionsFilter TODO.
+     * @return TODO
+     */
     public Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> getUpdateActionsFilter() {
         return updateActionsFilter;
     }
