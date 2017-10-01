@@ -561,4 +561,19 @@ public final class ProductUpdateActionUtils {
             .withKey(draft.getKey())
             .withImages(draft.getImages());
     }
+
+
+    static Optional<UpdateAction<Product>> buildActionIfNotBlackListed(
+            @Nonnull final List<UpdateFilter> blackList,
+            @Nonnull final UpdateFilter filter,
+            @Nonnull final Supplier<Optional<UpdateAction<Product>>> updateActionSupplier) {
+        return blackList.contains(filter) ? updateActionSupplier.get() : Optional.empty();
+    }
+
+    static List<UpdateAction<Product>> buildActionsIfNotBlackListed(
+            @Nonnull final List<UpdateFilter> blackList,
+            @Nonnull final UpdateFilter filter,
+            @Nonnull final Supplier<List<UpdateAction<Product>>> updateActionSupplier) {
+        return blackList.contains(filter) ? updateActionSupplier.get() : Collections.emptyList();
+    }
 }

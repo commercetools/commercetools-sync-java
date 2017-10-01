@@ -3,6 +3,7 @@ package com.commercetools.sync.products.utils;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.UpdateFilter;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -19,18 +20,20 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddToCategoryUpdateActions;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionIfNotBlackListed;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionsIfNotBlackListed;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeNameUpdateAction;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeSlugUpdateAction;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildPublishUpdateAction;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildRemoveFromCategoryUpdateActions;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetCategoryOrderHintUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetDescriptionUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeSlugUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetSearchKeywordsUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaTitleUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaDescriptionUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaTitleUpdateAction;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetSearchKeywordsUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddToCategoryUpdateActions;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildRemoveFromCategoryUpdateActions;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetCategoryOrderHintUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildPublishUpdateAction;
 
 // TODO: FIX DOCUMENTATION AFTER CHANGE OF REMOVAL OF SYNC OPTIONS FOR ONLY COMPARING STAGED.
 public final class ProductSyncUtils {
@@ -86,21 +89,44 @@ public final class ProductSyncUtils {
                                                                @Nonnull final ProductSyncOptions syncOptions,
                                                                @Nonnull final Map<String, AttributeMetaData>
                                                                        attributesMetaData) {
-        final List<UpdateAction<Product>> updateActions = buildUpdateActionsFromOptionals(Arrays.asList(
-            buildChangeNameUpdateAction(oldProduct, newProduct),
-            buildSetDescriptionUpdateAction(oldProduct, newProduct),
-            buildChangeSlugUpdateAction(oldProduct, newProduct),
-            buildSetSearchKeywordsUpdateAction(oldProduct, newProduct),
-            buildSetMetaTitleUpdateAction(oldProduct, newProduct),
-            buildSetMetaDescriptionUpdateAction(oldProduct, newProduct),
-            buildSetMetaKeywordsUpdateAction(oldProduct, newProduct)
-        ));
-        updateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct));
-        updateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));
-        updateActions.addAll(buildRemoveFromCategoryUpdateActions(oldProduct, newProduct));
-        updateActions.addAll(buildVariantsUpdateActions(oldProduct, newProduct, syncOptions, attributesMetaData));
 
-        // lastly publish/unpublish
+        final List<UpdateFilter> blackList = syncOptions.getBlackList();
+
+        final List<UpdateAction<Product>> updateActions = buildUpdateActionsFromOptionals(
+                Arrays.asList(
+                        buildActionIfNotBlackListed(blackList, UpdateFilter.NAME, () ->
+                                buildChangeNameUpdateAction(oldProduct, newProduct)),
+                        buildActionIfNotBlackListed(blackList, UpdateFilter.DESCRIPTION, () ->
+                                buildSetDescriptionUpdateAction(oldProduct, newProduct)),
+                        buildActionIfNotBlackListed(blackList, UpdateFilter.SLUG, () ->
+                                buildChangeSlugUpdateAction(oldProduct, newProduct)),
+                        buildActionIfNotBlackListed(blackList, UpdateFilter.SEARCHKEYWORDS, () ->
+                                buildSetSearchKeywordsUpdateAction(oldProduct, newProduct)),
+                        buildActionIfNotBlackListed(blackList, UpdateFilter.METATITLE, () ->
+                                buildSetMetaTitleUpdateAction(oldProduct, newProduct)),
+                        buildActionIfNotBlackListed(blackList, UpdateFilter.METADESCRIPTION, () ->
+                                buildSetMetaDescriptionUpdateAction(oldProduct, newProduct)),
+                        buildActionIfNotBlackListed(blackList, UpdateFilter.METAKEYWORDS, () ->
+                                buildSetMetaKeywordsUpdateAction(oldProduct, newProduct))
+                ));
+
+        // TODO OWN METHOD
+        final List<UpdateAction<Product>> productCatgoryUpdateActions =
+                buildActionsIfNotBlackListed(blackList, UpdateFilter.CATEGORIES, () -> {
+                    final List<UpdateAction<Product>> categoryUpdateActions = new ArrayList<>();
+                    categoryUpdateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct));
+                    categoryUpdateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));
+                    categoryUpdateActions.addAll(buildRemoveFromCategoryUpdateActions(oldProduct, newProduct));
+                    return categoryUpdateActions;
+                });
+        updateActions.addAll(productCatgoryUpdateActions);
+
+        final List<UpdateAction<Product>> variantUpdateActions =
+                buildActionsIfNotBlackListed(blackList, UpdateFilter.VARIANTS, () ->
+                        buildVariantsUpdateActions(oldProduct, newProduct, syncOptions, attributesMetaData));
+        updateActions.addAll(variantUpdateActions);
+
+        // lastly publish/unpublish product
         buildPublishUpdateAction(oldProduct, newProduct).ifPresent(updateActions::add);
         return updateActions;
     }
