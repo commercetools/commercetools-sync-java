@@ -6,6 +6,8 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -18,11 +20,13 @@ public class ProductSyncOptions extends BaseSyncOptions {
     private final boolean removeOtherVariants; // whether to remove other product variants or not.
 
     // defines which attributes to calculate update actions for
-    private final List<UpdateFilter> whiteList;
-    private final List<UpdateFilter> blackList;
+    private final SyncFilter syncFilter;
 
-    // optional filter which can be applied on generated list of update actions
-    private final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsFilter;
+    private List<UpdateFilter> whiteList;
+    private List<UpdateFilter> blackList;
+
+    // optional callback function which can be applied on the generated list of update actions
+    private final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsCallBack;
     private final boolean ensurePriceChannels;
 
     ProductSyncOptions(@Nonnull final SphereClient ctpClient,
@@ -35,18 +39,31 @@ public class ProductSyncOptions extends BaseSyncOptions {
                        final boolean removeOtherProperties,
                        final boolean allowUuid,
                        final boolean removeOtherVariants,
-                       final List<UpdateFilter> whiteList,
-                       final List<UpdateFilter> blackList,
+                       final SyncFilter syncFilter,
                        final Function<List<UpdateAction<Product>>,
-                           List<UpdateAction<Product>>> updateActionsFilter,
+                           List<UpdateAction<Product>>> updateActionsCallBack,
                        boolean ensurePriceChannels) {
         super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherLocales, removeOtherSetEntries,
             removeOtherCollectionEntries, removeOtherProperties, allowUuid);
         this.removeOtherVariants = removeOtherVariants;
-        this.whiteList = whiteList;
-        this.blackList = blackList;
-        this.updateActionsFilter = updateActionsFilter;
+        this.syncFilter = syncFilter;
+        setFilterListsFromSyncFilter();
+        this.updateActionsCallBack = updateActionsCallBack;
         this.ensurePriceChannels = ensurePriceChannels;
+    }
+
+    private void setFilterListsFromSyncFilter() {
+        whiteList = Collections.emptyList();
+        blackList = Collections.emptyList();
+        if (syncFilter != null) {
+            final List<UpdateFilter> filters = syncFilter.getFilters();
+            final UpdateFilterType filterType = syncFilter.getFilterType();
+            if (filterType.equals(UpdateFilterType.BLACKLIST)) {
+                blackList = new ArrayList<>(filters);
+            } else {
+                whiteList = new ArrayList<>(filters);
+            }
+        }
     }
 
     boolean shouldRemoveOtherVariants() {
@@ -54,27 +71,27 @@ public class ProductSyncOptions extends BaseSyncOptions {
     }
 
     /**
-     * getWhiteList TODO.
-     * @return TODO
+     * TODO
+     * @return TODO..
      */
+    public SyncFilter getSyncFilter() {
+        return syncFilter;
+    }
+
     public List<UpdateFilter> getWhiteList() {
         return whiteList;
     }
 
-    /**
-     * getBlackList TODO.
-     * @return TODO
-     */
     public List<UpdateFilter> getBlackList() {
         return blackList;
     }
 
     /**
-     * getUpdateActionsFilter TODO.
+     * getUpdateActionsCallBack TODO.
      * @return TODO
      */
-    public Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> getUpdateActionsFilter() {
-        return updateActionsFilter;
+    public Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> getUpdateActionsCallBack() {
+        return updateActionsCallBack;
     }
 
     /**
