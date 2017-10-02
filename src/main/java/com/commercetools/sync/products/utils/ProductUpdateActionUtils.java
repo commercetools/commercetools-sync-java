@@ -570,17 +570,54 @@ public final class ProductUpdateActionUtils {
     }
 
 
-    static Optional<UpdateAction<Product>> buildActionIfNotBlackListed(
-            @Nonnull final List<UpdateFilter> blackList,
+    /**
+     *
+     * @param syncFilter
+     * @param filter
+     * @param updateActionSupplier
+     * @return
+     */
+    static Optional<UpdateAction<Product>> buildActionIfPassesFilter(
+            @Nonnull final SyncFilter syncFilter,
             @Nonnull final UpdateFilter filter,
             @Nonnull final Supplier<Optional<UpdateAction<Product>>> updateActionSupplier) {
-        return !blackList.contains(filter) ? updateActionSupplier.get() : Optional.empty();
+        return buildSupplierResultIfPassesFilter(syncFilter, filter, updateActionSupplier, empty());
     }
 
-    static List<UpdateAction<Product>> buildActionsIfNotBlackListed(
-            @Nonnull final List<UpdateFilter> blackList,
+    /**
+     *
+     * @param syncFilter
+     * @param filter
+     * @param updateActionSupplier
+     * @return
+     */
+    static List<UpdateAction<Product>> buildActionsIfPassesFilter(
+            @Nonnull final SyncFilter syncFilter,
             @Nonnull final UpdateFilter filter,
             @Nonnull final Supplier<List<UpdateAction<Product>>> updateActionSupplier) {
-        return !blackList.contains(filter) ? updateActionSupplier.get() : Collections.emptyList();
+        return buildSupplierResultIfPassesFilter(syncFilter, filter, updateActionSupplier, emptyList());
+    }
+
+    /**
+     *
+     * @param syncFilter
+     * @param filter
+     * @param updateActionSupplier
+     * @param emptyResult
+     * @param <T>
+     * @return
+     */
+    private static <T> T buildSupplierResultIfPassesFilter(
+            @Nonnull final SyncFilter syncFilter, @Nonnull final UpdateFilter filter,
+            @Nonnull final Supplier<T> updateActionSupplier, @Nonnull final T emptyResult) {
+
+        final UpdateFilterType filterType = syncFilter.getFilterType();
+        if (filterType.equals(UpdateFilterType.BLACKLIST)) {
+            final List<UpdateFilter> blackList = syncFilter.getFilters();
+            return !blackList.contains(filter) ? updateActionSupplier.get() : emptyResult;
+        }
+
+        final List<UpdateFilter> whiteList = syncFilter.getFilters();
+        return whiteList.contains(filter) ? updateActionSupplier.get() : emptyResult;
     }
 }
