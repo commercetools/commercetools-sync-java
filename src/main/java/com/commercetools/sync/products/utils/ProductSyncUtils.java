@@ -3,6 +3,7 @@ package com.commercetools.sync.products.utils;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.SyncFilter;
 import com.commercetools.sync.products.UpdateFilter;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -64,7 +65,7 @@ public final class ProductSyncUtils {
         final List<UpdateAction<Product>> assetUpdateActions =
             buildAssetActions(oldProduct, newProduct, syncOptions);
         updateActions.addAll(assetUpdateActions);
-        return filterUpdateActions(updateActions, syncOptions.getUpdateActionsFilter());
+        return filterUpdateActions(updateActions, syncOptions.getUpdateActionsCallBack());
     }
 
     /**
@@ -89,30 +90,28 @@ public final class ProductSyncUtils {
                                                                @Nonnull final ProductSyncOptions syncOptions,
                                                                @Nonnull final Map<String, AttributeMetaData>
                                                                        attributesMetaData) {
-
-        final List<UpdateFilter> blackList = syncOptions.getBlackList();
-
+        final SyncFilter syncFilter = syncOptions.getSyncFilter();
         final List<UpdateAction<Product>> updateActions = buildUpdateActionsFromOptionals(
                 Arrays.asList(
-                        buildActionIfNotBlackListed(blackList, UpdateFilter.NAME, () ->
+                        buildActionIfPassesFilter(syncFilter, UpdateFilter.NAME, () ->
                                 buildChangeNameUpdateAction(oldProduct, newProduct)),
-                        buildActionIfNotBlackListed(blackList, UpdateFilter.DESCRIPTION, () ->
+                        buildActionIfPassesFilter(syncFilter, UpdateFilter.DESCRIPTION, () ->
                                 buildSetDescriptionUpdateAction(oldProduct, newProduct)),
-                        buildActionIfNotBlackListed(blackList, UpdateFilter.SLUG, () ->
+                        buildActionIfPassesFilter(syncFilter, UpdateFilter.SLUG, () ->
                                 buildChangeSlugUpdateAction(oldProduct, newProduct)),
-                        buildActionIfNotBlackListed(blackList, UpdateFilter.SEARCHKEYWORDS, () ->
+                        buildActionIfPassesFilter(syncFilter, UpdateFilter.SEARCHKEYWORDS, () ->
                                 buildSetSearchKeywordsUpdateAction(oldProduct, newProduct)),
-                        buildActionIfNotBlackListed(blackList, UpdateFilter.METATITLE, () ->
+                        buildActionIfPassesFilter(syncFilter, UpdateFilter.METATITLE, () ->
                                 buildSetMetaTitleUpdateAction(oldProduct, newProduct)),
-                        buildActionIfNotBlackListed(blackList, UpdateFilter.METADESCRIPTION, () ->
+                        buildActionIfPassesFilter(syncFilter, UpdateFilter.METADESCRIPTION, () ->
                                 buildSetMetaDescriptionUpdateAction(oldProduct, newProduct)),
-                        buildActionIfNotBlackListed(blackList, UpdateFilter.METAKEYWORDS, () ->
+                        buildActionIfPassesFilter(syncFilter, UpdateFilter.METAKEYWORDS, () ->
                                 buildSetMetaKeywordsUpdateAction(oldProduct, newProduct))
                 ));
 
         // TODO OWN METHOD
         final List<UpdateAction<Product>> productCatgoryUpdateActions =
-                buildActionsIfNotBlackListed(blackList, UpdateFilter.CATEGORIES, () -> {
+                buildActionsIfPassesFilter(syncFilter, UpdateFilter.CATEGORIES, () -> {
                     final List<UpdateAction<Product>> categoryUpdateActions = new ArrayList<>();
                     categoryUpdateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct));
                     categoryUpdateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));
@@ -122,7 +121,7 @@ public final class ProductSyncUtils {
         updateActions.addAll(productCatgoryUpdateActions);
 
         final List<UpdateAction<Product>> variantUpdateActions =
-                buildActionsIfNotBlackListed(blackList, UpdateFilter.VARIANTS, () ->
+                buildActionsIfPassesFilter(syncFilter, UpdateFilter.VARIANTS, () ->
                         buildVariantsUpdateActions(oldProduct, newProduct, syncOptions, attributesMetaData));
         updateActions.addAll(variantUpdateActions);
 

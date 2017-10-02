@@ -3,7 +3,9 @@ package com.commercetools.sync.products.utils;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.SyncFilter;
 import com.commercetools.sync.products.UpdateFilter;
+import com.commercetools.sync.products.UpdateFilterType;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
@@ -54,6 +56,7 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -438,15 +441,16 @@ public final class ProductUpdateActionUtils {
             @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
             @Nonnull final ProductSyncOptions syncOptions) {
         final ArrayList<UpdateAction<Product>> updateActions = new ArrayList<>();
+        final SyncFilter syncFilter = syncOptions.getSyncFilter();
         updateActions.addAll(
-                buildActionsIfNotBlackListed(syncOptions.getBlackList(), UpdateFilter.ATTRIBUTES, () ->
+                buildActionsIfPassesFilter(syncFilter, UpdateFilter.ATTRIBUTES, () ->
                         buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
                                 newProductVariant, attributesMetaData, syncOptions)));
         updateActions.addAll(
-                buildActionsIfNotBlackListed(syncOptions.getBlackList(), UpdateFilter.IMAGES, () ->
+                buildActionsIfPassesFilter(syncFilter, UpdateFilter.IMAGES, () ->
                         buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant)));
         updateActions.addAll(
-                buildActionsIfNotBlackListed(syncOptions.getBlackList(), UpdateFilter.PRICES, () ->
+                buildActionsIfPassesFilter(syncFilter, UpdateFilter.PRICES, () ->
                         buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant)));
         updateActions.addAll(buildProductVariantSkuUpdateActions(oldProductVariant, newProductVariant));
         return updateActions;
