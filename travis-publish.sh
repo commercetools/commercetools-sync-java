@@ -9,7 +9,7 @@ export TAG=`if [ "$TRAVIS_PULL_REQUEST" = "false" -a -n "$TRAVIS_TAG" ] ; then e
 
 if [ "$TAG" ]; then
   echo "Build is tagged. Uploading artifact $TAG to Bintray."
-  ./gradlew --info -Dbuild.version=$TRAVIS_TAG bintrayUpload
+  ./gradlew --info -Dbuild.version="$TAG" gitPublishPush bintrayUpload
 else
   echo "This build doesn't publish the library since it is not tagged."
 fi
