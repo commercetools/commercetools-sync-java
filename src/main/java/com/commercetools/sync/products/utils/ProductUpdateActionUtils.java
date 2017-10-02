@@ -35,7 +35,6 @@ import io.sphere.sdk.search.SearchKeywords;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -535,8 +534,8 @@ public final class ProductUpdateActionUtils {
             // thus we can't use ChangeMasterVariant.ofVariantId(),
             // but it could be re-factored as soon as ChangeMasterVariant.ofKey() happens in the SDK
             () -> {
-                final List<UpdateAction<Product>> res = new ArrayList<>(2);
-                res.add(ChangeMasterVariant.ofSku(newProduct.getMasterVariant().getSku(), true));
+                final List<UpdateAction<Product>> updateActions = new ArrayList<>(2);
+                updateActions.add(ChangeMasterVariant.ofSku(newProduct.getMasterVariant().getSku(), true));
 
                 // verify whether the old master variant should be removed:
                 // if the new variant list doesn't contain the old master variant key.
@@ -546,9 +545,9 @@ public final class ProductUpdateActionUtils {
                 // because this body is called only if newKey != oldKey
                 if (newProduct.getVariants().stream()
                     .noneMatch(variant -> Objects.equals(variant.getKey(), oldKey))) {
-                    res.add(RemoveVariant.of(oldProduct.getMasterData().getStaged().getMasterVariant()));
+                    updateActions.add(RemoveVariant.of(oldProduct.getMasterData().getStaged().getMasterVariant()));
                 }
-                return res;
+                return updateActions;
             });
     }
 
