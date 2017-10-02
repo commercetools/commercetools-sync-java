@@ -94,7 +94,7 @@ public class BuildProductVariantImagesUpdateActionsTest {
     }
 
     @Test
-    public void buildProductVariantImagesUpdateActions_WithDifferntImageLists_ShouldBuildAddExternalImageAction() {
+    public void buildProductVariantImagesUpdateActions_WithDifferentImageLists_ShouldBuildAddExternalImageAction() {
         final ProductVariant oldVariant = mock(ProductVariant.class);
         final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
@@ -119,7 +119,7 @@ public class BuildProductVariantImagesUpdateActionsTest {
     }
 
     @Test
-    public void buildProductVariantImagesUpdateActions_WithDifferntImageLists_ShouldBuildRemoveImageAction() {
+    public void buildProductVariantImagesUpdateActions_WithDifferentImageLists_ShouldBuildRemoveImageAction() {
         final ProductVariant oldVariant = mock(ProductVariant.class);
         final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
