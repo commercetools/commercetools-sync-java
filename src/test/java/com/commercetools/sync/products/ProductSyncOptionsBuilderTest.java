@@ -36,7 +36,7 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.shouldRemoveOtherVariants()).isTrue();
         assertThat(productSyncOptions.getBlackList()).isEmpty();
         assertThat(productSyncOptions.getWhiteList()).isEmpty();
-        assertThat(productSyncOptions.getUpdateActionsFilter()).isNull();
+        assertThat(productSyncOptions.getUpdateActionsCallBack()).isNull();
         assertThat(productSyncOptions.getErrorCallBack()).isNull();
         assertThat(productSyncOptions.getWarningCallBack()).isNull();
         assertThat(productSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
@@ -159,7 +159,7 @@ public class ProductSyncOptionsBuilderTest {
             .setAllowUuidKeys(true)
             .setRemoveOtherLocales(false)
             .setBatchSize(30)
-            .setUpdateActionsFilter(updateActions -> Collections.emptyList())
+            .setUpdateActionsFilterCallBack(updateActions -> Collections.emptyList())
             .build();
         assertThat(productSyncOptions).isNotNull();
     }
