@@ -34,8 +34,6 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.shouldRemoveOtherLocales()).isTrue();
         assertThat(productSyncOptions.shouldAllowUuidKeys()).isFalse();
         assertThat(productSyncOptions.shouldRemoveOtherVariants()).isTrue();
-        assertThat(productSyncOptions.getBlackList()).isEmpty();
-        assertThat(productSyncOptions.getWhiteList()).isEmpty();
         assertThat(productSyncOptions.getUpdateActionsCallBack()).isNull();
         assertThat(productSyncOptions.getErrorCallBack()).isNull();
         assertThat(productSyncOptions.getWarningCallBack()).isNull();
