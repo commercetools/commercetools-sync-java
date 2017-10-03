@@ -72,12 +72,8 @@ public class BuildProductVariantImageUpdateActionsIT {
      */
     @Before
     public void setUp() {
-        errorCallBackMessages = new ArrayList<>();
-        errorCallBackExceptions = new ArrayList<>();
-        warningCallBackMessages = new ArrayList<>();
-        updateActionsBuiltBySync = new ArrayList<>();
+        clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
-
 
         final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
             errorCallBackMessages.add(errorMessage);
@@ -100,6 +96,13 @@ public class BuildProductVariantImageUpdateActionsIT {
                                                                                    updateActionsCollector)
                                                                                .build();
         productSync = new ProductSync(productSyncOptions);
+    }
+
+    private void clearSyncTestCollections() {
+        errorCallBackMessages = new ArrayList<>();
+        errorCallBackExceptions = new ArrayList<>();
+        warningCallBackMessages = new ArrayList<>();
+        updateActionsBuiltBySync = new ArrayList<>();
     }
 
     @Test
