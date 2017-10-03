@@ -1,10 +1,10 @@
 package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.products.ActionGroup;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.SyncFilter;
-import com.commercetools.sync.products.UpdateFilter;
 import com.commercetools.sync.products.UpdateFilterType;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
@@ -52,6 +52,7 @@ import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUt
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantSkuUpdateActions;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
@@ -442,14 +443,14 @@ public final class ProductUpdateActionUtils {
         final ArrayList<UpdateAction<Product>> updateActions = new ArrayList<>();
         final SyncFilter syncFilter = syncOptions.getSyncFilter();
         updateActions.addAll(
-                buildActionsIfPassesFilter(syncFilter, UpdateFilter.ATTRIBUTES, () ->
+                buildActionsIfPassesFilter(syncFilter, ActionGroup.ATTRIBUTES, () ->
                         buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
                                 newProductVariant, attributesMetaData, syncOptions)));
         updateActions.addAll(
-                buildActionsIfPassesFilter(syncFilter, UpdateFilter.IMAGES, () ->
+                buildActionsIfPassesFilter(syncFilter, ActionGroup.IMAGES, () ->
                         buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant)));
         updateActions.addAll(
-                buildActionsIfPassesFilter(syncFilter, UpdateFilter.PRICES, () ->
+                buildActionsIfPassesFilter(syncFilter, ActionGroup.PRICES, () ->
                         buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant)));
         updateActions.addAll(buildProductVariantSkuUpdateActions(oldProductVariant, newProductVariant));
         return updateActions;
@@ -572,55 +573,31 @@ public final class ProductUpdateActionUtils {
             .withImages(draft.getImages());
     }
 
-
-    /**
-     *
-     * @param syncFilter
-     * @param filter
-     * @param updateActionSupplier
-     * @return
-     */
     static Optional<UpdateAction<Product>> buildActionIfPassesFilter(
             @Nonnull final SyncFilter syncFilter,
-            @Nonnull final UpdateFilter filter,
+            @Nonnull final ActionGroup filter,
             @Nonnull final Supplier<Optional<UpdateAction<Product>>> updateActionSupplier) {
         return buildSupplierResultIfPassesFilter(syncFilter, filter, updateActionSupplier, empty());
     }
 
-    /**
-     *
-     * @param syncFilter
-     * @param filter
-     * @param updateActionSupplier
-     * @return
-     */
     static List<UpdateAction<Product>> buildActionsIfPassesFilter(
             @Nonnull final SyncFilter syncFilter,
-            @Nonnull final UpdateFilter filter,
+            @Nonnull final ActionGroup filter,
             @Nonnull final Supplier<List<UpdateAction<Product>>> updateActionSupplier) {
         return buildSupplierResultIfPassesFilter(syncFilter, filter, updateActionSupplier, emptyList());
     }
 
-    /**
-     *
-     * @param syncFilter
-     * @param filter
-     * @param updateActionSupplier
-     * @param emptyResult
-     * @param <T>
-     * @return
-     */
     private static <T> T buildSupplierResultIfPassesFilter(
-            @Nonnull final SyncFilter syncFilter, @Nonnull final UpdateFilter filter,
+            @Nonnull final SyncFilter syncFilter, @Nonnull final ActionGroup filter,
             @Nonnull final Supplier<T> updateActionSupplier, @Nonnull final T emptyResult) {
 
         final UpdateFilterType filterType = syncFilter.getFilterType();
         if (filterType.equals(UpdateFilterType.BLACKLIST)) {
-            final List<UpdateFilter> blackList = syncFilter.getFilters();
+            final List<ActionGroup> blackList = syncFilter.getFilters();
             return !blackList.contains(filter) ? updateActionSupplier.get() : emptyResult;
         }
 
-        final List<UpdateFilter> whiteList = syncFilter.getFilters();
+        final List<ActionGroup> whiteList = syncFilter.getFilters();
         return whiteList.contains(filter) ? updateActionSupplier.get() : emptyResult;
     }
 }
