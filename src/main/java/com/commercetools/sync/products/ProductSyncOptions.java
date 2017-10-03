@@ -52,17 +52,27 @@ public class ProductSyncOptions extends BaseSyncOptions {
     }
 
     /**
-     * TODO
-     * @return TODO..
+     * Returns the {@link SyncFilter} set to {@code this} {@link ProductSyncOptions}.
+     * It represents either a blacklist or a whitelist for filtering certain update action groups.
+     *
+     * @return the {@link SyncFilter} set to {@code this} {@link ProductSyncOptions}.
      */
+    @Nullable
     public SyncFilter getSyncFilter() {
         return syncFilter;
     }
 
     /**
-     * getUpdateActionsCallBack TODO.
-     * @return TODO
+     * Returns the {@code updateActionsCallBack} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
+     * {@link Product}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@link Product}&gt;&gt;&gt; function set to
+     * {@code this} {@link ProductSyncOptions}. It represents a filter function which can be applied on generated list
+     * of update actions to produce a resultant list after the filter function has been applied.
+     *
+     * @return the {@code updateActionsFilter} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
+     *         {@link Product}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@link Product}&gt;&gt;&gt; function
+     *         set to {@code this} {@link ProductSyncOptions}.
      */
+    @Nullable
     public Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> getUpdateActionsCallBack() {
         return updateActionsCallBack;
     }
