@@ -26,7 +26,13 @@ public final class ProductSyncOptionsBuilder
         return new ProductSyncOptionsBuilder(ctpClient).setBatchSize(BATCH_SIZE_DEFAULT);
     }
 
-    public ProductSyncOptionsBuilder removeOtherVariants(final boolean removeOtherVariants) {
+    /**
+     * TODO: To Be Implemented.
+     * @param removeOtherVariants TODO
+     * @return TODO
+     */
+    @Nonnull
+    private ProductSyncOptionsBuilder removeOtherVariants(final boolean removeOtherVariants) {
         this.removeOtherVariants = removeOtherVariants;
         return this;
     }

@@ -43,9 +43,10 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getBatchSize()).isEqualTo(ProductSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
     }
 
+    @Ignore("Not implemented feature yet.")
     @Test
     public void removeOtherVariants_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.removeOtherVariants(false);
+        //TODO: productSyncOptionsBuilder.removeOtherVariants(false);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.shouldRemoveOtherVariants()).isFalse();
