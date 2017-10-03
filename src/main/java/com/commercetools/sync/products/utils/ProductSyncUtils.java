@@ -1,10 +1,10 @@
 package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.products.ActionGroup;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.SyncFilter;
-import com.commercetools.sync.products.UpdateFilter;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -21,20 +21,20 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionIfNotBlackListed;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionsIfNotBlackListed;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeNameUpdateAction;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetDescriptionUpdateAction;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeSlugUpdateAction;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetSearchKeywordsUpdateAction;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaTitleUpdateAction;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaDescriptionUpdateAction;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionIfPassesFilter;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionsIfPassesFilter;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddToCategoryUpdateActions;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeNameUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeSlugUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildPublishUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildRemoveFromCategoryUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetCategoryOrderHintUpdateActions;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetDescriptionUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaDescriptionUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaTitleUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetSearchKeywordsUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildPublishUpdateAction;
 
 // TODO: FIX DOCUMENTATION AFTER CHANGE OF REMOVAL OF SYNC OPTIONS FOR ONLY COMPARING STAGED.
 public final class ProductSyncUtils {
@@ -93,25 +93,25 @@ public final class ProductSyncUtils {
         final SyncFilter syncFilter = syncOptions.getSyncFilter();
         final List<UpdateAction<Product>> updateActions = buildUpdateActionsFromOptionals(
                 Arrays.asList(
-                        buildActionIfPassesFilter(syncFilter, UpdateFilter.NAME, () ->
+                        buildActionIfPassesFilter(syncFilter, ActionGroup.NAME, () ->
                                 buildChangeNameUpdateAction(oldProduct, newProduct)),
-                        buildActionIfPassesFilter(syncFilter, UpdateFilter.DESCRIPTION, () ->
+                        buildActionIfPassesFilter(syncFilter, ActionGroup.DESCRIPTION, () ->
                                 buildSetDescriptionUpdateAction(oldProduct, newProduct)),
-                        buildActionIfPassesFilter(syncFilter, UpdateFilter.SLUG, () ->
+                        buildActionIfPassesFilter(syncFilter, ActionGroup.SLUG, () ->
                                 buildChangeSlugUpdateAction(oldProduct, newProduct)),
-                        buildActionIfPassesFilter(syncFilter, UpdateFilter.SEARCHKEYWORDS, () ->
+                        buildActionIfPassesFilter(syncFilter, ActionGroup.SEARCHKEYWORDS, () ->
                                 buildSetSearchKeywordsUpdateAction(oldProduct, newProduct)),
-                        buildActionIfPassesFilter(syncFilter, UpdateFilter.METATITLE, () ->
+                        buildActionIfPassesFilter(syncFilter, ActionGroup.METATITLE, () ->
                                 buildSetMetaTitleUpdateAction(oldProduct, newProduct)),
-                        buildActionIfPassesFilter(syncFilter, UpdateFilter.METADESCRIPTION, () ->
+                        buildActionIfPassesFilter(syncFilter, ActionGroup.METADESCRIPTION, () ->
                                 buildSetMetaDescriptionUpdateAction(oldProduct, newProduct)),
-                        buildActionIfPassesFilter(syncFilter, UpdateFilter.METAKEYWORDS, () ->
+                        buildActionIfPassesFilter(syncFilter, ActionGroup.METAKEYWORDS, () ->
                                 buildSetMetaKeywordsUpdateAction(oldProduct, newProduct))
                 ));
 
         // TODO OWN METHOD
         final List<UpdateAction<Product>> productCatgoryUpdateActions =
-                buildActionsIfPassesFilter(syncFilter, UpdateFilter.CATEGORIES, () -> {
+                buildActionsIfPassesFilter(syncFilter, ActionGroup.CATEGORIES, () -> {
                     final List<UpdateAction<Product>> categoryUpdateActions = new ArrayList<>();
                     categoryUpdateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct));
                     categoryUpdateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));
@@ -121,7 +121,7 @@ public final class ProductSyncUtils {
         updateActions.addAll(productCatgoryUpdateActions);
 
         final List<UpdateAction<Product>> variantUpdateActions =
-                buildActionsIfPassesFilter(syncFilter, UpdateFilter.VARIANTS, () ->
+                buildActionsIfPassesFilter(syncFilter, ActionGroup.VARIANTS, () ->
                         buildVariantsUpdateActions(oldProduct, newProduct, syncOptions, attributesMetaData));
         updateActions.addAll(variantUpdateActions);
 
