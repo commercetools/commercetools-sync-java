@@ -1,7 +1,7 @@
 package com.commercetools.sync.products;
 
 
-public enum UpdateFilter {
+public enum ActionGroup {
     NAME,
     DESCRIPTION,
     SLUG,
