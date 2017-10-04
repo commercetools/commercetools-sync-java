@@ -68,10 +68,8 @@ public class ProductSyncFilterIT {
     private List<UpdateAction<Product>> updateActionsFromSync;
 
     /**
-     * Delete all product related test data from target project. Then creates custom types for target CTP project
-     * categories.
-     *
-     * <p>TODO: REFACTOR SETUP of key replacements.
+     * Delete all product related test data from target project. Then create custom types for the categories and a
+     * productType for the products of the target CTP project.
      */
     @BeforeClass
     public static void setupAllTests() {
@@ -83,11 +81,12 @@ public class ProductSyncFilterIT {
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
-
-
     /**
-     * Deletes Products and Types from target CTP projects, then it populates target CTP project with product test
-     * data.
+     * 1. Deletes all products from target CTP project
+     * 2. Clears all sync collections used for test assertions.
+     * 3. Creates an instance for {@link ProductSyncOptionsBuilder} that will be used in the tests to build
+     * {@link ProductSyncOptions} instances.
+     * 4. Create a product in the target CTP project.
      */
     @Before
     public void setupPerTest() {
