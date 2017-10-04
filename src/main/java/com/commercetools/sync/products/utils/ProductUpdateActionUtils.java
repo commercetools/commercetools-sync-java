@@ -34,6 +34,7 @@ import io.sphere.sdk.products.commands.updateactions.Unpublish;
 import io.sphere.sdk.search.SearchKeywords;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -574,23 +575,26 @@ public final class ProductUpdateActionUtils {
     }
 
     static Optional<UpdateAction<Product>> buildActionIfPassesFilter(
-            @Nonnull final SyncFilter syncFilter,
+            @Nullable final SyncFilter syncFilter,
             @Nonnull final ActionGroup filter,
             @Nonnull final Supplier<Optional<UpdateAction<Product>>> updateActionSupplier) {
         return buildSupplierResultIfPassesFilter(syncFilter, filter, updateActionSupplier, empty());
     }
 
     static List<UpdateAction<Product>> buildActionsIfPassesFilter(
-            @Nonnull final SyncFilter syncFilter,
+            @Nullable final SyncFilter syncFilter,
             @Nonnull final ActionGroup filter,
             @Nonnull final Supplier<List<UpdateAction<Product>>> updateActionSupplier) {
         return buildSupplierResultIfPassesFilter(syncFilter, filter, updateActionSupplier, emptyList());
     }
 
     private static <T> T buildSupplierResultIfPassesFilter(
-            @Nonnull final SyncFilter syncFilter, @Nonnull final ActionGroup filter,
+            @Nullable final SyncFilter syncFilter, @Nonnull final ActionGroup filter,
             @Nonnull final Supplier<T> updateActionSupplier, @Nonnull final T emptyResult) {
-
+        if (syncFilter == null) {
+            // If there is no filter, attempt to build an update action.
+            return updateActionSupplier.get();
+        }
         final UpdateFilterType filterType = syncFilter.getFilterType();
         if (filterType.equals(UpdateFilterType.BLACKLIST)) {
             final List<ActionGroup> blackList = syncFilter.getFilters();
