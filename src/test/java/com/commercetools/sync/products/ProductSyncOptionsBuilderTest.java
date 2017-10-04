@@ -1,7 +1,6 @@
 package com.commercetools.sync.products;
 
 import io.sphere.sdk.client.SphereClient;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -39,11 +38,9 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getBatchSize()).isEqualTo(ProductSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
     }
 
-    @Ignore("Not implemented feature yet.")
     @Test
     public void removeOtherVariants_WithFalse_ShouldSetFlag() {
-        //TODO: productSyncOptionsBuilder.removeOtherVariants(false);
-
+        productSyncOptionsBuilder.removeOtherVariants(false);
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.shouldRemoveOtherVariants()).isFalse();
     }

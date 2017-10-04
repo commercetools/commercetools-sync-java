@@ -33,7 +33,7 @@ public final class ProductSyncOptionsBuilder
      * @return TODO
      */
     @Nonnull
-    private ProductSyncOptionsBuilder removeOtherVariants(final boolean removeOtherVariants) {
+    public ProductSyncOptionsBuilder removeOtherVariants(final boolean removeOtherVariants) {
         this.removeOtherVariants = removeOtherVariants;
         return this;
     }
