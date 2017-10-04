@@ -28,9 +28,12 @@ public final class ProductSyncOptionsBuilder
     }
 
     /**
-     * TODO: To Be Implemented.
-     * @param removeOtherVariants TODO
-     * @return TODO
+     * Sets the {@code removeOtherVariants} boolean flag which sync additional variants without deleting
+     * existing ones. If set to true, which is the default value of the option, it deletes the
+     * existing variants. If set to false, it doesn't delete the existing ones.
+     *
+     * @param removeOtherVariants new value to set to the boolean flag.
+     * @return {@code this} instance of {@link ProductSyncOptionsBuilder}
      */
     @Nonnull
     public ProductSyncOptionsBuilder removeOtherVariants(final boolean removeOtherVariants) {
