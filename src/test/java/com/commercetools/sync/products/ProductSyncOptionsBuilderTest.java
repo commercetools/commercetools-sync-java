@@ -1,12 +1,18 @@
 package com.commercetools.sync.products;
 
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.products.Product;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
+import static com.commercetools.sync.products.UpdateFilterType.BLACKLIST;
+import static com.commercetools.sync.products.UpdateFilterType.WHITELIST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -45,34 +51,43 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.shouldRemoveOtherVariants()).isFalse();
     }
 
-    /*
     @Test
-    public void whiteList_WithNonEmptyList_ShouldSetWhiteList() {
-        productSyncOptionsBuilder.whiteList(Collections.singletonList(ActionGroup.NAME));
-
+    public void setSyncFilter_WithNoSyncFilter_ShouldSetWhiteList() {
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.getWhiteList()).hasSize(1);
-        assertThat(productSyncOptions.getWhiteList().get(0)).isEqualTo(ActionGroup.NAME);
+        assertThat(productSyncOptions.getSyncFilter()).isNull();
     }
 
     @Test
-    public void blackList_WithNonEmptyList_ShouldSetBlackList() {
-        productSyncOptionsBuilder.blackList(Collections.singletonList(ActionGroup.NAME));
+    public void setSyncFilter_WithWhiteListingImages_ShouldSetWhiteList() {
+        productSyncOptionsBuilder.setSyncFilter(WHITELIST, Collections.singletonList(ActionGroup.IMAGES));
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.getBlackList()).hasSize(1);
-        assertThat(productSyncOptions.getBlackList().get(0)).isEqualTo(ActionGroup.NAME);
+        assertThat(productSyncOptions.getSyncFilter()).isNotNull();
+        assertThat(productSyncOptions.getSyncFilter().getFilterType()).isEqualTo(WHITELIST);
+        assertThat(productSyncOptions.getSyncFilter().getFilters()).hasSize(1);
+        assertThat(productSyncOptions.getSyncFilter().getFilters().get(0)).isEqualTo(ActionGroup.IMAGES);
+    }
+
+    @Test
+    public void setSyncFilter_WithBlackListingPrices_ShouldSetBlackList() {
+        productSyncOptionsBuilder.setSyncFilter(BLACKLIST, Collections.singletonList(ActionGroup.PRICES));
+
+        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
+        assertThat(productSyncOptions.getSyncFilter()).isNotNull();
+        assertThat(productSyncOptions.getSyncFilter().getFilterType()).isEqualTo(BLACKLIST);
+        assertThat(productSyncOptions.getSyncFilter().getFilters()).hasSize(1);
+        assertThat(productSyncOptions.getSyncFilter().getFilters().get(0)).isEqualTo(ActionGroup.PRICES);
     }
 
     @Test
     public void setUpdateActionsFilter_WithFilter_ShouldSetFilter() {
         final Function<List<UpdateAction<Product>>,
-            List<UpdateAction<Product>>> clearListFilter = (updateActions -> Collections.emptyList());
-        productSyncOptionsBuilder.setUpdateActionsFilter(clearListFilter);
+                    List<UpdateAction<Product>>> clearListFilter = (updateActions -> Collections.emptyList());
+        productSyncOptionsBuilder.setUpdateActionsFilterCallBack(clearListFilter);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getUpdateActionsCallBack()).isNotNull();
-    }*/
+    }
 
     @Test
     public void setRemoveOtherCollectionEntries_WithFalse_ShouldSetFlag() {
