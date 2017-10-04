@@ -435,6 +435,7 @@ public final class ProductUpdateActionUtils {
         return updateActions;
     }
 
+    @Nonnull
     private static List<UpdateAction<Product>> collectAllVariantUpdateActions(
             @Nonnull final Product oldProduct,
             @Nonnull final ProductVariant oldProductVariant,
@@ -574,6 +575,7 @@ public final class ProductUpdateActionUtils {
             .withImages(draft.getImages());
     }
 
+    @Nonnull
     static Optional<UpdateAction<Product>> buildActionIfPassesFilter(
             @Nullable final SyncFilter syncFilter,
             @Nonnull final ActionGroup filter,
@@ -581,6 +583,7 @@ public final class ProductUpdateActionUtils {
         return buildSupplierResultIfPassesFilter(syncFilter, filter, updateActionSupplier, empty());
     }
 
+    @Nonnull
     static List<UpdateAction<Product>> buildActionsIfPassesFilter(
             @Nullable final SyncFilter syncFilter,
             @Nonnull final ActionGroup filter,
@@ -588,6 +591,7 @@ public final class ProductUpdateActionUtils {
         return buildSupplierResultIfPassesFilter(syncFilter, filter, updateActionSupplier, emptyList());
     }
 
+    @Nonnull
     private static <T> T buildSupplierResultIfPassesFilter(
             @Nullable final SyncFilter syncFilter, @Nonnull final ActionGroup filter,
             @Nonnull final Supplier<T> updateActionSupplier, @Nonnull final T emptyResult) {

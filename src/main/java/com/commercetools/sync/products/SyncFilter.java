@@ -43,6 +43,7 @@ public final class SyncFilter {
         this.filters = filters;
     }
 
+    @Nonnull
     public static SyncFilter of(@Nonnull final UpdateFilterType filterType, @Nonnull final List<ActionGroup> filters) {
         return new SyncFilter(filterType, filters);
     }
