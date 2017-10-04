@@ -1,36 +1,148 @@
 # commercetools product sync
 
+Utility which provides API for building CTP product update actions and product synchronisation.
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [Usage](#usage)
+  - [Sync list of product drafts](#sync-list-of-product-drafts)
+    - [Prerequisites](#prerequisites)
+    - [Running the sync](#running-the-sync)
+  - [Build all update actions](#build-all-update-actions)
+  - [Build particular update action(s)](#build-particular-update-actions)
+- [Caveats](#caveats)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Usage
 
-### Correlation of product sync options in the context of publishing and reverting staged changes
+### Sync list of product drafts
 
-Product sync module provides (among others) the following sync options:
-* `shouldPublish` - whether to auto-publish product after creation or update
-* `shouldRevertStagedChanges` - whether to revert potential staged changes before synchronization
+#### Prerequisites
+1. The sync expects a list of non-null `ProductDraft` objects that have their `key` fields set to match the
+products from the source to the target. Also the target project is expected to have the `key` fields set,
+otherwise they won't be matched.
+2. Every category may have a reference to .. be continued. <!-- TODO: GITHUB ISSUE: #121 -->
+3. It is an important responsibility of the user of the library to instantiate a `sphereClient` that has the following properties:
+    - Limits the amount of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with 
+   [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html) 
+    - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the 
+   [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
+   
+   You can use the same client instantiating used in the integration tests for this library found 
+   [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
 
-#### Creating new product
+4. After the `sphereClient` is setup, a `ProductSyncOptions` should be be built as follows: 
+````java
+// instantiating a ProductSyncOptions
+final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(sphereClient).build();
+````
 
-In case of creating new product based on provided draft only `shouldPublish` option matters.
-It controls whether the created product will be published or left as staged only.
+The options can be used to provide additional optional configuration for the sync as well:
+- `errorCallBack`
+a callback that is called whenever an event occurs during the sync process that represents an error. Currently, these 
+events.
 
-#### Updating existing product
+- `warningCallBack` 
+a callback that is called whenever an event occurs during the sync process that represents a warning. Currently, these 
+events.
+<!--
+- `removeOtherLocales`
+a flag which enables the sync module to add additional localizations without deleting existing ones, if set to `false`. 
+If set to `true`, which is the default value of the option, it deletes the existing object properties.
+- `removeOtherSetEntries`
+a flag which enables the sync module to add additional Set entries without deleting existing ones, if set to `false`. 
+If set to `true`, which is the default value of the option, it deletes the existing Set entries.
+- `removeOtherCollectionEntries`
+a flag which enables the sync module to add collection (e.g. Assets, Images etc.) entries without deleting existing 
+ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing collection 
+entries.
+- `removeOtherProperties`
+a flag which enables the sync module to add additional object properties (e.g. custom fields, etc..) without deleting 
+existing ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing 
+object properties. -->
+- `syncFilter`
+ represents either a blacklist or a whitelist for filtering certain update action groups. 
+  - __Blacklisting__ an update action group means that everything in products will be synced except for any group 
+  in the blacklist. A typical use case it to blacklist prices when syncing products, so as to sync everything in products
+  except prices. [Here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L143)
+  is an example where the sync is performed while blacklisting product categories. 
+  
+  - __Whitelisting__ an update action group means that the groups in this whitelist will be the *only* group synced in 
+  products. One use case could be to whitelist prices when syncing products, so as to only sync prices in products and
+  nothing else. [Here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L143)
+  is an example where the sync is performed while whitelisting product names.
+  
+  - The list of action groups allowed to be blacklist or whitelisted on products can be found [here](/src/main/java/com/commercetools/sync/products/ActionGroup.java). 
 
-In case of updating existing product both options are considered and certain scenarios might occur.
-Those scenarios depend on the state of existing product described by its two parameters:
-* product.`hasStagedChanges` - informs whether the existing product already has staged changes before sync happens
-* product.`isPublished` - informs whether the existing product is published
+- `updateActionsCallBack`
+a filter function which can be applied on generated list of update actions to produce a resultant list after the filter 
+function has been applied.
+- `allowUuid`
+a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
-Before update sync is executed the value of `shouldRevertStagedChanges` is checked.
-If `shouldRevertStagedChanges` == true and product.`hasStagedChanges` == true then `RevertStagedChanges` action
-is executed on the existing product. Thus, through `shouldRevertStagedChanges` option library's user might
-control if potential external changes on staged projection of product should be reverted on the product
-before syncing with draft.
+Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
+streams, can be found [here]()<!-- TODO: ADD link GITHUB ISSUE: #121 -->
 
-After this step actual update actions are executed.
 
-Last step is publishing product which is executed when `shouldPublish` == true and depends on the following:
-* if product.`isPublished` == false then Publish action is executed on product.
-* if product.`isPublished` == true it depends on the following:
-  * if product.`hasStagedChanges` == false then no action is required because product is already published and
-  does not have any staged changes
-  * if product.`hasStagedChanges` == true then Publish action is executed on product.
+#### Running the sync
+After all the aforementioned points in the previous section have been fulfilled, to run the sync:
+````java
+// instantiating a product sync
+final Product productSync = new ProductSync(productSyncOptions);
+
+// execute the sync on your list of products
+CompletionStage<ProductSyncStatistics> syncStatisticsStage = productSync.sync(productDrafts);
+````
+The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `ProductSyncStatistics`
+which contains all the stats of the sync process; which includes a report message, the total number of updated, created, 
+failed, processed categories and the processing time of the sync in different time units and in a
+human readable format.
+````java
+final CategorySyncStatistics stats = syncStatisticsStage.toCompletebleFuture().join();
+stats.getReportMessage(); 
+/*"Summary: 2000 products were processed in total (1000 created, 995 updated and 5 products failed to sync)."*/
+````
+
+
+More examples of how to use the sync <!-- TODO: continue GITHUB ISSUE: #121 
+1. From another CTP project as source can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
+2. From an external source can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java). 
+ -->
+
+
+### Build all update actions
+
+A utility method provided by the library to compare a Product with a new ProductDraft and results in a list of product
+ update actions. 
+<!-- TODO: continue GITHUB ISSUE: #121 
+
+```java
+List<UpdateAction<Category>> updateActions = CategorySyncUtils.buildActions(category, categoryDraft, categorySyncOptions);
+```
+
+Examples of its usage can be found in the tests 
+[here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/categories/utils/CategorySyncUtilsTest.java).
+-->
+
+### Build particular update action(s)
+
+Utility methods provided by the library to compare the specific fields of a Product and a new ProductDraft, and in turn builds
+ the update action. One example is the `buildChangeNameUpdateAction` which compares names:
+ <!-- TODO: continue GITHUB ISSUE: #121 
+ 
+````java
+Optional<UpdateAction<Category>> updateAction = buildChangeNameUpdateAction(oldCategory, categoryDraft);
+````
+More examples of those utils for different fields can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/updateactionutils).
+-->
+
+## Caveats
+<!-- TODO: continue GITHUB ISSUE: #121 
+1. Categories are either created or updated. Currently the tool does not support category deletion.
+2. The library doesn't sync category assets yet [#3](https://github.com/commercetools/commercetools-sync-java/issues/3), but it will not delete them.
+3. The library will sync all field types of custom fields, except `ReferenceType`. It will be implemented 
+in version [1.0.0-M3](https://github.com/commercetools/commercetools-sync-java/milestone/5).
+-->
