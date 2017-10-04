@@ -81,7 +81,7 @@ entries.
 a flag which enables the sync module to add additional object properties (e.g. custom fields, etc..) without deleting 
 existing ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing 
 object properties. -->
-- `updateActionsFilter`
+- `updateActionsCallBack`
 a filter function which can be applied on generated list of update actions to produce a resultant list after the filter 
 function has been applied.
 - `allowUuid`
