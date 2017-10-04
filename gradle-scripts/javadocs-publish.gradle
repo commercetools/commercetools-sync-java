@@ -4,7 +4,7 @@ gitPublish {
     http://ajoberstar.org/grgit/index.html
      */
 
-    repoUri = scmSshUrl
+    repoUri = scmHttpsUrl
     branch = 'gh-pages'
 
     // what to publish, this is a standard CopySpec
