@@ -98,7 +98,7 @@ After all the aforementioned points in the previous section have been fulfilled,
 final CategorySync categorySync = new CategorySync(categorySyncOptions);
 
 // execute the sync on your list of categories
-CompletionStage<CategorySyncStatistics> syncStatisticsStage = CategorySynccategorySync.sync(categoryDrafts);
+CompletionStage<CategorySyncStatistics> syncStatisticsStage = categorySync.sync(categoryDrafts);
 ````
 The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `CategorySyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created, 
