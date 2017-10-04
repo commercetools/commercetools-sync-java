@@ -3,6 +3,7 @@ package com.commercetools.sync.integration.externalsource.products;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.products.SyncFilter;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
@@ -170,8 +171,8 @@ public class ProductSyncFilterIT {
         final List<ProductDraft> productDraftWithKeysOnReferences =
                 replaceProductDraftsCategoryReferenceIdsWithKeys(Collections.singletonList(productDraft));
 
-        final ProductSyncOptions syncOptions = syncOptionsBuilder.setSyncFilter(WHITELIST, singletonList(NAME))
-                                                                 .build();
+        final SyncFilter syncFilter = SyncFilter.of(WHITELIST, singletonList(NAME));
+        final ProductSyncOptions syncOptions = syncOptionsBuilder.setSyncFilter(syncFilter).build();
 
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
