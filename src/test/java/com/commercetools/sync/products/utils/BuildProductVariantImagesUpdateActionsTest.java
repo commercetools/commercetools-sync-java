@@ -16,7 +16,10 @@ import java.util.List;
 
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildMoveImageToPositionUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -257,27 +260,13 @@ public class BuildProductVariantImagesUpdateActionsTest {
         newImages.add(image3);
 
         final List<MoveImageToPosition> updateActions =
-                buildMoveImageToPositionUpdateActions(1, oldImages, newImages);
-        assertThat(updateActions).hasSize(4);
-        updateActions.forEach(
-            productUpdateAction -> assertThat(productUpdateAction.getAction()).isEqualTo("moveImageToPosition"));
+            buildMoveImageToPositionUpdateActions(1, oldImages, newImages);
 
-        final MoveImageToPosition moveImage5ToPosition = updateActions.get(0);
-        final MoveImageToPosition moveImage2ToPosition = updateActions.get(1);
-        final MoveImageToPosition moveImage3ToPosition = updateActions.get(2);
-        final MoveImageToPosition moveImage4ToPosition = updateActions.get(3);
-
-        assertThat(moveImage5ToPosition.getImageUrl()).isEqualTo(image5.getUrl());
-        assertThat(moveImage5ToPosition.getPosition()).isEqualTo(newImages.indexOf(image5));
-
-        assertThat(moveImage2ToPosition.getImageUrl()).isEqualTo(image2.getUrl());
-        assertThat(moveImage2ToPosition.getPosition()).isEqualTo(newImages.indexOf(image2));
-
-        assertThat(moveImage3ToPosition.getImageUrl()).isEqualTo(image3.getUrl());
-        assertThat(moveImage3ToPosition.getPosition()).isEqualTo(newImages.indexOf(image3));
-
-        assertThat(moveImage4ToPosition.getImageUrl()).isEqualTo(image4.getUrl());
-        assertThat(moveImage4ToPosition.getPosition()).isEqualTo(newImages.indexOf(image4));
+        assertThat(updateActions).containsExactlyInAnyOrder(
+            MoveImageToPosition.ofImageUrlAndVariantId(image4.getUrl(), 1, 0, true),
+            MoveImageToPosition.ofImageUrlAndVariantId(image5.getUrl(), 1, 1, true),
+            MoveImageToPosition.ofImageUrlAndVariantId(image2.getUrl(), 1, 2, true),
+            MoveImageToPosition.ofImageUrlAndVariantId(image3.getUrl(), 1, 3, true));
     }
 
     @Test
@@ -315,40 +304,26 @@ public class BuildProductVariantImagesUpdateActionsTest {
     }
 
     @Test
-    public void buildMoveImageToPositionUpdateActions_WithDifferentImages_ShouldBuildActions() {
+    public void buildMoveImageToPositionUpdateActions_WithDifferentImages_ShouldThrowException() {
         final Image image2 = Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label");
         final Image image3 = Image.of("https://image3.url.com", ImageDimensions.of(2, 2), "image3Label");
         final Image image4 = Image.of("https://image4.url.com", ImageDimensions.of(2, 2), "image4Label");
         final Image image5 = Image.of("https://image5.url.com", ImageDimensions.of(2, 2), "image5Label");
 
-        final List<Image> oldImages = new ArrayList<>();
-        oldImages.add(image5);
-        oldImages.add(image2);
-        oldImages.add(image3);
+        final List<Image> oldImages = asList(image5, image2, image3);
+        final List<Image> newImagesWithout5 = asList(image4, image2, image3);
 
-        final List<Image> newImages = new ArrayList<>();
-        newImages.add(image4);
-        newImages.add(image5);
-        newImages.add(image2);
-        newImages.add(image3);
+        assertThatThrownBy(() -> buildMoveImageToPositionUpdateActions(1, oldImages, newImagesWithout5))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining(format("[%s] not found", image5));
 
-        final List<MoveImageToPosition> updateActions =
-                buildMoveImageToPositionUpdateActions(1, oldImages, newImages);
-        assertThat(updateActions).hasSize(3);
-        updateActions.forEach(
-            productUpdateAction -> assertThat(productUpdateAction.getAction()).isEqualTo("moveImageToPosition"));
+        final List<Image> newImagesWith4 = new ArrayList<>(newImagesWithout5);
+        newImagesWith4.add(image5);
 
-        final MoveImageToPosition moveImage5ToPosition = updateActions.get(0);
-        final MoveImageToPosition moveImage2ToPosition = updateActions.get(1);
-        final MoveImageToPosition moveImage3ToPosition = updateActions.get(2);
-
-        assertThat(moveImage5ToPosition.getImageUrl()).isEqualTo(image5.getUrl());
-        assertThat(moveImage5ToPosition.getPosition()).isEqualTo(newImages.indexOf(image5));
-
-        assertThat(moveImage2ToPosition.getImageUrl()).isEqualTo(image2.getUrl());
-        assertThat(moveImage2ToPosition.getPosition()).isEqualTo(newImages.indexOf(image2));
-
-        assertThat(moveImage3ToPosition.getImageUrl()).isEqualTo(image3.getUrl());
-        assertThat(moveImage3ToPosition.getPosition()).isEqualTo(newImages.indexOf(image3));
+        assertThatThrownBy(() -> buildMoveImageToPositionUpdateActions(1, oldImages, newImagesWith4))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("size")
+            .hasMessageContaining(String.valueOf(oldImages.size()))
+            .hasMessageContaining(String.valueOf(newImagesWith4.size()));
     }
 }

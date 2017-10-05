@@ -21,6 +21,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,6 +32,7 @@ import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdat
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
 
 // TODO: Add JAVADOC AND TESTS
 public final class ProductVariantUpdateActionUtils {
@@ -178,20 +180,41 @@ public final class ProductVariantUpdateActionUtils {
      * @param newImages the new list of images.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
      *         needed.
+     * @throws IllegalArgumentException if arrays have different size or different items.
      */
     public static List<MoveImageToPosition> buildMoveImageToPositionUpdateActions(
             final int variantId,
             @Nonnull final List<Image> oldImages,
-            @Nonnull final List<Image> newImages) {
+            @Nonnull final List<Image> newImages) throws IllegalArgumentException {
+
+        if (oldImages.size() != newImages.size()) {
+            throw new IllegalArgumentException(
+                format("Old and new image lists must have the same size, but they have %d and %d respectively",
+                    oldImages.size(), newImages.size()));
+        }
+
+        final int SIZE = oldImages.size();
+
+        // optimization: to avoid multiple linear image index searching in the loop below - create an [image -> index]
+        // map. This avoids quadratic order of growth of the implementation for large arrays.
+        final Map<Image, Integer> imageIndexMap = new HashMap<>(SIZE);
+        int index = 0;
+        for (Image newImage : newImages) {
+            imageIndexMap.put(newImage, index++);
+        }
+
         final List<MoveImageToPosition> updateActions = new ArrayList<>();
-        for (int index = 0; index < oldImages.size(); index++) {
-            final Image currentImage = oldImages.get(index);
-            int newIndex = newImages.indexOf(currentImage);
-            if (index != newIndex) {
-                final MoveImageToPosition updateAction =
-                        MoveImageToPosition
-                                .ofImageUrlAndVariantId(currentImage.getUrl(), variantId, newIndex, true);
-                updateActions.add(updateAction);
+
+        for (int oldIndex = 0; oldIndex < SIZE; oldIndex++) {
+            final Image oldImage = oldImages.get(oldIndex);
+
+            final Integer newIndex = ofNullable(imageIndexMap.get(oldImage)) // constant-time operation
+                .orElseThrow(() ->
+                    new IllegalArgumentException(format("Old image [%s] not found in the new images list", oldImage)));
+
+            if (oldIndex != newIndex) {
+                updateActions.add(
+                    MoveImageToPosition.ofImageUrlAndVariantId(oldImage.getUrl(), variantId, newIndex, true));
             }
         }
         return updateActions;
