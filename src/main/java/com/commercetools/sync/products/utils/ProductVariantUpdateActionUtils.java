@@ -203,11 +203,11 @@ public final class ProductVariantUpdateActionUtils {
                     oldImages.size(), newImages.size()));
         }
 
-        final int SIZE = oldImages.size();
+        final int listSize = oldImages.size();
 
         // optimization: to avoid multiple linear image index searching in the loop below - create an [image -> index]
         // map. This avoids quadratic order of growth of the implementation for large arrays.
-        final Map<Image, Integer> imageIndexMap = new HashMap<>(SIZE);
+        final Map<Image, Integer> imageIndexMap = new HashMap<>(listSize);
         int index = 0;
         for (Image newImage : newImages) {
             imageIndexMap.put(newImage, index++);
@@ -215,7 +215,7 @@ public final class ProductVariantUpdateActionUtils {
 
         final List<MoveImageToPosition> updateActions = new ArrayList<>();
 
-        for (int oldIndex = 0; oldIndex < SIZE; oldIndex++) {
+        for (int oldIndex = 0; oldIndex < listSize; oldIndex++) {
             final Image oldImage = oldImages.get(oldIndex);
 
             final Integer newIndex = ofNullable(imageIndexMap.get(oldImage)) // constant-time operation
