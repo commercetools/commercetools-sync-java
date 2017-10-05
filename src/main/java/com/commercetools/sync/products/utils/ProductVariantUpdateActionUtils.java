@@ -138,6 +138,12 @@ public final class ProductVariantUpdateActionUtils {
         final List<Image> oldProductVariantImages = oldProductVariant.getImages();
         final List<Image> newProductVariantImages = newProductVariant.getImages();
 
+        // this implementation is quite straight forward and might be slow on large arrays,
+        // because of quadratic algorithms of remove/add images synchronization.
+        // Unfortunately, there is not easy solution to synchronize 2 ordered lists
+        // having only add/remove/moveToPos actions.
+        // This solution should be re-optimized in the next releases to avoid O(N^2) for large lists.
+
         if (!Objects.equals(oldProductVariantImages, newProductVariantImages)) {
             final List<Image> oldImages = oldProductVariantImages != null
                     ? oldProductVariantImages : Collections.emptyList();
@@ -174,6 +180,10 @@ public final class ProductVariantUpdateActionUtils {
      * <p>This method expects the two lists two contain the same images only in different order. Therefore, be cautios
      * that supplying lists of different (missing/extra) images could results in an index out of bounds exception on the
      * new position of an image.
+     *
+     * <p><b>Note</b>: the solution is still not optimized and may contain {@link MoveImageToPosition} actions
+     * for items which are already on desired positions (after previous moves in the sequence). This will be
+     * re-optimized in the next releases.
      *
      * @param variantId the variantId for the {@link MoveImageToPosition} update actions.
      * @param oldImages the old list of images.
