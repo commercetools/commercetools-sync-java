@@ -92,22 +92,22 @@ public final class ProductSyncUtils {
                                                                        attributesMetaData) {
         final SyncFilter syncFilter = syncOptions.getSyncFilter();
         final List<UpdateAction<Product>> updateActions = buildUpdateActionsFromOptionals(
-                Arrays.asList(
-                        buildActionIfPassesFilter(syncFilter, ActionGroup.NAME, () ->
-                                buildChangeNameUpdateAction(oldProduct, newProduct)),
-                        buildActionIfPassesFilter(syncFilter, ActionGroup.DESCRIPTION, () ->
-                                buildSetDescriptionUpdateAction(oldProduct, newProduct)),
-                        buildActionIfPassesFilter(syncFilter, ActionGroup.SLUG, () ->
-                                buildChangeSlugUpdateAction(oldProduct, newProduct)),
-                        buildActionIfPassesFilter(syncFilter, ActionGroup.SEARCHKEYWORDS, () ->
-                                buildSetSearchKeywordsUpdateAction(oldProduct, newProduct)),
-                        buildActionIfPassesFilter(syncFilter, ActionGroup.METATITLE, () ->
-                                buildSetMetaTitleUpdateAction(oldProduct, newProduct)),
-                        buildActionIfPassesFilter(syncFilter, ActionGroup.METADESCRIPTION, () ->
-                                buildSetMetaDescriptionUpdateAction(oldProduct, newProduct)),
-                        buildActionIfPassesFilter(syncFilter, ActionGroup.METAKEYWORDS, () ->
-                                buildSetMetaKeywordsUpdateAction(oldProduct, newProduct))
-                ));
+            Arrays.asList(
+                buildActionIfPassesFilter(syncFilter, ActionGroup.NAME, () ->
+                    buildChangeNameUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.DESCRIPTION, () ->
+                    buildSetDescriptionUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.SLUG, () ->
+                        buildChangeSlugUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.SEARCHKEYWORDS, () ->
+                    buildSetSearchKeywordsUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.METATITLE, () ->
+                    buildSetMetaTitleUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.METADESCRIPTION, () ->
+                    buildSetMetaDescriptionUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.METAKEYWORDS, () ->
+                    buildSetMetaKeywordsUpdateAction(oldProduct, newProduct))
+            ));
 
         // TODO OWN METHOD
         final List<UpdateAction<Product>> productCatgoryUpdateActions =
