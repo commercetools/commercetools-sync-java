@@ -1,4 +1,4 @@
-package com.commercetools.sync.commons.utils.filterUtils;
+package com.commercetools.sync.commons.utils;
 
 import com.commercetools.sync.products.SyncFilter;
 import org.junit.Test;
@@ -12,7 +12,7 @@ import static com.commercetools.sync.products.UpdateFilterType.WHITELIST;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ExecuteSupplierTest {
+public class FilterUtilsTest {
 
     @Test
     public void executeSupplierIfPassesFilter_WithGroupInBlackList_ShouldFilterOutOnlyThisGroup(){
