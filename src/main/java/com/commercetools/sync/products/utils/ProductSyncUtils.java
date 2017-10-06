@@ -30,6 +30,8 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaTitleUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetSearchKeywordsUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetTaxCategoryUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildTransitionStateUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
 
 // TODO: FIX DOCUMENTATION AFTER CHANGE OF REMOVAL OF SYNC OPTIONS FOR ONLY COMPARING STAGED.
@@ -94,7 +96,9 @@ public final class ProductSyncUtils {
             buildSetSearchKeywordsUpdateAction(oldProduct, newProduct),
             buildSetMetaTitleUpdateAction(oldProduct, newProduct),
             buildSetMetaDescriptionUpdateAction(oldProduct, newProduct),
-            buildSetMetaKeywordsUpdateAction(oldProduct, newProduct)
+            buildSetMetaKeywordsUpdateAction(oldProduct, newProduct),
+            buildSetTaxCategoryUpdateAction(oldProduct, newProduct),
+            buildTransitionStateUpdateAction(oldProduct, newProduct)
         )));
 
         updateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct));
@@ -155,7 +159,7 @@ public final class ProductSyncUtils {
      */
     @Nonnull
     private static List<UpdateAction<Product>> buildUpdateActionsFromOptionals(
-        @Nonnull final List<Optional<UpdateAction<Product>>> optionalUpdateActions) {
+        @Nonnull final List<Optional<? extends UpdateAction<Product>>> optionalUpdateActions) {
         return optionalUpdateActions.stream()
                                     .filter(Optional::isPresent)
                                     .map(Optional::get)
