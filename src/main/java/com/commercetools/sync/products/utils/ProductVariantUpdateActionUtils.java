@@ -40,6 +40,9 @@ public final class ProductVariantUpdateActionUtils {
         + "setAttribute/setAttributeInAllVariants update action for the attribute with the name '%s' in the "
         + "ProductVariantDraft with key '%s' on the product with key '%s'. Reason: %s";
     private static final String NULL_PRODUCT_VARIANT_ATTRIBUTE = "AttributeDraft is null.";
+    private static final String IMAGE_LISTS_NOT_THE_SAME_SIZE = "Old and new image lists must have the same size, but "
+        + "they have %d and %d respectively";
+    private static final String OLD_IMAGE_NOT_FOUND = "Old image [%s] not found in the new images list.";
 
     /**
      * Compares the attributes of a {@link ProductVariantDraft} and a {@link ProductVariant} to build either
@@ -138,11 +141,12 @@ public final class ProductVariantUpdateActionUtils {
         final List<Image> oldProductVariantImages = oldProductVariant.getImages();
         final List<Image> newProductVariantImages = newProductVariant.getImages();
 
-        // this implementation is quite straight forward and might be slow on large arrays,
-        // because of quadratic algorithms of remove/add images synchronization.
-        // Unfortunately, there is not easy solution to synchronize 2 ordered lists
-        // having only add/remove/moveToPos actions.
+        // This implementation is quite straight forward and might be slow on large arrays, this is
+        // due to it's quadratic nature on images' removal/addition.
+        // Unfortunately, currently there is no easy solution to sync 2 ordered lists
+        // having only AddExternalImage/RemoveImage/MoveImageToPosition actions.
         // This solution should be re-optimized in the next releases to avoid O(N^2) for large lists.
+        // TODO: GITHUB ISSUE#133
 
         if (!Objects.equals(oldProductVariantImages, newProductVariantImages)) {
             final List<Image> oldImages = oldProductVariantImages != null
@@ -174,16 +178,15 @@ public final class ProductVariantUpdateActionUtils {
 
     /**
      * Compares an old {@link List} of {@link Image}s and a new one and returns a {@link List} of
-     * {@link MoveImageToPosition}&lt;{@link Product}&gt; with the given {@code variantId}. If both the lists are
-     * identical, then no update action is needed and hence an empty {@link List} is returned.
+     * {@link MoveImageToPosition} with the given {@code variantId}. If both the lists are identical, then no update
+     * action is needed and hence an empty {@link List} is returned.
      *
-     * <p>This method expects the two lists two contain the same images only in different order. Therefore, be cautios
-     * that supplying lists of different (missing/extra) images could results in an index out of bounds exception on the
-     * new position of an image.
+     * <p>This method expects the two lists two contain the same images only in different order. Otherwise, an
+     * {@link IllegalArgumentException} would be thrown.
      *
      * <p><b>Note</b>: the solution is still not optimized and may contain {@link MoveImageToPosition} actions
      * for items which are already on desired positions (after previous moves in the sequence). This will be
-     * re-optimized in the next releases.
+     * re-optimized in the next releases. TODO: GITHUB ISSUE#133
      *
      * @param variantId the variantId for the {@link MoveImageToPosition} update actions.
      * @param oldImages the old list of images.
@@ -196,18 +199,16 @@ public final class ProductVariantUpdateActionUtils {
             final int variantId,
             @Nonnull final List<Image> oldImages,
             @Nonnull final List<Image> newImages) throws IllegalArgumentException {
-
-        if (oldImages.size() != newImages.size()) {
+        final int oldImageListSize = oldImages.size();
+        final int newImageListSize = newImages.size();
+        if (oldImageListSize != newImageListSize) {
             throw new IllegalArgumentException(
-                format("Old and new image lists must have the same size, but they have %d and %d respectively",
-                    oldImages.size(), newImages.size()));
+                format(IMAGE_LISTS_NOT_THE_SAME_SIZE, oldImageListSize, newImageListSize));
         }
-
-        final int listSize = oldImages.size();
 
         // optimization: to avoid multiple linear image index searching in the loop below - create an [image -> index]
         // map. This avoids quadratic order of growth of the implementation for large arrays.
-        final Map<Image, Integer> imageIndexMap = new HashMap<>(listSize);
+        final Map<Image, Integer> imageIndexMap = new HashMap<>(oldImageListSize);
         int index = 0;
         for (Image newImage : newImages) {
             imageIndexMap.put(newImage, index++);
@@ -215,12 +216,10 @@ public final class ProductVariantUpdateActionUtils {
 
         final List<MoveImageToPosition> updateActions = new ArrayList<>();
 
-        for (int oldIndex = 0; oldIndex < listSize; oldIndex++) {
+        for (int oldIndex = 0; oldIndex < oldImageListSize; oldIndex++) {
             final Image oldImage = oldImages.get(oldIndex);
-
             final Integer newIndex = ofNullable(imageIndexMap.get(oldImage)) // constant-time operation
-                .orElseThrow(() ->
-                    new IllegalArgumentException(format("Old image [%s] not found in the new images list", oldImage)));
+                .orElseThrow(() -> new IllegalArgumentException(format(OLD_IMAGE_NOT_FOUND, oldImage)));
 
             if (oldIndex != newIndex) {
                 updateActions.add(
