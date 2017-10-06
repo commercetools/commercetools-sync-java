@@ -5,7 +5,6 @@ import com.commercetools.sync.products.ActionGroup;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.SyncFilter;
-import com.commercetools.sync.products.UpdateFilterType;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
@@ -36,6 +35,7 @@ import io.sphere.sdk.search.SearchKeywords;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,16 +48,15 @@ import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToM
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActions;
+import static com.commercetools.sync.commons.utils.FilterUtils.executeSupplierIfPassesFilter;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantSkuUpdateActions;
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -580,7 +579,7 @@ public final class ProductUpdateActionUtils {
             @Nullable final SyncFilter syncFilter,
             @Nonnull final ActionGroup filter,
             @Nonnull final Supplier<Optional<UpdateAction<Product>>> updateActionSupplier) {
-        return buildSupplierResultIfPassesFilter(syncFilter, filter, updateActionSupplier, empty());
+        return executeSupplierIfPassesFilter(syncFilter, filter, updateActionSupplier, Optional::empty);
     }
 
     @Nonnull
@@ -588,24 +587,6 @@ public final class ProductUpdateActionUtils {
             @Nullable final SyncFilter syncFilter,
             @Nonnull final ActionGroup filter,
             @Nonnull final Supplier<List<UpdateAction<Product>>> updateActionSupplier) {
-        return buildSupplierResultIfPassesFilter(syncFilter, filter, updateActionSupplier, emptyList());
-    }
-
-    @Nonnull
-    private static <T> T buildSupplierResultIfPassesFilter(
-            @Nullable final SyncFilter syncFilter, @Nonnull final ActionGroup filter,
-            @Nonnull final Supplier<T> updateActionSupplier, @Nonnull final T emptyResult) {
-        if (syncFilter == null) {
-            // If there is no filter, attempt to build an update action.
-            return updateActionSupplier.get();
-        }
-        final UpdateFilterType filterType = syncFilter.getFilterType();
-        if (filterType.equals(UpdateFilterType.BLACKLIST)) {
-            final List<ActionGroup> blackList = syncFilter.getFilters();
-            return !blackList.contains(filter) ? updateActionSupplier.get() : emptyResult;
-        }
-
-        final List<ActionGroup> whiteList = syncFilter.getFilters();
-        return whiteList.contains(filter) ? updateActionSupplier.get() : emptyResult;
+        return executeSupplierIfPassesFilter(syncFilter, filter, updateActionSupplier, Collections::emptyList);
     }
 }
