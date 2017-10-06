@@ -19,8 +19,7 @@ cache:
   - $HOME/.gradle/wrapper/
 after_success:
 - bash <(curl -s https://codecov.io/bash)
-- ./gradlew clean -Dbuild.version=$TRAVIS_TAG gitPublishPush
-- ./travis-build.sh
+- ./travis-publish.sh || travis_terminate 1
 notifications:
   hipchat:
     template:

@@ -21,8 +21,8 @@ Java API which exposes utilities for building update actions and automatic synci
       - [Package JARs and run tests](#package-jars-and-run-tests)
       - [Full build with tests, but without install to maven local repo (Recommended)](#full-build-with-tests-but-without-install-to-maven-local-repo-recommended)
       - [Install to local maven repo](#install-to-local-maven-repo)
-      - [Build and publish JavaDoc](#build-and-publish-javadoc)
-      - [Publish to Bintray](#publish-to-bintray)
+      - [Publish JavaDoc](#publish-javadoc)
+      - [Build and publish to Bintray](#build-and-publish-to-bintray)
   - [Integration Tests](#integration-tests)
     - [Running](#running)
 
@@ -119,14 +119,17 @@ For example, `#65: Remove redundant space.`
 ./gradlew clean install
 ````
 
-##### Build and publish JavaDoc
+##### Publish JavaDoc
 ````bash
-./gradlew clean -Dbuild.version={version} gitPublishPush
+./gradlew clean javadoc gitPublishPush -Dbuild.version={version}
 ````
 
-##### Publish to Bintray
+**Note**: in current [Travis build](/.travis.yml) workflow the command looks different: `clean` and `javadoc` 
+are omitted because `javadoc` is previously created in `build` task, we just should not clean it now.
+
+##### Build and publish to Bintray
 ````bash
-./gradlew clean -Dbuild.version={version} bintrayUpload
+./gradlew clean build bintrayUpload -Dbuild.version={version} 
 ````
 
 For more detailed information on build and release process, see [Build and Release](BUILD.md) documentation.

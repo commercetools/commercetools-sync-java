@@ -12,6 +12,7 @@ import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
+import io.sphere.sdk.products.commands.updateactions.MoveImageToPosition;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.SetPrices;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
@@ -20,17 +21,18 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
 
 // TODO: Add JAVADOC AND TESTS
 public final class ProductVariantUpdateActionUtils {
@@ -117,39 +119,108 @@ public final class ProductVariantUpdateActionUtils {
     }
 
     /**
-     * Compares the images of a {@link ProductVariantDraft} and a {@link ProductVariant}.
-     * TODO: Add JavaDoc..
+     * Compares the {@link List} of {@link Image}s of a {@link ProductVariantDraft} and a {@link ProductVariant} and
+     * returns a {@link List} of {@link UpdateAction}&lt;{@link Product}&gt;. If both the {@link ProductVariantDraft}
+     * and the {@link ProductVariant} have identical list of images, then no update action is needed and hence an
+     * empty {@link List} is returned.
      *
-     * @param oldProductVariant TODO
-     * @param newProductVariant TODO
-     * @return TODO
+     * @param oldProductVariant the {@link ProductVariant} which should be updated.
+     * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of images.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
+     *         needed.
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantImagesUpdateActions(
         @Nonnull final ProductVariant oldProductVariant,
         @Nonnull final ProductVariantDraft newProductVariant) {
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
+        final Integer oldProductVariantId = oldProductVariant.getId();
         final List<Image> oldProductVariantImages = oldProductVariant.getImages();
         final List<Image> newProductVariantImages = newProductVariant.getImages();
 
-        final Map<String, Image> oldUrlToImageMap = oldProductVariantImages != null
-            ? oldProductVariantImages.stream()
-                                     .collect(Collectors.toMap(Image::getUrl, image -> image)) : Collections.emptyMap();
-        final Map<String, Image> newUrlToImageMap = newProductVariantImages != null
-            ? newProductVariantImages.stream()
-                                     .collect(Collectors.toMap(Image::getUrl, image -> image)) : Collections.emptyMap();
+        // This implementation is quite straight forward and might be slow on large arrays, this is
+        // due to it's quadratic nature on images' removal/addition.
+        // Unfortunately, currently there is no easy solution to sync 2 ordered lists
+        // having only AddExternalImage/RemoveImage/MoveImageToPosition actions.
+        // This solution should be re-optimized in the next releases to avoid O(N^2) for large lists.
+        // TODO: GITHUB ISSUE#133
 
-        final Integer oldProductVariantId = oldProductVariant.getId();
+        if (!Objects.equals(oldProductVariantImages, newProductVariantImages)) {
+            final List<Image> updatedOldImages = new ArrayList<>(oldProductVariantImages);
+            final List<Image> newImages = newProductVariantImages != null
+                    ? newProductVariantImages : Collections.emptyList();
 
-        filterCollection(oldProductVariantImages, oldVariantImage ->
-            newUrlToImageMap.get(oldVariantImage.getUrl()) == null)
-            .forEach(oldImage ->
-                updateActions.add(RemoveImage.ofVariantId(oldProductVariantId, oldImage, true)));
+            filterCollection(oldProductVariantImages, oldVariantImage ->
+                    !newImages.contains(oldVariantImage))
+                    .forEach(oldImage -> {
+                        updateActions.add(RemoveImage.ofVariantId(oldProductVariantId, oldImage, true));
+                        updatedOldImages.remove(oldImage);
+                    });
 
-        filterCollection(newProductVariantImages, newVariantImage ->
-            oldUrlToImageMap.get(newVariantImage.getUrl()) == null)
-            .forEach(newImage ->
-                updateActions.add(AddExternalImage.ofVariantId(oldProductVariantId, newImage, true)));
+            filterCollection(newProductVariantImages, newVariantImage ->
+                    !oldProductVariantImages.contains(newVariantImage))
+                    .forEach(newImage -> {
+                        updateActions.add(AddExternalImage.ofVariantId(oldProductVariantId, newImage, true));
+                        updatedOldImages.add(newImage);
+                    });
+            updateActions.addAll(buildMoveImageToPositionUpdateActions(oldProductVariantId,
+                    updatedOldImages, newImages));
+        }
+        return updateActions;
+    }
+
+    /**
+     * Compares an old {@link List} of {@link Image}s and a new one and returns a {@link List} of
+     * {@link MoveImageToPosition} with the given {@code variantId}. If both the lists are identical, then no update
+     * action is needed and hence an empty {@link List} is returned.
+     *
+     * <p>This method expects the two lists two contain the same images only in different order. Otherwise, an
+     * {@link IllegalArgumentException} would be thrown.
+     *
+     * <p><b>Note</b>: the solution is still not optimized and may contain {@link MoveImageToPosition} actions
+     * for items which are already on desired positions (after previous moves in the sequence). This will be
+     * re-optimized in the next releases. TODO: GITHUB ISSUE#133
+     *
+     * @param variantId the variantId for the {@link MoveImageToPosition} update actions.
+     * @param oldImages the old list of images.
+     * @param newImages the new list of images.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
+     *         needed.
+     * @throws IllegalArgumentException if arrays have different size or different items.
+     */
+    public static List<MoveImageToPosition> buildMoveImageToPositionUpdateActions(
+            final int variantId,
+            @Nonnull final List<Image> oldImages,
+            @Nonnull final List<Image> newImages) throws IllegalArgumentException {
+        final int oldImageListSize = oldImages.size();
+        final int newImageListSize = newImages.size();
+        if (oldImageListSize != newImageListSize) {
+            throw new IllegalArgumentException(
+                format("Old and new image lists must have the same size, but they have %d and %d respectively",
+                    oldImageListSize, newImageListSize));
+        }
+
+        // optimization: to avoid multiple linear image index searching in the loop below - create an [image -> index]
+        // map. This avoids quadratic order of growth of the implementation for large arrays.
+        final Map<Image, Integer> imageIndexMap = new HashMap<>(oldImageListSize);
+        int index = 0;
+        for (Image newImage : newImages) {
+            imageIndexMap.put(newImage, index++);
+        }
+
+        final List<MoveImageToPosition> updateActions = new ArrayList<>();
+
+        for (int oldIndex = 0; oldIndex < oldImageListSize; oldIndex++) {
+            final Image oldImage = oldImages.get(oldIndex);
+            final Integer newIndex = ofNullable(imageIndexMap.get(oldImage)) // constant-time operation
+                .orElseThrow(() ->
+                    new IllegalArgumentException(format("Old image [%s] not found in the new images list.", oldImage)));
+
+            if (oldIndex != newIndex) {
+                updateActions.add(
+                    MoveImageToPosition.ofImageUrlAndVariantId(oldImage.getUrl(), variantId, newIndex, true));
+            }
+        }
         return updateActions;
     }
 
