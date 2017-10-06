@@ -49,6 +49,10 @@ import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollect
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActions;
 import static com.commercetools.sync.commons.utils.FilterUtils.executeSupplierIfPassesFilter;
+import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
+import static com.commercetools.sync.products.ActionGroup.IMAGES;
+import static com.commercetools.sync.products.ActionGroup.PRICES;
+import static com.commercetools.sync.products.ActionGroup.SKU;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
@@ -444,16 +448,18 @@ public final class ProductUpdateActionUtils {
         final ArrayList<UpdateAction<Product>> updateActions = new ArrayList<>();
         final SyncFilter syncFilter = syncOptions.getSyncFilter();
         updateActions.addAll(
-                buildActionsIfPassesFilter(syncFilter, ActionGroup.ATTRIBUTES, () ->
-                        buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
-                                newProductVariant, attributesMetaData, syncOptions)));
+            buildActionsIfPassesFilter(syncFilter, ATTRIBUTES, () ->
+                buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
+                    newProductVariant, attributesMetaData, syncOptions)));
         updateActions.addAll(
-                buildActionsIfPassesFilter(syncFilter, ActionGroup.IMAGES, () ->
-                        buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant)));
+            buildActionsIfPassesFilter(syncFilter, IMAGES, () ->
+                buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant)));
         updateActions.addAll(
-                buildActionsIfPassesFilter(syncFilter, ActionGroup.PRICES, () ->
-                        buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant)));
-        updateActions.addAll(buildProductVariantSkuUpdateActions(oldProductVariant, newProductVariant));
+            buildActionsIfPassesFilter(syncFilter, PRICES, () ->
+                buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant)));
+        updateActions.addAll(
+            buildActionsIfPassesFilter(syncFilter, SKU, () ->
+                buildProductVariantSkuUpdateActions(oldProductVariant, newProductVariant)));
         return updateActions;
     }
 
