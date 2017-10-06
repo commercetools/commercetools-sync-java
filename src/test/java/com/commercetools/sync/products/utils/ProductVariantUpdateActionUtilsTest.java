@@ -14,8 +14,8 @@ public class ProductVariantUpdateActionUtilsTest {
 
     @Test
     public void buildProductVariantSkuUpdateActions_normalCase() throws Exception {
-        ProductVariant variantOld = mock(ProductVariant.class);
-        ProductVariantDraft variantDraftNew = mock(ProductVariantDraft.class);
+        final ProductVariant variantOld = mock(ProductVariant.class);
+        final ProductVariantDraft variantDraftNew = mock(ProductVariantDraft.class);
 
         assertThat(buildProductVariantSkuUpdateActions(variantOld, variantDraftNew)).isEmpty();
 
@@ -38,5 +38,4 @@ public class ProductVariantUpdateActionUtilsTest {
         assertThat(buildProductVariantSkuUpdateActions(variantOld, variantDraftNew))
                 .containsExactly(SetSku.of(42, "sku-new", true));
     }
-
 }
