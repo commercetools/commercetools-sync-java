@@ -109,15 +109,9 @@ public final class ProductSyncUtils {
                     buildSetMetaKeywordsUpdateAction(oldProduct, newProduct))
             ));
 
-        // TODO OWN METHOD
         final List<UpdateAction<Product>> productCatgoryUpdateActions =
-                buildActionsIfPassesFilter(syncFilter, ActionGroup.CATEGORIES, () -> {
-                    final List<UpdateAction<Product>> categoryUpdateActions = new ArrayList<>();
-                    categoryUpdateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct));
-                    categoryUpdateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));
-                    categoryUpdateActions.addAll(buildRemoveFromCategoryUpdateActions(oldProduct, newProduct));
-                    return categoryUpdateActions;
-                });
+            buildActionsIfPassesFilter(syncFilter, ActionGroup.CATEGORIES, () ->
+                buildCategoryActions(oldProduct, newProduct));
         updateActions.addAll(productCatgoryUpdateActions);
 
         final List<UpdateAction<Product>> variantUpdateActions =
@@ -126,6 +120,26 @@ public final class ProductSyncUtils {
 
         // lastly publish/unpublish product
         buildPublishUpdateAction(oldProduct, newProduct).ifPresent(updateActions::add);
+        return updateActions;
+    }
+
+    /**
+     * Compares the categories of a {@link Product} and a {@link ProductDraft}. It returns a {@link List} of
+     * {@link UpdateAction}&lt;{@link Product}&gt; as a result. If no update action is needed, for example in
+     * case where both the {@link Product} and the {@link ProductDraft} have the identical categories, an empty
+     * {@link List} is returned.
+     *
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new data.
+     * @return A list of product category-related update actions.
+     */
+    @Nonnull
+    public static List<UpdateAction<Product>> buildCategoryActions(@Nonnull final Product oldProduct,
+                                                                   @Nonnull final ProductDraft newProduct) {
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
+        updateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct));
+        updateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));
+        updateActions.addAll(buildRemoveFromCategoryUpdateActions(oldProduct, newProduct));
         return updateActions;
     }
 
