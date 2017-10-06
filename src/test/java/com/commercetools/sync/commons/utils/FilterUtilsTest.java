@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class FilterUtilsTest {
 
     @Test
-    public void executeSupplierIfPassesFilter_WithGroupInBlackList_ShouldFilterOutOnlyThisGroup(){
+    public void executeSupplierIfPassesFilter_WithGroupInBlackList_ShouldFilterOutOnlyThisGroup() {
         final SyncFilter syncFilter = SyncFilter.of(BLACKLIST, singletonList(IMAGES));
         final Boolean areImagesFilteredIn = executeSupplierIfPassesFilter(syncFilter, IMAGES, () -> true, () -> false);
         assertThat(areImagesFilteredIn).isFalse();
@@ -29,7 +29,7 @@ public class FilterUtilsTest {
     }
 
     @Test
-    public void executeSupplierIfPassesFilter_WithGroupNotInBlackList_ShouldFilterInThisGroup(){
+    public void executeSupplierIfPassesFilter_WithGroupNotInBlackList_ShouldFilterInThisGroup() {
         final SyncFilter syncFilter = SyncFilter.of(BLACKLIST, singletonList(PRICES));
         final Boolean areImagesFilteredIn = executeSupplierIfPassesFilter(syncFilter, IMAGES, () -> true, () -> false);
         assertThat(areImagesFilteredIn).isTrue();
@@ -39,7 +39,7 @@ public class FilterUtilsTest {
     }
 
     @Test
-    public void executeSupplierIfPassesFilter_WithGroupInWhiteList_ShouldFilterInOnlyThisGroup(){
+    public void executeSupplierIfPassesFilter_WithGroupInWhiteList_ShouldFilterInOnlyThisGroup() {
         final SyncFilter syncFilter = SyncFilter.of(WHITELIST, singletonList(PRICES));
 
         final Boolean arePricesFilteredIn = executeSupplierIfPassesFilter(syncFilter, PRICES, () -> true, () -> false);
@@ -54,7 +54,7 @@ public class FilterUtilsTest {
     }
 
     @Test
-    public void executeSupplierIfPassesFilter_WithNoFilter_ShouldNotFilterInEveryThing(){
+    public void executeSupplierIfPassesFilter_WithNoFilter_ShouldNotFilterInEveryThing() {
         final Boolean arePricesFilteredIn = executeSupplierIfPassesFilter(null, PRICES, () -> true, () -> false);
         assertThat(arePricesFilteredIn).isTrue();
 
