@@ -1,10 +1,11 @@
 gitPublish {
-    /*
-    NOTE: $GRGIT_USER environment variable must be set to actual github token
-    http://ajoberstar.org/grgit/index.html
-     */
+    // NOTE:
+    // 1) $GRGIT_USER environment variable must be set to actual github token
+    //    see http://ajoberstar.org/grgit/docs/groovydoc/index.html?org/ajoberstar/grgit/auth/AuthConfig.html
+    //    https://github.com/ajoberstar/grgit#usage
+    // 2) to use GH token `repoUri` must have an https (not git or ssh) protocol
 
-    repoUri = scmSshUrl
+    repoUri = scmHttpsUrl
     branch = 'gh-pages'
 
     // what to publish, this is a standard CopySpec
@@ -18,6 +19,7 @@ gitPublish {
     // what to keep in the existing branch (include=keep)
     preserve {
         include 'v/**'
+        exclude 'v/test**' // always remove documentation of test releases
     }
 
     // message used when committing changes
