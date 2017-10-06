@@ -40,9 +40,6 @@ public final class ProductVariantUpdateActionUtils {
         + "setAttribute/setAttributeInAllVariants update action for the attribute with the name '%s' in the "
         + "ProductVariantDraft with key '%s' on the product with key '%s'. Reason: %s";
     private static final String NULL_PRODUCT_VARIANT_ATTRIBUTE = "AttributeDraft is null.";
-    private static final String IMAGE_LISTS_NOT_THE_SAME_SIZE = "Old and new image lists must have the same size, but "
-        + "they have %d and %d respectively";
-    private static final String OLD_IMAGE_NOT_FOUND = "Old image [%s] not found in the new images list.";
 
     /**
      * Compares the attributes of a {@link ProductVariantDraft} and a {@link ProductVariant} to build either
@@ -203,7 +200,8 @@ public final class ProductVariantUpdateActionUtils {
         final int newImageListSize = newImages.size();
         if (oldImageListSize != newImageListSize) {
             throw new IllegalArgumentException(
-                format(IMAGE_LISTS_NOT_THE_SAME_SIZE, oldImageListSize, newImageListSize));
+                format("Old and new image lists must have the same size, but they have %d and %d respectively",
+                    oldImageListSize, newImageListSize));
         }
 
         // optimization: to avoid multiple linear image index searching in the loop below - create an [image -> index]
@@ -219,7 +217,8 @@ public final class ProductVariantUpdateActionUtils {
         for (int oldIndex = 0; oldIndex < oldImageListSize; oldIndex++) {
             final Image oldImage = oldImages.get(oldIndex);
             final Integer newIndex = ofNullable(imageIndexMap.get(oldImage)) // constant-time operation
-                .orElseThrow(() -> new IllegalArgumentException(format(OLD_IMAGE_NOT_FOUND, oldImage)));
+                .orElseThrow(() ->
+                    new IllegalArgumentException(format("Old image [%s] not found in the new images list.", oldImage)));
 
             if (oldIndex != newIndex) {
                 updateActions.add(
