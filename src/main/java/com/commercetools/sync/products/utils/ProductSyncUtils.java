@@ -81,12 +81,13 @@ public final class ProductSyncUtils {
      * @return A list of category-specific update actions.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildCoreActions(@Nonnull final Product oldProduct,
-                                                               @Nonnull final ProductDraft newProduct,
-                                                               @Nonnull final ProductSyncOptions syncOptions,
-                                                               @Nonnull final Map<String, AttributeMetaData>
-                                                                       attributesMetaData) {
-        final List<UpdateAction<Product>> updateActions = buildUpdateActionsFromOptionals(Arrays.asList(
+    public static List<UpdateAction<Product>> buildCoreActions(
+        @Nonnull final Product oldProduct,
+        @Nonnull final ProductDraft newProduct,
+        @Nonnull final ProductSyncOptions syncOptions,
+        @Nonnull final Map<String, AttributeMetaData> attributesMetaData) {
+
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>(buildUpdateActionsFromOptionals(Arrays.asList(
             buildChangeNameUpdateAction(oldProduct, newProduct),
             buildSetDescriptionUpdateAction(oldProduct, newProduct),
             buildChangeSlugUpdateAction(oldProduct, newProduct),
@@ -94,7 +95,8 @@ public final class ProductSyncUtils {
             buildSetMetaTitleUpdateAction(oldProduct, newProduct),
             buildSetMetaDescriptionUpdateAction(oldProduct, newProduct),
             buildSetMetaKeywordsUpdateAction(oldProduct, newProduct)
-        ));
+        )));
+
         updateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct));
         updateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));
         updateActions.addAll(buildRemoveFromCategoryUpdateActions(oldProduct, newProduct));
