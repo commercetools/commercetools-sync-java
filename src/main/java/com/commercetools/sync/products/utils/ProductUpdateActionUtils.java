@@ -79,8 +79,8 @@ public final class ProductUpdateActionUtils {
      * If both the {@link Product} and the {@link ProductDraft} have the same name, then no update action is needed and
      * hence an empty {@link Optional} is returned.
      *
-     * @param oldProduct the category which should be updated.
-     * @param newProduct the category draft where we get the new name.
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new name.
      * @return A filled optional with the update action or an empty optional if the names are identical.
      */
     @Nonnull
@@ -103,8 +103,8 @@ public final class ProductUpdateActionUtils {
      * If both the {@link Product} and the {@link ProductDraft} have the same description, then no update action is
      * needed and hence an empty {@link Optional} is returned.
      *
-     * @param oldProduct the category which should be updated.
-     * @param newProduct the category draft where we get the new description.
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new description.
      * @return A filled optional with the update action or an empty optional if the descriptions are identical.
      */
     @Nonnull
@@ -128,8 +128,8 @@ public final class ProductUpdateActionUtils {
      * If both the {@link Product} and the {@link ProductDraft} have the same slug, then no update action is
      * needed and hence an empty {@link Optional} is returned.
      *
-     * @param oldProduct the category which should be updated.
-     * @param newProduct the category draft where we get the new slug.
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new slug.
      * @return A filled optional with the update action or an empty optional if the slugs are identical.
      */
     @Nonnull
@@ -153,8 +153,8 @@ public final class ProductUpdateActionUtils {
      * If both the {@link Product} and the {@link ProductDraft} have the same set of categories, then no update action
      * is  needed and hence an empty {@link List} is returned.
      *
-     * @param oldProduct the category which should be updated.
-     * @param newProduct the category draft where we get the new slug.
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new slug.
      * @return A list containing the update actions or an empty list if the category sets are identical.
      */
     @Nonnull
@@ -190,8 +190,8 @@ public final class ProductUpdateActionUtils {
      * If both the {@link Product} and the {@link ProductDraft} have the same categoryOrderHints, then no update action
      * is needed and hence an empty {@link List} is returned.
      *
-     * @param oldProduct the category which should be updated.
-     * @param newProduct the category draft where we get the new categoryOrderHints.
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new categoryOrderHints.
      * @return A list containing the update actions or an empty list if the categoryOrderHints are identical.
      */
     @Nonnull
@@ -245,8 +245,8 @@ public final class ProductUpdateActionUtils {
      * If both the {@link Product} and the {@link ProductDraft} have the same set of categories, then no update action
      * is  needed and hence an empty {@link List} is returned.
      *
-     * @param oldProduct the category which should be updated.
-     * @param newProduct the category draft where we get the new slug.
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new slug.
      * @return A list containing the update actions or an empty list if the category sets are identical.
      */
     @Nonnull
@@ -277,8 +277,8 @@ public final class ProductUpdateActionUtils {
      * If both the {@link Product} and the {@link ProductDraft} have the same search keywords, then no update action is
      * needed and hence an empty {@link Optional} is returned.
      *
-     * @param oldProduct the category which should be updated.
-     * @param newProduct the category draft where we get the new search keywords.
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new search keywords.
      * @return A filled optional with the update action or an empty optional if the search keywords are identical.
      */
     @Nonnull
@@ -303,8 +303,8 @@ public final class ProductUpdateActionUtils {
      * If both the {@link Product} and the {@link ProductDraft} have the same meta description, then no update action is
      * needed and hence an empty {@link Optional} is returned.
      *
-     * @param oldProduct the category which should be updated.
-     * @param newProduct the category draft where we get the new meta description.
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new meta description.
      * @return A filled optional with the update action or an empty optional if the meta descriptions are identical.
      */
     @Nonnull
@@ -329,8 +329,8 @@ public final class ProductUpdateActionUtils {
      * If both the {@link Product} and the {@link ProductDraft} have the same meta keywords, then no update action is
      * needed and hence an empty {@link Optional} is returned.
      *
-     * @param oldProduct the category which should be updated.
-     * @param newProduct the category draft where we get the new meta keywords.
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new meta keywords.
      * @return A filled optional with the update action or an empty optional if the meta keywords are identical.
      */
     @Nonnull
@@ -354,8 +354,8 @@ public final class ProductUpdateActionUtils {
      * If both the {@link Product} and the {@link ProductDraft} have the same meta title, then no update action is
      * needed and hence an empty {@link Optional} is returned.
      *
-     * @param oldProduct the category which should be updated.
-     * @param newProduct the category draft where we get the new meta title.
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new meta title.
      * @return A filled optional with the update action or an empty optional if the meta titles are identical.
      */
     @Nonnull
