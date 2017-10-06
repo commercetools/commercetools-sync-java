@@ -146,11 +146,7 @@ public final class ProductVariantUpdateActionUtils {
         // TODO: GITHUB ISSUE#133
 
         if (!Objects.equals(oldProductVariantImages, newProductVariantImages)) {
-            final List<Image> oldImages = oldProductVariantImages != null
-                    ? oldProductVariantImages : Collections.emptyList();
-
-            final List<Image> updatedOldImages = new ArrayList<>(oldImages);
-
+            final List<Image> updatedOldImages = new ArrayList<>(oldProductVariantImages);
             final List<Image> newImages = newProductVariantImages != null
                     ? newProductVariantImages : Collections.emptyList();
 
@@ -162,7 +158,7 @@ public final class ProductVariantUpdateActionUtils {
                     });
 
             filterCollection(newProductVariantImages, newVariantImage ->
-                    !oldImages.contains(newVariantImage))
+                    !oldProductVariantImages.contains(newVariantImage))
                     .forEach(newImage -> {
                         updateActions.add(AddExternalImage.ofVariantId(oldProductVariantId, newImage, true));
                         updatedOldImages.add(newImage);
