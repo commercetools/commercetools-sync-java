@@ -121,8 +121,7 @@ public final class ProductSyncUtils {
         updateActions.addAll(productCatgoryUpdateActions);
 
         final List<UpdateAction<Product>> variantUpdateActions =
-                buildActionsIfPassesFilter(syncFilter, ActionGroup.VARIANTS, () ->
-                        buildVariantsUpdateActions(oldProduct, newProduct, syncOptions, attributesMetaData));
+            buildVariantsUpdateActions(oldProduct, newProduct, syncOptions, attributesMetaData);
         updateActions.addAll(variantUpdateActions);
 
         // lastly publish/unpublish product
