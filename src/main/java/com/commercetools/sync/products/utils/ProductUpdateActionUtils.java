@@ -581,18 +581,18 @@ public final class ProductUpdateActionUtils {
     }
 
     @Nonnull
-    static Optional<UpdateAction<Product>> buildActionIfPassesFilter(
-            @Nullable final SyncFilter syncFilter,
-            @Nonnull final ActionGroup filter,
-            @Nonnull final Supplier<Optional<UpdateAction<Product>>> updateActionSupplier) {
+    static <T> Optional<T> buildActionIfPassesFilter(
+        @Nullable final SyncFilter syncFilter,
+        @Nonnull final ActionGroup filter,
+        @Nonnull final Supplier<Optional<T>> updateActionSupplier) {
         return executeSupplierIfPassesFilter(syncFilter, filter, updateActionSupplier, Optional::empty);
     }
 
     @Nonnull
-    static List<UpdateAction<Product>> buildActionsIfPassesFilter(
-            @Nullable final SyncFilter syncFilter,
-            @Nonnull final ActionGroup filter,
-            @Nonnull final Supplier<List<UpdateAction<Product>>> updateActionSupplier) {
+    static <T> List<T> buildActionsIfPassesFilter(
+        @Nullable final SyncFilter syncFilter,
+        @Nonnull final ActionGroup filter,
+        @Nonnull final Supplier<List<T>> updateActionSupplier) {
         return executeSupplierIfPassesFilter(syncFilter, filter, updateActionSupplier, Collections::emptyList);
     }
 }
