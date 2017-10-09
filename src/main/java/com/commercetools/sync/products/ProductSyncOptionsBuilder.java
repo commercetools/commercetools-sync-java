@@ -54,10 +54,6 @@ public final class ProductSyncOptionsBuilder
      * <li>.. and others</li>
      * </ul>
      *
-     * <p>The {@code filterType} defines whether the list is to be blacklisted ({@link UpdateFilterType#BLACKLIST}) or
-     * whitelisted ({@link UpdateFilterType#WHITELIST}). A blacklist means that <b>everything but</b> these action
-     * groups will be synced. A whitelist means that <b>only</b> these action groups will be synced.
-     *
      *
      * @param syncFilter defines either a blacklist or a whitelist for filtering certain update action groups.
      *

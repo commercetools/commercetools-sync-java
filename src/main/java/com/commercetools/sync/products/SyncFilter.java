@@ -20,8 +20,8 @@ import static java.util.Optional.ofNullable;
  * <li>.. and others</li>
  * </ul>
  *
- * <p>The {@code filterType} defines whether the list is to be blacklisted ({@link UpdateFilterType#BLACKLIST}) or
- * whitelisted ({@link UpdateFilterType#WHITELIST}). A blacklist means that <b>everything but</b> these action
+ * <p>The {@code includeOnly} flag defines whether the list is to be blacklisted (@code false) or
+ * whitelisted (@code true). A blacklist means that <b>everything but</b> these action
  * groups will be synced. A whitelist means that <b>only</b> these action groups will be synced.
  */
 public final class SyncFilter {
