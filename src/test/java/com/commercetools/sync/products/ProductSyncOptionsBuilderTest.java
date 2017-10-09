@@ -21,13 +21,13 @@ public class ProductSyncOptionsBuilderTest {
     private ProductSyncOptionsBuilder productSyncOptionsBuilder = ProductSyncOptionsBuilder.of(CTP_CLIENT);
 
     @Test
-    public void of_WithClient_ShouldCreateCategorySyncOptionsBuilder() {
+    public void of_WithClient_ShouldCreateProductSyncOptionsBuilder() {
         final ProductSyncOptionsBuilder builder = ProductSyncOptionsBuilder.of(CTP_CLIENT);
         assertThat(builder).isNotNull();
     }
 
     @Test
-    public void build_WithClient_ShouldBuildCategorySyncOptions() {
+    public void build_WithClient_ShouldBuildProductSyncOptions() {
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions).isNotNull();
         assertThat(productSyncOptions.shouldRemoveOtherCollectionEntries()).isTrue();
