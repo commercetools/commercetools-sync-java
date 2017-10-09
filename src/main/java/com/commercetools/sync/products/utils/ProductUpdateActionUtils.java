@@ -1,8 +1,10 @@
 package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.products.ActionGroup;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.SyncFilter;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
@@ -32,17 +34,24 @@ import io.sphere.sdk.search.SearchKeywords;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActions;
+import static com.commercetools.sync.commons.utils.FilterUtils.executeSupplierIfPassesFilter;
+import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
+import static com.commercetools.sync.products.ActionGroup.IMAGES;
+import static com.commercetools.sync.products.ActionGroup.PRICES;
+import static com.commercetools.sync.products.ActionGroup.SKU;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
@@ -428,21 +437,29 @@ public final class ProductUpdateActionUtils {
         return updateActions;
     }
 
+    @Nonnull
     private static List<UpdateAction<Product>> collectAllVariantUpdateActions(
             @Nonnull final Product oldProduct,
             @Nonnull final ProductVariant oldProductVariant,
             @Nonnull final ProductVariantDraft newProductVariant,
             @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
             @Nonnull final ProductSyncOptions syncOptions) {
-
-        ArrayList<UpdateAction<Product>> res = new ArrayList<>();
-        res.addAll(buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
-            newProductVariant, attributesMetaData, syncOptions));
-        res.addAll(buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant));
-        res.addAll(buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant));
-        res.addAll(buildProductVariantSkuUpdateActions(oldProductVariant, newProductVariant));
-
-        return res;
+        final ArrayList<UpdateAction<Product>> updateActions = new ArrayList<>();
+        final SyncFilter syncFilter = syncOptions.getSyncFilter();
+        updateActions.addAll(
+            buildActionsIfPassesFilter(syncFilter, ATTRIBUTES, () ->
+                buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
+                    newProductVariant, attributesMetaData, syncOptions)));
+        updateActions.addAll(
+            buildActionsIfPassesFilter(syncFilter, IMAGES, () ->
+                buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant)));
+        updateActions.addAll(
+            buildActionsIfPassesFilter(syncFilter, PRICES, () ->
+                buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant)));
+        updateActions.addAll(
+            buildActionsIfPassesFilter(syncFilter, SKU, () ->
+                buildProductVariantSkuUpdateActions(oldProductVariant, newProductVariant)));
+        return updateActions;
     }
 
     /**
@@ -524,8 +541,8 @@ public final class ProductUpdateActionUtils {
             // thus we can't use ChangeMasterVariant.ofVariantId(),
             // but it could be re-factored as soon as ChangeMasterVariant.ofKey() happens in the SDK
             () -> {
-                final List<UpdateAction<Product>> res = new ArrayList<>(2);
-                res.add(ChangeMasterVariant.ofSku(newProduct.getMasterVariant().getSku(), true));
+                final List<UpdateAction<Product>> updateActions = new ArrayList<>(2);
+                updateActions.add(ChangeMasterVariant.ofSku(newProduct.getMasterVariant().getSku(), true));
 
                 // verify whether the old master variant should be removed:
                 // if the new variant list doesn't contain the old master variant key.
@@ -535,9 +552,9 @@ public final class ProductUpdateActionUtils {
                 // because this body is called only if newKey != oldKey
                 if (newProduct.getVariants().stream()
                     .noneMatch(variant -> Objects.equals(variant.getKey(), oldKey))) {
-                    res.add(RemoveVariant.of(oldProduct.getMasterData().getStaged().getMasterVariant()));
+                    updateActions.add(RemoveVariant.of(oldProduct.getMasterData().getStaged().getMasterVariant()));
                 }
-                return res;
+                return updateActions;
             });
     }
 
@@ -560,5 +577,21 @@ public final class ProductUpdateActionUtils {
         return AddVariant.of(draft.getAttributes(), draft.getPrices(), draft.getSku())
             .withKey(draft.getKey())
             .withImages(draft.getImages());
+    }
+
+    @Nonnull
+    static <T> Optional<T> buildActionIfPassesFilter(
+        @Nonnull final SyncFilter syncFilter,
+        @Nonnull final ActionGroup filter,
+        @Nonnull final Supplier<Optional<T>> updateActionSupplier) {
+        return executeSupplierIfPassesFilter(syncFilter, filter, updateActionSupplier, Optional::empty);
+    }
+
+    @Nonnull
+    static <T> List<T> buildActionsIfPassesFilter(
+        @Nonnull final SyncFilter syncFilter,
+        @Nonnull final ActionGroup filter,
+        @Nonnull final Supplier<List<T>> updateActionSupplier) {
+        return executeSupplierIfPassesFilter(syncFilter, filter, updateActionSupplier, Collections::emptyList);
     }
 }

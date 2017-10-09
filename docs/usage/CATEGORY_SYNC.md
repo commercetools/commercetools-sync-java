@@ -81,7 +81,7 @@ entries.
 a flag which enables the sync module to add additional object properties (e.g. custom fields, etc..) without deleting 
 existing ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing 
 object properties. -->
-- `updateActionsFilter`
+- `updateActionsCallBack`
 a filter function which can be applied on generated list of update actions to produce a resultant list after the filter 
 function has been applied.
 - `allowUuid`
@@ -98,7 +98,7 @@ After all the aforementioned points in the previous section have been fulfilled,
 final CategorySync categorySync = new CategorySync(categorySyncOptions);
 
 // execute the sync on your list of categories
-CompletionStage<CategorySyncStatistics> syncStatisticsStage = CategorySynccategorySync.sync(categoryDrafts);
+CompletionStage<CategorySyncStatistics> syncStatisticsStage = categorySync.sync(categoryDrafts);
 ````
 The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `CategorySyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created, 
