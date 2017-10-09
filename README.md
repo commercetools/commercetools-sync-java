@@ -48,18 +48,18 @@ most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>v1.0.0-M1</version>
+  <version>v1.0.0-M2-beta</version>
   <type>pom</type>
 </dependency>
 ````
 #### Gradle
 ````groovy
-compile 'com.commercetools:commercetools-sync-java:v1.0.0-M1'
+compile 'com.commercetools:commercetools-sync-java:v1.0.0-M2-beta'
 ````
 <!-- TODO #### SBT 
 ````java
 libraryDependencies ++= Seq(
-    "com.commercetools" % "commercetools-sync-java" % "v1.0.0-M1",
+    "com.commercetools" % "commercetools-sync-java" % "v1.0.0-M2-beta",
  )
 ````-->
 
