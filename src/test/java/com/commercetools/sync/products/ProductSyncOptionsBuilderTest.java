@@ -52,9 +52,10 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void setSyncFilter_WithNoSyncFilter_ShouldNotSetFilter() {
+    public void setSyncFilter_WithNoSyncFilter_ShouldSetDefaultFilter() {
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.getSyncFilter()).isNull();
+        assertThat(productSyncOptions.getSyncFilter()).isNotNull();
+        assertThat(productSyncOptions.getSyncFilter()).isSameAs(SyncFilter.of());
     }
 
     @Test

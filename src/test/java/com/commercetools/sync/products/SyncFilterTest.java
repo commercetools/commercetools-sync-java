@@ -2,6 +2,8 @@ package com.commercetools.sync.products;
 
 import org.junit.Test;
 
+import java.util.EnumSet;
+
 import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
 import static com.commercetools.sync.products.ActionGroup.CATEGORIES;
 import static com.commercetools.sync.products.ActionGroup.DESCRIPTION;
@@ -16,7 +18,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SyncFilterTest {
 
     @Test
-    public void filterActionGroup_WithWhiteListingSingleOption_ShouldFilterInOnlyThisOption() {
+    public void of_returnsSameInstanceOfDefaultSyncFilter() {
+        final SyncFilter syncFilter = SyncFilter.of();
+        final SyncFilter otherSyncFilter = SyncFilter.of();
+        assertThat(syncFilter).isSameAs(otherSyncFilter);
+    }
+
+    @Test
+    public void filterActionGroup_WithWhiteListingSingleGroup_ShouldFilterInOnlyThisGroup() {
         final SyncFilter syncFilter = ofWhiteList(IMAGES);
 
         assertThat(syncFilter.filterActionGroup(IMAGES)).isTrue();
@@ -28,7 +37,7 @@ public class SyncFilterTest {
     }
 
     @Test
-    public void filterActionGroup_WithWhiteListingMultipleOptions_ShouldFilterInOnlyTheseOptions() {
+    public void filterActionGroup_WithWhiteListingMultipleGroups_ShouldFilterInOnlyTheseGroups() {
         final SyncFilter syncFilter = ofWhiteList(IMAGES, ATTRIBUTES, CATEGORIES);
 
         assertThat(syncFilter.filterActionGroup(IMAGES)).isTrue();
@@ -40,7 +49,7 @@ public class SyncFilterTest {
     }
 
     @Test
-    public void filterActionGroup_WithBlackListingSingleOption_ShouldFilterOutOnlyThisOption() {
+    public void filterActionGroup_WithBlackListingSingleGroup_ShouldFilterOutOnlyThisGroup() {
         final SyncFilter syncFilter = ofBlackList(PRICES);
 
         assertThat(syncFilter.filterActionGroup(PRICES)).isFalse();
@@ -52,7 +61,7 @@ public class SyncFilterTest {
     }
 
     @Test
-    public void filterActionGroup_WithBlackListingMultipleOptions_ShouldFilterOutOnlyTheseOptions() {
+    public void filterActionGroup_WithBlackListingMultiplGroups_ShouldFilterOutOnlyTheseGroups() {
         final SyncFilter syncFilter = ofBlackList(PRICES, IMAGES, ATTRIBUTES, NAME);
 
         assertThat(syncFilter.filterActionGroup(PRICES)).isFalse();
@@ -62,5 +71,12 @@ public class SyncFilterTest {
         assertThat(syncFilter.filterActionGroup(CATEGORIES)).isTrue();
         assertThat(syncFilter.filterActionGroup(DESCRIPTION)).isTrue();
         assertThat(syncFilter.filterActionGroup(METADESCRIPTION)).isTrue();
+    }
+
+    @Test
+    public void filterActionGroup_WithBlackListingMultipleGroups_ShouldFilterInAllActionGroups() {
+        final SyncFilter syncFilter = SyncFilter.of();
+        EnumSet.allOf(ActionGroup.class)
+               .forEach(actionGroup -> assertThat(syncFilter.filterActionGroup(actionGroup)).isTrue());
     }
 }
