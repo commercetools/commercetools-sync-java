@@ -68,7 +68,7 @@ public final class SyncFilter {
      * Checks if the supplied {@link ActionGroup} passes {@code this} filter.
      *
      * <p>Passing the filter has an XOR logic as follows:
-     * <table>
+     * <table summary="syncFilter filtering logic">
      *<tr>
      *<th> includeOnly </th> <th> actionGroups contains actionGroup </th> <th> passes filter </th>
      *</tr>
