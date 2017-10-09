@@ -1,5 +1,4 @@
-Build and release workflow
-===========================
+# Build and release workflow
 
 The main goal of the build process is to publish the artifacts to public repositories, 
 like [JCenter](https://jcenter.bintray.com/) and [Maven Central](https://search.maven.org/).

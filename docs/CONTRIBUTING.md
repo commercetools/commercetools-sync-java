@@ -1,28 +1,27 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-- [Contributing to commercetools-sync-java](#contributing-to-commercetools-sync-java)
-  - [Contribution process for all committers](#contribution-process-for-all-committers)
-    - [Typos](#typos)
-    - [Features or BugFixes](#features-or-bugfixes)
-  - [Development](#development)
-    - [Build](#build)
-        - [Run unit tests](#run-unit-tests)
-        - [Package JARs](#package-jars)
-        - [Package JARs and run tests](#package-jars-and-run-tests)
-        - [Full build with tests, but without install to maven local repo (Recommended)](#full-build-with-tests-but-without-install-to-maven-local-repo-recommended)
-        - [Install to local maven repo](#install-to-local-maven-repo)
-        - [Publish JavaDoc](#publish-javadoc)
-        - [Build and publish to Bintray](#build-and-publish-to-bintray)
-    - [Integration Tests](#integration-tests)
-      - [Running](#running)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 # Contributing to commercetools-sync-java
 
 These are the contribution guidelines for the commercetools-sync-java.
 
 Thanks for taking the time to contribute :+1::tada: All contributions are welcome! 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Contribution process for all committers](#contribution-process-for-all-committers)
+  - [Typos](#typos)
+  - [Features or Bug Fixes](#features-or-bug-fixes)
+- [Development](#development)
+  - [Build](#build)
+      - [Run unit tests](#run-unit-tests)
+      - [Package JARs](#package-jars)
+      - [Package JARs and run tests](#package-jars-and-run-tests)
+      - [Full build with tests, but without install to maven local repo (Recommended)](#full-build-with-tests-but-without-install-to-maven-local-repo-recommended)
+      - [Install to local maven repo](#install-to-local-maven-repo)
+      - [Publish JavaDoc](#publish-javadoc)
+      - [Build and publish to Bintray](#build-and-publish-to-bintray)
+  - [Integration Tests](#integration-tests)
+    - [Running](#running)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Contribution process for all committers
 
