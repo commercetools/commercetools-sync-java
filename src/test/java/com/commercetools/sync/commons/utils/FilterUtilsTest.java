@@ -10,24 +10,24 @@ import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static com.commercetools.sync.commons.utils.FilterUtils.executeSupplierIfPassesFilter;
 import static com.commercetools.sync.products.ActionGroup.CATEGORIES;
 import static com.commercetools.sync.products.ActionGroup.IMAGES;
 import static com.commercetools.sync.products.ActionGroup.PRICES;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class FilterUtilsTest {
 
-    private final static List<UpdateAction<Product>> passingUpdateActions = Arrays.asList(
+    private  final  List<UpdateAction<Product>> passingUpdateActions = Arrays.asList(
         AddExternalImage.of(Image.of("url2", ImageDimensions.of(10, 10)), 0),
         AddExternalImage.of(Image.of("url2", ImageDimensions.of(10, 10)), 0)
     );
 
-    private final static List<UpdateAction<Product>>  defaultActions =
-        Collections.singletonList(RemoveImage.of("anyUrl", 0));
+    private static final List<UpdateAction<Product>>  defaultActions =
+        singletonList(RemoveImage.of("anyUrl", 0));
 
     @Test
     public void executeSupplierIfPassesFilter_WithGroupInBlackList_ShouldFilterOutOnlyThisGroup() {
