@@ -1,25 +1,21 @@
 package com.commercetools.sync.products;
 
 import javax.annotation.Nonnull;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+
+import static java.util.Arrays.asList;
 
 /**
  * Defines either a blacklist or a whitelist for filtering certain update action groups ({@link ActionGroup}).
  *
  * <p>The action groups can be a list of any of the values of the enum {@link ActionGroup}, namely:
  * <ul>
- * <li>NAME</li>
- * <li>DESCRIPTION</li>
- * <li>SLUG</li>
- * <li>SEARCHKEYWORDS</li>
- * <li>METATITLE</li>
- * <li>METADESCRIPTION</li>
- * <li>METAKEYWORDS</li>
- * <li>VARIANTS</li>
  * <li>ATTRIBUTES</li>
  * <li>PRICES</li>
  * <li>IMAGES</li>
  * <li>CATEGORIES</li>
+ * <li>.. and others</li>
  * </ul>
  *
  * <p>The {@code filterType} defines whether the list is to be blacklisted ({@link UpdateFilterType#BLACKLIST}) or
@@ -31,28 +27,46 @@ public final class SyncFilter {
     /**
      * Defines which attributes to calculate update actions for.
      */
-    private final List<ActionGroup> filters;
+    private final Set<ActionGroup> actionGroups;
 
     /**
-     * Defines the filter type: blacklist or whitelist.
+     * Defines the filter type: blacklist (false) or whitelist (true).
      */
-    private final UpdateFilterType filterType;
+    private final boolean includeOnly;
 
-    private SyncFilter(@Nonnull final UpdateFilterType filterType, @Nonnull final List<ActionGroup> filters) {
-        this.filterType = filterType;
-        this.filters = filters;
+    private SyncFilter(final boolean includeOnly, @Nonnull final ActionGroup[] actionGroups) {
+        this.includeOnly = includeOnly;
+        this.actionGroups = new HashSet<>(asList(actionGroups));
     }
 
     @Nonnull
-    public static SyncFilter of(@Nonnull final UpdateFilterType filterType, @Nonnull final List<ActionGroup> filters) {
-        return new SyncFilter(filterType, filters);
+    public static SyncFilter ofWhiteList(@Nonnull final ActionGroup ... actionGroups) {
+        return new SyncFilter(true, actionGroups);
     }
 
-    public UpdateFilterType getFilterType() {
-        return filterType;
+    @Nonnull
+    public static SyncFilter ofBlackList(@Nonnull final ActionGroup ... actionGroups) {
+        return new SyncFilter(false, actionGroups);
     }
 
-    public List<ActionGroup> getFilters() {
-        return filters;
+    /**
+     * Checks if the supplied {@link ActionGroup} passes {@code this} filter.
+     *
+     * <p>Passing the filter has an XOR logic as follows:
+     * <table>
+     *<tr>
+     *<th> includeOnly </th> <th> actionGroups contains actionGroup </th> <th> passes filter </th>
+     *</tr>
+     *<tr><td>false</td><td>false</td><td>true (actionGroup is not in blacklist)</td></tr>
+     *<tr><td>false</td><td>true</td><td>false (actionGroup is in blacklist)</td></tr>
+     *<tr><td>true</td><td>false</td><td>false (actionGroup is not in whitelist)</td></tr>
+     *<tr><td>true</td><td>true</td><td>true (actionGroup is in whitelist)</td></tr>
+     *</table>
+     *
+     * @param actionGroup the supplied action group to be tested if it passes the current filter.
+     * @return true if the {@link ActionGroup} passes {@code this} filter, otherwise false.
+     */
+    public boolean filterActionGroup(@Nonnull final ActionGroup actionGroup) {
+        return includeOnly == actionGroups.contains(actionGroup);
     }
 }

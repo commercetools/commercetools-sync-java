@@ -3,7 +3,6 @@ package com.commercetools.sync.integration.externalsource.products;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.products.SyncFilter;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
@@ -50,8 +49,8 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
-import static com.commercetools.sync.products.UpdateFilterType.BLACKLIST;
-import static com.commercetools.sync.products.UpdateFilterType.WHITELIST;
+import static com.commercetools.sync.products.SyncFilter.ofBlackList;
+import static com.commercetools.sync.products.SyncFilter.ofWhiteList;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.lang.String.format;
@@ -140,7 +139,7 @@ public class ProductSyncFilterIT {
         final List<ProductDraft> productDraftWithKeysOnReferences =
                 replaceProductDraftsCategoryReferenceIdsWithKeys(singletonList(productDraft));
 
-        final ProductSyncOptions syncOptions = syncOptionsBuilder.setSyncFilter(BLACKLIST, singletonList(CATEGORIES))
+        final ProductSyncOptions syncOptions = syncOptionsBuilder.setSyncFilter(ofBlackList(CATEGORIES))
                                                                  .build();
 
         final ProductSync productSync = new ProductSync(syncOptions);
@@ -171,8 +170,7 @@ public class ProductSyncFilterIT {
         final List<ProductDraft> productDraftWithKeysOnReferences =
                 replaceProductDraftsCategoryReferenceIdsWithKeys(Collections.singletonList(productDraft));
 
-        final SyncFilter syncFilter = SyncFilter.of(WHITELIST, singletonList(NAME));
-        final ProductSyncOptions syncOptions = syncOptionsBuilder.setSyncFilter(syncFilter).build();
+        final ProductSyncOptions syncOptions = syncOptionsBuilder.setSyncFilter(ofWhiteList(NAME)).build();
 
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =

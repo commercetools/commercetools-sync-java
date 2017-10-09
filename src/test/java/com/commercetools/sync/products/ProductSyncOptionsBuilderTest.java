@@ -11,8 +11,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.commercetools.sync.products.UpdateFilterType.BLACKLIST;
-import static com.commercetools.sync.products.UpdateFilterType.WHITELIST;
+import static com.commercetools.sync.products.ActionGroup.IMAGES;
+import static com.commercetools.sync.products.SyncFilter.ofWhiteList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -52,31 +52,17 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void setSyncFilter_WithNoSyncFilter_ShouldSetWhiteList() {
+    public void setSyncFilter_WithNoSyncFilter_ShouldNotSetFilter() {
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getSyncFilter()).isNull();
     }
 
     @Test
-    public void setSyncFilter_WithWhiteListingImages_ShouldSetWhiteList() {
-        productSyncOptionsBuilder.setSyncFilter(WHITELIST, Collections.singletonList(ActionGroup.IMAGES));
+    public void setSyncFilter_WithSyncFilter_ShouldSetFilter() {
+        productSyncOptionsBuilder.setSyncFilter(ofWhiteList(IMAGES));
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
-        assertThat(productSyncOptions.getSyncFilter().getFilterType()).isEqualTo(WHITELIST);
-        assertThat(productSyncOptions.getSyncFilter().getFilters()).hasSize(1);
-        assertThat(productSyncOptions.getSyncFilter().getFilters().get(0)).isEqualTo(ActionGroup.IMAGES);
-    }
-
-    @Test
-    public void setSyncFilter_WithBlackListingPrices_ShouldSetBlackList() {
-        productSyncOptionsBuilder.setSyncFilter(BLACKLIST, Collections.singletonList(ActionGroup.PRICES));
-
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.getSyncFilter()).isNotNull();
-        assertThat(productSyncOptions.getSyncFilter().getFilterType()).isEqualTo(BLACKLIST);
-        assertThat(productSyncOptions.getSyncFilter().getFilters()).hasSize(1);
-        assertThat(productSyncOptions.getSyncFilter().getFilters().get(0)).isEqualTo(ActionGroup.PRICES);
     }
 
     @Test

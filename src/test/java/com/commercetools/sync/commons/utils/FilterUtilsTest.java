@@ -7,16 +7,13 @@ import static com.commercetools.sync.commons.utils.FilterUtils.executeSupplierIf
 import static com.commercetools.sync.products.ActionGroup.CATEGORIES;
 import static com.commercetools.sync.products.ActionGroup.IMAGES;
 import static com.commercetools.sync.products.ActionGroup.PRICES;
-import static com.commercetools.sync.products.UpdateFilterType.BLACKLIST;
-import static com.commercetools.sync.products.UpdateFilterType.WHITELIST;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class FilterUtilsTest {
 
     @Test
     public void executeSupplierIfPassesFilter_WithGroupInBlackList_ShouldFilterOutOnlyThisGroup() {
-        final SyncFilter syncFilter = SyncFilter.of(BLACKLIST, singletonList(IMAGES));
+        final SyncFilter syncFilter = SyncFilter.ofBlackList(IMAGES);
         final Boolean areImagesFilteredIn = executeSupplierIfPassesFilter(syncFilter, IMAGES, () -> true, () -> false);
         assertThat(areImagesFilteredIn).isFalse();
 
@@ -30,7 +27,7 @@ public class FilterUtilsTest {
 
     @Test
     public void executeSupplierIfPassesFilter_WithGroupNotInBlackList_ShouldFilterInThisGroup() {
-        final SyncFilter syncFilter = SyncFilter.of(BLACKLIST, singletonList(PRICES));
+        final SyncFilter syncFilter = SyncFilter.ofBlackList(PRICES);
         final Boolean areImagesFilteredIn = executeSupplierIfPassesFilter(syncFilter, IMAGES, () -> true, () -> false);
         assertThat(areImagesFilteredIn).isTrue();
 
@@ -40,7 +37,7 @@ public class FilterUtilsTest {
 
     @Test
     public void executeSupplierIfPassesFilter_WithGroupInWhiteList_ShouldFilterInOnlyThisGroup() {
-        final SyncFilter syncFilter = SyncFilter.of(WHITELIST, singletonList(PRICES));
+        final SyncFilter syncFilter = SyncFilter.ofWhiteList(PRICES);
 
         final Boolean arePricesFilteredIn = executeSupplierIfPassesFilter(syncFilter, PRICES, () -> true, () -> false);
         assertThat(arePricesFilteredIn).isTrue();
