@@ -33,7 +33,6 @@ import io.sphere.sdk.products.commands.updateactions.Unpublish;
 import io.sphere.sdk.search.SearchKeywords;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -582,7 +581,7 @@ public final class ProductUpdateActionUtils {
 
     @Nonnull
     static <T> Optional<T> buildActionIfPassesFilter(
-        @Nullable final SyncFilter syncFilter,
+        @Nonnull final SyncFilter syncFilter,
         @Nonnull final ActionGroup filter,
         @Nonnull final Supplier<Optional<T>> updateActionSupplier) {
         return executeSupplierIfPassesFilter(syncFilter, filter, updateActionSupplier, Optional::empty);
@@ -590,7 +589,7 @@ public final class ProductUpdateActionUtils {
 
     @Nonnull
     static <T> List<T> buildActionsIfPassesFilter(
-        @Nullable final SyncFilter syncFilter,
+        @Nonnull final SyncFilter syncFilter,
         @Nonnull final ActionGroup filter,
         @Nonnull final Supplier<List<T>> updateActionSupplier) {
         return executeSupplierIfPassesFilter(syncFilter, filter, updateActionSupplier, Collections::emptyList);

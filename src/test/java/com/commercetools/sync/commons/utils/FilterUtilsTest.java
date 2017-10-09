@@ -52,14 +52,14 @@ public class FilterUtilsTest {
 
     @Test
     public void executeSupplierIfPassesFilter_WithNoFilter_ShouldNotFilterInEveryThing() {
-        final Boolean arePricesFilteredIn = executeSupplierIfPassesFilter(null, PRICES, () -> true, () -> false);
+        final Boolean arePricesFilteredIn = executeSupplierIfPassesFilter(SyncFilter.of(), PRICES, () -> true, () -> false);
         assertThat(arePricesFilteredIn).isTrue();
 
-        final Boolean areImagesFilteredIn = executeSupplierIfPassesFilter(null, IMAGES, () -> true, () -> false);
+        final Boolean areImagesFilteredIn = executeSupplierIfPassesFilter(SyncFilter.of(), IMAGES, () -> true, () -> false);
         assertThat(areImagesFilteredIn).isTrue();
 
         final Boolean areCategoriesFilteredIn =
-            executeSupplierIfPassesFilter(null, CATEGORIES, () -> true, () -> false);
+            executeSupplierIfPassesFilter(SyncFilter.of(), CATEGORIES, () -> true, () -> false);
         assertThat(areCategoriesFilteredIn).isTrue();
     }
 }

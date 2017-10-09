@@ -12,6 +12,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * TODO: removeOtherVariants, whiteList, blackList, auto publish, revert staged changes, update staged.
  */
@@ -26,8 +28,8 @@ public class ProductSyncOptions extends BaseSyncOptions {
     private final boolean ensurePriceChannels;
 
     ProductSyncOptions(@Nonnull final SphereClient ctpClient,
-                       final BiConsumer<String, Throwable> errorCallBack,
-                       final Consumer<String> warningCallBack,
+                       @Nullable final BiConsumer<String, Throwable> errorCallBack,
+                       @Nullable final Consumer<String> warningCallBack,
                        final int batchSize,
                        final boolean removeOtherLocales,
                        final boolean removeOtherSetEntries,
@@ -35,14 +37,14 @@ public class ProductSyncOptions extends BaseSyncOptions {
                        final boolean removeOtherProperties,
                        final boolean allowUuid,
                        final boolean removeOtherVariants,
-                       final SyncFilter syncFilter,
-                       final Function<List<UpdateAction<Product>>,
+                       @Nullable final SyncFilter syncFilter,
+                       @Nullable final Function<List<UpdateAction<Product>>,
                            List<UpdateAction<Product>>> updateActionsCallBack,
                        boolean ensurePriceChannels) {
         super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherLocales, removeOtherSetEntries,
             removeOtherCollectionEntries, removeOtherProperties, allowUuid);
         this.removeOtherVariants = removeOtherVariants;
-        this.syncFilter = syncFilter;
+        this.syncFilter = ofNullable(syncFilter).orElseGet(SyncFilter::of);
         this.updateActionsCallBack = updateActionsCallBack;
         this.ensurePriceChannels = ensurePriceChannels;
     }
@@ -57,7 +59,7 @@ public class ProductSyncOptions extends BaseSyncOptions {
      *
      * @return the {@link SyncFilter} set to {@code this} {@link ProductSyncOptions}.
      */
-    @Nullable
+    @Nonnull
     public SyncFilter getSyncFilter() {
         return syncFilter;
     }

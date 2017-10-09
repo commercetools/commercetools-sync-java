@@ -1,10 +1,12 @@
 package com.commercetools.sync.products;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
+import static java.util.Optional.ofNullable;
 
 /**
  * Defines either a blacklist or a whitelist for filtering certain update action groups ({@link ActionGroup}).
@@ -34,9 +36,16 @@ public final class SyncFilter {
      */
     private final boolean includeOnly;
 
+    private static SyncFilter defaultSyncFilter = null;
+
     private SyncFilter(final boolean includeOnly, @Nonnull final ActionGroup[] actionGroups) {
         this.includeOnly = includeOnly;
         this.actionGroups = new HashSet<>(asList(actionGroups));
+    }
+
+    private SyncFilter() {
+        this.includeOnly = false;
+        this.actionGroups = Collections.emptySet();
     }
 
     @Nonnull
@@ -47,6 +56,12 @@ public final class SyncFilter {
     @Nonnull
     public static SyncFilter ofBlackList(@Nonnull final ActionGroup ... actionGroups) {
         return new SyncFilter(false, actionGroups);
+    }
+
+    @Nonnull
+    public static SyncFilter of() {
+        defaultSyncFilter = ofNullable(defaultSyncFilter).orElseGet(SyncFilter::new);
+        return defaultSyncFilter;
     }
 
     /**

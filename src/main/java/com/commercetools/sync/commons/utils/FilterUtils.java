@@ -4,7 +4,6 @@ import com.commercetools.sync.products.ActionGroup;
 import com.commercetools.sync.products.SyncFilter;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 public final class FilterUtils {
@@ -29,10 +28,10 @@ public final class FilterUtils {
      */
     @Nonnull
     public static <T> T executeSupplierIfPassesFilter(
-        @Nullable final SyncFilter syncFilter, @Nonnull final ActionGroup actionGroup,
+        @Nonnull final SyncFilter syncFilter, @Nonnull final ActionGroup actionGroup,
         @Nonnull final Supplier<T> resultIfFilteredIn, @Nonnull final Supplier<T> resultIfFilteredOut) {
         // If syncFilter is null or the action group passes the filter, execute resultIfFilteredIn supplier.
-        final Supplier<T> resultantSupplier = syncFilter == null || syncFilter.filterActionGroup(actionGroup)
+        final Supplier<T> resultantSupplier = syncFilter.filterActionGroup(actionGroup)
             ? resultIfFilteredIn : resultIfFilteredOut;
 
         return resultantSupplier.get();
