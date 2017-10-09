@@ -75,7 +75,7 @@ The `-SNAPSHOT` suffix is mandatory.
 `OSS_USER`/`OSS_KEY` environment variables or `ossUser`/`ossKey` gradle build properties 
 (the properties have precedence over environment variables). 
 
-See more configuration details of the oss uploading in [oss-publish.gradle](./gradle-scripts/oss-publish.gradle) file.
+See more configuration details of the oss uploading in [oss-publish.gradle](../gradle-scripts/oss-publish.gradle) file.
 
 
 ## Publish to Bintray
@@ -86,7 +86,7 @@ Bintray publish is performed by [`gradle-bintray-plugin`](https://github.com/bin
 The artifacts are published to [bintray commercetools maven repo](https://bintray.com/commercetools/maven/commercetools-sync-java).
 
 If you are a new developer in the project - update contributors list in 
-[`maven-publish.gradle`](https://github.com/commercetools/commercetools-sync-java/blob/master/gradle-scripts/maven-publish.gradle)`-> pomConfig -> developers`.
+[`maven-publish.gradle`](/gradle-scripts/maven-publish.gradle)`-> pomConfig -> developers`.
 
 To initiate publish call:
 ```
