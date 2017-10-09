@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.externalsource.products;
 
-import com.commercetools.sync.commons.utils.SyncUtils;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -31,13 +30,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceCategoryOrderHintCategoryIdsWithKeys;
+import static com.commercetools.sync.commons.utils.SyncUtils.replaceProductDraftCategoryReferenceIdsWithKeys;
+import static com.commercetools.sync.commons.utils.SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getResourceIdentifiersOfIds;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getResourceIdentifiersOfKeysAndIds;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
@@ -49,9 +54,9 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
+import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
@@ -78,10 +83,8 @@ public class ProductSyncIT {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
-        categoryResourceIdentifiers = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2))
-            .stream()
-            .map(category -> ResourceIdentifier.<Category>ofIdOrKey(category.getId(), category.getKey(),
-                Category.referenceTypeId())).collect(toSet());
+        final List<Category> categories = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
+        categoryResourceIdentifiers = getResourceIdentifiersOfKeysAndIds(categories);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
@@ -91,37 +94,40 @@ public class ProductSyncIT {
      */
     @Before
     public void setupTest() {
-
-        errorCallBackMessages = new ArrayList<>();
-        errorCallBackExceptions = new ArrayList<>();
-        warningCallBackMessages = new ArrayList<>();
+        clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
-
-        syncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                               .setErrorCallBack(
-                                                   (errorMessage, exception) -> {
-                                                       errorCallBackMessages
-                                                           .add(errorMessage);
-                                                       errorCallBackExceptions
-                                                           .add(exception);
-                                                   })
-                                               .setWarningCallBack(warningMessage ->
-                                                   warningCallBackMessages
-                                                       .add(warningMessage))
-                                               .build();
+        syncOptions = buildSyncOptions();
 
         final CategoryOrderHints randomCategoryOrderHints = createRandomCategoryOrderHints(categoryResourceIdentifiers);
         categoryOrderHintsWithCategoryKeys = replaceCategoryOrderHintCategoryIdsWithKeys(randomCategoryOrderHints,
             categoryResourceIdentifiers);
-        final Set<ResourceIdentifier<Category>> categoryResourcesWithIds = categoryResourceIdentifiers
-            .stream()
-            .map(categoryResourceIdentifier ->
-                ResourceIdentifier.<Category>ofId(categoryResourceIdentifier.getId(), Category.referenceTypeId()))
-            .collect(toSet());
+
+        final Set<ResourceIdentifier<Category>> categoryResourceIdentifiersWithIds =
+                getResourceIdentifiersOfIds(categoryResourceIdentifiers);
+
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH, productType.toReference(),
-            categoryResourcesWithIds, randomCategoryOrderHints);
-        product = CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft))
-                                   .toCompletableFuture().join();
+                categoryResourceIdentifiersWithIds, randomCategoryOrderHints);
+
+        product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)));
+    }
+
+    private void clearSyncTestCollections() {
+        errorCallBackMessages = new ArrayList<>();
+        errorCallBackExceptions = new ArrayList<>();
+        warningCallBackMessages = new ArrayList<>();
+    }
+
+    private ProductSyncOptions buildSyncOptions() {
+        final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
+            errorCallBackMessages.add(errorMessage);
+            errorCallBackExceptions.add(exception);
+        };
+        final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
+
+        return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                                        .setErrorCallBack(errorCallBack)
+                                        .setWarningCallBack(warningCallBack)
+                                        .build();
     }
 
     @AfterClass
@@ -136,8 +142,8 @@ public class ProductSyncIT {
             .build();
 
         final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics = productSync.sync(singletonList(productDraft))
-                                                                .toCompletableFuture().join();
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(singletonList(productDraft)));
+
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 1, 1, 0, 0));
@@ -153,10 +159,9 @@ public class ProductSyncIT {
             .slug(product.getMasterData().getStaged().getSlug())
             .build();
 
-
         final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics = productSync.sync(singletonList(productDraft))
-                                                                .toCompletableFuture().join();
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(singletonList(productDraft)));
+
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 1, 0, 0, 1));
@@ -175,13 +180,12 @@ public class ProductSyncIT {
             ProductType.referenceOfId(productType.getKey()), categoryResourceIdentifiers,
             categoryOrderHintsWithCategoryKeys);
 
-        final ProductDraft productDraftWithCategoryKeys =
-            SyncUtils.replaceProductDraftCategoryReferenceIdsWithKeys(productDraft);
+        final ProductDraft productDraftWithCategoryKeys = replaceProductDraftCategoryReferenceIdsWithKeys(productDraft);
 
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
-            productSync.sync(singletonList(productDraftWithCategoryKeys))
-                       .toCompletableFuture().join();
+                executeBlocking(productSync.sync(singletonList(productDraftWithCategoryKeys)));
+
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 1, 0, 0, 0));
@@ -196,12 +200,13 @@ public class ProductSyncIT {
             createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, ProductType.referenceOfId(productType.getKey()),
                 categoryResourceIdentifiers, categoryOrderHintsWithCategoryKeys);
 
-        final ProductDraft productDraftWithKeysOnReferences =
-            SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(Collections.singletonList(productDraft)).get(0);
+        final List<ProductDraft> productDraftWithKeysOnReferences =
+            replaceProductDraftsCategoryReferenceIdsWithKeys(singletonList(productDraft));
 
         final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics = productSync.sync(singletonList(productDraftWithKeysOnReferences))
-                                                                .toCompletableFuture().join();
+        final ProductSyncStatistics syncStatistics =
+                executeBlocking(productSync.sync(productDraftWithKeysOnReferences));
+
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 1, 0, 1, 0));
@@ -236,11 +241,11 @@ public class ProductSyncIT {
         final ProductDraft productDraft =
             createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, ProductType.referenceOfId(productType.getKey()),
                 categoryResourceIdentifiers, categoryOrderHintsWithCategoryKeys);
-        final ProductDraft productDraftWithKeysOnReferences =
-            SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(Collections.singletonList(productDraft)).get(0);
+        final List<ProductDraft> productDraftWithKeysOnReferences =
+            replaceProductDraftsCategoryReferenceIdsWithKeys(singletonList(productDraft));
 
-        final ProductSyncStatistics syncStatistics = spyProductSync
-            .sync(singletonList(productDraftWithKeysOnReferences)).toCompletableFuture().join();
+        final ProductSyncStatistics syncStatistics =
+                executeBlocking(spyProductSync.sync(productDraftWithKeysOnReferences));
 
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
@@ -252,18 +257,11 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withMultipleBatchSyncing_ShouldSync() {
-        //_-----_-----_-----_-----_-----_PREPARE EXISTING PRODUCTS (productKey1, productKey2, productKey3)------
-        //_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----
-
+        // Prepare existing products with keys: productKey1, productKey2, productKey3.
         final ProductDraft key2Draft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH,
-            productType.toReference(),
-            categoryResourceIdentifiers.stream().map(categoryResourceIdentifier ->
-                    ResourceIdentifier.<Category>ofId(categoryResourceIdentifier.getId(), Category.referenceTypeId()))
-                .collect(toSet()), product.getMasterData().getStaged().getCategoryOrderHints());
-
-        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(key2Draft))
-                         .toCompletableFuture()
-                         .join();
+            productType.toReference(), getResourceIdentifiersOfIds(categoryResourceIdentifiers),
+            product.getMasterData().getStaged().getCategoryOrderHints());
+        executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(key2Draft)));
 
         final ProductDraft key3Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference())
             .categories(new ArrayList<>())
@@ -272,16 +270,13 @@ public class ProductSyncIT {
             .slug(LocalizedString.of(Locale.ENGLISH, "slug3"))
             .masterVariant(ProductVariantDraftBuilder.of().key("v3").build())
             .build();
+        executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(key3Draft)));
 
-        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(key3Draft))
-                         .toCompletableFuture()
-                         .join();
 
-        //_-----_-----_-----_-----_-----_PREPARE BATCHES FROM EXTERNAL SOURCE-----_-----_-----_-----_-----_-----
-        //_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----_-----
+        // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ProductType.reference(productType.getKey()), categoryResourceIdentifiers,
-            categoryOrderHintsWithCategoryKeys);
+                categoryOrderHintsWithCategoryKeys);
 
         final List<ProductDraft> batch1 = new ArrayList<>();
         batch1.add(productDraft);
@@ -310,22 +305,19 @@ public class ProductSyncIT {
         final List<ProductDraft> batch3 = new ArrayList<>();
         batch3.add(key3DraftNewSlug);
 
-
         final List<ProductDraft> batch1WithReferenceKeys =
-            SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(batch1);
+            replaceProductDraftsCategoryReferenceIdsWithKeys(batch1);
         final List<ProductDraft> batch2WithReferenceKeys =
-            SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(batch2);
+            replaceProductDraftsCategoryReferenceIdsWithKeys(batch2);
         final List<ProductDraft> batch3WithReferenceKeys =
-            SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(batch3);
+            replaceProductDraftsCategoryReferenceIdsWithKeys(batch3);
 
         final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics = productSync.sync(batch1WithReferenceKeys)
-                                                                .thenCompose(result ->
-                                                                    productSync.sync(batch2WithReferenceKeys))
-                                                                .thenCompose(result ->
-                                                                    productSync.sync(batch3WithReferenceKeys))
-                                                                .toCompletableFuture()
-                                                                .join();
+        final ProductSyncStatistics syncStatistics =
+                executeBlocking(productSync.sync(batch1WithReferenceKeys)
+                                            .thenCompose(result -> productSync.sync(batch2WithReferenceKeys))
+                                            .thenCompose(result -> productSync.sync(batch3WithReferenceKeys)));
+
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 3, 1, 2, 0));
@@ -336,7 +328,7 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withSingleBatchSyncing_ShouldSync() {
-        //PREPARE BATCHES FROM EXTERNAL SOURCE
+        // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ProductType.referenceOfId(productType.getKey()), categoryResourceIdentifiers,
             categoryOrderHintsWithCategoryKeys);
@@ -384,12 +376,10 @@ public class ProductSyncIT {
         batch.add(key5Draft);
         batch.add(key6Draft);
 
-        final List<ProductDraft> draftsWithReferenceKeys =
-            SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
+        final List<ProductDraft> draftsWithReferenceKeys = replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
         final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics = productSync.sync(draftsWithReferenceKeys)
-                                                                .toCompletableFuture()
-                                                                .join();
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(draftsWithReferenceKeys));
+
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 5, 4, 1, 0));
@@ -400,7 +390,7 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withSameSlugInSingleBatch_ShouldNotSyncIt() {
-        //PREPARE BATCHES FROM EXTERNAL SOURCE
+        // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ProductType.referenceOfId(productType.getKey()), categoryResourceIdentifiers,
             categoryOrderHintsWithCategoryKeys);
@@ -444,12 +434,10 @@ public class ProductSyncIT {
         batch.add(key5Draft);
         batch.add(key6Draft);
 
-        final List<ProductDraft> draftsWithReferenceKeys =
-            SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
+        final List<ProductDraft> draftsWithReferenceKeys = replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
         final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics = productSync.sync(draftsWithReferenceKeys)
-                                                                .toCompletableFuture()
-                                                                .join();
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(draftsWithReferenceKeys));
+
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 5, 1, 1, 3));
@@ -465,12 +453,12 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withADraftsWithBlankKeysInBatch_ShouldNotSyncItAndTriggerErrorCallBack() {
-        //PREPARE BATCHES FROM EXTERNAL SOURCE
+        // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ProductType.reference(productType.getKey()), categoryResourceIdentifiers,
             categoryOrderHintsWithCategoryKeys);
         final ProductDraft productDraftWithCategoryKeysOnReferences =
-            SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(Collections.singletonList(productDraft)).get(0);
+            replaceProductDraftsCategoryReferenceIdsWithKeys(Collections.singletonList(productDraft)).get(0);
 
         // Draft with null key
         final ProductDraft key3Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
@@ -497,12 +485,10 @@ public class ProductSyncIT {
         batch.add(key3Draft);
         batch.add(key4Draft);
 
-        final List<ProductDraft> draftsWithReferenceKeys =
-            SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
+        final List<ProductDraft> draftsWithReferenceKeys = replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
         final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics = productSync.sync(draftsWithReferenceKeys)
-                                                                .toCompletableFuture()
-                                                                .join();
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(draftsWithReferenceKeys));
+
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 3, 0, 1, 2));
@@ -517,7 +503,7 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withANullDraftInBatch_ShouldNotSyncItAndTriggerErrorCallBack() {
-        //PREPARE BATCHES FROM EXTERNAL SOURCE
+        // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ProductType.reference(productType.getKey()), categoryResourceIdentifiers,
             categoryOrderHintsWithCategoryKeys);
@@ -526,13 +512,11 @@ public class ProductSyncIT {
         batch.add(productDraft);
         batch.add(null);
 
-        final List<ProductDraft> draftsWithReferenceKeys =
-            SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
+        final List<ProductDraft> draftsWithReferenceKeys = replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
 
         final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics = productSync.sync(draftsWithReferenceKeys)
-                                                                .toCompletableFuture()
-                                                                .join();
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(draftsWithReferenceKeys));
+
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 2, 0, 1, 1));
@@ -544,7 +528,7 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withSameDraftsWithChangesInBatch_ShouldRetryUpdateBecauseOfConcurrentModificationExceptions() {
-        //PREPARE BATCHES FROM EXTERNAL SOURCE
+        // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ProductType.reference(productType.getKey()), categoryResourceIdentifiers,
             categoryOrderHintsWithCategoryKeys);
@@ -563,13 +547,10 @@ public class ProductSyncIT {
         batch.add(productDraft);
         batch.add(draftWithSameKey);
 
-        final List<ProductDraft> draftsWithReferenceKeys =
-            SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
-
+        final List<ProductDraft> draftsWithReferenceKeys = replaceProductDraftsCategoryReferenceIdsWithKeys(batch);
         final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics = productSync.sync(draftsWithReferenceKeys)
-                                                                .toCompletableFuture()
-                                                                .join();
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(draftsWithReferenceKeys));
+
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 2, 0, 2, 0));

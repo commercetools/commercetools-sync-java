@@ -14,6 +14,7 @@ import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.types.BooleanFieldType;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toSet;
 
 public final class CategoryITUtils {
     public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
@@ -347,5 +349,43 @@ public final class CategoryITUtils {
         final List<CategoryDraft> firstBatch = batches.remove(0);
         return syncBatches(categorySync, batches, result
             .thenCompose(subResult -> categorySync.sync(firstBatch)));
+    }
+
+    /**
+     * Builds a {@link Set} of {@link ResourceIdentifier} built from the supplied {@link List} of {@link Category}
+     * containing comprising both the ids and keys per {@link Category}.
+     *
+     * @param categories a {@link List} of {@link Category} from which the {@link Set} of {@link ResourceIdentifier}
+     *                   will be built.
+     * @return a {@link Set} of {@link ResourceIdentifier} built from the supplied {@link List} of {@link Category}
+     *         containing comprising both the ids and keys per {@link Category}.
+     */
+    @Nonnull
+    public static Set<ResourceIdentifier<Category>>
+        getResourceIdentifiersOfKeysAndIds(@Nonnull final List<Category> categories) {
+        return categories.stream()
+                         .map(category ->
+                                 ResourceIdentifier
+                                         .<Category>ofIdOrKey(category.getId(), category.getKey(),
+                                                 Category.referenceTypeId())).collect(toSet());
+    }
+
+    /**
+     * Builds a {@link Set} of {@link ResourceIdentifier} copied from the supplied {@link Set} but only comprising of
+     * the ids.
+     *
+     * @param resourceIdentifiers a {@link Set} of {@link ResourceIdentifier} from which a new {@link Set} will be be
+     *                            copied but only comprising of the ids.
+     * @return a {@link Set} of {@link ResourceIdentifier} copied from the supplied {@link Set} but only comprising of
+     *         the ids.
+     */
+    @Nonnull
+    public static Set<ResourceIdentifier<Category>>
+        getResourceIdentifiersOfIds(@Nonnull final Set<ResourceIdentifier<Category>> resourceIdentifiers) {
+        return resourceIdentifiers.stream()
+                .map(categoryResourceIdentifier ->
+                        ResourceIdentifier
+                                .<Category>ofId(categoryResourceIdentifier.getId(), Category.referenceTypeId()))
+                .collect(toSet());
     }
 }

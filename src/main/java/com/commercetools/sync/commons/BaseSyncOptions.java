@@ -55,6 +55,7 @@ public class BaseSyncOptions {
      * @return the {@code errorCallBack} {@link BiConsumer}&lt;{@link String}, {@link Throwable}&gt; function set to
      *      {@code this} {@link BaseSyncOptions}
      */
+    @Nullable
     public BiConsumer<String, Throwable> getErrorCallBack() {
         return errorCallBack;
     }
@@ -67,6 +68,7 @@ public class BaseSyncOptions {
      * @return the {@code warningCallBack} {@link Consumer}&lt;{@link String}&gt; function set to {@code this}
      *      {@link BaseSyncOptions}
      */
+    @Nullable
     public Consumer<String> getWarningCallBack() {
         return warningCallBack;
     }

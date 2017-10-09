@@ -2,6 +2,7 @@ package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.SyncFilter;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Image;
 import io.sphere.sdk.products.PriceDraft;
@@ -60,6 +61,7 @@ public class ProductUpdateActionUtilsTest {
         final ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
 
         final ProductSyncOptions productSyncOptions = mock(ProductSyncOptions.class);
+        when(productSyncOptions.getSyncFilter()).thenReturn(SyncFilter.of());
 
         final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
         final AttributeMetaData priceInfo = mock(AttributeMetaData.class);
@@ -114,6 +116,7 @@ public class ProductUpdateActionUtilsTest {
         final ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER);
 
         final ProductSyncOptions productSyncOptions = mock(ProductSyncOptions.class);
+        when(productSyncOptions.getSyncFilter()).thenReturn(SyncFilter.of());
 
         final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
         final AttributeMetaData priceInfo = mock(AttributeMetaData.class);

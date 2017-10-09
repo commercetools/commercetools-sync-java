@@ -1,5 +1,6 @@
 package com.commercetools.sync.products;
 
+import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -9,15 +10,12 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.function.Function;
 
-import static java.util.Collections.emptyList;
-
 public final class ProductSyncOptionsBuilder
     extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions> {
     public static final int BATCH_SIZE_DEFAULT = 30;
     private boolean removeOtherVariants = true;
-    private List<String> whiteList = emptyList();
-    private List<String> blackList = emptyList();
-    private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsFilter;
+    private SyncFilter syncFilter;
+    private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsCallBack;
     static final boolean ENSURE_CHANNELS_DEFAULT = false;
     private boolean ensurePriceChannels = ENSURE_CHANNELS_DEFAULT;
 
@@ -29,24 +27,55 @@ public final class ProductSyncOptionsBuilder
         return new ProductSyncOptionsBuilder(ctpClient).setBatchSize(BATCH_SIZE_DEFAULT);
     }
 
+    /**
+     * Sets the {@code removeOtherVariants} boolean flag which sync additional variants without deleting
+     * existing ones. If set to true, which is the default value of the option, it deletes the
+     * existing variants. If set to false, it doesn't delete the existing ones.
+     *
+     * @param removeOtherVariants new value to set to the boolean flag.
+     * @return {@code this} instance of {@link ProductSyncOptionsBuilder}
+     */
+    @Nonnull
     public ProductSyncOptionsBuilder removeOtherVariants(final boolean removeOtherVariants) {
         this.removeOtherVariants = removeOtherVariants;
         return this;
     }
 
-    public ProductSyncOptionsBuilder whiteList(@Nonnull final List<String> whiteList) {
-        this.whiteList = whiteList;
+    /**
+     * Set option that defines {@link SyncFilter} for the sync, which defines either a blacklist or a whitelist for
+     * filtering certain update action groups.
+     *
+     * <p>The action groups can be a list of any of the values of the enum {@link ActionGroup}, namely:
+     * <ul>
+     * <li>ATTRIBUTES</li>
+     * <li>PRICES</li>
+     * <li>IMAGES</li>
+     * <li>CATEGORIES</li>
+     * <li>.. and others</li>
+     * </ul>
+     *
+     *
+     * @param syncFilter defines either a blacklist or a whitelist for filtering certain update action groups.
+     *
+     * @return {@code this} instance of {@link ProductSyncOptionsBuilder}
+     */
+    @Nonnull
+    public ProductSyncOptionsBuilder setSyncFilter(@Nonnull final SyncFilter syncFilter) {
+        this.syncFilter = syncFilter;
         return this;
     }
 
-    public ProductSyncOptionsBuilder blackList(@Nonnull final List<String> blackList) {
-        this.blackList = blackList;
-        return this;
-    }
-
-    public ProductSyncOptionsBuilder setUpdateActionsFilter(@Nonnull final Function<List<UpdateAction<Product>>,
-        List<UpdateAction<Product>>> updateActionsFilter) {
-        this.updateActionsFilter = updateActionsFilter;
+    /**
+     * Sets the update actions filter callback which can be applied on generated list of update actions to produce
+     * a resultant list after the filter function has been applied.
+     *
+     * @param updateActionsCallBack filter function which can be applied on generated list of update actions
+     * @return {@code this} instance of {@link CategorySyncOptionsBuilder}
+     */
+    @Nonnull
+    public ProductSyncOptionsBuilder setUpdateActionsFilterCallBack(@Nonnull final Function<List<UpdateAction<Product>>,
+        List<UpdateAction<Product>>> updateActionsCallBack) {
+        this.updateActionsCallBack = updateActionsCallBack;
         return this;
     }
 
@@ -61,12 +90,14 @@ public final class ProductSyncOptionsBuilder
      *                            when it doesn't exists in a target project yet
      * @return {@code this} instance of {@link ProductSyncOptionsBuilder}
      */
+    @Nonnull
     public ProductSyncOptionsBuilder ensurePriceChannels(final boolean ensurePriceChannels) {
         this.ensurePriceChannels = ensurePriceChannels;
         return this;
     }
 
     @Override
+    @Nonnull
     public ProductSyncOptions build() {
         return new ProductSyncOptions(
             ctpClient,
@@ -79,9 +110,8 @@ public final class ProductSyncOptionsBuilder
             removeOtherProperties,
             allowUuid,
             removeOtherVariants,
-            whiteList,
-            blackList,
-            updateActionsFilter,
+            syncFilter,
+            updateActionsCallBack,
             ensurePriceChannels
         );
     }
