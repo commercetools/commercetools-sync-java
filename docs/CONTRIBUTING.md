@@ -30,7 +30,7 @@ Thanks for taking the time to contribute :+1::tada: All contributions are welcom
 
 If you have push access to the repository you can fix them directly otherwise just make a pull request.
 
-### Features or BugFixes
+### Features or Bug Fixes
 
 - Every PR should address an issue on the repository. If the issue doesn't exist, please create it first.
 - Pull requests should always follow the following naming convention: 
@@ -84,7 +84,7 @@ are omitted because `javadoc` is previously created in `build` task, we just sho
 ./gradlew clean build bintrayUpload -Dbuild.version={version} 
 ````
 
-For more detailed information on build and release process, see [Build and Release](docs/BUILD.md) documentation.
+For more detailed information on build and release process, see [Build and Release](BUILD.md) documentation.
 
 ### Integration Tests
 
