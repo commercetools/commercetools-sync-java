@@ -67,12 +67,12 @@ object properties. -->
  represents either a blacklist or a whitelist for filtering certain update action groups. 
   - __Blacklisting__ an update action group means that everything in products will be synced except for any group 
   in the blacklist. A typical use case it to blacklist prices when syncing products, so as to sync everything in products
-  except prices. [Here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L143)
+  except prices. [Here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L142-L143)
   is an example where the sync is performed while blacklisting product categories. 
   
   - __Whitelisting__ an update action group means that the groups in this whitelist will be the *only* group synced in 
   products. One use case could be to whitelist prices when syncing products, so as to only sync prices in products and
-  nothing else. [Here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L143)
+  nothing else. [Here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L173)
   is an example where the sync is performed while whitelisting product names.
   
   - The list of action groups allowed to be blacklist or whitelisted on products can be found [here](/src/main/java/com/commercetools/sync/products/ActionGroup.java). 
