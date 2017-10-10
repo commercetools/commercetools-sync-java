@@ -1,8 +1,10 @@
 package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.products.ActionGroup;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.SyncFilter;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -19,6 +21,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionIfPassesFilter;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionsIfPassesFilter;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddToCategoryUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeNameUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeSlugUpdateAction;
@@ -63,7 +67,7 @@ public final class ProductSyncUtils {
         final List<UpdateAction<Product>> assetUpdateActions =
             buildAssetActions(oldProduct, newProduct, syncOptions);
         updateActions.addAll(assetUpdateActions);
-        return filterUpdateActions(updateActions, syncOptions.getUpdateActionsFilter());
+        return filterUpdateActions(updateActions, syncOptions.getUpdateActionsCallBack());
     }
 
     /**
@@ -83,31 +87,65 @@ public final class ProductSyncUtils {
      * @return A list of category-specific update actions.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildCoreActions(
-        @Nonnull final Product oldProduct,
-        @Nonnull final ProductDraft newProduct,
-        @Nonnull final ProductSyncOptions syncOptions,
-        @Nonnull final Map<String, AttributeMetaData> attributesMetaData) {
+    public static List<UpdateAction<Product>> buildCoreActions(@Nonnull final Product oldProduct,
+                                                               @Nonnull final ProductDraft newProduct,
+                                                               @Nonnull final ProductSyncOptions syncOptions,
+                                                               @Nonnull final Map<String, AttributeMetaData>
+                                                                       attributesMetaData) {
+        final SyncFilter syncFilter = syncOptions.getSyncFilter();
 
         final List<UpdateAction<Product>> updateActions = new ArrayList<>(buildUpdateActionsFromOptionals(Arrays.asList(
-            buildChangeNameUpdateAction(oldProduct, newProduct),
-            buildSetDescriptionUpdateAction(oldProduct, newProduct),
-            buildChangeSlugUpdateAction(oldProduct, newProduct),
-            buildSetSearchKeywordsUpdateAction(oldProduct, newProduct),
-            buildSetMetaTitleUpdateAction(oldProduct, newProduct),
-            buildSetMetaDescriptionUpdateAction(oldProduct, newProduct),
-            buildSetMetaKeywordsUpdateAction(oldProduct, newProduct),
-            buildSetTaxCategoryUpdateAction(oldProduct, newProduct),
-            buildTransitionStateUpdateAction(oldProduct, newProduct)
-        )));
+                buildActionIfPassesFilter(syncFilter, ActionGroup.NAME, () ->
+                    buildChangeNameUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.DESCRIPTION, () ->
+                    buildSetDescriptionUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.SLUG, () ->
+                     buildChangeSlugUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.SEARCHKEYWORDS, () ->
+                    buildSetSearchKeywordsUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.METATITLE, () ->
+                    buildSetMetaTitleUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.METADESCRIPTION, () ->
+                    buildSetMetaDescriptionUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.METAKEYWORDS, () ->
+                    buildSetMetaKeywordsUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.TAXCATEGORY, () ->
+                    buildSetTaxCategoryUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.STATE, () ->
+                    buildTransitionStateUpdateAction(oldProduct, newProduct))
+            )));
 
+        final List<UpdateAction<Product>> productCatgoryUpdateActions =
+            buildActionsIfPassesFilter(syncFilter, ActionGroup.CATEGORIES, () ->
+                buildCategoryActions(oldProduct, newProduct));
+        updateActions.addAll(productCatgoryUpdateActions);
+
+        final List<UpdateAction<Product>> variantUpdateActions =
+            buildVariantsUpdateActions(oldProduct, newProduct, syncOptions, attributesMetaData);
+        updateActions.addAll(variantUpdateActions);
+
+        // lastly publish/unpublish product
+        buildPublishUpdateAction(oldProduct, newProduct).ifPresent(updateActions::add);
+        return updateActions;
+    }
+
+    /**
+     * Compares the categories of a {@link Product} and a {@link ProductDraft}. It returns a {@link List} of
+     * {@link UpdateAction}&lt;{@link Product}&gt; as a result. If no update action is needed, for example in
+     * case where both the {@link Product} and the {@link ProductDraft} have the identical categories, an empty
+     * {@link List} is returned.
+     *
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new data.
+     * @return A list of product category-related update actions.
+     */
+    @Nonnull
+    public static List<UpdateAction<Product>> buildCategoryActions(@Nonnull final Product oldProduct,
+                                                                   @Nonnull final ProductDraft newProduct) {
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
         updateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct));
         updateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));
         updateActions.addAll(buildRemoveFromCategoryUpdateActions(oldProduct, newProduct));
-        updateActions.addAll(buildVariantsUpdateActions(oldProduct, newProduct, syncOptions, attributesMetaData));
-
-        // lastly publish/unpublish
-        buildPublishUpdateAction(oldProduct, newProduct).ifPresent(updateActions::add);
         return updateActions;
     }
 

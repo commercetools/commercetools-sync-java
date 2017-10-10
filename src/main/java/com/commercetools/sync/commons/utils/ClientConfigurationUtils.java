@@ -61,7 +61,7 @@ public class ClientConfigurationUtils {
      * Creates a {@link BlockingSphereClient} with a default {@code timeout} value of 30 seconds.
      *
      * @param clientConfig the client configuration for the client.
-     * @return the instanted {@link BlockingSphereClient}.
+     * @return the instantiated {@link BlockingSphereClient}.
      */
     public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
         return createClient(clientConfig, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
