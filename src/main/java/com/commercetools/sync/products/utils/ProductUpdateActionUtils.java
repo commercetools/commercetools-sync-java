@@ -73,6 +73,7 @@ public final class ProductUpdateActionUtils {
     private static final String NULL_VARIANT = "The variant is null.";
     private static final String BLANK_OLD_MASTER_VARIANT_KEY = "Old master variant key is blank";
     private static final String BLANK_NEW_MASTER_VARIANT_KEY = "New master variant null or has blank key";
+    private static final String BLANK_SKU = "New master variant has blank SKU";
 
     /**
      * Compares the {@link LocalizedString} names of a {@link ProductDraft} and a {@link Product}. The name of the
@@ -548,8 +549,15 @@ public final class ProductUpdateActionUtils {
             // thus we can't use ChangeMasterVariant.ofVariantId(),
             // but it could be re-factored as soon as ChangeMasterVariant.ofKey() happens in the SDK
             () -> {
+
+                final String newSku = newProduct.getMasterVariant().getSku();
+                if (isBlank(newSku)) {
+                    handleBuildVariantsUpdateActionsError(syncOptions, oldProduct, BLANK_SKU);
+                    return emptyList();
+                }
+
                 final List<UpdateAction<Product>> updateActions = new ArrayList<>(2);
-                updateActions.add(ChangeMasterVariant.ofSku(newProduct.getMasterVariant().getSku(), true));
+                updateActions.add(ChangeMasterVariant.ofSku(newSku, true));
 
                 // verify whether the old master variant should be removed:
                 // if the new variant list doesn't contain the old master variant key.
