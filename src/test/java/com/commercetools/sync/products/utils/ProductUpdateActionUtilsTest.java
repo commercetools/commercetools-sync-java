@@ -170,14 +170,14 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildVariantsUpdateActions_withEmptyNewMasterVariantOrKey() throws Exception {
+    public void buildVariantsUpdateActions_withEmptyNewMasterVariantOrKey_ShouldNotBuildActionAndTriggerCallback() {
         assertMissingMasterVariantKey(OLD_PROD_WITH_VARIANTS, NEW_PROD_DRAFT_WITHOUT_MV, BLANK_NEW_MASTER_VARIANT_KEY);
         assertMissingMasterVariantKey(OLD_PROD_WITH_VARIANTS, NEW_PROD_DRAFT_WITHOUT_MV_KEY,
             BLANK_NEW_MASTER_VARIANT_KEY);
     }
 
     @Test
-    public void buildVariantsUpdateActions_withEmptyBothMasterVariantKey() throws Exception {
+    public void buildVariantsUpdateActions_withEmptyBothMasterVariantKey_ShouldNotBuildActionAndTriggerCallback() {
         assertMissingMasterVariantKey(OLD_PROD_WITHOUT_MV_KEY_SKU, NEW_PROD_DRAFT_WITHOUT_MV_KEY,
             BLANK_OLD_MASTER_VARIANT_KEY, BLANK_NEW_MASTER_VARIANT_KEY);
     }
@@ -239,12 +239,12 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeMasterVariantUpdateAction_withEmptyKey() throws Exception {
+    public void buildVariantsUpdateActions_withEmptyKey_ShouldNotBuildActionAndTriggerCallback() throws Exception {
         assertChangeMasterVariantEmptyErrorCatcher(NEW_PROD_DRAFT_WITHOUT_MV_KEY, BLANK_NEW_MASTER_VARIANT_KEY);
     }
 
     @Test
-    public void buildChangeMasterVariantUpdateAction_withEmptySku() throws Exception {
+    public void buildVariantsUpdateActions_withEmptySku_ShouldNotBuildActionAndTriggerCallback() throws Exception {
         assertChangeMasterVariantEmptyErrorCatcher(NEW_PROD_DRAFT_WITHOUT_MV_SKU, BLANK_NEW_MASTER_VARIANT_SKU);
     }
 
