@@ -1,0 +1,27 @@
+{
+  "key": "productToSyncKey",
+  "masterData": {
+    "staged": {
+      "name": {
+        "en": "Rehrücken ohne Knochen"
+      },
+      "description": {
+        "en": "Die Rückenstücke..."
+      },
+      "categories": [
+        {
+          "typeId": "category",
+          "id": "1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        }
+      ],
+      "slug": {
+        "en": "rehruecken-o-kn"
+      },
+      "masterVariant": {
+        "id": 1
+      },
+      "variants": []
+    },
+    "published": true
+  }
+}

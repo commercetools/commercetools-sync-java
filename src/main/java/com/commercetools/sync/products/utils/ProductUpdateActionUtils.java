@@ -71,9 +71,9 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public final class ProductUpdateActionUtils {
     private static final String BLANK_VARIANT_KEY = "The variant key is blank.";
     private static final String NULL_VARIANT = "The variant is null.";
-    private static final String BLANK_OLD_MASTER_VARIANT_KEY = "Old master variant key is blank";
-    private static final String BLANK_NEW_MASTER_VARIANT_KEY = "New master variant null or has blank key";
-    private static final String BLANK_SKU = "New master variant has blank SKU";
+    static final String BLANK_OLD_MASTER_VARIANT_KEY = "Old master variant key is blank";
+    static final String BLANK_NEW_MASTER_VARIANT_KEY = "New master variant null or has blank key";
+    static final String BLANK_NEW_MASTER_VARIANT_SKU = "New master variant has blank SKU";
 
     /**
      * Compares the {@link LocalizedString} names of a {@link ProductDraft} and a {@link Product}. The name of the
@@ -552,7 +552,7 @@ public final class ProductUpdateActionUtils {
 
                 final String newSku = newProduct.getMasterVariant().getSku();
                 if (isBlank(newSku)) {
-                    handleBuildVariantsUpdateActionsError(oldProduct, BLANK_SKU, syncOptions);
+                    handleBuildVariantsUpdateActionsError(oldProduct, BLANK_NEW_MASTER_VARIANT_SKU, syncOptions);
                     return emptyList();
                 }
 
