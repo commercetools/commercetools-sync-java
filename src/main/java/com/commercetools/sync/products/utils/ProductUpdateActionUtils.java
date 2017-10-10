@@ -652,7 +652,8 @@ public final class ProductUpdateActionUtils {
     private static void handleBuildVariantsUpdateActionsError(@Nonnull final Product product,
                                                               @Nonnull final String reason,
                                                               @Nonnull final ProductSyncOptions syncOptions) {
-        syncOptions.applyErrorCallback(format("Failed to build update actions on the product with key '%s'. Reason: %s",
+        syncOptions.applyErrorCallback(format("Failed to build variants update actions on the product with key '%s'. "
+                + "Reason: %s",
             product.getKey(), reason));
     }
 }
