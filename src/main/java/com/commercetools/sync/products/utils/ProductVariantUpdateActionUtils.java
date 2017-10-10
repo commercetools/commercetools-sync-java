@@ -59,7 +59,7 @@ public final class ProductVariantUpdateActionUtils {
      *                           on the build update action process. And other options (See {@link ProductSyncOptions}
      *                           for more info.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
-     * needed.
+     *          needed.
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantAttributesUpdateActions(
