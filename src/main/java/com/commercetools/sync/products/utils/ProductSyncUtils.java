@@ -1,12 +1,9 @@
 package com.commercetools.sync.products.utils;
 
-import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.products.ActionGroup;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.SyncFilter;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -36,23 +33,28 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetSearchKeywordsUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
 
-// TODO: FIX DOCUMENTATION AFTER CHANGE OF REMOVAL OF SYNC OPTIONS FOR ONLY COMPARING STAGED.
 public final class ProductSyncUtils {
+
     /**
-     * Compares the Name, Slug, Description, Parent, OrderHint, MetaTitle, MetaDescription, MetaKeywords and Custom
-     * fields/ type fields and assets of a {@link Category} and a {@link CategoryDraft}. It returns a {@link List} of
-     * {@link UpdateAction}&lt;{@link Category}&gt; as a result. If no update action is needed, for example in
-     * case where both the {@link Category} and the {@link CategoryDraft} have the same parents, an empty
-     * {@link List} is returned.
+     * Compares the name, description, slug, search keywords, metaTitle, metaDescription, metaKeywords, categories,
+     * variants (comparing all variants see
+     * {@link ProductUpdateActionUtils#buildVariantsUpdateActions(Product, ProductDraft, ProductSyncOptions, Map)}),
+     * and publish state of a {@link Product} and a {@link ProductDraft}, given that each of these fields pass the
+     * specified {@link SyncFilter}. It returns a {@link List} of {@link UpdateAction}&lt;{@link Product}&gt; as a
+     * result. If no update action is needed, for example in case where both the {@link Product} and the
+     * {@link ProductDraft} have the same names, an empty {@link List} is returned. Then it applies a specified filter
+     * function in the {@link ProductSyncOptions} instance on the resultant list and returns this result.
      *
-     * @param oldProduct the category which should be updated.
-     * @param newProduct the category draft where we get the new data.
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new data.
      * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by
      *                    the user. For example, custom callbacks to call in case of warnings or errors occurring
-     *                    on the build update action process. And other options (See {@link BaseSyncOptions}
+     *                    on the build update action process. And other options (See {@link ProductSyncOptions}
      *                    for more info.
-     * @param attributesMetaData TODO
-     * @return A list of category-specific update actions.
+     * @param attributesMetaData a map of attribute name -&gt; {@link AttributeMetaData}; which defines attribute
+     *                           information: its name, whether a value is required or not and whether it has the
+     *                           constraint "SameForAll" or not.
+     * @return A list of product-specific update actions.
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildActions(@Nonnull final Product oldProduct,
@@ -69,20 +71,24 @@ public final class ProductSyncUtils {
     }
 
     /**
-     * Compares the Name, Slug, externalID, Description, Parent, OrderHint, MetaTitle, MetaDescription, MetaKeywords
-     * and Custom fields/ type fields of a {@link Category} and a {@link CategoryDraft}. It returns a {@link List} of
-     * {@link UpdateAction}&lt;{@link Category}&gt; as a result. If no update action is needed, for example in
-     * case where both the {@link Category} and the {@link CategoryDraft} have the same parents, an empty
-     * {@link List} is returned.
+     * Compares the name, description, slug, search keywords, metaTitle, metaDescription, metaKeywords, categories,
+     * variants (comparing all variants see
+     * {@link ProductUpdateActionUtils#buildVariantsUpdateActions(Product, ProductDraft, ProductSyncOptions, Map)})
+     * and publish state of a {@link Product} and a {@link ProductDraft}, given that each of these fields pass the
+     * specified {@link SyncFilter}. It returns a {@link List} of {@link UpdateAction}&lt;{@link Product}&gt; as a
+     * result. If no update action is needed, for example in case where both the {@link Product} and the
+     * {@link ProductDraft} have the same names, an empty {@link List} is returned.
      *
-     * @param oldProduct the category which should be updated.
-     * @param newProduct the category draft where we get the new data.
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new data.
      * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by
      *                    the user. For example, custom callbacks to call in case of warnings or errors occurring
-     *                    on the build update action process. And other options (See {@link BaseSyncOptions}
+     *                    on the build update action process. And other options (See {@link ProductSyncOptions}
      *                    for more info.
-     * @param attributesMetaData TODO
-     * @return A list of category-specific update actions.
+     * @param attributesMetaData a map of attribute name -&gt; {@link AttributeMetaData}; which defines attribute
+     *                           information: its name, whether a value is required or not and whether it has the
+     *                           constraint "SameForAll" or not.
+     * @return A list of product-specific update actions.
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildCoreActions(@Nonnull final Product oldProduct,
@@ -95,24 +101,30 @@ public final class ProductSyncUtils {
             Arrays.asList(
                 buildActionIfPassesFilter(syncFilter, ActionGroup.NAME, () ->
                     buildChangeNameUpdateAction(oldProduct, newProduct)),
+
                 buildActionIfPassesFilter(syncFilter, ActionGroup.DESCRIPTION, () ->
                     buildSetDescriptionUpdateAction(oldProduct, newProduct)),
+
                 buildActionIfPassesFilter(syncFilter, ActionGroup.SLUG, () ->
                         buildChangeSlugUpdateAction(oldProduct, newProduct)),
+
                 buildActionIfPassesFilter(syncFilter, ActionGroup.SEARCHKEYWORDS, () ->
                     buildSetSearchKeywordsUpdateAction(oldProduct, newProduct)),
+
                 buildActionIfPassesFilter(syncFilter, ActionGroup.METATITLE, () ->
                     buildSetMetaTitleUpdateAction(oldProduct, newProduct)),
+
                 buildActionIfPassesFilter(syncFilter, ActionGroup.METADESCRIPTION, () ->
                     buildSetMetaDescriptionUpdateAction(oldProduct, newProduct)),
+
                 buildActionIfPassesFilter(syncFilter, ActionGroup.METAKEYWORDS, () ->
                     buildSetMetaKeywordsUpdateAction(oldProduct, newProduct))
             ));
 
-        final List<UpdateAction<Product>> productCatgoryUpdateActions =
+        final List<UpdateAction<Product>> productCategoryUpdateActions =
             buildActionsIfPassesFilter(syncFilter, ActionGroup.CATEGORIES, () ->
                 buildCategoryActions(oldProduct, newProduct));
-        updateActions.addAll(productCatgoryUpdateActions);
+        updateActions.addAll(productCategoryUpdateActions);
 
         final List<UpdateAction<Product>> variantUpdateActions =
             buildVariantsUpdateActions(oldProduct, newProduct, syncOptions, attributesMetaData);
@@ -147,13 +159,13 @@ public final class ProductSyncUtils {
      * TODO: SEE GITHUB ISSUE#3
      * Change to {@code public} once implemented.
      *
-     * @param oldProduct the category which should be updated.
-     * @param newProduct the category draft where we get the new data.
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft where we get the new data.
      * @param syncOptions the sync options wrapper which contains options related to the sync process supplied
      *                    by the user. For example, custom callbacks to call in case of warnings or errors occurring
-     *                    on the build update action process. And other options (See {@link BaseSyncOptions}
+     *                    on the build update action process. And other options (See {@link ProductSyncOptions}
      *                    for more info.
-     * @return A list of category-specific update actions.
+     * @return A list of product assets-specific update actions.
      */
     @Nonnull
     private static List<UpdateAction<Product>> buildAssetActions(@Nonnull final Product oldProduct,
@@ -180,14 +192,14 @@ public final class ProductSyncUtils {
     }
 
     /**
-     * Given a list of category {@link UpdateAction} elements, where each is wrapped in an {@link Optional}; this method
-     * filters out the optionals which are only present and returns a new list of of category {@link UpdateAction}
+     * Given a list of product {@link UpdateAction} elements, where each is wrapped in an {@link Optional}; this method
+     * filters out the optionals which are only present and returns a new list of product {@link UpdateAction}
      * elements.
      *
-     * @param optionalUpdateActions list of category {@link UpdateAction} elements,
-     *                              where each is wrapped in an {@link Optional}.
-     * @return a List of category update actions from the optionals that were present in the
-     * {@code optionalUpdateActions} list parameter.
+     * @param optionalUpdateActions list of product {@link UpdateAction} elements, where each is wrapped
+     *                              in an {@link Optional}.
+     * @return a List of product update actions from the optionals that were present in
+     *         the {@code optionalUpdateActions} list parameter.
      */
     @Nonnull
     private static List<UpdateAction<Product>> buildUpdateActionsFromOptionals(
