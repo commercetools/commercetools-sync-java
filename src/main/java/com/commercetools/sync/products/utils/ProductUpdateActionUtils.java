@@ -531,7 +531,7 @@ public final class ProductUpdateActionUtils {
      * @param newProduct  new product draft with variants <b>with resolved references prices references</b>
      * @param syncOptions the sync options wrapper which contains options related to the sync process
      * @return a list of maximum two elements: {@link ChangeMasterVariant} if the keys are different,
-     * optionally followed by {@link RemoveVariant} if the changed variant does not exist in the new variants list.
+     *     optionally followed by {@link RemoveVariant} if the changed variant does not exist in the new variants list.
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildChangeMasterVariantUpdateAction(
