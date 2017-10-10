@@ -11,22 +11,20 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
-import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
-import io.sphere.sdk.client.ConcurrentModificationException;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
@@ -47,10 +46,8 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTyp
 import static com.commercetools.sync.integration.commons.utils.ITUtils.getStatisticsAsJSONString;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.allOf;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 
 public class CategorySyncIT {
@@ -176,31 +173,61 @@ public class CategorySyncIT {
                 + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
     }
 
+    @Ignore
     @Test
-    public void syncDrafts_WithChangedCategoryButConcurrentModificationException_ShouldRetryAndUpdateCategory() {
-        // Mock sphere client to return ConcurrentModification on the first update request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(CategoryUpdateCommand.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
-        final CategorySyncOptions spyOptions = CategorySyncOptionsBuilder.of(spyClient)
-                                                                         .setErrorCallBack(LOGGER::error)
-                                                                         .build();
-        final CategorySync spyCategorySync = new CategorySync(spyOptions);
-
+    public void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateCategory() {
         // Category draft coming from external source.
         final CategoryDraft categoryDraft = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
-                LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
-            .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
-            .build();
+                .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
+                        LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
+                .key(oldCategoryKey)
+                .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+                .build();
 
-        final CategorySyncStatistics syncStatistics = spyCategorySync.sync(Collections.singletonList(categoryDraft))
-                                                                     .toCompletableFuture().join();
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                .setErrorCallBack(LOGGER::error)
+                .setWarningCallBack(LOGGER::warn)
+                .build();
+        final CategorySync categorySync1 = new CategorySync(categorySyncOptions);
+        final CategorySync categorySync2 = new CategorySync(categorySyncOptions);
+        final CategorySync categorySync3 = new CategorySync(categorySyncOptions);
+
+        final CompletableFuture<CategorySyncStatistics> syncFuture1 =
+                categorySync1.sync(Collections.singletonList(categoryDraft)).toCompletableFuture();
+        final CompletableFuture<CategorySyncStatistics> syncFuture2 =
+                categorySync2.sync(Collections.singletonList(categoryDraft)).toCompletableFuture();
+        final CompletableFuture<CategorySyncStatistics> syncFuture3 =
+                categorySync3.sync(Collections.singletonList(categoryDraft)).toCompletableFuture();
+
+        final List<CompletableFuture<CategorySyncStatistics>> futures =
+                Arrays.asList(syncFuture1, syncFuture2, syncFuture3);
+
+        final CompletableFuture<Void> allTheSyncs = allOf(futures.toArray(new CompletableFuture[futures.size()]));
+
+        allTheSyncs.thenAccept(voidResult -> {
+            final CategorySyncStatistics syncStatistics = syncFuture1.join();
+            final String reportMessage1 = syncStatistics.getReportMessage();
+
+            final CategorySyncStatistics syncStatistics1 = syncFuture2.join();
+            final String reportMessage2 = syncStatistics1.getReportMessage();
+
+            final CategorySyncStatistics syncStatistics2 = syncFuture3.join();
+            final String reportMessage3 = syncStatistics2.getReportMessage();
+
+            assertThat(reportMessage1)
+                    .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                            + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
+
+            assertThat(reportMessage2)
+                    .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                            + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
+
+            assertThat(reportMessage3)
+                    .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
+                            + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
+        });
+
+        allTheSyncs.join();
     }
 
     @Test
