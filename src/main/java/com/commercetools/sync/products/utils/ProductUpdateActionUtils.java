@@ -395,7 +395,7 @@ public final class ProductUpdateActionUtils {
             collectionToMap(oldProduct.getMasterData().getStaged().getVariants(), ProductVariant::getKey);
 
         final Map<String, ProductVariant> oldProductVariantsWithMaster = new HashMap<>(oldProductVariantsNoMaster);
-        ProductVariant masterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
+        final ProductVariant masterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
         oldProductVariantsWithMaster.put(masterVariant.getKey(), masterVariant);
 
         final List<ProductVariantDraft> newAllProductVariants = new ArrayList<>(newProduct.getVariants());
