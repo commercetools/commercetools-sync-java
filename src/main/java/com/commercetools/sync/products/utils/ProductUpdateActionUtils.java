@@ -527,10 +527,11 @@ public final class ProductUpdateActionUtils {
      *
      * <p>If old master variant is missing in the new variants list - add {@link RemoveVariant} action at the end.
      *
-     * @param oldProduct old product with variants
-     * @param newProduct new product draft with variants <b>with resolved references prices references</b>
+     * @param oldProduct  old product with variants
+     * @param newProduct  new product draft with variants <b>with resolved references prices references</b>
+     * @param syncOptions the sync options wrapper which contains options related to the sync process
      * @return a list of maximum two elements: {@link ChangeMasterVariant} if the keys are different,
-     *     optionally followed by {@link RemoveVariant} if the changed variant does not exist in the new variants list.
+     * optionally followed by {@link RemoveVariant} if the changed variant does not exist in the new variants list.
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildChangeMasterVariantUpdateAction(

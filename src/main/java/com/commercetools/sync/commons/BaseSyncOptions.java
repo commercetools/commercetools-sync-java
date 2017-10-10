@@ -154,7 +154,9 @@ public class BaseSyncOptions {
     }
 
     /**
-     * @see #applyErrorCallback(String, Throwable) applyErrorCallback(String, Throwable) .
+     *
+     * @param errorMessage the error message to supply as first param to the {@code errorCallBack} function.
+     * @see #applyErrorCallback(String, Throwable) applyErrorCallback(String, Throwable)
      */
     public void applyErrorCallback(@Nonnull final String errorMessage) {
         applyErrorCallback(errorMessage, null);
