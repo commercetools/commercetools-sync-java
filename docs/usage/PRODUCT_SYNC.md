@@ -125,42 +125,35 @@ stats.getReportMessage();
 ````
 
 
-More examples of how to use the sync <!-- TODO: continue GITHUB ISSUE: #121 
-1. From another CTP project as source can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
-2. From an external source can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java). 
- -->
+More examples of how to use the sync
+1. From another CTP project as source can be found [here](src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/ProductSyncIT.java).
+2. From an external source can be found [here](src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java). 
+3. Syncing with blacklisting/whitelisting [here](src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java).
 
 
 ### Build all update actions
 
 A utility method provided by the library to compare a Product with a new ProductDraft and results in a list of product
  update actions. 
-<!-- TODO: continue GITHUB ISSUE: #121 
-
 ```java
-List<UpdateAction<Category>> updateActions = CategorySyncUtils.buildActions(category, categoryDraft, categorySyncOptions);
+List<UpdateAction<Product>> updateActions = ProductSyncUtils.buildActions(product, productDraft, productSyncOptions);
 ```
 
 Examples of its usage can be found in the tests 
-[here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/categories/utils/CategorySyncUtilsTest.java).
--->
+[here](src/test/java/com/commercetools/sync/products/utils/ProductSyncUtilsTest.java).
+
 
 ### Build particular update action(s)
 
 Utility methods provided by the library to compare the specific fields of a Product and a new ProductDraft, and in turn builds
  the update action. One example is the `buildChangeNameUpdateAction` which compares names:
- <!-- TODO: continue GITHUB ISSUE: #121 
- 
+  
 ````java
-Optional<UpdateAction<Category>> updateAction = buildChangeNameUpdateAction(oldCategory, categoryDraft);
+Optional<UpdateAction<Product>> updateAction = buildChangeNameUpdateAction(oldProduct, productDraft);
 ````
-More examples of those utils for different fields can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/updateactionutils).
--->
+More examples of those utils for different fields can be found [here](src/integration-test/java/com/commercetools/sync/integration/externalsource/products/utils).
 
 ## Caveats
-<!-- TODO: continue GITHUB ISSUE: #121 
-1. Categories are either created or updated. Currently the tool does not support category deletion.
-2. The library doesn't sync category assets yet [#3](https://github.com/commercetools/commercetools-sync-java/issues/3), but it will not delete them.
-3. The library will sync all field types of custom fields, except `ReferenceType`. It will be implemented 
-in version [1.0.0-M3](https://github.com/commercetools/commercetools-sync-java/milestone/5).
--->
+1. Products are either created or updated. Currently the tool does not support category deletion.
+2. The library doesn't sync product variant assets yet [#3](https://github.com/commercetools/commercetools-sync-java/issues/3), but it will not delete them.
+3. The library will sync all field types of custom fields, except `ReferenceType`. [#87](https://github.com/commercetools/commercetools-sync-java/issues/3).
