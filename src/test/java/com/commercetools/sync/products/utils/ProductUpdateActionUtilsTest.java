@@ -173,7 +173,7 @@ public class ProductUpdateActionUtilsTest {
         ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
 
         List<UpdateAction<Product>> changeMasterVariant =
-                buildChangeMasterVariantUpdateAction(mock(ProductSyncOptions.class), productOld, productDraftNew);
+                buildChangeMasterVariantUpdateAction(productOld, productDraftNew, mock(ProductSyncOptions.class));
         assertThat(changeMasterVariant).hasSize(2);
         assertThat(changeMasterVariant.get(0))
                 .isEqualTo(ChangeMasterVariant.ofSku(productDraftNew.getMasterVariant().getSku(), true));
