@@ -6,9 +6,10 @@
 ### {version} - {date}
 
 2. link to commits of release.
-2. link to Javadoc of release.
+3. link to Javadoc of release.
+4. link to Jar of release.
 
-3. Depending on the contents of the release use the subtitles below to 
+5. Depending on the contents of the release use the subtitles below to 
   document the new changes in the release accordingly. Please always include
   a link to the releated issue number. 
    **New Features** (n)
@@ -23,7 +24,7 @@
    - **Category Sync** - Sync now supports product variant images syncing. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
    - **Build Tools** - Convinient handelling of env vars for integration tests.
 
-4. Add Compatibility notes section, which specifies explicitly if there
+6. Add Compatibility notes section, which specifies explicitly if there
 are breaking changes. If there are, then a migration guide should be provided.
 
 -->
@@ -38,7 +39,8 @@ are breaking changes. If there are, then a migration guide should be provided.
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ### v1.0.0-M2-beta -  Sep 28, 2017 
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M1...v1.0.0-M2-beta)
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M1...v1.0.0-M2-beta) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M2-beta)
 
 **Beta Features** (11)
 - **Product Sync** - Support syncing products name, categories, categoryOrderHints, description, slug,  metaTitle, 
@@ -61,8 +63,9 @@ metaDescription, metaKeywords, masterVariant and searchKeywords. [#57](https://g
 
 
 ### v1.0.0-M1 -  Sep 06, 2017
-[Commits](https://github.com/commercetools/commercetools-sync-java/commits/v1.0.0-M1)
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M1/)
+[Commits](https://github.com/commercetools/commercetools-sync-java/commits/v1.0.0-M1) | 
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M1/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M1)
 
 **New Features** (16)
 - **Category Sync** - Support syncing category name, description, orderHint, metaDescription, metaTitle, 
