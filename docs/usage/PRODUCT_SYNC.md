@@ -50,7 +50,7 @@ order for the sync to resolve the actual ids of those references, those `key`s h
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
    
    You can use the same client instantiating used in the integration tests for this library found 
-   [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
+   [here](src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
 
 4. After the `sphereClient` is setup, a `ProductSyncOptions` should be be built as follows: 
 ````java
@@ -85,12 +85,12 @@ object properties. -->
  represents either a blacklist or a whitelist for filtering certain update action groups. 
   - __Blacklisting__ an update action group means that everything in products will be synced except for any group 
   in the blacklist. A typical use case it to blacklist prices when syncing products, so as to sync everything in products
-  except prices. [Here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L142-L143)
+  except prices. [Here](src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L142-L143)
   is an example where the sync is performed while blacklisting product categories. 
   
   - __Whitelisting__ an update action group means that the groups in this whitelist will be the *only* group synced in 
   products. One use case could be to whitelist prices when syncing products, so as to only sync prices in products and
-  nothing else. [Here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L173)
+  nothing else. [Here](src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L173)
   is an example where the sync is performed while whitelisting product names.
   
   - The list of action groups allowed to be blacklist or whitelisted on products can be found [here](/src/main/java/com/commercetools/sync/products/ActionGroup.java). 
@@ -102,7 +102,7 @@ function has been applied.
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
 Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
-streams, can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java#L121-L130)
+streams, can be found [here](src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java#L121-L130)
 
 
 #### Running the sync
