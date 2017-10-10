@@ -14,7 +14,8 @@ Java API which exposes utilities for building update actions and automatic synci
     - [Maven](#maven)
     - [Gradle](#gradle)
 - [Roadmap](#roadmap)
-- [Javadocs](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M1/)
+- [Release Notes](/docs/RELEASE_NOTES.md)
+- [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M1/)
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 ## Usage
 
