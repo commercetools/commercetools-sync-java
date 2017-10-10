@@ -57,6 +57,7 @@ import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUt
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantSkuUpdateActions;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
@@ -68,11 +69,10 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 // TODO: Update JavaDocs according to changes, tests..
 public final class ProductUpdateActionUtils {
-    private static final String FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS = "Failed to build "
-            + "setAttribute/setAttributeInAllVariants update actions for the attributes of a ProductVariantDraft on the"
-            + " product with key '%s'. Reason: %s";
     private static final String BLANK_VARIANT_KEY = "The variant key is blank.";
     private static final String NULL_VARIANT = "The variant is null.";
+    private static final String BLANK_OLD_MASTER_VARIANT_KEY = "Old master variant key is blank";
+    private static final String BLANK_NEW_MASTER_VARIANT_KEY = "New master variant null or has blank key";
 
     /**
      * Compares the {@link LocalizedString} names of a {@link ProductDraft} and a {@link Product}. The name of the
@@ -389,34 +389,41 @@ public final class ProductUpdateActionUtils {
             @Nonnull final ProductSyncOptions syncOptions,
             @Nonnull final Map<String, AttributeMetaData> attributesMetaData) {
 
-        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
+        final ProductVariant oldMasterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
+        final ProductVariantDraft newMasterVariant = newProduct.getMasterVariant();
+
+        // validate both new and old master variants have significant keys
+        if (isBlank(oldMasterVariant.getKey())) {
+            handleBuildVariantsUpdateActionsError(syncOptions, oldProduct, BLANK_OLD_MASTER_VARIANT_KEY);
+            return emptyList();
+        } else if (newMasterVariant == null || isBlank(newMasterVariant.getKey())) {
+            handleBuildVariantsUpdateActionsError(syncOptions, oldProduct, BLANK_NEW_MASTER_VARIANT_KEY);
+            return emptyList();
+        }
 
         final Map<String, ProductVariant> oldProductVariantsNoMaster =
             collectionToMap(oldProduct.getMasterData().getStaged().getVariants(), ProductVariant::getKey);
 
         final Map<String, ProductVariant> oldProductVariantsWithMaster = new HashMap<>(oldProductVariantsNoMaster);
-        final ProductVariant masterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
-        oldProductVariantsWithMaster.put(masterVariant.getKey(), masterVariant);
+        oldProductVariantsWithMaster.put(oldMasterVariant.getKey(), oldMasterVariant);
 
         final List<ProductVariantDraft> newAllProductVariants = new ArrayList<>(newProduct.getVariants());
-        newAllProductVariants.add(newProduct.getMasterVariant());
+        newAllProductVariants.add(newMasterVariant);
+
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
 
         // 1. Remove missing variants, but keep master variant (MV can't be removed)
         updateActions.addAll(buildRemoveVariantUpdateActions(oldProductVariantsNoMaster, newAllProductVariants));
 
         for (ProductVariantDraft newProductVariant : newAllProductVariants) {
             if (newProductVariant == null) {
-                final String errorMessage = format(FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS,
-                    oldProduct.getKey(), NULL_VARIANT);
-                syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
+                handleBuildVariantsUpdateActionsError(syncOptions, oldProduct, NULL_VARIANT);
                 continue;
             }
 
             final String newProductVariantKey = newProductVariant.getKey();
             if (isBlank(newProductVariantKey)) {
-                final String errorMessage = format(FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS,
-                    oldProduct.getKey(), BLANK_VARIANT_KEY);
-                syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
+                handleBuildVariantsUpdateActionsError(syncOptions, oldProduct, BLANK_VARIANT_KEY);
                 continue;
             }
 
@@ -593,5 +600,14 @@ public final class ProductUpdateActionUtils {
         @Nonnull final ActionGroup filter,
         @Nonnull final Supplier<List<T>> updateActionSupplier) {
         return executeSupplierIfPassesFilter(syncFilter, filter, updateActionSupplier, Collections::emptyList);
+    }
+
+    private static void handleBuildVariantsUpdateActionsError(@Nonnull final ProductSyncOptions syncOptions,
+                                                              @Nonnull final Product product,
+                                                              @Nonnull final String reason) {
+        final String errorMessage = format("Failed to build setAttribute/setAttributeInAllVariants update actions "
+                + "for the attributes of a ProductVariantDraft on the product with key '%s'. Reason: %s",
+            product.getKey(), reason);
+        syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
     }
 }
