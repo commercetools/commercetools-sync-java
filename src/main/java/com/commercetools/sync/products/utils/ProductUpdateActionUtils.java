@@ -66,7 +66,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-// TODO: tests..
+// TODO: Add tests
 public final class ProductUpdateActionUtils {
     private static final String FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS = "Failed to build "
             + "setAttribute/setAttributeInAllVariants update actions for the attributes of a ProductVariantDraft on the"
