@@ -119,7 +119,7 @@ which contains all the stats of the sync process; which includes a report messag
 failed, processed categories and the processing time of the sync in different time units and in a
 human readable format.
 ````java
-final CategorySyncStatistics stats = syncStatisticsStage.toCompletebleFuture().join();
+final ProductSyncStatistics stats = syncStatisticsStage.toCompletebleFuture().join();
 stats.getReportMessage(); 
 /*"Summary: 2000 products were processed in total (1000 created, 995 updated and 5 products failed to sync)."*/
 ````
