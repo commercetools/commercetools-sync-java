@@ -49,7 +49,6 @@ most popular ones:
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
   <version>v1.0.0-M2-beta</version>
-  <type>pom</type>
 </dependency>
 ````
 #### Gradle
