@@ -112,7 +112,7 @@ public final class ProductVariantUpdateActionUtils {
      * {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of prices, then no update action
      * is needed and hence an empty {@link List} is returned.
      *
-     * TODO: NOTE: Right now it always builds SetPrices UpdateAction, comparison should be
+     * <p>TODO: NOTE: Right now it always builds SetPrices UpdateAction, comparison should be
      * TODO: calculated GITHUB ISSUE#101.
      *
      * @param oldProductVariant the {@link ProductVariant} which should be updated.
@@ -254,7 +254,7 @@ public final class ProductVariantUpdateActionUtils {
         final String oldProductVariantSku = oldProductVariant.getSku();
         final String newProductVariantSku = newProductVariant.getSku();
         return buildUpdateAction(oldProductVariantSku, newProductVariantSku,
-                () -> SetSku.of(oldProductVariant.getId(), newProductVariantSku, true));
+            () -> SetSku.of(oldProductVariant.getId(), newProductVariantSku, true));
     }
 
     private ProductVariantUpdateActionUtils() {

@@ -30,8 +30,9 @@ public final class ProductVariantAttributeUpdateActionUtils {
      * {@link io.sphere.sdk.products.commands.updateactions.SetAttribute} or a
      * {@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants}.
      *
-     * <p>If the attribute is sameForAll a {@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants}
-     * is built. Otherwise, {@link io.sphere.sdk.products.commands.updateactions.SetAttribute} is built.
+     * <p>If the attribute is sameForAll a
+     * {@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants} is built. Otherwise,
+     * a {@link io.sphere.sdk.products.commands.updateactions.SetAttribute} is built.
      *
      * <p>If both the {@link AttributeDraft} and the {@link Attribute} have identical values, then
      * no update action is needed and hence an empty {@link List} is returned.
@@ -45,7 +46,7 @@ public final class ProductVariantAttributeUpdateActionUtils {
      *                           constraint "SameForAll" or not.
      * @return A filled optional with the update action or an empty optional if the attributes are identical.
      * @throws BuildUpdateActionException thrown if attribute as not found in the {@code attributeMetaData} or
-     *          if the attribute is required and the new value is null. 
+     *          if the attribute is required and the new value is null.
      */
     @Nonnull
     public static Optional<UpdateAction<Product>> buildProductVariantAttributeUpdateAction(

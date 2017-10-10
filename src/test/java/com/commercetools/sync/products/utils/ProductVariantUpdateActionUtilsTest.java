@@ -61,7 +61,7 @@ public class ProductVariantUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildProductVariantSkuUpdateAction_WithNullOldSku_ShouldBuildUpdateAction(){
+    public void buildProductVariantSkuUpdateAction_WithNullOldSku_ShouldBuildUpdateAction() {
         final ProductVariant variantOld = mock(ProductVariant.class);
         final ProductVariantDraft variantDraftNew = mock(ProductVariantDraft.class);
 
