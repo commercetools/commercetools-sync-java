@@ -66,7 +66,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-// TODO: Update JavaDocs according to changes, tests..
+// TODO: tests..
 public final class ProductUpdateActionUtils {
     private static final String FAILED_TO_BUILD_VARIANTS_ATTRIBUTES_UPDATE_ACTIONS = "Failed to build "
             + "setAttribute/setAttributeInAllVariants update actions for the attributes of a ProductVariantDraft on the"
@@ -75,15 +75,11 @@ public final class ProductUpdateActionUtils {
     private static final String NULL_VARIANT = "The variant is null.";
 
     /**
-     * Compares the {@link LocalizedString} names of a {@link ProductDraft} and a {@link Product}. The name of the
-     * product is either fetched from it's current or staged projection based on the whether the {@code updateStaged}
-     * flag configured in the {@code syncOptions} supplied as a parameter to the method. If the {@code updateStaged} is
-     * set to {@code true}, then the staged projection of the product is used for comparison. If the
-     * {@code updateStaged} is set to {@code false}, then the current projection of the product is used for comparison.
+     * Compares the {@link LocalizedString} names of a {@link ProductDraft} and a {@link Product}. It returns an
+     * {@link ChangeName} as a result in an {@link Optional}. If both the {@link Product} and the {@link ProductDraft}
+     * have the same name, then no update action is needed and hence an empty {@link Optional} is returned.
      *
-     * <p>Then it returns an {@link ChangeName} as a result in an {@link Optional}.
-     * If both the {@link Product} and the {@link ProductDraft} have the same name, then no update action is needed and
-     * hence an empty {@link Optional} is returned.
+     * <p>NOTE: Comparison is done against the staged projection of the old product.
      *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft where we get the new name.
@@ -98,16 +94,12 @@ public final class ProductUpdateActionUtils {
     }
 
     /**
-     * Compares the {@link LocalizedString} descriptions of a {@link ProductDraft} and a {@link Product}. The
-     * description of the product is either fetched from it's current or staged projection based on the whether the
-     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the
-     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
-     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for
-     * comparison.
+     * Compares the {@link LocalizedString} descriptions of a {@link ProductDraft} and a {@link Product}. It returns an
+     * {@link SetDescription} as a result in an {@link Optional}. If both the {@link Product} and the
+     * {@link ProductDraft} have the same description, then no update action is needed and hence an empty
+     * {@link Optional} is returned.
      *
-     * <p>Then it returns an {@link SetDescription} as a result in an {@link Optional}.
-     * If both the {@link Product} and the {@link ProductDraft} have the same description, then no update action is
-     * needed and hence an empty {@link Optional} is returned.
+     * <p>NOTE: Comparison is done against the staged projection of the old product.
      *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft where we get the new description.
@@ -123,16 +115,12 @@ public final class ProductUpdateActionUtils {
     }
 
     /**
-     * Compares the {@link LocalizedString} slugs of a {@link ProductDraft} and a {@link Product}. The
-     * slug of the product is either fetched from it's current or staged projection based on the whether the
-     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the
-     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
-     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for
-     * comparison.
+     * Compares the {@link LocalizedString} slugs of a {@link ProductDraft} and a {@link Product}. It returns a
+     * {@link ChangeSlug} update action as a result in an {@link Optional}. If both the {@link Product} and the
+     * {@link ProductDraft} have the same slug, then no update action is needed and hence an empty {@link Optional} is
+     * returned.
      *
-     * <p>Then it returns a {@link ChangeSlug} update action as a result in an {@link Optional}.
-     * If both the {@link Product} and the {@link ProductDraft} have the same slug, then no update action is
-     * needed and hence an empty {@link Optional} is returned.
+     * <p>NOTE: Comparison is done against the staged projection of the old product.
      *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft where we get the new slug.
@@ -148,16 +136,12 @@ public final class ProductUpdateActionUtils {
 
     /**
      * Compares the {@link Set} of {@link Category} {@link Reference}s of a {@link ProductDraft} and a {@link Product}.
-     * The categories of the product is either fetched from it's current or staged projection based on the whether the
-     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the
-     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
-     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for
-     * comparison.
-     *
-     * <p>Then it returns a {@link List} of {@link AddToCategory} update actions as a result, if the old product
+     * It returns a {@link List} of {@link AddToCategory} update actions as a result, if the old product
      * needs to be added to a category to have the same set of categories as the new product.
-     * If both the {@link Product} and the {@link ProductDraft} have the same set of categories, then no update action
-     * is  needed and hence an empty {@link List} is returned.
+     * If both the {@link Product} and the {@link ProductDraft} have the same set of categories, then no update actions
+     * are needed and hence an empty {@link List} is returned.
+     *
+     * <p>NOTE: Comparison is done against the staged projection of the old product.
      *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft where we get the new slug.
@@ -185,16 +169,12 @@ public final class ProductUpdateActionUtils {
     }
 
     /**
-     * Compares the {@link CategoryOrderHints} of a {@link ProductDraft} and a {@link Product}. The categoryOrderHints
-     * of the  product is either fetched from it's current or staged projection based on the whether the
-     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the
-     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
-     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for
-     * comparison.
+     * Compares the {@link CategoryOrderHints} of a {@link ProductDraft} and a {@link Product}. It returns a
+     * {@link SetCategoryOrderHint} update action as a result in an {@link List}. If both the {@link Product} and the
+     * {@link ProductDraft} have the same categoryOrderHints, then no update actions are needed and hence an empty
+     * {@link List} is returned.
      *
-     * <p>Then it returns a {@link SetCategoryOrderHint} update action as a result in an {@link List}.
-     * If both the {@link Product} and the {@link ProductDraft} have the same categoryOrderHints, then no update action
-     * is needed and hence an empty {@link List} is returned.
+     * <p>NOTE: Comparison is done against the staged projection of the old product.
      *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft where we get the new categoryOrderHints.
@@ -240,16 +220,12 @@ public final class ProductUpdateActionUtils {
 
     /**
      * Compares the {@link Set} of {@link Category} {@link Reference}s of a {@link ProductDraft} and a {@link Product}.
-     * The categories of the product is either fetched from it's current or staged projection based on the whether the
-     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the
-     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
-     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for
-     * comparison.
-     *
-     * <p>Then it returns a {@link List} of {@link RemoveFromCategory} update actions as a result, if the old product
+     * It returns a {@link List} of {@link RemoveFromCategory} update actions as a result, if the old product
      * needs to be removed from a category to have the same set of categories as the new product.
-     * If both the {@link Product} and the {@link ProductDraft} have the same set of categories, then no update action
-     * is  needed and hence an empty {@link List} is returned.
+     * If both the {@link Product} and the {@link ProductDraft} have the same set of categories, then no update actions
+     * are needed and hence an empty {@link List} is returned.
+     *
+     * <p>NOTE: Comparison is done against the staged projection of the old product.
      *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft where we get the new slug.
@@ -273,15 +249,12 @@ public final class ProductUpdateActionUtils {
     }
 
     /**
-     * Compares the {@link SearchKeywords} of a {@link ProductDraft} and a {@link Product}. The search keywords of the
-     * product is either fetched from it's current or staged projection based on the whether the {@code updateStaged}
-     * flag configured in the {@code syncOptions} supplied as a parameter to the method. If the {@code updateStaged} is
-     * set to {@code true}, then the staged projection of the product is used for comparison. If the
-     * {@code updateStaged} is set to {@code false}, then the current projection of the product is used for comparison.
+     * Compares the {@link SearchKeywords} of a {@link ProductDraft} and a {@link Product}. It returns a
+     * {@link SetSearchKeywords} update action as a result in an {@link Optional}. If both the {@link Product} and the
+     * {@link ProductDraft} have the same search keywords, then no update action is needed and hence an empty
+     * {@link Optional} is returned.
      *
-     * <p>Then it returns a {@link SetSearchKeywords} update action as a result in an {@link Optional}.
-     * If both the {@link Product} and the {@link ProductDraft} have the same search keywords, then no update action is
-     * needed and hence an empty {@link Optional} is returned.
+     * <p>NOTE: Comparison is done against the staged projection of the old product.
      *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft where we get the new search keywords.
@@ -298,16 +271,12 @@ public final class ProductUpdateActionUtils {
     }
 
     /**
-     * Compares the {@link LocalizedString} meta descriptions of a {@link ProductDraft} and a {@link Product}. The
-     * meta description of the product is either fetched from it's current or staged projection based on the whether the
-     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the
-     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
-     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for
-     * comparison.
+     * Compares the {@link LocalizedString} meta descriptions of a {@link ProductDraft} and a {@link Product}. It
+     * returns a {@link SetMetaDescription} update action as a result in an {@link Optional}. If both the
+     * {@link Product} and the {@link ProductDraft} have the same meta description, then no update action is needed and
+     * hence an empty {@link Optional} is returned.
      *
-     * <p>Then it returns a {@link SetMetaDescription} update action as a result in an {@link Optional}.
-     * If both the {@link Product} and the {@link ProductDraft} have the same meta description, then no update action is
-     * needed and hence an empty {@link Optional} is returned.
+     * <p>NOTE: Comparison is done against the staged projection of the old product.
      *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft where we get the new meta description.
@@ -324,16 +293,12 @@ public final class ProductUpdateActionUtils {
     }
 
     /**
-     * Compares the {@link LocalizedString} meta keywordss of a {@link ProductDraft} and a {@link Product}. The
-     * meta keywords of the product is either fetched from it's current or staged projection based on the whether the
-     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the
-     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
-     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for
-     * comparison.
+     * Compares the {@link LocalizedString} meta keywordss of a {@link ProductDraft} and a {@link Product}. It returns
+     * a {@link SetMetaKeywords} update action as a result in an {@link Optional}. If both the {@link Product} and the
+     * {@link ProductDraft} have the same meta keywords, then no update action is needed and hence an empty
+     * {@link Optional} is returned.
      *
-     * <p>Then it returns a {@link SetMetaKeywords} update action as a result in an {@link Optional}.
-     * If both the {@link Product} and the {@link ProductDraft} have the same meta keywords, then no update action is
-     * needed and hence an empty {@link Optional} is returned.
+     * <p>NOTE: Comparison is done against the staged projection of the old product.
      *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft where we get the new meta keywords.
@@ -349,16 +314,12 @@ public final class ProductUpdateActionUtils {
     }
 
     /**
-     * Compares the {@link LocalizedString} meta titles of a {@link ProductDraft} and a {@link Product}. The
-     * meta title of the product is either fetched from it's current or staged projection based on the whether the
-     * {@code updateStaged} flag configured in the {@code syncOptions} supplied as a parameter to the method. If the
-     * {@code updateStaged} is set to {@code true}, then the staged projection of the product is used for comparison. If
-     * the {@code updateStaged} is set to {@code false}, then the current projection of the product is used for
-     * comparison.
+     * Compares the {@link LocalizedString} meta titles of a {@link ProductDraft} and a {@link Product}. It returns a
+     * {@link SetMetaTitle} update action as a result in an {@link Optional}. If both the {@link Product} and the
+     * {@link ProductDraft} have the same meta title, then no update action is needed and hence an empty
+     * {@link Optional} is returned.
      *
-     * <p>Then it returns a {@link SetMetaTitle} update action as a result in an {@link Optional}.
-     * If both the {@link Product} and the {@link ProductDraft} have the same meta title, then no update action is
-     * needed and hence an empty {@link Optional} is returned.
+     * <p>NOTE: Comparison is done against the staged projection of the old product.
      *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft where we get the new meta title.
@@ -374,8 +335,26 @@ public final class ProductUpdateActionUtils {
     }
 
     /**
-     * Compares the variants (including the master variants) of a {@link ProductDraft} and a {@link Product}.
+     * Compares the variants (including the master variants) of a {@link ProductDraft} and a {@link Product}. It returns
+     * a {@link List} of variant related update actions. For example:
      *
+     * <ul>
+     *     <li>{@link AddVariant}</li>
+     *     <li>{@link RemoveVariant}</li>
+     *     <li>{@link ChangeMasterVariant}</li>
+     *     <li>{@link io.sphere.sdk.products.commands.updateactions.SetAttribute}</li>
+     *     <li>{@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants}</li>
+     *     <li>{@link io.sphere.sdk.products.commands.updateactions.SetSku}</li>
+     *     <li>{@link io.sphere.sdk.products.commands.updateactions.AddExternalImage}</li>
+     *     <li>{@link io.sphere.sdk.products.commands.updateactions.RemoveImage}</li>
+     *     <li>{@link io.sphere.sdk.products.commands.updateactions.AddPrice}</li>
+     *     <li> ... and more variant level update actions.</li>
+     * </ul>
+     * If both the {@link Product} and the {@link ProductDraft} have identical variants, then no update actions are
+     * needed and hence an empty {@link List} is returned.
+     *
+     *
+     * <p>NOTE: Comparison is done against the staged projection of the old product.
      *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft where we get the new meta title.
@@ -506,6 +485,8 @@ public final class ProductUpdateActionUtils {
      * <p>If both the {@link Product} and the {@link ProductDraft} have the same 'published' flag value, then no update
      * action is needed and hence an empty {@link Optional} is returned.
      *
+     * <p>NOTE: Comparison is done against the staged projection of the old product.
+     *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft where we get the new published field value.
      * @return A filled optional with the update action or an empty optional if the flag values are identical.
@@ -585,19 +566,41 @@ public final class ProductUpdateActionUtils {
             .withImages(draft.getImages());
     }
 
+    /**
+     * Util that checks if the supplied {@link ActionGroup} passes the {@link SyncFilter}, then it returns the result
+     * of the {@code updateActionSupplier} execution, otherwise it returns an empty {@link Optional}.
+     *
+     * @param syncFilter           the sync filter to check the {@code actionGroup} against.
+     * @param actionGroup          the action group to check against the filter.
+     * @param updateActionSupplier the supplier to execute if the {@code actionGroup} passes the filter.
+     * @param <T>                  the type of the content of the returned {@link Optional}.
+     * @return the result of the {@code updateActionSupplier} execution if the {@code actionGroup} passes the
+     *         {@code syncFilter}, otherwise it returns an empty {@link Optional}.
+     */
     @Nonnull
     static <T> Optional<T> buildActionIfPassesFilter(
         @Nonnull final SyncFilter syncFilter,
-        @Nonnull final ActionGroup filter,
+        @Nonnull final ActionGroup actionGroup,
         @Nonnull final Supplier<Optional<T>> updateActionSupplier) {
-        return executeSupplierIfPassesFilter(syncFilter, filter, updateActionSupplier, Optional::empty);
+        return executeSupplierIfPassesFilter(syncFilter, actionGroup, updateActionSupplier, Optional::empty);
     }
 
+    /**
+     * Util that checks if the supplied {@link ActionGroup} passes the {@link SyncFilter}, then it returns the result
+     * of the {@code updateActionSupplier} execution, otherwise it returns an empty {@link List}.
+     *
+     * @param syncFilter the sync filter to check the {@code actionGroup} against.
+     * @param actionGroup the action group to check against the filter.
+     * @param updateActionSupplier the supplier to execute if the {@code actionGroup} passes the filter.
+     * @param <T> the type of the content of the returned {@link List}.
+     * @return the result of the {@code updateActionSupplier} execution if the {@code actionGroup} passes the
+     *         {@code syncFilter}, otherwise it returns an empty {@link List}.
+     */
     @Nonnull
     static <T> List<T> buildActionsIfPassesFilter(
         @Nonnull final SyncFilter syncFilter,
-        @Nonnull final ActionGroup filter,
+        @Nonnull final ActionGroup actionGroup,
         @Nonnull final Supplier<List<T>> updateActionSupplier) {
-        return executeSupplierIfPassesFilter(syncFilter, filter, updateActionSupplier, Collections::emptyList);
+        return executeSupplierIfPassesFilter(syncFilter, actionGroup, updateActionSupplier, Collections::emptyList);
     }
 }
