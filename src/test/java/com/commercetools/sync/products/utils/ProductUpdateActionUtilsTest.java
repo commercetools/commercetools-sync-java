@@ -42,7 +42,6 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeMasterVariantUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildRemoveVariantUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
-import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -201,8 +200,9 @@ public class ProductUpdateActionUtilsTest {
         // verify all expected error messages
         for (int i = 0; i < errorMessages.length; i++) {
             assertThat(errorsCatcher.get(i))
-                .contains(format("Failed to build update actions on the product with key '%s'", productOld.getKey()))
-                .contains(errorMessages[i]);
+                .containsIgnoringCase("failed")
+                .contains(productOld.getKey())
+                .containsIgnoringCase(errorMessages[i]);
         }
     }
 
@@ -263,8 +263,9 @@ public class ProductUpdateActionUtilsTest {
         assertThat(changeMasterVariant).hasSize(0);
         assertThat(errorsCatcher).hasSize(1);
         assertThat(errorsCatcher.get(0))
-            .contains(format("Failed to build update actions on the product with key '%s'", productOld.getKey()))
-            .contains(expectedErrorReason);
+            .containsIgnoringCase("failed")
+            .contains(productOld.getKey())
+            .containsIgnoringCase(expectedErrorReason);
     }
 
     @Test
