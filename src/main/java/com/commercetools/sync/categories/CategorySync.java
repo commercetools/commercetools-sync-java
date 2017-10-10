@@ -519,6 +519,20 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
     }
 
+    private CompletionStage<Void> fetchAndUpdate(@Nonnull final Category oldCategory,
+                                                 @Nonnull final CategoryDraft newCategory) {
+        final String key = oldCategory.getKey();
+        return categoryService.fetchCategory(key)
+                .thenCompose(categoryOptional -> {
+                    if (categoryOptional.isPresent()) {
+                        final Category fetchedCategory = categoryOptional.get();
+                        return buildUpdateActionsAndUpdate(fetchedCategory, newCategory);
+                    }
+                    handleError(format(UPDATE_FAILED, key,
+                            "Category with key: '%s' was deleted while retrying to update."), null);
+                    return CompletableFuture.completedFuture(null);
+                });
+    }
 
     /**
      * Given an existing {@link Category} and a new {@link CategoryDraft}, first resolves all references on the category
@@ -533,6 +547,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> buildUpdateActionsAndUpdate(@Nonnull final Category oldCategory,
                                                               @Nonnull final CategoryDraft newCategory) {
+
         final List<UpdateAction<Category>> updateActions = buildActions(oldCategory, newCategory, syncOptions);
         if (!updateActions.isEmpty()) {
             return updateCategory(oldCategory, newCategory, updateActions);
@@ -582,9 +597,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     /**
      * This method checks if the {@code sphereException} (thrown when trying to sync the old {@link Category} and the
      * new {@link CategoryDraft}) is an instance of {@link ConcurrentModificationException}. If it is, then calls the
-     * method {@link CategorySync#buildUpdateActionsAndUpdate(Category, CategoryDraft)} to rebuild update actions and
-     * reissue the CTP update request. Otherwise, if it is not an instance of a {@link ConcurrentModificationException}
-     * then it is counted as a failed category to sync.
+     * method {@link CategorySync#fetchAndUpdate(Category, CategoryDraft)}  to rebuild update actions and reissue the
+     * CTP update request. Otherwise, if it is not an instance of a {@link ConcurrentModificationException} then it is
+     * counted as a failed category to sync.
      *
      * @param sphereException the sphere exception thrown after issuing an update request.
      * @param category the category to update.
@@ -596,7 +611,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         @Nonnull final Throwable sphereException, @Nonnull final Category category,
         @Nonnull final CategoryDraft newCategory) {
         if (sphereException instanceof ConcurrentModificationException) {
-            return buildUpdateActionsAndUpdate(category, newCategory);
+            return fetchAndUpdate(category, newCategory);
         } else {
             final String categoryKey = category.getKey();
             if (!processedCategoryKeys.contains(categoryKey)) {
