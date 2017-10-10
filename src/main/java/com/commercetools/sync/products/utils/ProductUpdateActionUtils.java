@@ -55,7 +55,7 @@ import static com.commercetools.sync.products.ActionGroup.SKU;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
-import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantSkuUpdateActions;
+import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantSkuUpdateAction;
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -431,19 +431,24 @@ public final class ProductUpdateActionUtils {
             @Nonnull final ProductSyncOptions syncOptions) {
         final ArrayList<UpdateAction<Product>> updateActions = new ArrayList<>();
         final SyncFilter syncFilter = syncOptions.getSyncFilter();
+
         updateActions.addAll(
             buildActionsIfPassesFilter(syncFilter, ATTRIBUTES, () ->
                 buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
                     newProductVariant, attributesMetaData, syncOptions)));
+
         updateActions.addAll(
             buildActionsIfPassesFilter(syncFilter, IMAGES, () ->
                 buildProductVariantImagesUpdateActions(oldProductVariant, newProductVariant)));
+
         updateActions.addAll(
             buildActionsIfPassesFilter(syncFilter, PRICES, () ->
                 buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant)));
-        updateActions.addAll(
-            buildActionsIfPassesFilter(syncFilter, SKU, () ->
-                buildProductVariantSkuUpdateActions(oldProductVariant, newProductVariant)));
+
+        buildActionIfPassesFilter(syncFilter, SKU, () ->
+            buildProductVariantSkuUpdateAction(oldProductVariant, newProductVariant))
+            .ifPresent(updateActions::add);
+
         return updateActions;
     }
 

@@ -225,22 +225,23 @@ public final class ProductVariantUpdateActionUtils {
     }
 
     /**
-     * Update variants' SKUs by key:
-     * In old and new variant lists find those pairs which have the the same {@code key} and different {@code sku}
-     * and create {@link SetSku} update action for them, using {@link ProductVariant#getId() oldVariant#id} and
-     * {@link ProductVariantDraft#getSku() newVariant#sku}.
+     * Compares the SKUs of a {@link ProductVariantDraft} and a {@link ProductVariant}. It returns a {@link SetSku}
+     * update action as a result in an {@link Optional}. If both the {@link ProductVariantDraft}
+     * and the {@link ProductVariant} have identical identical SKUs, then no update action is needed and hence an
+     * empty {@link Optional} is returned.
      *
-     * @param oldVariant old product with variants
-     * @param newVariant new product draft with variants
-     * @return list of {@link SetSku} actions. Empty list if no SKU changed.
+     * @param oldProductVariant the variant which should be updated.
+     * @param newProductVariant the variant draft where we get the new SKU.
+     * @return A filled optional with the update action or an empty optional if the SKUs are identical.
      */
     @Nonnull
-    public static List<SetSku> buildProductVariantSkuUpdateActions(@Nonnull final ProductVariant oldVariant,
-                                                                   @Nonnull final ProductVariantDraft newVariant) {
-
-        return Objects.equals(oldVariant.getSku(), newVariant.getSku())
-                ? emptyList()
-                : singletonList(SetSku.of(oldVariant.getId(), newVariant.getSku(), true));
+    public static Optional<SetSku> buildProductVariantSkuUpdateAction(
+        @Nonnull final ProductVariant oldProductVariant,
+        @Nonnull final ProductVariantDraft newProductVariant) {
+        final String oldProductVariantSku = oldProductVariant.getSku();
+        final String newProductVariantSku = newProductVariant.getSku();
+        return buildUpdateAction(oldProductVariantSku, newProductVariantSku,
+                () -> SetSku.of(oldProductVariant.getId(), newProductVariantSku, true));
     }
 
     private ProductVariantUpdateActionUtils() {
