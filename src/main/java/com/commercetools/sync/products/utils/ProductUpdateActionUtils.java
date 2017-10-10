@@ -1,6 +1,6 @@
 package com.commercetools.sync.products.utils;
 
-import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.products.ActionGroup;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -389,17 +389,11 @@ public final class ProductUpdateActionUtils {
             @Nonnull final ProductSyncOptions syncOptions,
             @Nonnull final Map<String, AttributeMetaData> attributesMetaData) {
 
-        final ProductVariant oldMasterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
-        final ProductVariantDraft newMasterVariant = newProduct.getMasterVariant();
-
-        // validate both new and old master variants have significant keys
-        if (isBlank(oldMasterVariant.getKey())) {
-            handleBuildVariantsUpdateActionsError(syncOptions, oldProduct, BLANK_OLD_MASTER_VARIANT_KEY);
-            return emptyList();
-        } else if (newMasterVariant == null || isBlank(newMasterVariant.getKey())) {
-            handleBuildVariantsUpdateActionsError(syncOptions, oldProduct, BLANK_NEW_MASTER_VARIANT_KEY);
+        if (haveInvalidMasterVariants(syncOptions, oldProduct, newProduct)) {
             return emptyList();
         }
+
+        final ProductVariant oldMasterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
 
         final Map<String, ProductVariant> oldProductVariantsNoMaster =
             collectionToMap(oldProduct.getMasterData().getStaged().getVariants(), ProductVariant::getKey);
@@ -408,7 +402,7 @@ public final class ProductUpdateActionUtils {
         oldProductVariantsWithMaster.put(oldMasterVariant.getKey(), oldMasterVariant);
 
         final List<ProductVariantDraft> newAllProductVariants = new ArrayList<>(newProduct.getVariants());
-        newAllProductVariants.add(newMasterVariant);
+        newAllProductVariants.add(newProduct.getMasterVariant());
 
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
 
@@ -439,7 +433,7 @@ public final class ProductUpdateActionUtils {
         }
 
         // 3. change master variant and remove previous one, if necessary
-        updateActions.addAll(buildChangeMasterVariantUpdateAction(oldProduct, newProduct));
+        updateActions.addAll(buildChangeMasterVariantUpdateAction(syncOptions, oldProduct, newProduct));
 
         return updateActions;
     }
@@ -539,10 +533,16 @@ public final class ProductUpdateActionUtils {
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildChangeMasterVariantUpdateAction(
+            @Nonnull final ProductSyncOptions syncOptions,
             @Nonnull final Product oldProduct,
             @Nonnull final ProductDraft newProduct) {
         final String newKey = newProduct.getMasterVariant().getKey();
         final String oldKey = oldProduct.getMasterData().getStaged().getMasterVariant().getKey();
+
+        if (haveInvalidMasterVariants(syncOptions, oldProduct, newProduct)) {
+            return emptyList();
+        }
+
         return buildUpdateActions(newKey, oldKey,
             // it might be that the new master variant is from new added variants, so CTP variantId is not set yet,
             // thus we can't use ChangeMasterVariant.ofVariantId(),
@@ -602,12 +602,48 @@ public final class ProductUpdateActionUtils {
         return executeSupplierIfPassesFilter(syncFilter, filter, updateActionSupplier, Collections::emptyList);
     }
 
+    /**
+     * Validate both old and new product have master variant with significant key.
+     *
+     * <p>If at least on of the master variants key not found - the error is reported to {@code syncOptions} and
+     * <b>true</b> is returned.
+     *
+     * @param syncOptions {@link BaseSyncOptions#applyErrorCallback(String, Throwable) applyErrorCallback} holder
+     * @param oldProduct  old product to verify
+     * @param newProduct  new product to verify
+     * @return <b>true</b> if at least one of the products have invalid (null/blank) master variant or key.
+     */
+    private static boolean haveInvalidMasterVariants(@Nonnull final ProductSyncOptions syncOptions,
+                                                     @Nonnull final Product oldProduct,
+                                                     @Nonnull final ProductDraft newProduct) {
+        boolean hasError = false;
+
+        final ProductVariant oldMasterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
+        if (isBlank(oldMasterVariant.getKey())) {
+            handleBuildVariantsUpdateActionsError(syncOptions, oldProduct, BLANK_OLD_MASTER_VARIANT_KEY);
+            hasError = true;
+        }
+
+        final ProductVariantDraft newMasterVariant = newProduct.getMasterVariant();
+        if (newMasterVariant == null || isBlank(newMasterVariant.getKey())) {
+            handleBuildVariantsUpdateActionsError(syncOptions, oldProduct, BLANK_NEW_MASTER_VARIANT_KEY);
+            hasError = true;
+        }
+
+        return hasError;
+    }
+
+    /**
+     * Apply error message to the {@code syncOptions}, reporting the product key and {@code reason}
+     *
+     * @param syncOptions {@link BaseSyncOptions#applyErrorCallback(String, Throwable) applyErrorCallback} holder
+     * @param product     product which has sync error
+     * @param reason      reason to specify in the error message.
+     */
     private static void handleBuildVariantsUpdateActionsError(@Nonnull final ProductSyncOptions syncOptions,
                                                               @Nonnull final Product product,
                                                               @Nonnull final String reason) {
-        final String errorMessage = format("Failed to build setAttribute/setAttributeInAllVariants update actions "
-                + "for the attributes of a ProductVariantDraft on the product with key '%s'. Reason: %s",
-            product.getKey(), reason);
-        syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
+        syncOptions.applyErrorCallback(format("Failed to build update actions on the product with key '%s'. Reason: %s",
+            product.getKey(), reason));
     }
 }
