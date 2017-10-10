@@ -2,6 +2,7 @@ package com.commercetools.sync.services;
 
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
@@ -34,6 +35,18 @@ public interface CategoryService {
      */
     @Nonnull
     CompletionStage<Set<Category>> fetchMatchingCategoriesByKeys(@Nonnull final Set<String> categoryKeys);
+
+    /**
+     * Given a category key, this method fetches a category that matches this given key in the CTP project defined in a
+     * potentially injected {@link SphereClient}. If there is no matching category an empty {@link Optional} will be
+     * returned in the returned future.
+     *
+     * @param key the key of the category to fetch.
+     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
+     *         {@link Optional} that contains the matching {@link Category} if exists, otherwise empty.
+     */
+    @Nonnull
+    CompletionStage<Optional<Category>> fetchCategory(@Nonnull final String key);
 
     /**
      * Given a {@link Set} of categoryDrafts, this method creates Categories corresponding to them in the CTP project
