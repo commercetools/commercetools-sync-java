@@ -24,7 +24,25 @@ Utility which provides API for building CTP product update actions and product s
 1. The sync expects a list of non-null `ProductDraft` objects that have their `key` fields set to match the
 products from the source to the target. Also the target project is expected to have the `key` fields set,
 otherwise they won't be matched.
-2. Every category may have a reference to .. be continued. <!-- TODO: GITHUB ISSUE: #121 -->
+2. Every product may have several references including `product type`, `categories`, `taxCategory`, etc.. Variants
+of the product also have prices, where each prices also has some references including a reference to the `Type` of its 
+custom fields and a reference to a `channel`. All these referenced resources are matched by their `key` Therefore, in 
+order for the sync to resolve the actual ids of those references, those `key`s have to be supplied in one of two ways:
+    - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
+    reference would return its `key`. Note that the library will check that this `key` is not 
+    provided in `UUID` format by default. However, if you want to provide the `key` in `UUID` format, you can
+     set it through the sync options. <!--TODO Different example of sync performed that way can be found [here]().-->
+    - Provide the reference expanded. This means that calling `getObj()` on the reference should not return `null`,
+     but return the `Type` object, from which the its `key` can be directly accessible. 
+     
+        **Note**: This library provides you with a utility method 
+         [`replaceProductsReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M2-beta-2/com/commercetools/sync/commons/utils/SyncUtils.html#replaceProductsReferenceIdsWithKeys-java.util.List-)
+         that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
+         ````java
+         // Puts the keys in the reference id fields to prepare for reference resolution
+         final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+         ````
+     
 3. It is an important responsibility of the user of the library to instantiate a `sphereClient` that has the following properties:
     - Limits the amount of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with 
    [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html) 
@@ -32,7 +50,7 @@ otherwise they won't be matched.
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
    
    You can use the same client instantiating used in the integration tests for this library found 
-   [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
+   [here](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
 
 4. After the `sphereClient` is setup, a `ProductSyncOptions` should be be built as follows: 
 ````java
@@ -84,7 +102,7 @@ function has been applied.
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
 Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
-streams, can be found [here]()<!-- TODO: ADD link GITHUB ISSUE: #121 -->
+streams, can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java#L121-L130)
 
 
 #### Running the sync
@@ -101,48 +119,41 @@ which contains all the stats of the sync process; which includes a report messag
 failed, processed categories and the processing time of the sync in different time units and in a
 human readable format.
 ````java
-final CategorySyncStatistics stats = syncStatisticsStage.toCompletebleFuture().join();
+final ProductSyncStatistics stats = syncStatisticsStage.toCompletebleFuture().join();
 stats.getReportMessage(); 
 /*"Summary: 2000 products were processed in total (1000 created, 995 updated and 5 products failed to sync)."*/
 ````
 
 
-More examples of how to use the sync <!-- TODO: continue GITHUB ISSUE: #121 
-1. From another CTP project as source can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
-2. From an external source can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java). 
- -->
+More examples of how to use the sync
+1. From another CTP project as source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/ProductSyncIT.java).
+2. From an external source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java). 
+3. Syncing with blacklisting/whitelisting [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java).
 
 
 ### Build all update actions
 
 A utility method provided by the library to compare a Product with a new ProductDraft and results in a list of product
  update actions. 
-<!-- TODO: continue GITHUB ISSUE: #121 
-
 ```java
-List<UpdateAction<Category>> updateActions = CategorySyncUtils.buildActions(category, categoryDraft, categorySyncOptions);
+List<UpdateAction<Product>> updateActions = ProductSyncUtils.buildActions(product, productDraft, productSyncOptions);
 ```
 
 Examples of its usage can be found in the tests 
-[here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/categories/utils/CategorySyncUtilsTest.java).
--->
+[here](/src/test/java/com/commercetools/sync/products/utils/ProductSyncUtilsTest.java).
+
 
 ### Build particular update action(s)
 
 Utility methods provided by the library to compare the specific fields of a Product and a new ProductDraft, and in turn builds
  the update action. One example is the `buildChangeNameUpdateAction` which compares names:
- <!-- TODO: continue GITHUB ISSUE: #121 
- 
+  
 ````java
-Optional<UpdateAction<Category>> updateAction = buildChangeNameUpdateAction(oldCategory, categoryDraft);
+Optional<UpdateAction<Product>> updateAction = buildChangeNameUpdateAction(oldProduct, productDraft);
 ````
-More examples of those utils for different fields can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/updateactionutils).
--->
+More examples of those utils for different fields can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/utils).
 
 ## Caveats
-<!-- TODO: continue GITHUB ISSUE: #121 
-1. Categories are either created or updated. Currently the tool does not support category deletion.
-2. The library doesn't sync category assets yet [#3](https://github.com/commercetools/commercetools-sync-java/issues/3), but it will not delete them.
-3. The library will sync all field types of custom fields, except `ReferenceType`. It will be implemented 
-in version [1.0.0-M3](https://github.com/commercetools/commercetools-sync-java/milestone/5).
--->
+1. Products are either created or updated. Currently the tool does not support category deletion.
+2. The library doesn't sync product variant assets yet [#3](https://github.com/commercetools/commercetools-sync-java/issues/3), but it will not delete them.
+3. The library will sync all field types of product type attributes/custom fields, except `ReferenceType`. [#87](https://github.com/commercetools/commercetools-sync-java/issues/3).
