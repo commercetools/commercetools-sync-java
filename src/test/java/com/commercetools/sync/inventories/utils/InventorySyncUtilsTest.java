@@ -17,18 +17,23 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
+import io.sphere.sdk.types.Type;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockCustomFields;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
+import static com.commercetools.sync.inventories.utils.InventorySyncUtils.replaceInventoriesReferenceIdsWithKeys;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class InventorySyncUtilsTest {
     private static final String CUSTOM_TYPE_ID = "testId";
@@ -157,6 +162,66 @@ public class InventorySyncUtilsTest {
         assertThat(actions).hasSize(1);
         assertThat(actions.get(0)).isNotNull();
         assertThat(actions.get(0)).isInstanceOf(SetCustomField.class);
+    }
+
+    @Test
+    public void
+    replaceInventoriesReferenceIdsWithKeys_WithAllExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+        final String customTypeId = UUID.randomUUID().toString();
+        final String customTypeKey = "customTypeKey";
+        final Type mockCustomType = mock(Type.class);
+        when(mockCustomType.getId()).thenReturn(customTypeId);
+        when(mockCustomType.getKey()).thenReturn(customTypeKey);
+
+
+        final List<InventoryEntry> mockInventoryEntries = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            final InventoryEntry mockInventoryEntry = mock(InventoryEntry.class);
+            final CustomFields mockCustomFields = mock(CustomFields.class);
+            final Reference<Type> typeReference = Reference.ofResourceTypeIdAndObj(UUID.randomUUID().toString(),
+                mockCustomType);
+            when(mockCustomFields.getType()).thenReturn(typeReference);
+            when(mockInventoryEntry.getCustom()).thenReturn(mockCustomFields);
+            mockInventoryEntries.add(mockInventoryEntry);
+        }
+
+        for (final InventoryEntry inventoryEntry: mockInventoryEntries) {
+            assertThat(inventoryEntry.getCustom().getType().getId()).isEqualTo(customTypeId);
+        }
+
+        final List<InventoryEntryDraft> referenceReplacedDrafts =
+            replaceInventoriesReferenceIdsWithKeys(mockInventoryEntries);
+
+        for (InventoryEntryDraft referenceReplacedDraft : referenceReplacedDrafts) {
+            assertThat(referenceReplacedDraft.getCustom().getType().getId()).isEqualTo(customTypeKey);
+        }
+    }
+
+    @Test
+    public void
+    replaceInventoriesReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
+        final String customTypeId = UUID.randomUUID().toString();
+        final List<InventoryEntry> mockInventoryEntries = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            final InventoryEntry mockInventoryEntry = mock(InventoryEntry.class);
+            final CustomFields mockCustomFields = mock(CustomFields.class);
+            final Reference<Type> typeReference = Reference.ofResourceTypeIdAndId("resourceTypeId",
+                customTypeId);
+            when(mockCustomFields.getType()).thenReturn(typeReference);
+            when(mockInventoryEntry.getCustom()).thenReturn(mockCustomFields);
+            mockInventoryEntries.add(mockInventoryEntry);
+        }
+
+        for (final InventoryEntry inventoryEntry : mockInventoryEntries) {
+            assertThat(inventoryEntry.getCustom().getType().getId()).isEqualTo(customTypeId);
+        }
+
+        final List<InventoryEntryDraft> referenceReplacedDrafts =
+            replaceInventoriesReferenceIdsWithKeys(mockInventoryEntries);
+
+        for (InventoryEntryDraft referenceReplacedDraft : referenceReplacedDrafts) {
+            assertThat(referenceReplacedDraft.getCustom().getType().getId()).isEqualTo(customTypeId);
+        }
     }
 
     private CustomFieldsDraft getDraftOfCustomField(final String fieldName, final String fieldValue) {
