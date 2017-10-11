@@ -17,8 +17,7 @@ like [JCenter](https://jcenter.bintray.com/) and [Maven Central](https://search.
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Release a new version
-
+# Release a new version 
 To release the library, you need to create a new git commit tag.
 
 This will trigger a new Travis build. The tag can be created via command line
@@ -34,6 +33,8 @@ https://github.com/commercetools/commercetools-sync-java/releases
 Having a tag in the commit will cause travis to call the `bintrayUpload` task specified in the gradle build scripts, which uploads
 the artifacts to Bintray. The artifacts have to be then promoted/published from Bintray to _JCenter_ and/or 
 _Maven Central_. See [Publish workflow](#publish-workflow) below for more details.
+
+Please make sure to add a section for the release in the [release notes](/docs/RELEASE_NOTES.md). 
 
 # Publish workflow
 
