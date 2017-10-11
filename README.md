@@ -31,9 +31,9 @@ commercetools sync is a Java library that could be used to synchronise CTP data 
 
 
 Currently this library supports synchronising
- - [Categories](docs/usage/CATEGORY_SYNC.md)
- - [Products](docs/usage/PRODUCT_SYNC.md) (_Beta_: Not recommended for production use yet.)
- - [InventoryEntries](docs/usage/INVENTORY_SYNC.md) (_Beta_: Not recommended for production use yet.)
+ - [Categories](/docs/usage/CATEGORY_SYNC.md)
+ - [Products](/docs/usage/PRODUCT_SYNC.md) (_Beta_: Not recommended for production use yet.)
+ - [InventoryEntries](/docs/usage/INVENTORY_SYNC.md) (_Beta_: Not recommended for production use yet.)
 
 ### Prerequisites
  

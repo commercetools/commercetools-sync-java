@@ -75,7 +75,7 @@ The `-SNAPSHOT` suffix is mandatory.
 `OSS_USER`/`OSS_KEY` environment variables or `ossUser`/`ossKey` gradle build properties 
 (the properties have precedence over environment variables). 
 
-See more configuration details of the oss uploading in [oss-publish.gradle](../gradle-scripts/oss-publish.gradle) file.
+See more configuration details of the oss uploading in [oss-publish.gradle](/gradle-scripts/oss-publish.gradle) file.
 
 
 ## Publish to Bintray

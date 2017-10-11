@@ -42,7 +42,7 @@ matched.
     final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
     ````
      
-   Example of its usage can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130).
+   Example of its usage can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130).
 3. It is an important responsibility of the user of the library to instantiate a `sphereClient` that has the following properties:
     - Limits the amount of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with 
    [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html) 
@@ -50,7 +50,7 @@ matched.
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
    
    You can use the same client instantiating used in the integration tests for this library found 
-   [here](../../src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
+   [here](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
 
 4. After the `sphereClient` is setup, a `CategorySyncOptions` should be be built as follows: 
 ````java
@@ -88,7 +88,7 @@ function has been applied.
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
 Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
-streams, can be found [here](../../src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java#L79-L82).
+streams, can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java#L79-L82).
 
 
 #### Running the sync
@@ -112,8 +112,8 @@ stats.getReportMessage();
 
 
 More examples of how to use the sync 
-1. From another CTP project as source can be found [here](../../src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
-2. From an external source can be found [here](../../src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java). 
+1. From another CTP project as source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
+2. From an external source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java). 
  
 
 
@@ -125,7 +125,7 @@ List<UpdateAction<Category>> updateActions = CategorySyncUtils.buildActions(cate
 ```
 
 Examples of its usage can be found in the tests 
-[here](../../src/test/java/com/commercetools/sync/categories/utils/CategorySyncUtilsTest.java).
+[here](/src/test/java/com/commercetools/sync/categories/utils/CategorySyncUtilsTest.java).
 
 
 ### Build particular update action(s)
@@ -135,7 +135,7 @@ Utility methods provided by the library to compare the specific fields of a Cate
 ````java
 Optional<UpdateAction<Category>> updateAction = buildChangeNameUpdateAction(oldCategory, categoryDraft);
 ````
-More examples of those utils for different fields can be found [here](../../src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/updateactionutils).
+More examples of those utils for different fields can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/updateactionutils).
 
 
 ## Caveats
