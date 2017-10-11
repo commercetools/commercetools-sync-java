@@ -45,12 +45,7 @@ public class StateServiceImpl implements StateService {
             statePage.forEach(state -> {
                 final String fetchedStateKey = state.getKey();
                 final String id = state.getId();
-                if (StringUtils.isNotBlank(fetchedStateKey)) {
-                    keyToIdCache.put(fetchedStateKey, id);
-                } else {
-                    syncOptions.applyWarningCallback(format("State with id: '%s' has no key set. Keys are required for"
-                        + " state matching.", id));
-                }
+                keyToIdCache.put(fetchedStateKey, id);
             });
 
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), buildStateQuery(stateType), statePageConsumer)
