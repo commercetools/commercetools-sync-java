@@ -10,6 +10,7 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.queries.PagedResult;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -88,6 +89,22 @@ public final class CategoryServiceImpl implements CategoryService {
                                                         .flatMap(List::stream)
                                                         .collect(Collectors.toSet());
                             });
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Optional<Category>> fetchCategory(@Nonnull final String key) {
+        return syncOptions.getCtpClient()
+                .execute(CategoryQuery.of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().is(key)))
+                .thenApply(PagedResult::head)
+                .handle((fetchedProductOptional, sphereException) -> {
+                    if (sphereException != null) {
+                        syncOptions
+                                .applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
+                        return Optional.empty();
+                    }
+                    return fetchedProductOptional;
+                });
     }
 
     @Nonnull
