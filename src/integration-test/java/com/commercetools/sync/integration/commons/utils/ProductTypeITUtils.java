@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.commons.utils;
 
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -10,14 +11,17 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
+import io.sphere.sdk.producttypes.commands.ProductTypeDeleteCommand;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Arrays.asList;
@@ -34,6 +38,26 @@ public final class ProductTypeITUtils {
     public static void deleteProductTypesFromTargetAndSource() {
         deleteProductTypes(CTP_TARGET_CLIENT);
         deleteProductTypes(CTP_SOURCE_CLIENT);
+    }
+
+    /**
+     * Deletes all product types from the CTP project defined by the {@code ctpClient}.
+     *
+     * @param ctpClient defines the CTP project to delete the categories from.
+     */
+    public static void deleteProductTypes(@Nonnull final SphereClient ctpClient) {
+        final List<CompletableFuture> productTypeDeleteFutures = new ArrayList<>();
+        final Consumer<List<ProductType>> productTypePageDelete = productTypes -> productTypes.forEach(productType -> {
+            final CompletableFuture<ProductType> deleteFuture =
+                ctpClient.execute(ProductTypeDeleteCommand.of(productType)).toCompletableFuture();
+            productTypeDeleteFutures.add(deleteFuture);
+        });
+
+        CtpQueryUtils.queryAll(ctpClient, ProductTypeQuery.of(), productTypePageDelete)
+                     .thenCompose(result -> CompletableFuture
+                         .allOf(productTypeDeleteFutures
+                             .toArray(new CompletableFuture[productTypeDeleteFutures.size()])))
+                     .toCompletableFuture().join();
     }
 
     /**
