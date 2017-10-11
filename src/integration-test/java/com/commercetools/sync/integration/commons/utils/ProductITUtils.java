@@ -55,7 +55,7 @@ public final class ProductITUtils {
     /**
      * Deletes all products, product types, categories and types from the CTP project defined by the {@code ctpClient}.
      *
-     * @param ctpClient defines the CTP project to delete the categories from.
+     * @param ctpClient defines the CTP project to delete the product types from.
      */
     public static void deleteProductSyncTestData(@Nonnull final SphereClient ctpClient) {
         deleteAllProducts(ctpClient);
