@@ -1,0 +1,7 @@
+{
+  "key": "productToSyncKey",
+  "masterVariant": {
+    "key": "newMasterKey"
+  },
+  "variants": []
+}

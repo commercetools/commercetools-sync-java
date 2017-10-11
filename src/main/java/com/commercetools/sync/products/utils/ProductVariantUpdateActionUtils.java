@@ -28,13 +28,12 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 
-// TODO: Add JAVADOC AND TESTS
+// TODO: TESTS
 public final class ProductVariantUpdateActionUtils {
     private static final String FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION = "Failed to build a "
         + "setAttribute/setAttributeInAllVariants update action for the attribute with the name '%s' in the "
@@ -45,14 +44,22 @@ public final class ProductVariantUpdateActionUtils {
      * Compares the attributes of a {@link ProductVariantDraft} and a {@link ProductVariant} to build either
      * {@link io.sphere.sdk.products.commands.updateactions.SetAttribute} or
      * {@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants} update actions.
-     * TODO: Add JavaDoc
+     * If both the {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of attributes, then
+     * no update action is needed and hence an empty {@link List} is returned.
      *
-     * @param productKey         TODO
-     * @param oldProductVariant  TODO
-     * @param newProductVariant  TODO
-     * @param attributesMetaData TODO
-     * @param syncOptions        TODO
-     * @return TODO
+     * @param productKey         the key of the product that the variants belong to. It is used only in the error
+     *                           messages if any.
+     * @param oldProductVariant  the {@link ProductVariant} which should be updated.
+     * @param newProductVariant  the {@link ProductVariantDraft} where we get the new list of attributes.
+     * @param attributesMetaData a map of attribute name -&gt; {@link AttributeMetaData}; which defines attribute
+     *                           information: its name, whether a value is required or not and whether it has the
+     *                           constraint "SameForAll" or not.
+     * @param syncOptions        the sync options wrapper which contains options related to the sync process supplied by
+     *                           the user. For example, custom callbacks to call in case of warnings or errors occurring
+     *                           on the build update action process. And other options (See {@link ProductSyncOptions}
+     *                           for more info.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
+     *          needed.
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantAttributesUpdateActions(
@@ -100,12 +107,18 @@ public final class ProductVariantUpdateActionUtils {
     }
 
     /**
-     * Compares the prices of a {@link ProductVariantDraft} and a {@link ProductVariant}.
-     * TODO: Add JavaDoc
+     * Compares the {@link List} of {@link io.sphere.sdk.products.Price}s of a {@link ProductVariantDraft} and a
+     * {@link ProductVariant} and returns a {@link List} of {@link UpdateAction}&lt;{@link Product}&gt;. If both the
+     * {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of prices, then no update action
+     * is needed and hence an empty {@link List} is returned.
      *
-     * @param oldProductVariant TODO
-     * @param newProductVariant TODO
-     * @return TODO
+     * <p>TODO: NOTE: Right now it always builds SetPrices UpdateAction, comparison should be
+     * TODO: calculated GITHUB ISSUE#101.
+     *
+     * @param oldProductVariant the {@link ProductVariant} which should be updated.
+     * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of prices.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
+     *         needed.
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantPricesUpdateActions(
@@ -225,22 +238,23 @@ public final class ProductVariantUpdateActionUtils {
     }
 
     /**
-     * Update variants' SKUs by key:
-     * In old and new variant lists find those pairs which have the the same {@code key} and different {@code sku}
-     * and create {@link SetSku} update action for them, using {@link ProductVariant#getId() oldVariant#id} and
-     * {@link ProductVariantDraft#getSku() newVariant#sku}.
+     * Compares the SKUs of a {@link ProductVariantDraft} and a {@link ProductVariant}. It returns a {@link SetSku}
+     * update action as a result in an {@link Optional}. If both the {@link ProductVariantDraft}
+     * and the {@link ProductVariant} have identical identical SKUs, then no update action is needed and hence an
+     * empty {@link Optional} is returned.
      *
-     * @param oldVariant old product with variants
-     * @param newVariant new product draft with variants
-     * @return list of {@link SetSku} actions. Empty list if no SKU changed.
+     * @param oldProductVariant the variant which should be updated.
+     * @param newProductVariant the variant draft where we get the new SKU.
+     * @return A filled optional with the update action or an empty optional if the SKUs are identical.
      */
     @Nonnull
-    public static List<SetSku> buildProductVariantSkuUpdateActions(@Nonnull final ProductVariant oldVariant,
-                                                                   @Nonnull final ProductVariantDraft newVariant) {
-
-        return Objects.equals(oldVariant.getSku(), newVariant.getSku())
-                ? emptyList()
-                : singletonList(SetSku.of(oldVariant.getId(), newVariant.getSku(), true));
+    public static Optional<SetSku> buildProductVariantSkuUpdateAction(
+        @Nonnull final ProductVariant oldProductVariant,
+        @Nonnull final ProductVariantDraft newProductVariant) {
+        final String oldProductVariantSku = oldProductVariant.getSku();
+        final String newProductVariantSku = newProductVariant.getSku();
+        return buildUpdateAction(oldProductVariantSku, newProductVariantSku,
+            () -> SetSku.of(oldProductVariant.getId(), newProductVariantSku, true));
     }
 
     private ProductVariantUpdateActionUtils() {
