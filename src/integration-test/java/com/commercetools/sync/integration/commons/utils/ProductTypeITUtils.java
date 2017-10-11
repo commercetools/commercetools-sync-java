@@ -32,8 +32,8 @@ public final class ProductTypeITUtils {
 
 
     /**
-     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} ProductTypes from CTP
-     * projects defined by the {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
+     * Deletes all ProductTypes from CTP projects defined by the {@code CTP_SOURCE_CLIENT} and
+     * {@code CTP_TARGET_CLIENT}.
      */
     public static void deleteProductTypesFromTargetAndSource() {
         deleteProductTypes(CTP_TARGET_CLIENT);
