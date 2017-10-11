@@ -33,9 +33,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import static com.commercetools.sync.commons.utils.SyncUtils.replaceCategoryOrderHintCategoryIdsWithKeys;
-import static com.commercetools.sync.commons.utils.SyncUtils.replaceProductDraftCategoryReferenceIdsWithKeys;
-import static com.commercetools.sync.commons.utils.SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
@@ -54,6 +51,9 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
+import static com.commercetools.sync.products.utils.ProductSyncUtils.replaceCategoryOrderHintCategoryIdsWithKeys;
+import static com.commercetools.sync.products.utils.ProductSyncUtils.replaceProductDraftCategoryReferenceIdsWithKeys;
+import static com.commercetools.sync.products.utils.ProductSyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
