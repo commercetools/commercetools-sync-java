@@ -3,9 +3,10 @@ package com.commercetools.sync.services.impl;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.StateService;
+import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.states.State;
+import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.states.queries.StateQuery;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -20,10 +21,13 @@ import static java.lang.String.format;
 
 public class StateServiceImpl implements StateService {
     private final ProductSyncOptions syncOptions;
+    private final StateType stateType;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
-    public StateServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
+    public StateServiceImpl(@Nonnull final ProductSyncOptions syncOptions,
+                            @Nonnull final StateType stateType) {
         this.syncOptions = syncOptions;
+        this.stateType = stateType;
     }
 
     @Nonnull
@@ -49,7 +53,19 @@ public class StateServiceImpl implements StateService {
                 }
             });
 
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), StateQuery.of(), statePageConsumer)
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), buildStateQuery(stateType), statePageConsumer)
                             .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
+    }
+
+    /**
+     * Builds a {@link StateQuery} based on the given {@link StateType}.
+     *
+     * @param stateType state type to build the {@link StateQuery} with.
+     * @return a {@link StateQuery} based on the given {@link StateType}.
+     */
+    public static StateQuery buildStateQuery(@Nonnull final StateType stateType) {
+        final QueryPredicate<State> stateQueryPredicate =
+            QueryPredicate.of(format("type= \"%s\"", stateType.toSphereName()));
+        return StateQuery.of().withPredicates(stateQueryPredicate);
     }
 }
