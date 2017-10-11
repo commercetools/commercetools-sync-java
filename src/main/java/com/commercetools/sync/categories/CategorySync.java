@@ -614,9 +614,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param categoryKey the category key to remove from {@code categoryKeysWithMissingParents}
      */
     private void removeUpdatedCategoryFromMissingParentsMap(@Nonnull final String categoryKey) {
-        categoryKeysWithMissingParents.entrySet()
-                                      .forEach(missingParentEntry ->
-                                          missingParentEntry.getValue().remove(categoryKey));
+        categoryKeysWithMissingParents.forEach((key, value) -> value.remove(categoryKey));
     }
 
     /**
