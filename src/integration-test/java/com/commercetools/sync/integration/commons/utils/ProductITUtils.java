@@ -20,8 +20,6 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
-import io.sphere.sdk.producttypes.commands.ProductTypeDeleteCommand;
-import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -31,6 +29,7 @@ import java.util.function.Consumer;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteSupplyChannels;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.stream.Collectors.toList;
@@ -56,7 +55,7 @@ public final class ProductITUtils {
     /**
      * Deletes all products, product types, categories and types from the CTP project defined by the {@code ctpClient}.
      *
-     * @param ctpClient defines the CTP project to delete the categories from.
+     * @param ctpClient defines the CTP project to delete the product types from.
      */
     public static void deleteProductSyncTestData(@Nonnull final SphereClient ctpClient) {
         deleteAllProducts(ctpClient);
@@ -85,26 +84,6 @@ public final class ProductITUtils {
         CtpQueryUtils.queryAll(ctpClient, ProductQuery.of(), productPageDelete)
                      .thenCompose(result -> CompletableFuture
                          .allOf(productDeleteFutures.toArray(new CompletableFuture[productDeleteFutures.size()])))
-                     .toCompletableFuture().join();
-    }
-
-    /**
-     * Deletes all product types from the CTP project defined by the {@code ctpClient}.
-     *
-     * @param ctpClient defines the CTP project to delete the categories from.
-     */
-    static void deleteProductTypes(@Nonnull final SphereClient ctpClient) {
-        final List<CompletableFuture> productTypeDeleteFutures = new ArrayList<>();
-        final Consumer<List<ProductType>> productTypePageDelete = productTypes -> productTypes.forEach(productType -> {
-            final CompletableFuture<ProductType> deleteFuture =
-                ctpClient.execute(ProductTypeDeleteCommand.of(productType)).toCompletableFuture();
-            productTypeDeleteFutures.add(deleteFuture);
-        });
-
-        CtpQueryUtils.queryAll(ctpClient, ProductTypeQuery.of(), productTypePageDelete)
-                     .thenCompose(result -> CompletableFuture
-                         .allOf(productTypeDeleteFutures
-                             .toArray(new CompletableFuture[productTypeDeleteFutures.size()])))
                      .toCompletableFuture().join();
     }
 

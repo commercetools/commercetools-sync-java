@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypesFromTargetAndSource;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,11 +27,11 @@ public class ProductTypeServiceIT {
     private static final Locale OLD_PRODUCT_TYPE_LOCALE = Locale.ENGLISH;
 
     /**
-     * Deletes product types from source and target CTP projects, then it populates target CTP project with test data.
+     * Deletes product types from the target CTP project, then it populates the project with test data.
      */
     @Before
     public void setup() {
-        deleteProductTypesFromTargetAndSource();
+        deleteProductTypes(CTP_TARGET_CLIENT);
         createProductType(OLD_PRODUCT_TYPE_KEY, OLD_PRODUCT_TYPE_LOCALE, OLD_PRODUCT_TYPE_NAME, CTP_TARGET_CLIENT);
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                                                                .build();
@@ -39,11 +39,11 @@ public class ProductTypeServiceIT {
     }
 
     /**
-     * Cleans up the target and source test data that were built in this test class.
+     * Cleans up the target test data that were built in this test class.
      */
     @AfterClass
     public static void tearDown() {
-        deleteProductTypesFromTargetAndSource();
+        deleteProductTypes(CTP_TARGET_CLIENT);
     }
 
     @Test
