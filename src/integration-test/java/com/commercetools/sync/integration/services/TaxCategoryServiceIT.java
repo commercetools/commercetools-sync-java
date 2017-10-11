@@ -26,12 +26,13 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TaxCategoryServiceIT {
-    private TaxCategoryService taxCategoryService;
-    private static TaxRateDraft taxRateDraft;
     private static final String OLD_TAXCATEGORY_KEY = "old_tax_category_key";
     private static final String OLD_TAXCATEGORY_NAME = "old_tax_category_name";
     private static final String OLD_TAXCATEGORY_DESCRIPTION = "old_tax_category_desc";
-    private static ArrayList<String> warnings;
+
+    private TaxCategoryService taxCategoryService;
+    private TaxRateDraft taxRateDraft;
+    private ArrayList<String> warnings;
 
     /**
      * Deletes tax categories from the target CTP projects, then it populates target CTP project with test data.
@@ -65,7 +66,7 @@ public class TaxCategoryServiceIT {
 
     @Test
     public void fetchCachedTaxCategoryId_WithNonExistingTaxCategory_ShouldNotFetchATaxCategory() {
-        final Optional<String> taxCategoryId = taxCategoryService.fetchCachedTaxCategoryId("non-existing-taxCategory-key")
+        final Optional<String> taxCategoryId = taxCategoryService.fetchCachedTaxCategoryId("non-existing-key")
                                                                  .toCompletableFuture()
                                                                  .join();
         assertThat(taxCategoryId).isEmpty();

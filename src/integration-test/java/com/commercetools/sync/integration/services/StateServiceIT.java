@@ -21,10 +21,11 @@ import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class StateServiceIT {
-    private StateService stateService;
     private static final StateType STATE_TYPE = StateType.PRODUCT_STATE;
     private static final String OLD_STATE_KEY = "old_state_key";
-    private static ArrayList<String> warnings;
+
+    private StateService stateService;
+    private ArrayList<String> warnings;
 
     /**
      * Deletes states from the target CTP projects, then it populates the project with test data.
