@@ -28,10 +28,8 @@ public class ProductVariantUpdateActionUtilsTest {
         when(variantOld.getSku()).thenReturn("sku-old");
         when(variantOld.getId()).thenReturn(42);
 
-        final SetSku updateAction =
-            buildProductVariantSkuUpdateAction(variantOld, variantDraftNew).orElse(null);
-        assertThat(updateAction).isNotNull();
-        assertThat(updateAction).isEqualTo(SetSku.of(42, null, true));
+        assertThat(buildProductVariantSkuUpdateAction(variantOld, variantDraftNew))
+            .contains(SetSku.of(42, null, true));
     }
 
     @Test
@@ -43,10 +41,9 @@ public class ProductVariantUpdateActionUtilsTest {
         when(variantOld.getId()).thenReturn(42);
         when(variantDraftNew.getSku()).thenReturn("sku-new");
 
-        final SetSku updateAction =
-            buildProductVariantSkuUpdateAction(variantOld, variantDraftNew).orElse(null);
-        assertThat(updateAction).isNotNull();
-        assertThat(updateAction).isEqualTo(SetSku.of(42, "sku-new", true));
+
+        assertThat(buildProductVariantSkuUpdateAction(variantOld, variantDraftNew))
+            .contains(SetSku.of(42, "sku-new", true));
     }
 
     @Test
@@ -69,9 +66,7 @@ public class ProductVariantUpdateActionUtilsTest {
         when(variantOld.getId()).thenReturn(42);
         when(variantDraftNew.getSku()).thenReturn("sku-new");
 
-        final SetSku updateAction =
-            buildProductVariantSkuUpdateAction(variantOld, variantDraftNew).orElse(null);
-        assertThat(updateAction).isNotNull();
-        assertThat(updateAction).isEqualTo(SetSku.of(42, "sku-new", true));
+        assertThat(buildProductVariantSkuUpdateAction(variantOld, variantDraftNew))
+            .contains(SetSku.of(42, "sku-new", true));
     }
 }
