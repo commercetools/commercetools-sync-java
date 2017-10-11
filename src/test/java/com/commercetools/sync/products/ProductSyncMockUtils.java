@@ -52,7 +52,7 @@ public class ProductSyncMockUtils {
     }
 
     /**
-     * Builds a {@link ProductDraftBuilder} based on the current projection of the product JSON resource located at the
+     * Builds a {@link ProductDraftBuilder} based on the staged projection of the product JSON resource located at the
      * {@code jsonResourcePath} and based on the supplied {@code productType}.
      *
      * @param jsonResourcePath     the path of the JSON resource to build the product draft from.
