@@ -5,7 +5,7 @@ import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
 import org.junit.Test;
 
-import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantSkuUpdateActions;
+import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantSkuUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -13,29 +13,60 @@ import static org.mockito.Mockito.when;
 public class ProductVariantUpdateActionUtilsTest {
 
     @Test
-    public void buildProductVariantSkuUpdateActions_normalCase() throws Exception {
+    public void buildProductVariantSkuUpdateAction_WithBothNullSkus_ShouldNotBuildAction() {
         final ProductVariant variantOld = mock(ProductVariant.class);
         final ProductVariantDraft variantDraftNew = mock(ProductVariantDraft.class);
 
-        assertThat(buildProductVariantSkuUpdateActions(variantOld, variantDraftNew)).isEmpty();
+        assertThat(buildProductVariantSkuUpdateAction(variantOld, variantDraftNew)).isEmpty();
+    }
+
+    @Test
+    public void buildProductVariantSkuUpdateAction_WithNullNewSku_ShouldBuildUpdateAction() {
+        final ProductVariant variantOld = mock(ProductVariant.class);
+        final ProductVariantDraft variantDraftNew = mock(ProductVariantDraft.class);
 
         when(variantOld.getSku()).thenReturn("sku-old");
         when(variantOld.getId()).thenReturn(42);
-        assertThat(buildProductVariantSkuUpdateActions(variantOld, variantDraftNew))
-                .containsExactly(SetSku.of(42, null, true));
 
+        assertThat(buildProductVariantSkuUpdateAction(variantOld, variantDraftNew))
+            .contains(SetSku.of(42, null, true));
+    }
+
+    @Test
+    public void buildProductVariantSkuUpdateAction_WithNewSku_ShouldBuildUpdateAction() {
+        final ProductVariant variantOld = mock(ProductVariant.class);
+        final ProductVariantDraft variantDraftNew = mock(ProductVariantDraft.class);
+
+        when(variantOld.getSku()).thenReturn("sku-old");
+        when(variantOld.getId()).thenReturn(42);
         when(variantDraftNew.getSku()).thenReturn("sku-new");
-        assertThat(buildProductVariantSkuUpdateActions(variantOld, variantDraftNew))
-                .containsExactly(SetSku.of(42, "sku-new", true));
+
+
+        assertThat(buildProductVariantSkuUpdateAction(variantOld, variantDraftNew))
+            .contains(SetSku.of(42, "sku-new", true));
+    }
+
+    @Test
+    public void buildProductVariantSkuUpdateAction_WithSameSku_ShouldNotBuildUpdateAction() {
+        final ProductVariant variantOld = mock(ProductVariant.class);
+        final ProductVariantDraft variantDraftNew = mock(ProductVariantDraft.class);
 
         when(variantOld.getSku()).thenReturn("sku-the-same");
         when(variantDraftNew.getSku()).thenReturn("sku-the-same");
-        assertThat(buildProductVariantSkuUpdateActions(variantOld, variantDraftNew)).isEmpty();
+
+        assertThat(buildProductVariantSkuUpdateAction(variantOld, variantDraftNew)).isEmpty();
+    }
+
+    @Test
+    public void buildProductVariantSkuUpdateAction_WithNullOldSku_ShouldBuildUpdateAction() {
+        final ProductVariant variantOld = mock(ProductVariant.class);
+        final ProductVariantDraft variantDraftNew = mock(ProductVariantDraft.class);
 
         when(variantOld.getSku()).thenReturn(null);
         when(variantOld.getId()).thenReturn(42);
         when(variantDraftNew.getSku()).thenReturn("sku-new");
-        assertThat(buildProductVariantSkuUpdateActions(variantOld, variantDraftNew))
-                .containsExactly(SetSku.of(42, "sku-new", true));
+
+        assertThat(buildProductVariantSkuUpdateAction(variantOld, variantDraftNew))
+            .contains(SetSku.of(42, "sku-new", true));
     }
 }
