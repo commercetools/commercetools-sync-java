@@ -183,7 +183,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * in the CTP project, the resultant draft would remain exactly the same as the passed product draft
      * (without reference resolution).
      *
-     * @param draftBuilder the product draft to resolve it's category references.
+     * @param draftBuilder the product draft builder where to update resolved category references.
      * @param categoryKeys the category keys of to resolve their actual id on the draft.
      * @return a {@link CompletionStage} that contains as a result a new productDraft instance with resolved category
      *          references or an exception.
