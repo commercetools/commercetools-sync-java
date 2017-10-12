@@ -47,13 +47,12 @@ are breaking changes. If there are, then a migration guide should be provided.
 **Bug Fixes** (4)
 - **Build Tools** - Fixes issue were JavaDoc jar was not built. [#117](https://github.com/commercetools/commercetools-sync-java/issues/117)
 - **Build Tools** - Fixes issue were JavaDoc was not published on github. [#118](https://github.com/commercetools/commercetools-sync-java/issues/118)
-- **Product Sync** - Fixes a potential bug where an exisitng master variant key could be blank. [#122]
-(https://github.com/commercetools/commercetools-sync-java/issues/122)
+- **Product Sync** - Fixes a potential bug where an exisitng master variant key could be blank.[#122](https://github.com/commercetools/commercetools-sync-java/issues/122)
 - **Product Sync** - Fixes a potential bug where a product draft could be provided with no master variant set. [#122](https://github.com/commercetools/commercetools-sync-java/issues/122)
 
 **Enhancements** (2)
 - **Build Tools** - Integration tests project credentials can now be set on a properties file not only as environment variables and give error messages if not set. [#105](https://github.com/commercetools/commercetools-sync-java/issues/105)
-- **Product Sync** - Validates the SKU before making a `ChangeMasterVariant` request by SKU. [#122]
+- **Product Sync** - Validates the SKU before making a `ChangeMasterVariant` request by SKU. [#122](https://github.com/commercetools/commercetools-sync-java/issues/122)
 
  **Doc Fixes** (4)
  - **Build Tools** - Adds bintray badge to repo. [#126](https://github.com/commercetools/commercetools-sync-java/issues/126)
