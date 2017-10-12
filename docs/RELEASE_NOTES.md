@@ -33,11 +33,16 @@ are breaking changes. If there are, then a migration guide should be provided.
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [v1.0.0-M2 -  Oct 12, 2017](#v100-m2----oct-12-2017)
 - [v1.0.0-M2-beta -  Sep 28, 2017](#v100-m2-beta----sep-28-2017)
 - [v1.0.0-M1 -  Sep 06, 2017](#v100-m1----sep-06-2017)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 ### v1.0.0-M2 -  Oct 12, 2017 
+
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M2-beta...v1.0.0-M2) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M2/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M2)
 
 **New Features** (3)
 - **Product Sync** - Support syncing entire product variant images, putting order into consideration. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
@@ -61,7 +66,8 @@ are breaking changes. If there are, then a migration guide should be provided.
  - **Commons** - Adds release notes doc. [#125](https://github.com/commercetools/commercetools-sync-java/issues/125)
  - **Build Tools** - Adds JavaDoc badge to repo. [#145](https://github.com/commercetools/commercetools-sync-java/issues/145)
 
-
+**Compatibility notes**
+- No breaking changes introduced.
 
 
 ### v1.0.0-M2-beta -  Sep 28, 2017 

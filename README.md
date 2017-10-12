@@ -52,17 +52,17 @@ most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>v1.0.0-M2-beta</version>
+  <version>v1.0.0-M2</version>
 </dependency>
 ````
 #### Gradle
 ````groovy
-compile 'com.commercetools:commercetools-sync-java:v1.0.0-M2-beta'
+compile 'com.commercetools:commercetools-sync-java:v1.0.0-M2'
 ````
 <!-- TODO #### SBT 
 ````java
 libraryDependencies ++= Seq(
-    "com.commercetools" % "commercetools-sync-java" % "v1.0.0-M2-beta",
+    "com.commercetools" % "commercetools-sync-java" % "v1.0.0-M2",
  )
 ````-->
 
