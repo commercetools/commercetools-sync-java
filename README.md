@@ -1,6 +1,7 @@
 # commercetools sync
 [![Build Status](https://travis-ci.org/commercetools/commercetools-sync-java.svg?branch=master)](https://travis-ci.org/commercetools/commercetools-sync-java)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
+[![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M2/)
 
 Java API which exposes utilities for building update actions and automatic syncing of CTP data from external sources 
  such as CSV, XML, JSON, etc.. or an already existing CTP project into a target project.
