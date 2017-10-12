@@ -1,0 +1,10 @@
+# rename to it.properties and fill the values to run the integration tests locally without env variables
+# see SphereClientUtils for more info
+
+source.projectKey=<<create your project for local IT>>
+source.clientId=YOUR client id without quotes
+source.clientSecret=YOUR client secret without quotes
+
+target.projectKey=<<create your project for local IT>>
+target.clientId=YOUR client id without quotes
+target.clientSecret=YOUR client secret without quotes

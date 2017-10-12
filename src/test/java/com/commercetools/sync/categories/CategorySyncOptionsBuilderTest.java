@@ -32,7 +32,8 @@ public class CategorySyncOptionsBuilderTest {
         assertThat(categorySyncOptions.shouldRemoveOtherProperties()).isTrue();
         assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isTrue();
         assertThat(categorySyncOptions.shouldRemoveOtherLocales()).isTrue();
-        assertThat(categorySyncOptions.getUpdateActionsFilter()).isNull();
+        assertThat(categorySyncOptions.shouldAllowUuidKeys()).isFalse();
+        assertThat(categorySyncOptions.getUpdateActionsCallBack()).isNull();
         assertThat(categorySyncOptions.getErrorCallBack()).isNull();
         assertThat(categorySyncOptions.getWarningCallBack()).isNull();
         assertThat(categorySyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
@@ -46,7 +47,7 @@ public class CategorySyncOptionsBuilderTest {
         categorySyncOptionsBuilder.setUpdateActionsFilter(clearListFilter);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
-        assertThat(categorySyncOptions.getUpdateActionsFilter()).isNotNull();
+        assertThat(categorySyncOptions.getUpdateActionsCallBack()).isNotNull();
     }
 
     @Test

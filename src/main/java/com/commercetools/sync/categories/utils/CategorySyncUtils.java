@@ -30,10 +30,11 @@ public final class CategorySyncUtils {
 
     /**
      * Compares the Name, Slug, Description, Parent, OrderHint, MetaTitle, MetaDescription, MetaKeywords and Custom
-     * fields/ type fields and assets of a {@link Category} and a {@link CategoryDraft}. It returns a {@link List} of
+     * fields/ type fields of a {@link Category} and a {@link CategoryDraft}. It returns a {@link List} of
      * {@link UpdateAction}&lt;{@link Category}&gt; as a result. If no update action is needed, for example in
      * case where both the {@link Category} and the {@link CategoryDraft} have the same parents, an empty
-     * {@link List} is returned.
+     * {@link List} is returned. Then it applies a specified filter function in the {@link CategorySyncOptions}
+     * instance on the resultant list and returns this result.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new data.
@@ -52,7 +53,7 @@ public final class CategorySyncUtils {
         final List<UpdateAction<Category>> assetUpdateActions =
             buildAssetActions(oldCategory, newCategory, syncOptions);
         updateActions.addAll(assetUpdateActions);
-        return filterUpdateActions(updateActions, syncOptions.getUpdateActionsFilter());
+        return filterUpdateActions(updateActions, syncOptions.getUpdateActionsCallBack());
     }
 
     /**
@@ -129,7 +130,7 @@ public final class CategorySyncUtils {
 
     /**
      * Given a list of category {@link UpdateAction} elements, where each is wrapped in an {@link Optional}; this method
-     * filters out the optionals which are only present and returns a new list of of category {@link UpdateAction}
+     * filters out the optionals which are only present and returns a new list of category {@link UpdateAction}
      * elements.
      *
      * @param optionalUpdateActions list of category {@link UpdateAction} elements,

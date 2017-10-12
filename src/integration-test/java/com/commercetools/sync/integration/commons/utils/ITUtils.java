@@ -14,7 +14,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.fetchAndProcess;
 
-public class ITUtils {
+public final class ITUtils {
 
     /**
      * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} Types from CTP

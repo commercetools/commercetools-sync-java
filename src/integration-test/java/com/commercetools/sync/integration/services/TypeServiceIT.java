@@ -1,6 +1,8 @@
 package com.commercetools.sync.integration.services;
 
 
+import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.models.LocalizedString;
@@ -33,7 +35,10 @@ public class TypeServiceIT {
     public void setup() {
         deleteTypesFromTargetAndSource();
         createCategoriesCustomType(OLD_TYPE_KEY, OLD_TYPE_LOCALE, OLD_TYPE_NAME, CTP_TARGET_CLIENT);
-        typeService = new TypeServiceImpl(CTP_TARGET_CLIENT);
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                                                                                  .build();
+
+        typeService = new TypeServiceImpl(categorySyncOptions);
     }
 
     /**

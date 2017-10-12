@@ -55,6 +55,7 @@ public class BaseSyncOptions {
      * @return the {@code errorCallBack} {@link BiConsumer}&lt;{@link String}, {@link Throwable}&gt; function set to
      *      {@code this} {@link BaseSyncOptions}
      */
+    @Nullable
     public BiConsumer<String, Throwable> getErrorCallBack() {
         return errorCallBack;
     }
@@ -67,6 +68,7 @@ public class BaseSyncOptions {
      * @return the {@code warningCallBack} {@link Consumer}&lt;{@link String}&gt; function set to {@code this}
      *      {@link BaseSyncOptions}
      */
+    @Nullable
     public Consumer<String> getWarningCallBack() {
         return warningCallBack;
     }
@@ -142,13 +144,22 @@ public class BaseSyncOptions {
      * this method does nothing.
      *
      * @param errorMessage the error message to supply as first param to the {@code errorCallBack} function.
-     * @param exception    the {@link Throwable} instance to supply to the {@code errorCallBack} function as a
+     * @param exception    optional {@link Throwable} instance to supply to the {@code errorCallBack} function as a
      *                     second param.
      */
     public void applyErrorCallback(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
         if (this.errorCallBack != null) {
             this.errorCallBack.accept(errorMessage, exception);
         }
+    }
+
+    /**
+     *
+     * @param errorMessage the error message to supply as first param to the {@code errorCallBack} function.
+     * @see #applyErrorCallback(String, Throwable) applyErrorCallback(String, Throwable)
+     */
+    public void applyErrorCallback(@Nonnull final String errorMessage) {
+        applyErrorCallback(errorMessage, null);
     }
 
     /**

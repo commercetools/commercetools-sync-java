@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.ChannelService;
 import io.sphere.sdk.channels.Channel;
@@ -9,9 +10,10 @@ import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.commands.ChannelCreateCommand;
 import io.sphere.sdk.channels.queries.ChannelQuery;
 import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
-import io.sphere.sdk.client.SphereClient;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,18 +23,27 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import static java.lang.String.format;
+
 
 public final class ChannelServiceImpl implements ChannelService {
 
-    private final SphereClient ctpClient;
+    private final BaseSyncOptions syncOptions;
     private final Set<ChannelRole> channelRoles;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private boolean invalidCache = false;
+    private static final String CHANNEL_KEY_NOT_SET = "Channel with id: '%s' has no key set. Keys are required for "
+        + "channel matching.";
 
-    public ChannelServiceImpl(@Nonnull final SphereClient ctpClient,
+    public ChannelServiceImpl(@Nonnull final BaseSyncOptions syncOptions,
                               @Nonnull final Set<ChannelRole> channelRoles) {
-        this.ctpClient = ctpClient;
+        this.syncOptions = syncOptions;
         this.channelRoles = channelRoles;
+    }
+
+    public ChannelServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
+        this.syncOptions = syncOptions;
+        this.channelRoles = Collections.emptySet();
     }
 
     @Nonnull
@@ -45,15 +56,24 @@ public final class ChannelServiceImpl implements ChannelService {
     }
 
     private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
-        final ChannelQuery query =
-            ChannelQueryBuilder.of()
-                               .plusPredicates(channelQueryModel -> channelQueryModel.roles().containsAny(channelRoles))
-                               .build();
-
+        ChannelQueryBuilder channelQueryBuilder = ChannelQueryBuilder.of();
+        if (!channelRoles.isEmpty()) {
+            channelQueryBuilder = channelQueryBuilder
+                .plusPredicates(channelQueryModel -> channelQueryModel.roles().containsAny(channelRoles));
+        }
+        final ChannelQuery query = channelQueryBuilder.build();
         final Consumer<List<Channel>> channelPageConsumer = channelsPage ->
-            channelsPage.forEach(channel -> keyToIdCache.put(channel.getKey(), channel.getId()));
+            channelsPage.forEach(channel -> {
+                final String fetchedChannelKey = channel.getKey();
+                final String id = channel.getId();
+                if (StringUtils.isNotBlank(fetchedChannelKey)) {
+                    keyToIdCache.put(fetchedChannelKey, id);
+                } else {
+                    syncOptions.applyWarningCallback(format(CHANNEL_KEY_NOT_SET, id));
+                }
+            });
 
-        return CtpQueryUtils.queryAll(ctpClient, query, channelPageConsumer)
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), query, channelPageConsumer)
                             .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 
@@ -63,7 +83,7 @@ public final class ChannelServiceImpl implements ChannelService {
         final ChannelDraft draft = ChannelDraftBuilder.of(key)
                                                       .roles(channelRoles)
                                                       .build();
-        return ctpClient.execute(ChannelCreateCommand.of(draft));
+        return syncOptions.getCtpClient().execute(ChannelCreateCommand.of(draft));
     }
 
     @Nonnull

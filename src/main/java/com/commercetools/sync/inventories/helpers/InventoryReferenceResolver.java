@@ -1,7 +1,7 @@
 package com.commercetools.sync.inventories.helpers;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
-import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
+import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.TypeService;
@@ -19,7 +19,8 @@ import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
 
-public final class InventoryReferenceResolver extends BaseReferenceResolver<InventoryEntryDraft, InventorySyncOptions> {
+public final class InventoryReferenceResolver extends CustomReferenceResolver<InventoryEntryDraft,
+    InventorySyncOptions> {
     private static final String CHANNEL_DOES_NOT_EXIST = "Channel with key '%s' does not exist.";
     private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
         + "InventoryEntryDraft with SKU:'%s'.";
@@ -90,7 +91,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
         if (channelReference != null) {
             try {
                 final String keyFromExpansion = getKeyFromExpansion(channelReference);
-                final String channelKey = getKeyFromExpansionOrReference(getOptions().shouldAllowUuidKeys(),
+                final String channelKey = getKeyFromExpansionOrReference(options.shouldAllowUuidKeys(),
                     keyFromExpansion, channelReference);
                 return fetchOrCreateAndResolveReference(draft, channelKey);
             } catch (ReferenceResolutionException exception) {
@@ -148,6 +149,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
      *          Otherwise, returns null.
      */
     @Nullable
+    @SuppressWarnings("ConstantConditions") // NPE can't occur because of the isReferenceExpanded check.
     private static String getKeyFromExpansion(@Nonnull final Reference<Channel> channelReference) {
         return isReferenceExpanded(channelReference) ? channelReference.getObj().getKey() : null;
     }
@@ -194,7 +196,7 @@ public final class InventoryReferenceResolver extends BaseReferenceResolver<Inve
     private CompletionStage<InventoryEntryDraft> createChannelAndSetReference(@Nonnull final String channelKey,
                                                                               @Nonnull final InventoryEntryDraft
                                                                                   inventoryEntryDraft) {
-        if (getOptions().shouldEnsureChannels()) {
+        if (options.shouldEnsureChannels()) {
             return channelService.createAndCacheChannel(channelKey)
                                  .thenCompose(createdChannel -> setChannelReference(createdChannel.getId(),
                                      inventoryEntryDraft));

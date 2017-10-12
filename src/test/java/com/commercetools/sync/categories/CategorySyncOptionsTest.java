@@ -39,7 +39,7 @@ public class CategorySyncOptionsTest {
         final List<UpdateAction<Category>> updateActions = new ArrayList<>();
         updateActions.add(ChangeName.of(LocalizedString.of(Locale.ENGLISH, "name")));
 
-        final List<UpdateAction<Category>> resultantList = syncOptions.getUpdateActionsFilter().apply(updateActions);
+        final List<UpdateAction<Category>> resultantList = syncOptions.getUpdateActionsCallBack().apply(updateActions);
 
         assertThat(updateActions).isNotEmpty();
         assertThat(resultantList).isEmpty();

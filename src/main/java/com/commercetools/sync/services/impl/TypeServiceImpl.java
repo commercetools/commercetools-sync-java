@@ -1,9 +1,9 @@
 package com.commercetools.sync.services.impl;
 
 
+import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.TypeService;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.queries.TypeQuery;
 
@@ -21,12 +21,12 @@ import java.util.function.Consumer;
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
 public final class TypeServiceImpl implements TypeService {
-    private final SphereClient ctpClient;
+    private final BaseSyncOptions syncOptions;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private boolean invalidCache = false;
 
-    public TypeServiceImpl(@Nonnull final SphereClient ctpClient) {
-        this.ctpClient = ctpClient;
+    public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
+        this.syncOptions = syncOptions;
     }
 
     @Nonnull
@@ -43,7 +43,7 @@ public final class TypeServiceImpl implements TypeService {
         final Consumer<List<Type>> typePageConsumer = typesPage ->
             typesPage.forEach(type -> keyToIdCache.put(type.getKey(), type.getId()));
 
-        return CtpQueryUtils.queryAll(ctpClient, TypeQuery.of(), typePageConsumer)
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), TypeQuery.of(), typePageConsumer)
                             .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 

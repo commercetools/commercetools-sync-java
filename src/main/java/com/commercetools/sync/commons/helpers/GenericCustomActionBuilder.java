@@ -22,8 +22,8 @@ import java.util.Map;
  */
 public abstract class GenericCustomActionBuilder<T extends Custom & Resource<T>> {
     /**
-     * Creates a CTP "setCustomType" update action on the given resource {@link T} that removes the custom type set on
-     * the given resource {@link T} (which currently could either be a {@link Category} or a {@link Channel}).
+     * Creates a CTP "setCustomType" update action on the given resource {@code T} that removes the custom type set on
+     * the given resource {@code T} (which currently could either be a {@link Category} or a {@link Channel}).
      *
      * @return a setCustomType update action that removes the custom type from the resource it's requested on.
      */
@@ -31,7 +31,7 @@ public abstract class GenericCustomActionBuilder<T extends Custom & Resource<T>>
     public abstract UpdateAction<T> buildRemoveCustomTypeAction();
 
     /**
-     * Creates a CTP "setCustomType" update action on the given resource {@link T} (which currently could either
+     * Creates a CTP "setCustomType" update action on the given resource {@code T} (which currently could either
      * be a {@link Category} or a {@link Channel}).
      *
      * @param customTypeId       the id of the new custom type.
@@ -43,9 +43,9 @@ public abstract class GenericCustomActionBuilder<T extends Custom & Resource<T>>
                                                              @Nullable final Map<String, JsonNode> customFieldsJsonMap);
 
     /**
-     * Creates a CTP "setCustomField" update action on the given resource {@link T} that updates a custom field with
+     * Creates a CTP "setCustomField" update action on the given resource {@code T} that updates a custom field with
      * {@code customFieldName} and a {@code customFieldValue} on the given
-     * resource {@link T} (which currently could either be a {@link Category} or a {@link Channel}).
+     * resource {@code T} (which currently could either be a {@link Category} or a {@link Channel}).
      *
      * @param customFieldName  the name of the custom field to update.
      * @param customFieldValue the new JSON value of the custom field.

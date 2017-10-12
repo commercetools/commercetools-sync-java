@@ -6,25 +6,26 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class CategorySyncOptions extends BaseSyncOptions {
-    private final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter;
+    private final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsCallBack;
 
     CategorySyncOptions(@Nonnull final SphereClient ctpClient,
-                        final BiConsumer<String, Throwable> updateActionErrorCallBack,
-                        final Consumer<String> updateActionWarningCallBack,
+                        @Nullable final BiConsumer<String, Throwable> updateActionErrorCallBack,
+                        @Nullable final Consumer<String> updateActionWarningCallBack,
                         final int batchSize,
                         final boolean removeOtherLocales,
                         final boolean removeOtherSetEntries,
                         final boolean removeOtherCollectionEntries,
                         final boolean removeOtherProperties,
                         final boolean allowUuid,
-                        final Function<List<UpdateAction<Category>>,
-                          List<UpdateAction<Category>>> updateActionsFilter) {
+                        @Nullable final Function<List<UpdateAction<Category>>,
+                          List<UpdateAction<Category>>> updateActionsCallBack) {
         super(ctpClient,
             updateActionErrorCallBack,
             updateActionWarningCallBack,
@@ -34,20 +35,20 @@ public final class CategorySyncOptions extends BaseSyncOptions {
             removeOtherCollectionEntries,
             removeOtherProperties,
             allowUuid);
-        this.updateActionsFilter = updateActionsFilter;
+        this.updateActionsCallBack = updateActionsCallBack;
     }
 
     /**
-     * Returns the {@code updateActionsFilter} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
+     * Returns the {@code updateActionsCallBack} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
      * {@link Category}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@link Category}&gt;&gt;&gt; function set to
      * {@code this} {@link CategorySyncOptions}. It represents a filter function which can be applied on generated list
      * of update actions to produce a resultant list after the filter function has been applied.
      *
-     * @return the {@code updateActionsFilter} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
+     * @return the {@code updateActionsCallBack} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
      *         {@link Category}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@link Category}&gt;&gt;&gt; function
      *         set to {@code this} {@link CategorySyncOptions}.
      */
-    public Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> getUpdateActionsFilter() {
-        return updateActionsFilter;
+    public Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> getUpdateActionsCallBack() {
+        return updateActionsCallBack;
     }
 }
