@@ -7,6 +7,7 @@ import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
@@ -56,7 +57,8 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
         final CategoryDraft draftWithResolvedReferences = categoryReferenceResolver
-            .resolveParentReference(categoryDraft).toCompletableFuture().join();
+            .resolveParentReference(categoryDraft, CategoryDraftBuilder.of(categoryDraft)).toCompletableFuture().join()
+            .build();
 
         assertThat(draftWithResolvedReferences.getParent()).isNotNull();
         assertThat(draftWithResolvedReferences.getParent().getId()).isEqualTo("parentId");
@@ -74,7 +76,9 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(categorySyncOptions, typeService, categoryService);
         final CategoryDraft draftWithResolvedReferences = categoryReferenceResolver
-            .resolveCustomTypeReference(categoryDraft).toCompletableFuture().join();
+            .resolveCustomTypeReference(categoryDraft)
+            .toCompletableFuture().join()
+            .build();
 
         assertThat(draftWithResolvedReferences.getCustom()).isNotNull();
         assertThat(draftWithResolvedReferences.getCustom().getType().getId()).isEqualTo("typeId");
@@ -89,7 +93,7 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveParentReference(categoryDraft)
+        categoryReferenceResolver.resolveParentReference(categoryDraft, CategoryDraftBuilder.of(categoryDraft))
                                  .exceptionally(exception -> {
                                      assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                                      assertThat(exception.getMessage())
@@ -112,7 +116,8 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveParentReference(categoryDraft)
+        categoryReferenceResolver.resolveParentReference(categoryDraft, CategoryDraftBuilder.of(categoryDraft))
+                                 .thenApply(CategoryDraftBuilder::build)
                                  .thenAccept(resolvedDraft -> {
                                      assertThat(resolvedDraft.getParent()).isNotNull();
                                      assertThat(resolvedDraft.getParent().getId()).isEqualTo("parentKey");
@@ -178,6 +183,7 @@ public class CategoryReferenceResolverTest {
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
         categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
+                                 .thenApply(CategoryDraftBuilder::build)
                                  .thenAccept(resolvedDraft -> {
                                      assertThat(resolvedDraft.getCustom()).isNotNull();
                                      assertThat(resolvedDraft.getCustom().getType()).isNotNull();
@@ -194,7 +200,7 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveParentReference(categoryDraft)
+        categoryReferenceResolver.resolveParentReference(categoryDraft, CategoryDraftBuilder.of(categoryDraft))
                                  .exceptionally(exception -> {
                                      assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                                      assertThat(exception.getMessage())
@@ -215,7 +221,7 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveParentReference(categoryDraft)
+        categoryReferenceResolver.resolveParentReference(categoryDraft, CategoryDraftBuilder.of(categoryDraft))
                                  .exceptionally(exception -> {
                                      assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                                      assertThat(exception.getMessage())

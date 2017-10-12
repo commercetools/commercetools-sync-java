@@ -10,6 +10,7 @@ import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
+import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.types.CustomFieldsDraft;
@@ -66,7 +67,8 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
         final InventoryEntryDraft draftWithResolvedReferences = referenceResolver
-            .resolveCustomTypeReference(draft).toCompletableFuture().join();
+            .resolveCustomTypeReference(draft).toCompletableFuture().join()
+            .build();
 
         assertThat(draftWithResolvedReferences.getCustom()).isNotNull();
         assertThat(draftWithResolvedReferences.getCustom().getType().getId()).isEqualTo("typeId");
@@ -84,7 +86,8 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(optionsWithAllowedUuid, typeService, channelService);
         final InventoryEntryDraft draftWithResolvedReferences = referenceResolver
-            .resolveCustomTypeReference(draft).toCompletableFuture().join();
+            .resolveCustomTypeReference(draft).toCompletableFuture().join()
+            .build();
 
         assertThat(draftWithResolvedReferences.getCustom()).isNotNull();
         assertThat(draftWithResolvedReferences.getCustom().getType().getId()).isEqualTo("typeId");
@@ -99,7 +102,7 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
-        referenceResolver.resolveSupplyChannelReference(draft)
+        referenceResolver.resolveSupplyChannelReference(draft, InventoryEntryDraftBuilder.of(draft))
                                  .exceptionally(exception -> {
                                      assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                                      assertThat(exception.getMessage())
@@ -125,7 +128,7 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
-        referenceResolver.resolveSupplyChannelReference(draft)
+        referenceResolver.resolveSupplyChannelReference(draft, InventoryEntryDraftBuilder.of(draft))
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getCause())
@@ -154,7 +157,8 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(optionsWithEnsureChannels, typeService, channelService);
 
-        referenceResolver.resolveSupplyChannelReference(draft)
+        referenceResolver.resolveSupplyChannelReference(draft, InventoryEntryDraftBuilder.of(draft))
+                         .thenApply(InventoryEntryDraftBuilder::build)
                          .thenAccept(resolvedDraft -> {
                              assertThat(resolvedDraft.getSupplyChannel()).isNotNull();
                              assertThat(resolvedDraft.getSupplyChannel().getId()).isEqualTo(CHANNEL_ID);
@@ -218,6 +222,7 @@ public class InventoryReferenceResolverTest {
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
         referenceResolver.resolveCustomTypeReference(draft)
+                         .thenApply(InventoryEntryDraftBuilder::build)
                          .thenAccept(resolvedDraft -> {
                              assertThat(resolvedDraft.getCustom()).isNotNull();
                              assertThat(resolvedDraft.getCustom().getType()).isNotNull();
@@ -234,7 +239,7 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
-        referenceResolver.resolveSupplyChannelReference(draft)
+        referenceResolver.resolveSupplyChannelReference(draft, InventoryEntryDraftBuilder.of(draft))
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getMessage())
@@ -255,7 +260,7 @@ public class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
-        referenceResolver.resolveSupplyChannelReference(draft)
+        referenceResolver.resolveSupplyChannelReference(draft, InventoryEntryDraftBuilder.of(draft))
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getMessage())

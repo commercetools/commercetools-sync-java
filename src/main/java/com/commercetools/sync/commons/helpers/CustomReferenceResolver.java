@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.models.Builder;
 import io.sphere.sdk.types.CustomDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
@@ -19,12 +20,15 @@ import static java.lang.String.format;
  * resources for example (Categories, inventories and resource with a custom field).
  * For concrete reference resolution implementation of the CTP resources, this class should be extended.
  *
- * @param <T> the resource draft type for which reference resolution has to be done on.
+ * @param <D> the resource draft type for which reference resolution has to be done on.
+ * @param <B> the resource draft builder where resolved values should be set. The builder type should correspond
+ *            the {@code D} type.
  * @param <S> a subclass implementation of {@link BaseSyncOptions} that is used to allow/deny some specific options,
  *            specified by the user, on reference resolution.
  */
-public abstract class CustomReferenceResolver<T extends CustomDraft, S extends BaseSyncOptions>
-    extends BaseReferenceResolver<T, S> {
+public abstract class CustomReferenceResolver
+        <D extends CustomDraft, B extends Builder<? extends D>, S extends BaseSyncOptions>
+    extends BaseReferenceResolver<D, S> {
 
     private TypeService typeService;
 
@@ -34,7 +38,7 @@ public abstract class CustomReferenceResolver<T extends CustomDraft, S extends B
     }
 
     /**
-     * Given a draft of {@code T} (e.g. {@link CategoryDraft}) this method attempts to resolve it's custom type
+     * Given a draft of {@code D} (e.g. {@link CategoryDraft}) this method attempts to resolve it's custom type
      * reference to return {@link CompletionStage} which contains a new instance of the draft with the resolved
      * custom type reference. The key of the custom type is taken from the from the id field of the reference.
      *
@@ -47,7 +51,7 @@ public abstract class CustomReferenceResolver<T extends CustomDraft, S extends B
      *      type references or, in case an error occurs during reference resolution,
      *      a {@link ReferenceResolutionException}.
      */
-    protected abstract CompletionStage<T> resolveCustomTypeReference(@Nonnull final T draft);
+    protected abstract CompletionStage<B> resolveCustomTypeReference(@Nonnull D draft);
 
     /**
      * Given a custom fields object this method fetches the custom type reference id.
