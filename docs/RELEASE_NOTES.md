@@ -59,7 +59,7 @@ are breaking changes. If there are, then a migration guide should be provided.
 - **Build Tools** - Integration tests project credentials can now be set on a properties file not only as environment variables and give error messages if not set. [#105](https://github.com/commercetools/commercetools-sync-java/issues/105)
 - **Product Sync** - Validates the SKU before making a `ChangeMasterVariant` request by SKU. [#122](https://github.com/commercetools/commercetools-sync-java/issues/122)
 
- **Doc Fixes** (4)
+ **Doc Fixes** (5)
  - **Build Tools** - Adds bintray badge to repo. [#126](https://github.com/commercetools/commercetools-sync-java/issues/126)
  - **Product Sync** - Adds usage documentation. [#121](https://github.com/commercetools/commercetools-sync-java/issues/121)
  - **Commons** - Seperate contributing README into own README not in the main one. [#121](https://github.com/commercetools/commercetools-sync-java/issues/121)
