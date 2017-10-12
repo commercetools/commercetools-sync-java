@@ -37,6 +37,33 @@ are breaking changes. If there are, then a migration guide should be provided.
 - [v1.0.0-M1 -  Sep 06, 2017](#v100-m1----sep-06-2017)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+### v1.0.0-M2 -  Oct 12, 2017 
+
+**New Features** (3)
+- **Product Sync** - Support syncing entire product variant images, putting order into consideration. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
+- **Product Sync** - Expose `ProductVariantUpdateActionUtils#buildProductVariantImagesUpdateActions` and `ProductVariantUpdateActionUtils#buildMoveImageToPositionUpdateActions` action build util. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
+- **Product Sync** - Support Blacklisting/Whitelisting update action groups on sync. [#122](https://github.com/commercetools/commercetools-sync-java/issues/122)
+
+**Bug Fixes** (4)
+- **Build Tools** - Fixes issue were JavaDoc jar was not built. [#117](https://github.com/commercetools/commercetools-sync-java/issues/117)
+- **Build Tools** - Fixes issue were JavaDoc was not published on github. [#118](https://github.com/commercetools/commercetools-sync-java/issues/118)
+- **Product Sync** - Fixes a potential bug where an exisitng master variant key could be blank. [#122]
+(https://github.com/commercetools/commercetools-sync-java/issues/122)
+- **Product Sync** - Fixes a potential bug where a product draft could be provided with no master variant set. [#122](https://github.com/commercetools/commercetools-sync-java/issues/122)
+
+**Enhancements** (2)
+- **Build Tools** - Integration tests project credentials can now be set on a properties file not only as environment variables and give error messages if not set. [#105](https://github.com/commercetools/commercetools-sync-java/issues/105)
+- **Product Sync** - Validates the SKU before making a `ChangeMasterVariant` request by SKU. [#122]
+
+ **Doc Fixes** (4)
+ - **Build Tools** - Adds bintray badge to repo. [#126](https://github.com/commercetools/commercetools-sync-java/issues/126)
+ - **Product Sync** - Adds usage documentation. [#121](https://github.com/commercetools/commercetools-sync-java/issues/121)
+ - **Commons** - Seperate contributing README into own README not in the main one. [#121](https://github.com/commercetools/commercetools-sync-java/issues/121)
+ - **Commons** - Adds release notes doc. [#125](https://github.com/commercetools/commercetools-sync-java/issues/125)
+ - **Build Tools** - Adds JavaDoc badge to repo. [#145](https://github.com/commercetools/commercetools-sync-java/issues/145)
+
+
+
 
 ### v1.0.0-M2-beta -  Sep 28, 2017 
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M1...v1.0.0-M2-beta) | 
