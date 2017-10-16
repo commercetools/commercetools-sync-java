@@ -14,6 +14,7 @@ import static com.commercetools.sync.commons.utils.SyncUtils.replaceCustomTypeId
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
 
 public final class CategoryReferenceReplacementUtils {
+
     /**
      * Takes a list of Categories that are supposed to have their custom type and parent category reference expanded
      * in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return
