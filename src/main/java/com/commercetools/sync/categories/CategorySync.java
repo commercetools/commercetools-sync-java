@@ -612,14 +612,13 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                                  @Nonnull final CategoryDraft newCategory) {
         final String key = oldCategory.getKey();
         return categoryService.fetchCategory(key)
-                              .thenCompose(categoryOptional -> {
-                                  if (categoryOptional.isPresent()) {
-                                      final Category fetchedCategory = categoryOptional.get();
-                                      return buildUpdateActionsAndUpdate(fetchedCategory, newCategory);
-                                  }
-                                  handleError(format(UPDATE_FAILED, key, FETCH_ON_RETRY), null);
-                                  return CompletableFuture.completedFuture(null);
-                              });
+                .thenCompose(categoryOptional ->
+                        categoryOptional
+                                .map(fetchecCategory -> buildUpdateActionsAndUpdate(fetchecCategory, newCategory))
+                                .orElseGet(() -> {
+                                    handleError(format(UPDATE_FAILED, key, FETCH_ON_RETRY), null);
+                                    return CompletableFuture.completedFuture(null);
+                                }));
     }
 
     /**

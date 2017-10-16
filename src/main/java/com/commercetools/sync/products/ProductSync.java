@@ -231,23 +231,21 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                                                                        @Nonnull final ProductDraft
                                                                                            newProduct) {
         return productTypeService.fetchCachedProductAttributeMetaDataMap(oldProduct.getProductType().getId())
-                          .thenCompose(optionalAttributesMetaDataMap -> {
-                              if (!optionalAttributesMetaDataMap.isPresent()) {
-                                  final String errorMessage = format(UPDATE_FAILED, oldProduct.getKey(),
-                                      FAILED_TO_FETCH_PRODUCT_TYPE);
-                                  handleError(errorMessage, null);
-                                  return CompletableFuture.completedFuture(Optional.of(oldProduct));
-                              } else {
-                                  final Map<String, AttributeMetaData> attributeMetaDataMap =
-                                      optionalAttributesMetaDataMap.get();
-                                  final List<UpdateAction<Product>> updateActions =
-                                      buildActions(oldProduct, newProduct, syncOptions, attributeMetaDataMap);
-                                  if (!updateActions.isEmpty()) {
-                                      return updateProduct(oldProduct, newProduct, updateActions);
-                                  }
-                                  return CompletableFuture.completedFuture(Optional.of(oldProduct));
-                              }
-                          });
+                .thenCompose(optionalAttributesMetaDataMap ->
+                        optionalAttributesMetaDataMap.map(attributeMetaDataMap -> {
+                            final List<UpdateAction<Product>> updateActions =
+                                    buildActions(oldProduct, newProduct, syncOptions, attributeMetaDataMap);
+                            if (!updateActions.isEmpty()) {
+                                return updateProduct(oldProduct, newProduct, updateActions);
+                            }
+                            return CompletableFuture.completedFuture(Optional.of(oldProduct));
+                        }).orElseGet(() -> {
+                            final String errorMessage = format(UPDATE_FAILED, oldProduct.getKey(),
+                                    FAILED_TO_FETCH_PRODUCT_TYPE);
+                            handleError(errorMessage, null);
+                            return CompletableFuture.completedFuture(Optional.of(oldProduct));
+                        })
+                );
     }
 
     @Nonnull
