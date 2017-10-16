@@ -100,7 +100,7 @@ public final class CategoryServiceImpl implements CategoryService {
                 .handle((fetchedProductOptional, sphereException) -> {
                     if (sphereException != null) {
                         syncOptions
-                                .applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
+                            .applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
                         return Optional.empty();
                     }
                     return fetchedProductOptional;
