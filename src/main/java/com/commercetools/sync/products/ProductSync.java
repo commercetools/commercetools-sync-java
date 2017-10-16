@@ -188,41 +188,10 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private CompletionStage<Void> syncProducts(@Nonnull final Map<ProductDraft, Product> productsToSync) {
         final List<CompletableFuture<Optional<Product>>> futureUpdates =
             productsToSync.entrySet().stream()
-                          .map(entry -> buildUpdateActionsAndUpdate(entry.getValue(), entry.getKey(), false))
+                          .map(entry -> fetchProductAttributesMetadataAndUpdate(entry.getValue(), entry.getKey()))
                           .map(CompletionStage::toCompletableFuture)
                           .collect(Collectors.toList());
         return CompletableFuture.allOf(futureUpdates.toArray(new CompletableFuture[futureUpdates.size()]));
-    }
-
-    /**
-     * Given an existing {@link Product} and a new {@link ProductDraft}, first resolves all references on the category
-     * draft, then it calculates all the update actions required to synchronize the existing category to be the
-     * same as the new one. If there are update actions found, a request is made to CTP to update the
-     * existing category, otherwise it doesn't issue a request.
-     *
-     * @param oldProduct the category which could be updated.
-     * @param newProduct the category draft where we get the new data.
-     * @return a future which contains an empty result after execution of the update.
-     */
-    @Nonnull
-    @SuppressWarnings("ConstantConditions")
-    private CompletionStage<Optional<Product>> buildUpdateActionsAndUpdate(@Nonnull final Product oldProduct,
-                                                                           @Nonnull final ProductDraft newProduct,
-                                                                           final boolean retry) {
-        if (retry) {
-            final String key = oldProduct.getKey();
-            return productService.fetchProduct(key)
-                                 .thenCompose(productOptional -> {
-                                     if (productOptional.isPresent()) {
-                                         final Product fetchedProduct = productOptional.get();
-                                         return fetchProductAttributesMetadataAndUpdate(fetchedProduct, newProduct);
-                                     }
-                                     handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE), null);
-                                     return CompletableFuture.completedFuture(productOptional);
-                                 });
-        } else {
-            return fetchProductAttributesMetadataAndUpdate(oldProduct, newProduct);
-        }
     }
 
     @Nonnull
@@ -260,13 +229,36 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                  if (sphereException != null) {
                                      return retryRequestIfConcurrentModificationException(
                                          sphereException, oldProduct,
-                                         () -> buildUpdateActionsAndUpdate(oldProduct, newProduct,
                                              true), UPDATE_FAILED);
                                  } else {
                                      statistics.incrementUpdated();
                                      return CompletableFuture.completedFuture(Optional.of(updatedProduct));
                                  }
                              });
+                                () -> fetchAndUpdate(oldProduct, newProduct), UPDATE_FAILED);
+    /**
+     * Given an existing {@link Product} and a new {@link ProductDraft}, first resolves all references on the category
+     * draft, then it calculates all the update actions required to synchronize the existing category to be the
+     * same as the new one. If there are update actions found, a request is made to CTP to update the
+     * existing category, otherwise it doesn't issue a request.
+     *
+     * @param oldProduct the category which could be updated.
+     * @param newProduct the category draft where we get the new data.
+     * @return a future which contains an empty result after execution of the update.
+     */
+    @Nonnull
+    @SuppressWarnings("ConstantConditions")
+    private CompletionStage<Optional<Product>> fetchAndUpdate(@Nonnull final Product oldProduct,
+                                                              @Nonnull final ProductDraft newProduct) {
+        final String key = oldProduct.getKey();
+        return productService.fetchProduct(key)
+                .thenCompose(productOptional -> productOptional
+                        .map(fetchedProduct -> fetchProductAttributesMetadataAndUpdate(fetchedProduct, newProduct))
+                        .orElseGet(() -> {
+                            handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE), null);
+                            return CompletableFuture.completedFuture(productOptional);
+                        })
+                );
     }
 
     /**
