@@ -26,6 +26,7 @@ publishing {
         Production(MavenPublication) {
             from components.java
             artifact sourcesJar
+            artifact javadocJar
             groupId rootProject.group
             artifactId project.name
             version rootProject.version

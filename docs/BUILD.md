@@ -1,5 +1,4 @@
-Build and release workflow
-===========================
+# Build and release workflow
 
 The main goal of the build process is to publish the artifacts to public repositories, 
 like [JCenter](https://jcenter.bintray.com/) and [Maven Central](https://search.maven.org/).
@@ -18,8 +17,7 @@ like [JCenter](https://jcenter.bintray.com/) and [Maven Central](https://search.
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Release a new version
-
+# Release a new version 
 To release the library, you need to create a new git commit tag.
 
 This will trigger a new Travis build. The tag can be created via command line
@@ -35,6 +33,8 @@ https://github.com/commercetools/commercetools-sync-java/releases
 Having a tag in the commit will cause travis to call the `bintrayUpload` task specified in the gradle build scripts, which uploads
 the artifacts to Bintray. The artifacts have to be then promoted/published from Bintray to _JCenter_ and/or 
 _Maven Central_. See [Publish workflow](#publish-workflow) below for more details.
+
+Please make sure to add a section for the release in the [release notes](/docs/RELEASE_NOTES.md). 
 
 # Publish workflow
 
@@ -75,7 +75,7 @@ The `-SNAPSHOT` suffix is mandatory.
 `OSS_USER`/`OSS_KEY` environment variables or `ossUser`/`ossKey` gradle build properties 
 (the properties have precedence over environment variables). 
 
-See more configuration details of the oss uploading in [oss-publish.gradle](./gradle-scripts/oss-publish.gradle) file.
+See more configuration details of the oss uploading in [oss-publish.gradle](/gradle-scripts/oss-publish.gradle) file.
 
 
 ## Publish to Bintray
@@ -86,7 +86,7 @@ Bintray publish is performed by [`gradle-bintray-plugin`](https://github.com/bin
 The artifacts are published to [bintray commercetools maven repo](https://bintray.com/commercetools/maven/commercetools-sync-java).
 
 If you are a new developer in the project - update contributors list in 
-[`maven-publish.gradle`](https://github.com/commercetools/commercetools-sync-java/blob/master/gradle-scripts/maven-publish.gradle)`-> pomConfig -> developers`.
+[`maven-publish.gradle`](/gradle-scripts/maven-publish.gradle)`-> pomConfig -> developers`.
 
 To initiate publish call:
 ```
