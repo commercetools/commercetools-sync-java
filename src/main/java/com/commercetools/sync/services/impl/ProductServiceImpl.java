@@ -108,13 +108,10 @@ public class ProductServiceImpl implements ProductService {
         final QueryPredicate<Product> queryPredicate = buildProductKeysQueryPredicate(Collections.singleton(key));
         return syncOptions.getCtpClient().execute(ProductQuery.of().withPredicates(queryPredicate))
                           .thenApply(PagedResult::head)
-                          .handle((fetchedProductOptional, sphereException) -> {
-                              if (sphereException != null) {
-                                  syncOptions
+                          .exceptionally(sphereException -> {
+                              syncOptions
                                       .applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
-                                  return Optional.empty();
-                              }
-                              return fetchedProductOptional;
+                              return Optional.empty();
                           });
     }
 

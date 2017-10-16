@@ -97,13 +97,9 @@ public final class CategoryServiceImpl implements CategoryService {
         return syncOptions.getCtpClient()
                 .execute(CategoryQuery.of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().is(key)))
                 .thenApply(PagedResult::head)
-                .handle((fetchedProductOptional, sphereException) -> {
-                    if (sphereException != null) {
-                        syncOptions
-                            .applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
-                        return Optional.empty();
-                    }
-                    return fetchedProductOptional;
+                .exceptionally(sphereException -> {
+                    syncOptions.applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
+                    return Optional.empty();
                 });
     }
 
