@@ -106,8 +106,7 @@ public class ChannelServiceIT {
             .toCompletableFuture()
             .join()
             .head();
-        assertThat(createdChannelOptional).isNotEmpty();
-        assertThat(createdChannelOptional.get()).isEqualTo(result);
+        assertThat(createdChannelOptional).contains(result);
     }
 
 
@@ -128,12 +127,11 @@ public class ChannelServiceIT {
             .toCompletableFuture()
             .join()
             .head();
-        assertThat(createdChannelOptional).isNotEmpty();
-        assertThat(createdChannelOptional.get()).isEqualTo(result);
+        assertThat(createdChannelOptional).contains(result);
 
         //assert cache state
         final Optional<String> newChannelId =
             channelService.fetchCachedChannelId(newChannelKey).toCompletableFuture().join();
-        assertThat(newChannelId).isNotEmpty();
+        assertThat(newChannelId).contains(result.getId());
     }
 }
