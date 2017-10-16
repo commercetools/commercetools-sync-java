@@ -11,7 +11,8 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceCustomTypeIdWithKeys;
 
-public final class InventoryReferenceReplacementUtils{
+public final class InventoryReferenceReplacementUtils {
+    
     /**
      * Takes a list of inventoryEntries that are supposed to have their custom type reference expanded
      * in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return
