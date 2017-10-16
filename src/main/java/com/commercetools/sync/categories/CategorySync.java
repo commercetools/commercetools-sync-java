@@ -42,6 +42,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
         + "CategoryDraft with key:'%s'. Reason: %s";
     private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
+    private static final String FETCH_ON_RETRY = "Failed to fetch category on retry.";
 
     private final CategoryService categoryService;
     private final CategoryReferenceResolver referenceResolver;
@@ -519,21 +520,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
     }
 
-    private CompletionStage<Void> fetchAndUpdate(@Nonnull final Category oldCategory,
-                                                 @Nonnull final CategoryDraft newCategory) {
-        final String key = oldCategory.getKey();
-        return categoryService.fetchCategory(key)
-                .thenCompose(categoryOptional -> {
-                    if (categoryOptional.isPresent()) {
-                        final Category fetchedCategory = categoryOptional.get();
-                        return buildUpdateActionsAndUpdate(fetchedCategory, newCategory);
-                    }
-                    handleError(format(UPDATE_FAILED, key,
-                            "Category with key: '%s' was deleted while retrying to update."), null);
-                    return CompletableFuture.completedFuture(null);
-                });
-    }
-
     /**
      * Given an existing {@link Category} and a new {@link CategoryDraft}, first resolves all references on the category
      * draft, then it calculates all the update actions required to synchronize the existing category to be the same as
@@ -620,6 +606,20 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             }
             return CompletableFuture.completedFuture(null);
         }
+    }
+
+    private CompletionStage<Void> fetchAndUpdate(@Nonnull final Category oldCategory,
+                                                 @Nonnull final CategoryDraft newCategory) {
+        final String key = oldCategory.getKey();
+        return categoryService.fetchCategory(key)
+                              .thenCompose(categoryOptional -> {
+                                  if (categoryOptional.isPresent()) {
+                                      final Category fetchedCategory = categoryOptional.get();
+                                      return buildUpdateActionsAndUpdate(fetchedCategory, newCategory);
+                                  }
+                                  handleError(format(UPDATE_FAILED, key, FETCH_ON_RETRY), null);
+                                  return CompletableFuture.completedFuture(null);
+                              });
     }
 
     /**
