@@ -222,20 +222,20 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                                              @Nonnull final ProductDraft newProduct,
                                                              @Nonnull final List<UpdateAction<Product>> updateActions) {
         return productService.updateProduct(oldProduct, updateActions)
-                             .handle(ImmutablePair::new)
-                             .thenCompose(updateResponse -> {
-                                 final Product updatedProduct = updateResponse.getKey();
-                                 final Throwable sphereException = updateResponse.getValue();
-                                 if (sphereException != null) {
-                                     return retryRequestIfConcurrentModificationException(
-                                         sphereException, oldProduct,
-                                             true), UPDATE_FAILED);
-                                 } else {
-                                     statistics.incrementUpdated();
-                                     return CompletableFuture.completedFuture(Optional.of(updatedProduct));
-                                 }
-                             });
+                .handle(ImmutablePair::new)
+                .thenCompose(updateResponse -> {
+                    final Product updatedProduct = updateResponse.getKey();
+                    final Throwable sphereException = updateResponse.getValue();
+                    if (sphereException != null) {
+                        return retryRequestIfConcurrentModificationException(sphereException, oldProduct,
                                 () -> fetchAndUpdate(oldProduct, newProduct), UPDATE_FAILED);
+                    } else {
+                        statistics.incrementUpdated();
+                        return CompletableFuture.completedFuture(Optional.of(updatedProduct));
+                    }
+                });
+    }
+
     /**
      * Given an existing {@link Product} and a new {@link ProductDraft}, first resolves all references on the category
      * draft, then it calculates all the update actions required to synchronize the existing category to be the
