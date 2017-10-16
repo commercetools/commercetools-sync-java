@@ -53,7 +53,7 @@ Category and rebuilding build update actions. [#94](https://github.com/commercet
 
 **Compatibility notes** (8)
 - **Category Sync** - Move `replaceCategoriesReferenceIdsWithKeys` from `SyncUtils` to `CategorySyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
-- **Inventory Sync** - Move `replaceInventoriesReferenceIdsWithKeys` from `SyncUtils` to `InventorySyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Inventory Sync** - Move `replaceInventoriesReferenceIdsWithKeys` from `SyncUtils` to `InventoryReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
 - **Product Sync** - Move `replaceProductsReferenceIdsWithKeys` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
 - **Product Sync** - Move `replaceProductDraftsCategoryReferenceIdsWithKeys` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
 - **Product Sync** - Move `replaceProductDraftCategoryReferenceIdsWithKeys` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
