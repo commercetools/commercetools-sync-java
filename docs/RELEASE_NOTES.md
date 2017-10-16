@@ -52,14 +52,14 @@ are breaking changes. If there are, then a migration guide should be provided.
 Category and rebuilding build update actions. [#94](https://github.com/commercetools/commercetools-sync-java/issues/94)
 
 **Compatibility notes** (8)
-- **Category Sync** - Move `replaceCategoriesReferenceIdsWithKeys` from `SyncUtils` to `CategoryReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
-- **Inventory Sync** - Move `replaceInventoriesReferenceIdsWithKeys` from `SyncUtils` to `InventoryReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
-- **Product Sync** - Move `replaceProductsReferenceIdsWithKeys` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
-- **Product Sync** - Move `replaceProductDraftsCategoryReferenceIdsWithKeys` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
-- **Product Sync** - Move `replaceProductDraftCategoryReferenceIdsWithKeys` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
-- **Product Sync** - Move `replaceCategoryOrderHintCategoryIdsWithKeys` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
-- **Product Sync** - Move `replaceProductDraftsCategoryReferenceIdsWithKeys` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
-- **Product Sync** - Move `getDraftBuilderFromStagedProduct` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Category Sync** - Move `replaceCategoriesReferenceIdsWithKeys` from `SyncUtils` to `CategoryReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Inventory Sync** - Move `replaceInventoriesReferenceIdsWithKeys` from `SyncUtils` to `InventoryReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Product Sync** - Move `replaceProductsReferenceIdsWithKeys` from `SyncUtils` to `ProductReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Product Sync** - Move `replaceProductDraftsCategoryReferenceIdsWithKeys` from `SyncUtils` to `ProductReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Product Sync** - Move `replaceProductDraftCategoryReferenceIdsWithKeys` from `SyncUtils` to `ProductReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Product Sync** - Move `replaceCategoryOrderHintCategoryIdsWithKeys` from `SyncUtils` to `ProductReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Product Sync** - Move `replaceProductDraftsCategoryReferenceIdsWithKeys` from `SyncUtils` to `ProductReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Product Sync** - Move `getDraftBuilderFromStagedProduct` from `SyncUtils` to `ProductReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
 -->
 ### v1.0.0-M2 -  Oct 12, 2017 
 
