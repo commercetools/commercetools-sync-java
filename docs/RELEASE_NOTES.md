@@ -1,4 +1,4 @@
-# RELEASE NOTES
+# Release Notes
 
 <!-- RELEASE NOTE FORMAT
 
@@ -37,6 +37,60 @@ are breaking changes. If there are, then a migration guide should be provided.
 - [v1.0.0-M1 -  Sep 06, 2017](#v100-m1----sep-06-2017)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!--
+### v1.0.0-M3 -  Oct 26, 2017
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M2...v1.0.0-M3) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M3/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M3)
+
+**New Features** (1)
+- **Commons** - Expose `replaceCustomTypeIdWithKeys` and `replaceReferenceIdWithKey`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120).
+
+
+**Bug Fixes** (1)
+- **Category Sync** - Fixes an issue where retrying on concurrent modification exception wasn't re-fetching the latest 
+Category and rebuilding build update actions. [#94](https://github.com/commercetools/commercetools-sync-java/issues/94)
+
+**Compatibility notes** (8)
+- **Category Sync** - Move `replaceCategoriesReferenceIdsWithKeys` from `SyncUtils` to `CategorySyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Inventory Sync** - Move `replaceInventoriesReferenceIdsWithKeys` from `SyncUtils` to `InventorySyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Product Sync** - Move `replaceProductsReferenceIdsWithKeys` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Product Sync** - Move `replaceProductDraftsCategoryReferenceIdsWithKeys` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Product Sync** - Move `replaceProductDraftCategoryReferenceIdsWithKeys` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Product Sync** - Move `replaceCategoryOrderHintCategoryIdsWithKeys` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Product Sync** - Move `replaceProductDraftsCategoryReferenceIdsWithKeys` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Product Sync** - Move `getDraftBuilderFromStagedProduct` from `SyncUtils` to `ProductSyncUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+-->
+### v1.0.0-M2 -  Oct 12, 2017 
+
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M2-beta...v1.0.0-M2) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M2/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M2)
+
+**New Features** (3)
+- **Product Sync** - Support syncing entire product variant images, putting order into consideration. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
+- **Product Sync** - Expose `ProductVariantUpdateActionUtils#buildProductVariantImagesUpdateActions` and `ProductVariantUpdateActionUtils#buildMoveImageToPositionUpdateActions` action build util. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
+- **Product Sync** - Support Blacklisting/Whitelisting update action groups on sync. [#122](https://github.com/commercetools/commercetools-sync-java/issues/122)
+
+**Bug Fixes** (4)
+- **Build Tools** - Fixes issue were JavaDoc jar was not built. [#117](https://github.com/commercetools/commercetools-sync-java/issues/117)
+- **Build Tools** - Fixes issue were JavaDoc was not published on github. [#118](https://github.com/commercetools/commercetools-sync-java/issues/118)
+- **Product Sync** - Fixes a potential bug where an existing master variant key could be blank.[#122](https://github.com/commercetools/commercetools-sync-java/issues/122)
+- **Product Sync** - Fixes a potential bug where a product draft could be provided with no master variant set. [#122](https://github.com/commercetools/commercetools-sync-java/issues/122)
+
+**Enhancements** (2)
+- **Build Tools** - Integration tests project credentials can now be set on a properties file not only as environment variables and give error messages if not set. [#105](https://github.com/commercetools/commercetools-sync-java/issues/105)
+- **Product Sync** - Validates the SKU before making a `ChangeMasterVariant` request by SKU. [#122](https://github.com/commercetools/commercetools-sync-java/issues/122)
+
+ **Doc Fixes** (5)
+ - **Build Tools** - Adds bintray badge to repo. [#126](https://github.com/commercetools/commercetools-sync-java/issues/126)
+ - **Product Sync** - Adds usage documentation. [#121](https://github.com/commercetools/commercetools-sync-java/issues/121)
+ - **Commons** - Seperate contributing README into own README not in the main one. [#121](https://github.com/commercetools/commercetools-sync-java/issues/121)
+ - **Commons** - Adds release notes doc. [#125](https://github.com/commercetools/commercetools-sync-java/issues/125)
+ - **Build Tools** - Adds JavaDoc badge to repo. [#145](https://github.com/commercetools/commercetools-sync-java/issues/145)
+
+**Compatibility notes**
+- No breaking changes introduced.
 
 ### v1.0.0-M2-beta -  Sep 28, 2017 
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M1...v1.0.0-M2-beta) | 
