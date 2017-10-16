@@ -155,7 +155,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                               .thenCompose(keyToIdCache -> {
                                   prepareDraftsForProcessing(categoryDrafts, keyToIdCache);
                                   categoryKeysToFetch = existingCategoryDrafts.stream().map(CategoryDraft::getKey)
-                                                                                 .collect(Collectors.toSet());
+                                                                              .collect(Collectors.toSet());
                                   return categoryService.createCategories(newCategoryDrafts)
                                                         .thenAccept(this::processCreatedCategories)
                                                         .thenCompose(result -> categoryService
