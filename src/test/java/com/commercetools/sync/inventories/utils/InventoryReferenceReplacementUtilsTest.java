@@ -19,7 +19,7 @@ public class InventoryReferenceReplacementUtilsTest {
 
     @Test
     public void
-    replaceInventoriesReferenceIdsWithKeys_WithAllExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+        replaceInventoriesReferenceIdsWithKeys_WithAllExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
         final String customTypeId = UUID.randomUUID().toString();
         final String customTypeKey = "customTypeKey";
         final Type mockCustomType = mock(Type.class);
@@ -52,7 +52,7 @@ public class InventoryReferenceReplacementUtilsTest {
 
     @Test
     public void
-    replaceInventoriesReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
+        replaceInventoriesReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
         final String customTypeId = UUID.randomUUID().toString();
         final List<InventoryEntry> mockInventoryEntries = new ArrayList<>();
         for (int i = 0; i < 10; i++) {

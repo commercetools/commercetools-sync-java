@@ -19,7 +19,7 @@ public class CategoryReferenceReplacementUtilsTest {
 
     @Test
     public void
-    replaceCategoryReferenceIdsWithKeys_WithAllExpandedCategoryReferences_ShouldReturnReferencesWithReplacedKeys() {
+        replaceCategoryReferenceIdsWithKeys_WithAllExpandedCategoryReferences_ShouldReturnReferencesWithReplacedKeys() {
         final String parentId = UUID.randomUUID().toString();
         final String customTypeId = UUID.randomUUID().toString();
         final String customTypeKey = "customTypeKey";
@@ -63,7 +63,7 @@ public class CategoryReferenceReplacementUtilsTest {
 
     @Test
     public void
-    replaceCategoryReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
+        replaceCategoryReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
         final String parentId = UUID.randomUUID().toString();
         final String customTypeId = UUID.randomUUID().toString();
 

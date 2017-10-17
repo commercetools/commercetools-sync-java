@@ -223,7 +223,8 @@ public final class ProductReferenceReplacementUtils {
             final List<ProductVariantDraft> variantDraftsWithPriceChannelReferencesWithKeys =
                 productDraftVariants.stream()
                                     .filter(Objects::nonNull)
-                                    .map(ProductReferenceReplacementUtils::replaceProductVariantDraftPriceChannelIdsWithKeys)
+                                    .map(ProductReferenceReplacementUtils::
+                                        replaceProductVariantDraftPriceChannelIdsWithKeys)
                                     .collect(toList());
             productDraftBuilder = productDraftBuilder.variants(variantDraftsWithPriceChannelReferencesWithKeys);
         }
