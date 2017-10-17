@@ -79,6 +79,8 @@ public class ProductSyncMockUtils {
             .metaTitle(productData.getMetaTitle())
             .description(productData.getDescription())
             .searchKeywords(productData.getSearchKeywords())
+            .taxCategory(productFromJson.getTaxCategory())
+            .state(productFromJson.getState())
             .key(productFromJson.getKey())
             .categories(
                 productData.getCategories().stream().map(Reference::toResourceIdentifier).collect(Collectors.toSet()))
