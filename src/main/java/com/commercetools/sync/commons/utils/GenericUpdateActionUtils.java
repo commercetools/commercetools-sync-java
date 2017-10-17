@@ -28,7 +28,7 @@ final class GenericUpdateActionUtils {
         + "remove the custom type on the %s with id '%s'. Reason: %s";
 
     /**
-     * Creates a CTP "setCustomType" update action on the given resource {@link T} (which currently could either
+     * Creates a CTP "setCustomType" update action on the given resource {@code T} (which currently could either
      * be a {@link Category} or a {@link Channel}).
      *
      * @param customTypeId       the id of the new custom type.
@@ -56,8 +56,8 @@ final class GenericUpdateActionUtils {
     }
 
     /**
-     * Creates a CTP "setCustomType" update action on the given resource {@link T} that removes the custom type set on
-     * the given resource {@link T} (which currently could either be a {@link Category} or a {@link Channel}).
+     * Creates a CTP "setCustomType" update action on the given resource {@code T} that removes the custom type set on
+     * the given resource {@code T} (which currently could either be a {@link Category} or a {@link Channel}).
      *
      * @param resource    the resource to do the update action on.
      * @param <T>         the type of the resource to do the update action on.
@@ -77,9 +77,9 @@ final class GenericUpdateActionUtils {
     }
 
     /**
-     * Creates a CTP "setCustomField" update action on the given resource {@link T} that updates a custom field with
+     * Creates a CTP "setCustomField" update action on the given resource {@code T} that updates a custom field with
      * {@code customFieldName} and a {@code customFieldValue} on the given
-     * resource {@link T} (which currently could either be a {@link Category} or a {@link Channel}).
+     * resource {@code T} (which currently could either be a {@link Category} or a {@link Channel}).
      *
      * @param customFieldName  the name of the custom field to update.
      * @param customFieldValue the new JSON value of the custom field.

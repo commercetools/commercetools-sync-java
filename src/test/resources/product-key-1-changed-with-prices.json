@@ -1,0 +1,305 @@
+{
+  "id": "ba81a6da-cf83-435b-a89e-2afab579846f",
+  "version": 10,
+  "key": "productKey1",
+  "productType": {
+    "typeId": "product-type",
+    "id": "cda0dbf7-b42e-40bf-8453-241d5b587f93"
+  },
+  "catalogs": [],
+  "masterData": {
+    "current": {
+      "name": {
+        "en": "new name current"
+      },
+      "description": {
+        "en": "new description current"
+      },
+      "metaDescription": {
+        "en": "new Meta description current"
+      },
+      "metaKeywords": {
+        "en": "key3,key4"
+      },
+      "metaTitle": {
+        "en": "new title current"
+      },
+      "categories": [
+        {
+          "typeId": "category",
+          "id": "2cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        },
+        {
+          "typeId": "category",
+          "id": "3cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        },
+        {
+          "typeId": "category",
+          "id": "4cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        },
+        {
+          "typeId": "category",
+          "id": "5cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        }
+      ],
+      "categoryOrderHints": {
+        "2cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.53",
+        "4cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.83",
+        "5cfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.93"
+      },
+      "slug": {
+        "en": "rehruecken-o-k1-current"
+      },
+      "masterVariant": {
+        "id": 1,
+        "key": "v1",
+        "sku": "3065836",
+        "prices": [
+          {
+            "value": {
+              "currencyCode": "EUR",
+              "centAmount": 118
+            }
+          },
+          {
+            "value": {
+              "currencyCode": "EGP",
+              "centAmount": 100
+            }
+          }
+        ],
+        "images": [
+          {
+            "url": "https://53346cfbf3c7e017ed3d-6de74c3efa80f1c837c6a988b57abe66.ssl.cf3.rackcdn.com/16.11.11_rehruecken--O9hsZFH4.png",
+            "dimensions": {
+              "w": 0,
+              "h": 0
+            }
+          }
+        ],
+        "attributes": [
+          {
+            "name": "priceInfo",
+            "value": "62,90/kg"
+          },
+          {
+            "name": "size",
+            "value": "ca. 1 x 1000 g"
+          },
+          {
+            "name": "rinderrasse",
+            "value": "Reh"
+          },
+          {
+            "name": "herkunft",
+            "value": "Ägypten"
+          },
+          {
+            "name": "fuetterung",
+            "value": "Gräser, Kräuter, Knospen, Eicheln, Beeren"
+          },
+          {
+            "name": "teilstueck",
+            "value": "Reh-Rücken"
+          },
+          {
+            "name": "reifung",
+            "value": "dry-aged, mindestens 2 Tage"
+          },
+          {
+            "name": "haltbarkeit",
+            "value": "bei < 7°C: 9 Tage ungeöffnet"
+          },
+          {
+            "name": "verpackung",
+            "value": "vakuumverpackt"
+          },
+          {
+            "name": "anlieferung",
+            "value": "frisch"
+          },
+          {
+            "name": "zubereitung",
+            "value": "Grill, Ofen, Niedertemperatur"
+          },
+          {
+            "name": "ean",
+            "value": "2743580000005"
+          }
+        ],
+        "assets": []
+      },
+      "variants": [],
+      "searchKeywords": {
+        "en": [
+          {
+            "text": "key3"
+          },
+          {
+            "text": "key4"
+          }
+        ]
+      }
+    },
+    "staged": {
+      "name": {
+        "en": "new name"
+      },
+      "description": {
+        "en": "new description"
+      },
+      "metaDescription": {
+        "en": "new Meta description"
+      },
+      "metaKeywords": {
+        "en": "key1,key2"
+      },
+      "metaTitle": {
+        "en": "new title"
+      },
+      "categories": [
+        {
+          "typeId": "category",
+          "id": "2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        },
+        {
+          "typeId": "category",
+          "id": "3dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        },
+        {
+          "typeId": "category",
+          "id": "4dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        },
+        {
+          "typeId": "category",
+          "id": "5dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        }
+      ],
+      "categoryOrderHints": {
+        "2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.53",
+        "4dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.83",
+        "5dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.93"
+      },
+      "slug": {
+        "en": "rehruecken-o-k1"
+      },
+      "masterVariant": {
+        "id": 1,
+        "key": "v1",
+        "sku": "3065831",
+        "key": "v1",
+        "prices": [
+          {
+            "value": {
+              "currencyCode": "EUR",
+              "centAmount": 118
+            },
+            "channel": {
+              "typeId": "channel",
+              "id": "channel-key_1"
+            }
+          },
+          {
+            "value": {
+              "currencyCode": "EGP",
+              "centAmount": 100
+            },
+            "channel": {
+              "typeId": "channel",
+              "id": "channel-key_1"
+            }
+          }
+        ],
+        "images": [
+          {
+            "url": "https://53346cfbf3c7e017ed3d-6de74c3efa80f1c837c6a988b57abe66.ssl.cf3.rackcdn.com/new-image.png",
+            "dimensions": {
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "url": "https://53346cfbf3c7e017ed3d-6de74c3efa80f1c837c6a988b57abe66.ssl.cf3.rackcdn.com/new-image-2.png",
+            "dimensions": {
+              "w": 0,
+              "h": 0
+            }
+          }
+        ],
+        "attributes": [
+          {
+            "name": "priceInfo",
+            "value": "64,90/kg"
+          },
+          {
+            "name": "size",
+            "value": "ca. 1 x 1000 g"
+          },
+          {
+            "name": "rinderrasse",
+            "value": "Reh"
+          },
+          {
+            "name": "herkunft",
+            "value": "Deutschland"
+          },
+          {
+            "name": "fuetterung",
+            "value": "Gräser, Kräuter, Knospen, Eicheln, Beeren"
+          },
+          {
+            "name": "teilstueck",
+            "value": "Reh-Rücken"
+          },
+          {
+            "name": "reifung",
+            "value": "wet-aged, mindestens 2 Tage"
+          },
+          {
+            "name": "haltbarkeit",
+            "value": "bei < 7°C: 8 Tage ungeöffnet"
+          },
+          {
+            "name": "verpackung",
+            "value": "vakuumverpackt"
+          },
+          {
+            "name": "anlieferung",
+            "value": "frisch"
+          },
+          {
+            "name": "zubereitung",
+            "value": "Grill, Ofen, Niedertemperatur"
+          },
+          {
+            "name": "ean",
+            "value": "2743580000005"
+          }
+        ],
+        "assets": []
+      },
+      "variants": [],
+      "searchKeywords": {
+        "en": [
+          {
+            "text": "key1"
+          },
+          {
+            "text": "key2"
+          }
+        ]
+      }
+    },
+    "published": true,
+    "hasStagedChanges": false
+  },
+  "catalogData": {},
+  "taxCategory": {
+    "typeId": "tax-category",
+    "id": "ebbe95fb-2282-4f9a-8747-fbe440e02dc0"
+  },
+  "lastVariantId": 1,
+  "createdAt": "2016-11-21T09:32:41.261Z",
+  "lastModifiedAt": "2016-12-05T16:09:03.307Z",
+  "lastMessageSequenceNumber": 3
+}

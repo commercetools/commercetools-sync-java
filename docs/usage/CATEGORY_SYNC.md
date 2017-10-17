@@ -42,7 +42,7 @@ matched.
     final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
     ````
      
-   Example of its usage can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130).
+   Example of its usage can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130).
 3. It is an important responsibility of the user of the library to instantiate a `sphereClient` that has the following properties:
     - Limits the amount of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with 
    [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html) 
@@ -50,7 +50,7 @@ matched.
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
    
    You can use the same client instantiating used in the integration tests for this library found 
-   [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
+   [here](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
 
 4. After the `sphereClient` is setup, a `CategorySyncOptions` should be be built as follows: 
 ````java
@@ -81,14 +81,14 @@ entries.
 a flag which enables the sync module to add additional object properties (e.g. custom fields, etc..) without deleting 
 existing ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing 
 object properties. -->
-- `updateActionsFilter`
+- `updateActionsCallBack`
 a filter function which can be applied on generated list of update actions to produce a resultant list after the filter 
 function has been applied.
 - `allowUuid`
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
 Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
-streams, can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java#L79-L82).
+streams, can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java#L79-L82).
 
 
 #### Running the sync
@@ -98,7 +98,7 @@ After all the aforementioned points in the previous section have been fulfilled,
 final CategorySync categorySync = new CategorySync(categorySyncOptions);
 
 // execute the sync on your list of categories
-CompletionStage<CategorySyncStatistics> syncStatisticsStage = CategorySynccategorySync.sync(categoryDrafts);
+CompletionStage<CategorySyncStatistics> syncStatisticsStage = categorySync.sync(categoryDrafts);
 ````
 The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `CategorySyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created, 
@@ -112,8 +112,8 @@ stats.getReportMessage();
 
 
 More examples of how to use the sync 
-1. From another CTP project as source can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
-2. From an external source can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java). 
+1. From another CTP project as source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
+2. From an external source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java). 
  
 
 
@@ -125,7 +125,7 @@ List<UpdateAction<Category>> updateActions = CategorySyncUtils.buildActions(cate
 ```
 
 Examples of its usage can be found in the tests 
-[here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/categories/utils/CategorySyncUtilsTest.java).
+[here](/src/test/java/com/commercetools/sync/categories/utils/CategorySyncUtilsTest.java).
 
 
 ### Build particular update action(s)
@@ -135,12 +135,11 @@ Utility methods provided by the library to compare the specific fields of a Cate
 ````java
 Optional<UpdateAction<Category>> updateAction = buildChangeNameUpdateAction(oldCategory, categoryDraft);
 ````
-More examples of those utils for different fields can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/updateactionutils).
+More examples of those utils for different fields can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/updateactionutils).
 
 
 ## Caveats
 
 1. Categories are either created or updated. Currently the tool does not support category deletion.
 2. The library doesn't sync category assets yet [#3](https://github.com/commercetools/commercetools-sync-java/issues/3), but it will not delete them.
-3. The library will sync all field types of custom fields, except `ReferenceType`. It will be implemented 
-in version [1.0.0-M3](https://github.com/commercetools/commercetools-sync-java/milestone/5).
+3. The library will sync all field types of custom fields, except `ReferenceType`. [#87](https://github.com/commercetools/commercetools-sync-java/issues/3). 

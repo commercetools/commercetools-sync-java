@@ -3,7 +3,7 @@ package com.commercetools.sync.categories.helpers;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
-import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
+import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
@@ -21,7 +21,7 @@ import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
 
-public final class CategoryReferenceResolver extends BaseReferenceResolver<CategoryDraft, CategorySyncOptions> {
+public final class CategoryReferenceResolver extends CustomReferenceResolver<CategoryDraft, CategorySyncOptions> {
     private CategoryService categoryService;
     private static final String FAILED_TO_RESOLVE_PARENT = "Failed to resolve parent reference on "
         + "CategoryDraft with key:'%s'. Reason: %s";
@@ -82,7 +82,7 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
     @Nonnull
     CompletionStage<CategoryDraft> resolveParentReference(@Nonnull final CategoryDraft categoryDraft) {
         try {
-            return getParentCategoryKey(categoryDraft, getOptions().shouldAllowUuidKeys())
+            return getParentCategoryKey(categoryDraft, options.shouldAllowUuidKeys())
                 .map(parentCategoryKey -> fetchAndResolveParentReference(categoryDraft, parentCategoryKey))
                 .orElseGet(() -> CompletableFuture.completedFuture(categoryDraft));
         } catch (ReferenceResolutionException referenceResolutionException) {
@@ -148,12 +148,14 @@ public final class CategoryReferenceResolver extends BaseReferenceResolver<Categ
      * Helper method that returns the value of the key field from the passed category {@link Reference} object,
      * if expanded. Otherwise, returns null.
      *
+     * @param categoryReference the category reference to get the key from it's expansion.
      * @return the value of the key field from the passed category {@link Reference} object, if expanded.
      *          Otherwise, returns null.
      */
     @Nullable
-    private static String getKeyFromExpansion(@Nonnull final Reference<Category> parentCategoryReference) {
-        return isReferenceExpanded(parentCategoryReference) ? parentCategoryReference.getObj().getKey() : null;
+    @SuppressWarnings("ConstantConditions") // NPE can't occur because of the isReferenceExpanded check.
+    public static String getKeyFromExpansion(@Nonnull final Reference<Category> categoryReference) {
+        return isReferenceExpanded(categoryReference) ? categoryReference.getObj().getKey() : null;
     }
 
 }

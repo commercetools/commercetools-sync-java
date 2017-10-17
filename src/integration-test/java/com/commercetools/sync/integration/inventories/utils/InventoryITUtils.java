@@ -44,7 +44,6 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.fetchAndProcess;
-import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
 public class InventoryITUtils {
@@ -70,9 +69,6 @@ public class InventoryITUtils {
     private static final InventoryEntryQuery QUERY_ALL_INVENTORIES = InventoryEntryQuery.of()
         .withLimit(QUERY_MAX_LIMIT);
 
-    private static final ChannelQuery QUERY_ALL_SUPPLY_CHANNELS = ChannelQuery.of().withLimit(QUERY_MAX_LIMIT)
-        .plusPredicates(queryModel -> queryModel.roles().containsAny(singleton(ChannelRole.INVENTORY_SUPPLY)));
-
     /**
      * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} inventory entries
      * from CTP project, represented by provided {@code sphereClient}.
@@ -90,7 +86,7 @@ public class InventoryITUtils {
      * @param sphereClient sphere client used to execute requests
      */
     public static void deleteSupplyChannels(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, QUERY_ALL_SUPPLY_CHANNELS, ChannelDeleteCommand::of);
+        fetchAndProcess(sphereClient, ChannelQuery.of().withLimit(QUERY_MAX_LIMIT), ChannelDeleteCommand::of);
     }
 
     /**

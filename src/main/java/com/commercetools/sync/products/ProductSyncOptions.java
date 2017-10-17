@@ -6,83 +6,84 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static java.util.Optional.ofNullable;
+
 /**
- * This Class is a WIP and should be reimplemented when the Product Sync module is implemented.
- * It is just provided as a skeleton/reminder for the options it should include in the future.
+ * TODO: removeOtherVariants, whiteList, blackList, auto publish, revert staged changes, update staged.
  */
 public class ProductSyncOptions extends BaseSyncOptions {
-    private boolean compareStaged = true; // to control whether to compare to the staged data or the published ones.
-    private boolean publish = false; // to control whether to auto-publish or not.
-    private boolean removeOtherVariants = true; // to control whether to remove other product variants or not.
+    private final boolean removeOtherVariants; // whether to remove other product variants or not.
 
-    // defines which attributes
-    private List<String> whiteList;
-    private List<String> blackList;
+    // defines which attributes to calculate update actions to black list or white list
+    private final SyncFilter syncFilter;
 
-    // optional filter which can be applied on generated list of update actions
-    private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> filterActions;
+    // optional callback function which can be applied on the generated list of update actions
+    private final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsCallBack;
+    private final boolean ensurePriceChannels;
 
     ProductSyncOptions(@Nonnull final SphereClient ctpClient,
-                       @Nonnull final BiConsumer<String, Throwable> errorCallBack,
-                       @Nonnull final Consumer<String> warningCallBack,
+                       @Nullable final BiConsumer<String, Throwable> errorCallBack,
+                       @Nullable final Consumer<String> warningCallBack,
                        final int batchSize,
                        final boolean removeOtherLocales,
                        final boolean removeOtherSetEntries,
                        final boolean removeOtherCollectionEntries,
                        final boolean removeOtherProperties,
                        final boolean allowUuid,
-                       final boolean compareStaged,
-                       final boolean publish,
                        final boolean removeOtherVariants,
-                       @Nonnull final List<String> whiteList,
-                       @Nonnull final List<String> blackList,
-                       @Nonnull final Function<List<UpdateAction<Product>>,
-                           List<UpdateAction<Product>>> filterActions) {
+                       @Nullable final SyncFilter syncFilter,
+                       @Nullable final Function<List<UpdateAction<Product>>,
+                           List<UpdateAction<Product>>> updateActionsCallBack,
+                       boolean ensurePriceChannels) {
         super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherLocales, removeOtherSetEntries,
             removeOtherCollectionEntries, removeOtherProperties, allowUuid);
-        this.compareStaged = compareStaged;
-        this.publish = publish;
         this.removeOtherVariants = removeOtherVariants;
-        this.whiteList = whiteList;
-        this.blackList = blackList;
-        this.filterActions = filterActions;
+        this.syncFilter = ofNullable(syncFilter).orElseGet(SyncFilter::of);
+        this.updateActionsCallBack = updateActionsCallBack;
+        this.ensurePriceChannels = ensurePriceChannels;
     }
 
-    /**
-     * This getter and all the getters below should be removed. They are only added to use these fields
-     * to supress FindBugs from throwing the alert:
-     *
-     * <p>"This field is never read.  Consider removing it from the class."
-     * TODO: Remove these getters when implementing the Product Sync module.
-     *
-     * @return {@code this} instance's {@code compareStaged} boolean value.
-     */
-    boolean isCompareStaged() {
-        return compareStaged;
-    }
-
-    boolean isPublish() {
-        return publish;
-    }
-
-    boolean isRemoveOtherVariants() {
+    boolean shouldRemoveOtherVariants() {
         return removeOtherVariants;
     }
 
-    List<String> getWhiteList() {
-        return whiteList;
+    /**
+     * Returns the {@link SyncFilter} set to {@code this} {@link ProductSyncOptions}.
+     * It represents either a blacklist or a whitelist for filtering certain update action groups.
+     *
+     * @return the {@link SyncFilter} set to {@code this} {@link ProductSyncOptions}.
+     */
+    @Nonnull
+    public SyncFilter getSyncFilter() {
+        return syncFilter;
     }
 
-    List<String> getBlackList() {
-        return blackList;
+    /**
+     * Returns the {@code updateActionsCallBack} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
+     * {@link Product}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@link Product}&gt;&gt;&gt; function set to
+     * {@code this} {@link ProductSyncOptions}. It represents a filter function which can be applied on generated list
+     * of update actions to produce a resultant list after the filter function has been applied.
+     *
+     * @return the {@code updateActionsFilter} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
+     *         {@link Product}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@link Product}&gt;&gt;&gt; function
+     *         set to {@code this} {@link ProductSyncOptions}.
+     */
+    @Nullable
+    public Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> getUpdateActionsCallBack() {
+        return updateActionsCallBack;
     }
 
-    Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> getFilterActions() {
-        return filterActions;
+    /**
+     * @return option that indicates whether sync process should create price channel of given key when it doesn't
+     *      exists in a target project yet.
+     */
+    public boolean shouldEnsurePriceChannels() {
+        return ensurePriceChannels;
     }
 }

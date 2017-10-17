@@ -1,6 +1,8 @@
 package com.commercetools.sync.integration.services;
 
 
+import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.models.LocalizedString;
@@ -33,7 +35,10 @@ public class TypeServiceIT {
     public void setup() {
         deleteTypesFromTargetAndSource();
         createCategoriesCustomType(OLD_TYPE_KEY, OLD_TYPE_LOCALE, OLD_TYPE_NAME, CTP_TARGET_CLIENT);
-        typeService = new TypeServiceImpl(CTP_TARGET_CLIENT);
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                                                                                  .build();
+
+        typeService = new TypeServiceImpl(categorySyncOptions);
     }
 
     /**
@@ -61,7 +66,7 @@ public class TypeServiceIT {
     }
 
     @Test
-    public void fetchCachedTypeId_WithNonInvalidatedCache_ShouldFetchTypeAndCache() {
+    public void fetchCachedTypeId_WithNewlyCreatedTypeAfterCaching_ShouldNotFetchNewType() {
         // Fetch any type to populate cache
         typeService.fetchCachedTypeId("anyTypeKey").toCompletableFuture().join();
 
@@ -77,26 +82,5 @@ public class TypeServiceIT {
             typeService.fetchCachedTypeId(newTypeKey).toCompletableFuture().join();
 
         assertThat(newTypeId).isEmpty();
-    }
-
-    @Test
-    public void fetchCachedTypeId_WithInvalidatedCache_ShouldFetchFreshCopyAndRepopulateCache() {
-        // Fetch any type to populate cache
-        typeService.fetchCachedTypeId(OLD_TYPE_KEY).toCompletableFuture().join();
-
-        // Create new type
-        final String newTypeKey = "new_type_key";
-        final TypeDraft draft = TypeDraftBuilder
-            .of(newTypeKey, LocalizedString.of(Locale.ENGLISH, "typeName"),
-                ResourceTypeIdsSetBuilder.of().addChannels())
-            .build();
-        CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(draft)).toCompletableFuture().join();
-
-        typeService.invalidateCache();
-
-        final Optional<String> newTypeId =
-            typeService.fetchCachedTypeId(newTypeKey).toCompletableFuture().join();
-
-        assertThat(newTypeId).isNotEmpty();
     }
 }
