@@ -565,8 +565,17 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                               .handle((updatedCategory, sphereException) -> sphereException)
                               .thenCompose(sphereException -> {
                                   if (sphereException != null) {
-                                      return retryIfConcurrentModificationException(sphereException, category,
-                                          newCategory);
+                                      return executeSupplierIfConcurrentModificationException(
+                                          sphereException,
+                                          () -> fetchAndUpdate(category, newCategory),
+                                          () -> {
+                                              if (!processedCategoryKeys.contains(categoryKey)) {
+                                                  handleError(format(UPDATE_FAILED, categoryKey, sphereException),
+                                                      sphereException);
+                                                  processedCategoryKeys.add(categoryKey);
+                                              }
+                                              return CompletableFuture.completedFuture(null);
+                                          });
                                   } else {
                                       if (!processedCategoryKeys.contains(categoryKey)) {
                                           statistics.incrementUpdated();
@@ -580,41 +589,13 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                               });
     }
 
-    /**
-     * This method checks if the {@code sphereException} (thrown when trying to sync the old {@link Category} and the
-     * new {@link CategoryDraft}) is an instance of {@link ConcurrentModificationException}. If it is, then calls the
-     * method {@link CategorySync#fetchAndUpdate(Category, CategoryDraft)}  to rebuild update actions and reissue the
-     * CTP update request. Otherwise, if it is not an instance of a {@link ConcurrentModificationException} then it is
-     * counted as a failed category to sync.
-     *
-     * @param sphereException the sphere exception thrown after issuing an update request.
-     * @param category the category to update.
-     * @param newCategory the new category draft to sync data from.
-     * @return a future which contains an empty result after execution of the update.
-     */
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<Void> retryIfConcurrentModificationException(
-        @Nonnull final Throwable sphereException, @Nonnull final Category category,
-        @Nonnull final CategoryDraft newCategory) {
-        if (sphereException instanceof ConcurrentModificationException) {
-            return fetchAndUpdate(category, newCategory);
-        } else {
-            final String categoryKey = category.getKey();
-            if (!processedCategoryKeys.contains(categoryKey)) {
-                handleError(format(UPDATE_FAILED, categoryKey, sphereException), sphereException);
-                processedCategoryKeys.add(categoryKey);
-            }
-            return CompletableFuture.completedFuture(null);
-        }
-    }
-
     private CompletionStage<Void> fetchAndUpdate(@Nonnull final Category oldCategory,
                                                  @Nonnull final CategoryDraft newCategory) {
         final String key = oldCategory.getKey();
         return categoryService.fetchCategory(key)
                 .thenCompose(categoryOptional ->
                         categoryOptional
-                                .map(fetchecCategory -> buildUpdateActionsAndUpdate(fetchecCategory, newCategory))
+                                .map(fetchedCategory -> buildUpdateActionsAndUpdate(fetchedCategory, newCategory))
                                 .orElseGet(() -> {
                                     handleError(format(UPDATE_FAILED, key, FETCH_ON_RETRY), null);
                                     return CompletableFuture.completedFuture(null);

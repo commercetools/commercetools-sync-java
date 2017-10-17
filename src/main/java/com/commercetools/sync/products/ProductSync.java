@@ -13,7 +13,6 @@ import com.commercetools.sync.services.impl.ChannelServiceImpl;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
-import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -32,7 +31,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchDrafts;
@@ -222,18 +220,24 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                                              @Nonnull final ProductDraft newProduct,
                                                              @Nonnull final List<UpdateAction<Product>> updateActions) {
         return productService.updateProduct(oldProduct, updateActions)
-                .handle(ImmutablePair::new)
-                .thenCompose(updateResponse -> {
-                    final Product updatedProduct = updateResponse.getKey();
-                    final Throwable sphereException = updateResponse.getValue();
-                    if (sphereException != null) {
-                        return retryRequestIfConcurrentModificationException(sphereException, oldProduct,
-                                () -> fetchAndUpdate(oldProduct, newProduct), UPDATE_FAILED);
-                    } else {
-                        statistics.incrementUpdated();
-                        return CompletableFuture.completedFuture(Optional.of(updatedProduct));
-                    }
-                });
+                             .handle(ImmutablePair::new)
+                             .thenCompose(updateResponse -> {
+                                 final Product updatedProduct = updateResponse.getKey();
+                                 final Throwable sphereException = updateResponse.getValue();
+                                 if (sphereException != null) {
+                                     return executeSupplierIfConcurrentModificationException(sphereException,
+                                         () -> fetchAndUpdate(oldProduct, newProduct),
+                                         () -> {
+                                             final String productKey = oldProduct.getKey();
+                                             handleError(format(UPDATE_FAILED, productKey, sphereException),
+                                                 sphereException);
+                                             return CompletableFuture.completedFuture(Optional.empty());
+                                         });
+                                 } else {
+                                     statistics.incrementUpdated();
+                                     return CompletableFuture.completedFuture(Optional.of(updatedProduct));
+                                 }
+                             });
     }
 
     /**
@@ -259,31 +263,6 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                             return CompletableFuture.completedFuture(productOptional);
                         })
                 );
-    }
-
-    /**
-     * This method checks if the {@code sphereException} (thrown when trying to sync the old {@link Product} and the
-     * new {@link ProductDraft}) is an instance of {@link ConcurrentModificationException}. If it is, then it executes
-     * the supplied {@code request} to rebuild update actions and reissue the CTP update request. Otherwise, if it is
-     * not an instance of a  {@link ConcurrentModificationException} then it is counted as a failed product to sync.
-     *
-     * @param sphereException the sphere exception thrown after issuing an update request.
-     * @param oldProduct      the product to update.
-     * @param request         the request to re execute in case of a {@link ConcurrentModificationException}.
-     * @return a future which contains an empty result after execution of the update.
-     */
-    @Nonnull
-    private CompletionStage<Optional<Product>> retryRequestIfConcurrentModificationException(
-        @Nonnull final Throwable sphereException, @Nonnull final Product oldProduct,
-        @Nonnull final Supplier<CompletionStage<Optional<Product>>> request,
-        @Nonnull final String errorMessage) {
-        if (sphereException instanceof ConcurrentModificationException) {
-            return request.get();
-        } else {
-            final String productKey = oldProduct.getKey();
-            handleError(format(errorMessage, productKey, sphereException), sphereException);
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
     }
 
     /**
