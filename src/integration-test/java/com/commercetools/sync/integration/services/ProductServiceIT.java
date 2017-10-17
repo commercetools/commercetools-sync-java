@@ -600,7 +600,6 @@ public class ProductServiceIT {
     }
 
     @Test
-    @SuppressWarnings("ConstantConditions")
     public void fetchProduct_WithExistingKey_ShouldReturnProduct() {
         final Optional<Product> fetchedProductOptional = productService.fetchProduct(product.getKey())
                                                                        .toCompletableFuture()
@@ -613,7 +612,6 @@ public class ProductServiceIT {
     }
 
     @Test
-    @SuppressWarnings("ConstantConditions")
     public void fetchProduct_WithNonExistingKey_ShouldNotReturnProduct() {
         final Optional<Product> fetchedProductOptional = productService.fetchProduct("someNonExistingKey")
                                                                        .toCompletableFuture()
@@ -624,7 +622,26 @@ public class ProductServiceIT {
     }
 
     @Test
-    @SuppressWarnings("ConstantConditions")
+    public void fetchProduct_WithNullKey_ShouldNotReturnProduct() {
+        final Optional<Product> fetchedProductOptional = productService.fetchProduct(null)
+                                                                       .toCompletableFuture()
+                                                                       .join();
+        assertThat(fetchedProductOptional).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void fetchProduct_WithBlankKey_ShouldNotReturnProduct() {
+        final Optional<Product> fetchedProductOptional = productService.fetchProduct(StringUtils.EMPTY)
+                                                                       .toCompletableFuture()
+                                                                       .join();
+        assertThat(fetchedProductOptional).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
     public void fetchProduct_WithBadGatewayException_ShouldFail() {
         // Mock sphere client to return BadeGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
