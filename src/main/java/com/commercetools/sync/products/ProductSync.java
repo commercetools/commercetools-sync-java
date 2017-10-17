@@ -251,7 +251,6 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
      * @return a future which contains an empty result after execution of the update.
      */
     @Nonnull
-    @SuppressWarnings("ConstantConditions")
     private CompletionStage<Optional<Product>> fetchAndUpdate(@Nonnull final Product oldProduct,
                                                               @Nonnull final ProductDraft newProduct) {
         final String key = oldProduct.getKey();
