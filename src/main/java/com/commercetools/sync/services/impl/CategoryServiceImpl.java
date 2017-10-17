@@ -14,6 +14,7 @@ import io.sphere.sdk.queries.PagedResult;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 /**
  * Implementation of CategoryService interface.
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
@@ -93,7 +96,11 @@ public final class CategoryServiceImpl implements CategoryService {
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<Category>> fetchCategory(@Nonnull final String key) {
+    public CompletionStage<Optional<Category>> fetchCategory(@Nullable final String key) {
+        if (isBlank(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+
         return syncOptions.getCtpClient()
                 .execute(CategoryQuery.of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().is(key)))
                 .thenApply(PagedResult::head)

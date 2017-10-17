@@ -501,6 +501,13 @@ public class CategoryServiceIT {
     }
 
     @Test
+    public void fetchCategory_WithNullKey_ShouldNotFetchCategory() {
+        final Optional<Category> fetchedCategoryOptional =
+            executeBlocking(categoryService.fetchCategory(null));
+        assertThat(fetchedCategoryOptional).isEmpty();
+    }
+
+    @Test
     public void fetchCategory_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadeGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);

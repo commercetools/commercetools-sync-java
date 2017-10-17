@@ -6,6 +6,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,7 +47,7 @@ public interface CategoryService {
      *         {@link Optional} that contains the matching {@link Category} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<Category>> fetchCategory(@Nonnull final String key);
+    CompletionStage<Optional<Category>> fetchCategory(@Nullable final String key);
 
     /**
      * Given a {@link Set} of categoryDrafts, this method creates Categories corresponding to them in the CTP project
