@@ -26,7 +26,7 @@ public class BaseSyncTest {
 
     @Test
     public void
-    executeSupplierIfConcurrentModificationException_WithConcurrentModException_ShouldExecuteSecondSupplier() {
+        executeSupplierIfConcurrentModificationException_WithConcurrentModException_ShouldExecuteSecondSupplier() {
         final Throwable sphereException = new BadRequestException("message");
         final Supplier<Optional<String>> firstSupplier = () -> Optional.of("firstSupplier");
         final Supplier<Optional<String>> secondSupplier = () -> Optional.of("SecondSupplier");
