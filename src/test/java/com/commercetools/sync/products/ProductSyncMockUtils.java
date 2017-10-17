@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.stream.Collectors.toList;
@@ -79,6 +80,9 @@ public class ProductSyncMockUtils {
             .description(productData.getDescription())
             .searchKeywords(productData.getSearchKeywords())
             .key(productFromJson.getKey())
+            .categories(
+                productData.getCategories().stream().map(Reference::toResourceIdentifier).collect(Collectors.toSet()))
+            .categoryOrderHints(productData.getCategoryOrderHints())
             .publish(productFromJson.getMasterData().isPublished());
     }
 

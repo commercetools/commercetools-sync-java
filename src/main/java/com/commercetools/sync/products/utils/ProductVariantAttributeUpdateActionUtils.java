@@ -12,12 +12,13 @@ import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.lang.String.format;
 
-// TODO: Add JAVADOC AND TESTS
+// TODO: Add tests.
 public final class ProductVariantAttributeUpdateActionUtils {
     private static final String ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA = "Cannot find the attribute with the name '%s'"
         + " in the supplied attribute metadata.";
@@ -25,17 +26,27 @@ public final class ProductVariantAttributeUpdateActionUtils {
         + " required to have a value according to the supplied attribute metadata.";
 
     /**
-     ** Compares the attributes of an {@link Attribute} and an {@link AttributeDraft} to build either
-     * {@link io.sphere.sdk.products.commands.updateactions.SetAttribute} or
-     * {@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants} update actions.
-     * TODO: Add JavaDoc
+     * Compares the attributes of a {@link AttributeDraft} and a {@link Attribute} to build either a
+     * {@link io.sphere.sdk.products.commands.updateactions.SetAttribute} or a
+     * {@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants}.
      *
-     * @param variantId TODO: Add JavaDoc
-     * @param oldProductVariantAttribute TODO: Add JavaDoc
-     * @param newProductVariantAttribute TODO: Add JavaDoc
-     * @param attributeMetaData TODO: Add JavaDoc
-     * @return TODO: Add JavaDoc
-     * @throws BuildUpdateActionException TODO: Add JavaDoc
+     * <p>If the attribute is sameForAll a
+     * {@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants} is built. Otherwise,
+     * a {@link io.sphere.sdk.products.commands.updateactions.SetAttribute} is built.
+     *
+     * <p>If both the {@link AttributeDraft} and the {@link Attribute} have identical values, then
+     * no update action is needed and hence an empty {@link List} is returned.
+     *
+     * @param variantId the id of the variant of that the attribute belong to. It is used only in the error
+     *                           messages if any.
+     * @param oldProductVariantAttribute the {@link Attribute} which should be updated.
+     * @param newProductVariantAttribute the {@link AttributeDraft} where we get the new value.
+     * @param attributeMetaData a map of attribute name -&gt; {@link AttributeMetaData}; which defines attribute
+     *                           information: its name, whether a value is required or not and whether it has the
+     *                           constraint "SameForAll" or not.
+     * @return A filled optional with the update action or an empty optional if the attributes are identical.
+     * @throws BuildUpdateActionException thrown if attribute as not found in the {@code attributeMetaData} or
+     *          if the attribute is required and the new value is null.
      */
     @Nonnull
     public static Optional<UpdateAction<Product>> buildProductVariantAttributeUpdateAction(

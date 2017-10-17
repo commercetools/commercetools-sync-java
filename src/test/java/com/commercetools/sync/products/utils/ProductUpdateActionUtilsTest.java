@@ -2,7 +2,9 @@ package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.SyncFilter;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Image;
 import io.sphere.sdk.products.PriceDraft;
@@ -33,10 +35,14 @@ import java.util.Objects;
 import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftFromJson;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductFromJson;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.BLANK_NEW_MASTER_VARIANT_KEY;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.BLANK_NEW_MASTER_VARIANT_SKU;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.BLANK_OLD_MASTER_VARIANT_KEY;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddVariantUpdateActionFromDraft;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeMasterVariantUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildRemoveVariantUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -46,6 +52,7 @@ public class ProductUpdateActionUtilsTest {
 
     private static final String RES_ROOT = "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/";
     private static final String OLD_PROD_WITH_VARIANTS = RES_ROOT + "productOld.json";
+    private static final String OLD_PROD_WITHOUT_MV_KEY_SKU = RES_ROOT + "productOld_noMasterVariantKeySku.json";
 
     // this product's variants don't contain old master variant
     private static final String NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER =
@@ -54,6 +61,12 @@ public class ProductUpdateActionUtilsTest {
     // this product's variants contain old master variant, but not as master any more
     private static final String NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER =
         RES_ROOT + "productDraftNew_moveMasterVariant.json";
+
+    private static final String NEW_PROD_DRAFT_WITHOUT_MV = RES_ROOT + "productDraftNew_noMasterVariant.json";
+
+    private static final String NEW_PROD_DRAFT_WITHOUT_MV_KEY = RES_ROOT + "productDraftNew_noMasterVariantKey.json";
+
+    private static final String NEW_PROD_DRAFT_WITHOUT_MV_SKU = RES_ROOT + "productDraftNew_noMasterVariantSku.json";
 
     @Test
     public void buildVariantsUpdateActions_updatesVariants() throws Exception {
@@ -150,6 +163,50 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
+    public void buildVariantsUpdateActions_withEmptyOldMasterVariantKey() throws Exception {
+        assertMissingMasterVariantKey(OLD_PROD_WITHOUT_MV_KEY_SKU, NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER,
+            BLANK_OLD_MASTER_VARIANT_KEY);
+    }
+
+    @Test
+    public void buildVariantsUpdateActions_withEmptyNewMasterVariantOrKey_ShouldNotBuildActionAndTriggerCallback() {
+        assertMissingMasterVariantKey(OLD_PROD_WITH_VARIANTS, NEW_PROD_DRAFT_WITHOUT_MV, BLANK_NEW_MASTER_VARIANT_KEY);
+        assertMissingMasterVariantKey(OLD_PROD_WITH_VARIANTS, NEW_PROD_DRAFT_WITHOUT_MV_KEY,
+            BLANK_NEW_MASTER_VARIANT_KEY);
+    }
+
+    @Test
+    public void buildVariantsUpdateActions_withEmptyBothMasterVariantKey_ShouldNotBuildActionAndTriggerCallback() {
+        assertMissingMasterVariantKey(OLD_PROD_WITHOUT_MV_KEY_SKU, NEW_PROD_DRAFT_WITHOUT_MV_KEY,
+            BLANK_OLD_MASTER_VARIANT_KEY, BLANK_NEW_MASTER_VARIANT_KEY);
+    }
+
+    private void assertMissingMasterVariantKey(final String oldProduct,
+                                               final String newProduct,
+                                               final String ... errorMessages) {
+        final Product productOld = createProductFromJson(oldProduct);
+        final ProductDraft productDraftNew = createProductDraftFromJson(newProduct);
+
+        final List<String> errorsCatcher = new ArrayList<>();
+        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+            .setErrorCallBack((message, exception) -> errorsCatcher.add(message))
+            .build();
+
+        final List<UpdateAction<Product>> updateActions =
+            buildVariantsUpdateActions(productOld, productDraftNew, syncOptions, emptyMap());
+        assertThat(updateActions).isEmpty();
+        assertThat(errorsCatcher).hasSize(errorMessages.length);
+
+        // verify all expected error messages
+        for (int i = 0; i < errorMessages.length; i++) {
+            assertThat(errorsCatcher.get(i))
+                .containsIgnoringCase("failed")
+                .contains(productOld.getKey())
+                .containsIgnoringCase(errorMessages[i]);
+        }
+    }
+
+    @Test
     public void buildRemoveVariantUpdateAction_removesMissedVariants() throws Exception {
         Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
         ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
@@ -173,12 +230,42 @@ public class ProductUpdateActionUtilsTest {
         ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
 
         List<UpdateAction<Product>> changeMasterVariant =
-                buildChangeMasterVariantUpdateAction(productOld, productDraftNew);
+                buildChangeMasterVariantUpdateAction(productOld, productDraftNew, mock(ProductSyncOptions.class));
         assertThat(changeMasterVariant).hasSize(2);
         assertThat(changeMasterVariant.get(0))
                 .isEqualTo(ChangeMasterVariant.ofSku(productDraftNew.getMasterVariant().getSku(), true));
         assertThat(changeMasterVariant.get(1))
             .isEqualTo(RemoveVariant.of(productOld.getMasterData().getStaged().getMasterVariant()));
+    }
+
+    @Test
+    public void buildVariantsUpdateActions_withEmptyKey_ShouldNotBuildActionAndTriggerCallback() throws Exception {
+        assertChangeMasterVariantEmptyErrorCatcher(NEW_PROD_DRAFT_WITHOUT_MV_KEY, BLANK_NEW_MASTER_VARIANT_KEY);
+    }
+
+    @Test
+    public void buildVariantsUpdateActions_withEmptySku_ShouldNotBuildActionAndTriggerCallback() throws Exception {
+        assertChangeMasterVariantEmptyErrorCatcher(NEW_PROD_DRAFT_WITHOUT_MV_SKU, BLANK_NEW_MASTER_VARIANT_SKU);
+    }
+
+    private void assertChangeMasterVariantEmptyErrorCatcher(final String productMockName,
+                                                            final String expectedErrorReason) {
+        final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+        final ProductDraft productDraftNew_withoutKey = createProductDraftFromJson(productMockName);
+
+        final List<String> errorsCatcher = new ArrayList<>();
+        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+            .setErrorCallBack((message, exception) -> errorsCatcher.add(message))
+            .build();
+
+        final List<UpdateAction<Product>> changeMasterVariant =
+            buildChangeMasterVariantUpdateAction(productOld, productDraftNew_withoutKey, syncOptions);
+        assertThat(changeMasterVariant).hasSize(0);
+        assertThat(errorsCatcher).hasSize(1);
+        assertThat(errorsCatcher.get(0))
+            .containsIgnoringCase("failed")
+            .contains(productOld.getKey())
+            .containsIgnoringCase(expectedErrorReason);
     }
 
     @Test
