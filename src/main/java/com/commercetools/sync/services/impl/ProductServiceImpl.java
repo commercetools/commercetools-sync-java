@@ -16,6 +16,7 @@ import io.sphere.sdk.queries.QueryPredicate;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ProductServiceImpl implements ProductService {
     private boolean isCached = false;
@@ -104,17 +106,17 @@ public class ProductServiceImpl implements ProductService {
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<Product>> fetchProduct(@Nonnull final String key) {
+    public CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key) {
+        if (isBlank(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
         final QueryPredicate<Product> queryPredicate = buildProductKeysQueryPredicate(Collections.singleton(key));
         return syncOptions.getCtpClient().execute(ProductQuery.of().withPredicates(queryPredicate))
                           .thenApply(PagedResult::head)
-                          .handle((fetchedProductOptional, sphereException) -> {
-                              if (sphereException != null) {
-                                  syncOptions
+                          .exceptionally(sphereException -> {
+                              syncOptions
                                       .applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
-                                  return Optional.empty();
-                              }
-                              return fetchedProductOptional;
+                              return Optional.empty();
                           });
     }
 

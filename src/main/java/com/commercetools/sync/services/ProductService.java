@@ -6,6 +6,7 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,7 +47,7 @@ public interface ProductService {
      *         {@link Optional} that contains the matching {@link Product} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<Product>> fetchProduct(@Nonnull final String key);
+    CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key);
 
     /**
      * Given a {@link Set} of productsDrafts, this method creates Products corresponding to them in the CTP project
