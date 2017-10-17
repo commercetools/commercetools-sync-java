@@ -51,9 +51,9 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
-import static com.commercetools.sync.products.utils.ProductSyncUtils.replaceCategoryOrderHintCategoryIdsWithKeys;
-import static com.commercetools.sync.products.utils.ProductSyncUtils.replaceProductDraftCategoryReferenceIdsWithKeys;
-import static com.commercetools.sync.products.utils.ProductSyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys;
+import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceCategoryOrderHintCategoryIdsWithKeys;
+import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductDraftCategoryReferenceIdsWithKeys;
+import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductDraftsCategoryReferenceIdsWithKeys;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;

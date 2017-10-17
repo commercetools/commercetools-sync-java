@@ -30,7 +30,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.commercetools.sync.commons.utils.SyncUtils.replaceProductDraftsCategoryReferenceIdsWithKeys;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
@@ -51,6 +50,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static com.commercetools.sync.products.SyncFilter.ofBlackList;
 import static com.commercetools.sync.products.SyncFilter.ofWhiteList;
+import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductDraftsCategoryReferenceIdsWithKeys;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.lang.String.format;
