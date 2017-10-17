@@ -66,14 +66,14 @@ tasks.withType(Test) {
                     break
             }
 
-            out.println( "--------------------------------------------------------------------------")
-            out.println( "Results: " + summaryStyle + "${result.resultType}" + ANSI_RESET
+            out.println( "------------------------------------------------------------------------------------------------")
+            out.println( "Results of ${desc.name}: " + summaryStyle + "${result.resultType}" + ANSI_RESET
                     + " (${result.testCount} tests, "
                     + ANSI_GREEN + "${result.successfulTestCount} passed" + " " + TEST_SUCCEEDED_EMOJI + " " + ANSI_RESET
                     + ", " + failStyle + "${result.failedTestCount} failed" + " " + TEST_FAILED_EMOJI + " " + ANSI_RESET
                     + ", " + skipStyle + "${result.skippedTestCount} skipped" + " " + TEST_SKIPPED_EMOJI + " " + ANSI_RESET
                     + ")")
-            out.println( "--------------------------------------------------------------------------")
+            out.println( "------------------------------------------------------------------------------------------------")
         }
     }
 
