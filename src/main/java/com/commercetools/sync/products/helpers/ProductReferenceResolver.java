@@ -100,7 +100,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             .thenCompose(this::resolveProductPricesReferences)
             .thenCompose(this::resolveTaxCategoryReferences)
             .thenCompose(this::resolveStateReferences);
-            //.thenApply(ProductDraftBuilder::build); // TODO: akovalenko: fix it when new draft builders released
+            //.thenApply(ProductDraftBuilder::build);
+            // TODO: akovalenko: fix it when new draft builders released
     }
 
     @Nonnull
