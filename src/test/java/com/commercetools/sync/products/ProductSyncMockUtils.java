@@ -11,6 +11,8 @@ import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.producttypes.ProductType;
+import io.sphere.sdk.states.State;
+import io.sphere.sdk.taxcategories.TaxCategory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -112,9 +114,9 @@ public class ProductSyncMockUtils {
 
     /**
      * Builds a {@link ProductDraft} based on the current projection of the product JSON resource located at the
-     * {@code jsonResourcePath} and based on the supplied {@code productType}. The method also attaches the created
-     * {@link ProductDraft} to all the {@code categories} specified and assigns {@code categoryOrderHints} for it for
-     * each category assigned.
+     * {@code jsonResourcePath} and based on the supplied {@code productType}, {@code taxCategoryReference} and
+     * {@code stateReference}. The method also attaches the created {@link ProductDraft} to all the {@code categories}
+     * specified and assigns {@code categoryOrderHints} for it for each category assigned.
      *
      * @param jsonResourcePath     the path of the JSON resource to build the product draft from.
      * @param productTypeReference the reference of the  product type that the product draft belongs to.
@@ -126,10 +128,14 @@ public class ProductSyncMockUtils {
      */
     public static ProductDraft createProductDraft(@Nonnull final String jsonResourcePath,
                                                   @Nonnull final Reference<ProductType> productTypeReference,
+                                                  @Nullable final Reference<TaxCategory> taxCategoryReference,
+                                                  @Nullable final Reference<State> stateReference,
                                                   @Nonnull final Set<ResourceIdentifier<Category>>
                                                       categoryResourceIdentifiers,
                                                   @Nullable final CategoryOrderHints categoryOrderHints) {
         return createProductDraftBuilder(jsonResourcePath, productTypeReference)
+            .taxCategory(taxCategoryReference)
+            .state(stateReference)
             .categories(categoryResourceIdentifiers)
             .categoryOrderHints(categoryOrderHints)
             .build();
