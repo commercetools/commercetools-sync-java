@@ -133,8 +133,8 @@ public final class ProductReferenceReplacementUtils {
     }
 
     /**
-     * Builds a {@link ProductQuery} for fetching products from a CTP project with all the following references
-     * expanded:
+     * Builds a {@link ProductQuery} for fetching products from a source CTP project with all the needed references
+     * expanded for the sync:
      * <ul>
      *     <li>Product Type</li>
      *     <li>Tax Category</li>
@@ -143,8 +143,8 @@ public final class ProductReferenceReplacementUtils {
      *     <li>Staged Price Channels</li>
      * </ul>
      *
-     * @return the query for fetching products from the source CTP project with all the aforementioned reference
-     *          expanded.
+     * @return the query for fetching products from the source CTP project with all the aforementioned references
+     *         expanded.
      */
     @Nonnull
     public static ProductQuery buildProductQuery() {
