@@ -1,34 +1,47 @@
 package com.commercetools.sync.integration.commons.utils;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.commands.TypeDeleteCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.fetchAndProcess;
 
 public final class ITUtils {
 
     /**
-     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} Types from CTP
-     * projects defined by the {@code sphereClient}
+     * Deletes all Types from CTP projects defined by the {@code sphereClient}
      *
-     * @param sphereClient defines the CTP project to delete the Types from.
+     * @param ctpClient defines the CTP project to delete the Types from.
      */
-    public static void deleteTypes(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, TypeQuery.of().withLimit(QUERY_MAX_LIMIT), TypeDeleteCommand::of);
+    public static void deleteTypes(@Nonnull final SphereClient ctpClient) {
+        final List<CompletableFuture> typeDeleteFutures = new ArrayList<>();
+
+        final Consumer<List<Type>> typePageDelete = types -> types.forEach(type -> {
+            final CompletableFuture<Type> deleteFuture =
+                ctpClient.execute(TypeDeleteCommand.of(type)).toCompletableFuture();
+            typeDeleteFutures.add(deleteFuture);
+        });
+
+        CtpQueryUtils.queryAll(ctpClient, TypeQuery.of(), typePageDelete)
+                     .thenCompose(result -> CompletableFuture.allOf(typeDeleteFutures
+                         .toArray(new CompletableFuture[typeDeleteFutures.size()])))
+                     .toCompletableFuture().join();
     }
 
     /**
-     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} Types from CTP
-     * projects defined by the {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
+     * Deletes all Types from CTP projects defined by the {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
      */
     public static void deleteTypesFromTargetAndSource() {
         deleteTypes(CTP_TARGET_CLIENT);
