@@ -20,6 +20,7 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
+import io.sphere.sdk.states.StateType;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -48,6 +49,8 @@ public final class ProductITUtils {
         deleteAllCategories(ctpClient);
         deleteTypes(ctpClient);
         deleteSupplyChannels(ctpClient);
+        deleteStates(ctpClient, StateType.PRODUCT_STATE);
+        deleteTaxCategories(ctpClient);
     }
 
     /**
