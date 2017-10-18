@@ -14,12 +14,7 @@ import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.commands.ProductDeleteCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
-import io.sphere.sdk.products.expansion.ProductExpansionModel;
 import io.sphere.sdk.products.queries.ProductQuery;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
-import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
 import io.sphere.sdk.states.StateType;
 
 import javax.annotation.Nonnull;
@@ -73,19 +68,6 @@ public final class ProductITUtils {
                      .thenCompose(result -> CompletableFuture
                          .allOf(productDeleteFutures.toArray(new CompletableFuture[productDeleteFutures.size()])))
                      .toCompletableFuture().join();
-    }
-
-    /**
-     * Builds the query for fetching products from the source CTP project with all the needed expansions.
-     * @return the query for fetching products from the source CTP project with all the needed expansions.
-     */
-    public static ProductQuery getProductQuery() {
-        return ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
-                           .withExpansionPaths(ProductExpansionModel::productType)
-                           .plusExpansionPaths(productProductExpansionModel ->
-                               productProductExpansionModel.masterData().staged().categories())
-                           .plusExpansionPaths(channelExpansionModel ->
-                               channelExpansionModel.masterData().staged().allVariants().prices().channel());
     }
 
     /**

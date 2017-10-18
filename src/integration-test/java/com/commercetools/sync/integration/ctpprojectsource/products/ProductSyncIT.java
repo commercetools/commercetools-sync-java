@@ -161,7 +161,7 @@ public class ProductSyncIT {
             createRandomCategoryOrderHints(sourceCategories));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft)).toCompletableFuture().join();
 
-        final List<Product> products = CTP_SOURCE_CLIENT.execute(getProductQuery())
+        final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
 
         final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
@@ -192,7 +192,7 @@ public class ProductSyncIT {
 
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft)).toCompletableFuture().join();
 
-        final List<Product> products = CTP_SOURCE_CLIENT.execute(getProductQuery())
+        final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
 
         final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
@@ -232,7 +232,7 @@ public class ProductSyncIT {
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newDraftWithPriceChannelReferences))
                          .toCompletableFuture().join();
 
-        final List<Product> products = CTP_SOURCE_CLIENT.execute(getProductQuery())
+        final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
 
         final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);

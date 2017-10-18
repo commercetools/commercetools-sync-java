@@ -1,9 +1,11 @@
 package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.products.ProductSyncMockUtils;
+import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
@@ -239,6 +241,17 @@ public class ProductReferenceReplacementUtilsTest {
 
         assertThat(stateReferenceWithKey).isNotNull();
         assertThat(stateReferenceWithKey.getId()).isEqualTo(stateKey);
+    }
+
+    @Test
+    public void buildProductQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+        final ProductQuery productQuery = ProductReferenceReplacementUtils.buildProductQuery();
+        assertThat(productQuery.expansionPaths()).hasSize(6);
+        assertThat(productQuery.expansionPaths())
+            .contains(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
+                ExpansionPath.of("state"), ExpansionPath.of("masterData.staged.categories[*]"),
+                ExpansionPath.of("masterData.staged.masterVariant.prices[*].channel"),
+                ExpansionPath.of("masterData.staged.variants[*].prices[*].channel"));
     }
 
     private static ProductType getProductTypeMock(@Nonnull final String key) {

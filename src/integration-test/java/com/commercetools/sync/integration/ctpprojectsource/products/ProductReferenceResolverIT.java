@@ -41,6 +41,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
+import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
@@ -50,6 +51,7 @@ public class ProductReferenceResolverIT {
     private static ProductType productTypeSource;
     private static ProductType noKeyProductTypeSource;
 
+    private static ProductQuery productQuery;
     private static Set<ResourceIdentifier<Category>> sourceCategoryResourcesWithIds;
     private static Set<ResourceIdentifier<Category>> sourceCategories;
     private ProductSync productSync;
@@ -88,6 +90,7 @@ public class ProductReferenceResolverIT {
 
         productTypeSource = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_SOURCE_CLIENT);
         noKeyProductTypeSource = createProductType(PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, CTP_SOURCE_CLIENT);
+        productQuery = buildProductQuery();
     }
 
     /**
@@ -131,12 +134,6 @@ public class ProductReferenceResolverIT {
             createRandomCategoryOrderHints(sourceCategories));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
-        final ProductQuery productQuery = ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
-                                                      .withExpansionPaths(ProductExpansionModel::productType)
-                                                      .plusExpansionPaths(productProductExpansionModel ->
-                                                          productProductExpansionModel.masterData().staged()
-                                                                                      .categories());
-
         final List<Product> products = CTP_SOURCE_CLIENT.execute(productQuery)
                                                         .toCompletableFuture().join().getResults();
 
@@ -161,12 +158,6 @@ public class ProductReferenceResolverIT {
             noKeyProductTypeSource.toReference(), sourceCategoryResourcesWithIds,
             createRandomCategoryOrderHints(sourceCategories));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
-
-        final ProductQuery productQuery = ProductQuery.of().withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
-                                                      .withExpansionPaths(ProductExpansionModel::productType)
-                                                      .plusExpansionPaths(productProductExpansionModel ->
-                                                          productProductExpansionModel.masterData().staged()
-                                                                                      .categories());
 
         final List<Product> products = CTP_SOURCE_CLIENT.execute(productQuery)
                                                         .toCompletableFuture().join().getResults();

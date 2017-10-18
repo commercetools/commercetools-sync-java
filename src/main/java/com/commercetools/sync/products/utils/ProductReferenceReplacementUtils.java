@@ -2,6 +2,7 @@ package com.commercetools.sync.products.utils;
 
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
@@ -13,7 +14,10 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.expansion.ProductExpansionModel;
+import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
+import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
 
@@ -128,6 +132,32 @@ public final class ProductReferenceReplacementUtils {
         return replaceReferenceIdWithKey(productState, () -> State.referenceOfId(productState.getObj().getKey()));
     }
 
+    /**
+     * Builds a {@link ProductQuery} for fetching products from a CTP project with all the following references
+     * expanded:
+     * <ul>
+     *     <li>Product Type</li>
+     *     <li>Tax Category</li>
+     *     <li>Product State</li>
+     *     <li>Staged Product Categories</li>
+     *     <li>Staged Price Channels</li>
+     * </ul>
+     *
+     * @return the query for fetching products from the source CTP project with all the aforementioned reference
+     *          expanded.
+     */
+    @Nonnull
+    public static ProductQuery buildProductQuery() {
+        return ProductQuery.of()
+                           .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
+                           .withExpansionPaths(ProductExpansionModel::productType)
+                           .plusExpansionPaths(ProductExpansionModel::taxCategory)
+                           .plusExpansionPaths(ExpansionPath.of("state"))
+                           .plusExpansionPaths(productExpansionModel ->
+                               productExpansionModel.masterData().staged().categories())
+                           .plusExpansionPaths(channelExpansionModel ->
+                               channelExpansionModel.masterData().staged().allVariants().prices().channel());
+    }
 
     /**
      * ============================== Tested/document so far.. ========================================================
