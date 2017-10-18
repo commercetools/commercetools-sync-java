@@ -30,27 +30,12 @@ import java.util.function.Consumer;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
+import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStates;
+import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteSupplyChannels;
-import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.stream.Collectors.toList;
 
 public final class ProductITUtils {
-    /**
-     * This method blocks to create a product type, which is defined by the JSON resource found in the supplied
-     * {@code jsonResourcePath}, in the CTP project defined by the supplied {@code ctpClient}.
-     *
-     * @param jsonResourcePath defines the path of the JSON resource of the product type.
-     * @param ctpClient        defines the CTP project to create the categories on.
-     */
-    public static ProductType createProductType(@Nonnull final String jsonResourcePath,
-                                                @Nonnull final SphereClient ctpClient) {
-        final ProductType productTypeFromJson = readObjectFromResource(jsonResourcePath,
-            ProductType.class);
-        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder.of(productTypeFromJson)
-                                                                         .build();
-        return ctpClient.execute(ProductTypeCreateCommand.of(productTypeDraft))
-                        .toCompletableFuture().join();
-    }
 
     /**
      * Deletes all products, product types, categories and types from the CTP project defined by the {@code ctpClient}.
