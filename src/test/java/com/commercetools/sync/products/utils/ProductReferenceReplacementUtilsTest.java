@@ -248,7 +248,7 @@ public class ProductReferenceReplacementUtilsTest {
         final ProductQuery productQuery = ProductReferenceReplacementUtils.buildProductQuery();
         assertThat(productQuery.expansionPaths()).hasSize(6);
         assertThat(productQuery.expansionPaths())
-            .contains(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
+            .containsExactly(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
                 ExpansionPath.of("state"), ExpansionPath.of("masterData.staged.categories[*]"),
                 ExpansionPath.of("masterData.staged.masterVariant.prices[*].channel"),
                 ExpansionPath.of("masterData.staged.variants[*].prices[*].channel"));
