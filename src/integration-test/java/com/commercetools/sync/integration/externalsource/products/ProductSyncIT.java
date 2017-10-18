@@ -149,6 +149,8 @@ public class ProductSyncIT {
     public void sync_withNewProduct_shouldCreateProduct() {
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             ProductType.referenceOfId(productType.getKey()))
+            .taxCategory(null)
+            .state(null)
             .build();
 
         final ProductSync productSync = new ProductSync(syncOptions);
@@ -166,6 +168,8 @@ public class ProductSyncIT {
     public void sync_withNewProductWithExistingSlug_shouldNotCreateProduct() {
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             ProductType.referenceOfId(productType.getKey()))
+            .taxCategory(null)
+            .state(null)
             .slug(product.getMasterData().getStaged().getSlug())
             .build();
 
