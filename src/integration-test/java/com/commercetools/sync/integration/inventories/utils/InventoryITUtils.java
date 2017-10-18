@@ -47,8 +47,6 @@ import java.util.function.Consumer;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.fetchAndProcess;
 import static java.util.Collections.singletonList;
 
 public class InventoryITUtils {
@@ -72,9 +70,9 @@ public class InventoryITUtils {
     public static final String CUSTOM_FIELD_NAME = "inventory-custom-field-1";
 
     /**
-     * Deletes all inventory entries from CTP project, represented by provided {@code sphereClient}.
+     * Deletes all inventory entries from CTP project, represented by provided {@code ctpClient}.
      *
-     * @param ctpClient sphere client used to execute requests
+     * @param ctpClient represents the CTP project the inventory entries will be deleted from.
      */
     public static void deleteInventoryEntries(@Nonnull final SphereClient ctpClient) {
         final List<CompletableFuture> inventoryEntryDeleteFutures = new ArrayList<>();
@@ -93,13 +91,24 @@ public class InventoryITUtils {
     }
 
     /**
-     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} channels containing
-     * {@link ChannelRole#INVENTORY_SUPPLY} role from CTP project, represented by provided {@code sphereClient}.
+     * Deletes all channels from CTP project, represented by the supplied {@code ctpClient}.
      *
-     * @param sphereClient sphere client used to execute requests
+     * @param ctpClient represents the CTP project the channels will be deleted from.
      */
-    public static void deleteSupplyChannels(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, ChannelQuery.of().withLimit(QUERY_MAX_LIMIT), ChannelDeleteCommand::of);
+    public static void deleteSupplyChannels(@Nonnull final SphereClient ctpClient) {
+        final List<CompletableFuture> channelDeleteFutures = new ArrayList<>();
+
+        final Consumer<List<Channel>> channelPageDelete =
+            channels -> channels.forEach(channel -> {
+                final CompletableFuture<Channel> deleteFuture =
+                    ctpClient.execute(ChannelDeleteCommand.of(channel)).toCompletableFuture();
+                channelDeleteFutures.add(deleteFuture);
+            });
+
+        CtpQueryUtils.queryAll(ctpClient, ChannelQuery.of(), channelPageDelete)
+                     .thenCompose(result -> CompletableFuture.allOf(channelDeleteFutures
+                         .toArray(new CompletableFuture[channelDeleteFutures.size()])))
+                     .toCompletableFuture().join();
     }
 
     /**
