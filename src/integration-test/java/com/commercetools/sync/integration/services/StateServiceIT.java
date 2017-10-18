@@ -4,6 +4,7 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.impl.StateServiceImpl;
+import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateDraftBuilder;
 import io.sphere.sdk.states.StateType;
@@ -16,14 +17,15 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.StateITUtils.createState;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStates;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class StateServiceIT {
     private static final StateType STATE_TYPE = StateType.PRODUCT_STATE;
-    private static final String OLD_STATE_KEY = "old_state_key";
 
+    private State oldState;
     private StateService stateService;
     private ArrayList<String> warnings;
 
@@ -34,11 +36,7 @@ public class StateServiceIT {
     public void setup() {
         deleteStates(CTP_TARGET_CLIENT, STATE_TYPE);
         warnings = new ArrayList<>();
-
-        final StateDraft stateDraft = StateDraftBuilder.of(OLD_STATE_KEY, StateType.PRODUCT_STATE)
-                                                       .build();
-        executeBlocking(CTP_TARGET_CLIENT.execute(StateCreateCommand.of(stateDraft)));
-
+        oldState = createState(CTP_TARGET_CLIENT, STATE_TYPE);
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                                                                .setWarningCallBack(warnings::add)
                                                                                .build();
@@ -64,7 +62,7 @@ public class StateServiceIT {
 
     @Test
     public void fetchCachedStateId_WithExistingProductType_ShouldFetchProductTypeAndCache() {
-        final Optional<String> stateId = stateService.fetchCachedStateId(OLD_STATE_KEY)
+        final Optional<String> stateId = stateService.fetchCachedStateId(oldState.getKey())
                                                                  .toCompletableFuture()
                                                                  .join();
         assertThat(stateId).isNotEmpty();
@@ -78,7 +76,7 @@ public class StateServiceIT {
 
         // Create new state
         final String newStateKey = "new_state_key";
-        final StateDraft stateDraft = StateDraftBuilder.of(newStateKey, StateType.PRODUCT_STATE)
+        final StateDraft stateDraft = StateDraftBuilder.of(newStateKey, STATE_TYPE)
                                                        .build();
         executeBlocking(CTP_TARGET_CLIENT.execute(StateCreateCommand.of(stateDraft)));
 

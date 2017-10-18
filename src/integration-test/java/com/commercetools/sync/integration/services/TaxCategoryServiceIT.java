@@ -4,12 +4,9 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
-import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
 import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
-import io.sphere.sdk.taxcategories.TaxRateDraft;
-import io.sphere.sdk.taxcategories.TaxRateDraftBuilder;
 import io.sphere.sdk.taxcategories.commands.TaxCategoryCreateCommand;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -19,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxCategory;
+import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxRateDraft;
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
@@ -26,12 +25,8 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TaxCategoryServiceIT {
-    private static final String OLD_TAXCATEGORY_KEY = "old_tax_category_key";
-    private static final String OLD_TAXCATEGORY_NAME = "old_tax_category_name";
-    private static final String OLD_TAXCATEGORY_DESCRIPTION = "old_tax_category_desc";
-
     private TaxCategoryService taxCategoryService;
-    private TaxRateDraft taxRateDraft;
+    private TaxCategory oldTaxCategory;
     private ArrayList<String> warnings;
 
     /**
@@ -41,15 +36,7 @@ public class TaxCategoryServiceIT {
     public void setup() {
         deleteTaxCategories(CTP_TARGET_CLIENT);
         warnings = new ArrayList<>();
-
-        taxRateDraft = TaxRateDraftBuilder.of("taxRateName", 0.2, true, CountryCode.DE)
-                                                            .build();
-        final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder
-            .of(OLD_TAXCATEGORY_NAME, singletonList(taxRateDraft), OLD_TAXCATEGORY_DESCRIPTION)
-            .key(OLD_TAXCATEGORY_KEY)
-            .build();
-        executeBlocking(CTP_TARGET_CLIENT.execute(TaxCategoryCreateCommand.of(taxCategoryDraft)));
-
+        oldTaxCategory = createTaxCategory(CTP_TARGET_CLIENT);
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                                                                .setWarningCallBack(warnings::add)
                                                                                .build();
@@ -74,8 +61,8 @@ public class TaxCategoryServiceIT {
     }
 
     @Test
-    public void fetchCachedTaxCategoryId_WithExistingProductType_ShouldFetchProductTypeAndCache() {
-        final Optional<String> taxCategoryId = taxCategoryService.fetchCachedTaxCategoryId(OLD_TAXCATEGORY_KEY)
+    public void fetchCachedTaxCategoryId_WithExistingTaxCategory_ShouldFetchProductTypeAndCache() {
+        final Optional<String> taxCategoryId = taxCategoryService.fetchCachedTaxCategoryId(oldTaxCategory.getKey())
                                                                  .toCompletableFuture()
                                                                  .join();
         assertThat(taxCategoryId).isNotEmpty();
@@ -90,7 +77,7 @@ public class TaxCategoryServiceIT {
         // Create new taxCategory
         final String newTaxCategoryKey = "new_tax_category_key";
         final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder
-            .of("newTaxCategory", singletonList(taxRateDraft), OLD_TAXCATEGORY_DESCRIPTION)
+            .of("newTaxCategory", singletonList(createTaxRateDraft()), oldTaxCategory.getDescription())
             .key(newTaxCategoryKey)
             .build();
         executeBlocking(CTP_TARGET_CLIENT.execute(TaxCategoryCreateCommand.of(taxCategoryDraft)));
@@ -108,12 +95,12 @@ public class TaxCategoryServiceIT {
     public void fetchCachedTaxCategoryId_WithTaxCategoryExistingWithNoKey_ShouldTriggerWarningCallback() {
         // Create new taxCategory without key
         final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder
-            .of("newTaxCategory", singletonList(taxRateDraft), OLD_TAXCATEGORY_DESCRIPTION)
+            .of("newTaxCategory", singletonList(createTaxRateDraft()), oldTaxCategory.getDescription())
             .build();
         final TaxCategory newTaxCategory = executeBlocking(
             CTP_TARGET_CLIENT.execute(TaxCategoryCreateCommand.of(taxCategoryDraft)));
 
-        final Optional<String> taxCategoryId = taxCategoryService.fetchCachedTaxCategoryId(OLD_TAXCATEGORY_KEY)
+        final Optional<String> taxCategoryId = taxCategoryService.fetchCachedTaxCategoryId(oldTaxCategory.getKey())
                                                                  .toCompletableFuture()
                                                                  .join();
 
