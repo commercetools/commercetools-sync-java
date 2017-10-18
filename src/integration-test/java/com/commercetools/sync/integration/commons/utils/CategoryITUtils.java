@@ -285,13 +285,11 @@ public final class CategoryITUtils {
 
 
     /**
-     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} categories from CTP
-     * projects defined by the {@code ctpClient}. Only issues delete request action to a category in the case that none
-     * of its ancestors was already deleted or not to avoid trying to delete a category which would have been already
-     * deleted, due to deletion of an ancestor of it. As a performance improvement, this method sorts categories by
-     * least ancestors for faster deletion (due to deletion of ancestors always first, which in turn deletes all the
-     * children and grand children.
-     *
+     * Deletes all categories from CTP projects defined by the {@code ctpClient}. Only issues delete request action to a
+     * category in the case that none of its ancestors was already deleted or not to avoid trying to delete a category
+     * which would have been already deleted, due to deletion of an ancestor of it. As a performance improvement, this
+     * method sorts categories by least ancestors for faster deletion (due to deletion of ancestors always first, which
+     * in turn deletes all the children and grand children.
      *
      * @param ctpClient defines the CTP project to delete the categories from.
      */
