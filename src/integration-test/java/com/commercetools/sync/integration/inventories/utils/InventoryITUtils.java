@@ -1,7 +1,6 @@
 package com.commercetools.sync.integration.inventories.utils;
 
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
-import com.commercetools.sync.integration.commons.utils.SphereClientUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.channels.Channel;
@@ -112,8 +111,8 @@ public class InventoryITUtils {
     }
 
     /**
-     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} inventory entries
-     * from CTP projects {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
+     * Deletes all inventory entries from CTP projects defined by {@code CTP_SOURCE_CLIENT} and
+     * {@code CTP_TARGET_CLIENT}.
      */
     public static void deleteInventoryEntriesFromTargetAndSource() {
         deleteInventoryEntries(CTP_SOURCE_CLIENT);
@@ -121,8 +120,7 @@ public class InventoryITUtils {
     }
 
     /**
-     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} supply channels
-     * from CTP projects {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
+     * Deletes all channels from CTP projects defined by {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
      */
     public static void deleteChannelsFromTargetAndSource() {
         deleteSupplyChannels(CTP_SOURCE_CLIENT);
