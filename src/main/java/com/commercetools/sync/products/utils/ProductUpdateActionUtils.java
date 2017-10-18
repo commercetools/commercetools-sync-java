@@ -592,7 +592,11 @@ public final class ProductUpdateActionUtils {
      * Compares the {@link State} references of an old {@link Product} and
      * new {@link ProductDraft}. If they are different - return {@link TransitionState} update action.
      *
-     * <p>If the old value is set, but the new one is empty - the command will unset the tax category.
+     * <p>If the old value is set, but the new one is empty - return empty object, because unset transition state is
+     * not possible.
+     *
+     * <p><b>Note:</b> the transition state action is called with <i>force == true</i>, e.g. the platform won't verify
+     * transition 
      *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft with new {@link State} reference.
@@ -602,8 +606,9 @@ public final class ProductUpdateActionUtils {
     public static Optional<TransitionState> buildTransitionStateUpdateAction(
         @Nonnull final Product oldProduct,
         @Nonnull final ProductDraft newProduct) {
-        return buildUpdateAction(oldProduct.getState(), newProduct.getState(),
-            () -> TransitionState.of(newProduct.getState()));
+        return ofNullable(newProduct.getState() != null && !Objects.equals(oldProduct.getState(), newProduct.getState())
+            ? TransitionState.of(newProduct.getState(), true)
+            : null);
     }
 
     /**

@@ -295,7 +295,8 @@ public class ProductSyncIT {
         // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ProductType.reference(productType.getKey()), TaxCategory.referenceOfId(targetTaxCategory.getKey()),
-            State.referenceOfId(targetProductState.getKey()),categoryResourceIdentifiers, categoryOrderHintsWithCategoryKeys);
+            State.referenceOfId(targetProductState.getKey()),
+            categoryResourceIdentifiers, categoryOrderHintsWithCategoryKeys);
 
         final List<ProductDraft> batch1 = new ArrayList<>();
         batch1.add(productDraft);

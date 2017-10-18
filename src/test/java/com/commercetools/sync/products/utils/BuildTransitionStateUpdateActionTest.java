@@ -42,15 +42,12 @@ public class BuildTransitionStateUpdateActionTest {
 
         when(newProduct.getState()).thenReturn(newState);
         assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct))
-            .contains(TransitionState.of(newState));
+            .contains(TransitionState.of(newState, true));
     }
 
     @Test
-    public void buildTransitionStateUpdateAction_withEmptyNewShouldUnset() throws Exception {
+    public void buildTransitionStateUpdateAction_withEmptyNewShouldReturnEmpty() throws Exception {
         assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct)).isEmpty();
-
-        when(oldProduct.getState()).thenReturn(oldState);
-        assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct)).contains(TransitionState.of(null));
     }
 
     @Test
@@ -61,11 +58,19 @@ public class BuildTransitionStateUpdateActionTest {
     }
 
     @Test
+    public void buildTransitionStateUpdateAction_withEmptyOldShouldReturnNew() throws Exception {
+        when(newProduct.getState()).thenReturn(newChangedState);
+        assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct))
+            .contains(TransitionState.of(newChangedState, true));
+    }
+
+
+    @Test
     public void buildTransitionStateUpdateAction_withDifferent() throws Exception {
         when(oldProduct.getState()).thenReturn(oldState);
         when(newProduct.getState()).thenReturn(newChangedState);
         assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct))
-            .contains(TransitionState.of(newChangedState));
+            .contains(TransitionState.of(newChangedState, true));
     }
 
 }
