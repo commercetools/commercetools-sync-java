@@ -2,6 +2,8 @@ package com.commercetools.sync.categories.utils;
 
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.categories.queries.CategoryQuery;
+import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.Type;
@@ -97,5 +99,13 @@ public class CategoryReferenceReplacementUtilsTest {
             assertThat(referenceReplacedDraft.getParent().getId()).isEqualTo(parentId);
             assertThat(referenceReplacedDraft.getCustom().getType().getId()).isEqualTo(customTypeId);
         }
+    }
+
+    @Test
+    public void buildCategoryQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+        final CategoryQuery categoryQuery = CategoryReferenceReplacementUtils.buildCategoryQuery();
+        assertThat(categoryQuery.expansionPaths()).hasSize(2);
+        assertThat(categoryQuery.expansionPaths())
+                       .containsExactly(ExpansionPath.of("custom.type"), ExpansionPath.of("parent"));
     }
 }

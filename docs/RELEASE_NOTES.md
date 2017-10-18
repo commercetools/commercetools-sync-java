@@ -46,6 +46,7 @@ are breaking changes. If there are, then a migration guide should be provided.
 **New Features** (1)
 - **Commons** - Expose `replaceCustomTypeIdWithKeys` and `replaceReferenceIdWithKey`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120).
 - **ProductSync** - Expose `ProductReferenceReplancementUtils#buildProductQuery` util to create a product query with all needed reference expansions to fetch products from a source CTP project for the sync. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120).
+- **CategorySync** - Expose `CategoryReferenceReplancementUtils#buildCategoryQuery` util to create a category query with all needed reference expansions to fetch categories from a source CTP project for the sync. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120).
 
 
 **Bug Fixes** (1)

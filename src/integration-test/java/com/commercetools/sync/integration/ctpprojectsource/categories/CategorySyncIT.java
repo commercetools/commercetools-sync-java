@@ -5,17 +5,13 @@ import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
-import com.commercetools.sync.integration.commons.utils.SphereClientUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
-import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
-import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.ErrorResponseException;
-import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.AfterClass;
@@ -33,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.buildCategoryQuery;
 import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.replaceCategoriesReferenceIdsWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
@@ -118,13 +115,8 @@ public class CategorySyncIT {
         createCategories(CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, 2));
 
-        final List<Category> categories = CTP_SOURCE_CLIENT
-            .execute(CategoryQuery.of()
-                                  .withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
-                                  .withExpansionPaths(ExpansionPath.of("custom.type"))
-                                  .plusExpansionPaths(CategoryExpansionModel::parent)
-            )
-            .toCompletableFuture().join().getResults();
+        final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
+                                                           .toCompletableFuture().join().getResults();
 
         // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
@@ -145,13 +137,8 @@ public class CategorySyncIT {
         createCategories(CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, 3));
 
-        final List<Category> categories = CTP_SOURCE_CLIENT
-            .execute(CategoryQuery.of()
-                                  .withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
-                                  .withExpansionPaths(ExpansionPath.of("custom.type"))
-                                  .plusExpansionPaths(CategoryExpansionModel::parent)
-            )
-            .toCompletableFuture().join().getResults();
+        final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
+                                                           .toCompletableFuture().join().getResults();
 
         // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
@@ -172,13 +159,8 @@ public class CategorySyncIT {
         createCategories(CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, 2));
 
-        final List<Category> categories = CTP_SOURCE_CLIENT
-            .execute(CategoryQuery.of()
-                                  .withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
-                                  .withExpansionPaths(ExpansionPath.of("custom.type"))
-                                  .plusExpansionPaths(CategoryExpansionModel::parent)
-            )
-            .toCompletableFuture().join().getResults();
+        final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
+                                                           .toCompletableFuture().join().getResults();
 
         final List<CategoryDraft> categoryDrafts = categories.stream()
                                                              .map(category -> CategoryDraftBuilder.of(category).build())
@@ -237,13 +219,8 @@ public class CategorySyncIT {
         //---------------------------------------------------------------
 
         // Fetch categories from source project
-        final List<Category> categories = CTP_SOURCE_CLIENT
-            .execute(CategoryQuery.of()
-                                  .withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
-                                  .withExpansionPaths(ExpansionPath.of("custom.type"))
-                                  .plusExpansionPaths(CategoryExpansionModel::parent)
-            )
-            .toCompletableFuture().join().getResults();
+        final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
+                                                           .toCompletableFuture().join().getResults();
 
         // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
@@ -311,13 +288,8 @@ public class CategorySyncIT {
         //---------------------------------------------------------------
 
         // Fetch categories from source project
-        final List<Category> categories = CTP_SOURCE_CLIENT
-            .execute(CategoryQuery.of()
-                                  .withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
-                                  .withExpansionPaths(ExpansionPath.of("custom.type"))
-                                  .plusExpansionPaths(CategoryExpansionModel::parent)
-            )
-            .toCompletableFuture().join().getResults();
+        final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
+                                                           .toCompletableFuture().join().getResults();
 
         // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
@@ -372,13 +344,8 @@ public class CategorySyncIT {
         //---------------------------------------------------------------
 
         // Fetch categories from source project
-        final List<Category> categories = CTP_SOURCE_CLIENT
-            .execute(CategoryQuery.of()
-                                  .withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
-                                  .withExpansionPaths(ExpansionPath.of("custom.type"))
-                                  .plusExpansionPaths(CategoryExpansionModel::parent)
-            )
-            .toCompletableFuture().join().getResults();
+        final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
+                                                           .toCompletableFuture().join().getResults();
 
         // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
@@ -457,12 +424,7 @@ public class CategorySyncIT {
 
         // Fetch categories from source project
         final List<Category> categories = CTP_SOURCE_CLIENT
-            .execute(CategoryQuery.of()
-                                  .withSort(sorting -> sorting.createdAt().sort().asc())
-                                  .withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
-                                  .withExpansionPaths(ExpansionPath.of("custom.type"))
-                                  .plusExpansionPaths(CategoryExpansionModel::parent)
-            )
+            .execute(buildCategoryQuery().withSort(sorting -> sorting.createdAt().sort().asc()))
             .toCompletableFuture().join().getResults();
 
         // Put the keys in the reference ids to prepare for reference resolution
@@ -531,13 +493,8 @@ public class CategorySyncIT {
 
         //---------
 
-        final List<Category> categories = CTP_SOURCE_CLIENT
-            .execute(CategoryQuery.of()
-                                  .withLimit(SphereClientUtils.QUERY_MAX_LIMIT)
-                                  .withExpansionPaths(ExpansionPath.of("custom.type"))
-                                  .plusExpansionPaths(CategoryExpansionModel::parent)
-            )
-            .toCompletableFuture().join().getResults();
+        final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
+                                                           .toCompletableFuture().join().getResults();
 
         // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);

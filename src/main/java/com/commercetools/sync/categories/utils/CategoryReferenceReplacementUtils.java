@@ -3,7 +3,11 @@ package com.commercetools.sync.categories.utils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
+import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
+import io.sphere.sdk.categories.queries.CategoryQuery;
+import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
@@ -40,5 +44,23 @@ public final class CategoryReferenceReplacementUtils {
                                            .build();
             })
             .collect(Collectors.toList());
+    }
+
+    /**
+     * Builds a {@link CategoryQuery} for fetching categories from a source CTP project with all the needed references
+     * expanded for the sync:
+     * <ul>
+     *     <li>Custom Type</li>
+     *     <li>Parent Category</li>
+     * </ul>
+     *
+     * @return the query for fetching categories from the source CTP project with all the aforementioned references
+     *         expanded.
+     */
+    public static CategoryQuery buildCategoryQuery() {
+        return CategoryQuery.of()
+                            .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
+                            .withExpansionPaths(ExpansionPath.of("custom.type"))
+                            .plusExpansionPaths(CategoryExpansionModel::parent);
     }
 }
