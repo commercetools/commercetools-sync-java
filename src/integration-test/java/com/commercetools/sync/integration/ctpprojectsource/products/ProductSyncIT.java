@@ -13,7 +13,9 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.producttypes.ProductType;
-import org.assertj.core.api.Assertions;
+import io.sphere.sdk.states.State;
+import io.sphere.sdk.states.StateType;
+import io.sphere.sdk.taxcategories.TaxCategory;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -30,13 +32,14 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.O
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.getDraftWithPriceChannelReferences;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.getProductQuery;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.StateITUtils.createState;
+import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxCategory;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_1;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
@@ -46,6 +49,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
+import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
@@ -54,8 +58,16 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 public class ProductSyncIT {
     private static ProductType sourceProductType;
     private static ProductType targetProductType;
+
+    private static TaxCategory sourceTaxCategory;
+    private static TaxCategory targetTaxCategory;
+
+    private static State sourceProductState;
+    private static State targetProductState;
+
     private static Channel sourcePriceChannel;
     private static Channel targetPriceChannel;
+
     private static Set<ResourceIdentifier<Category>> sourceCategories;
     private static Set<ResourceIdentifier<Category>> targetCategories;
     private static Set<ResourceIdentifier<Category>> sourceCategoryResourcesWithIds;
@@ -113,6 +125,12 @@ public class ProductSyncIT {
 
         targetProductType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
         sourceProductType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_SOURCE_CLIENT);
+
+        targetTaxCategory = createTaxCategory(CTP_TARGET_CLIENT);
+        sourceTaxCategory = createTaxCategory(CTP_SOURCE_CLIENT);
+
+        targetProductState = createState(CTP_TARGET_CLIENT, StateType.PRODUCT_STATE);
+        sourceProductState = createState(CTP_SOURCE_CLIENT, StateType.PRODUCT_STATE);
     }
 
     /**
@@ -152,13 +170,13 @@ public class ProductSyncIT {
     @Test
     public void sync_withChangesOnly_ShouldUpdateProducts() {
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
-            targetProductType.toReference(), targetCategoryResourcesWithIds,
-            createRandomCategoryOrderHints(targetCategories));
+            targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
+            targetCategoryResourcesWithIds, createRandomCategoryOrderHints(targetCategories));
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)).toCompletableFuture().join();
 
         final ProductDraft newProductDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
-            sourceProductType.toReference(), sourceCategoryResourcesWithIds,
-            createRandomCategoryOrderHints(sourceCategories));
+            sourceProductType.toReference(), sourceTaxCategory.toReference(), sourceProductState.toReference(),
+            sourceCategoryResourcesWithIds, createRandomCategoryOrderHints(sourceCategories));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft)).toCompletableFuture().join();
 
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
@@ -172,20 +190,22 @@ public class ProductSyncIT {
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 1, 0, 1, 0));
 
-        Assertions.assertThat(errorCallBackMessages).isEmpty();
-        Assertions.assertThat(errorCallBackExceptions).isEmpty();
-        Assertions.assertThat(warningCallBackMessages).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
     }
 
     @Test
     public void sync_withChangesOnlyAndUnPublish_ShouldUpdateProducts() {
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
-            targetProductType.toReference(), targetCategoryResourcesWithIds,
-            createRandomCategoryOrderHints(targetCategories));
+            targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
+            targetCategoryResourcesWithIds, createRandomCategoryOrderHints(targetCategories));
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)).toCompletableFuture().join();
 
         final ProductDraft newProductDraft = createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             sourceProductType.toReference())
+            .taxCategory(sourceTaxCategory)
+            .state(sourceProductState)
             .categories(sourceCategoryResourcesWithIds)
             .categoryOrderHints(createRandomCategoryOrderHints(sourceCategories))
             .publish(false).build();
@@ -203,16 +223,16 @@ public class ProductSyncIT {
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 1, 0, 1, 0));
 
-        Assertions.assertThat(errorCallBackMessages).isEmpty();
-        Assertions.assertThat(errorCallBackExceptions).isEmpty();
-        Assertions.assertThat(warningCallBackMessages).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
     }
 
     @Test
     public void sync_withPriceChannels_ShouldUpdateProducts() {
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
-            targetProductType.toReference(), targetCategoryResourcesWithIds,
-            createRandomCategoryOrderHints(targetCategories));
+            targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
+            targetCategoryResourcesWithIds, createRandomCategoryOrderHints(targetCategories));
 
         final ProductDraft existingDraftWithPriceChannelReferences =
             getDraftWithPriceChannelReferences(existingProductDraft, targetPriceChannel.toReference());
@@ -222,6 +242,8 @@ public class ProductSyncIT {
 
         final ProductDraft newProductDraft = createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH,
             sourceProductType.toReference())
+            .taxCategory(sourceTaxCategory)
+            .state(sourceProductState)
             .categories(sourceCategoryResourcesWithIds)
             .categoryOrderHints(createRandomCategoryOrderHints(sourceCategories))
             .publish(false).build();
@@ -243,8 +265,8 @@ public class ProductSyncIT {
             .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
                 + " failed to sync).", 1, 0, 1, 0));
 
-        Assertions.assertThat(errorCallBackMessages).isEmpty();
-        Assertions.assertThat(errorCallBackExceptions).isEmpty();
-        Assertions.assertThat(warningCallBackMessages).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
     }
 }
