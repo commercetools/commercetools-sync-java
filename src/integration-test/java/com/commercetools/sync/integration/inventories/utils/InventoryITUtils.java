@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.inventories.utils;
 
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.integration.commons.utils.SphereClientUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -34,11 +35,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -66,17 +71,25 @@ public class InventoryITUtils {
     public static final String CUSTOM_TYPE = "inventory-custom-type-name";
     public static final String CUSTOM_FIELD_NAME = "inventory-custom-field-1";
 
-    private static final InventoryEntryQuery QUERY_ALL_INVENTORIES = InventoryEntryQuery.of()
-        .withLimit(QUERY_MAX_LIMIT);
-
     /**
-     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} inventory entries
-     * from CTP project, represented by provided {@code sphereClient}.
+     * Deletes all inventory entries from CTP project, represented by provided {@code sphereClient}.
      *
-     * @param sphereClient sphere client used to execute requests
+     * @param ctpClient sphere client used to execute requests
      */
-    public static void deleteInventoryEntries(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, QUERY_ALL_INVENTORIES, InventoryEntryDeleteCommand::of);
+    public static void deleteInventoryEntries(@Nonnull final SphereClient ctpClient) {
+        final List<CompletableFuture> inventoryEntryDeleteFutures = new ArrayList<>();
+
+        final Consumer<List<InventoryEntry>> inventoryEntryPageDelete =
+            inventoryEntries -> inventoryEntries.forEach(inventoryEntry -> {
+                final CompletableFuture<InventoryEntry> deleteFuture =
+                    ctpClient.execute(InventoryEntryDeleteCommand.of(inventoryEntry)).toCompletableFuture();
+                inventoryEntryDeleteFutures.add(deleteFuture);
+            });
+
+        CtpQueryUtils.queryAll(ctpClient, InventoryEntryQuery.of(), inventoryEntryPageDelete)
+                     .thenCompose(result -> CompletableFuture.allOf(inventoryEntryDeleteFutures
+                         .toArray(new CompletableFuture[inventoryEntryDeleteFutures.size()])))
+                     .toCompletableFuture().join();
     }
 
     /**
