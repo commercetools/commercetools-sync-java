@@ -37,9 +37,9 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.c
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getResourceIdentifiersOfIds;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getResourceIdentifiersOfKeysAndIds;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ActionGroup.CATEGORIES;
 import static com.commercetools.sync.products.ActionGroup.NAME;
@@ -94,8 +94,8 @@ public class ProductSyncFilterIT {
         deleteAllProducts(CTP_TARGET_CLIENT);
         syncOptionsBuilder = getProductSyncOptionsBuilder();
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH, productType.toReference(),
-                getResourceIdentifiersOfIds(categoryResourceIdentifiers),
-                createRandomCategoryOrderHints(categoryResourceIdentifiers));
+            null, null, getResourceIdentifiersOfIds(categoryResourceIdentifiers),
+            createRandomCategoryOrderHints(categoryResourceIdentifiers));
         executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)));
     }
 
@@ -133,8 +133,8 @@ public class ProductSyncFilterIT {
     @Test
     public void sync_withChangedProductBlackListingCategories_shouldUpdateProductWithoutCategories() {
         final ProductDraft productDraft =
-                createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, referenceOfId(productType.getKey()),
-                        categoryResourceIdentifiers, createRandomCategoryOrderHints(categoryResourceIdentifiers));
+                createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, referenceOfId(productType.getKey()), null,
+                    null, categoryResourceIdentifiers, createRandomCategoryOrderHints(categoryResourceIdentifiers));
 
         final List<ProductDraft> productDraftWithKeysOnReferences =
                 replaceProductDraftsCategoryReferenceIdsWithKeys(singletonList(productDraft));
@@ -164,8 +164,8 @@ public class ProductSyncFilterIT {
     @Test
     public void sync_withChangedProductWhiteListingName_shouldOnlyUpdateProductName() {
         final ProductDraft productDraft =
-                createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, referenceOfId(productType.getKey()),
-                        categoryResourceIdentifiers, createRandomCategoryOrderHints(categoryResourceIdentifiers));
+                createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, referenceOfId(productType.getKey()), null,
+                    null, categoryResourceIdentifiers, createRandomCategoryOrderHints(categoryResourceIdentifiers));
 
         final List<ProductDraft> productDraftWithKeysOnReferences =
                 replaceProductDraftsCategoryReferenceIdsWithKeys(Collections.singletonList(productDraft));
