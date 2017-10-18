@@ -8,6 +8,7 @@ import io.sphere.sdk.taxcategories.queries.TaxCategoryQuery;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class TaxCategoryServiceImpl implements TaxCategoryService {
     private final ProductSyncOptions syncOptions;
@@ -28,7 +30,10 @@ public class TaxCategoryServiceImpl implements TaxCategoryService {
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<String>> fetchCachedTaxCategoryId(@Nonnull final String key) {
+    public CompletionStage<Optional<String>> fetchCachedTaxCategoryId(@Nullable final String key) {
+        if (isBlank(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
         if (keyToIdCache.isEmpty()) {
             return cacheAndFetch(key);
         }

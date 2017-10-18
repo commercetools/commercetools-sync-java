@@ -3,6 +3,7 @@ package com.commercetools.sync.services;
 import io.sphere.sdk.taxcategories.TaxCategory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
@@ -25,5 +26,5 @@ public interface TaxCategoryService {
      *         {@link TaxCategory} was found in the CTP project with this key.
      */
     @Nonnull
-    CompletionStage<Optional<String>> fetchCachedTaxCategoryId(@Nonnull final String key);
+    CompletionStage<Optional<String>> fetchCachedTaxCategoryId(@Nullable final String key);
 }

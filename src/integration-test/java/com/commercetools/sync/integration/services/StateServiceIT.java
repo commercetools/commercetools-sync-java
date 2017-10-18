@@ -90,4 +90,14 @@ public class StateServiceIT {
         assertThat(stateId).isEmpty();
         assertThat(warnings).isEmpty();
     }
+
+    @Test
+    public void fetchCachedStateId_WithNullKey_ShouldReturnFutureWithEmptyOptional() {
+        final Optional<String> stateId = stateService.fetchCachedStateId(null)
+                                                     .toCompletableFuture()
+                                                     .join();
+
+        assertThat(stateId).isEmpty();
+        assertThat(warnings).isEmpty();
+    }
 }

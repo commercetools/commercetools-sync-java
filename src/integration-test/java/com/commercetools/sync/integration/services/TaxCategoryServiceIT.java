@@ -122,4 +122,13 @@ public class TaxCategoryServiceIT {
         assertThat(warnings.get(0)).isEqualTo(format("TaxCategory with id: '%s' has no key"
             + " set. Keys are required for taxCategory matching.", newTaxCategory.getId()));
     }
+
+    @Test
+    public void fetchCachedTaxCategoryId_WithWithNullKey_ShouldReturnFutureWithEmptyOptional() {
+        final Optional<String> taxCategoryId = taxCategoryService.fetchCachedTaxCategoryId(null)
+                                                                 .toCompletableFuture()
+                                                                 .join();
+        assertThat(taxCategoryId).isEmpty();
+        assertThat(warnings).isEmpty();
+    }
 }
