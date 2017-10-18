@@ -7,11 +7,15 @@ import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
+import com.commercetools.sync.services.StateService;
+import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
+import com.commercetools.sync.services.impl.StateServiceImpl;
+import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
@@ -37,6 +41,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchDrafts;
 import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
+import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -68,17 +73,19 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     public ProductSync(@Nonnull final ProductSyncOptions productSyncOptions) {
         this(productSyncOptions, new ProductServiceImpl(productSyncOptions),
             new ProductTypeServiceImpl(productSyncOptions), new CategoryServiceImpl(productSyncOptions),
-            new TypeServiceImpl(productSyncOptions), new ChannelServiceImpl(productSyncOptions));
+            new TypeServiceImpl(productSyncOptions), new ChannelServiceImpl(productSyncOptions),
+            new TaxCategoryServiceImpl(productSyncOptions), new StateServiceImpl(productSyncOptions, PRODUCT_STATE));
     }
 
     ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService,
                 @Nonnull final ProductTypeService productTypeService, @Nonnull final CategoryService categoryService,
-                @Nonnull final TypeService typeService, @Nonnull final ChannelService channelService) {
+                @Nonnull final TypeService typeService, @Nonnull final ChannelService channelService,
+                @Nonnull final TaxCategoryService taxCategoryService, @Nonnull final StateService stateService) {
         super(new ProductSyncStatistics(), productSyncOptions);
         this.productService = productService;
         this.productTypeService = productTypeService;
         this.productReferenceResolver = new ProductReferenceResolver(productSyncOptions, productTypeService,
-            categoryService, typeService, channelService);
+            categoryService, typeService, channelService, taxCategoryService, stateService);
     }
 
     @Override

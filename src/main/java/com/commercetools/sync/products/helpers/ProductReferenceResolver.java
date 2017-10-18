@@ -6,6 +6,8 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.ProductTypeService;
+import com.commercetools.sync.services.StateService;
+import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.Reference;
@@ -17,7 +19,7 @@ import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.utils.CompletableFutureUtils;
+import io.sphere.sdk.taxcategories.TaxCategory;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -31,12 +33,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public final class ProductReferenceResolver extends BaseReferenceResolver<ProductDraft, ProductSyncOptions> {
-    private ProductTypeService productTypeService;
-    private CategoryService categoryService;
-    private PriceReferenceResolver priceReferenceResolver;
+    private final ProductTypeService productTypeService;
+    private final CategoryService categoryService;
+    private final PriceReferenceResolver priceReferenceResolver;
+    private final TaxCategoryService taxCategoryService;
+    private final StateService stateService;
+
+
     private static final String FAILED_TO_RESOLVE_PRODUCT_TYPE = "Failed to resolve product type reference on "
         + "ProductDraft with key:'%s'.";
     private static final String FAILED_TO_RESOLVE_CATEGORY = "Failed to resolve category reference on "
@@ -54,15 +62,21 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * @param categoryService    the service to fetch the categories for reference resolution.
      * @param typeService        the service to fetch the custom types for reference resolution.
      * @param channelService     the service to fetch the channels for reference resolution.
+     * @param taxCategoryService the service to fetch tax categories for reference resolution.
+     * @param stateService       the service to fetch product states for reference resolution
      */
     public ProductReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final ProductTypeService productTypeService,
                                     @Nonnull final CategoryService categoryService,
                                     @Nonnull final TypeService typeService,
-                                    @Nonnull final ChannelService channelService) {
+                                    @Nonnull final ChannelService channelService,
+                                    @Nonnull final TaxCategoryService taxCategoryService,
+                                    @Nonnull final StateService stateService) {
         super(productSyncOptions);
         this.productTypeService = productTypeService;
         this.categoryService = categoryService;
+        this.taxCategoryService = taxCategoryService;
+        this.stateService = stateService;
         this.priceReferenceResolver = new PriceReferenceResolver(productSyncOptions, typeService, channelService);
     }
 
@@ -80,7 +94,9 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     public CompletionStage<ProductDraft> resolveReferences(@Nonnull final ProductDraft productDraft) {
         return resolveProductTypeReference(productDraft)
             .thenCompose(this::resolveCategoryReferences)
-            .thenCompose(this::resolveProductPricesReferences);
+            .thenCompose(this::resolveProductPricesReferences)
+            .thenCompose(this::resolveTaxCategoryReferences);
+            //.thenApply(ProductDraftBuilder::build); // TODO: akovalenko: fix it when new draft builders released
     }
 
     @Nonnull
@@ -127,7 +143,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             ProductVariantDraftBuilder.of(productVariantDraft);
 
         if (productVariantDraftPrices == null) {
-            return CompletableFuture.completedFuture(productVariantDraftBuilder.build());
+            return completedFuture(productVariantDraftBuilder.build());
         }
 
         final List<CompletableFuture<PriceDraft>> resolvedPriceDraftFutures =
@@ -226,17 +242,44 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      *         if it exists or empty if it doesn't.
      */
     @Nonnull
-    private CompletionStage<Optional<String>> getProductTypeId(@Nonnull final ResourceIdentifier<ProductType>
-                                                                   productTypeResourceIdentifier,
-                                                               @Nonnull final String referenceResolutionErrorMessage) {
+    private CompletionStage<Optional<String>> getProductTypeId(
+            @Nonnull final ResourceIdentifier<ProductType> productTypeResourceIdentifier,
+            @Nonnull final String referenceResolutionErrorMessage) {
         try {
             final String productTypeKey = getKeyFromResourceIdentifier(productTypeResourceIdentifier,
                 options.shouldAllowUuidKeys());
             return productTypeService.fetchCachedProductTypeId(productTypeKey);
         } catch (ReferenceResolutionException exception) {
-            return CompletableFutureUtils.exceptionallyCompletedFuture(
+            return exceptionallyCompletedFuture(
                 new ReferenceResolutionException(
                     format("%s Reason: %s", referenceResolutionErrorMessage, exception.getMessage()), exception));
+        }
+    }
+
+    @Nonnull
+    private CompletionStage<ProductDraft> resolveTaxCategoryReferences(@Nonnull final ProductDraft productDraft) {
+        final Reference<TaxCategory> taxCategory = productDraft.getTaxCategory();
+
+        if (taxCategory == null) {
+            return completedFuture(productDraft);
+        }
+
+        try {
+            final String taxCategoryKey = getKeyFromResourceIdentifier(taxCategory, options.shouldAllowUuidKeys());
+            return taxCategoryService.fetchCachedTaxCategoryId(taxCategoryKey)
+                .thenApply(optTaxCategory -> optTaxCategory
+                    .map(TaxCategory::referenceOfId)
+                    // up-casting (ProductDraft) is required to allow orElse(ProductDraft) chaining,
+                    // because ProductDraftBuilder#build() returns more specific ProductDraftDsl
+                    .map(taxCategoryReference -> (ProductDraft)ProductDraftBuilder.of(productDraft)
+                        .taxCategory(taxCategoryReference)
+                        .build())
+                    .orElse(productDraft));
+        } catch (ReferenceResolutionException referenceResolutionException) {
+            return exceptionallyCompletedFuture(
+                new ReferenceResolutionException(
+                    format("Failed to resolve tax category reference on ProductDraft with key:'%s'. Reason: %s",
+                        productDraft.getKey(), referenceResolutionException.getMessage())));
         }
     }
 
