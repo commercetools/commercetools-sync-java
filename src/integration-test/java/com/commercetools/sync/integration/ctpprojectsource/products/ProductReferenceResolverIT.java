@@ -54,8 +54,8 @@ public class ProductReferenceResolverIT {
     private static ProductType productTypeSource;
     private static ProductType noKeyProductTypeSource;
 
-    private static TaxCategory taxCategory;
-    private static State productState;
+    private static TaxCategory oldTaxCategory;
+    private static State oldProductState;
     private static ProductQuery productQuery;
 
     private static Set<ResourceIdentifier<Category>> sourceCategoryResourcesWithIds;
@@ -97,8 +97,11 @@ public class ProductReferenceResolverIT {
         productTypeSource = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_SOURCE_CLIENT);
         noKeyProductTypeSource = createProductType(PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, CTP_SOURCE_CLIENT);
 
-        taxCategory = createTaxCategory(CTP_SOURCE_CLIENT);
-        productState = createState(CTP_SOURCE_CLIENT, StateType.PRODUCT_STATE);
+        oldTaxCategory = createTaxCategory(CTP_SOURCE_CLIENT);
+        oldProductState = createState(CTP_SOURCE_CLIENT, StateType.PRODUCT_STATE);
+        createTaxCategory(CTP_TARGET_CLIENT);
+        createState(CTP_TARGET_CLIENT, StateType.PRODUCT_STATE);
+
         productQuery = buildProductQuery();
     }
 
@@ -139,7 +142,7 @@ public class ProductReferenceResolverIT {
     @Test
     public void sync_withNewProductWithExistingCategoryAndProductTypeReferences_ShouldCreateProduct() {
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
-            productTypeSource.toReference(), taxCategory.toReference(), productState.toReference(),
+            productTypeSource.toReference(), oldTaxCategory.toReference(), oldProductState.toReference(),
             sourceCategoryResourcesWithIds, createRandomCategoryOrderHints(sourceCategories));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
@@ -164,7 +167,7 @@ public class ProductReferenceResolverIT {
     @Test
     public void sync_withNewProductWithNoProductTypeKey_ShouldFailCreatingTheProduct() {
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
-            noKeyProductTypeSource.toReference(), taxCategory.toReference(), productState.toReference(),
+            noKeyProductTypeSource.toReference(), oldTaxCategory.toReference(), oldProductState.toReference(),
             sourceCategoryResourcesWithIds, createRandomCategoryOrderHints(sourceCategories));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
