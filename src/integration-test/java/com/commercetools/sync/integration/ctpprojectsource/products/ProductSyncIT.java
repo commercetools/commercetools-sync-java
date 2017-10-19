@@ -8,7 +8,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
 import io.sphere.sdk.channels.commands.ChannelCreateCommand;
-import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
@@ -24,14 +24,13 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithIds;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.getDraftWithPriceChannelReferences;
@@ -52,7 +51,6 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomC
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 public class ProductSyncIT {
@@ -68,10 +66,8 @@ public class ProductSyncIT {
     private static Channel sourcePriceChannel;
     private static Channel targetPriceChannel;
 
-    private static Set<ResourceIdentifier<Category>> sourceCategories;
-    private static Set<ResourceIdentifier<Category>> targetCategories;
-    private static Set<ResourceIdentifier<Category>> sourceCategoryResourcesWithIds;
-    private static Set<ResourceIdentifier<Category>> targetCategoryResourcesWithIds;
+    private static List<Reference<Category>> sourceCategoryReferencesWithIds;
+    private static List<Reference<Category>> targetCategoryReferencesWithIds;
     private ProductSync productSync;
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
@@ -100,28 +96,11 @@ public class ProductSyncIT {
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_SOURCE_CLIENT);
 
 
-        targetCategories = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2))
-            .stream()
-            .map(category -> ResourceIdentifier.<Category>ofIdOrKey(category.getId(), category.getKey(),
-                Category.referenceTypeId())).collect(Collectors.toSet());
-        sourceCategories = createCategories(CTP_SOURCE_CLIENT, getCategoryDrafts(null, 2))
-            .stream()
-            .map(category -> ResourceIdentifier.<Category>ofIdOrKey(category.getId(), category.getKey(),
-                Category.referenceTypeId())).collect(Collectors.toSet());
+        final List<Category> targetCategories = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
+        targetCategoryReferencesWithIds = getReferencesWithIds(targetCategories);
+        final List<Category> sourceCategories = createCategories(CTP_SOURCE_CLIENT, getCategoryDrafts(null, 2));
+        sourceCategoryReferencesWithIds = getReferencesWithIds(sourceCategories);
 
-        targetCategoryResourcesWithIds =
-            targetCategories.stream()
-                            .map(categoryResourceIdentifier ->
-                                ResourceIdentifier.<Category>ofId(categoryResourceIdentifier.getId(),
-                                    Category.referenceTypeId()))
-                            .collect(toSet());
-
-        sourceCategoryResourcesWithIds =
-            sourceCategories.stream()
-                            .map(categoryResourceIdentifier ->
-                                ResourceIdentifier.<Category>ofId(categoryResourceIdentifier.getId(),
-                                    Category.referenceTypeId()))
-                            .collect(toSet());
 
         targetProductType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
         sourceProductType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_SOURCE_CLIENT);
@@ -171,12 +150,12 @@ public class ProductSyncIT {
     public void sync_withChangesOnly_ShouldUpdateProducts() {
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
-            targetCategoryResourcesWithIds, createRandomCategoryOrderHints(targetCategories));
+            targetCategoryReferencesWithIds, createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)).toCompletableFuture().join();
 
         final ProductDraft newProductDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             sourceProductType.toReference(), sourceTaxCategory.toReference(), sourceProductState.toReference(),
-            sourceCategoryResourcesWithIds, createRandomCategoryOrderHints(sourceCategories));
+            sourceCategoryReferencesWithIds, createRandomCategoryOrderHints(sourceCategoryReferencesWithIds));
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft)).toCompletableFuture().join();
 
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
@@ -199,15 +178,15 @@ public class ProductSyncIT {
     public void sync_withChangesOnlyAndUnPublish_ShouldUpdateProducts() {
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
-            targetCategoryResourcesWithIds, createRandomCategoryOrderHints(targetCategories));
+            targetCategoryReferencesWithIds, createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)).toCompletableFuture().join();
 
         final ProductDraft newProductDraft = createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             sourceProductType.toReference())
             .taxCategory(sourceTaxCategory)
             .state(sourceProductState)
-            .categories(sourceCategoryResourcesWithIds)
-            .categoryOrderHints(createRandomCategoryOrderHints(sourceCategories))
+            .categories(sourceCategoryReferencesWithIds)
+            .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
             .publish(false).build();
 
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft)).toCompletableFuture().join();
@@ -232,7 +211,7 @@ public class ProductSyncIT {
     public void sync_withPriceChannels_ShouldUpdateProducts() {
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
             targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
-            targetCategoryResourcesWithIds, createRandomCategoryOrderHints(targetCategories));
+            targetCategoryReferencesWithIds, createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
 
         final ProductDraft existingDraftWithPriceChannelReferences =
             getDraftWithPriceChannelReferences(existingProductDraft, targetPriceChannel.toReference());
@@ -244,8 +223,8 @@ public class ProductSyncIT {
             sourceProductType.toReference())
             .taxCategory(sourceTaxCategory)
             .state(sourceProductState)
-            .categories(sourceCategoryResourcesWithIds)
-            .categoryOrderHints(createRandomCategoryOrderHints(sourceCategories))
+            .categories(sourceCategoryReferencesWithIds)
+            .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
             .publish(false).build();
 
         final ProductDraft newDraftWithPriceChannelReferences =
