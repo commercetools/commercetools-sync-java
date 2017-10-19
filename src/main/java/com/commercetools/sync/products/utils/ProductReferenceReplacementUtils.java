@@ -4,14 +4,15 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
+import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.expansion.ProductExpansionModel;
@@ -20,11 +21,11 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
+import javafx.util.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,11 +60,22 @@ public final class ProductReferenceReplacementUtils {
                     replaceProductTypeReferenceIdWithKey(product);
                 final Reference<TaxCategory> taxCategoryReferenceWithKey =
                     replaceTaxCategoryReferenceIdWithKey(product);
-                final Reference<State> stateReferenceWithKey =
-                    replaceProductStateReferenceIdWithKey(product);
+                final Reference<State> stateReferenceWithKey = replaceProductStateReferenceIdWithKey(product);
 
-                return ProductDraftBuilder.of(productDraftWithCategoryKeys)
+                final Pair<List<Reference<Category>>, CategoryOrderHints> allCategoryReferencesWithKeys =
+                    replaceCategoryReferencesIdsWithKeys(product);
+                final List<Reference<Category>> categoryReferencesWithKeys = allCategoryReferencesWithKeys.getKey();
+                final CategoryOrderHints categoryOrderHintsWithKeys = allCategoryReferencesWithKeys.getValue();
+
+                final List<ProductVariantDraft> variantDraftsWithKeys = replaceProductPriceChannelIdsWithKeys(product);
+                final ProductVariantDraft masterVariantDraftWithKeys = variantDraftsWithKeys.remove(0);
+
+                return ProductDraftBuilder.of(productDraft)
+                                          .masterVariant(masterVariantDraftWithKeys)
+                                          .variants(variantDraftsWithKeys)
                                           .productType(productTypeReferenceWithKey)
+                                          .categories(categoryReferencesWithKeys)
+                                          .categoryOrderHints(categoryOrderHintsWithKeys)
                                           .taxCategory(taxCategoryReferenceWithKey)
                                           .state(stateReferenceWithKey)
                                           .build();
@@ -190,33 +202,119 @@ public final class ProductReferenceReplacementUtils {
     }
 
     /**
+     * Takes a product that is supposed to have its category references expanded in order to be able to fetch the keys
+     * and replace the reference ids with the corresponding keys for both the product's category references and
+     * the categoryOrderHints ids. This method returns as a result a {@link Pair} that contains a {@link List} of
+     * category references with keys replacing the ids as key and a {@link CategoryOrderHints} with keys replacing the
+     * ids as value.
      *
+     * <p>If the product's categoryOrderHints is null, then the resulting categoryOrderHints will be also null.
      *
+     * <p>If the product's category references are not expanded the ids will not be replaced in both the category
+     * references and the categoryOrderHints and will be returned as is.
+     *
+     * @param product the product to replace its category references and CategoryOrderHints ids with keys.
+     * @return a {@link Pair} that contains a {@link List} of category references with keys replacing the ids as key and
+     *         a {@link CategoryOrderHints} with keys replacing the ids as value.
      */
     @Nonnull
+    static Pair<List<Reference<Category>>, CategoryOrderHints> replaceCategoryReferencesIdsWithKeys(
+        @Nonnull final Product product) {
+        final Set<Reference<Category>> categoryReferences = product.getMasterData().getStaged().getCategories();
+        final List<Reference<Category>> categoryReferencesWithKeys = new ArrayList<>();
+
+        final CategoryOrderHints categoryOrderHints = product.getMasterData().getStaged().getCategoryOrderHints();
+        final Map<String, String> categoryOrderHintsMapWithKeys = new HashMap<>();
+
+        categoryReferences.forEach(categoryReference ->
+            categoryReferencesWithKeys.add(
+                replaceReferenceIdWithKey(categoryReference, () -> {
+                    final String categoryId = categoryReference.getId();
+                    @SuppressWarnings("ConstantConditions") // NPE is checked in replaceReferenceIdWithKey.
+                    final String categoryKey = categoryReference.getObj().getKey();
 
                     if (categoryOrderHints != null) {
+                        final String categoryOrderHintValue = categoryOrderHints.get(categoryId);
+                        if (categoryOrderHintValue != null) {
                             categoryOrderHintsMapWithKeys.put(categoryKey, categoryOrderHintValue);
                         }
                     }
+                    return Category.referenceOfId(categoryKey);
+                }))
+        );
 
+        final CategoryOrderHints categoryOrderHintsWithKeys = categoryOrderHintsMapWithKeys.isEmpty()
+            ? categoryOrderHints : CategoryOrderHints.of(categoryOrderHintsMapWithKeys);
+        return new Pair<>(categoryReferencesWithKeys, categoryOrderHintsWithKeys);
     }
 
     /**
+     * Takes a product that is supposed to have all its variants' prices' channels expanded in order to be able to fetch
+     * the keys and replace the reference ids with the corresponding keys for the channel references. This method
+     * returns as a result a {@link List} of {@link ProductVariantDraft} that has all prices' channel references with
+     * keys replacing the ids.
      *
+     * <p>Any channel reference that is not expanded will have it's id in place and not replaced by the key.
      *
+     * @param product the product to replace its variants' prices' channel' ids with keys.
+     * @return  a {@link List} of {@link ProductVariantDraft} that has all prices' channel references with
+     *          keys replacing the ids.
      */
     @Nonnull
+    static List<ProductVariantDraft> replaceProductPriceChannelIdsWithKeys(@Nonnull final Product product) {
+        final List<ProductVariant> allVariants = product.getMasterData().getStaged().getAllVariants();
+        final List<ProductVariantDraft> variantDraftsWithKeys = new ArrayList<>();
+
+        allVariants.forEach(productVariant -> {
+            final List<PriceDraft> priceDrafts = replaceProductVariantPriceChannelIdsWithKeys(productVariant);
+            final ProductVariantDraft variantDraftWithKey = ProductVariantDraftBuilder.of(productVariant)
+                                                                                      .prices(priceDrafts)
+                                                                                      .build();
+            variantDraftsWithKeys.add(variantDraftWithKey);
+        });
+        return variantDraftsWithKeys;
     }
 
     /**
+     * Takes a product variant that is supposed to have all its prices' channels expanded in order to be able to fetch
+     * the keys and replace the reference ids with the corresponding keys for the channel references. This method
+     * returns as a result a {@link List} of {@link PriceDraft} that has all channel references with keys replacing the
+     * ids.
      *
+     * <p>Any channel reference that is not expanded will have it's id in place and not replaced by the key.
+     *
+     * @param productVariant the product variant to replace its prices' channel' ids with keys.
+     * @return  a {@link List} of {@link PriceDraft} that has all channel references with keys replacing the ids.
      */
     @Nonnull
+    static List<PriceDraft> replaceProductVariantPriceChannelIdsWithKeys(@Nonnull final ProductVariant productVariant) {
+        final List<Price> variantPrices = productVariant.getPrices();
+        final List<PriceDraft> variantPriceDraftsWithKeys = new ArrayList<>();
+        variantPrices.forEach(price -> {
+            final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
+            final PriceDraft priceDraftWithKey = PriceDraftBuilder.of(price)
+                                                                  .channel(channelReferenceWithKey).build();
+            variantPriceDraftsWithKeys.add(priceDraftWithKey);
+        });
+        return variantPriceDraftsWithKeys;
     }
 
     /**
+     * Takes a price that is supposed to have its channel reference expanded in order to be able to fetch the key
+     * and replace the reference id with the corresponding key and then return a new {@link Channel} {@link Reference}
+     * containing the key in the id field.
      *
+     * <p><b>Note:</b> The Channel reference should be expanded for the {@code price}, otherwise the reference
+     * id will not be replaced with the key and will still have the id in place.
+     *
+     * @param price the price to replace its channel reference id with the key.
+     *
+     * @return a new {@link Channel} {@link Reference} containing the key in the id field.
      */
+    @Nullable
+    @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
+    static Reference<Channel> replaceChannelReferenceIdWithKey(@Nonnull final Price price) {
+        final Reference<Channel> priceChannel = price.getChannel();
+        return replaceReferenceIdWithKey(priceChannel, () -> Channel.referenceOfId(priceChannel.getObj().getKey()));
     }
 }
