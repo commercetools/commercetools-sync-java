@@ -72,7 +72,7 @@ public class ChannelServiceIT {
     }
 
     @Test
-    public void fetchCachedChannelId_WithNonInvalidatedCache_ShouldFetchFromCache() {
+    public void fetchCachedChannelId_WithNewlyCreatedChannelAfterCaching_ShouldNotFetchNewChannel() {
         // Fetch any channel to populate cache
         channelService.fetchCachedChannelId("anyChannelKey").toCompletableFuture().join();
 
@@ -87,26 +87,6 @@ public class ChannelServiceIT {
             channelService.fetchCachedChannelId(newChannelKey).toCompletableFuture().join();
 
         assertThat(newChannelId).isEmpty();
-    }
-
-    @Test
-    public void fetchCachedChannelId_WithInvalidatedCache_ShouldFetchFreshCopyAndRepopulateCache() {
-        // Fetch any channel to populate cache
-        channelService.fetchCachedChannelId(CHANNEL_KEY).toCompletableFuture().join();
-
-        // Create new channel
-        final String newChannelKey = "new_channel_key";
-        final ChannelDraft draft = ChannelDraftBuilder.of(newChannelKey)
-                                                      .roles(Collections.singleton(ChannelRole.INVENTORY_SUPPLY))
-                                                      .build();
-        CTP_TARGET_CLIENT.execute(ChannelCreateCommand.of(draft)).toCompletableFuture().join();
-
-        channelService.invalidateCache();
-
-        final Optional<String> newChannelId =
-            channelService.fetchCachedChannelId(newChannelKey).toCompletableFuture().join();
-
-        assertThat(newChannelId).isNotEmpty();
     }
 
     @Test
@@ -126,8 +106,7 @@ public class ChannelServiceIT {
             .toCompletableFuture()
             .join()
             .head();
-        assertThat(createdChannelOptional).isNotEmpty();
-        assertThat(createdChannelOptional.get()).isEqualTo(result);
+        assertThat(createdChannelOptional).contains(result);
     }
 
 
@@ -148,12 +127,11 @@ public class ChannelServiceIT {
             .toCompletableFuture()
             .join()
             .head();
-        assertThat(createdChannelOptional).isNotEmpty();
-        assertThat(createdChannelOptional.get()).isEqualTo(result);
+        assertThat(createdChannelOptional).contains(result);
 
         //assert cache state
         final Optional<String> newChannelId =
             channelService.fetchCachedChannelId(newChannelKey).toCompletableFuture().join();
-        assertThat(newChannelId).isNotEmpty();
+        assertThat(newChannelId).contains(result.getId());
     }
 }

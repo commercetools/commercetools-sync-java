@@ -66,7 +66,7 @@ public class TypeServiceIT {
     }
 
     @Test
-    public void fetchCachedTypeId_WithNonInvalidatedCache_ShouldFetchTypeAndCache() {
+    public void fetchCachedTypeId_WithNewlyCreatedTypeAfterCaching_ShouldNotFetchNewType() {
         // Fetch any type to populate cache
         typeService.fetchCachedTypeId("anyTypeKey").toCompletableFuture().join();
 
@@ -82,26 +82,5 @@ public class TypeServiceIT {
             typeService.fetchCachedTypeId(newTypeKey).toCompletableFuture().join();
 
         assertThat(newTypeId).isEmpty();
-    }
-
-    @Test
-    public void fetchCachedTypeId_WithInvalidatedCache_ShouldFetchFreshCopyAndRepopulateCache() {
-        // Fetch any type to populate cache
-        typeService.fetchCachedTypeId(OLD_TYPE_KEY).toCompletableFuture().join();
-
-        // Create new type
-        final String newTypeKey = "new_type_key";
-        final TypeDraft draft = TypeDraftBuilder
-            .of(newTypeKey, LocalizedString.of(Locale.ENGLISH, "typeName"),
-                ResourceTypeIdsSetBuilder.of().addChannels())
-            .build();
-        CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(draft)).toCompletableFuture().join();
-
-        typeService.invalidateCache();
-
-        final Optional<String> newTypeId =
-            typeService.fetchCachedTypeId(newTypeKey).toCompletableFuture().join();
-
-        assertThat(newTypeId).isNotEmpty();
     }
 }

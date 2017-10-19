@@ -31,7 +31,7 @@ public final class ChannelServiceImpl implements ChannelService {
     private final BaseSyncOptions syncOptions;
     private final Set<ChannelRole> channelRoles;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
-    private boolean invalidCache = false;
+    private boolean isCached = false;
     private static final String CHANNEL_KEY_NOT_SET = "Channel with id: '%s' has no key set. Keys are required for "
         + "channel matching.";
 
@@ -49,7 +49,7 @@ public final class ChannelServiceImpl implements ChannelService {
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key) {
-        if (keyToIdCache.isEmpty() || invalidCache) {
+        if (!isCached) {
             return cacheAndFetch(key);
         }
         return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
@@ -74,6 +74,7 @@ public final class ChannelServiceImpl implements ChannelService {
             });
 
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), query, channelPageConsumer)
+                            .thenAccept(result -> isCached = true)
                             .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 
@@ -98,10 +99,5 @@ public final class ChannelServiceImpl implements ChannelService {
     @Override
     public void cacheChannel(@Nonnull final Channel channel) {
         keyToIdCache.put(channel.getKey(), channel.getId());
-    }
-
-    @Override
-    public void invalidateCache() {
-        invalidCache = true;
     }
 }

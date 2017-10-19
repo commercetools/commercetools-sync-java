@@ -1,10 +1,12 @@
 package com.commercetools.sync.commons;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
+import io.sphere.sdk.client.ConcurrentModificationException;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Supplier;
 
 
 public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSyncOptions> {
@@ -81,4 +83,31 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
                                                       @Nonnull final CompletionStage<U> result);
 
     protected abstract CompletionStage<U> processBatch(@Nonnull final List<T> batch);
+
+    /**
+     * This method checks if the supplied {@code sphereException} is an instance of
+     * {@link ConcurrentModificationException}. If it is, then it executes the supplied
+     * {@code onConcurrentModificationSupplier} {@link Supplier}. Otherwise, if it is
+     * not an instance of a {@link ConcurrentModificationException} then it executes
+     * the other {@code onOtherExceptionSupplier} {@link Supplier}. Regardless, which supplier is executed the results
+     * of either is the result of this method.
+     *
+     * @param sphereException                  the sphere exception to check if is
+     *                                         {@link ConcurrentModificationException}.
+     * @param onConcurrentModificationSupplier the supplier to execute if the {@code sphereException} is a
+     *                                         {@link ConcurrentModificationException}.
+     * @param onOtherExceptionSupplier         the supplier to execute if the {@code sphereException} is not a
+     *                                         {@link ConcurrentModificationException}.
+     * @param <S>                              the type of the result of the suppliers and this method.
+     * @return the result of the executed supplier.
+     */
+    protected static <S> S executeSupplierIfConcurrentModificationException(
+        @Nonnull final Throwable sphereException,
+        @Nonnull final Supplier<S> onConcurrentModificationSupplier,
+        @Nonnull final Supplier<S> onOtherExceptionSupplier) {
+        if (sphereException instanceof ConcurrentModificationException) {
+            return onConcurrentModificationSupplier.get();
+        }
+        return onOtherExceptionSupplier.get();
+    }
 }
