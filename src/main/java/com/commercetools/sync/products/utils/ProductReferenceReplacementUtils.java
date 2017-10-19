@@ -55,9 +55,6 @@ public final class ProductReferenceReplacementUtils {
             .filter(Objects::nonNull)
             .map(product -> {
                 final ProductDraft productDraft = getDraftBuilderFromStagedProduct(product).build();
-                final ProductDraft productDraftWithCategoryKeys =
-                    replaceProductDraftCategoryReferenceIdsWithKeys(productDraft);
-
                 final Reference<ProductType> productTypeReferenceWithKey =
                     replaceProductTypeReferenceIdWithKey(product);
                 final Reference<TaxCategory> taxCategoryReferenceWithKey =
@@ -160,173 +157,27 @@ public final class ProductReferenceReplacementUtils {
     }
 
     /**
-     * ============================== Tested/document so far.. ========================================================
-     * ================================================================================================================
-     */
-
-    /**
-     * Takes a list of product drafts that are supposed to have their category references expanded in order to be able
-     * to fetch the keys and replace the reference ids with the corresponding keys and then return a new list of product
-     * drafts with their references containing keys instead of the ids. Note that if the references are not expanded
-     * for a product, the reference ids will not be replaced with keys and will still have their ids in place.
      *
-     * @param productDrafts the product drafts to replace their reference ids with keys
-     * @return a list of products drafts with keys instead of ids for references.
+     *
      */
     @Nonnull
-    public static List<ProductDraft> replaceProductDraftsCategoryReferenceIdsWithKeys(@Nonnull final List<ProductDraft>
-                                                                                          productDrafts) {
-        return productDrafts.stream()
-                            .map(productDraft ->
-                                productDraft != null
-                                    ? replaceProductDraftCategoryReferenceIdsWithKeys(productDraft) : null
-                            )
-                            .collect(Collectors.toList());
-    }
 
-    /**
-     * Takes a product draft that is supposed to have its category references expanded
-     * in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return
-     * a new product drafts with the references containing keys instead of the ids. Note that the category references
-     * should be expanded for the productDraft, otherwise the reference ids will not be replaced with keys and will
-     * still have their ids in place.
-     *
-     * @param productDraft the product drafts to replace its reference ids with keys
-     * @return a new products draft with keys instead of ids for references.
-     */
-    @Nonnull
-    public static ProductDraft replaceProductDraftCategoryReferenceIdsWithKeys(@Nonnull final ProductDraft
-                                                                                   productDraft) {
-        final Set<ResourceIdentifier<Category>> categories = productDraft.getCategories();
-        List<Reference<Category>> categoryReferencesWithKeys = new ArrayList<>();
-        Map<String, String> categoryOrderHintsMapWithKeys = new HashMap<>();
-        if (categories != null) {
-            categories.forEach(categoryResourceIdentifier -> {
-                final String categoryKey = categoryResourceIdentifier.getKey();
-                final String categoryId = categoryResourceIdentifier.getId();
-                if (categoryKey != null) {
-                    // Replace category reference id with key.
-                    categoryReferencesWithKeys.add(Category.referenceOfId(categoryKey));
-
-                    // Replace categoryOrderHint id with key.
-                    final CategoryOrderHints categoryOrderHints = productDraft.getCategoryOrderHints();
                     if (categoryOrderHints != null) {
-                        final String categoryOrderHintValue = categoryOrderHints.get(categoryKey);
-                        if (categoryOrderHintValue == null) {
-                            // to handle case of getting category order hints from another CTP
-                            // TODO NEEDS TO BE REFACTORED INTO OWN METHOD.
-                            final String categoryOrderHintValueById = categoryOrderHints.get(categoryId);
-                            if (categoryOrderHintValueById != null) {
-                                categoryOrderHintsMapWithKeys.put(categoryKey, categoryOrderHintValueById);
-                            }
-                        } else {
                             categoryOrderHintsMapWithKeys.put(categoryKey, categoryOrderHintValue);
                         }
                     }
-                } else {
-                    categoryReferencesWithKeys.add(Category.referenceOfId(categoryId));
-                }
-            });
-        }
-        final CategoryOrderHints categoryOrderHintsWithKeys = CategoryOrderHints.of(categoryOrderHintsMapWithKeys);
-        final ProductDraft productDraftPriceChannelIdsWithKeys =
-            replaceProductDraftPriceChannelIdsWithKeys(productDraft);
 
-        return ProductDraftBuilder.of(productDraftPriceChannelIdsWithKeys)
-                                  .categories(categoryReferencesWithKeys)
-                                  .categoryOrderHints(categoryOrderHintsWithKeys)
-                                  .build();
-    }
-
-    private static ProductDraft replaceProductDraftPriceChannelIdsWithKeys(@Nonnull final ProductDraft productDraft) {
-        final ProductVariantDraft masterVariant = productDraft.getMasterVariant();
-        final List<ProductVariantDraft> productDraftVariants = productDraft.getVariants();
-        ProductDraftBuilder productDraftBuilder = ProductDraftBuilder.of(productDraft);
-
-        if (masterVariant != null) {
-            final ProductVariantDraft masterVariantPriceChannelReferencesWithKeys =
-                replaceProductVariantDraftPriceChannelIdsWithKeys(masterVariant);
-            productDraftBuilder = productDraftBuilder.masterVariant(masterVariantPriceChannelReferencesWithKeys);
-        }
-
-        if (productDraftVariants != null) {
-            final List<ProductVariantDraft> variantDraftsWithPriceChannelReferencesWithKeys =
-                productDraftVariants.stream()
-                                    .filter(Objects::nonNull)
-                                    .map(ProductReferenceReplacementUtils::
-                                        replaceProductVariantDraftPriceChannelIdsWithKeys)
-                                    .collect(toList());
-            productDraftBuilder = productDraftBuilder.variants(variantDraftsWithPriceChannelReferencesWithKeys);
-        }
-        return productDraftBuilder.build();
-    }
-
-    @Nonnull
-    private static ProductVariantDraft replaceProductVariantDraftPriceChannelIdsWithKeys(
-        @Nonnull final ProductVariantDraft productVariantDraft) {
-        final List<PriceDraft> variantDraftPrices = productVariantDraft.getPrices();
-        final ProductVariantDraftBuilder productVariantDraftBuilder =
-            ProductVariantDraftBuilder.of(productVariantDraft);
-
-        if (variantDraftPrices == null) {
-            return productVariantDraftBuilder.build();
-        }
-        final List<PriceDraft> priceDraftsWithChannelKeys =
-            variantDraftPrices.stream()
-                              .map(ProductReferenceReplacementUtils::replacePriceDraftChannelIdWithKey)
-                              .collect(toList());
-        return productVariantDraftBuilder.prices(priceDraftsWithChannelKeys)
-                                         .build();
-    }
-
-    @Nonnull
-    @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
-    private static PriceDraft replacePriceDraftChannelIdWithKey(@Nonnull final PriceDraft priceDraft) {
-        final Reference<Channel> priceDraftChannel = priceDraft.getChannel();
-        final Reference<Channel> channelReferenceWithKey = replaceReferenceIdWithKey(priceDraftChannel, () ->
-            Channel.referenceOfId(priceDraftChannel.getObj().getKey()));
-
-        return PriceDraftBuilder.of(priceDraft)
-                                .channel(channelReferenceWithKey)
-                                .build();
     }
 
     /**
-     * Given a {@link CategoryOrderHints} instance and a set of {@link Category} {@link ResourceIdentifier}, this method
-     * replaces all the categoryOrderHint ids with the {@link Category} keys.
-     * TODO: EITHER TO BE MOVED INTO IT UTILS OR REUSED IN #replaceProductDraftCategoryReferenceIdsWithKeys.
      *
      *
-     * @param categoryOrderHints the categoryOrderHints that should have its keys replaced with ids.
-     * @param categoryResourceIdentifiers the category resource identifiers which contains the ids and keys of the
-     *                                    categories.
-     * @return a new {@link CategoryOrderHints} instance with keys replacing the category ids.
      */
     @Nonnull
-    public static CategoryOrderHints replaceCategoryOrderHintCategoryIdsWithKeys(
-        @Nonnull final CategoryOrderHints categoryOrderHints,
-        @Nonnull final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers) {
-        final Map<String, String> categoryOrderHintKeyMap = new HashMap<>();
-        categoryOrderHints.getAsMap()
-                          .forEach((categoryId, categoryOrderHintValue) ->
-                              categoryResourceIdentifiers.stream()
-                                                         .filter(categoryResourceIdentifier ->
-                                                             Objects.equals(categoryResourceIdentifier.getId(),
-                                                                 categoryId))
-                                                         .findFirst()
-                                                         .ifPresent(categoryResourceIdentifier ->
-                                                             categoryOrderHintKeyMap
-                                                                 .put(categoryResourceIdentifier.getKey(),
-                                                                     categoryOrderHintValue)));
-        return CategoryOrderHints.of(categoryOrderHintKeyMap);
     }
 
     /**
-     * Given a {@link Product} this method creates a {@link ProductDraftBuilder} based on the staged projection
-     * values of the supplied product.
      *
-     * @param product the product to create a {@link ProductDraftBuilder} based on it's staged data.
-     * @return a {@link ProductDraftBuilder} based on the staged projection values of the supplied product.
      */
     @Nonnull
     public static ProductDraftBuilder getDraftBuilderFromStagedProduct(@Nonnull final Product product) {
@@ -355,26 +206,7 @@ public final class ProductReferenceReplacementUtils {
     }
 
     /**
-     * Builds a {@link Set} of Category {@link ResourceIdentifier} given a {@link ProductData} instance which contains
-     * references to those categories.
      *
-     * @param productData the instance containing the category references.
-     * @return a set of {@link Category} {@link ResourceIdentifier}
      */
-    @Nonnull
-    @SuppressWarnings("ConstantConditions") // NPE (categoryReference.getObj().getKey()) is being checked in the filter.
-    private static Set<ResourceIdentifier<Category>> getCategoryResourceIdentifiers(@Nonnull final ProductData
-                                                                                        productData) {
-        final Set<Reference<Category>> categoryReferences = productData.getCategories();
-        if (categoryReferences == null) {
-            return Collections.emptySet();
-        }
-        return categoryReferences.stream()
-                                 .filter(Objects::nonNull)
-                                 .filter(categoryReference -> Objects.nonNull(categoryReference.getObj()))
-                                 .map(categoryReference ->
-                                     ResourceIdentifier.<Category>ofIdOrKey(categoryReference.getId(),
-                                         categoryReference.getObj().getKey(), Category.referenceTypeId()))
-                                 .collect(Collectors.toSet());
     }
 }
