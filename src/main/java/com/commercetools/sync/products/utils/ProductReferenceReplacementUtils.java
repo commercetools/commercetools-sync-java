@@ -22,7 +22,6 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
-import javafx.util.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -205,9 +204,9 @@ public final class ProductReferenceReplacementUtils {
     /**
      * Takes a product that is supposed to have its category references expanded in order to be able to fetch the keys
      * and replace the reference ids with the corresponding keys for both the product's category references and
-     * the categoryOrderHints ids. This method returns as a result a {@link Pair} that contains a {@link List} of
-     * category references with keys replacing the ids as key and a {@link CategoryOrderHints} with keys replacing the
-     * ids as value.
+     * the categoryOrderHints ids. This method returns as a result a {@link CategoryReferencePair} that contains a
+     * {@link List} of category references with keys replacing the ids and a {@link CategoryOrderHints} with keys
+     * replacing the ids.
      *
      * <p>If the product's categoryOrderHints is null, then the resulting categoryOrderHints will be also null.
      *
@@ -215,8 +214,8 @@ public final class ProductReferenceReplacementUtils {
      * references and the categoryOrderHints and will be returned as is.
      *
      * @param product the product to replace its category references and CategoryOrderHints ids with keys.
-     * @return a {@link Pair} that contains a {@link List} of category references with keys replacing the ids as key and
-     *         a {@link CategoryOrderHints} with keys replacing the ids as value.
+     * @return a {@link CategoryReferencePair} that contains a {@link List} of category references with keys replacing
+     *         the ids and a {@link CategoryOrderHints} with keys replacing the ids.
      */
     @Nonnull
     static CategoryReferencePair replaceCategoryReferencesIdsWithKeys(@Nonnull final Product product) {
