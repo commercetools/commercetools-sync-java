@@ -14,7 +14,7 @@ import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.types.BooleanFieldType;
@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -45,7 +46,6 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toSet;
 
 public final class CategoryITUtils {
     public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
@@ -350,40 +350,56 @@ public final class CategoryITUtils {
     }
 
     /**
-     * Builds a {@link Set} of {@link ResourceIdentifier} built from the supplied {@link List} of {@link Category}
-     * containing comprising both the ids and keys per {@link Category}.
+     * Builds a {@link List} of {@link Reference} with keys in place of ids from the supplied {@link List} of
+     * {@link Category}.
      *
-     * @param categories a {@link List} of {@link Category} from which the {@link Set} of {@link ResourceIdentifier}
-     *                   will be built.
-     * @return a {@link Set} of {@link ResourceIdentifier} built from the supplied {@link List} of {@link Category}
-     *         containing comprising both the ids and keys per {@link Category}.
+     * @param categories a {@link List} of {@link Category} from which the {@link List} of {@link Reference} will be
+     *                   built.
+     * @return a {@link List} of {@link Reference} with keys in place of ids from the supplied {@link List} of
+     *         {@link Category}.
      */
     @Nonnull
-    public static Set<ResourceIdentifier<Category>>
-        getResourceIdentifiersOfKeysAndIds(@Nonnull final List<Category> categories) {
+    public static List<Reference<Category>> getReferencesWithKeys(@Nonnull final List<Category> categories) {
         return categories.stream()
-                         .map(category ->
-                                 ResourceIdentifier
-                                         .<Category>ofIdOrKey(category.getId(), category.getKey(),
-                                                 Category.referenceTypeId())).collect(toSet());
+                         .map(category -> Category.referenceOfId(category.getKey()))
+                         .collect(Collectors.toList());
     }
 
     /**
-     * Builds a {@link Set} of {@link ResourceIdentifier} copied from the supplied {@link Set} but only comprising of
-     * the ids.
+     * Builds a {@link List} of {@link Reference} built from the supplied {@link List} of {@link Category}.
      *
-     * @param resourceIdentifiers a {@link Set} of {@link ResourceIdentifier} from which a new {@link Set} will be be
-     *                            copied but only comprising of the ids.
-     * @return a {@link Set} of {@link ResourceIdentifier} copied from the supplied {@link Set} but only comprising of
-     *         the ids.
+     * @param categories a {@link List} of {@link Category} from which the {@link List} of {@link Reference} will be
+     *                   built.
+     * @return a {@link List} of {@link Reference} built from the supplied {@link List} of {@link Category}.
      */
     @Nonnull
-    public static Set<ResourceIdentifier<Category>>
-        getResourceIdentifiersOfIds(@Nonnull final Set<ResourceIdentifier<Category>> resourceIdentifiers) {
-        return resourceIdentifiers.stream()
-                .map(categoryResourceIdentifier ->
-                        ResourceIdentifier
-                                .<Category>ofId(categoryResourceIdentifier.getId(), Category.referenceTypeId()))
-                .collect(toSet());
+    public static List<Reference<Category>> getReferencesWithIds(@Nonnull final List<Category> categories) {
+        return categories.stream()
+                         .map(category -> Category.referenceOfId(category.getId()))
+                         .collect(Collectors.toList());
+    }
+
+    /**
+     * Given a {@link CategoryOrderHints} instance and a {@link List} of {@link Category}, this method replaces all the
+     * categoryOrderHint ids with the {@link Category} keys.
+     *
+     * @param categoryOrderHints the categoryOrderHints that should have its keys replaced with ids.
+     * @param categories the categories that the keys would be taken from to replace on the newly created
+     *                  {@link CategoryOrderHints}.
+     * @return a new {@link CategoryOrderHints} instance with keys replacing the category ids.
+     */
+    @Nonnull
+    public static CategoryOrderHints replaceCategoryOrderHintCategoryIdsWithKeys(
+        @Nonnull final CategoryOrderHints categoryOrderHints,
+        @Nonnull final List<Category> categories) {
+        final Map<String, String> categoryOrderHintKeyMap = new HashMap<>();
+        categoryOrderHints.getAsMap()
+                          .forEach((categoryId, categoryOrderHintValue) ->
+                              categories.stream()
+                                        .filter(category -> Objects.equals(category.getId(), categoryId))
+                                        .findFirst()
+                                        .ifPresent(category ->
+                                            categoryOrderHintKeyMap.put(category.getKey(), categoryOrderHintValue)));
+        return CategoryOrderHints.of(categoryOrderHintKeyMap);
     }
 }
