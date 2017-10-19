@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.utils;
 
+import com.commercetools.sync.commons.helpers.CategoryReferencePair;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.expansion.ExpansionPath;
@@ -62,10 +63,10 @@ public final class ProductReferenceReplacementUtils {
                     replaceTaxCategoryReferenceIdWithKey(product);
                 final Reference<State> stateReferenceWithKey = replaceProductStateReferenceIdWithKey(product);
 
-                final Pair<List<Reference<Category>>, CategoryOrderHints> allCategoryReferencesWithKeys =
-                    replaceCategoryReferencesIdsWithKeys(product);
-                final List<Reference<Category>> categoryReferencesWithKeys = allCategoryReferencesWithKeys.getKey();
-                final CategoryOrderHints categoryOrderHintsWithKeys = allCategoryReferencesWithKeys.getValue();
+                final CategoryReferencePair categoryReferencePair = replaceCategoryReferencesIdsWithKeys(product);
+                final List<Reference<Category>> categoryReferencesWithKeys =
+                    categoryReferencePair.getCategoryReferences();
+                final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
 
                 final List<ProductVariantDraft> variantDraftsWithKeys = replaceProductPriceChannelIdsWithKeys(product);
                 final ProductVariantDraft masterVariantDraftWithKeys = variantDraftsWithKeys.remove(0);
@@ -218,8 +219,7 @@ public final class ProductReferenceReplacementUtils {
      *         a {@link CategoryOrderHints} with keys replacing the ids as value.
      */
     @Nonnull
-    static Pair<List<Reference<Category>>, CategoryOrderHints> replaceCategoryReferencesIdsWithKeys(
-        @Nonnull final Product product) {
+    static CategoryReferencePair replaceCategoryReferencesIdsWithKeys(@Nonnull final Product product) {
         final Set<Reference<Category>> categoryReferences = product.getMasterData().getStaged().getCategories();
         final List<Reference<Category>> categoryReferencesWithKeys = new ArrayList<>();
 
@@ -245,7 +245,7 @@ public final class ProductReferenceReplacementUtils {
 
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryOrderHintsMapWithKeys.isEmpty()
             ? categoryOrderHints : CategoryOrderHints.of(categoryOrderHintsMapWithKeys);
-        return new Pair<>(categoryReferencesWithKeys, categoryOrderHintsWithKeys);
+        return CategoryReferencePair.of(categoryReferencesWithKeys, categoryOrderHintsWithKeys);
     }
 
     /**
