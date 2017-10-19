@@ -72,6 +72,39 @@ public final class ProductReferenceReplacementUtils {
     }
 
     /**
+     * Given a {@link Product} this method creates a {@link ProductDraftBuilder} based on the staged projection
+     * values of the supplied product.
+     *
+     * @param product the product to create a {@link ProductDraftBuilder} based on it's staged data.
+     * @return a {@link ProductDraftBuilder} based on the staged projection values of the supplied product.
+     */
+    @Nonnull
+    public static ProductDraftBuilder getDraftBuilderFromStagedProduct(@Nonnull final Product product) {
+        final ProductData productData = product.getMasterData().getStaged();
+        final List<ProductVariantDraft> allVariants = productData
+            .getAllVariants().stream()
+            .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
+            .collect(toList());
+        final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
+            .of(product.getMasterData().getStaged().getMasterVariant()).build();
+
+        return ProductDraftBuilder
+            .of(product.getProductType(), productData.getName(), productData.getSlug(), allVariants)
+            .masterVariant(masterVariant)
+            .metaDescription(productData.getMetaDescription())
+            .metaKeywords(productData.getMetaKeywords())
+            .metaTitle(productData.getMetaTitle())
+            .description(productData.getDescription())
+            .searchKeywords(productData.getSearchKeywords())
+            .taxCategory(product.getTaxCategory())
+            .state(product.getState())
+            .key(product.getKey())
+            .publish(product.getMasterData().isPublished())
+            .categories(new ArrayList<>(productData.getCategories()))
+            .categoryOrderHints(productData.getCategoryOrderHints());
+    }
+
+    /**
      * Takes a product that is supposed to have its ProductType reference expanded in order to be able to fetch the key
      * and replace the reference id with the corresponding key and then return a new {@link ProductType}
      * {@link Reference} containing the key in the id field.
@@ -180,29 +213,6 @@ public final class ProductReferenceReplacementUtils {
      *
      */
     @Nonnull
-    public static ProductDraftBuilder getDraftBuilderFromStagedProduct(@Nonnull final Product product) {
-        final ProductData productData = product.getMasterData().getStaged();
-        final List<ProductVariantDraft> allVariants = productData
-            .getAllVariants().stream()
-            .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
-            .collect(toList());
-        final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
-            .of(product.getMasterData().getStaged().getMasterVariant()).build();
-
-        return ProductDraftBuilder
-            .of(product.getProductType(), productData.getName(), productData.getSlug(), allVariants)
-            .masterVariant(masterVariant)
-            .metaDescription(productData.getMetaDescription())
-            .metaKeywords(productData.getMetaKeywords())
-            .metaTitle(productData.getMetaTitle())
-            .description(productData.getDescription())
-            .searchKeywords(productData.getSearchKeywords())
-            .taxCategory(product.getTaxCategory())
-            .state(product.getState())
-            .key(product.getKey())
-            .publish(product.getMasterData().isPublished())
-            .categories(getCategoryResourceIdentifiers(productData))
-            .categoryOrderHints(productData.getCategoryOrderHints());
     }
 
     /**
