@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 public final class TypeServiceImpl implements TypeService {
     private final BaseSyncOptions syncOptions;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
-    private boolean invalidCache = false;
+    private boolean isCached = false;
 
     public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
         this.syncOptions = syncOptions;
@@ -32,7 +32,7 @@ public final class TypeServiceImpl implements TypeService {
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key) {
-        if (keyToIdCache.isEmpty() || invalidCache) {
+        if (!isCached) {
             return cacheAndFetch(key);
         }
         return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
@@ -44,11 +44,7 @@ public final class TypeServiceImpl implements TypeService {
             typesPage.forEach(type -> keyToIdCache.put(type.getKey(), type.getId()));
 
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), TypeQuery.of(), typePageConsumer)
+                            .thenAccept(result -> isCached = true)
                             .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
-    }
-
-    @Override
-    public void invalidateCache() {
-        invalidCache = true;
     }
 }
