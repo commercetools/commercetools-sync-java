@@ -34,20 +34,6 @@ public final class PriceReferenceResolver extends CustomReferenceResolver<PriceD
         this.channelService = channelService;
     }
 
-    @Override
-    protected CompletionStage<PriceDraft> resolveCustomTypeReference(@Nonnull final PriceDraft draft) {
-        final CustomFieldsDraft custom = draft.getCustom();
-        if (custom != null) {
-            return getCustomTypeId(custom, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draft.getCountry(), draft.getValue()))
-                .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional
-                    .map(resolvedTypeId -> PriceDraftBuilder
-                        .of(draft).custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields()))
-                        .build())
-                    .orElseGet(() -> PriceDraftBuilder.of(draft).build()));
-        }
-        return CompletableFuture.completedFuture(draft);
-    }
-
     /**
      * Given a {@link PriceDraft} this method attempts to resolve the custom type and channel
      * references to return a {@link CompletionStage} which contains a new instance of the draft with the resolved
@@ -62,6 +48,20 @@ public final class PriceReferenceResolver extends CustomReferenceResolver<PriceD
     @Override
     public CompletionStage<PriceDraft> resolveReferences(@Nonnull final PriceDraft priceDraft) {
         return resolveCustomTypeReference(priceDraft).thenCompose(this::resolveChannelReference);
+    }
+
+    @Override
+    protected CompletionStage<PriceDraft> resolveCustomTypeReference(@Nonnull final PriceDraft draft) {
+        final CustomFieldsDraft custom = draft.getCustom();
+        if (custom != null) {
+            return getCustomTypeId(custom, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draft.getCountry(), draft.getValue()))
+                .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional
+                    .map(resolvedTypeId -> PriceDraftBuilder
+                        .of(draft).custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields()))
+                        .build())
+                    .orElseGet(() -> PriceDraftBuilder.of(draft).build()));
+        }
+        return CompletableFuture.completedFuture(draft);
     }
 
     /**
