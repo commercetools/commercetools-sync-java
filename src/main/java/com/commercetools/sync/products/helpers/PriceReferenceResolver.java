@@ -41,7 +41,7 @@ public final class PriceReferenceResolver extends CustomReferenceResolver<PriceD
      * taken from the id field of the references.
      *
      * @param priceDraft the priceDraft to resolve it's references.
-     * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance with resolved
+     * @return a {@link CompletionStage} that contains as a result a new priceDraft instance with resolved
      *         references or, in case an error occurs during reference resolution a
      *         {@link ReferenceResolutionException}.
      */
