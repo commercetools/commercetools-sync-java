@@ -22,7 +22,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static com.commercetools.sync.commons.MockUtils.getMockCategoryService;
@@ -89,17 +88,15 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveParentReference(categoryDraft)
-                                 .exceptionally(exception -> {
-                                     assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
-                                     assertThat(exception.getMessage())
-                                         .isEqualTo("Failed to resolve parent reference on CategoryDraft with"
-                                                 + " key:'key'. Reason: Found a UUID in the id field. Expecting a"
-                                                 + " key without a UUID value. If you want to allow UUID values for"
-                                                 + " reference keys, please use the setAllowUuidKeys(true) option in"
-                                                 + " the sync options.");
-                                     return null;
-                                 }).toCompletableFuture().join();
+        assertThat(categoryReferenceResolver.resolveParentReference(categoryDraft).toCompletableFuture())
+            .hasFailed()
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage("Failed to resolve parent reference on CategoryDraft with"
+                + " key:'key'. Reason: Found a UUID in the id field. Expecting a"
+                + " key without a UUID value. If you want to allow UUID values for"
+                + " reference keys, please use the setAllowUuidKeys(true) option in"
+                + " the sync options.");
     }
 
     @Test
@@ -125,21 +122,18 @@ public class CategoryReferenceResolverTest {
         final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH, "myDraft", "key",
             "parentId", "customTypeId", new HashMap<>());
 
-        CompletableFuture<Optional<String>> futureThrowingSphereException = CompletableFuture.supplyAsync(() -> {
-            throw new SphereException("bad request");
-        });
+        final CompletableFuture<Optional<String>> futureThrowingSphereException = new CompletableFuture<>();
+        futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
         when(typeService.fetchCachedTypeId(anyString())).thenReturn(futureThrowingSphereException);
 
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
-                                 .exceptionally(exception -> {
-                                     assertThat(exception).isExactlyInstanceOf(CompletionException.class);
-                                     assertThat(exception.getCause()).isExactlyInstanceOf(SphereException.class);
-                                     assertThat(exception.getCause().getMessage()).contains("bad request");
-                                     return null;
-                                 }).toCompletableFuture().join();
+        assertThat(categoryReferenceResolver.resolveCustomTypeReference(categoryDraft).toCompletableFuture())
+            .hasFailed()
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(SphereException.class)
+            .hasMessageContaining("CTP error on fetch");
     }
 
     @Test
@@ -151,21 +145,16 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
-                                 .exceptionally(exception -> {
-                                     assertThat(exception).isExactlyInstanceOf(CompletionException.class);
-                                     assertThat(exception.getCause())
-                                         .isExactlyInstanceOf(ReferenceResolutionException.class);
-                                     assertThat(exception.getCause().getMessage())
-                                         .isEqualTo("Failed to resolve custom type reference on CategoryDraft"
-                                             + " with key:'key'. Reason: Found a UUID in the id field. Expecting"
-                                             + " a key without a UUID value. If you want to allow UUID values for"
-                                             + " reference keys, please use the setAllowUuidKeys(true) option in"
-                                             + " the sync options.");
-                                     return null;
-                                 }).toCompletableFuture().join();
+        assertThat(categoryReferenceResolver.resolveCustomTypeReference(categoryDraft).toCompletableFuture())
+            .hasFailed()
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage("Failed to resolve custom type reference on CategoryDraft"
+                + " with key:'key'. Reason: Found a UUID in the id field. Expecting"
+                + " a key without a UUID value. If you want to allow UUID values for"
+                + " reference keys, please use the setAllowUuidKeys(true) option in"
+                + " the sync options.");
     }
-
 
     @Test
     public void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
@@ -194,15 +183,13 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveParentReference(categoryDraft)
-                                 .exceptionally(exception -> {
-                                     assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
-                                     assertThat(exception.getMessage())
-                                         .isEqualTo("Failed to resolve parent reference on CategoryDraft"
-                                             + " with key:'key'. Reason: Key is blank (null/empty) on both expanded"
-                                             + " reference object and reference id field.");
-                                     return null;
-                                 }).toCompletableFuture().join();
+        assertThat(categoryReferenceResolver.resolveParentReference(categoryDraft).toCompletableFuture())
+            .hasFailed()
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage("Failed to resolve parent reference on CategoryDraft"
+                + " with key:'key'. Reason: Key is blank (null/empty) on both expanded"
+                + " reference object and reference id field.");
     }
 
     @Test
@@ -215,15 +202,13 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveParentReference(categoryDraft)
-                                 .exceptionally(exception -> {
-                                     assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
-                                     assertThat(exception.getMessage())
-                                         .isEqualTo("Failed to resolve parent reference on CategoryDraft"
-                                             + " with key:'key'. Reason: Key is blank (null/empty) on both expanded"
-                                             + " reference object and reference id field.");
-                                     return null;
-                                 }).toCompletableFuture().join();
+        assertThat(categoryReferenceResolver.resolveParentReference(categoryDraft).toCompletableFuture())
+            .hasFailed()
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage("Failed to resolve parent reference on CategoryDraft"
+                + " with key:'key'. Reason: Key is blank (null/empty) on both expanded"
+                + " reference object and reference id field.");
     }
 
     @Test
@@ -240,17 +225,12 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
-                                 .exceptionally(exception -> {
-                                     assertThat(exception).isExactlyInstanceOf(CompletionException.class);
-                                     assertThat(exception.getCause())
-                                         .isExactlyInstanceOf(ReferenceResolutionException.class);
-                                     assertThat(exception.getCause().getMessage())
-                                         .isEqualTo("Failed to resolve custom type reference on CategoryDraft"
-                                                 + " with key:'key'. Reason: Reference 'id' field value is blank"
-                                                 + " (null/empty).");
-                                     return null;
-                                 }).toCompletableFuture().join();
+        assertThat(categoryReferenceResolver.resolveCustomTypeReference(categoryDraft).toCompletableFuture())
+            .hasFailed()
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage("Failed to resolve custom type reference on CategoryDraft"
+                + " with key:'key'. Reason: Reference 'id' field value is blank (null/empty).");
     }
 
     @Test
@@ -267,21 +247,16 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
-                                 .exceptionally(exception -> {
-                                     assertThat(exception).isExactlyInstanceOf(CompletionException.class);
-                                     assertThat(exception.getCause())
-                                         .isExactlyInstanceOf(ReferenceResolutionException.class);
-                                     assertThat(exception.getCause().getMessage())
-                                         .isEqualTo("Failed to resolve custom type reference on CategoryDraft"
-                                                 + " with key:'key'. Reason: Reference 'id' field value is blank"
-                                                 + " (null/empty).");
-                                     return null;
-                                 }).toCompletableFuture().join();
+        assertThat(categoryReferenceResolver.resolveCustomTypeReference(categoryDraft).toCompletableFuture())
+            .hasFailed()
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage("Failed to resolve custom type reference on CategoryDraft"
+                + " with key:'key'. Reason: Reference 'id' field value is blank (null/empty).");
     }
 
     @Test
-    public void resolveReferences_WithNoCustomTypeReferenceAndNoParentReference_ShouldResolveReferences() {
+    public void resolveReferences_WithNoCustomTypeReferenceAndNoParentReference_ShouldNotResolveReferences() {
         final CategoryDraft categoryDraft = mock(CategoryDraft.class);
         when(categoryDraft.getName()).thenReturn(LocalizedString.of(Locale.ENGLISH, "myDraft"));
         when(categoryDraft.getKey()).thenReturn("key");
