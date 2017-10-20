@@ -1,5 +1,8 @@
 package com.commercetools.sync.products;
 
+import com.commercetools.sync.services.ProductTypeService;
+import com.commercetools.sync.services.StateService;
+import com.commercetools.sync.services.TaxCategoryService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.CategoryOrderHints;
@@ -19,11 +22,16 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.stream.Collectors.toList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ProductSyncMockUtils {
     public static final String PRODUCT_KEY_1_RESOURCE_PATH = "product-key-1.json";
@@ -146,5 +154,54 @@ public class ProductSyncMockUtils {
 
     public static ProductDraft createProductDraftFromJson(@Nonnull final String jsonResourcePath) {
         return readObjectFromResource(jsonResourcePath, ProductDraft.class);
+    }
+
+
+    /**
+     * Creates a mock {@link ProductTypeService} that returns a completed {@link CompletableFuture} containing an
+     * {@link Optional} containing the id of the supplied value whenever the following method is called on the service:
+     * <ul>
+     * <li>{@link ProductTypeService#fetchCachedProductTypeId(String)}</li>
+     * </ul>
+     *
+     * @return the created mock of the {@link ProductTypeService}.
+     */
+    public static ProductTypeService getMockProductTypeService(@Nonnull final String id) {
+        final ProductTypeService productTypeService = mock(ProductTypeService.class);
+        when(productTypeService.fetchCachedProductTypeId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
+        return productTypeService;
+    }
+
+    /**
+     * Creates a mock {@link TaxCategoryService} that returns a completed {@link CompletableFuture} containing an
+     * {@link Optional} containing the id of the supplied value whenever the following method is called on the service:
+     * <ul>
+     * <li>{@link TaxCategoryService#fetchCachedTaxCategoryId(String)}</li>
+     * </ul>
+     *
+     * @return the created mock of the {@link TaxCategoryService}.
+     */
+    public static TaxCategoryService getMockTaxCategoryService(@Nonnull final String id) {
+        final TaxCategoryService taxCategoryService = mock(TaxCategoryService.class);
+        when(taxCategoryService.fetchCachedTaxCategoryId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
+        return taxCategoryService;
+    }
+
+    /**
+     * Creates a mock {@link StateService} that returns a completed {@link CompletableFuture} containing an
+     * {@link Optional} containing the id of the supplied value whenever the following method is called on the service:
+     * <ul>
+     * <li>{@link StateService#fetchCachedStateId(String)}</li>
+     * </ul>
+     *
+     * @return the created mock of the {@link StateService}.
+     */
+    public static StateService getMockStateService(@Nonnull final String id) {
+        final StateService stateService = mock(StateService.class);
+        when(stateService.fetchCachedStateId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
+        return stateService;
     }
 }
