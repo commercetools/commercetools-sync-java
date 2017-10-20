@@ -82,7 +82,7 @@ public final class PriceReferenceResolver extends CustomReferenceResolver<PriceD
      *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    private CompletionStage<PriceDraft> resolveChannelReference(@Nonnull final PriceDraft draft) {
+    CompletionStage<PriceDraft> resolveChannelReference(@Nonnull final PriceDraft draft) {
         final Reference<Channel> channelReference = draft.getChannel();
         if (channelReference != null) {
             try {

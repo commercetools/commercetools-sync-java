@@ -165,7 +165,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    private CompletionStage<ProductDraft> resolveProductTypeReference(@Nonnull final ProductDraft productDraft) {
+    CompletionStage<ProductDraft> resolveProductTypeReference(@Nonnull final ProductDraft productDraft) {
         final ResourceIdentifier<ProductType> productTypeResourceIdentifier = productDraft.getProductType();
         return getProductTypeId(productTypeResourceIdentifier,
             format(FAILED_TO_RESOLVE_PRODUCT_TYPE, productDraft.getKey()))
@@ -262,14 +262,14 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    private CompletionStage<ProductDraft> resolveTaxCategoryReferences(@Nonnull final ProductDraft productDraft) {
+    CompletionStage<ProductDraft> resolveTaxCategoryReferences(@Nonnull final ProductDraft productDraft) {
         return resolveReference(productDraft,
             ProductDraft::getTaxCategory, taxCategoryService::fetchCachedTaxCategoryId, TaxCategory::referenceOfId,
             ProductDraftBuilder::taxCategory);
     }
 
     @Nonnull
-    private CompletionStage<ProductDraft> resolveStateReferences(@Nonnull final ProductDraft productDraft) {
+    CompletionStage<ProductDraft> resolveStateReferences(@Nonnull final ProductDraft productDraft) {
         return resolveReference(productDraft,
             ProductDraft::getState, stateService::fetchCachedStateId, State::referenceOfId, ProductDraftBuilder::state);
     }
