@@ -24,6 +24,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
@@ -74,10 +76,8 @@ public class ProductSyncIT {
     private List<Throwable> errorCallBackExceptions;
 
     /**
-     * Delete all product related test data from target and source projects. Then creates custom types for both
-     * CTP projects categories.
-     *
-     * <p>TODO: REFACTOR SETUP of key replacements.
+     * Delete all product related test data from target and source projects. Then creates for both CTP projects price
+     * channels, product types, tax categories, categories, custom types for categories and product states.
      */
     @BeforeClass
     public static void setup() {
@@ -113,31 +113,35 @@ public class ProductSyncIT {
     }
 
     /**
-     * Deletes Products and Types from target CTP projects, then it populates target CTP project with product test
-     * data.
+     * Deletes Products from the source and target CTP projects, clears the callback collections then it instantiates a
+     * new {@link ProductSync} instance.
      */
     @Before
     public void setupTest() {
+        clearSyncTestCollections();
+        deleteAllProducts(CTP_TARGET_CLIENT);
+        deleteAllProducts(CTP_SOURCE_CLIENT);
+        final ProductSyncOptions syncOptions = buildSyncOptions();
+        productSync = new ProductSync(syncOptions);
+    }
+
+    private void clearSyncTestCollections() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
         warningCallBackMessages = new ArrayList<>();
+    }
 
-        deleteAllProducts(CTP_TARGET_CLIENT);
-        deleteAllProducts(CTP_SOURCE_CLIENT);
+    private ProductSyncOptions buildSyncOptions() {
+        final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
+            errorCallBackMessages.add(errorMessage);
+            errorCallBackExceptions.add(exception);
+        };
+        final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
 
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                  .setErrorCallBack(
-                                                                      (errorMessage, exception) -> {
-                                                                          errorCallBackMessages
-                                                                              .add(errorMessage);
-                                                                          errorCallBackExceptions
-                                                                              .add(exception);
-                                                                      })
-                                                                  .setWarningCallBack(warningMessage ->
-                                                                      warningCallBackMessages
-                                                                          .add(warningMessage))
-                                                                  .build();
-        productSync = new ProductSync(syncOptions);
+        return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                                        .setErrorCallBack(errorCallBack)
+                                        .setWarningCallBack(warningCallBack)
+                                        .build();
     }
 
     @AfterClass

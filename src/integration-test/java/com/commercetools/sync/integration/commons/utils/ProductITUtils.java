@@ -71,14 +71,14 @@ public final class ProductITUtils {
     }
 
     /**
-     * Gets the supplied {@link ProductDraft} with the price channel reference attached.
+     * Gets the supplied {@link ProductDraft} with the price channel reference attached on its variants' prices.
      *
-     * @param productDraft TODO
-     * @param channelReference TODO
-     * @return TODO.
+     * @param productDraft     the product draft to attach the channel reference on its variants' prices.
+     * @param channelReference the channel reference to attach on the product draft's variants' prices.
+     * @return the product draft with the supplied channel reference attached on the product draft's variants' prices.
      */
     public static ProductDraft getDraftWithPriceChannelReferences(@Nonnull final ProductDraft productDraft,
-                                                            @Nonnull final Reference<Channel> channelReference) {
+                                                                  @Nonnull final Reference<Channel> channelReference) {
         final List<ProductVariantDraft> allVariants = productDraft
             .getVariants().stream().map(productVariant -> {
                 final List<PriceDraft> priceDraftsWithChannelReferences =

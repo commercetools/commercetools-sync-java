@@ -79,10 +79,8 @@ public class ProductSyncIT {
     private List<Throwable> errorCallBackExceptions;
 
     /**
-     * Delete all product related test data from target project. Then creates custom types for target CTP project
-     * categories.
-     *
-     * <p>TODO: REFACTOR SETUP of key replacements.
+     * Delete all product related test data from the target project. Then creates for the target CTP project price
+     * a product type, a tax category, 2 categories, custom types for the categories and a product state.
      */
     @BeforeClass
     public static void setup() {
@@ -105,7 +103,7 @@ public class ProductSyncIT {
     }
 
     /**
-     * Deletes Products and Types from target CTP projects, then it populates target CTP project with product test
+     * Deletes Products and Types from the target CTP project, then it populates target CTP project with product test
      * data.
      */
     @Before
