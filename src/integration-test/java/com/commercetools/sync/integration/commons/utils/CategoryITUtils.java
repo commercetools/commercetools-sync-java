@@ -134,6 +134,7 @@ public final class CategoryITUtils {
                                                 @Nonnull final String prefix,
                                                 @Nonnull final SphereClient ctpClient) {
         final List<Category> children = new ArrayList<>();
+        final List<CompletableFuture<Category>> futures = new ArrayList<>();
         for (int i = 0; i < numberOfChildren; i++) {
             final String categoryName = prefix + (i + 1);
             CategoryDraft child = CategoryDraftBuilder
@@ -144,10 +145,16 @@ public final class CategoryITUtils {
                 .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
                 .orderHint("sameOrderHint")
                 .build();
-            final Category createdChild = ctpClient.execute(CategoryCreateCommand.of(child))
-                                                   .toCompletableFuture().join();
-            children.add(createdChild);
+            final CompletableFuture<Category> future = ctpClient
+                .execute(CategoryCreateCommand.of(child)).toCompletableFuture();
+            futures.add(future);
         }
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
+                         .thenAccept(voidResult -> {
+                             for (CompletableFuture<Category> creationFuture : futures) {
+                                 children.add(creationFuture.join());
+                             }
+                         }).join();
         return children;
     }
 
