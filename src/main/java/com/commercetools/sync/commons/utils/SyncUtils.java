@@ -35,7 +35,7 @@ public final class SyncUtils {
     }
 
     /**
-     * Given a resource of type {@link T} that extends {@link Custom} (i.e. it has {@link CustomFields}, this method
+     * Given a resource of type {@code T} that extends {@link Custom} (i.e. it has {@link CustomFields}, this method
      * checks if the custom fields are existing (not null) and they are reference expanded. If they are then
      * it returns a {@link CustomFieldsDraft} instance with the custom type key in place of the id of the reference.
      * Otherwise, if its not reference expanded it returns a {@link CustomFieldsDraft} with the id not replaced. If the
@@ -62,7 +62,7 @@ public final class SyncUtils {
     }
 
     /**
-     * Given a reference to a resource of type {@link T}, this method
+     * Given a reference to a resource of type {@code T}, this method
      * checks if the reference is expanded. If it is, then it executes the {@code keyInReferenceSupplier} and returns
      * it's result. Otherwise, it returns the supplied reference as is. Since, the reference could be {@code null}, this
      * method could also return null if the reference was not expanded.
