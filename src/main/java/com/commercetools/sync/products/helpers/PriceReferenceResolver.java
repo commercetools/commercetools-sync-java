@@ -38,9 +38,9 @@ public final class PriceReferenceResolver
     }
 
     @Override
-    protected CompletionStage<PriceDraftBuilder> resolveCustomTypeReference(@Nonnull final PriceDraft draft) {
-        final CustomFieldsDraft custom = draft.getCustom();
-        final PriceDraftBuilder draftBuilder = PriceDraftBuilder.of(draft);
+    protected CompletionStage<PriceDraftBuilder> resolveCustomTypeReference(
+            @Nonnull final PriceDraftBuilder draftBuilder) {
+        final CustomFieldsDraft custom = draftBuilder.getCustom();
         if (custom != null) {
             return getCustomTypeId(custom,
                     format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getCountry(), draftBuilder.getValue()))
@@ -65,7 +65,7 @@ public final class PriceReferenceResolver
      */
     @Override
     public CompletionStage<PriceDraft> resolveReferences(@Nonnull final PriceDraft priceDraft) {
-        return resolveCustomTypeReference(priceDraft)
+        return resolveCustomTypeReference(PriceDraftBuilder.of(priceDraft))
             .thenCompose(this::resolveChannelReference)
             .thenApply(PriceDraftBuilder::build);
     }

@@ -49,7 +49,7 @@ public final class InventoryReferenceResolver
      *          a {@link ReferenceResolutionException}.
      */
     public CompletionStage<InventoryEntryDraft> resolveReferences(@Nonnull final InventoryEntryDraft draft) {
-        return resolveCustomTypeReference(draft)
+        return resolveCustomTypeReference(InventoryEntryDraftBuilder.of(draft))
             .thenCompose(this::resolveSupplyChannelReference)
             .thenApply(InventoryEntryDraftBuilder::build);
     }
@@ -57,10 +57,9 @@ public final class InventoryReferenceResolver
     @Override
     @Nonnull
     protected CompletionStage<InventoryEntryDraftBuilder> resolveCustomTypeReference(
-            @Nonnull final InventoryEntryDraft draft) {
+            @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
 
-        final CustomFieldsDraft custom = draft.getCustom();
-        final InventoryEntryDraftBuilder draftBuilder = InventoryEntryDraftBuilder.of(draft);
+        final CustomFieldsDraft custom = draftBuilder.getCustom();
         if (custom != null) {
             return getCustomTypeId(custom, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getSku()))
                 .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional

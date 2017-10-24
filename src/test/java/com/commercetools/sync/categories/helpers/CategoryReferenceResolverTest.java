@@ -76,7 +76,7 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(categorySyncOptions, typeService, categoryService);
         final CategoryDraft draftWithResolvedReferences = categoryReferenceResolver
-            .resolveCustomTypeReference(categoryDraft)
+            .resolveCustomTypeReference(CategoryDraftBuilder.of(categoryDraft))
             .toCompletableFuture().join()
             .build();
 
@@ -138,7 +138,7 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
+        categoryReferenceResolver.resolveCustomTypeReference(CategoryDraftBuilder.of(categoryDraft))
                                  .exceptionally(exception -> {
                                      assertThat(exception).isExactlyInstanceOf(CompletionException.class);
                                      assertThat(exception.getCause()).isExactlyInstanceOf(SphereException.class);
@@ -156,7 +156,7 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
+        categoryReferenceResolver.resolveCustomTypeReference(CategoryDraftBuilder.of(categoryDraft))
                                  .exceptionally(exception -> {
                                      assertThat(exception).isExactlyInstanceOf(CompletionException.class);
                                      assertThat(exception.getCause())
@@ -182,7 +182,7 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
+        categoryReferenceResolver.resolveCustomTypeReference(CategoryDraftBuilder.of(categoryDraft))
                                  .thenApply(CategoryDraftBuilder::build)
                                  .thenAccept(resolvedDraft -> {
                                      assertThat(resolvedDraft.getCustom()).isNotNull();
@@ -246,7 +246,7 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
+        categoryReferenceResolver.resolveCustomTypeReference(CategoryDraftBuilder.of(categoryDraft))
                                  .exceptionally(exception -> {
                                      assertThat(exception).isExactlyInstanceOf(CompletionException.class);
                                      assertThat(exception.getCause())
@@ -273,7 +273,7 @@ public class CategoryReferenceResolverTest {
         final CategoryReferenceResolver categoryReferenceResolver =
             new CategoryReferenceResolver(syncOptions, typeService, categoryService);
 
-        categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
+        categoryReferenceResolver.resolveCustomTypeReference(CategoryDraftBuilder.of(categoryDraft))
                                  .exceptionally(exception -> {
                                      assertThat(exception).isExactlyInstanceOf(CompletionException.class);
                                      assertThat(exception.getCause())

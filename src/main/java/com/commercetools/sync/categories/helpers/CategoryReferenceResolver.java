@@ -49,7 +49,7 @@ public final class CategoryReferenceResolver
      *          a {@link ReferenceResolutionException}.
      */
     public CompletionStage<CategoryDraft> resolveReferences(@Nonnull final CategoryDraft categoryDraft) {
-        return resolveCustomTypeReference(categoryDraft)
+        return resolveCustomTypeReference(CategoryDraftBuilder.of(categoryDraft))
             .thenCompose(this::resolveParentReference)
             .thenApply(CategoryDraftBuilder::build);
     }
@@ -57,9 +57,8 @@ public final class CategoryReferenceResolver
     @Override
     @Nonnull
     protected CompletionStage<CategoryDraftBuilder> resolveCustomTypeReference(
-            @Nonnull final CategoryDraft categoryDraft) {
-        final CustomFieldsDraft custom = categoryDraft.getCustom();
-        final CategoryDraftBuilder draftBuilder = CategoryDraftBuilder.of(categoryDraft);
+            @Nonnull final CategoryDraftBuilder draftBuilder) {
+        final CustomFieldsDraft custom = draftBuilder.getCustom();
         if (custom != null) {
             return getCustomTypeId(custom, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getKey()))
                 .thenApply(resolvedTypeIdOptional ->

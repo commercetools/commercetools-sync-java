@@ -46,12 +46,12 @@ public abstract class CustomReferenceResolver
      * cache. If the key is is not found, the resultant draft would remain exactly the same as the passed
      * draft (without a custom type reference resolution).
      *
-     * @param draft the draft to resolve it's references.
+     * @param draftBuilder the draft builder to resolve it's references.
      * @return a {@link CompletionStage} that contains as a result a new draft instance with resolved custom
      *      type references or, in case an error occurs during reference resolution,
      *      a {@link ReferenceResolutionException}.
      */
-    protected abstract CompletionStage<B> resolveCustomTypeReference(@Nonnull D draft);
+    protected abstract CompletionStage<B> resolveCustomTypeReference(@Nonnull B draftBuilder);
 
     /**
      * Given a custom fields object this method fetches the custom type reference id.
