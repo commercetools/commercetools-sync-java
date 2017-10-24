@@ -23,6 +23,7 @@ import static java.lang.String.format;
 public class ProductTypeServiceImpl implements ProductTypeService {
     private final ProductSyncOptions syncOptions;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
+    private boolean isCached = false;
     private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData = new ConcurrentHashMap<>();
 
     public ProductTypeServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
@@ -32,7 +33,7 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedProductTypeId(@Nonnull final String key) {
-        if (keyToIdCache.isEmpty()) {
+        if (!isCached) {
             return cacheAndFetch(key);
         }
         return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
@@ -54,6 +55,7 @@ public class ProductTypeServiceImpl implements ProductTypeService {
             });
 
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
+                            .thenAccept(result -> isCached = true)
                             .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 

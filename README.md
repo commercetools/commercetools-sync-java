@@ -1,11 +1,14 @@
+![commercetools-java-sync-logos 002](https://user-images.githubusercontent.com/9512131/31182587-90d47f0a-a924-11e7-9716-66e6bec7f79b.png)
 # commercetools sync
 [![Build Status](https://travis-ci.org/commercetools/commercetools-sync-java.svg?branch=master)](https://travis-ci.org/commercetools/commercetools-sync-java)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
+[![Download](https://api.bintray.com/packages/commercetools/maven/commercetools-sync-java/images/download.svg) ](https://bintray.com/commercetools/maven/commercetools-sync-java/_latestVersion)
+[![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M2/)
 
 Java API which exposes utilities for building update actions and automatic syncing of CTP data from external sources 
  such as CSV, XML, JSON, etc.. or an already existing CTP project into a target project.
 
-
+![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/9512131/31230702-0f2255a6-a9e5-11e7-9412-04ed52641dde.png)
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 - [Usage](#usage)
@@ -49,17 +52,17 @@ most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>v1.0.0-M2-beta</version>
+  <version>v1.0.0-M2</version>
 </dependency>
 ````
 #### Gradle
 ````groovy
-compile 'com.commercetools:commercetools-sync-java:v1.0.0-M2-beta'
+compile 'com.commercetools:commercetools-sync-java:v1.0.0-M2'
 ````
 <!-- TODO #### SBT 
 ````java
 libraryDependencies ++= Seq(
-    "com.commercetools" % "commercetools-sync-java" % "v1.0.0-M2-beta",
+    "com.commercetools" % "commercetools-sync-java" % "v1.0.0-M2",
  )
 ````-->
 

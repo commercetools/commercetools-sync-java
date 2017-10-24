@@ -7,13 +7,16 @@ import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
+import com.commercetools.sync.services.StateService;
+import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
+import com.commercetools.sync.services.impl.StateServiceImpl;
+import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
-import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -32,11 +35,11 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchDrafts;
 import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
+import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -68,17 +71,19 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     public ProductSync(@Nonnull final ProductSyncOptions productSyncOptions) {
         this(productSyncOptions, new ProductServiceImpl(productSyncOptions),
             new ProductTypeServiceImpl(productSyncOptions), new CategoryServiceImpl(productSyncOptions),
-            new TypeServiceImpl(productSyncOptions), new ChannelServiceImpl(productSyncOptions));
+            new TypeServiceImpl(productSyncOptions), new ChannelServiceImpl(productSyncOptions),
+            new TaxCategoryServiceImpl(productSyncOptions), new StateServiceImpl(productSyncOptions, PRODUCT_STATE));
     }
 
     ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService,
                 @Nonnull final ProductTypeService productTypeService, @Nonnull final CategoryService categoryService,
-                @Nonnull final TypeService typeService, @Nonnull final ChannelService channelService) {
+                @Nonnull final TypeService typeService, @Nonnull final ChannelService channelService,
+                @Nonnull final TaxCategoryService taxCategoryService, @Nonnull final StateService stateService) {
         super(new ProductSyncStatistics(), productSyncOptions);
         this.productService = productService;
         this.productTypeService = productTypeService;
         this.productReferenceResolver = new ProductReferenceResolver(productSyncOptions, productTypeService,
-            categoryService, typeService, channelService);
+            categoryService, typeService, channelService, taxCategoryService, stateService);
     }
 
     @Override
@@ -188,10 +193,58 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private CompletionStage<Void> syncProducts(@Nonnull final Map<ProductDraft, Product> productsToSync) {
         final List<CompletableFuture<Optional<Product>>> futureUpdates =
             productsToSync.entrySet().stream()
-                          .map(entry -> buildUpdateActionsAndUpdate(entry.getValue(), entry.getKey(), false))
+                          .map(entry -> fetchProductAttributesMetadataAndUpdate(entry.getValue(), entry.getKey()))
                           .map(CompletionStage::toCompletableFuture)
                           .collect(Collectors.toList());
         return CompletableFuture.allOf(futureUpdates.toArray(new CompletableFuture[futureUpdates.size()]));
+    }
+
+    @Nonnull
+    private CompletionStage<Optional<Product>> fetchProductAttributesMetadataAndUpdate(@Nonnull final Product
+                                                                                           oldProduct,
+                                                                                       @Nonnull final ProductDraft
+                                                                                           newProduct) {
+        return productTypeService.fetchCachedProductAttributeMetaDataMap(oldProduct.getProductType().getId())
+                .thenCompose(optionalAttributesMetaDataMap ->
+                        optionalAttributesMetaDataMap.map(attributeMetaDataMap -> {
+                            final List<UpdateAction<Product>> updateActions =
+                                    buildActions(oldProduct, newProduct, syncOptions, attributeMetaDataMap);
+                            if (!updateActions.isEmpty()) {
+                                return updateProduct(oldProduct, newProduct, updateActions);
+                            }
+                            return CompletableFuture.completedFuture(Optional.of(oldProduct));
+                        }).orElseGet(() -> {
+                            final String errorMessage = format(UPDATE_FAILED, oldProduct.getKey(),
+                                    FAILED_TO_FETCH_PRODUCT_TYPE);
+                            handleError(errorMessage, null);
+                            return CompletableFuture.completedFuture(Optional.of(oldProduct));
+                        })
+                );
+    }
+
+    @Nonnull
+    private CompletionStage<Optional<Product>> updateProduct(@Nonnull final Product oldProduct,
+                                                             @Nonnull final ProductDraft newProduct,
+                                                             @Nonnull final List<UpdateAction<Product>> updateActions) {
+        return productService.updateProduct(oldProduct, updateActions)
+                             .handle(ImmutablePair::new)
+                             .thenCompose(updateResponse -> {
+                                 final Product updatedProduct = updateResponse.getKey();
+                                 final Throwable sphereException = updateResponse.getValue();
+                                 if (sphereException != null) {
+                                     return executeSupplierIfConcurrentModificationException(sphereException,
+                                         () -> fetchAndUpdate(oldProduct, newProduct),
+                                         () -> {
+                                             final String productKey = oldProduct.getKey();
+                                             handleError(format(UPDATE_FAILED, productKey, sphereException),
+                                                 sphereException);
+                                             return CompletableFuture.completedFuture(Optional.empty());
+                                         });
+                                 } else {
+                                     statistics.incrementUpdated();
+                                     return CompletableFuture.completedFuture(Optional.of(updatedProduct));
+                                 }
+                             });
     }
 
     /**
@@ -205,95 +258,17 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
      * @return a future which contains an empty result after execution of the update.
      */
     @Nonnull
-    @SuppressWarnings("ConstantConditions")
-    private CompletionStage<Optional<Product>> buildUpdateActionsAndUpdate(@Nonnull final Product oldProduct,
-                                                                           @Nonnull final ProductDraft newProduct,
-                                                                           final boolean retry) {
-        if (retry) {
-            final String key = oldProduct.getKey();
-            return productService.fetchProduct(key)
-                                 .thenCompose(productOptional -> {
-                                     if (productOptional.isPresent()) {
-                                         final Product fetchedProduct = productOptional.get();
-                                         return fetchProductAttributesMetadataAndUpdate(fetchedProduct, newProduct);
-                                     }
-                                     handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE), null);
-                                     return CompletableFuture.completedFuture(productOptional);
-                                 });
-        } else {
-            return fetchProductAttributesMetadataAndUpdate(oldProduct, newProduct);
-        }
-    }
-
-    @Nonnull
-    private CompletionStage<Optional<Product>> fetchProductAttributesMetadataAndUpdate(@Nonnull final Product
-                                                                                           oldProduct,
-                                                                                       @Nonnull final ProductDraft
-                                                                                           newProduct) {
-        return productTypeService.fetchCachedProductAttributeMetaDataMap(oldProduct.getProductType().getId())
-                          .thenCompose(optionalAttributesMetaDataMap -> {
-                              if (!optionalAttributesMetaDataMap.isPresent()) {
-                                  final String errorMessage = format(UPDATE_FAILED, oldProduct.getKey(),
-                                      FAILED_TO_FETCH_PRODUCT_TYPE);
-                                  handleError(errorMessage, null);
-                                  return CompletableFuture.completedFuture(Optional.of(oldProduct));
-                              } else {
-                                  final Map<String, AttributeMetaData> attributeMetaDataMap =
-                                      optionalAttributesMetaDataMap.get();
-                                  final List<UpdateAction<Product>> updateActions =
-                                      buildActions(oldProduct, newProduct, syncOptions, attributeMetaDataMap);
-                                  if (!updateActions.isEmpty()) {
-                                      return updateProduct(oldProduct, newProduct, updateActions);
-                                  }
-                                  return CompletableFuture.completedFuture(Optional.of(oldProduct));
-                              }
-                          });
-    }
-
-    @Nonnull
-    private CompletionStage<Optional<Product>> updateProduct(@Nonnull final Product oldProduct,
-                                                             @Nonnull final ProductDraft newProduct,
-                                                             @Nonnull final List<UpdateAction<Product>> updateActions) {
-        return productService.updateProduct(oldProduct, updateActions)
-                             .handle(ImmutablePair::new)
-                             .thenCompose(updateResponse -> {
-                                 final Product updatedProduct = updateResponse.getKey();
-                                 final Throwable sphereException = updateResponse.getValue();
-                                 if (sphereException != null) {
-                                     return retryRequestIfConcurrentModificationException(
-                                         sphereException, oldProduct,
-                                         () -> buildUpdateActionsAndUpdate(oldProduct, newProduct,
-                                             true), UPDATE_FAILED);
-                                 } else {
-                                     statistics.incrementUpdated();
-                                     return CompletableFuture.completedFuture(Optional.of(updatedProduct));
-                                 }
-                             });
-    }
-
-    /**
-     * This method checks if the {@code sphereException} (thrown when trying to sync the old {@link Product} and the
-     * new {@link ProductDraft}) is an instance of {@link ConcurrentModificationException}. If it is, then it executes
-     * the supplied {@code request} to rebuild update actions and reissue the CTP update request. Otherwise, if it is
-     * not an instance of a  {@link ConcurrentModificationException} then it is counted as a failed product to sync.
-     *
-     * @param sphereException the sphere exception thrown after issuing an update request.
-     * @param oldProduct      the product to update.
-     * @param request         the request to re execute in case of a {@link ConcurrentModificationException}.
-     * @return a future which contains an empty result after execution of the update.
-     */
-    @Nonnull
-    private CompletionStage<Optional<Product>> retryRequestIfConcurrentModificationException(
-        @Nonnull final Throwable sphereException, @Nonnull final Product oldProduct,
-        @Nonnull final Supplier<CompletionStage<Optional<Product>>> request,
-        @Nonnull final String errorMessage) {
-        if (sphereException instanceof ConcurrentModificationException) {
-            return request.get();
-        } else {
-            final String productKey = oldProduct.getKey();
-            handleError(format(errorMessage, productKey, sphereException), sphereException);
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
+    private CompletionStage<Optional<Product>> fetchAndUpdate(@Nonnull final Product oldProduct,
+                                                              @Nonnull final ProductDraft newProduct) {
+        final String key = oldProduct.getKey();
+        return productService.fetchProduct(key)
+                .thenCompose(productOptional -> productOptional
+                        .map(fetchedProduct -> fetchProductAttributesMetadataAndUpdate(fetchedProduct, newProduct))
+                        .orElseGet(() -> {
+                            handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE), null);
+                            return CompletableFuture.completedFuture(productOptional);
+                        })
+                );
     }
 
     /**
