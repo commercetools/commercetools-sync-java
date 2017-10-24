@@ -102,14 +102,18 @@ CompletionStage<CategorySyncStatistics> syncStatisticsStage = categorySync.sync(
 ````
 The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `CategorySyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created, 
-failed, processed categories and the processing time of the sync in different time units and in a
+failed, processed categories and the processing time of the last sync batch in different time units and in a
 human readable format.
+
 ````java
 final CategorySyncStatistics stats = syncStatisticsStage.toCompletebleFuture().join();
 stats.getReportMessage(); 
-/*"Summary: 2000 categories were processed in total (1000 created, 995 updated and 5 categories failed to sync)."*/
+/*"Summary: 2000 categories were processed in total (1000 created, 995 updated, 5 failed to sync and 0 categories with a missing parent)."*/
 ````
 
+__Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
+ 1. The sync processing time should not take into account the time between supplying batches to the sync. 
+ 2. It is not not known by the sync which batch is going to be the last one supplied.
 
 More examples of how to use the sync 
 1. From another CTP project as source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).

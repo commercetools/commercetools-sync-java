@@ -49,10 +49,15 @@ are breaking changes. If there are, then a migration guide should be provided.
 - **ProductSync** - Expose `ProductReferenceReplancementUtils#buildProductQuery` util to create a product query with all needed reference expansions to fetch products from a source CTP project for the sync. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120).
 - **CategorySync** - Expose `CategoryReferenceReplancementUtils#buildCategoryQuery` util to create a category query with all needed reference expansions to fetch categories from a source CTP project for the sync. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120).
 
-
 **Bug Fixes** (1)
 - **Category Sync** - Fixes an issue where retrying on concurrent modification exception wasn't re-fetching the latest 
 Category and rebuilding build update actions. [#94](https://github.com/commercetools/commercetools-sync-java/issues/94)
+
+**Doc Fixes** (4)
+- **Category Sync** - Document the reason behind having the latest batch processing time. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
+- **Category Sync** - Fix the statistics summary string used in the documentation. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
+- **Product Sync** - Document the reason behind having the latest batch processing time. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
+- **Inventory Sync** - Document the reason behind having the latest batch processing time. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
 
 **Compatibility notes** (8)
 - **Category Sync** - Move `replaceCategoriesReferenceIdsWithKeys` from `SyncUtils` to `CategoryReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
