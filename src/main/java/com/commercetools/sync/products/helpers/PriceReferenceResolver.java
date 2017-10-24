@@ -43,7 +43,7 @@ public final class PriceReferenceResolver
         final PriceDraftBuilder draftBuilder = PriceDraftBuilder.of(draft);
         if (custom != null) {
             return getCustomTypeId(custom,
-                    format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draft.getCountry(), draft.getValue()))
+                    format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getCountry(), draftBuilder.getValue()))
                 .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional
                     .map(resolvedTypeId -> draftBuilder
                         .custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields())))
