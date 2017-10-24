@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.String.format;
+
 public class CategorySyncStatistics extends BaseSyncStatistics {
     /**
      * Map that represents categories with missing parents; the keys of the map are the keys of the missing parent
