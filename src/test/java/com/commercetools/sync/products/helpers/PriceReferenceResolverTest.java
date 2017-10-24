@@ -32,7 +32,6 @@ import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockS
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 public class PriceReferenceResolverTest {
@@ -61,19 +60,19 @@ public class PriceReferenceResolverTest {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeIdAndJson(UUID.randomUUID().toString(), new HashMap<>());
 
-        final PriceDraft priceDraft = PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-                                                       .custom(customFieldsDraft)
-                                                       .build();
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .custom(customFieldsDraft);
+
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(productSyncOptions, typeService, channelService);
 
 
-
-        final PriceDraft draftWithResolvedReferences = priceReferenceResolver.resolveCustomTypeReference(priceDraft)
+        final PriceDraftBuilder resolvedDraft = priceReferenceResolver.resolveCustomTypeReference(priceBuilder)
                                                                              .toCompletableFuture().join();
 
-        assertThat(draftWithResolvedReferences.getCustom()).isNotNull();
-        assertThat(draftWithResolvedReferences.getCustom().getType().getId()).isEqualTo("typeId");
+        assertThat(resolvedDraft.getCustom()).isNotNull();
+        assertThat(resolvedDraft.getCustom().getType().getId()).isEqualTo("typeId");
     }
 
     @Test
@@ -81,15 +80,15 @@ public class PriceReferenceResolverTest {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeIdAndJson(UUID.randomUUID().toString(), new HashMap<>());
 
-        final PriceDraft priceDraft = PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-                                                       .country(CountryCode.DE)
-                                                       .custom(customFieldsDraft)
-                                                       .build();
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .country(CountryCode.DE)
+            .custom(customFieldsDraft);
 
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(syncOptions, typeService, channelService);
 
-        assertThat(priceReferenceResolver.resolveCustomTypeReference(priceDraft).toCompletableFuture())
+        assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
@@ -104,10 +103,10 @@ public class PriceReferenceResolverTest {
     public void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
         final String customTypeKey = "customTypeKey";
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeKey, new HashMap<>());
-        final PriceDraft priceDraft = PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-                                                       .country(CountryCode.DE)
-                                                       .custom(customFieldsDraft)
-                                                       .build();
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .country(CountryCode.DE)
+            .custom(customFieldsDraft);
 
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
@@ -115,7 +114,7 @@ public class PriceReferenceResolverTest {
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(syncOptions, typeService, channelService);
 
-        assertThat(priceReferenceResolver.resolveCustomTypeReference(priceDraft).toCompletableFuture())
+        assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder).toCompletableFuture())
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft ->
                 Objects.nonNull(resolvedDraft.getCustom())
@@ -129,15 +128,15 @@ public class PriceReferenceResolverTest {
         final ResourceIdentifier<Type> typeReference = ResourceIdentifier.ofId(null);
         when(customFieldsDraft.getType()).thenReturn(typeReference);
 
-        final PriceDraft priceDraft = spy(PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-                                                       .country(CountryCode.DE)
-                                                       .build());
-        when(priceDraft.getCustom()).thenReturn(customFieldsDraft);
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .country(CountryCode.DE)
+            .custom(customFieldsDraft);
 
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(syncOptions, typeService, channelService);
 
-        assertThat(priceReferenceResolver.resolveCustomTypeReference(priceDraft).toCompletableFuture())
+        assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
@@ -149,15 +148,15 @@ public class PriceReferenceResolverTest {
     @Test
     public void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson("", new HashMap<>());
-        final PriceDraft priceDraft = PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-                                                       .country(CountryCode.DE)
-                                                       .custom(customFieldsDraft)
-                                                       .build();
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .country(CountryCode.DE)
+            .custom(customFieldsDraft);
 
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(syncOptions, typeService, channelService);
 
-        assertThat(priceReferenceResolver.resolveCustomTypeReference(priceDraft).toCompletableFuture())
+        assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
@@ -170,10 +169,10 @@ public class PriceReferenceResolverTest {
     public void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         final String customTypeKey = "customTypeKey";
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeKey, new HashMap<>());
-        final PriceDraft priceDraft = PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-                                                       .country(CountryCode.DE)
-                                                       .custom(customFieldsDraft)
-                                                       .build();
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .country(CountryCode.DE)
+            .custom(customFieldsDraft);
 
         final CompletableFuture<Optional<String>> futureThrowingSphereException = new CompletableFuture<>();
         futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
@@ -182,7 +181,7 @@ public class PriceReferenceResolverTest {
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(syncOptions, typeService, channelService);
 
-        assertThat(priceReferenceResolver.resolveCustomTypeReference(priceDraft).toCompletableFuture())
+        assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
@@ -194,31 +193,31 @@ public class PriceReferenceResolverTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .setAllowUuidKeys(true)
                                                                                .build();
-        final PriceDraft priceDraft = PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-                                                       .country(CountryCode.DE)
-                                                       .channel(Channel.referenceOfId(UUID.randomUUID().toString()))
-                                                       .build();
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .country(CountryCode.DE)
+            .channel(Channel.referenceOfId(UUID.randomUUID().toString()));
 
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(productSyncOptions, typeService, channelService);
 
-        final PriceDraft resolvedDraft = priceReferenceResolver.resolveChannelReference(priceDraft)
+        final PriceDraftBuilder resolvedBuilder = priceReferenceResolver.resolveChannelReference(priceBuilder)
                                                                .toCompletableFuture().join();
-        assertThat(resolvedDraft.getChannel()).isNotNull();
-        assertThat(resolvedDraft.getChannel().getId()).isEqualTo(CHANNEL_ID);
+        assertThat(resolvedBuilder.getChannel()).isNotNull();
+        assertThat(resolvedBuilder.getChannel().getId()).isEqualTo(CHANNEL_ID);
     }
 
     @Test
     public void resolveChannelReference_WithChannelKeyAsUuidSetAndNotAllowed_ShouldNotResolveChannelReference() {
-        final PriceDraft priceDraft = PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-                                                       .country(CountryCode.DE)
-                                                       .channel(Channel.referenceOfId(UUID.randomUUID().toString()))
-                                                       .build();
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .country(CountryCode.DE)
+            .channel(Channel.referenceOfId(UUID.randomUUID().toString()));
 
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(syncOptions, typeService, channelService);
 
-        assertThat(priceReferenceResolver.resolveChannelReference(priceDraft).toCompletableFuture())
+        assertThat(priceReferenceResolver.resolveChannelReference(priceBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
