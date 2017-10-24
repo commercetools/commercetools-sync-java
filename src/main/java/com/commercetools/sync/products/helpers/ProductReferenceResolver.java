@@ -99,9 +99,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             .thenCompose(this::resolveCategoryReferences)
             .thenCompose(this::resolveProductPricesReferences)
             .thenCompose(this::resolveTaxCategoryReferences)
-            .thenCompose(this::resolveStateReferences);
-            //.thenApply(ProductDraftBuilder::build);
-            // TODO: akovalenko: fix it when new draft builders released
+            .thenCompose(this::resolveStateReferences)
+            .thenApply(ProductDraftBuilder::build);
     }
 
     @Nonnull
@@ -255,22 +254,24 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    private CompletionStage<ProductDraft> resolveTaxCategoryReferences(@Nonnull final ProductDraft productDraft) {
-        return resolveReference(productDraft,
-            ProductDraft::getTaxCategory, taxCategoryService::fetchCachedTaxCategoryId, TaxCategory::referenceOfId,
-            ProductDraftBuilder::taxCategory);
+    private CompletionStage<ProductDraftBuilder> resolveTaxCategoryReferences(
+            @Nonnull final ProductDraftBuilder draftBuilder) {
+        return resolveReference(draftBuilder, ProductDraftBuilder::getTaxCategory,
+            taxCategoryService::fetchCachedTaxCategoryId, TaxCategory::referenceOfId, ProductDraftBuilder::taxCategory);
     }
 
     @Nonnull
-    private CompletionStage<ProductDraft> resolveStateReferences(@Nonnull final ProductDraft productDraft) {
-        return resolveReference(productDraft,
-            ProductDraft::getState, stateService::fetchCachedStateId, State::referenceOfId, ProductDraftBuilder::state);
+    private CompletionStage<ProductDraftBuilder> resolveStateReferences(
+            @Nonnull final ProductDraftBuilder draftBuilder) {
+        return resolveReference(draftBuilder,
+            ProductDraftBuilder::getState, stateService::fetchCachedStateId, State::referenceOfId,
+            ProductDraftBuilder::state);
     }
 
     /**
      * Common function to resolve references from key.
      *
-     * @param productDraft        {@link ProductDraft} to update
+     * @param draftBuilder        {@link ProductDraftBuilder} to update
      * @param referenceProvider   function which returns the reference which should be resolver from the
      *                            {@code productDraft}
      * @param keyToIdMapper       function which calls respective service to fetch the reference by key
@@ -280,16 +281,16 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * @return {@link CompletionStage} containing {@link ProductDraft} with resolved &lt;T&gt; reference.
      */
     @Nonnull
-    private <T> CompletionStage<ProductDraft> resolveReference(
-            @Nonnull final ProductDraft productDraft,
-            @Nonnull final Function<ProductDraft, Reference<T>> referenceProvider,
+    private <T> CompletionStage<ProductDraftBuilder> resolveReference(
+            @Nonnull final ProductDraftBuilder draftBuilder,
+            @Nonnull final Function<ProductDraftBuilder, Reference<T>> referenceProvider,
             @Nonnull final Function<String, CompletionStage<Optional<String>>> keyToIdMapper,
             @Nonnull final Function<String, Reference<T>> idToReferenceMapper,
             @Nonnull final BiFunction<ProductDraftBuilder, Reference<T>, ProductDraftBuilder> referenceSetter) {
-        final Reference<T> reference = referenceProvider.apply(productDraft);
+        final Reference<T> reference = referenceProvider.apply(draftBuilder);
 
         if (reference == null) {
-            return completedFuture(productDraft);
+            return completedFuture(draftBuilder);
         }
 
         try {
@@ -297,16 +298,13 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             return keyToIdMapper.apply(stateKey)
                 .thenApply(optId -> optId
                     .map(idToReferenceMapper)
-                    // up-casting (ProductDraft) is required to allow orElse(ProductDraft) chaining,
-                    // because ProductDraftBuilder#build() returns more specific ProductDraftDsl
-                    .map(stateReference -> (ProductDraft)
-                        referenceSetter.apply(ProductDraftBuilder.of(productDraft), stateReference).build())
-                    .orElse(productDraft));
+                    .map(stateReference -> referenceSetter.apply(draftBuilder, stateReference))
+                    .orElse(draftBuilder));
         } catch (ReferenceResolutionException referenceResolutionException) {
             return exceptionallyCompletedFuture(
                 new ReferenceResolutionException(
                     format("Failed to resolve reference '%s' on ProductDraft with key:'%s'. Reason: %s",
-                        reference.getTypeId(), productDraft.getKey(), referenceResolutionException.getMessage())));
+                        reference.getTypeId(), draftBuilder.getKey(), referenceResolutionException.getMessage())));
         }
     }
 
