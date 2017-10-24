@@ -10,15 +10,19 @@ import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -70,33 +74,48 @@ public class ProductReferenceResolverTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .setAllowUuidKeys(true)
                                                                                .build();
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getProductType()).thenReturn(ProductType.referenceOfId(UUID.randomUUID().toString()));
-
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId();
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        final ProductDraft resolvedDraft = productReferenceResolver.resolveProductTypeReference(productDraft)
+        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveProductTypeReference(productBuilder)
                                                                    .toCompletableFuture().join();
-
 
         assertThat(resolvedDraft.getProductType()).isNotNull();
         assertThat(resolvedDraft.getProductType().getId()).isEqualTo(PRODUCT_TYPE_ID);
     }
 
+    @Nonnull
+    private static ProductDraftBuilder getProductDraftWithRefId(@Nonnull final String refId) {
+        return ProductDraftBuilder.of(ProductType.referenceOfId(refId),
+            LocalizedString.ofEnglish("testName"),
+            LocalizedString.ofEnglish("testSlug"),
+            (ProductVariantDraft)null);
+    }
+
+    @Nonnull
+    private static ProductDraftBuilder getProductDraftWithRef(@Nonnull final Reference<ProductType> reference) {
+        return ProductDraftBuilder.of(reference,
+            LocalizedString.ofEnglish("testName"),
+            LocalizedString.ofEnglish("testSlug"),
+            (ProductVariantDraft)null);
+    }
+
+    @Nonnull
+    private static ProductDraftBuilder getProductDraftWithRandomRefId() {
+        return getProductDraftWithRefId(UUID.randomUUID().toString());
+    }
+
     @Test
     public void resolveProductTypeReference_WithKeys_ShouldResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getProductType()).thenReturn(ProductType.referenceOfId("productTypeKey"));
-
+        final ProductDraftBuilder productBuilder = getProductDraftWithRefId("productTypeKey");
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        final ProductDraft resolvedDraft = productReferenceResolver.resolveProductTypeReference(productDraft)
+        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveProductTypeReference(productBuilder)
                                                                    .toCompletableFuture().join();
-
 
         assertThat(resolvedDraft.getProductType()).isNotNull();
         assertThat(resolvedDraft.getProductType().getId()).isEqualTo(PRODUCT_TYPE_ID);
@@ -104,20 +123,18 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveProductTypeReference_WithKeysAsUuidSetAndNotAllowed_ShouldNotResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getProductType()).thenReturn(ProductType.referenceOfId(UUID.randomUUID().toString()));
-
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId();
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
 
-        assertThat(productReferenceResolver.resolveProductTypeReference(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve product type reference on ProductDraft"
-                + " with key:'" + productDraft.getKey() + "'. Reason: Found a UUID"
+                + " with key:'" + productBuilder.getKey() + "'. Reason: Found a UUID"
                 + " in the id field. Expecting a key without a UUID value. If you want to"
                 + " allow UUID values for reference keys, please use the "
                 + "setAllowUuidKeys(true) option in the sync options.");
@@ -125,9 +142,8 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveProductTypeReference_WithNonExistentProductType_ShouldNotResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getProductType()).thenReturn(ProductType.referenceOfId("anyKey"));
-        when(productDraft.getKey()).thenReturn("dummyKey");
+        final ProductDraftBuilder productBuilder = getProductDraftWithRefId("anyKey")
+            .key("dummyKey");
 
         when(productTypeService.fetchCachedProductTypeId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
@@ -135,7 +151,7 @@ public class ProductReferenceResolverTest {
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveProductTypeReference(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft ->
                 Objects.nonNull(resolvedDraft.getProductType())
@@ -144,48 +160,43 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveProductTypeReference_WithNullIdOnProductTypeReference_ShouldNotResolveReference() {
-        final String productTypeKey = null;
-        final Reference<ProductType> productTypeReference = Reference.of(ProductType.referenceTypeId(), productTypeKey);
-
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getProductType()).thenReturn(productTypeReference);
-        when(productDraft.getKey()).thenReturn("dummyKey");
+        final ProductDraftBuilder productBuilder = getProductDraftWithRef(
+            Reference.of(ProductType.referenceTypeId(), (String)null))
+            .key("dummyKey");
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveProductTypeReference(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve product type reference on ProductDraft"
-                + " with key:'" + productDraft.getKey() + "'. Reason: Reference 'id' field"
+                + " with key:'" + productBuilder.getKey() + "'. Reason: Reference 'id' field"
                 + " value is blank (null/empty).");
     }
 
     @Test
     public void resolveProductTypeReference_WithEmptyIdOnProductTypeReference_ShouldNotResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getProductType()).thenReturn(ProductType.referenceOfId(""));
-        when(productDraft.getKey()).thenReturn("dummyKey");
+        final ProductDraftBuilder productBuilder = getProductDraftWithRefId("")
+            .key("dummyKey");
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveProductTypeReference(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve product type reference on ProductDraft"
-                + " with key:'" + productDraft.getKey() + "'. Reason: Reference 'id' field"
+                + " with key:'" + productBuilder.getKey() + "'. Reason: Reference 'id' field"
                 + " value is blank (null/empty).");
     }
 
     @Test
     public void resolveProductTypeReference_WithExceptionOnProductTypeFetch_ShouldNotResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getProductType()).thenReturn(ProductType.referenceOfId(PRODUCT_TYPE_ID));
-        when(productDraft.getKey()).thenReturn("dummyKey");
+        final ProductDraftBuilder productBuilder = getProductDraftWithRefId(PRODUCT_TYPE_ID)
+            .key("dummyKey");
 
         final CompletableFuture<Optional<String>> futureThrowingSphereException = new CompletableFuture<>();
         futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
@@ -194,7 +205,7 @@ public class ProductReferenceResolverTest {
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveProductTypeReference(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
@@ -206,14 +217,13 @@ public class ProductReferenceResolverTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .setAllowUuidKeys(true)
                                                                                .build();
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getTaxCategory()).thenReturn(TaxCategory.referenceOfId(UUID.randomUUID().toString()));
-
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .taxCategory(TaxCategory.referenceOfId(UUID.randomUUID().toString()));
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        final ProductDraft resolvedDraft = productReferenceResolver.resolveTaxCategoryReferences(productDraft)
+        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveTaxCategoryReferences(productBuilder)
                                                                    .toCompletableFuture().join();
 
         assertThat(resolvedDraft.getTaxCategory()).isNotNull();
@@ -222,14 +232,13 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveTaxCategoryReference_WithKeys_ShouldResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getTaxCategory()).thenReturn(TaxCategory.referenceOfId("taxCategoryKey"));
-
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .taxCategory(TaxCategory.referenceOfId("taxCategoryKey"));
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        final ProductDraft resolvedDraft = productReferenceResolver.resolveTaxCategoryReferences(productDraft)
+        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveTaxCategoryReferences(productBuilder)
                                                                    .toCompletableFuture().join();
 
         assertThat(resolvedDraft.getTaxCategory()).isNotNull();
@@ -238,20 +247,19 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveTaxCategoryReference_WithKeysAsUuidSetAndNotAllowed_ShouldNotResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getTaxCategory()).thenReturn(TaxCategory.referenceOfId(UUID.randomUUID().toString()));
-        when(productDraft.getKey()).thenReturn("dummyKey");
-
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .taxCategory(TaxCategory.referenceOfId(UUID.randomUUID().toString()))
+            .key("dummyKey");
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveTaxCategoryReferences(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveTaxCategoryReferences(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve reference 'tax-category' on ProductDraft"
-                + " with key:'" + productDraft.getKey() + "'. Reason: Found a UUID"
+                + " with key:'" + productBuilder.getKey() + "'. Reason: Found a UUID"
                 + " in the id field. Expecting a key without a UUID value. If you want to"
                 + " allow UUID values for reference keys, please use the "
                 + "setAllowUuidKeys(true) option in the sync options.");
@@ -259,23 +267,22 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveTaxCategoryReference_WithNullTaxCategory_ShouldNotResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getKey()).thenReturn("dummyKey");
-
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .key("dummyKey");
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveTaxCategoryReferences(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveTaxCategoryReferences(productBuilder).toCompletableFuture())
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft -> Objects.isNull(resolvedDraft.getTaxCategory()));
     }
 
     @Test
     public void resolveTaxCategoryReference_WithNonExistentTaxCategory_ShouldNotResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getTaxCategory()).thenReturn(TaxCategory.referenceOfId("nonExistentKey"));
-        when(productDraft.getKey()).thenReturn("dummyKey");
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .taxCategory(TaxCategory.referenceOfId("nonExistentKey"))
+            .key("dummyKey");
 
         when(taxCategoryService.fetchCachedTaxCategoryId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
@@ -283,7 +290,7 @@ public class ProductReferenceResolverTest {
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveTaxCategoryReferences(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveTaxCategoryReferences(productBuilder).toCompletableFuture())
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft ->
                 Objects.nonNull(resolvedDraft.getTaxCategory())
@@ -292,47 +299,45 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveTaxCategoryReference_WithNullIdOnTaxCategoryReference_ShouldNotResolveReference() {
-        final String taxCategoryKey = null;
-        final Reference<TaxCategory> reference = Reference.of(TaxCategory.referenceTypeId(), taxCategoryKey);
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getTaxCategory()).thenReturn(reference);
-        when(productDraft.getKey()).thenReturn("dummyKey");
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .taxCategory(Reference.of(TaxCategory.referenceTypeId(), (String)null))
+            .key("dummyKey");
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveTaxCategoryReferences(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveTaxCategoryReferences(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve reference 'tax-category' on ProductDraft with "
-                + "key:'" + productDraft.getKey() + "'. Reason: Reference 'id' field"
+                + "key:'" + productBuilder.getKey() + "'. Reason: Reference 'id' field"
                 + " value is blank (null/empty).");
     }
 
     @Test
     public void resolveTaxCategoryReference_WithEmptyIdOnTaxCategoryReference_ShouldNotResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getTaxCategory()).thenReturn(TaxCategory.referenceOfId(""));
-        when(productDraft.getKey()).thenReturn("dummyKey");
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .taxCategory(TaxCategory.referenceOfId(""))
+            .key("dummyKey");
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveTaxCategoryReferences(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveTaxCategoryReferences(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve reference 'tax-category' on ProductDraft with "
-                + "key:'" + productDraft.getKey() + "'. Reason: Reference 'id' field"
+                + "key:'" + productBuilder.getKey() + "'. Reason: Reference 'id' field"
                 + " value is blank (null/empty).");
     }
 
     @Test
     public void resolveTaxCategoryReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getTaxCategory()).thenReturn(TaxCategory.referenceOfId("taxCategoryKey"));
-        when(productDraft.getKey()).thenReturn("dummyKey");
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .taxCategory(TaxCategory.referenceOfId("taxCategoryKey"))
+            .key("dummyKey");
 
         final CompletableFuture<Optional<String>> futureThrowingSphereException = new CompletableFuture<>();
         futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
@@ -342,7 +347,7 @@ public class ProductReferenceResolverTest {
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveTaxCategoryReferences(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveTaxCategoryReferences(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
@@ -355,14 +360,13 @@ public class ProductReferenceResolverTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .setAllowUuidKeys(true)
                                                                                .build();
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getState()).thenReturn(State.referenceOfId(UUID.randomUUID().toString()));
-
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .state(State.referenceOfId(UUID.randomUUID().toString()));
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        final ProductDraft resolvedDraft = productReferenceResolver.resolveStateReferences(productDraft)
+        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveStateReferences(productBuilder)
                                                                    .toCompletableFuture().join();
 
         assertThat(resolvedDraft.getState()).isNotNull();
@@ -371,14 +375,13 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveStateReference_WithKeys_ShouldResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getState()).thenReturn(State.referenceOfId("stateKey"));
-
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .state(State.referenceOfId("stateKey"));
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        final ProductDraft resolvedDraft = productReferenceResolver.resolveStateReferences(productDraft)
+        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveStateReferences(productBuilder)
                                                                    .toCompletableFuture().join();
 
         assertThat(resolvedDraft.getState()).isNotNull();
@@ -387,20 +390,19 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveStateReference_WithKeysAsUuidSetAndNotAllowed_ShouldNotResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getState()).thenReturn(State.referenceOfId(UUID.randomUUID().toString()));
-        when(productDraft.getKey()).thenReturn("dummyKey");
-
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .state(State.referenceOfId(UUID.randomUUID().toString()))
+            .key("dummyKey");
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveStateReferences(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveStateReferences(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve reference 'state' on ProductDraft"
-                + " with key:'" + productDraft.getKey() + "'. Reason: Found a UUID"
+                + " with key:'" + productBuilder.getKey() + "'. Reason: Found a UUID"
                 + " in the id field. Expecting a key without a UUID value. If you want to"
                 + " allow UUID values for reference keys, please use the "
                 + "setAllowUuidKeys(true) option in the sync options.");
@@ -408,23 +410,22 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveStateReference_WithNullState_ShouldNotResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getKey()).thenReturn("dummyKey");
-
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .key("dummyKey");
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveStateReferences(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveStateReferences(productBuilder).toCompletableFuture())
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft -> Objects.isNull(resolvedDraft.getState()));
     }
 
     @Test
     public void resolveStateReference_WithNonExistentState_ShouldNotResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getState()).thenReturn(State.referenceOfId("nonExistentKey"));
-        when(productDraft.getKey()).thenReturn("dummyKey");
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .state(State.referenceOfId("nonExistentKey"))
+            .key("dummyKey");
 
         when(stateService.fetchCachedStateId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
@@ -432,7 +433,7 @@ public class ProductReferenceResolverTest {
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveStateReferences(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveStateReferences(productBuilder).toCompletableFuture())
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft ->
                 Objects.nonNull(resolvedDraft.getState())
@@ -441,47 +442,45 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveStateReference_WithNullIdOnStateReference_ShouldNotResolveReference() {
-        final String stateKey = null;
-        final Reference<State> reference = Reference.of(State.referenceTypeId(), stateKey);
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getState()).thenReturn(reference);
-        when(productDraft.getKey()).thenReturn("dummyKey");
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .state(Reference.of(State.referenceTypeId(), (String)null))
+            .key("dummyKey");
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveStateReferences(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveStateReferences(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve reference 'state' on ProductDraft with "
-                + "key:'" + productDraft.getKey() + "'. Reason: Reference 'id' field"
+                + "key:'" + productBuilder.getKey() + "'. Reason: Reference 'id' field"
                 + " value is blank (null/empty).");
     }
 
     @Test
     public void resolveStateReference_WithEmptyIdOnStateReference_ShouldNotResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getState()).thenReturn(State.referenceOfId(""));
-        when(productDraft.getKey()).thenReturn("dummyKey");
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .state(State.referenceOfId(""))
+            .key("dummyKey");
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveStateReferences(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveStateReferences(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve reference 'state' on ProductDraft with "
-                + "key:'" + productDraft.getKey() + "'. Reason: Reference 'id' field"
+                + "key:'" + productBuilder.getKey() + "'. Reason: Reference 'id' field"
                 + " value is blank (null/empty).");
     }
 
     @Test
     public void resolveStateReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReference() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getState()).thenReturn(State.referenceOfId("stateKey"));
-        when(productDraft.getKey()).thenReturn("dummyKey");
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomRefId()
+            .state(State.referenceOfId("stateKey"))
+            .key("dummyKey");
 
         final CompletableFuture<Optional<String>> futureThrowingSphereException = new CompletableFuture<>();
         futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
@@ -491,7 +490,7 @@ public class ProductReferenceResolverTest {
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        assertThat(productReferenceResolver.resolveStateReferences(productDraft).toCompletableFuture())
+        assertThat(productReferenceResolver.resolveStateReferences(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
@@ -501,16 +500,15 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveReferences_WithNoCategoryReferencesAndNoChannelReferences_ShouldResolveAvailableReferences() {
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getProductType()).thenReturn(ProductType.referenceOfId("productTypeKey"));
-        when(productDraft.getState()).thenReturn(State.referenceOfId("stateKey"));
-        when(productDraft.getTaxCategory()).thenReturn(TaxCategory.referenceOfId("taxCategoryKey"));
-        when(productDraft.getKey()).thenReturn("dummyKey");
+        final ProductDraftBuilder productBuilder = getProductDraftWithRefId("productTypeKey")
+            .state(State.referenceOfId("stateKey"))
+            .taxCategory(TaxCategory.referenceOfId("taxCategoryKey"))
+            .key("dummyKey");
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
 
-        final ProductDraft referencesResolvedDraft = productReferenceResolver.resolveReferences(productDraft)
+        final ProductDraft referencesResolvedDraft = productReferenceResolver.resolveReferences(productBuilder.build())
                                                                              .toCompletableFuture().join();
 
         assertThat(referencesResolvedDraft).isNotNull();
