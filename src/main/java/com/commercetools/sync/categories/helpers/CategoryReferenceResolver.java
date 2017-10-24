@@ -145,21 +145,15 @@ public final class CategoryReferenceResolver
         return Optional.empty();
     }
 
-    /**
-     * @see #getParentCategoryKey(Reference, String, boolean)
-     */
     public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraft draft,
                                                         final boolean shouldAllowUuidKeys)
-        throws ReferenceResolutionException {
+            throws ReferenceResolutionException {
         return getParentCategoryKey(draft.getParent(), draft.getKey(), shouldAllowUuidKeys);
     }
 
-    /**
-     * @see #getParentCategoryKey(Reference, String, boolean)
-     */
     public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraftBuilder draftBuilder,
                                                         final boolean shouldAllowUuidKeys)
-        throws ReferenceResolutionException {
+            throws ReferenceResolutionException {
         return getParentCategoryKey(draftBuilder.getParent(), draftBuilder.getKey(), shouldAllowUuidKeys);
     }
 
