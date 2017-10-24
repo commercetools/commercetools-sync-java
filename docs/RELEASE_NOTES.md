@@ -48,6 +48,12 @@ are breaking changes. If there are, then a migration guide should be provided.
 **Bug Fixes** (1)
 - **Category Sync** - Fixes an issue where retrying on concurrent modification exception wasn't re-fetching the latest 
 Category and rebuilding build update actions. [#94](https://github.com/commercetools/commercetools-sync-java/issues/94)
+
+**Doc Fixes** (4)
+- **Category Sync** - Document the reason behind having the latest batch processing time. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
+- **Category Sync** - Fix the statistics summary string used in the documentation. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
+- **Product Sync** - Document the reason behind having the latest batch processing time. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
+- **Inventory Sync** - Document the reason behind having the latest batch processing time. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
 -->
 
 ### v1.0.0-M2 -  Oct 12, 2017 
