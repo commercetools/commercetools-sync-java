@@ -125,17 +125,17 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
         final List<CompletableFuture<ProductVariantDraft>> resolvedVariantFutures =
             productDraftVariants.stream()
-                                .filter(Objects::nonNull)
-                                .map(this::resolveProductVariantPriceReferences)
-                                .map(CompletionStage::toCompletableFuture)
-                                .collect(Collectors.toList());
+                .filter(Objects::nonNull)
+                .map(this::resolveProductVariantPriceReferences)
+                .map(CompletionStage::toCompletableFuture)
+                .collect(Collectors.toList());
         return
             CompletableFuture.allOf(
                 resolvedVariantFutures.toArray(new CompletableFuture[resolvedVariantFutures.size()]))
-                             .thenApply(result -> resolvedVariantFutures.stream()
-                                                                        .map(CompletableFuture::join)
-                                                                        .collect(Collectors.toList()))
-                             .thenApply(draftBuilder::variants);
+                .thenApply(result -> resolvedVariantFutures.stream()
+                    .map(CompletableFuture::join)
+                    .collect(Collectors.toList()))
+                .thenApply(draftBuilder::variants);
     }
 
     private CompletionStage<ProductVariantDraft> resolveProductVariantPriceReferences(
@@ -150,14 +150,14 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
         final List<CompletableFuture<PriceDraft>> resolvedPriceDraftFutures =
             productVariantDraftPrices.stream()
-                                     .map(priceReferenceResolver::resolveReferences)
-                                     .map(CompletionStage::toCompletableFuture)
-                                     .collect(Collectors.toList());
+                .map(priceReferenceResolver::resolveReferences)
+                .map(CompletionStage::toCompletableFuture)
+                .collect(Collectors.toList());
         return CompletableFuture
             .allOf(resolvedPriceDraftFutures.toArray(new CompletableFuture[resolvedPriceDraftFutures.size()]))
             .thenApply(result -> resolvedPriceDraftFutures.stream()
-                                                          .map(CompletableFuture::join)
-                                                          .collect(Collectors.toList()))
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList()))
             .thenApply(resolvedPriceDrafts -> productVariantDraftBuilder.prices(resolvedPriceDrafts).build());
     }
 
@@ -166,10 +166,10 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             @Nonnull final ProductDraftBuilder draftBuilder) {
         final ResourceIdentifier<ProductType> productTypeResourceIdentifier = draftBuilder.getProductType();
         return getProductTypeId(productTypeResourceIdentifier,
-                format(FAILED_TO_RESOLVE_PRODUCT_TYPE, draftBuilder.getKey()))
+            format(FAILED_TO_RESOLVE_PRODUCT_TYPE, draftBuilder.getKey()))
             .thenApply(resolvedProductTypeIdOptional -> {
                 resolvedProductTypeIdOptional.ifPresent(resolvedTypeId -> draftBuilder
-                        .productType(ResourceIdentifier.ofId(resolvedTypeId, ProductType.referenceTypeId())));
+                    .productType(ResourceIdentifier.ofId(resolvedTypeId, ProductType.referenceTypeId())));
                 return draftBuilder;
             });
     }
