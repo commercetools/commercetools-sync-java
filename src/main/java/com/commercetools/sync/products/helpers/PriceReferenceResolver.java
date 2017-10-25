@@ -157,7 +157,7 @@ public final class PriceReferenceResolver
 
     /**
      * Helper method that returns a completed CompletionStage with a resolved channel reference
-     * {@link PriceDraft} object as a result of setting the passed {@code channelId} as the id of channel
+     * {@link PriceDraftBuilder} object as a result of setting the passed {@code channelId} as the id of channel
      * reference.
      *
      * @param channelId  the channel id to set on the price channel reference id field.
