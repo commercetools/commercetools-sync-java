@@ -23,6 +23,7 @@ import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -256,24 +257,22 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     private CompletionStage<ProductDraftBuilder> resolveTaxCategoryReferences(
             @Nonnull final ProductDraftBuilder draftBuilder) {
-        return resolveReference(draftBuilder, ProductDraftBuilder::getTaxCategory,
+        return resolveReference(draftBuilder, draftBuilder.getTaxCategory(),
             taxCategoryService::fetchCachedTaxCategoryId, TaxCategory::referenceOfId, ProductDraftBuilder::taxCategory);
     }
 
     @Nonnull
     private CompletionStage<ProductDraftBuilder> resolveStateReferences(
             @Nonnull final ProductDraftBuilder draftBuilder) {
-        return resolveReference(draftBuilder,
-            ProductDraftBuilder::getState, stateService::fetchCachedStateId, State::referenceOfId,
-            ProductDraftBuilder::state);
+        return resolveReference(draftBuilder, draftBuilder.getState(),
+            stateService::fetchCachedStateId, State::referenceOfId, ProductDraftBuilder::state);
     }
 
     /**
      * Common function to resolve references from key.
      *
      * @param draftBuilder        {@link ProductDraftBuilder} to update
-     * @param referenceProvider   function which returns the reference which should be resolved from the
-     *                            {@code productDraft}
+     * @param reference           reference instance from which key is read
      * @param keyToIdMapper       function which calls respective service to fetch the reference by key
      * @param idToReferenceMapper function which creates {@link Reference} instance from fetched id
      * @param referenceSetter     function which will set the resolved reference to the {@code productDraft}
@@ -283,11 +282,10 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     private <T> CompletionStage<ProductDraftBuilder> resolveReference(
             @Nonnull final ProductDraftBuilder draftBuilder,
-            @Nonnull final Function<ProductDraftBuilder, Reference<T>> referenceProvider,
+            @Nullable final Reference<T> reference,
             @Nonnull final Function<String, CompletionStage<Optional<String>>> keyToIdMapper,
             @Nonnull final Function<String, Reference<T>> idToReferenceMapper,
             @Nonnull final BiFunction<ProductDraftBuilder, Reference<T>, ProductDraftBuilder> referenceSetter) {
-        final Reference<T> reference = referenceProvider.apply(draftBuilder);
 
         if (reference == null) {
             return completedFuture(draftBuilder);
@@ -298,7 +296,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             return keyToIdMapper.apply(resourceKey)
                 .thenApply(optId -> optId
                     .map(idToReferenceMapper)
-                    .map(stateReference -> referenceSetter.apply(draftBuilder, stateReference))
+                    .map(referenceToSet -> referenceSetter.apply(draftBuilder, referenceToSet))
                     .orElse(draftBuilder));
         } catch (ReferenceResolutionException referenceResolutionException) {
             return exceptionallyCompletedFuture(
