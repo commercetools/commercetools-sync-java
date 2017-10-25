@@ -71,8 +71,8 @@ public final class PriceReferenceResolver
     }
 
     /**
-     * Given a {@link PriceDraft} this method attempts to resolve the supply channel reference to return
-     * a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * Given a {@link PriceDraftBuilder} this method attempts to resolve the supply channel reference to return
+     * a {@link CompletionStage} which contains the same instance of draft builder with the resolved
      * supply channel reference. The key of the supply channel is either taken from the expanded reference or
      * taken from the id field of the reference.
      *
@@ -82,27 +82,27 @@ public final class PriceReferenceResolver
      * However, if the {@code ensureChannel} is set to false, the future is completed exceptionally with a
      * {@link ReferenceResolutionException}.
      *
-     * @param draft the inventoryEntryDraft to resolve it's channel reference.
+     * @param draftBuilder the inventoryEntryDraft to resolve it's channel reference.
      * @return a {@link CompletionStage} that contains as a result a new price draft builder instance with resolved
      *         supply channel or, in case an error occurs during reference resolution,
      *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    private CompletionStage<PriceDraftBuilder> resolveChannelReference(@Nonnull final PriceDraftBuilder draft) {
-        final Reference<Channel> channelReference = draft.getChannel();
+    private CompletionStage<PriceDraftBuilder> resolveChannelReference(@Nonnull final PriceDraftBuilder draftBuilder) {
+        final Reference<Channel> channelReference = draftBuilder.getChannel();
         if (channelReference != null) {
             try {
                 final String keyFromExpansion = getKeyFromExpansion(channelReference);
                 final String channelKey = getKeyFromExpansionOrReference(options.shouldAllowUuidKeys(),
                     keyFromExpansion, channelReference);
-                return fetchOrCreateAndResolveReference(draft, channelKey);
+                return fetchOrCreateAndResolveReference(draftBuilder, channelKey);
             } catch (ReferenceResolutionException exception) {
                 return CompletableFutureUtils.exceptionallyCompletedFuture(
-                    new ReferenceResolutionException(format(FAILED_TO_RESOLVE_CHANNEL, draft.getCountry(),
-                        draft.getValue(), exception.getMessage()), exception));
+                    new ReferenceResolutionException(format(FAILED_TO_RESOLVE_CHANNEL, draftBuilder.getCountry(),
+                        draftBuilder.getValue(), exception.getMessage()), exception));
             }
         }
-        return completedFuture(draft);
+        return completedFuture(draftBuilder);
     }
 
     /**
