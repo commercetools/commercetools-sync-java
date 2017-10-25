@@ -187,7 +187,7 @@ public final class InventoryReferenceResolver
      * <p>If the {@code ensureChannels} options is set to {@code false} on the {@code options} instance of {@code this}
      * class, the future is completed exceptionally with a {@link ReferenceResolutionException}.
      *
-     * <p>The method then returns a CompletionStage with a resolved channel reference {@link InventoryEntryDraft}
+     * <p>The method then returns a CompletionStage with a resolved channel reference {@link InventoryEntryDraftBuilder}
      * object.
      *
      * @param channelKey   the key to create the new channel with.
