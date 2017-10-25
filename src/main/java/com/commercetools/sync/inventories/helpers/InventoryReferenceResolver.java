@@ -162,8 +162,8 @@ public final class InventoryReferenceResolver
 
     /**
      * Helper method that returns a completed CompletionStage with a resolved channel reference
-     * {@link InventoryEntryDraft} object as a result of setting the passed {@code channelId} as the id of channel
-     * reference.
+     * {@link InventoryEntryDraftBuilder} object as a result of setting the passed {@code channelId}
+     * as the id of channel reference.
      *
      * @param channelId    the channel id to set on the inventory entry supply channel reference id field.
      * @param draftBuilder the inventory draft builder where to write resolved references.
