@@ -196,13 +196,13 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     /**
-     * Given a {@link ProductDraft} and a {@link Set} of {@code categoryKeys} this method fetches the categories
-     * corresponding to these keys. Then it sets the category references on the {@code productDraft}. It also replaces
+     * Given a {@link ProductDraftBuilder} and a {@link Set} of {@code categoryKeys} this method fetches the categories
+     * corresponding to these keys. Then it sets the category references on the {@code draftBuilder}. It also replaces
      * the category keys on the {@link CategoryOrderHints} map of the {@code productDraft}. If the category is not found
      * in the CTP project, the resultant draft would remain exactly the same as the passed product draft
      * (without reference resolution).
      *
-     * @param draftBuilder the product draft builder where to update resolved category references.
+     * @param draftBuilder the product draft builder to resolve it's category references.
      * @param categoryKeys the category keys of to resolve their actual id on the draft.
      * @return a {@link CompletionStage} that contains as a result a new productDraft instance with resolved category
      *          references or an exception.
