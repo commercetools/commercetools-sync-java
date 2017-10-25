@@ -109,8 +109,7 @@ public final class CategoryReferenceResolver
             @Nonnull final String parentCategoryKey) {
         return categoryService.fetchCachedCategoryId(parentCategoryKey)
             .thenApply(resolvedParentIdOptional -> resolvedParentIdOptional
-                .map(resolvedParentId -> draftBuilder
-                    .parent(Category.referenceOfId(resolvedParentId)))
+                .map(resolvedParentId -> draftBuilder.parent(Category.referenceOfId(resolvedParentId)))
                 .orElse(draftBuilder));
     }
 
