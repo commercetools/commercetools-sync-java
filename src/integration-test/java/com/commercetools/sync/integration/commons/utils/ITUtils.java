@@ -61,21 +61,21 @@ public final class ITUtils {
      * @param ctpClient            defines the CTP project to apply the query on.
      * @param queryRequestSupplier defines a supplier which, when executed, returns the query that should be made on
      *                             the CTP project.
-     * @param pageMapper           defines a mapper function that should be applied on each page fetched from the query
-     *                             on the specified CTP project.
+     * @param resourceMapper       defines a mapper function that should be applied on each resource in the fetched page
+     *                             from the query on the specified CTP project.
      */
     public static <T, C extends QueryDsl<T, C>> void queryAndApply(
         @Nonnull final SphereClient ctpClient,
         @Nonnull final Supplier<QueryDsl<T, C>> queryRequestSupplier,
-        @Nonnull final Function<T, SphereRequest<T>> pageMapper) {
+        @Nonnull final Function<T, SphereRequest<T>> resourceMapper) {
 
-        final Function<List<T>, Stream<CompletableFuture<T>>> pageDelete =
-            entries -> entries.stream()
-                              .map(pageMapper)
-                              .map(ctpClient::execute)
-                              .map(CompletionStage::toCompletableFuture);
+        final Function<List<T>, Stream<CompletableFuture<T>>> pageMapper =
+            pageElements -> pageElements.stream()
+                                        .map(resourceMapper)
+                                        .map(ctpClient::execute)
+                                        .map(CompletionStage::toCompletableFuture);
 
-        CtpQueryUtils.queryAll(ctpClient, queryRequestSupplier.get(), pageDelete)
+        CtpQueryUtils.queryAll(ctpClient, queryRequestSupplier.get(), pageMapper)
                      .thenApply(list -> list.stream().flatMap(Function.identity()))
                      .thenApply(stream -> stream.toArray(CompletableFuture[]::new))
                      .thenCompose(CompletableFuture::allOf)
