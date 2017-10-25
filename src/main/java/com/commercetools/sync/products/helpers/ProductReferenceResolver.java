@@ -36,7 +36,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
@@ -125,15 +124,16 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             return CompletableFuture.completedFuture(draftBuilder);
         }
 
-        final Stream<CompletableFuture<ProductVariantDraft>> resolvedVariantFutures =
+        final List<CompletableFuture<ProductVariantDraft>> resolvedVariantFutures =
             productDraftVariants.stream()
-                .filter(Objects::nonNull)
-                .map(this::resolveProductVariantPriceReferences)
-                .map(CompletionStage::toCompletableFuture);
+                                .filter(Objects::nonNull)
+                                .map(this::resolveProductVariantPriceReferences)
+                                .map(CompletionStage::toCompletableFuture)
+                                .collect(Collectors.toList());
         return
             CompletableFuture.allOf(
-                resolvedVariantFutures.toArray(CompletableFuture[]::new))
-                .thenApply(result -> resolvedVariantFutures
+                resolvedVariantFutures.toArray(new CompletableFuture[resolvedVariantFutures.size()]))
+                .thenApply(result -> resolvedVariantFutures.stream()
                     .map(CompletableFuture::join)
                     .collect(Collectors.toList()))
                 .thenApply(draftBuilder::variants);
