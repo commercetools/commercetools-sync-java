@@ -70,8 +70,8 @@ public final class CategoryReferenceResolver
     }
 
     /**
-     * Given a {@link CategoryDraft} this method attempts to resolve the parent category reference to return
-     * a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * Given a {@link CategoryDraftBuilder} this method attempts to resolve the parent category reference to return
+     * a {@link CompletionStage} which contains a new instance of the draft builder with the resolved
      * parent category reference. The key of the parent category is either taken from the expanded object or
      * taken from the id field of the reference.
      *
