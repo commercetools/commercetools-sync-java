@@ -214,7 +214,6 @@ public final class CategoryITUtils {
                       .map(CompletableFuture::toCompletableFuture)
                       .map(CompletableFuture::join)
                       .collect(Collectors.toList());
-
     }
 
     /**
