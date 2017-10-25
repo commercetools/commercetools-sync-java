@@ -595,8 +595,8 @@ public final class ProductUpdateActionUtils {
      * <p>If the old value is set, but the new one is empty - return empty object, because unset transition state is
      * not possible.
      *
-     * <p><b>Note:</b> the transition state action is called with <i>force == true</i>, e.g. the platform won't verify
-     * transition 
+     * <p><b>Note:</b> the transition state action is called with <i>force == true</i>, i.e. the platform won't verify
+     * transition
      *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft with new {@link State} reference.
