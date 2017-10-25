@@ -1,21 +1,30 @@
 package com.commercetools.sync.integration.commons.utils;
 
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
+import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.taxcategories.TaxCategory;
+import io.sphere.sdk.taxcategories.TaxCategoryDraft;
+import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
+import io.sphere.sdk.taxcategories.TaxRateDraft;
+import io.sphere.sdk.taxcategories.TaxRateDraftBuilder;
+import io.sphere.sdk.taxcategories.commands.TaxCategoryCreateCommand;
 import io.sphere.sdk.taxcategories.commands.TaxCategoryDeleteCommand;
 import io.sphere.sdk.taxcategories.queries.TaxCategoryQuery;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
+import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndApply;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static java.util.Collections.singletonList;
 
 public class TaxCategoryITUtils {
+    private static final String TAXCATEGORY_KEY = "old_tax_category_key";
+    private static final String TAXCATEGORY_NAME = "old_tax_category_name";
+    private static final String TAXCATEGORY_DESCRIPTION = "old_tax_category_desc";
+    private static final String TAXCATEGORY_TAXRATE_NAME = "old_tax_rate_name";
+    private static final double TAXCATEGORY_TAXRATE_AMOUNT = 0.2;
 
     /**
      * Deletes all Tax categories from CTP projects defined by the {@code CTP_SOURCE_CLIENT} and
@@ -32,19 +41,34 @@ public class TaxCategoryITUtils {
      * @param ctpClient defines the CTP project to delete the tax categories from.
      */
     public static void deleteTaxCategories(@Nonnull final SphereClient ctpClient) {
-        final List<CompletableFuture> taxCategoryDeleteFutures = new ArrayList<>();
+        queryAndApply(ctpClient, TaxCategoryQuery::of, TaxCategoryDeleteCommand::of);
+    }
 
-        final Consumer<List<TaxCategory>> taxCategoryPageDelete = taxCategories ->
-            taxCategories.forEach(taxCategory -> {
-                final CompletableFuture<TaxCategory> deleteFuture =
-                    ctpClient.execute(TaxCategoryDeleteCommand.of(taxCategory)).toCompletableFuture();
-                taxCategoryDeleteFutures.add(deleteFuture);
-            });
+    /**
+     * Creates a {@link TaxCategory} in the CTP project defined by the {@code ctpClient} in a blocking fashion.
+     * The created tax category will have a key with the value {@value TAXCATEGORY_KEY}, a name with the value
+     * {@value TAXCATEGORY_NAME}, a description with the value {@value TAXCATEGORY_DESCRIPTION} and a tax rate with the
+     * name {@value TAXCATEGORY_TAXRATE_NAME} and amount {@value TAXCATEGORY_TAXRATE_AMOUNT}.
+     *
+     * @param ctpClient defines the CTP project to create the tax category in.
+     * @return the created tax category.
+     */
+    public static TaxCategory createTaxCategory(@Nonnull final SphereClient ctpClient) {
+        final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder
+            .of(TAXCATEGORY_NAME, singletonList(createTaxRateDraft()), TAXCATEGORY_DESCRIPTION)
+            .key(TAXCATEGORY_KEY)
+            .build();
+        return executeBlocking(ctpClient.execute(TaxCategoryCreateCommand.of(taxCategoryDraft)));
+    }
 
-        CtpQueryUtils.queryAll(ctpClient, TaxCategoryQuery.of(), taxCategoryPageDelete)
-                     .thenCompose(result -> CompletableFuture
-                         .allOf(taxCategoryDeleteFutures
-                             .toArray(new CompletableFuture[taxCategoryDeleteFutures.size()])))
-                     .toCompletableFuture().join();
+    /**
+     * Creates a {@link TaxRateDraft} with the name {@value TAXCATEGORY_TAXRATE_NAME}
+     * and amount {@value TAXCATEGORY_TAXRATE_AMOUNT}.
+     *
+     * @return the created tax rate draft.
+     */
+    public static TaxRateDraft createTaxRateDraft() {
+        return TaxRateDraftBuilder.of(TAXCATEGORY_TAXRATE_NAME, TAXCATEGORY_TAXRATE_AMOUNT, true, CountryCode.DE)
+                                  .build();
     }
 }

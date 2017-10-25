@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.commons.utils;
 
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -15,15 +14,14 @@ import io.sphere.sdk.producttypes.commands.ProductTypeDeleteCommand;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
+import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndApply;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
 
 public final class ProductTypeITUtils {
@@ -46,18 +44,7 @@ public final class ProductTypeITUtils {
      * @param ctpClient defines the CTP project to delete the categories from.
      */
     public static void deleteProductTypes(@Nonnull final SphereClient ctpClient) {
-        final List<CompletableFuture> productTypeDeleteFutures = new ArrayList<>();
-        final Consumer<List<ProductType>> productTypePageDelete = productTypes -> productTypes.forEach(productType -> {
-            final CompletableFuture<ProductType> deleteFuture =
-                ctpClient.execute(ProductTypeDeleteCommand.of(productType)).toCompletableFuture();
-            productTypeDeleteFutures.add(deleteFuture);
-        });
-
-        CtpQueryUtils.queryAll(ctpClient, ProductTypeQuery.of(), productTypePageDelete)
-                     .thenCompose(result -> CompletableFuture
-                         .allOf(productTypeDeleteFutures
-                             .toArray(new CompletableFuture[productTypeDeleteFutures.size()])))
-                     .toCompletableFuture().join();
+        queryAndApply(ctpClient, ProductTypeQuery::of, ProductTypeDeleteCommand::of);
     }
 
     /**
@@ -79,6 +66,22 @@ public final class ProductTypeITUtils {
                 .build();
             ctpClient.execute(ProductTypeCreateCommand.of(productTypeDraft)).toCompletableFuture().join();
         }
+    }
+
+    /**
+     * This method blocks to create a product type, which is defined by the JSON resource found in the supplied
+     * {@code jsonResourcePath}, in the CTP project defined by the supplied {@code ctpClient}.
+     *
+     * @param jsonResourcePath defines the path of the JSON resource of the product type.
+     * @param ctpClient        defines the CTP project to create the product type on.
+     */
+    public static ProductType createProductType(@Nonnull final String jsonResourcePath,
+                                                @Nonnull final SphereClient ctpClient) {
+        final ProductType productTypeFromJson = readObjectFromResource(jsonResourcePath, ProductType.class);
+        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder.of(productTypeFromJson)
+                                                                         .build();
+        return ctpClient.execute(ProductTypeCreateCommand.of(productTypeDraft))
+                        .toCompletableFuture().join();
     }
 
     /**

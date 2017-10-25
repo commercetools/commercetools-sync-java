@@ -37,21 +37,6 @@ public final class PriceReferenceResolver
         this.channelService = channelService;
     }
 
-    @Override
-    protected CompletionStage<PriceDraftBuilder> resolveCustomTypeReference(
-            @Nonnull final PriceDraftBuilder draftBuilder) {
-        final CustomFieldsDraft custom = draftBuilder.getCustom();
-        if (custom != null) {
-            return getCustomTypeId(custom,
-                    format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getCountry(), draftBuilder.getValue()))
-                .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional
-                    .map(resolvedTypeId -> draftBuilder
-                        .custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields())))
-                    .orElse(draftBuilder));
-        }
-        return completedFuture(draftBuilder);
-    }
-
     /**
      * Given a {@link PriceDraft} this method attempts to resolve the custom type and channel
      * references to return a {@link CompletionStage} which contains a new instance of the draft with the resolved
@@ -68,6 +53,21 @@ public final class PriceReferenceResolver
         return resolveCustomTypeReference(PriceDraftBuilder.of(priceDraft))
             .thenCompose(this::resolveChannelReference)
             .thenApply(PriceDraftBuilder::build);
+    }
+
+    @Override
+    protected CompletionStage<PriceDraftBuilder> resolveCustomTypeReference(
+            @Nonnull final PriceDraftBuilder draftBuilder) {
+        final CustomFieldsDraft custom = draftBuilder.getCustom();
+        if (custom != null) {
+            return getCustomTypeId(custom,
+                    format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getCountry(), draftBuilder.getValue()))
+                .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional
+                    .map(resolvedTypeId -> draftBuilder
+                        .custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields())))
+                    .orElse(draftBuilder));
+        }
+        return completedFuture(draftBuilder);
     }
 
     /**
@@ -88,7 +88,7 @@ public final class PriceReferenceResolver
      *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    private CompletionStage<PriceDraftBuilder> resolveChannelReference(@Nonnull final PriceDraftBuilder draftBuilder) {
+    CompletionStage<PriceDraftBuilder> resolveChannelReference(@Nonnull final PriceDraftBuilder draftBuilder) {
         final Reference<Channel> channelReference = draftBuilder.getChannel();
         if (channelReference != null) {
             try {

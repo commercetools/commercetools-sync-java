@@ -3,6 +3,7 @@ package com.commercetools.sync.services;
 import io.sphere.sdk.states.State;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
@@ -25,5 +26,5 @@ public interface StateService {
      *         {@link State} was found in the CTP project with this key.
      */
     @Nonnull
-    CompletionStage<Optional<String>> fetchCachedStateId(@Nonnull final String key);
+    CompletionStage<Optional<String>> fetchCachedStateId(@Nullable final String key);
 }

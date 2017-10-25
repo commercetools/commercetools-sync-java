@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.inventories.utils;
 
-import com.commercetools.sync.integration.commons.utils.SphereClientUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.channels.Channel;
@@ -40,10 +39,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndApply;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.QUERY_MAX_LIMIT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.fetchAndProcess;
 import static java.util.Collections.singletonList;
 
 public class InventoryITUtils {
@@ -66,32 +64,27 @@ public class InventoryITUtils {
     public static final String CUSTOM_TYPE = "inventory-custom-type-name";
     public static final String CUSTOM_FIELD_NAME = "inventory-custom-field-1";
 
-    private static final InventoryEntryQuery QUERY_ALL_INVENTORIES = InventoryEntryQuery.of()
-        .withLimit(QUERY_MAX_LIMIT);
-
     /**
-     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} inventory entries
-     * from CTP project, represented by provided {@code sphereClient}.
+     * Deletes all inventory entries from CTP project, represented by provided {@code ctpClient}.
      *
-     * @param sphereClient sphere client used to execute requests
+     * @param ctpClient represents the CTP project the inventory entries will be deleted from.
      */
-    public static void deleteInventoryEntries(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, QUERY_ALL_INVENTORIES, InventoryEntryDeleteCommand::of);
+    public static void deleteInventoryEntries(@Nonnull final SphereClient ctpClient) {
+        queryAndApply(ctpClient, InventoryEntryQuery::of, InventoryEntryDeleteCommand::of);
     }
 
     /**
-     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} channels containing
-     * {@link ChannelRole#INVENTORY_SUPPLY} role from CTP project, represented by provided {@code sphereClient}.
+     * Deletes all channels from CTP project, represented by the supplied {@code ctpClient}.
      *
-     * @param sphereClient sphere client used to execute requests
+     * @param ctpClient represents the CTP project the channels will be deleted from.
      */
-    public static void deleteSupplyChannels(@Nonnull final SphereClient sphereClient) {
-        fetchAndProcess(sphereClient, ChannelQuery.of().withLimit(QUERY_MAX_LIMIT), ChannelDeleteCommand::of);
+    public static void deleteSupplyChannels(@Nonnull final SphereClient ctpClient) {
+        queryAndApply(ctpClient, ChannelQuery::of, ChannelDeleteCommand::of);
     }
 
     /**
-     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} inventory entries
-     * from CTP projects {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
+     * Deletes all inventory entries from CTP projects defined by {@code CTP_SOURCE_CLIENT} and
+     * {@code CTP_TARGET_CLIENT}.
      */
     public static void deleteInventoryEntriesFromTargetAndSource() {
         deleteInventoryEntries(CTP_SOURCE_CLIENT);
@@ -99,8 +92,7 @@ public class InventoryITUtils {
     }
 
     /**
-     * Deletes up to {@link SphereClientUtils#QUERY_MAX_LIMIT} supply channels
-     * from CTP projects {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
+     * Deletes all channels from CTP projects defined by {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
      */
     public static void deleteChannelsFromTargetAndSource() {
         deleteSupplyChannels(CTP_SOURCE_CLIENT);

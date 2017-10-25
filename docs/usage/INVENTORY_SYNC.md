@@ -81,6 +81,10 @@ inventorySync.sync(inventoryEntryDrafts)
 //"Summary: 2000 inventory entries were processed in total (1000 created, 995 updated, 5 failed to sync)"
 ````
 
+__Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
+ 1. The sync processing time should not take into account the time between supplying batches to the sync. 
+ 2. It is not not known by the sync which batch is going to be the last one supplied.
+
 Additional optional configuration for the sync can be configured on the `InventorySyncOptions` instance, according to your need:
 
 - `ensureChannels`

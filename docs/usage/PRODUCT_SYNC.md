@@ -124,6 +124,10 @@ stats.getReportMessage();
 /*"Summary: 2000 products were processed in total (1000 created, 995 updated and 5 products failed to sync)."*/
 ````
 
+__Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
+ 1. The sync processing time should not take into account the time between supplying batches to the sync. 
+ 2. It is not not known by the sync which batch is going to be the last one supplied.
+
 
 More examples of how to use the sync
 1. From another CTP project as source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/ProductSyncIT.java).

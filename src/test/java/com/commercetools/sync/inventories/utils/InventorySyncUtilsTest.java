@@ -25,8 +25,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockCustomFields;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
