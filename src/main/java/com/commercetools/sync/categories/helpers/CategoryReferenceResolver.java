@@ -75,7 +75,7 @@ public final class CategoryReferenceResolver
      * parent category reference. The key of the parent category is either taken from the expanded object or
      * taken from the id field of the reference.
      *
-     * @param draftBuilder  the category draft builder to read keys and then set resolved values
+     * @param draftBuilder  the category draft builder to read parent category key.
      * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} category draft instance
      *         with resolved parent category references or, in case an error occurs during reference resolution,
      *         a {@link ReferenceResolutionException}.
