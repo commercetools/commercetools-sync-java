@@ -4,6 +4,7 @@ package com.commercetools.sync.categories;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
@@ -137,35 +138,13 @@ public class CategorySyncMockUtils {
         return categoryDraft;
     }
 
-    /**
-     * Given a {@code locale}, {@code name}, {@code slug}, {@code key}, {@code description},
-     * {@code metaDescription}, {@code metaTitle}, {@code metaKeywords}, {@code orderHint} and
-     * {@code parentId}; this method creates a mock of {@link CategoryDraft} with all those supplied fields. All the
-     * supplied arguments are given as {@link String} and the method internally converts them to their required types.
-     * For example, for all the fields that require a {@link LocalizedString} as a value type; the method creates an
-     * instance of a {@link LocalizedString} with the given {@link String} and {@link Locale}.
-     *
-     * @param locale          the locale to create with all the {@link LocalizedString} instances.
-     * @param name            the name of the category.
-     * @param key             the key id of the category.
-     * @param parentId        the id of the parent category.
-     * @param customTypeId    the id of the custom type of category.
-     * @param customFields    the custom fields of the category.
-     * @return an instance {@link CategoryDraft} with all the given fields set in the given {@link Locale}.
-     */
     public static CategoryDraft getMockCategoryDraft(@Nonnull final Locale locale,
                                                      @Nonnull final String name,
                                                      @Nonnull final String key,
                                                      @Nullable final String parentId,
                                                      @Nonnull final String customTypeId,
                                                      @Nonnull final Map<String, JsonNode> customFields) {
-        final CategoryDraft categoryDraft = mock(CategoryDraft.class);
-        when(categoryDraft.getName()).thenReturn(LocalizedString.of(locale, name));
-        when(categoryDraft.getKey()).thenReturn(key);
-        when(categoryDraft.getParent()).thenReturn(Category.referenceOfId(parentId));
-        final CustomFieldsDraft mockCustomFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeId, customFields);
-        when(categoryDraft.getCustom()).thenReturn(mockCustomFieldsDraft);
-        return categoryDraft;
+        return getMockCategoryDraftBuilder(locale, name, key, parentId, customTypeId, customFields).build();
     }
 
 
@@ -192,5 +171,34 @@ public class CategorySyncMockUtils {
         when(mockCategoryDraft.getKey()).thenReturn(key);
         when(mockCategoryDraft.getCustom()).thenReturn(getMockCustomFieldsDraft());
         return mockCategoryDraft;
+    }
+
+    /**
+     * Given a {@code locale}, {@code name}, {@code slug}, {@code key}, {@code description},
+     * {@code metaDescription}, {@code metaTitle}, {@code metaKeywords}, {@code orderHint} and
+     * {@code parentId}; this method creates a  {@link CategoryDraftBuilder} with mocked all those supplied fields.
+     * All the supplied arguments are given as {@link String} and the method internally converts them
+     * to their required types.
+     * For example, for all the fields that require a {@link LocalizedString} as a value type; the method creates an
+     * instance of a {@link LocalizedString} with the given {@link String} and {@link Locale}.
+     *
+     * @param locale          the locale to create with all the {@link LocalizedString} instances.
+     * @param name            the name of the category.
+     * @param key             the key id of the category.
+     * @param parentId        the id of the parent category.
+     * @param customTypeId    the id of the custom type of category.
+     * @param customFields    the custom fields of the category.
+     * @return an instance {@link CategoryDraftBuilder} with all the given fields set in the given {@link Locale}.
+     */
+    public static CategoryDraftBuilder getMockCategoryDraftBuilder(@Nonnull final Locale locale,
+                                                                   @Nonnull final String name,
+                                                                   @Nonnull final String key,
+                                                                   @Nullable final String parentId,
+                                                                   @Nonnull final String customTypeId,
+                                                                   @Nonnull final Map<String, JsonNode> customFields) {
+        return CategoryDraftBuilder.of(LocalizedString.of(locale, name), LocalizedString.of(locale, "testSlug"))
+            .key(key)
+            .parent(Category.referenceOfId(parentId))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(customTypeId, customFields));
     }
 }

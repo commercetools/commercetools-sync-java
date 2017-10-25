@@ -18,8 +18,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
-public final class PriceReferenceResolver extends CustomReferenceResolver<PriceDraft, ProductSyncOptions> {
+public final class PriceReferenceResolver
+    extends CustomReferenceResolver<PriceDraft, PriceDraftBuilder, ProductSyncOptions> {
+
     private ChannelService channelService;
     private static final String CHANNEL_DOES_NOT_EXIST = "Channel with key '%s' does not exist.";
     private static final String FAILED_TO_RESOLVE_CHANNEL = "Failed to resolve the channel reference on "
@@ -32,20 +35,6 @@ public final class PriceReferenceResolver extends CustomReferenceResolver<PriceD
                                   @Nonnull final ChannelService channelService) {
         super(options, typeService);
         this.channelService = channelService;
-    }
-
-    @Override
-    protected CompletionStage<PriceDraft> resolveCustomTypeReference(@Nonnull final PriceDraft draft) {
-        final CustomFieldsDraft custom = draft.getCustom();
-        if (custom != null) {
-            return getCustomTypeId(custom, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draft.getCountry(), draft.getValue()))
-                .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional
-                    .map(resolvedTypeId -> PriceDraftBuilder
-                        .of(draft).custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields()))
-                        .build())
-                    .orElseGet(() -> PriceDraftBuilder.of(draft).build()));
-        }
-        return CompletableFuture.completedFuture(draft);
     }
 
     /**
@@ -61,12 +50,29 @@ public final class PriceReferenceResolver extends CustomReferenceResolver<PriceD
      */
     @Override
     public CompletionStage<PriceDraft> resolveReferences(@Nonnull final PriceDraft priceDraft) {
-        return resolveCustomTypeReference(priceDraft).thenCompose(this::resolveChannelReference);
+        return resolveCustomTypeReference(PriceDraftBuilder.of(priceDraft))
+            .thenCompose(this::resolveChannelReference)
+            .thenApply(PriceDraftBuilder::build);
+    }
+
+    @Override
+    protected CompletionStage<PriceDraftBuilder> resolveCustomTypeReference(
+            @Nonnull final PriceDraftBuilder draftBuilder) {
+        final CustomFieldsDraft custom = draftBuilder.getCustom();
+        if (custom != null) {
+            return getCustomTypeId(custom,
+                    format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getCountry(), draftBuilder.getValue()))
+                .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional
+                    .map(resolvedTypeId -> draftBuilder
+                        .custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields())))
+                    .orElse(draftBuilder));
+        }
+        return completedFuture(draftBuilder);
     }
 
     /**
-     * Given a {@link PriceDraft} this method attempts to resolve the supply channel reference to return
-     * a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * Given a {@link PriceDraftBuilder} this method attempts to resolve the supply channel reference to return
+     * a {@link CompletionStage} which contains the same instance of draft builder with the resolved
      * supply channel reference. The key of the supply channel is either taken from the expanded reference or
      * taken from the id field of the reference.
      *
@@ -76,27 +82,27 @@ public final class PriceReferenceResolver extends CustomReferenceResolver<PriceD
      * However, if the {@code ensureChannel} is set to false, the future is completed exceptionally with a
      * {@link ReferenceResolutionException}.
      *
-     * @param draft the inventoryEntryDraft to resolve it's channel reference.
-     * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance with resolved
+     * @param draftBuilder the inventoryEntryDraft to resolve it's channel reference.
+     * @return a {@link CompletionStage} that contains as a result a new price draft builder instance with resolved
      *         supply channel or, in case an error occurs during reference resolution,
      *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    private CompletionStage<PriceDraft> resolveChannelReference(@Nonnull final PriceDraft draft) {
-        final Reference<Channel> channelReference = draft.getChannel();
+    CompletionStage<PriceDraftBuilder> resolveChannelReference(@Nonnull final PriceDraftBuilder draftBuilder) {
+        final Reference<Channel> channelReference = draftBuilder.getChannel();
         if (channelReference != null) {
             try {
                 final String keyFromExpansion = getKeyFromExpansion(channelReference);
                 final String channelKey = getKeyFromExpansionOrReference(options.shouldAllowUuidKeys(),
                     keyFromExpansion, channelReference);
-                return fetchOrCreateAndResolveReference(draft, channelKey);
+                return fetchOrCreateAndResolveReference(draftBuilder, channelKey);
             } catch (ReferenceResolutionException exception) {
                 return CompletableFutureUtils.exceptionallyCompletedFuture(
-                    new ReferenceResolutionException(format(FAILED_TO_RESOLVE_CHANNEL, draft.getCountry(),
-                        draft.getValue(), exception.getMessage()), exception));
+                    new ReferenceResolutionException(format(FAILED_TO_RESOLVE_CHANNEL, draftBuilder.getCountry(),
+                        draftBuilder.getValue(), exception.getMessage()), exception));
             }
         }
-        return CompletableFuture.completedFuture(draft);
+        return completedFuture(draftBuilder);
     }
 
     /**
@@ -113,35 +119,35 @@ public final class PriceReferenceResolver extends CustomReferenceResolver<PriceD
     }
 
     /**
-     * Given an {@link ProductSyncOptions} and a {@code channelKey} this method fetches the actual id of the
+     * Given an {@link PriceDraftBuilder} and a {@code channelKey} this method fetches the actual id of the
      * channel corresponding to this key, ideally from a cache. Then it sets this id on the supply channel reference
      * id of the inventory entry draft. If the id is not found in cache nor the CTP project and {@code ensureChannel}
      * option is set to true, a new channel will be created with this key and the role {@code "InventorySupply"}.
      * However, if the {@code ensureChannel} is set to false, the future is completed exceptionally with a
      * {@link ReferenceResolutionException}.
      *
-     * @param draft      the inventory entry draft to resolve it's supply channel reference.
+     * @param draftBuilder      the price draft builder where to set resolved references.
      * @param channelKey the key of the channel to resolve it's actual id on the draft.
-     * @return a {@link CompletionStage} that contains as a result a new inventory entry draft instance with resolved
+     * @return a {@link CompletionStage} that contains as a result the same {@code draft} instance with resolved
      *         supply channel reference or an exception.
      */
     @Nonnull
-    private CompletionStage<PriceDraft> fetchOrCreateAndResolveReference(
-        @Nonnull final PriceDraft draft,
+    private CompletionStage<PriceDraftBuilder> fetchOrCreateAndResolveReference(
+        @Nonnull final PriceDraftBuilder draftBuilder,
         @Nonnull final String channelKey) {
-        final CompletionStage<PriceDraft> priceDraftCompletionStage = channelService
+        final CompletionStage<PriceDraftBuilder> priceDraftCompletionStage = channelService
             .fetchCachedChannelId(channelKey)
             .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
-                .map(resolvedChannelId -> setChannelReference(resolvedChannelId, draft))
-                .orElseGet(() -> createChannelAndSetReference(channelKey, draft)));
+                .map(resolvedChannelId -> setChannelReference(resolvedChannelId, draftBuilder))
+                .orElseGet(() -> createChannelAndSetReference(channelKey, draftBuilder)));
 
-        final CompletableFuture<PriceDraft> result = new CompletableFuture<>();
+        final CompletableFuture<PriceDraftBuilder> result = new CompletableFuture<>();
         priceDraftCompletionStage
             .whenComplete((resolvedDraft, exception) -> {
                 if (exception != null) {
                     result.completeExceptionally(
-                        new ReferenceResolutionException(format(FAILED_TO_RESOLVE_CHANNEL, draft.getCountry(),
-                            draft.getValue(), exception.getMessage()), exception));
+                        new ReferenceResolutionException(format(FAILED_TO_RESOLVE_CHANNEL, draftBuilder.getCountry(),
+                            draftBuilder.getValue(), exception.getMessage()), exception));
                 } else {
                     result.complete(resolvedDraft);
                 }
@@ -151,23 +157,18 @@ public final class PriceReferenceResolver extends CustomReferenceResolver<PriceD
 
     /**
      * Helper method that returns a completed CompletionStage with a resolved channel reference
-     * {@link PriceDraft} object as a result of setting the passed {@code channelId} as the id of channel
+     * {@link PriceDraftBuilder} object as a result of setting the passed {@code channelId} as the id of channel
      * reference.
      *
      * @param channelId  the channel id to set on the price channel reference id field.
-     * @param priceDraft the price draft to resolve it's supply channel reference.
-     * @return a completed CompletionStage with a resolved channel reference
-     *         {@link PriceDraft} object as a result of setting the passed {@code channelId} as the id of channel
-     *         reference.
+     * @param builder    the price draft builder where to update the channel reference.
+     * @return a completed CompletionStage with the same instance of {@code builder} having resolved channel reference
+     *         as a result of setting the passed {@code channelId} as the id of channel reference.
      */
     @Nonnull
-    private static CompletionStage<PriceDraft> setChannelReference(@Nonnull final String channelId,
-                                                                   @Nonnull final PriceDraft
-                                                                       priceDraft) {
-        return CompletableFuture.completedFuture(PriceDraftBuilder
-            .of(priceDraft)
-            .channel(Channel.referenceOfId(channelId))
-            .build());
+    private static CompletionStage<PriceDraftBuilder> setChannelReference(@Nonnull final String channelId,
+                                                                          @Nonnull final PriceDraftBuilder builder) {
+        return completedFuture(builder.channel(Channel.referenceOfId(channelId)));
     }
 
     /**
@@ -179,21 +180,21 @@ public final class PriceReferenceResolver extends CustomReferenceResolver<PriceD
      * <p>If the {@code ensureChannels} options is set to {@code false} on the {@code options} instance of {@code this}
      * class, the future is completed exceptionally with a {@link ReferenceResolutionException}.
      *
-     * <p>The method then returns a CompletionStage with a resolved channel reference {@link PriceDraft}
+     * <p>The method then returns a CompletionStage with a resolved channel reference {@link PriceDraftBuilder}
      * object.
      *
-     * @param channelKey the key to create the new channel with.
-     * @param priceDraft the inventory entry draft to resolve it's supply channel reference to the newly
-     *                   created channel.
-     * @return a CompletionStage with a resolved channel reference {@link PriceDraft} object.
+     * @param channelKey   the key to create the new channel with.
+     * @param draftBuilder the inventory entry draft builder where to resolve it's supply channel reference to the newly
+     *                     created channel.
+     * @return a CompletionStage with the same {@code draftBuilder} instance having resolved channel reference.
      */
     @Nonnull
-    private CompletionStage<PriceDraft> createChannelAndSetReference(@Nonnull final String channelKey,
-                                                                     @Nonnull final PriceDraft priceDraft) {
+    private CompletionStage<PriceDraftBuilder> createChannelAndSetReference(
+            @Nonnull final String channelKey,
+            @Nonnull final PriceDraftBuilder draftBuilder) {
         if (options.shouldEnsurePriceChannels()) {
             return channelService.createAndCacheChannel(channelKey)
-                                 .thenCompose(createdChannel -> setChannelReference(createdChannel.getId(),
-                                     priceDraft));
+                .thenCompose(createdChannel -> setChannelReference(createdChannel.getId(), draftBuilder));
         } else {
             final ReferenceResolutionException referenceResolutionException =
                 new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));

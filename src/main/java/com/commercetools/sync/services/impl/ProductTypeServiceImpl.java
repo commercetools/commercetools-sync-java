@@ -25,8 +25,6 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private boolean isCached = false;
     private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData = new ConcurrentHashMap<>();
-    private static final String PRODUCT_TYPE_KEY_NOT_SET = "ProductType with id: '%s' has no key set. "
-        + "Keys are required for productType matching.";
 
     public ProductTypeServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
         this.syncOptions = syncOptions;
@@ -45,13 +43,14 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
         final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
             productTypePage.forEach(type -> {
-                final String fetchedTypekey = type.getKey();
+                final String fetchedTypeKey = type.getKey();
                 final String id = type.getId();
                 productsAttributesMetaData.put(id, getAttributeMetaDataMap(type));
-                if (StringUtils.isNotBlank(fetchedTypekey)) {
-                    keyToIdCache.put(fetchedTypekey, id);
+                if (StringUtils.isNotBlank(fetchedTypeKey)) {
+                    keyToIdCache.put(fetchedTypeKey, id);
                 } else {
-                    syncOptions.applyWarningCallback(format(PRODUCT_TYPE_KEY_NOT_SET, id));
+                    syncOptions.applyWarningCallback(format("ProductType with id: '%s' has no key set. Keys are"
+                        + " required for productType matching.", id));
                 }
             });
 

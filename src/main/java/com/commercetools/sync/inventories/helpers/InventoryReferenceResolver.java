@@ -18,9 +18,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
-public final class InventoryReferenceResolver extends CustomReferenceResolver<InventoryEntryDraft,
-    InventorySyncOptions> {
+public final class InventoryReferenceResolver
+        extends CustomReferenceResolver<InventoryEntryDraft, InventoryEntryDraftBuilder, InventorySyncOptions> {
+
     private static final String CHANNEL_DOES_NOT_EXIST = "Channel with key '%s' does not exist.";
     private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
         + "InventoryEntryDraft with SKU:'%s'.";
@@ -47,29 +49,30 @@ public final class InventoryReferenceResolver extends CustomReferenceResolver<In
      *          a {@link ReferenceResolutionException}.
      */
     public CompletionStage<InventoryEntryDraft> resolveReferences(@Nonnull final InventoryEntryDraft draft) {
-        return resolveCustomTypeReference(draft)
-            .thenCompose(this::resolveSupplyChannelReference);
+        return resolveCustomTypeReference(InventoryEntryDraftBuilder.of(draft))
+            .thenCompose(this::resolveSupplyChannelReference)
+            .thenApply(InventoryEntryDraftBuilder::build);
     }
 
     @Override
     @Nonnull
-    protected CompletionStage<InventoryEntryDraft> resolveCustomTypeReference(@Nonnull final
-                                                                                  InventoryEntryDraft draft) {
-        final CustomFieldsDraft custom = draft.getCustom();
+    protected CompletionStage<InventoryEntryDraftBuilder> resolveCustomTypeReference(
+            @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
+
+        final CustomFieldsDraft custom = draftBuilder.getCustom();
         if (custom != null) {
-            return getCustomTypeId(custom, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draft.getSku()))
+            return getCustomTypeId(custom, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getSku()))
                 .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional
-                    .map(resolvedTypeId -> InventoryEntryDraftBuilder
-                        .of(draft).custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields()))
-                                          .build())
-                                      .orElseGet(() -> InventoryEntryDraftBuilder.of(draft).build()));
+                    .map(resolvedTypeId -> draftBuilder
+                        .custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields())))
+                    .orElse(draftBuilder));
         }
-        return CompletableFuture.completedFuture(draft);
+        return completedFuture(draftBuilder);
     }
 
     /**
-     * Given a {@link InventoryEntryDraft} this method attempts to resolve the supply channel reference to return
-     * a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * Given a {@link InventoryEntryDraftBuilder} this method attempts to resolve the supply channel reference to return
+     * a {@link CompletionStage} which contains a new instance of the draft builder with the resolved
      * supply channel reference. The key of the supply channel is either taken from the expanded reference or
      * taken from the id field of the reference.
      *
@@ -79,62 +82,65 @@ public final class InventoryReferenceResolver extends CustomReferenceResolver<In
      * However, if the {@code ensureChannel} is set to false, the future is completed exceptionally with a
      * {@link ReferenceResolutionException}.
      *
-     * @param draft the inventoryEntryDraft to resolve it's channel reference.
-     * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance with resolved
-     *          supply channel or, in case an error occurs during reference resolution,
-     *          a {@link ReferenceResolutionException}.
+     * @param draftBuilder the inventory draft builder to read it's values (key, sku, channel)
+     *                     and then to write resolved references.
+     * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} inventory draft builder
+     *         instance with resolved supply channel or, in case an error occurs during reference resolution,
+     *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    CompletionStage<InventoryEntryDraft> resolveSupplyChannelReference(
-        @Nonnull final InventoryEntryDraft draft) {
-        final Reference<Channel> channelReference = draft.getSupplyChannel();
+    CompletionStage<InventoryEntryDraftBuilder> resolveSupplyChannelReference(
+            @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
+        final Reference<Channel> channelReference = draftBuilder.getSupplyChannel();
         if (channelReference != null) {
             try {
                 final String keyFromExpansion = getKeyFromExpansion(channelReference);
                 final String channelKey = getKeyFromExpansionOrReference(options.shouldAllowUuidKeys(),
                     keyFromExpansion, channelReference);
-                return fetchOrCreateAndResolveReference(draft, channelKey);
+                return fetchOrCreateAndResolveReference(draftBuilder, channelKey);
             } catch (ReferenceResolutionException exception) {
                 return CompletableFutureUtils.exceptionallyCompletedFuture(
-                    new ReferenceResolutionException(format(FAILED_TO_RESOLVE_SUPPLY_CHANNEL, draft.getSku(),
+                    new ReferenceResolutionException(format(FAILED_TO_RESOLVE_SUPPLY_CHANNEL, draftBuilder.getSku(),
                         exception.getMessage()), exception));
             }
         }
-        return CompletableFuture.completedFuture(draft);
+        return completedFuture(draftBuilder);
     }
 
     /**
-     * Given an {@link InventoryEntryDraft} and a {@code channelKey} this method fetches the actual id of the
+     * Given an {@link InventoryEntryDraftBuilder} and a {@code channelKey} this method fetches the actual id of the
      * channel corresponding to this key, ideally from a cache. Then it sets this id on the supply channel reference
-     * id of the inventory entry draft. If the id is not found in cache nor the CTP project and {@code ensureChannel}
-     * option is set to true, a new channel will be created with this key and the role {@code "InventorySupply"}.
+     * id of the inventory entry draft builder. If the id is not found in cache nor the CTP project
+     * and {@code ensureChannel} option is set to true, a new channel will be created with this key
+     * and the role {@code "InventorySupply"}.
      * However, if the {@code ensureChannel} is set to false, the future is completed exceptionally with a
      * {@link ReferenceResolutionException}.
      *
-     * @param draft the inventory entry draft to resolve it's supply channel reference.
+     * @param draftBuilder the inventory draft builder to read it's values (key, sku, channel)
+     *                     and then to write resolved references.
      * @param channelKey the key of the channel to resolve it's actual id on the draft.
-     * @return a {@link CompletionStage} that contains as a result a new inventory entry draft instance with resolved
-     *      supply channel reference or an exception.
+     * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} inventory draft builder
+     *         instance with resolved supply channel reference or an exception.
      */
     @Nonnull
-    private CompletionStage<InventoryEntryDraft> fetchOrCreateAndResolveReference(
-        @Nonnull final InventoryEntryDraft draft,
+    private CompletionStage<InventoryEntryDraftBuilder> fetchOrCreateAndResolveReference(
+        @Nonnull final InventoryEntryDraftBuilder draftBuilder,
         @Nonnull final String channelKey) {
-        final CompletionStage<InventoryEntryDraft> inventoryEntryDraftCompletionStage = channelService
+        final CompletionStage<InventoryEntryDraftBuilder> inventoryEntryDraftCompletionStage = channelService
             .fetchCachedChannelId(channelKey)
             .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
-                .map(resolvedChannelId -> setChannelReference(resolvedChannelId, draft))
-                .orElseGet(() -> createChannelAndSetReference(channelKey, draft)));
+                .map(resolvedChannelId -> setChannelReference(resolvedChannelId, draftBuilder))
+                .orElseGet(() -> createChannelAndSetReference(channelKey, draftBuilder)));
 
-        final CompletableFuture<InventoryEntryDraft> result = new CompletableFuture<>();
+        final CompletableFuture<InventoryEntryDraftBuilder> result = new CompletableFuture<>();
         inventoryEntryDraftCompletionStage
-            .whenComplete((resolvedDraft, exception) -> {
+            .whenComplete((resolvedDraftBuilder, exception) -> {
                 if (exception != null) {
                     result.completeExceptionally(
-                        new ReferenceResolutionException(format(FAILED_TO_RESOLVE_SUPPLY_CHANNEL, draft.getSku(),
+                        new ReferenceResolutionException(format(FAILED_TO_RESOLVE_SUPPLY_CHANNEL, draftBuilder.getSku(),
                             exception.getCause().getMessage()), exception));
                 } else {
-                    result.complete(resolvedDraft);
+                    result.complete(resolvedDraftBuilder);
                 }
             });
         return result;
@@ -156,23 +162,20 @@ public final class InventoryReferenceResolver extends CustomReferenceResolver<In
 
     /**
      * Helper method that returns a completed CompletionStage with a resolved channel reference
-     * {@link InventoryEntryDraft} object as a result of setting the passed {@code channelId} as the id of channel
-     * reference.
+     * {@link InventoryEntryDraftBuilder} object as a result of setting the passed {@code channelId}
+     * as the id of channel reference.
      *
-     * @param channelId the channel id to set on the inventory entry supply channel reference id field.
-     * @param inventoryEntryDraft the inventory entry draft to resolve it's supply channel reference.
-     * @return a completed CompletionStage with a resolved channel reference
-     *      {@link InventoryEntryDraft} object as a result of setting the passed {@code channelId} as the id of channel
-     *      reference.
+     * @param channelId    the channel id to set on the inventory entry supply channel reference id field.
+     * @param draftBuilder the inventory draft builder where to write resolved references.
+     * @return a completed CompletionStage with a resolved channel reference with the same
+     *         {@link InventoryEntryDraftBuilder} instance as a result of setting the passed {@code channelId}
+     *         as the id of channel reference.
      */
     @Nonnull
-    private static CompletionStage<InventoryEntryDraft> setChannelReference(@Nonnull final String channelId,
-                                                                            @Nonnull final InventoryEntryDraft
-                                                                                inventoryEntryDraft) {
-        return CompletableFuture.completedFuture(InventoryEntryDraftBuilder
-            .of(inventoryEntryDraft)
-            .supplyChannel(Channel.referenceOfId(channelId))
-            .build());
+    private static CompletionStage<InventoryEntryDraftBuilder> setChannelReference(
+            @Nonnull final String channelId,
+            @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
+        return completedFuture(draftBuilder.supplyChannel(Channel.referenceOfId(channelId)));
     }
 
     /**
@@ -184,22 +187,22 @@ public final class InventoryReferenceResolver extends CustomReferenceResolver<In
      * <p>If the {@code ensureChannels} options is set to {@code false} on the {@code options} instance of {@code this}
      * class, the future is completed exceptionally with a {@link ReferenceResolutionException}.
      *
-     * <p>The method then returns a CompletionStage with a resolved channel reference {@link InventoryEntryDraft}
+     * <p>The method then returns a CompletionStage with a resolved channel reference {@link InventoryEntryDraftBuilder}
      * object.
      *
-     * @param channelKey          the key to create the new channel with.
-     * @param inventoryEntryDraft the inventory entry draft to resolve it's supply channel reference to the newly
-     *                            created channel.
-     * @return a CompletionStage with a resolved channel reference {@link InventoryEntryDraft} object.
+     * @param channelKey   the key to create the new channel with.
+     * @param draftBuilder the inventory draft builder where to write resolved references.
+     * @return a CompletionStage with the same {@code draftBuilder} inventory draft builder instance where channel
+     *         channels are resolved.
      */
     @Nonnull
-    private CompletionStage<InventoryEntryDraft> createChannelAndSetReference(@Nonnull final String channelKey,
-                                                                              @Nonnull final InventoryEntryDraft
-                                                                                  inventoryEntryDraft) {
+    private CompletionStage<InventoryEntryDraftBuilder> createChannelAndSetReference(
+            @Nonnull final String channelKey,
+            @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
         if (options.shouldEnsureChannels()) {
-            return channelService.createAndCacheChannel(channelKey)
-                                 .thenCompose(createdChannel -> setChannelReference(createdChannel.getId(),
-                                     inventoryEntryDraft));
+            return channelService
+                .createAndCacheChannel(channelKey)
+                .thenCompose(createdChannel -> setChannelReference(createdChannel.getId(), draftBuilder));
         } else {
             final ReferenceResolutionException referenceResolutionException =
                 new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));

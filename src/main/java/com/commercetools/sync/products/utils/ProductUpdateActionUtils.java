@@ -29,8 +29,11 @@ import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.products.commands.updateactions.SetSearchKeywords;
+import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
+import io.sphere.sdk.products.commands.updateactions.TransitionState;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
 import io.sphere.sdk.search.SearchKeywords;
+import io.sphere.sdk.states.State;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -564,6 +567,48 @@ public final class ProductUpdateActionUtils {
                 }
                 return updateActions;
             });
+    }
+
+
+    /**
+     * Compares the {@link io.sphere.sdk.taxcategories.TaxCategory} references of an old {@link Product} and
+     * new {@link ProductDraft}. If they are different - return {@link SetTaxCategory} update action.
+     *
+     * <p>If the old value is set, but the new one is empty - the command will unset the tax category.
+     *
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft with new {@link io.sphere.sdk.taxcategories.TaxCategory} reference.
+     * @return An optional with {@link SetTaxCategory} update action.
+     */
+    @Nonnull
+    public static Optional<SetTaxCategory> buildSetTaxCategoryUpdateAction(
+        @Nonnull final Product oldProduct,
+        @Nonnull final ProductDraft newProduct) {
+        return buildUpdateAction(oldProduct.getTaxCategory(), newProduct.getTaxCategory(),
+            () -> SetTaxCategory.of(newProduct.getTaxCategory()));
+    }
+
+    /**
+     * Compares the {@link State} references of an old {@link Product} and
+     * new {@link ProductDraft}. If they are different - return {@link TransitionState} update action.
+     *
+     * <p>If the old value is set, but the new one is empty - return empty object, because unset transition state is
+     * not possible.
+     *
+     * <p><b>Note:</b> the transition state action is called with <i>force == true</i>, i.e. the platform won't verify
+     * transition
+     *
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft with new {@link State} reference.
+     * @return An optional with {@link TransitionState} update action.
+     */
+    @Nonnull
+    public static Optional<TransitionState> buildTransitionStateUpdateAction(
+        @Nonnull final Product oldProduct,
+        @Nonnull final ProductDraft newProduct) {
+        return ofNullable(newProduct.getState() != null && !Objects.equals(oldProduct.getState(), newProduct.getState())
+            ? TransitionState.of(newProduct.getState(), true)
+            : null);
     }
 
     /**

@@ -9,7 +9,7 @@ import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
@@ -35,16 +35,16 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createProductType;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithIds;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2_RESOURCE_PATH;
@@ -53,7 +53,6 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
@@ -62,8 +61,7 @@ import static org.mockito.Mockito.when;
 public class ProductServiceIT {
     private ProductService productService;
     private static ProductType productType;
-    private static Set<ResourceIdentifier<Category>> categoryResourceIdentifiers;
-    private static Set<ResourceIdentifier<Category>> categoryResourcesWithIds;
+    private static List<Reference<Category>> categoryReferencesWithIds;
     private Product product;
 
 
@@ -81,17 +79,8 @@ public class ProductServiceIT {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
-        categoryResourceIdentifiers = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2))
-            .stream()
-            .map(category -> ResourceIdentifier.<Category>ofIdOrKey(category.getId(), category.getKey(),
-                Category.referenceTypeId()))
-            .collect(Collectors.toSet());
-        categoryResourcesWithIds =
-            categoryResourceIdentifiers.stream()
-                            .map(categoryResourceIdentifier ->
-                                ResourceIdentifier.<Category>ofId(categoryResourceIdentifier.getId(),
-                                    Category.referenceTypeId()))
-                            .collect(toSet());
+        final List<Category> categories = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
+        categoryReferencesWithIds = getReferencesWithIds(categories);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
@@ -121,8 +110,8 @@ public class ProductServiceIT {
 
         // Create a mock new product in the target project.
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
-            productType.toReference(), categoryResourcesWithIds,
-            createRandomCategoryOrderHints(categoryResourceIdentifiers));
+            productType.toReference(), null, null, categoryReferencesWithIds,
+            createRandomCategoryOrderHints(categoryReferencesWithIds));
         product = CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft))
                                    .toCompletableFuture().join();
 
@@ -144,7 +133,8 @@ public class ProductServiceIT {
 
         // Create new product without caching
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference(),
-            categoryResourcesWithIds, createRandomCategoryOrderHints(categoryResourceIdentifiers));
+            null, null, categoryReferencesWithIds,
+            createRandomCategoryOrderHints(categoryReferencesWithIds));
 
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
@@ -154,18 +144,21 @@ public class ProductServiceIT {
         assertThat(errorCallBackMessages).isEmpty();
     }
 
-
     @Test
     public void cacheKeysToIds_WithTargetProductsWithBlankKeys_ShouldGiveAWarningAboutKeyNotSetAndNotCacheKey() {
         // Create new product without key
         final ProductDraft productDraftWithNullKey = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             productType.toReference())
+            .taxCategory(null)
+            .state(null)
             .key(null)
             .build();
 
         final ProductDraft productDraftWithEmptyKey = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             productType.toReference())
             .key(StringUtils.EMPTY)
+            .taxCategory(null)
+            .state(null)
             .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
@@ -245,7 +238,7 @@ public class ProductServiceIT {
         keys.add(product.getKey());
         keys.add("new-key");
         final Set<Product> fetchedProducts = productService.fetchMatchingProductsByKeys(keys)
-                                                               .toCompletableFuture().join();
+                                                           .toCompletableFuture().join();
         assertThat(fetchedProducts).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
@@ -258,6 +251,8 @@ public class ProductServiceIT {
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
             productType.toReference())
             .key("newKey")
+            .taxCategory(null)
+            .state(null)
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
             .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
@@ -265,7 +260,8 @@ public class ProductServiceIT {
             .build();
 
         final ProductDraft productDraft2 = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference(),
-            categoryResourcesWithIds, createRandomCategoryOrderHints(categoryResourceIdentifiers));
+            null, null, categoryReferencesWithIds,
+            createRandomCategoryOrderHints(categoryReferencesWithIds));
 
         final Set<ProductDraft> productDrafts = new HashSet<>();
         productDrafts.add(productDraft1);
@@ -294,7 +290,8 @@ public class ProductServiceIT {
             .build();
 
         final ProductDraft productDraft2 = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference(),
-            categoryResourcesWithIds, createRandomCategoryOrderHints(categoryResourceIdentifiers));
+            null, null, categoryReferencesWithIds,
+            createRandomCategoryOrderHints(categoryReferencesWithIds));
 
         final Set<ProductDraft> productDrafts = new HashSet<>();
         productDrafts.add(productDraft1);
@@ -317,6 +314,8 @@ public class ProductServiceIT {
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
             productType.toReference())
             .key("newKey")
+            .taxCategory(null)
+            .state(null)
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
             .masterVariant(ProductVariantDraftBuilder.of().build())
@@ -325,6 +324,8 @@ public class ProductServiceIT {
         final ProductDraft productDraft2 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
             productType.toReference())
             .key("newKey1")
+            .taxCategory(null)
+            .state(null)
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
             .masterVariant(ProductVariantDraftBuilder.of().build())
@@ -356,6 +357,8 @@ public class ProductServiceIT {
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
             productType.toReference())
             .key(newKey)
+            .taxCategory(null)
+            .state(null)
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
             .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
@@ -393,6 +396,8 @@ public class ProductServiceIT {
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
             productType.toReference())
             .key(newKey)
+            .taxCategory(null)
+            .state(null)
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
             .masterVariant(ProductVariantDraftBuilder.of().build())
@@ -497,6 +502,8 @@ public class ProductServiceIT {
             .key(newKey)
             .categories(Collections.emptyList())
             .categoryOrderHints(null)
+            .taxCategory(null)
+            .state(null)
             .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .publish(false)
@@ -571,6 +578,8 @@ public class ProductServiceIT {
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             productType.toReference())
             .categories(Collections.emptyList())
+            .taxCategory(null)
+            .state(null)
             .categoryOrderHints(null)
             .build();
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft1)).toCompletableFuture().join();

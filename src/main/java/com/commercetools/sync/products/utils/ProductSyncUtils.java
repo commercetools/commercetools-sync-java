@@ -31,6 +31,8 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetMetaTitleUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetSearchKeywordsUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetTaxCategoryUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildTransitionStateUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
 
 public final class ProductSyncUtils {
@@ -97,8 +99,8 @@ public final class ProductSyncUtils {
                                                                @Nonnull final Map<String, AttributeMetaData>
                                                                        attributesMetaData) {
         final SyncFilter syncFilter = syncOptions.getSyncFilter();
-        final List<UpdateAction<Product>> updateActions = buildUpdateActionsFromOptionals(
-            Arrays.asList(
+
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>(buildUpdateActionsFromOptionals(Arrays.asList(
                 buildActionIfPassesFilter(syncFilter, ActionGroup.NAME, () ->
                     buildChangeNameUpdateAction(oldProduct, newProduct)),
 
@@ -106,7 +108,7 @@ public final class ProductSyncUtils {
                     buildSetDescriptionUpdateAction(oldProduct, newProduct)),
 
                 buildActionIfPassesFilter(syncFilter, ActionGroup.SLUG, () ->
-                        buildChangeSlugUpdateAction(oldProduct, newProduct)),
+                     buildChangeSlugUpdateAction(oldProduct, newProduct)),
 
                 buildActionIfPassesFilter(syncFilter, ActionGroup.SEARCHKEYWORDS, () ->
                     buildSetSearchKeywordsUpdateAction(oldProduct, newProduct)),
@@ -118,8 +120,14 @@ public final class ProductSyncUtils {
                     buildSetMetaDescriptionUpdateAction(oldProduct, newProduct)),
 
                 buildActionIfPassesFilter(syncFilter, ActionGroup.METAKEYWORDS, () ->
-                    buildSetMetaKeywordsUpdateAction(oldProduct, newProduct))
-            ));
+                    buildSetMetaKeywordsUpdateAction(oldProduct, newProduct)),
+
+                buildActionIfPassesFilter(syncFilter, ActionGroup.TAXCATEGORY, () ->
+                    buildSetTaxCategoryUpdateAction(oldProduct, newProduct)),
+
+                buildActionIfPassesFilter(syncFilter, ActionGroup.STATE, () ->
+                    buildTransitionStateUpdateAction(oldProduct, newProduct))
+            )));
 
         final List<UpdateAction<Product>> productCategoryUpdateActions =
             buildActionsIfPassesFilter(syncFilter, ActionGroup.CATEGORIES, () ->
@@ -201,7 +209,7 @@ public final class ProductSyncUtils {
      */
     @Nonnull
     private static List<UpdateAction<Product>> buildUpdateActionsFromOptionals(
-        @Nonnull final List<Optional<UpdateAction<Product>>> optionalUpdateActions) {
+        @Nonnull final List<Optional<? extends UpdateAction<Product>>> optionalUpdateActions) {
         return optionalUpdateActions.stream()
                                     .filter(Optional::isPresent)
                                     .map(Optional::get)
