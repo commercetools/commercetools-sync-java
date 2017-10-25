@@ -294,8 +294,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         }
 
         try {
-            final String stateKey = getKeyFromResourceIdentifier(reference, options.shouldAllowUuidKeys());
-            return keyToIdMapper.apply(stateKey)
+            final String resourceKey = getKeyFromResourceIdentifier(reference, options.shouldAllowUuidKeys());
+            return keyToIdMapper.apply(resourceKey)
                 .thenApply(optId -> optId
                     .map(idToReferenceMapper)
                     .map(stateReference -> referenceSetter.apply(draftBuilder, stateReference))
