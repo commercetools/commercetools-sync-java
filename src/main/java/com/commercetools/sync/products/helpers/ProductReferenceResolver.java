@@ -23,6 +23,7 @@ import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +36,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
@@ -123,16 +125,15 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             return CompletableFuture.completedFuture(draftBuilder);
         }
 
-        final List<CompletableFuture<ProductVariantDraft>> resolvedVariantFutures =
+        final Stream<CompletableFuture<ProductVariantDraft>> resolvedVariantFutures =
             productDraftVariants.stream()
                 .filter(Objects::nonNull)
                 .map(this::resolveProductVariantPriceReferences)
-                .map(CompletionStage::toCompletableFuture)
-                .collect(Collectors.toList());
+                .map(CompletionStage::toCompletableFuture);
         return
             CompletableFuture.allOf(
-                resolvedVariantFutures.toArray(new CompletableFuture[resolvedVariantFutures.size()]))
-                .thenApply(result -> resolvedVariantFutures.stream()
+                resolvedVariantFutures.toArray(CompletableFuture[]::new))
+                .thenApply(result -> resolvedVariantFutures
                     .map(CompletableFuture::join)
                     .collect(Collectors.toList()))
                 .thenApply(draftBuilder::variants);
@@ -196,13 +197,13 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     /**
-     * Given a {@link ProductDraft} and a {@link Set} of {@code categoryKeys} this method fetches the categories
-     * corresponding to these keys. Then it sets the category references on the {@code productDraft}. It also replaces
+     * Given a {@link ProductDraftBuilder} and a {@link Set} of {@code categoryKeys} this method fetches the categories
+     * corresponding to these keys. Then it sets the category references on the {@code draftBuilder}. It also replaces
      * the category keys on the {@link CategoryOrderHints} map of the {@code productDraft}. If the category is not found
      * in the CTP project, the resultant draft would remain exactly the same as the passed product draft
      * (without reference resolution).
      *
-     * @param draftBuilder the product draft builder where to update resolved category references.
+     * @param draftBuilder the product draft builder to resolve it's category references.
      * @param categoryKeys the category keys of to resolve their actual id on the draft.
      * @return a {@link CompletionStage} that contains as a result a new productDraft instance with resolved category
      *          references or an exception.
@@ -256,49 +257,46 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     CompletionStage<ProductDraftBuilder> resolveTaxCategoryReferences(
             @Nonnull final ProductDraftBuilder draftBuilder) {
-        return resolveReference(draftBuilder, ProductDraftBuilder::getTaxCategory,
+        return resolveReference(draftBuilder, draftBuilder.getTaxCategory(),
             taxCategoryService::fetchCachedTaxCategoryId, TaxCategory::referenceOfId, ProductDraftBuilder::taxCategory);
     }
 
     @Nonnull
     CompletionStage<ProductDraftBuilder> resolveStateReferences(
             @Nonnull final ProductDraftBuilder draftBuilder) {
-        return resolveReference(draftBuilder,
-            ProductDraftBuilder::getState, stateService::fetchCachedStateId, State::referenceOfId,
-            ProductDraftBuilder::state);
+        return resolveReference(draftBuilder, draftBuilder.getState(),
+            stateService::fetchCachedStateId, State::referenceOfId, ProductDraftBuilder::state);
     }
 
     /**
      * Common function to resolve references from key.
      *
      * @param draftBuilder        {@link ProductDraftBuilder} to update
-     * @param referenceProvider   function which returns the reference which should be resolver from the
-     *                            {@code productDraft}
+     * @param reference           reference instance from which key is read
      * @param keyToIdMapper       function which calls respective service to fetch the reference by key
      * @param idToReferenceMapper function which creates {@link Reference} instance from fetched id
      * @param referenceSetter     function which will set the resolved reference to the {@code productDraft}
      * @param <T>                 type of reference (e.g. {@link State}, {@link TaxCategory}
-     * @return {@link CompletionStage} containing {@link ProductDraft} with resolved &lt;T&gt; reference.
+     * @return {@link CompletionStage} containing {@link ProductDraftBuilder} with resolved &lt;T&gt; reference.
      */
     @Nonnull
     private <T> CompletionStage<ProductDraftBuilder> resolveReference(
             @Nonnull final ProductDraftBuilder draftBuilder,
-            @Nonnull final Function<ProductDraftBuilder, Reference<T>> referenceProvider,
+            @Nullable final Reference<T> reference,
             @Nonnull final Function<String, CompletionStage<Optional<String>>> keyToIdMapper,
             @Nonnull final Function<String, Reference<T>> idToReferenceMapper,
             @Nonnull final BiFunction<ProductDraftBuilder, Reference<T>, ProductDraftBuilder> referenceSetter) {
-        final Reference<T> reference = referenceProvider.apply(draftBuilder);
 
         if (reference == null) {
             return completedFuture(draftBuilder);
         }
 
         try {
-            final String stateKey = getKeyFromResourceIdentifier(reference, options.shouldAllowUuidKeys());
-            return keyToIdMapper.apply(stateKey)
+            final String resourceKey = getKeyFromResourceIdentifier(reference, options.shouldAllowUuidKeys());
+            return keyToIdMapper.apply(resourceKey)
                 .thenApply(optId -> optId
                     .map(idToReferenceMapper)
-                    .map(stateReference -> referenceSetter.apply(draftBuilder, stateReference))
+                    .map(referenceToSet -> referenceSetter.apply(draftBuilder, referenceToSet))
                     .orElse(draftBuilder));
         } catch (ReferenceResolutionException referenceResolutionException) {
             return exceptionallyCompletedFuture(

@@ -71,8 +71,8 @@ public final class InventoryReferenceResolver
     }
 
     /**
-     * Given a {@link InventoryEntryDraft} this method attempts to resolve the supply channel reference to return
-     * a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * Given a {@link InventoryEntryDraftBuilder} this method attempts to resolve the supply channel reference to return
+     * a {@link CompletionStage} which contains a new instance of the draft builder with the resolved
      * supply channel reference. The key of the supply channel is either taken from the expanded reference or
      * taken from the id field of the reference.
      *
@@ -108,10 +108,11 @@ public final class InventoryReferenceResolver
     }
 
     /**
-     * Given an {@link InventoryEntryDraft} and a {@code channelKey} this method fetches the actual id of the
+     * Given an {@link InventoryEntryDraftBuilder} and a {@code channelKey} this method fetches the actual id of the
      * channel corresponding to this key, ideally from a cache. Then it sets this id on the supply channel reference
-     * id of the inventory entry draft. If the id is not found in cache nor the CTP project and {@code ensureChannel}
-     * option is set to true, a new channel will be created with this key and the role {@code "InventorySupply"}.
+     * id of the inventory entry draft builder. If the id is not found in cache nor the CTP project
+     * and {@code ensureChannel} option is set to true, a new channel will be created with this key
+     * and the role {@code "InventorySupply"}.
      * However, if the {@code ensureChannel} is set to false, the future is completed exceptionally with a
      * {@link ReferenceResolutionException}.
      *
@@ -161,8 +162,8 @@ public final class InventoryReferenceResolver
 
     /**
      * Helper method that returns a completed CompletionStage with a resolved channel reference
-     * {@link InventoryEntryDraft} object as a result of setting the passed {@code channelId} as the id of channel
-     * reference.
+     * {@link InventoryEntryDraftBuilder} object as a result of setting the passed {@code channelId}
+     * as the id of channel reference.
      *
      * @param channelId    the channel id to set on the inventory entry supply channel reference id field.
      * @param draftBuilder the inventory draft builder where to write resolved references.
@@ -186,7 +187,7 @@ public final class InventoryReferenceResolver
      * <p>If the {@code ensureChannels} options is set to {@code false} on the {@code options} instance of {@code this}
      * class, the future is completed exceptionally with a {@link ReferenceResolutionException}.
      *
-     * <p>The method then returns a CompletionStage with a resolved channel reference {@link InventoryEntryDraft}
+     * <p>The method then returns a CompletionStage with a resolved channel reference {@link InventoryEntryDraftBuilder}
      * object.
      *
      * @param channelKey   the key to create the new channel with.

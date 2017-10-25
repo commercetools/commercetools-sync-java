@@ -70,12 +70,12 @@ public final class CategoryReferenceResolver
     }
 
     /**
-     * Given a {@link CategoryDraft} this method attempts to resolve the parent category reference to return
-     * a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * Given a {@link CategoryDraftBuilder} this method attempts to resolve the parent category reference to return
+     * a {@link CompletionStage} which contains a new instance of the draft builder with the resolved
      * parent category reference. The key of the parent category is either taken from the expanded object or
      * taken from the id field of the reference.
      *
-     * @param draftBuilder  the category draft builder to read keys and then set resolved values
+     * @param draftBuilder  the category draft builder to read parent category key.
      * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} category draft instance
      *         with resolved parent category references or, in case an error occurs during reference resolution,
      *         a {@link ReferenceResolutionException}.
@@ -93,10 +93,10 @@ public final class CategoryReferenceResolver
     }
 
     /**
-     * Given a {@link CategoryDraft} and a {@code parentCategoryKey} this method fetches the actual id of the
+     * Given a {@link CategoryDraftBuilder} and a {@code parentCategoryKey} this method fetches the actual id of the
      * category corresponding to this key, ideally from a cache. Then it sets this id on the parent reference
-     * id. If the id is not found in cache nor the CTP project, the resultant draft would remain exactly the same as
-     * the passed category draft (without parent reference resolution).
+     * id. If the id is not found in cache nor the CTP project, the resultant draft builder
+     * would remain exactly the same as the passed category draft (without parent reference resolution).
      *
      * @param draftBuilder the category draft builder to accept resolved references values.
      * @param parentCategoryKey the parent category key of to resolve it's actual id on the draft.
@@ -109,8 +109,7 @@ public final class CategoryReferenceResolver
             @Nonnull final String parentCategoryKey) {
         return categoryService.fetchCachedCategoryId(parentCategoryKey)
             .thenApply(resolvedParentIdOptional -> resolvedParentIdOptional
-                .map(resolvedParentId -> draftBuilder
-                    .parent(Category.referenceOfId(resolvedParentId)))
+                .map(resolvedParentId -> draftBuilder.parent(Category.referenceOfId(resolvedParentId)))
                 .orElse(draftBuilder));
     }
 

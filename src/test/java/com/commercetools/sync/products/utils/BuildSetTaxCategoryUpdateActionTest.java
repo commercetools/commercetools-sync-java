@@ -37,7 +37,7 @@ public class BuildSetTaxCategoryUpdateActionTest {
         "{\"typeId\": \"tax-category\",\"id\": \"22222222-2222-2222-2222-222222222222\"}", Reference.class);
 
     @Test
-    public void buildSetTaxCategoryUpdateAction_withEmptyOld() throws Exception {
+    public void buildSetTaxCategoryUpdateAction_withEmptyOld_containsNewCategory() throws Exception {
         assertThat(buildSetTaxCategoryUpdateAction(oldProduct, newProduct)).isEmpty();
 
         when(newProduct.getTaxCategory()).thenReturn(newSameTaxCategory);
@@ -46,7 +46,7 @@ public class BuildSetTaxCategoryUpdateActionTest {
     }
 
     @Test
-    public void buildSetTaxCategoryUpdateAction_withEmptyNewShouldUnset() throws Exception {
+    public void buildSetTaxCategoryUpdateAction_withEmptyNew_ShouldUnset() throws Exception {
         assertThat(buildSetTaxCategoryUpdateAction(oldProduct, newProduct)).isEmpty();
 
         when(oldProduct.getTaxCategory()).thenReturn(oldTaxCategory);
@@ -54,14 +54,14 @@ public class BuildSetTaxCategoryUpdateActionTest {
     }
 
     @Test
-    public void buildSetTaxCategoryUpdateAction_withEqual() throws Exception {
+    public void buildSetTaxCategoryUpdateAction_withEqual_isEmpty() throws Exception {
         when(oldProduct.getTaxCategory()).thenReturn(oldTaxCategory);
         when(newProduct.getTaxCategory()).thenReturn(newSameTaxCategory);
         assertThat(buildSetTaxCategoryUpdateAction(oldProduct, newProduct)).isEmpty();
     }
 
     @Test
-    public void buildSetTaxCategoryUpdateAction_withDifferent() throws Exception {
+    public void buildSetTaxCategoryUpdateAction_withDifferent_containsNew() throws Exception {
         when(oldProduct.getTaxCategory()).thenReturn(oldTaxCategory);
         when(newProduct.getTaxCategory()).thenReturn(newChangedTaxCategory);
         assertThat(buildSetTaxCategoryUpdateAction(oldProduct, newProduct))
