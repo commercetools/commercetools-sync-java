@@ -74,7 +74,7 @@ public class ProductReferenceResolverTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .setAllowUuidKeys(true)
                                                                                .build();
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID();
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid();
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
@@ -104,7 +104,7 @@ public class ProductReferenceResolverTest {
     }
 
     @Nonnull
-    private static ProductDraftBuilder getProductDraftWithRandomProductTypeUUID() {
+    private static ProductDraftBuilder getProductDraftWithRandomProductTypeUuid() {
         return getProductDraftWithRefId(UUID.randomUUID().toString());
     }
 
@@ -124,7 +124,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveProductTypeReference_WithKeysAsUuidSetAndNotAllowed_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID();
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid();
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
             productTypeService, categoryService, typeService, channelService, taxCategoryService, stateService);
@@ -218,7 +218,7 @@ public class ProductReferenceResolverTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .setAllowUuidKeys(true)
                                                                                .build();
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .taxCategory(TaxCategory.referenceOfId(UUID.randomUUID().toString()));
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
@@ -233,7 +233,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveTaxCategoryReference_WithKeys_ShouldResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .taxCategory(TaxCategory.referenceOfId("taxCategoryKey"));
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
@@ -248,7 +248,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveTaxCategoryReference_WithKeysAsUuidSetAndNotAllowed_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .taxCategory(TaxCategory.referenceOfId(UUID.randomUUID().toString()))
             .key("dummyKey");
 
@@ -268,7 +268,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveTaxCategoryReference_WithNullTaxCategory_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .key("dummyKey");
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
@@ -281,7 +281,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveTaxCategoryReference_WithNonExistentTaxCategory_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .taxCategory(TaxCategory.referenceOfId("nonExistentKey"))
             .key("dummyKey");
 
@@ -300,7 +300,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveTaxCategoryReference_WithNullIdOnTaxCategoryReference_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .taxCategory(Reference.of(TaxCategory.referenceTypeId(), (String)null))
             .key("dummyKey");
 
@@ -318,7 +318,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveTaxCategoryReference_WithEmptyIdOnTaxCategoryReference_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .taxCategory(TaxCategory.referenceOfId(""))
             .key("dummyKey");
 
@@ -336,7 +336,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveTaxCategoryReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .taxCategory(TaxCategory.referenceOfId("taxCategoryKey"))
             .key("dummyKey");
 
@@ -361,7 +361,7 @@ public class ProductReferenceResolverTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .setAllowUuidKeys(true)
                                                                                .build();
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .state(State.referenceOfId(UUID.randomUUID().toString()));
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
@@ -376,7 +376,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveStateReference_WithKeys_ShouldResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .state(State.referenceOfId("stateKey"));
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
@@ -391,7 +391,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveStateReference_WithKeysAsUuidSetAndNotAllowed_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .state(State.referenceOfId(UUID.randomUUID().toString()))
             .key("dummyKey");
 
@@ -411,7 +411,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveStateReference_WithNullState_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .key("dummyKey");
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(syncOptions,
@@ -424,7 +424,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveStateReference_WithNonExistentState_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .state(State.referenceOfId("nonExistentKey"))
             .key("dummyKey");
 
@@ -443,7 +443,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveStateReference_WithNullIdOnStateReference_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .state(Reference.of(State.referenceTypeId(), (String)null))
             .key("dummyKey");
 
@@ -461,7 +461,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveStateReference_WithEmptyIdOnStateReference_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .state(State.referenceOfId(""))
             .key("dummyKey");
 
@@ -479,7 +479,7 @@ public class ProductReferenceResolverTest {
 
     @Test
     public void resolveStateReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUUID()
+        final ProductDraftBuilder productBuilder = getProductDraftWithRandomProductTypeUuid()
             .state(State.referenceOfId("stateKey"))
             .key("dummyKey");
 
