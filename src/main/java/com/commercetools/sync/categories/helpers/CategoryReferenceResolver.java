@@ -93,10 +93,10 @@ public final class CategoryReferenceResolver
     }
 
     /**
-     * Given a {@link CategoryDraft} and a {@code parentCategoryKey} this method fetches the actual id of the
+     * Given a {@link CategoryDraftBuilder} and a {@code parentCategoryKey} this method fetches the actual id of the
      * category corresponding to this key, ideally from a cache. Then it sets this id on the parent reference
-     * id. If the id is not found in cache nor the CTP project, the resultant draft would remain exactly the same as
-     * the passed category draft (without parent reference resolution).
+     * id. If the id is not found in cache nor the CTP project, the resultant draft builder
+     * would remain exactly the same as the passed category draft (without parent reference resolution).
      *
      * @param draftBuilder the category draft builder to accept resolved references values.
      * @param parentCategoryKey the parent category key of to resolve it's actual id on the draft.
