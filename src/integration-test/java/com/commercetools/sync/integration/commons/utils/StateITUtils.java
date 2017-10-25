@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.commons.utils;
 
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
@@ -10,11 +9,8 @@ import io.sphere.sdk.states.commands.StateCreateCommand;
 import io.sphere.sdk.states.commands.StateDeleteCommand;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
+import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndApply;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.services.impl.StateServiceImpl.buildStateQuery;
@@ -40,19 +36,7 @@ public class StateITUtils {
      */
     public static void deleteStates(@Nonnull final SphereClient ctpClient,
                                     @Nonnull final StateType stateType) {
-        final List<CompletableFuture> stateDeleteFutures = new ArrayList<>();
-
-        final Consumer<List<State>> statePageDelete = states -> states.forEach(state -> {
-            final CompletableFuture<State> deleteFuture =
-                ctpClient.execute(StateDeleteCommand.of(state)).toCompletableFuture();
-            stateDeleteFutures.add(deleteFuture);
-        });
-
-        CtpQueryUtils.queryAll(ctpClient, buildStateQuery(stateType), statePageDelete)
-                     .thenCompose(result -> CompletableFuture
-                         .allOf(stateDeleteFutures
-                             .toArray(new CompletableFuture[stateDeleteFutures.size()])))
-                     .toCompletableFuture().join();
+        queryAndApply(ctpClient, () -> buildStateQuery(stateType), StateDeleteCommand::of);
     }
 
     /**

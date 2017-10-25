@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.commons.utils;
 
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.taxcategories.TaxCategory;
@@ -13,11 +12,8 @@ import io.sphere.sdk.taxcategories.commands.TaxCategoryDeleteCommand;
 import io.sphere.sdk.taxcategories.queries.TaxCategoryQuery;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
+import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndApply;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
@@ -45,20 +41,7 @@ public class TaxCategoryITUtils {
      * @param ctpClient defines the CTP project to delete the tax categories from.
      */
     public static void deleteTaxCategories(@Nonnull final SphereClient ctpClient) {
-        final List<CompletableFuture> taxCategoryDeleteFutures = new ArrayList<>();
-
-        final Consumer<List<TaxCategory>> taxCategoryPageDelete = taxCategories ->
-            taxCategories.forEach(taxCategory -> {
-                final CompletableFuture<TaxCategory> deleteFuture =
-                    ctpClient.execute(TaxCategoryDeleteCommand.of(taxCategory)).toCompletableFuture();
-                taxCategoryDeleteFutures.add(deleteFuture);
-            });
-
-        CtpQueryUtils.queryAll(ctpClient, TaxCategoryQuery.of(), taxCategoryPageDelete)
-                     .thenCompose(result -> CompletableFuture
-                         .allOf(taxCategoryDeleteFutures
-                             .toArray(new CompletableFuture[taxCategoryDeleteFutures.size()])))
-                     .toCompletableFuture().join();
+        queryAndApply(ctpClient, TaxCategoryQuery::of, TaxCategoryDeleteCommand::of);
     }
 
     /**

@@ -5,15 +5,18 @@ import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.types.Type;
+import io.sphere.sdk.client.SphereRequest;
+import io.sphere.sdk.queries.QueryDsl;
 import io.sphere.sdk.types.commands.TypeDeleteCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -26,18 +29,7 @@ public final class ITUtils {
      * @param ctpClient defines the CTP project to delete the Types from.
      */
     public static void deleteTypes(@Nonnull final SphereClient ctpClient) {
-        final List<CompletableFuture> typeDeleteFutures = new ArrayList<>();
-
-        final Consumer<List<Type>> typePageDelete = types -> types.forEach(type -> {
-            final CompletableFuture<Type> deleteFuture =
-                ctpClient.execute(TypeDeleteCommand.of(type)).toCompletableFuture();
-            typeDeleteFutures.add(deleteFuture);
-        });
-
-        CtpQueryUtils.queryAll(ctpClient, TypeQuery.of(), typePageDelete)
-                     .thenCompose(result -> CompletableFuture.allOf(typeDeleteFutures
-                         .toArray(new CompletableFuture[typeDeleteFutures.size()])))
-                     .toCompletableFuture().join();
+        queryAndApply(ctpClient, TypeQuery::of, TypeDeleteCommand::of);
     }
 
     /**
@@ -60,5 +52,33 @@ public final class ITUtils {
         throws JsonProcessingException {
         final ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(statistics);
+    }
+
+    /**
+     * Applies the {@code pageMapper} function on each page fetched from the supplied {@code queryRequestSupplier} on
+     * the supplied {@code ctpClient}.
+     *
+     * @param ctpClient            defines the CTP project to apply the query on.
+     * @param queryRequestSupplier defines a supplier which, when executed, returns the query that should be made on
+     *                             the CTP project.
+     * @param pageMapper           defines a mapper function that should be applied on each page fetched from the query
+     *                             on the specified CTP project.
+     */
+    public static <T, C extends QueryDsl<T, C>> void queryAndApply(
+        @Nonnull final SphereClient ctpClient,
+        @Nonnull final Supplier<QueryDsl<T, C>> queryRequestSupplier,
+        @Nonnull final Function<T, SphereRequest<T>> pageMapper) {
+
+        final Function<List<T>, Stream<CompletableFuture<T>>> pageDelete =
+            entries -> entries.stream()
+                              .map(pageMapper)
+                              .map(ctpClient::execute)
+                              .map(CompletionStage::toCompletableFuture);
+
+        CtpQueryUtils.queryAll(ctpClient, queryRequestSupplier.get(), pageDelete)
+                     .thenApply(list -> list.stream().flatMap(Function.identity()))
+                     .thenApply(stream -> stream.toArray(CompletableFuture[]::new))
+                     .thenCompose(CompletableFuture::allOf)
+                     .toCompletableFuture().join();
     }
 }
