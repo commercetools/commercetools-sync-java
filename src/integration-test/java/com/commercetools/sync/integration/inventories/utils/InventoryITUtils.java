@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.inventories.utils;
 
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.channels.Channel;
@@ -34,16 +33,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
+import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndApply;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Collections.singletonList;
@@ -74,19 +70,7 @@ public class InventoryITUtils {
      * @param ctpClient represents the CTP project the inventory entries will be deleted from.
      */
     public static void deleteInventoryEntries(@Nonnull final SphereClient ctpClient) {
-        final List<CompletableFuture> inventoryEntryDeleteFutures = new ArrayList<>();
-
-        final Consumer<List<InventoryEntry>> inventoryEntryPageDelete =
-            inventoryEntries -> inventoryEntries.forEach(inventoryEntry -> {
-                final CompletableFuture<InventoryEntry> deleteFuture =
-                    ctpClient.execute(InventoryEntryDeleteCommand.of(inventoryEntry)).toCompletableFuture();
-                inventoryEntryDeleteFutures.add(deleteFuture);
-            });
-
-        CtpQueryUtils.queryAll(ctpClient, InventoryEntryQuery.of(), inventoryEntryPageDelete)
-                     .thenCompose(result -> CompletableFuture.allOf(inventoryEntryDeleteFutures
-                         .toArray(new CompletableFuture[inventoryEntryDeleteFutures.size()])))
-                     .toCompletableFuture().join();
+        queryAndApply(ctpClient, InventoryEntryQuery::of, InventoryEntryDeleteCommand::of);
     }
 
     /**
@@ -95,19 +79,7 @@ public class InventoryITUtils {
      * @param ctpClient represents the CTP project the channels will be deleted from.
      */
     public static void deleteSupplyChannels(@Nonnull final SphereClient ctpClient) {
-        final List<CompletableFuture> channelDeleteFutures = new ArrayList<>();
-
-        final Consumer<List<Channel>> channelPageDelete =
-            channels -> channels.forEach(channel -> {
-                final CompletableFuture<Channel> deleteFuture =
-                    ctpClient.execute(ChannelDeleteCommand.of(channel)).toCompletableFuture();
-                channelDeleteFutures.add(deleteFuture);
-            });
-
-        CtpQueryUtils.queryAll(ctpClient, ChannelQuery.of(), channelPageDelete)
-                     .thenCompose(result -> CompletableFuture.allOf(channelDeleteFutures
-                         .toArray(new CompletableFuture[channelDeleteFutures.size()])))
-                     .toCompletableFuture().join();
+        queryAndApply(ctpClient, ChannelQuery::of, ChannelDeleteCommand::of);
     }
 
     /**
