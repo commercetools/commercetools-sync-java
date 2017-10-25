@@ -108,10 +108,11 @@ public final class InventoryReferenceResolver
     }
 
     /**
-     * Given an {@link InventoryEntryDraft} and a {@code channelKey} this method fetches the actual id of the
+     * Given an {@link InventoryEntryDraftBuilder} and a {@code channelKey} this method fetches the actual id of the
      * channel corresponding to this key, ideally from a cache. Then it sets this id on the supply channel reference
-     * id of the inventory entry draft. If the id is not found in cache nor the CTP project and {@code ensureChannel}
-     * option is set to true, a new channel will be created with this key and the role {@code "InventorySupply"}.
+     * id of the inventory entry draft builder. If the id is not found in cache nor the CTP project
+     * and {@code ensureChannel} option is set to true, a new channel will be created with this key
+     * and the role {@code "InventorySupply"}.
      * However, if the {@code ensureChannel} is set to false, the future is completed exceptionally with a
      * {@link ReferenceResolutionException}.
      *
