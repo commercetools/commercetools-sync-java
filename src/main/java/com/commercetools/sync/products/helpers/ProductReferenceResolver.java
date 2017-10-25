@@ -278,7 +278,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * @param idToReferenceMapper function which creates {@link Reference} instance from fetched id
      * @param referenceSetter     function which will set the resolved reference to the {@code productDraft}
      * @param <T>                 type of reference (e.g. {@link State}, {@link TaxCategory}
-     * @return {@link CompletionStage} containing {@link ProductDraft} with resolved &lt;T&gt; reference.
+     * @return {@link CompletionStage} containing {@link ProductDraftBuilder} with resolved &lt;T&gt; reference.
      */
     @Nonnull
     private <T> CompletionStage<ProductDraftBuilder> resolveReference(
