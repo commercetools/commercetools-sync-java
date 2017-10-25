@@ -71,8 +71,8 @@ public final class InventoryReferenceResolver
     }
 
     /**
-     * Given a {@link InventoryEntryDraft} this method attempts to resolve the supply channel reference to return
-     * a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * Given a {@link InventoryEntryDraftBuilder} this method attempts to resolve the supply channel reference to return
+     * a {@link CompletionStage} which contains a new instance of the draft builder with the resolved
      * supply channel reference. The key of the supply channel is either taken from the expanded reference or
      * taken from the id field of the reference.
      *
