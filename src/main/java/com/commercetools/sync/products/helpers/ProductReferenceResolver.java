@@ -272,7 +272,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * Common function to resolve references from key.
      *
      * @param draftBuilder        {@link ProductDraftBuilder} to update
-     * @param referenceProvider   function which returns the reference which should be resolver from the
+     * @param referenceProvider   function which returns the reference which should be resolved from the
      *                            {@code productDraft}
      * @param keyToIdMapper       function which calls respective service to fetch the reference by key
      * @param idToReferenceMapper function which creates {@link Reference} instance from fetched id
