@@ -175,33 +175,6 @@ public final class ProductReferenceReplacementUtils {
     }
 
     /**
-     * Builds a {@link ProductQuery} for fetching products from a source CTP project with all the needed references
-     * expanded for the sync:
-     * <ul>
-     *     <li>Product Type</li>
-     *     <li>Tax Category</li>
-     *     <li>Product State</li>
-     *     <li>Staged Product Categories</li>
-     *     <li>Staged Price Channels</li>
-     * </ul>
-     *
-     * @return the query for fetching products from the source CTP project with all the aforementioned references
-     *         expanded.
-     */
-    @Nonnull
-    public static ProductQuery buildProductQuery() {
-        return ProductQuery.of()
-                           .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
-                           .withExpansionPaths(ProductExpansionModel::productType)
-                           .plusExpansionPaths(ProductExpansionModel::taxCategory)
-                           .plusExpansionPaths(ExpansionPath.of("state"))
-                           .plusExpansionPaths(productExpansionModel ->
-                               productExpansionModel.masterData().staged().categories())
-                           .plusExpansionPaths(channelExpansionModel ->
-                               channelExpansionModel.masterData().staged().allVariants().prices().channel());
-    }
-
-    /**
      * Takes a product that is supposed to have its category references expanded in order to be able to fetch the keys
      * and replace the reference ids with the corresponding keys for both the product's category references and
      * the categoryOrderHints ids. This method returns as a result a {@link CategoryReferencePair} that contains a
@@ -281,9 +254,22 @@ public final class ProductReferenceReplacementUtils {
      * ids.
      *
      * <p>Any channel reference that is not expanded will have it's id in place and not replaced by the key.
+     * Builds a {@link ProductQuery} for fetching products from a source CTP project with all the needed references
+     * expanded for the sync:
+     * <ul>
+     *     <li>Product Type</li>
+     *     <li>Tax Category</li>
+     *     <li>Product State</li>
+     *     <li>Staged Product Categories</li>
+     *     <li>Staged Price Channels</li>
+     *     <li>Reference Attributes</li>
+     *     <li>Reference Set Attributes</li>
+     * </ul>
      *
      * @param productVariant the product variant to replace its prices' channel' ids with keys.
      * @return  a {@link List} of {@link PriceDraft} that has all channel references with keys replacing the ids.
+     * @return the query for fetching products from the source CTP project with all the aforementioned references
+     *         expanded.
      */
     @Nonnull
     static List<PriceDraft> replaceProductVariantPriceChannelIdsWithKeys(@Nonnull final ProductVariant productVariant) {
@@ -315,5 +301,19 @@ public final class ProductReferenceReplacementUtils {
     static Reference<Channel> replaceChannelReferenceIdWithKey(@Nonnull final Price price) {
         final Reference<Channel> priceChannel = price.getChannel();
         return replaceReferenceIdWithKey(priceChannel, () -> Channel.referenceOfId(priceChannel.getObj().getKey()));
+    public static ProductQuery buildProductQuery() {
+        return ProductQuery.of()
+                           .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
+                           .withExpansionPaths(ProductExpansionModel::productType)
+                           .plusExpansionPaths(ProductExpansionModel::taxCategory)
+                           .plusExpansionPaths(ExpansionPath.of("state"))
+                           .plusExpansionPaths(expansionModel ->
+                               expansionModel.masterData().staged().categories())
+                           .plusExpansionPaths(expansionModel ->
+                               expansionModel.masterData().staged().allVariants().prices().channel())
+                           .plusExpansionPaths(expansionModel ->
+                               expansionModel.masterData().staged().allVariants().attributes().value())
+                           .plusExpansionPaths(expansionModel ->
+                               expansionModel.masterData().staged().allVariants().attributes().valueSet());
     }
 }

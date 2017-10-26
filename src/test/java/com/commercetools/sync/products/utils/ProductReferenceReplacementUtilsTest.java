@@ -316,12 +316,15 @@ public class ProductReferenceReplacementUtilsTest {
     @Test
     public void buildProductQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final ProductQuery productQuery = ProductReferenceReplacementUtils.buildProductQuery();
-        assertThat(productQuery.expansionPaths()).hasSize(6);
+        assertThat(productQuery.expansionPaths()).hasSize(9);
         assertThat(productQuery.expansionPaths())
             .containsExactly(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
                 ExpansionPath.of("state"), ExpansionPath.of("masterData.staged.categories[*]"),
                 ExpansionPath.of("masterData.staged.masterVariant.prices[*].channel"),
-                ExpansionPath.of("masterData.staged.variants[*].prices[*].channel"));
+                ExpansionPath.of("masterData.staged.variants[*].prices[*].channel"),
+                ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value"),
+                ExpansionPath.of("masterData.staged.variants[*].attributes[*].value"),
+                ExpansionPath.of("masterData.staged.variants[*].attributes[*].value[*]"));
     }
 
     @Test
