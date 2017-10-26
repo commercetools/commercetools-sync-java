@@ -14,6 +14,27 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 public interface ProductService {
+
+    /**
+     * Given a {@code key}, this method first checks if cached map of product keys -&gt; ids is not empty.
+     * If not, it returns a completed future that contains an optional that contains what this key maps to in
+     * the cache. If the cache is empty, the method populates the cache with the mapping of all products' keys
+     * to ids in the CTP project. After that, the method returns a
+     * {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's completion
+     * could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no {@link Product}
+     * was found in the CTP project with this key.
+     *
+     * <p>Note: If the supplied key is null, this method will return an empty optional as a result of the
+     * CompletionStage.
+     *
+     * @param key the key by which a {@link Product} id should be fetched from the CTP project.
+     * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's
+     *         completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
+     *         {@link Product} was found in the CTP project with this key.
+     */
+    @Nonnull
+    CompletionStage<Optional<String>> fetchCachedProductId(@Nullable final String key);
+
     /**
      * If not already done once before, it fetches all the product keys from the CTP project defined in a potentially
      * injected {@link SphereClient} and stores a mapping for every product to id in {@link Map}
