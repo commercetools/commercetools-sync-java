@@ -8,13 +8,11 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductCatalogData;
 import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
@@ -33,6 +31,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithChannelReference;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMockWithPrices;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -473,194 +474,7 @@ public class ProductReferenceReplacementUtilsTest {
         assertThat(categoryOrderHintsWithKeys).isNull();
     }
 
-    @Test
-    public void
-        replaceProductPriceChannelIdsWithKeys_WithExpandedReferences_ShouldReturnVariantDraftsWithReplacedKeys() {
-        final String channelKey = "channelKey";
-        final Channel channel = getChannelMock(channelKey);
 
-        final Reference<Channel> channelReference = Reference
-            .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
-
-        final Price price = getPriceMockWithChannelReference(channelReference);
-        final ProductVariant productVariant = getProductVariantMockWithPrices(Collections.singletonList(price));
-        final Product product = getProductMock(Collections.singletonList(productVariant));
-
-        final List<ProductVariantDraft> variantDrafts = ProductReferenceReplacementUtils
-            .replaceProductPriceChannelIdsWithKeys(product);
-
-        assertThat(variantDrafts).hasSize(1);
-        assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
-        final Reference<Channel> channelReferenceAfterReplacement =
-            variantDrafts.get(0).getPrices().get(0).getChannel();
-        assertThat(channelReferenceAfterReplacement).isNotNull();
-        assertThat(channelReferenceAfterReplacement.getId()).isEqualTo(channelKey);
-    }
-
-    @Test
-    public void replaceProductPriceChannelIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceSomeKeys() {
-        final String channelKey1 = "channelKey1";
-        final Channel channel1 = getChannelMock(channelKey1);
-
-        final Reference<Channel> channelReference1 = Reference
-            .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel1.getId(), channel1);
-        final Reference<Channel> channelReference2 = Channel.referenceOfId(UUID.randomUUID().toString());
-
-        final Price price1 = getPriceMockWithChannelReference(channelReference1);
-        final Price price2 = getPriceMockWithChannelReference(channelReference2);
-
-        final ProductVariant productVariant1 = getProductVariantMockWithPrices(Collections.singletonList(price1));
-        final ProductVariant productVariant2 = getProductVariantMockWithPrices(Collections.singletonList(price2));
-        final Product product = getProductMock(Arrays.asList(productVariant1, productVariant2));
-
-        final List<ProductVariantDraft> variantDrafts = ProductReferenceReplacementUtils
-            .replaceProductPriceChannelIdsWithKeys(product);
-
-        assertThat(variantDrafts).hasSize(2);
-        assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
-        final Reference<Channel> channel1ReferenceAfterReplacement = variantDrafts.get(0).getPrices().get(0)
-                                                                                  .getChannel();
-        assertThat(channel1ReferenceAfterReplacement).isNotNull();
-        assertThat(channel1ReferenceAfterReplacement.getId()).isEqualTo(channelKey1);
-
-        assertThat(variantDrafts.get(1).getPrices()).hasSize(1);
-        final Reference<Channel> channel2ReferenceAfterReplacement = variantDrafts.get(1).getPrices().get(0)
-                                                                                  .getChannel();
-        assertThat(channel2ReferenceAfterReplacement).isNotNull();
-        assertThat(channel2ReferenceAfterReplacement.getId()).isEqualTo(channelReference2.getId());
-    }
-
-    @Test
-    public void replaceProductPriceChannelIdsWithKeys_WithNoExpandedReferences_ShouldNotReplaceIds() {
-        final Reference<Channel> channelReference = Channel.referenceOfId(UUID.randomUUID().toString());
-
-        final Price price = getPriceMockWithChannelReference(channelReference);
-        final ProductVariant productVariant = getProductVariantMockWithPrices(Collections.singletonList(price));
-        final Product product = getProductMock(Collections.singletonList(productVariant));
-
-        final List<ProductVariantDraft> variantDrafts = ProductReferenceReplacementUtils
-            .replaceProductPriceChannelIdsWithKeys(product);
-
-        assertThat(variantDrafts).hasSize(1);
-        assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
-        final Reference<Channel> channelReferenceAfterReplacement = variantDrafts.get(0).getPrices().get(0)
-                                                                                 .getChannel();
-        assertThat(channelReferenceAfterReplacement).isNotNull();
-        assertThat(channelReferenceAfterReplacement.getId()).isEqualTo(channelReference.getId());
-    }
-
-    @Test
-    public void replaceProductVariantPriceChannelIdsWithKeys_WithNoExpandedReferences_ShouldNotReplaceIds() {
-        final Reference<Channel> channelReference = Channel.referenceOfId(UUID.randomUUID().toString());
-
-        final Price price = getPriceMockWithChannelReference(channelReference);
-        final ProductVariant productVariant = getProductVariantMockWithPrices(Collections.singletonList(price));
-
-        final List<PriceDraft> priceDrafts = ProductReferenceReplacementUtils
-            .replaceProductVariantPriceChannelIdsWithKeys(productVariant);
-
-        assertThat(priceDrafts).hasSize(1);
-        final Reference<Channel> channelReferenceAfterReplacement = priceDrafts.get(0).getChannel();
-        assertThat(channelReferenceAfterReplacement).isNotNull();
-        assertThat(channelReferenceAfterReplacement.getId()).isEqualTo(channelReference.getId());
-    }
-
-    @Test
-    public void replaceProductVariantPriceChannelIdsWithKeys_WithAllExpandedReferences_ShouldReplaceIds() {
-        final String channelKey1 = "channelKey1";
-        final String channelKey2 = "channelKey2";
-
-        final Channel channel1 = getChannelMock(channelKey1);
-        final Channel channel2 = getChannelMock(channelKey2);
-
-        final Reference<Channel> channelReference1 =
-            Reference.ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel1.getId(), channel1);
-        final Reference<Channel> channelReference2 =
-            Reference.ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel2.getId(), channel2);
-
-        final Price price1 = getPriceMockWithChannelReference(channelReference1);
-        final Price price2 = getPriceMockWithChannelReference(channelReference2);
-        final ProductVariant productVariant = getProductVariantMockWithPrices(Arrays.asList(price1, price2));
-
-        final List<PriceDraft> priceDrafts = ProductReferenceReplacementUtils
-            .replaceProductVariantPriceChannelIdsWithKeys(productVariant);
-
-        assertThat(priceDrafts).hasSize(2);
-        final Reference<Channel> channelReference1AfterReplacement = priceDrafts.get(0).getChannel();
-        assertThat(channelReference1AfterReplacement).isNotNull();
-        assertThat(channelReference1AfterReplacement.getId()).isEqualTo(channelKey1);
-        final Reference<Channel> channelReference2AfterReplacement = priceDrafts.get(1).getChannel();
-        assertThat(channelReference2AfterReplacement).isNotNull();
-        assertThat(channelReference2AfterReplacement.getId()).isEqualTo(channelKey2);
-    }
-
-    @Test
-    public void
-        replaceProductVariantPriceChannelIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceOnlyExpandedIds() {
-        final String channelKey1 = "channelKey1";
-
-        final Channel channel1 = getChannelMock(channelKey1);
-
-        final Reference<Channel> channelReference1 =
-            Reference.ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel1.getId(), channel1);
-        final Reference<Channel> channelReference2 = Channel.referenceOfId(UUID.randomUUID().toString());
-
-        final Price price1 = getPriceMockWithChannelReference(channelReference1);
-        final Price price2 = getPriceMockWithChannelReference(channelReference2);
-        final ProductVariant productVariant = getProductVariantMockWithPrices(Arrays.asList(price1, price2));
-
-        final List<PriceDraft> priceDrafts = ProductReferenceReplacementUtils
-            .replaceProductVariantPriceChannelIdsWithKeys(productVariant);
-
-        assertThat(priceDrafts).hasSize(2);
-        final Reference<Channel> channelReference1AfterReplacement = priceDrafts.get(0).getChannel();
-        assertThat(channelReference1AfterReplacement).isNotNull();
-        assertThat(channelReference1AfterReplacement.getId()).isEqualTo(channelKey1);
-        final Reference<Channel> channelReference2AfterReplacement = priceDrafts.get(1).getChannel();
-        assertThat(channelReference2AfterReplacement).isNotNull();
-        assertThat(channelReference2AfterReplacement.getId()).isEqualTo(channelReference2.getId());
-    }
-
-    @Test
-    public void replaceChannelReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferenceWithoutReplacedKeys() {
-        final String channelId = UUID.randomUUID().toString();
-        final Reference<Channel> channelReference = Channel.referenceOfId(channelId);
-        final Price price = getPriceMockWithChannelReference(channelReference);
-
-
-        final Reference<Channel> channelReferenceWithKey = ProductReferenceReplacementUtils
-            .replaceChannelReferenceIdWithKey(price);
-
-        assertThat(channelReferenceWithKey).isNotNull();
-        assertThat(channelReferenceWithKey.getId()).isEqualTo(channelId);
-    }
-
-    @Test
-    public void replaceChannelReferenceIdWithKey_WithExpandedReferences_ShouldReturnReplaceReferenceIdsWithKey() {
-        final String channelKey = "channelKey";
-        final Channel channel = getChannelMock(channelKey);
-
-        final Reference<Channel> channelReference = Reference
-            .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
-        final Price price = getPriceMockWithChannelReference(channelReference);
-
-
-        final Reference<Channel> channelReferenceWithKey = ProductReferenceReplacementUtils
-            .replaceChannelReferenceIdWithKey(price);
-
-        assertThat(channelReferenceWithKey).isNotNull();
-        assertThat(channelReferenceWithKey.getId()).isEqualTo(channelKey);
-    }
-
-    @Test
-    public void replaceChannelReferenceIdWithKey_WithNullReference_ShouldReturnNull() {
-        final Price price = getPriceMockWithChannelReference(null);
-
-        final Reference<Channel> channelReferenceWithKey = ProductReferenceReplacementUtils
-            .replaceChannelReferenceIdWithKey(price);
-
-        assertThat(channelReferenceWithKey).isNull();
-    }
 
     @Nonnull
     private static Product getProductMock(@Nonnull final Set<Reference<Category>> references,
@@ -746,20 +560,6 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Nonnull
-    private static Price getPriceMockWithChannelReference(@Nullable final Reference<Channel> channelReference) {
-        final Price price = mock(Price.class);
-        when(price.getChannel()).thenReturn(channelReference);
-        return price;
-    }
-
-    @Nonnull
-    private static ProductVariant getProductVariantMockWithPrices(@Nonnull final List<Price> prices) {
-        final ProductVariant productVariant = mock(ProductVariant.class);
-        when(productVariant.getPrices()).thenReturn(prices);
-        return productVariant;
-    }
-
-    @Nonnull
     private static Product mockStagedProductData(@Nonnull final ProductData productData) {
         final ProductCatalogData productCatalogData = mock(ProductCatalogData.class);
         when(productCatalogData.getStaged()).thenReturn(productData);
@@ -767,13 +567,5 @@ public class ProductReferenceReplacementUtilsTest {
         final Product product = mock(Product.class);
         when(product.getMasterData()).thenReturn(productCatalogData);
         return product;
-    }
-
-    @Nonnull
-    private static Channel getChannelMock(@Nonnull final String key) {
-        final Channel channel = mock(Channel.class);
-        when(channel.getKey()).thenReturn(key);
-        when(channel.getId()).thenReturn(UUID.randomUUID().toString());
-        return channel;
     }
 }

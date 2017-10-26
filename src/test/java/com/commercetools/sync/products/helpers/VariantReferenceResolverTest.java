@@ -21,7 +21,6 @@ import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,6 +37,9 @@ import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceSetAttributeDraft;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithRandomId;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -140,7 +142,7 @@ public class VariantReferenceResolverTest { ;
     public void resolveAttributesReferences_WithMixedReference_ShouldResolveProductReferenceAttributes() {
         final ObjectNode productReferenceWithRandomId = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceSetAttribute =
-            getProductReferenceSetAttributeDraft(productReferenceWithRandomId);
+            getProductReferenceSetAttributeDraft("foo", productReferenceWithRandomId);
 
         final ObjectNode categoryReference1 = JsonNodeFactory.instance.objectNode();
         categoryReference1.put("typeId", "category");
@@ -295,7 +297,7 @@ public class VariantReferenceResolverTest { ;
     public void resolveAttributeReference_WithProductReferenceSetAttribute_ShouldResolveReferences() {
         final ObjectNode productReferenceWithRandomId = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceSetAttributeDraft =
-            getProductReferenceSetAttributeDraft(productReferenceWithRandomId);
+            getProductReferenceSetAttributeDraft("foo", productReferenceWithRandomId);
 
         final AttributeDraft resolvedAttributeDraft =
             referenceResolver.resolveAttributeReference(productReferenceSetAttributeDraft)
@@ -318,7 +320,7 @@ public class VariantReferenceResolverTest { ;
     public void resolveAttributeReference_WithNullReferenceInSetAttribute_ShouldResolveReferences() {
         final ObjectNode productReference = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceAttribute =
-            getProductReferenceSetAttributeDraft(productReference, null);
+            getProductReferenceSetAttributeDraft("foo", productReference, null);
 
         final AttributeDraft resolvedAttributeDraft =
             referenceResolver.resolveAttributeReference(productReferenceAttribute)
@@ -344,7 +346,7 @@ public class VariantReferenceResolverTest { ;
 
         final ObjectNode productReference = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceAttribute =
-            getProductReferenceSetAttributeDraft(productReference);
+            getProductReferenceSetAttributeDraft("foo", productReference);
 
         final AttributeDraft resolvedAttributeDraft =
             referenceResolver.resolveAttributeReference(productReferenceAttribute)
@@ -371,7 +373,7 @@ public class VariantReferenceResolverTest { ;
         final ObjectNode productReference2 = getProductReferenceWithId("randomKey");
 
         final AttributeDraft productReferenceAttribute =
-            getProductReferenceSetAttributeDraft(productReference1, productReference2);
+            getProductReferenceSetAttributeDraft("foo", productReference1, productReference2);
 
         final AttributeDraft resolvedAttributeDraft =
             referenceResolver.resolveAttributeReference(productReferenceAttribute)
@@ -496,7 +498,7 @@ public class VariantReferenceResolverTest { ;
     public void resolveReferences_WithNoPriceReferences_ShouldResolveAttributeReferences() {
         final ObjectNode productReferenceWithRandomId = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceSetAttribute =
-            getProductReferenceSetAttributeDraft(productReferenceWithRandomId);
+            getProductReferenceSetAttributeDraft("foo", productReferenceWithRandomId);
 
         final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "textValue");
 
@@ -528,28 +530,4 @@ public class VariantReferenceResolverTest { ;
         assertThat(resolvedProductReferenceIdTextNode).isNotNull();
         assertThat(resolvedProductReferenceIdTextNode.asText()).isEqualTo(PRODUCT_ID);
     }
-
-    @Nonnull
-    private AttributeDraft getProductReferenceSetAttributeDraft(@Nonnull final ObjectNode... references) {
-        final ArrayNode referenceSet = JsonNodeFactory.instance.arrayNode();
-        referenceSet.addAll(Arrays.asList(references));
-        return AttributeDraft.of("attributeName", referenceSet);
-    }
-
-    @Nonnull
-    private ObjectNode getProductReferenceWithRandomId() {
-        final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
-        productReference.put("typeId", "product");
-        productReference.put("id", UUID.randomUUID().toString());
-        return productReference;
-    }
-
-    @Nonnull
-    private ObjectNode getProductReferenceWithId(@Nonnull final String id) {
-        final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
-        productReference.put("typeId", "product");
-        productReference.put("id", id);
-        return productReference;
-    }
-
 }

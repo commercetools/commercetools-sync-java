@@ -4,15 +4,22 @@ import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TaxCategoryService;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.CategoryOrderHints;
+import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
@@ -20,10 +27,12 @@ import io.sphere.sdk.taxcategories.TaxCategory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -220,5 +229,51 @@ public class ProductSyncMockUtils {
         when(productService.fetchCachedProductId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
         return productService;
+    }
+
+    @Nonnull
+    public static Price getPriceMockWithChannelReference(@Nullable final Reference<Channel> channelReference) {
+        final Price price = mock(Price.class);
+        when(price.getChannel()).thenReturn(channelReference);
+        return price;
+    }
+
+    @Nonnull
+    public static ProductVariant getProductVariantMockWithPrices(@Nonnull final List<Price> prices) {
+        final ProductVariant productVariant = mock(ProductVariant.class);
+        when(productVariant.getPrices()).thenReturn(prices);
+        return productVariant;
+    }
+
+    @Nonnull
+    public static Channel getChannelMock(@Nonnull final String key) {
+        final Channel channel = mock(Channel.class);
+        when(channel.getKey()).thenReturn(key);
+        when(channel.getId()).thenReturn(UUID.randomUUID().toString());
+        return channel;
+    }
+
+    @Nonnull
+    public static AttributeDraft getProductReferenceSetAttributeDraft(@Nonnull final String attributeName,
+                                                                      @Nonnull final ObjectNode... references) {
+        final ArrayNode referenceSet = JsonNodeFactory.instance.arrayNode();
+        referenceSet.addAll(Arrays.asList(references));
+        return AttributeDraft.of(attributeName, referenceSet);
+    }
+
+    @Nonnull
+    public static ObjectNode getProductReferenceWithRandomId() {
+        final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
+        productReference.put("typeId", "product");
+        productReference.put("id", UUID.randomUUID().toString());
+        return productReference;
+    }
+
+    @Nonnull
+    public static ObjectNode getProductReferenceWithId(@Nonnull final String id) {
+        final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
+        productReference.put("typeId", "product");
+        productReference.put("id", id);
+        return productReference;
     }
 }
