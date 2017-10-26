@@ -38,7 +38,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class VariantReferenceReplacementUtilsTest {
-   @Test
+
+    @Test
     public void replaceVariantsReferenceIdsWithKeys_WithExpandedReferences_ShouldReturnVariantDraftsWithReplacedKeys() {
         final String channelKey = "channelKey";
         final Channel channel = getChannelMock(channelKey);
@@ -49,10 +50,10 @@ public class VariantReferenceReplacementUtilsTest {
         final Price price = getPriceMockWithChannelReference(channelReference);
         final ProductVariant productVariant = getProductVariantMockWithPrices(Collections.singletonList(price));
 
-       final List<ProductVariantDraft> variantDrafts = replaceVariantsReferenceIdsWithKeys(
-           Collections.singletonList(productVariant));
+        final List<ProductVariantDraft> variantDrafts = replaceVariantsReferenceIdsWithKeys(
+            Collections.singletonList(productVariant));
 
-       assertThat(variantDrafts).hasSize(1);
+        assertThat(variantDrafts).hasSize(1);
         assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
         final Reference<Channel> channelReferenceAfterReplacement =
             variantDrafts.get(0).getPrices().get(0).getChannel();

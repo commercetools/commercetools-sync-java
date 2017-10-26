@@ -41,6 +41,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
      *                           and/or configuration and other sync-specific options.
      * @param typeService        the service to fetch the custom types for reference resolution.
      * @param channelService     the service to fetch the channels for reference resolution.
+     * @param productService     the service to fetch the products for reference resolution.
      */
     public VariantReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final TypeService typeService,

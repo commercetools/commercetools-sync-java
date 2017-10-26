@@ -231,6 +231,11 @@ public class ProductSyncMockUtils {
         return productService;
     }
 
+    /**
+     * Creates a mock {@link Price} with the supplied {@link Channel} {@link Reference}.
+     * @param channelReference the channel reference to attach on the mock {@link Price}.
+     * @return a mock price with the supplied channel reference.
+     */
     @Nonnull
     public static Price getPriceMockWithChannelReference(@Nullable final Reference<Channel> channelReference) {
         final Price price = mock(Price.class);
@@ -238,6 +243,11 @@ public class ProductSyncMockUtils {
         return price;
     }
 
+    /**
+     * Creates a mock {@link ProductVariant} with the supplied {@link Price} {@link List}.
+     * @param prices the prices to attach on the mock {@link ProductVariant}.
+     * @return a mock product variant with the supplied prices.
+     */
     @Nonnull
     public static ProductVariant getProductVariantMockWithPrices(@Nonnull final List<Price> prices) {
         final ProductVariant productVariant = mock(ProductVariant.class);
@@ -245,6 +255,11 @@ public class ProductSyncMockUtils {
         return productVariant;
     }
 
+    /**
+     * Creates a mock {@link Channel} with the supplied {@code key}..
+     * @param key the key to to set on the mock {@link Channel}.
+     * @return a mock channel with the supplied key.
+     */
     @Nonnull
     public static Channel getChannelMock(@Nonnull final String key) {
         final Channel channel = mock(Channel.class);
@@ -253,6 +268,12 @@ public class ProductSyncMockUtils {
         return channel;
     }
 
+    /**
+     * Creates an {@link AttributeDraft} with the supplied {@code attributeName} and {@code references}.
+     * @param attributeName the name to set on the {@link AttributeDraft}.
+     * @param references the references to set on the {@link AttributeDraft}.
+     * @return an {@link AttributeDraft} with the supplied {@code attributeName} and {@code references}.
+     */
     @Nonnull
     public static AttributeDraft getProductReferenceSetAttributeDraft(@Nonnull final String attributeName,
                                                                       @Nonnull final ObjectNode... references) {
@@ -261,6 +282,10 @@ public class ProductSyncMockUtils {
         return AttributeDraft.of(attributeName, referenceSet);
     }
 
+    /**
+     * Creates an {@link ObjectNode} that represents a product reference with a random uuid in the id field.
+     * @return an {@link ObjectNode} that represents a product reference with a random uuid in the id field.
+     */
     @Nonnull
     public static ObjectNode getProductReferenceWithRandomId() {
         final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
@@ -269,6 +294,10 @@ public class ProductSyncMockUtils {
         return productReference;
     }
 
+    /**
+     * Creates an {@link ObjectNode} that represents a product reference with the  supplied {@code id} in the id field.
+     * @return an {@link ObjectNode} that represents a product reference with the  supplied {@code id} in the id field.
+     */
     @Nonnull
     public static ObjectNode getProductReferenceWithId(@Nonnull final String id) {
         final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
