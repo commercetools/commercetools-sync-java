@@ -29,14 +29,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
@@ -149,20 +148,21 @@ public class ProductSyncIT {
     }
 
     private ProductSyncOptions buildSyncOptions() {
-        final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
-            errorCallBackMessages.add(errorMessage);
-            errorCallBackExceptions.add(exception);
-        };
-        final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
-
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                        .setErrorCallBack(errorCallBack)
-                                        .setWarningCallBack(warningCallBack)
-                                        .setUpdateActionsFilterCallBack(builtActions -> {
-                                            updateActions.addAll(builtActions);
-                                            return builtActions;
-                                        })
+                                        .setErrorCallBack(this::errorCallback)
+                                        .setWarningCallBack(warningCallBackMessages::add)
+                                        .setUpdateActionsFilterCallBack(this::updateActionsCallback)
                                         .build();
+    }
+
+    private void errorCallback(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
+        errorCallBackMessages.add(errorMessage);
+        errorCallBackExceptions.add(exception);
+    }
+
+    private List<UpdateAction<Product>> updateActionsCallback(@Nonnull final List<UpdateAction<Product>> builtActions) {
+        updateActions.addAll(builtActions);
+        return builtActions;
     }
 
     @AfterClass
@@ -277,20 +277,11 @@ public class ProductSyncIT {
     @Test
     public void sync_withProductTypeReference_ShouldUpdateProducts() {
         // Create custom options with whitelisting and action filter callback..
-        final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
-            errorCallBackMessages.add(errorMessage);
-            errorCallBackExceptions.add(exception);
-        };
-        final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
-        final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> actionCollector = builtActions -> {
-            updateActions.addAll(builtActions);
-            return builtActions;
-        };
         final ProductSyncOptions customSyncOptions =
             ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                     .setErrorCallBack(errorCallBack)
-                                     .setWarningCallBack(warningCallBack)
-                                     .setUpdateActionsFilterCallBack(actionCollector)
+                                     .setErrorCallBack(this::errorCallback)
+                                     .setWarningCallBack(warningCallBackMessages::add)
+                                     .setUpdateActionsFilterCallBack(this::updateActionsCallback)
                                      .setSyncFilter(SyncFilter.ofWhiteList(ATTRIBUTES))
                                      .build();
         final ProductSync customSync = new ProductSync(customSyncOptions);
