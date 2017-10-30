@@ -21,7 +21,9 @@ import java.util.Optional;
 import java.util.Spliterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -78,17 +80,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return completedFuture(productVariantDraftBuilder);
         }
 
-        final List<CompletableFuture<PriceDraft>> resolvedPriceDraftFutures =
-            productVariantDraftPrices.stream()
-                                     .filter(Objects::nonNull)
-                                     .map(priceReferenceResolver::resolveReferences)
-                                     .map(CompletionStage::toCompletableFuture)
-                                     .collect(Collectors.toList());
-        return CompletableFuture
-            .allOf(resolvedPriceDraftFutures.toArray(new CompletableFuture[resolvedPriceDraftFutures.size()]))
-            .thenApply(result -> resolvedPriceDraftFutures.stream()
-                                                          .map(CompletableFuture::join)
-                                                          .collect(Collectors.toList()))
+        return mapValuesToFutureOfCompletedValues(productVariantDraftPrices, priceReferenceResolver::resolveReferences)
             .thenApply(productVariantDraftBuilder::prices);
     }
 
@@ -99,17 +91,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return completedFuture(productVariantDraftBuilder);
         }
 
-        final List<CompletableFuture<AttributeDraft>> resolvedAttributeDraftFutures =
-            attributeDrafts.stream()
-                           .filter(Objects::nonNull)
-                           .map(this::resolveAttributeReference)
-                           .map(CompletionStage::toCompletableFuture)
-                           .collect(Collectors.toList());
-        return CompletableFuture
-            .allOf(resolvedAttributeDraftFutures.toArray(new CompletableFuture[resolvedAttributeDraftFutures.size()]))
-            .thenApply(result -> resolvedAttributeDraftFutures.stream()
-                                                              .map(CompletableFuture::join)
-                                                              .collect(Collectors.toList()))
+        return mapValuesToFutureOfCompletedValues(attributeDrafts, this::resolveAttributeReference)
             .thenApply(productVariantDraftBuilder::attributes);
     }
 
@@ -132,35 +114,28 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
         }
     }
 
+
     private CompletionStage<AttributeDraft> resolveAttributeSetReferences(
         @Nonnull final AttributeDraft attributeDraft) {
         final JsonNode attributeDraftValue = attributeDraft.getValue();
         final Spliterator<JsonNode> attributeReferencesIterator = attributeDraftValue.spliterator();
-        final List<CompletableFuture<JsonNode>> referenceResolutionFutures =
-            StreamSupport.stream(attributeReferencesIterator, false)
-                         .filter(Objects::nonNull)
-                         .filter(reference -> !reference.isNull())
-                         .map(reference -> {
-                             if (isProductReference(reference)) {
-                                 return getResolvedIdFromKeyInReference(reference)
-                                     .thenApply(productIdOptional ->
-                                         productIdOptional.map(this::createProductReferenceJson)
-                                                          .orElse(reference));
-                             }
-                             return CompletableFuture.completedFuture(reference);
-                         })
-                         .map(CompletionStage::toCompletableFuture)
-                         .collect(Collectors.toList());
-        return CompletableFuture
-            .allOf(referenceResolutionFutures.toArray(new CompletableFuture[referenceResolutionFutures.size()]))
-            .thenApply(voidResult -> {
-                final List<JsonNode> resolvedProductReferences =
-                    referenceResolutionFutures.stream()
-                                              .map(CompletionStage::toCompletableFuture)
-                                              .map(CompletableFuture::join)
-                                              .collect(Collectors.toList());
-                return AttributeDraft.of(attributeDraft.getName(), resolvedProductReferences);
-            });
+
+        final Stream<JsonNode> attributeReferenceStream = StreamSupport.stream(attributeReferencesIterator, false)
+                                                                       .filter(Objects::nonNull)
+                                                                       .filter(reference -> !reference.isNull());
+
+        return mapValuesToFutureOfCompletedValues(attributeReferenceStream, this::resolveAttributeReferenceValue)
+            .thenApply(resolved -> AttributeDraft.of(attributeDraft.getName(), resolved));
+    }
+
+    private CompletionStage<JsonNode> resolveAttributeReferenceValue(@Nonnull final JsonNode referenceValue) {
+        if (isProductReference(referenceValue)) {
+            return getResolvedIdFromKeyInReference(referenceValue)
+                .thenApply(productIdOptional ->
+                    productIdOptional.map(this::createProductReferenceJson)
+                                     .orElse(referenceValue));
+        }
+        return CompletableFuture.completedFuture(referenceValue);
     }
 
     static boolean isProductReference(@Nonnull final JsonNode referenceValue) {
@@ -186,6 +161,37 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
         productReferenceJsonNode.put("id", productId);
         productReferenceJsonNode.put("typeId", "product");
         return productReferenceJsonNode;
+    }
+
+    private static <T> CompletableFuture<List<T>> mapValuesToFutureOfCompletedValues(
+        @Nonnull final List<T> entities,
+        @Nonnull final Function<T, CompletionStage<T>> entityMapper) {
+        return mapValuesToFutureOfCompletedValues(entities.stream(), entityMapper);
+    }
+
+    private static <T> CompletableFuture<List<T>> mapValuesToFutureOfCompletedValues(
+        @Nonnull final Stream<T> entities,
+        @Nonnull final Function<T, CompletionStage<T>> entityMapper) {
+        return getFutureOfCompletedValues(mapValuesToFutures(entities, entityMapper));
+    }
+
+    private static <T> List<CompletableFuture<T>> mapValuesToFutures(
+        @Nonnull final Stream<T> entities,
+        @Nonnull final Function<T, CompletionStage<T>> entityMapper) {
+        return entities
+            .filter(Objects::nonNull)
+            .map(entityMapper)
+            .map(CompletionStage::toCompletableFuture)
+            .collect(Collectors.toList());
+    }
+
+    private static <T> CompletableFuture<List<T>> getFutureOfCompletedValues(
+        @Nonnull final List<CompletableFuture<T>> futures) {
+        return CompletableFuture
+            .allOf(futures.toArray(new CompletableFuture[futures.size()]))
+            .thenApply(result -> futures.stream()
+                                        .map(CompletableFuture::join)
+                                        .collect(Collectors.toList()));
     }
 }
 
