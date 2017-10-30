@@ -14,17 +14,17 @@ so that:
 
 <!-- If you're describing a bug, please let us know the steps to reproduce your problem. -->
 
-### Expected Behaviour
-<!-- What should happen or how it should work. -->
-
 ### Current Behaviour
 <!-- What happens instead of the expected behavior. -->
 <!-- If suggesting a change, explain the difference from current behavior. -->
 
-<!-- If there is an error, please copy the error message inculding the stack trace down here -->
+<!-- If there is an error, please copy the error message including the stack trace down here -->
 ````bash
 
 ````
+
+### Expected Behaviour
+<!-- What should happen or how it should work. -->
 
 ### Context
 <!-- How has this issue affected you? What are you trying to accomplish? -->
