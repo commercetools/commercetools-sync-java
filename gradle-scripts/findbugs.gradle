@@ -10,3 +10,7 @@ tasks.withType(FindBugs) {
         xml.enabled = false
     }
 }
+
+findbugsTest.mustRunAfter findbugsMain
+findbugsIntegrationTest.mustRunAfter findbugsTest
+
