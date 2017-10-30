@@ -8,7 +8,5 @@ findbugs {
 tasks.withType(FindBugs) {
     reports {
         xml.enabled = false
-        html.enabled =  true
-        html.stylesheet = resources.text.fromFile('config/findbugs/findbugs-custom.xsl')
     }
 }
