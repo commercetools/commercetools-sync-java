@@ -5,6 +5,7 @@ import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TaxCategoryService;
@@ -13,11 +14,9 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
-import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
@@ -44,10 +43,9 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 public final class ProductReferenceResolver extends BaseReferenceResolver<ProductDraft, ProductSyncOptions> {
     private final ProductTypeService productTypeService;
     private final CategoryService categoryService;
-    private final PriceReferenceResolver priceReferenceResolver;
+    private final VariantReferenceResolver variantReferenceResolver;
     private final TaxCategoryService taxCategoryService;
     private final StateService stateService;
-
 
     private static final String FAILED_TO_RESOLVE_PRODUCT_TYPE = "Failed to resolve product type reference on "
         + "ProductDraft with key:'%s'.";
@@ -55,10 +53,11 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         + "ProductDraft with key:'%s'. Reason: %s";
 
     /**
-     * Takes a {@link ProductSyncOptions} instance, a {@link ProductTypeService} and {@link CategoryService} to
-     * instantiate a {@link ProductReferenceResolver} instance that could be used to resolve the product type and
-     * category references of product drafts in the CTP project specified in the injected {@link ProductSyncOptions}
-     * instance.
+     * Takes a {@link ProductSyncOptions} instance, a {@link ProductTypeService}, a {@link CategoryService}, a
+     * {@link TypeService}, a {@link ChannelService}, a {@link TaxCategoryService}, a {@link StateService} and a
+     * {@link ProductService} to instantiate a {@link ProductReferenceResolver} instance that could be used to resolve
+     * the product type, categories, variants, tax category and product state references of product drafts in the CTP
+     * project specified in the injected {@link ProductSyncOptions} instance.
      *
      * @param productSyncOptions the container of all the options of the sync process including the CTP project client
      *                           and/or configuration and other sync-specific options.
@@ -67,7 +66,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * @param typeService        the service to fetch the custom types for reference resolution.
      * @param channelService     the service to fetch the channels for reference resolution.
      * @param taxCategoryService the service to fetch tax categories for reference resolution.
-     * @param stateService       the service to fetch product states for reference resolution
+     * @param stateService       the service to fetch product states for reference resolution.
+     * @param productService     the service to fetch products for product reference resolution on reference attributes.
      */
     public ProductReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final ProductTypeService productTypeService,
@@ -75,19 +75,21 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                                     @Nonnull final TypeService typeService,
                                     @Nonnull final ChannelService channelService,
                                     @Nonnull final TaxCategoryService taxCategoryService,
-                                    @Nonnull final StateService stateService) {
+                                    @Nonnull final StateService stateService,
+                                    @Nonnull final ProductService productService) {
         super(productSyncOptions);
         this.productTypeService = productTypeService;
         this.categoryService = categoryService;
         this.taxCategoryService = taxCategoryService;
         this.stateService = stateService;
-        this.priceReferenceResolver = new PriceReferenceResolver(productSyncOptions, typeService, channelService);
+        this.variantReferenceResolver =
+            new VariantReferenceResolver(productSyncOptions, typeService, channelService, productService);
     }
 
     /**
-     * Given a {@link ProductDraft} this method attempts to resolve the product type and category references to
-     * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * references. The keys of the references are either taken from the expanded references or
+     * Given a {@link ProductDraft} this method attempts to resolve the product type, categories, variants, tax
+     * category and product state references to return a {@link CompletionStage} which contains a new instance of the
+     * draft with the resolved references. The keys of the references are either taken from the expanded references or
      * taken from the id field of the references.
      *
      * @param productDraft the productDraft to resolve it's references.
@@ -98,36 +100,33 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     public CompletionStage<ProductDraft> resolveReferences(@Nonnull final ProductDraft productDraft) {
         return resolveProductTypeReference(ProductDraftBuilder.of(productDraft))
             .thenCompose(this::resolveCategoryReferences)
-            .thenCompose(this::resolveProductPricesReferences)
+            .thenCompose(this::resolveAllVariantsReferences)
             .thenCompose(this::resolveTaxCategoryReferences)
             .thenCompose(this::resolveStateReferences)
             .thenApply(ProductDraftBuilder::build);
     }
 
     @Nonnull
-    private CompletionStage<ProductDraftBuilder> resolveProductPricesReferences(
+    private CompletionStage<ProductDraftBuilder> resolveAllVariantsReferences(
             @Nonnull final ProductDraftBuilder draftBuilder) {
-        final ProductVariantDraft productDraftMasterVariant = draftBuilder.getMasterVariant();
-        if (productDraftMasterVariant != null) {
-            return resolveProductVariantPriceReferences(productDraftMasterVariant)
-                .thenApply(draftBuilder::masterVariant)
-                .thenCompose(this::resolveProductVariantsPriceReferences);
+        final ProductVariantDraft masterVariantDraft = draftBuilder.getMasterVariant();
+        if (masterVariantDraft != null) {
+            return variantReferenceResolver.resolveReferences(masterVariantDraft)
+                                           .thenApply(draftBuilder::masterVariant)
+                                           .thenCompose(this::resolveVariantsReferences);
         }
-        return resolveProductVariantsPriceReferences(draftBuilder);
+        return resolveVariantsReferences(draftBuilder);
     }
 
     @Nonnull
-    private CompletionStage<ProductDraftBuilder> resolveProductVariantsPriceReferences(
+    private CompletionStage<ProductDraftBuilder> resolveVariantsReferences(
         @Nonnull final ProductDraftBuilder draftBuilder) {
         final List<ProductVariantDraft> productDraftVariants = draftBuilder.getVariants();
-        if (productDraftVariants == null) {
-            return CompletableFuture.completedFuture(draftBuilder);
-        }
 
         final List<CompletableFuture<ProductVariantDraft>> resolvedVariantFutures =
             productDraftVariants.stream()
                                 .filter(Objects::nonNull)
-                                .map(this::resolveProductVariantPriceReferences)
+                                .map(variantReferenceResolver::resolveReferences)
                                 .map(CompletionStage::toCompletableFuture)
                                 .collect(Collectors.toList());
         return
@@ -137,29 +136,6 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                     .map(CompletableFuture::join)
                     .collect(Collectors.toList()))
                 .thenApply(draftBuilder::variants);
-    }
-
-    private CompletionStage<ProductVariantDraft> resolveProductVariantPriceReferences(
-        @Nonnull final ProductVariantDraft productVariantDraft) {
-        final List<PriceDraft> productVariantDraftPrices = productVariantDraft.getPrices();
-        final ProductVariantDraftBuilder productVariantDraftBuilder =
-            ProductVariantDraftBuilder.of(productVariantDraft);
-
-        if (productVariantDraftPrices == null) {
-            return completedFuture(productVariantDraftBuilder.build());
-        }
-
-        final List<CompletableFuture<PriceDraft>> resolvedPriceDraftFutures =
-            productVariantDraftPrices.stream()
-                .map(priceReferenceResolver::resolveReferences)
-                .map(CompletionStage::toCompletableFuture)
-                .collect(Collectors.toList());
-        return CompletableFuture
-            .allOf(resolvedPriceDraftFutures.toArray(new CompletableFuture[resolvedPriceDraftFutures.size()]))
-            .thenApply(result -> resolvedPriceDraftFutures.stream()
-                .map(CompletableFuture::join)
-                .collect(Collectors.toList()))
-            .thenApply(resolvedPriceDrafts -> productVariantDraftBuilder.prices(resolvedPriceDrafts).build());
     }
 
     @Nonnull
@@ -228,7 +204,6 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                 .categories(categoryReferences)
                 .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintsMap)));
     }
-
 
     /**
      * Given a {@link ProductType} this method fetches the product type reference id.
