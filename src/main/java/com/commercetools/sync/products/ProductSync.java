@@ -83,7 +83,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         this.productService = productService;
         this.productTypeService = productTypeService;
         this.productReferenceResolver = new ProductReferenceResolver(productSyncOptions, productTypeService,
-            categoryService, typeService, channelService, taxCategoryService, stateService);
+            categoryService, typeService, channelService, taxCategoryService, stateService, productService);
     }
 
     @Override
