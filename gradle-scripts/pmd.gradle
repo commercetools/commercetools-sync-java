@@ -6,4 +6,15 @@ pmd {
     toolVersion = pmdVersion
     ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/pmd.xml')
     rulePriority = 2
+    consoleOutput = true
 }
+
+tasks.withType(Pmd) {
+    reports {
+        html.enabled = false
+        xml.enabled = false
+    }
+}
+
+pmdTest.mustRunAfter pmdMain
+pmdIntegrationTest.mustRunAfter pmdTest
