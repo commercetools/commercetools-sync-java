@@ -57,13 +57,14 @@ are breaking changes. If there are, then a migration guide should be provided.
 - **Category Sync** - Fixes an issue where retrying on concurrent modification exception wasn't re-fetching the latest 
 Category and rebuilding build update actions. [#94](https://github.com/commercetools/commercetools-sync-java/issues/94)
 
-**Doc Fixes** (4)
+**Doc Fixes** (5)
 - **Product Sync** - Document the reason behind having the latest batch processing time. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
 - **Category Sync** - Document the reason behind having the latest batch processing time. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
 - **Category Sync** - Fix the statistics summary string used in the documentation. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
 - **Inventory Sync** - Document the reason behind having the latest batch processing time. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
+- **Commons** - Provide inline example of how to use logging in callbacks. [#172](https://github.com/commercetools/commercetools-sync-java/issues/172)
 
-**Compatibility notes** (7)
+**Compatibility notes** (9)
 - **Product Sync** - Move `replaceProductsReferenceIdsWithKeys` from `SyncUtils` to `ProductReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
 - **Product Sync** - Remove `replaceProductDraftsCategoryReferenceIdsWithKeys` which is not needed anymore. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
 - **Product Sync** - Remove `replaceProductDraftCategoryReferenceIdsWithKeys` which is not needed anymore. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
@@ -71,6 +72,8 @@ Category and rebuilding build update actions. [#94](https://github.com/commercet
 - **Product Sync** - Move `getDraftBuilderFromStagedProduct` from `SyncUtils` to `ProductReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
 - **Category Sync** - Move `replaceCategoriesReferenceIdsWithKeys` from `SyncUtils` to `CategoryReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
 - **Inventory Sync** - Move `replaceInventoriesReferenceIdsWithKeys` from `SyncUtils` to `InventoryReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
+- **Commons** - Remove slf4j-simple dependency. [#172](https://github.com/commercetools/commercetools-sync-java/issues/172)
+- **Commons** - Use implementation instead of compile configuration for dependencies. [#172](https://github.com/commercetools/commercetools-sync-java/issues/172)
 -->
 
 ### v1.0.0-M2 -  Oct 12, 2017 

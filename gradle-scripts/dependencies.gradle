@@ -1,7 +1,6 @@
 ext{
     commercetoolsJvmSdkVersion = '1.25.0'
     mockitoVersion = '2.8.9'
-    slf4jVersion = '1.6.2'
     jUnitVersion = '4.12'
     assertjVersion = '3.6.1'
     checkstyleVersion = '7.7'
@@ -11,12 +10,11 @@ ext{
 }
 
 dependencies {
-    compile "com.commercetools.sdk.jvm.core:commercetools-models:${commercetoolsJvmSdkVersion}"
-    compile "com.commercetools.sdk.jvm.core:commercetools-java-client:${commercetoolsJvmSdkVersion}"
-    compile "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
-    compile "com.google.code.findbugs:annotations:${findbugsVersion}"
-    runtime "org.slf4j:slf4j-simple:${slf4jVersion}"
-    testCompile "org.mockito:mockito-core:${mockitoVersion}"
-    testCompile "junit:junit:${jUnitVersion}"
-    testCompile "org.assertj:assertj-core:${assertjVersion}"
+    implementation "com.commercetools.sdk.jvm.core:commercetools-models:${commercetoolsJvmSdkVersion}"
+    implementation "com.commercetools.sdk.jvm.core:commercetools-java-client:${commercetoolsJvmSdkVersion}"
+    implementation "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
+    implementation "com.google.code.findbugs:annotations:${findbugsVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation "junit:junit:${jUnitVersion}"
+    testImplementation "org.assertj:assertj-core:${assertjVersion}"
 }
