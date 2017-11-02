@@ -57,7 +57,7 @@ most popular ones:
 ````
 #### Gradle
 ````groovy
-compile 'com.commercetools:commercetools-sync-java:v1.0.0-M2'
+implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M2'
 ````
 <!-- TODO #### SBT 
 ````java
