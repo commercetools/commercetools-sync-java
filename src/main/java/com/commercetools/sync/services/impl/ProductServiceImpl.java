@@ -48,6 +48,23 @@ public class ProductServiceImpl implements ProductService {
 
     @Nonnull
     @Override
+    public CompletionStage<Optional<String>> fetchCachedProductId(@Nullable final String key) {
+        if (isBlank(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+        if (isCached) {
+            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
+        }
+        return cacheAndFetch(key);
+    }
+
+    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
+        return cacheKeysToIds()
+            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
+    }
+
+    @Nonnull
+    @Override
     public CompletionStage<Map<String, String>> cacheKeysToIds() {
         if (isCached) {
             return CompletableFuture.completedFuture(keyToIdCache);

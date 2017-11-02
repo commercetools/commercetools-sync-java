@@ -682,4 +682,51 @@ public class ProductServiceIT {
             .isEqualToIgnoringCase(format("Failed to fetch products with keys: '%s'. Reason: %s", productKey,
                 errorCallBackExceptions.get(0)));
     }
+
+    @Test
+    public void fetchCachedProductId_WithExistingProduct_ShouldFetchCategoryAndCache() {
+        final Optional<String> productId = productService.fetchCachedProductId(product.getKey())
+                                                           .toCompletableFuture()
+                                                           .join();
+        assertThat(productId).isNotEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void fetchCachedProductId_WithNullProductKey_ShouldReturnEmptyOptional() {
+        final Optional<String> productId = productService.fetchCachedProductId(null)
+                                                         .toCompletableFuture()
+                                                         .join();
+        assertThat(productId).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void fetchCachedProductId_ByDefault_ShouldCacheProductKeysOnlyFirstTime() {
+        // Fetch any product to populate cache
+        productService.fetchCachedProductId("anyKey").toCompletableFuture().join();
+
+        final String newKey = "newKey";
+        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
+            productType.toReference())
+            .key(newKey)
+            .taxCategory(null)
+            .state(null)
+            .categories(Collections.emptyList())
+            .categoryOrderHints(null)
+            .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
+            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .build();
+
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
+
+        final Optional<String> newProductId =
+            productService.fetchCachedProductId(newKey).toCompletableFuture().join();
+
+        assertThat(newProductId).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
 }

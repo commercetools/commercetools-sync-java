@@ -1,17 +1,25 @@
 package com.commercetools.sync.products;
 
+import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TaxCategoryService;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.CategoryOrderHints;
+import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
@@ -19,10 +27,12 @@ import io.sphere.sdk.taxcategories.TaxCategory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -203,5 +213,96 @@ public class ProductSyncMockUtils {
         when(stateService.fetchCachedStateId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
         return stateService;
+    }
+
+    /**
+     * Creates a mock {@link ProductService} that returns a completed {@link CompletableFuture} containing an
+     * {@link Optional} containing the id of the supplied value whenever the following method is called on the service:
+     * <ul>
+     * <li>{@link ProductService#fetchCachedProductId(String)}</li>
+     * </ul>
+     *
+     * @return the created mock of the {@link ProductService}.
+     */
+    public static ProductService getMockProductService(@Nonnull final String id) {
+        final ProductService productService = mock(ProductService.class);
+        when(productService.fetchCachedProductId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
+        return productService;
+    }
+
+    /**
+     * Creates a mock {@link Price} with the supplied {@link Channel} {@link Reference}.
+     * @param channelReference the channel reference to attach on the mock {@link Price}.
+     * @return a mock price with the supplied channel reference.
+     */
+    @Nonnull
+    public static Price getPriceMockWithChannelReference(@Nullable final Reference<Channel> channelReference) {
+        final Price price = mock(Price.class);
+        when(price.getChannel()).thenReturn(channelReference);
+        return price;
+    }
+
+    /**
+     * Creates a mock {@link ProductVariant} with the supplied {@link Price} {@link List}.
+     * @param prices the prices to attach on the mock {@link ProductVariant}.
+     * @return a mock product variant with the supplied prices.
+     */
+    @Nonnull
+    public static ProductVariant getProductVariantMockWithPrices(@Nonnull final List<Price> prices) {
+        final ProductVariant productVariant = mock(ProductVariant.class);
+        when(productVariant.getPrices()).thenReturn(prices);
+        return productVariant;
+    }
+
+    /**
+     * Creates a mock {@link Channel} with the supplied {@code key}..
+     * @param key the key to to set on the mock {@link Channel}.
+     * @return a mock channel with the supplied key.
+     */
+    @Nonnull
+    public static Channel getChannelMock(@Nonnull final String key) {
+        final Channel channel = mock(Channel.class);
+        when(channel.getKey()).thenReturn(key);
+        when(channel.getId()).thenReturn(UUID.randomUUID().toString());
+        return channel;
+    }
+
+    /**
+     * Creates an {@link AttributeDraft} with the supplied {@code attributeName} and {@code references}.
+     * @param attributeName the name to set on the {@link AttributeDraft}.
+     * @param references the references to set on the {@link AttributeDraft}.
+     * @return an {@link AttributeDraft} with the supplied {@code attributeName} and {@code references}.
+     */
+    @Nonnull
+    public static AttributeDraft getProductReferenceSetAttributeDraft(@Nonnull final String attributeName,
+                                                                      @Nonnull final ObjectNode... references) {
+        final ArrayNode referenceSet = JsonNodeFactory.instance.arrayNode();
+        referenceSet.addAll(Arrays.asList(references));
+        return AttributeDraft.of(attributeName, referenceSet);
+    }
+
+    /**
+     * Creates an {@link ObjectNode} that represents a product reference with a random uuid in the id field.
+     * @return an {@link ObjectNode} that represents a product reference with a random uuid in the id field.
+     */
+    @Nonnull
+    public static ObjectNode getProductReferenceWithRandomId() {
+        final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
+        productReference.put("typeId", "product");
+        productReference.put("id", UUID.randomUUID().toString());
+        return productReference;
+    }
+
+    /**
+     * Creates an {@link ObjectNode} that represents a product reference with the  supplied {@code id} in the id field.
+     * @return an {@link ObjectNode} that represents a product reference with the  supplied {@code id} in the id field.
+     */
+    @Nonnull
+    public static ObjectNode getProductReferenceWithId(@Nonnull final String id) {
+        final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
+        productReference.put("typeId", "product");
+        productReference.put("id", id);
+        return productReference;
     }
 }
