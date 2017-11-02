@@ -21,8 +21,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,10 +45,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 public class CategoryServiceIT {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CategoryServiceIT.class);
     private CategoryService categoryService;
     private Category oldCategory;
-    private final String oldCategoryKey = "oldCategoryKey";
+    private static final String oldCategoryKey = "oldCategoryKey";
 
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
@@ -85,15 +82,11 @@ public class CategoryServiceIT {
                                                                                               .add(errorMessage);
                                                                                           errorCallBackExceptions
                                                                                               .add(exception);
-                                                                                          LOGGER.error(errorMessage,
-                                                                                              exception);
                                                                                       })
                                                                                   .setWarningCallBack(
-                                                                                      warningMessage -> {
+                                                                                      warningMessage ->
                                                                                           warningCallBackMessages
-                                                                                              .add(warningMessage);
-                                                                                          LOGGER.warn(warningMessage);
-                                                                                      })
+                                                                                              .add(warningMessage))
                                                                                   .build();
 
         // Create a mock new category in the target project.

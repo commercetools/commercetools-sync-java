@@ -4,7 +4,6 @@ import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
@@ -23,8 +22,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +44,6 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.d
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsJsons;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.getStatisticsAsJSONString;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
@@ -59,9 +55,8 @@ import static org.mockito.Mockito.when;
 
 
 public class CategorySyncIT {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CategorySyncIT.class);
     private CategorySync categorySync;
-    private final String oldCategoryKey = "oldCategoryKey";
+    private static final String oldCategoryKey = "oldCategoryKey";
 
     /**
      * Delete all categories and types from target project. Then create custom types for target CTP project categories.
@@ -82,8 +77,6 @@ public class CategorySyncIT {
         deleteAllCategories(CTP_TARGET_CLIENT);
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                                  .setErrorCallBack(LOGGER::error)
-                                                                                  .setWarningCallBack(LOGGER::warn)
                                                                                   .build();
         categorySync = new CategorySync(categorySyncOptions);
 
@@ -193,8 +186,6 @@ public class CategorySyncIT {
 
         final CategorySyncOptions categorySyncOptions =
             CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                      .setErrorCallBack(LOGGER::error)
-                                      .setWarningCallBack(LOGGER::warn)
                                       .build();
         final CategorySync categorySync1 = new CategorySync(categorySyncOptions);
         final CategorySync categorySync2 = new CategorySync(categorySyncOptions);
@@ -251,7 +242,6 @@ public class CategorySyncIT {
                                           errorMessages.add(errorMessage);
                                           errors.add(error);
                                       })
-                                      .setWarningCallBack(LOGGER::warn)
                                       .build();
         final CategorySync categorySync = new CategorySync(categorySyncOptions);
 
@@ -733,23 +723,12 @@ public class CategorySyncIT {
         categoryDrafts.add(categoryDraft);
         categoryDrafts.add(categoryDraftWithMissingParent);
 
-        final long startTime = System.currentTimeMillis();
-        LOGGER.info("Starting to sync categories:");
+
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts)
                                                                   .toCompletableFuture().join();
-        LOGGER.info(syncStatistics.getReportMessage());
-        try {
-            LOGGER.info(getStatisticsAsJSONString(syncStatistics));
-        } catch (JsonProcessingException exception) {
-            LOGGER.error("Failed to build JSON String of summary.", exception);
-        }
-        final long syncTimeTaken = System.currentTimeMillis() - startTime;
-        LOGGER.info("Syncing categories took: " + syncTimeTaken + "ms");
-
         assertThat(syncStatistics.getReportMessage())
             .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
                 + " sync and %d categories with a missing parent).", 2, 2, 0, 0, 1));
-
 
         assertThat(syncStatistics.getCategoryKeysWithMissingParents()).hasSize(1);
         final ArrayList<String> missingParentsChildren = syncStatistics.getCategoryKeysWithMissingParents()
