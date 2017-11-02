@@ -102,8 +102,14 @@ function has been applied.
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
 Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
-streams, can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java#L121-L130)
-
+streams, would look as follows:
+ ```java
+ final Logger logger = LoggerFactory.getLogger(MySync.class);
+ final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder.of(sphereClient)
+                                                                        .setErrorCallBack(logger::error)
+                                                                        .setWarningCallBack(logger::warn)
+                                                                        .build();
+ ```
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
