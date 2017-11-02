@@ -16,7 +16,6 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -24,6 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 public class VariantReferenceReplacementUtils {
@@ -70,15 +70,10 @@ public class VariantReferenceReplacementUtils {
      */
     @Nonnull
     static List<PriceDraft> replacePricesReferencesIdsWithKeys(@Nonnull final ProductVariant productVariant) {
-        final List<Price> variantPrices = productVariant.getPrices();
-        final List<PriceDraft> variantPriceDraftsWithKeys = new ArrayList<>();
-        variantPrices.forEach(price -> {
+        return productVariant.getPrices().stream().map(price -> {
             final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
-            final PriceDraft priceDraftWithKey = PriceDraftBuilder.of(price)
-                                                                  .channel(channelReferenceWithKey).build();
-            variantPriceDraftsWithKeys.add(priceDraftWithKey);
-        });
-        return variantPriceDraftsWithKeys;
+            return PriceDraftBuilder.of(price).channel(channelReferenceWithKey).build();
+        }).collect(toList());
     }
 
     /**
@@ -113,18 +108,15 @@ public class VariantReferenceReplacementUtils {
      */
     @Nonnull
     static List<AttributeDraft> replaceAttributesReferencesIdsWithKeys(@Nonnull final ProductVariant productVariant) {
-        final List<Attribute> variantAttributes = productVariant.getAttributes();
-        final List<AttributeDraft> variantAttributeDraftsWithKeys = new ArrayList<>();
-        variantAttributes.forEach(attribute -> {
-            final AttributeDraft resolvedAttributeDraft = replaceAttributeReferenceIdWithKey(attribute)
-                .map(productReference -> AttributeDraft.of(attribute.getName(), productReference))
-                .orElseGet(() ->
-                    replaceAttributeReferenceSetIdsWithKeys(attribute)
-                        .map(productReferenceSet -> AttributeDraft.of(attribute.getName(), productReferenceSet))
-                        .orElseGet(() -> AttributeDraft.of(attribute.getName(), attribute.getValueAsJsonNode())));
-            variantAttributeDraftsWithKeys.add(resolvedAttributeDraft);
-        });
-        return variantAttributeDraftsWithKeys;
+        return productVariant.getAttributes().stream()
+                             .map(attribute -> replaceAttributeReferenceIdWithKey(attribute)
+                                 .map(productReference -> AttributeDraft.of(attribute.getName(), productReference))
+                                 .orElseGet(() -> replaceAttributeReferenceSetIdsWithKeys(attribute)
+                                     .map(productReferenceSet ->
+                                         AttributeDraft.of(attribute.getName(), productReferenceSet))
+                                     .orElseGet(() ->
+                                         AttributeDraft.of(attribute.getName(), attribute.getValueAsJsonNode()))))
+                             .collect(toList());
     }
 
 
