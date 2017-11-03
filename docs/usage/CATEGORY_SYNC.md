@@ -87,15 +87,8 @@ function has been applied.
 - `allowUuid`
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
-Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
-streams, would look as follows:
-```java
-final Logger logger = LoggerFactory.getLogger(MySync.class);
-final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(sphereClient)
-                                                                          .setErrorCallBack(logger::error)
-                                                                          .setWarningCallBack(logger::warn)
-                                                                          .build();
-```
+Example of options usage, that sets the error and warning callbacks to output the message to standard output stream 
+can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java#L80-L84).
 
 
 #### Running the sync
