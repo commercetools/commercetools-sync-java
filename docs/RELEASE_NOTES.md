@@ -62,7 +62,7 @@ Category and rebuilding build update actions. [#94](https://github.com/commercet
 - **Category Sync** - Document the reason behind having the latest batch processing time. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
 - **Category Sync** - Fix the statistics summary string used in the documentation. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
 - **Inventory Sync** - Document the reason behind having the latest batch processing time. [#119](https://github.com/commercetools/commercetools-sync-java/issues/119)
-- **Commons** - Provide inline example of how to use logging in callbacks. [#172](https://github.com/commercetools/commercetools-sync-java/issues/172)
+- **Product Sync** - Typo fixes. [#172](https://github.com/commercetools/commercetools-sync-java/issues/172)
 
 **Compatibility notes** (9)
 - **Product Sync** - Move `replaceProductsReferenceIdsWithKeys` from `SyncUtils` to `ProductReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
