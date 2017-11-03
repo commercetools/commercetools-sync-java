@@ -109,7 +109,7 @@ can be found [here](/src/integration-test/java/com/commercetools/sync/integratio
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
 ````java
 // instantiating a product sync
-final Product productSync = new ProductSync(productSyncOptions);
+final ProductSync productSync = new ProductSync(productSyncOptions);
 
 // execute the sync on your list of products
 CompletionStage<ProductSyncStatistics> syncStatisticsStage = productSync.sync(productDrafts);
@@ -140,7 +140,7 @@ More examples of how to use the sync
 A utility method provided by the library to compare a Product with a new ProductDraft and results in a list of product
  update actions. 
 ```java
-List<UpdateAction<Product>> updateActions = ProductSyncUtils.buildActions(product, productDraft, productSyncOptions);
+List<UpdateAction<Product>> updateActions = ProductSyncUtils.buildActions(product, productDraft, productSyncOptions, attributesMetaData);
 ```
 
 Examples of its usage can be found in the tests 
