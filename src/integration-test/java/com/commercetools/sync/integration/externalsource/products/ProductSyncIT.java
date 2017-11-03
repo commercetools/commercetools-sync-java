@@ -129,12 +129,8 @@ public class ProductSyncIT {
         final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
             errorCallBackMessages.add(errorMessage);
             errorCallBackExceptions.add(exception);
-            System.err.print(errorMessage);
         };
-        final Consumer<String> warningCallBack = warningMessage -> {
-            warningCallBackMessages.add(warningMessage);
-            System.out.print(warningMessage);
-        };
+        final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                         .setErrorCallBack(errorCallBack)
