@@ -33,12 +33,22 @@ are breaking changes. If there are, then a migration guide should be provided.
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [v1.0.0-M4 -  Nov 7, 2017](#v100-m4----nov-7-2017)
 - [v1.0.0-M3 -  Nov 3, 2017](#v100-m3----nov-3-2017)
 - [v1.0.0-M2 -  Oct 12, 2017](#v100-m2----oct-12-2017)
 - [v1.0.0-M2-beta -  Sep 28, 2017](#v100-m2-beta----sep-28-2017)
 - [v1.0.0-M1 -  Sep 06, 2017](#v100-m1----sep-06-2017)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+### v1.0.0-M4 -  Nov 7, 2017
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M4...v1.0.0-M4) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M4/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M4)
+
+**Bug Fixes** (1)
+- **Product Sync** - Fixes an issue with `replaceAttributesReferencesIdsWithKeys` which nullifies localized text attributes due 
+to json parsing not throwing exception on parsing it to reference set. [#179](https://github.com/commercetools/commercetools-sync-java/issues/179)
+
 
 ### v1.0.0-M3 -  Nov 3, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M2...v1.0.0-M3) |
