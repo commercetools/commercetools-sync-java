@@ -1,7 +1,8 @@
 package com.commercetools.sync.products.utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.json.JsonException;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
@@ -23,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
+import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -128,11 +130,10 @@ public class VariantReferenceReplacementUtils {
     }
 
     private static Optional<Reference<Product>> getProductReference(@Nonnull final Attribute attribute) {
-        try {
-            return Optional.of(attribute.getValue(AttributeAccess.ofProductReference()));
-        } catch (final JsonException exception) {
-            return Optional.empty();
-        }
+        return Optional.of(attribute)
+                       .filter(VariantReferenceReplacementUtils::isProductReference)
+                       .map(productReferenceAttribute -> productReferenceAttribute
+                           .getValue(AttributeAccess.ofProductReference()));
     }
 
     @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
@@ -147,10 +148,27 @@ public class VariantReferenceReplacementUtils {
     }
 
     private static Optional<Set<Reference<Product>>> getProductReferenceSet(@Nonnull final Attribute attribute) {
-        try {
-            return Optional.of(attribute.getValue(AttributeAccess.ofProductReferenceSet()));
-        } catch (final JsonException exception) {
-            return Optional.empty();
+        return Optional.of(attribute)
+                       .filter(VariantReferenceReplacementUtils::isProductReferenceSet)
+                       .map(productReferenceSetAttribute -> productReferenceSetAttribute
+                           .getValue(AttributeAccess.ofProductReferenceSet()));
+    }
+
+    static boolean isProductReference(@Nonnull final Attribute attribute) {
+        final JsonNode valueAsJsonNode = attribute.getValueAsJsonNode();
+        return !(valueAsJsonNode instanceof ArrayNode) && isValueAProductReference(valueAsJsonNode);
+    }
+
+    static boolean isProductReferenceSet(@Nonnull final Attribute attribute) {
+        final JsonNode valueAsJsonNode = attribute.getValueAsJsonNode();
+        return (valueAsJsonNode instanceof ArrayNode) && isValueAProductReference(valueAsJsonNode.elements().next());
+    }
+
+    private static boolean isValueAProductReference(@Nonnull final JsonNode valueAsJsonNode) {
+        if (valueAsJsonNode.isContainerNode()) {
+            final JsonNode typeIdNode = valueAsJsonNode.get(REFERENCE_TYPE_ID_FIELD);
+            return typeIdNode != null && Product.referenceTypeId().equals(typeIdNode.asText());
         }
+        return false;
     }
 }

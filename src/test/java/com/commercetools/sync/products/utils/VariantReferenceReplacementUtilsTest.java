@@ -22,10 +22,26 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.commercetools.sync.products.ProductSyncMockUtils.BOOLEAN_ATTRIBUTE;
+import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_REFERENCE_ATTRIBUTE;
+import static com.commercetools.sync.products.ProductSyncMockUtils.DATE_ATTRIBUTE;
+import static com.commercetools.sync.products.ProductSyncMockUtils.DATE_TIME_ATTRIBUTE;
+import static com.commercetools.sync.products.ProductSyncMockUtils.ENUM_ATTRIBUTE;
+import static com.commercetools.sync.products.ProductSyncMockUtils.LENUM_ATTRIBUTE;
+import static com.commercetools.sync.products.ProductSyncMockUtils.LTEXT_ATTRIBUTE;
+import static com.commercetools.sync.products.ProductSyncMockUtils.LTEXT_SET_ATTRIBUTE;
+import static com.commercetools.sync.products.ProductSyncMockUtils.MONEY_ATTRIBUTE;
+import static com.commercetools.sync.products.ProductSyncMockUtils.NUMBER_ATTRIBUTE;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_REFERENCE_ATTRIBUTE;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_REFERENCE_SET_ATTRIBUTE;
+import static com.commercetools.sync.products.ProductSyncMockUtils.TEXT_ATTRIBUTE;
+import static com.commercetools.sync.products.ProductSyncMockUtils.TIME_ATTRIBUTE;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithChannelReference;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMockWithPrices;
+import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.isProductReference;
+import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.isProductReferenceSet;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceAttributeReferenceIdWithKey;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceAttributeReferenceSetIdsWithKeys;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceAttributesReferencesIdsWithKeys;
@@ -297,5 +313,114 @@ public class VariantReferenceReplacementUtilsTest {
         when(variant.getAttributes()).thenReturn(new ArrayList<>());
         final List<AttributeDraft> replacedDrafts = replaceAttributesReferencesIdsWithKeys(variant);
         assertThat(replacedDrafts).isEmpty();
+    }
+
+    @Test
+    public void replaceAttributesReferencesIdsWithKeys_WithAttributesWithNoReferences_ShouldNotChangeAttributes() {
+        final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
+        final ProductVariant masterVariant = product.getMasterData().getStaged().getMasterVariant();
+        final List<AttributeDraft> replacedDrafts = replaceAttributesReferencesIdsWithKeys(masterVariant);
+        replacedDrafts.forEach(attributeDraft -> {
+            final String name = attributeDraft.getName();
+            final Attribute originalAttribute = masterVariant.getAttribute(name);
+            assertThat(originalAttribute).isNotNull();
+            assertThat(originalAttribute.getValueAsJsonNode()).isEqualTo(attributeDraft.getValue());
+        });
+    }
+
+    @Test
+    public void isProductReference_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceAttributeOnly() {
+        final Attribute booleanAttribute = readObjectFromResource(BOOLEAN_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(booleanAttribute)).isFalse();
+
+        final Attribute textAttribute = readObjectFromResource(TEXT_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(textAttribute)).isFalse();
+
+        final Attribute ltextAttribute = readObjectFromResource(LTEXT_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(ltextAttribute)).isFalse();
+
+        final Attribute enumAttribute = readObjectFromResource(ENUM_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(enumAttribute)).isFalse();
+
+        final Attribute lenumAttribute = readObjectFromResource(LENUM_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(lenumAttribute)).isFalse();
+
+        final Attribute numberAttribute = readObjectFromResource(NUMBER_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(numberAttribute)).isFalse();
+
+        final Attribute moneyAttribute = readObjectFromResource(MONEY_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(moneyAttribute)).isFalse();
+
+        final Attribute dateAttribute = readObjectFromResource(DATE_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(dateAttribute)).isFalse();
+
+        final Attribute timeAttribute = readObjectFromResource(TIME_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(timeAttribute)).isFalse();
+
+        final Attribute dateTimeAttribute = readObjectFromResource(DATE_TIME_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(dateTimeAttribute)).isFalse();
+
+        final Attribute productReferenceSetAttribute =
+            readObjectFromResource(PRODUCT_REFERENCE_SET_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(productReferenceSetAttribute)).isFalse();
+
+        final Attribute categoryReferenceAttribute =
+            readObjectFromResource(CATEGORY_REFERENCE_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(categoryReferenceAttribute)).isFalse();
+
+        final Attribute ltextSetAttribute = readObjectFromResource(LTEXT_SET_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(ltextSetAttribute)).isFalse();
+
+        final Attribute productReferenceAttribute =
+            readObjectFromResource(PRODUCT_REFERENCE_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(productReferenceAttribute)).isTrue();
+    }
+
+    @Test
+    public void isProductReferenceSet_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceSetAttributeOnly() {
+        final Attribute booleanAttribute = readObjectFromResource(BOOLEAN_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(booleanAttribute)).isFalse();
+
+        final Attribute textAttribute = readObjectFromResource(TEXT_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(textAttribute)).isFalse();
+
+        final Attribute ltextAttribute = readObjectFromResource(LTEXT_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(ltextAttribute)).isFalse();
+
+        final Attribute enumAttribute = readObjectFromResource(ENUM_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(enumAttribute)).isFalse();
+
+        final Attribute lenumAttribute = readObjectFromResource(LENUM_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(lenumAttribute)).isFalse();
+
+        final Attribute numberAttribute = readObjectFromResource(NUMBER_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(numberAttribute)).isFalse();
+
+        final Attribute moneyAttribute = readObjectFromResource(MONEY_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(moneyAttribute)).isFalse();
+
+        final Attribute dateAttribute = readObjectFromResource(DATE_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(dateAttribute)).isFalse();
+
+        final Attribute timeAttribute = readObjectFromResource(TIME_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(timeAttribute)).isFalse();
+
+        final Attribute dateTimeAttribute = readObjectFromResource(DATE_TIME_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(dateTimeAttribute)).isFalse();
+
+        final Attribute productReferenceAttribute =
+            readObjectFromResource(PRODUCT_REFERENCE_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(productReferenceAttribute)).isFalse();
+
+        final Attribute categoryReferenceAttribute =
+            readObjectFromResource(CATEGORY_REFERENCE_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(categoryReferenceAttribute)).isFalse();
+
+        final Attribute ltextSetAttribute = readObjectFromResource(LTEXT_SET_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(ltextSetAttribute)).isFalse();
+
+        final Attribute productReferenceSetAttribute =
+            readObjectFromResource(PRODUCT_REFERENCE_SET_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(productReferenceSetAttribute)).isTrue();
     }
 }

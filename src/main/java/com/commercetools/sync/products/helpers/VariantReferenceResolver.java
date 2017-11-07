@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.products.PriceDraft;
+import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
@@ -32,6 +33,9 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 public final class VariantReferenceResolver extends BaseReferenceResolver<ProductVariantDraft, ProductSyncOptions> {
     private final PriceReferenceResolver priceReferenceResolver;
     private final ProductService productService;
+
+    public static final String REFERENCE_TYPE_ID_FIELD = "typeId";
+    public static final String REFERENCE_ID_FIELD = "id";
 
     /**
      * Takes a {@link ProductSyncOptions} instance, {@link TypeService}, a {@link ChannelService} and a
@@ -140,17 +144,17 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
 
     static boolean isProductReference(@Nonnull final JsonNode referenceValue) {
         return getReferenceTypeIdIfReference(referenceValue)
-            .map(referenceTypeId -> Objects.equals(referenceTypeId, "product"))
+            .map(referenceTypeId -> Objects.equals(referenceTypeId, Product.referenceTypeId()))
             .orElse(false);
     }
 
     private static Optional<String> getReferenceTypeIdIfReference(@Nonnull final JsonNode referenceValue) {
-        final JsonNode typeId = referenceValue.get("typeId");
+        final JsonNode typeId = referenceValue.get(REFERENCE_TYPE_ID_FIELD);
         return typeId != null ? Optional.ofNullable(typeId.asText()) : Optional.empty();
     }
 
     CompletionStage<Optional<String>> getResolvedIdFromKeyInReference(@Nonnull final JsonNode referenceValue) {
-        final JsonNode idField = referenceValue.get("id");
+        final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
         return idField != null
             ? productService.fetchCachedProductId(idField.asText())
             : CompletableFuture.completedFuture(Optional.empty());
@@ -158,8 +162,8 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
 
     private JsonNode createProductReferenceJson(@Nonnull final String productId) {
         final ObjectNode productReferenceJsonNode = JsonNodeFactory.instance.objectNode();
-        productReferenceJsonNode.put("id", productId);
-        productReferenceJsonNode.put("typeId", "product");
+        productReferenceJsonNode.put(REFERENCE_ID_FIELD, productId);
+        productReferenceJsonNode.put(REFERENCE_TYPE_ID_FIELD, Product.referenceTypeId());
         return productReferenceJsonNode;
     }
 

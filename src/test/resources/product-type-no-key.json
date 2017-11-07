@@ -452,6 +452,20 @@
       "isSearchable": true,
       "inputHint": "SingleLine",
       "displayGroup": "Other"
+    },
+    {
+      "name": "localisedText",
+      "label": {
+        "en": "Angebot"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "ltext"
+      },
+      "attributeConstraint": "None",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
     }
   ],
   "createdAt": "2015-06-09T08:51:37.052Z",
