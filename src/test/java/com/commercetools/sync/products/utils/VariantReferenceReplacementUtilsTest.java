@@ -313,6 +313,20 @@ public class VariantReferenceReplacementUtilsTest {
         final List<AttributeDraft> replacedDrafts = replaceAttributesReferencesIdsWithKeys(variant);
         assertThat(replacedDrafts).isEmpty();
     }
+
+    @Test
+    public void replaceAttributesReferencesIdsWithKeys_WithAttributesWithNoReferences_ShouldNotChangeAttributes() {
+        final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
+        final ProductVariant masterVariant = product.getMasterData().getStaged().getMasterVariant();
+        final List<AttributeDraft> replacedDrafts = replaceAttributesReferencesIdsWithKeys(masterVariant);
+        replacedDrafts.forEach(attributeDraft -> {
+            final String name = attributeDraft.getName();
+            final Attribute originalAttribute = masterVariant.getAttribute(name);
+            assertThat(originalAttribute).isNotNull();
+            assertThat(originalAttribute.getValueAsJsonNode()).isEqualTo(attributeDraft.getValue());
+        });
+    }
+
     @Test
     public void isProductReference_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceAttributeOnly() {
         final Attribute booleanAttribute = readObjectFromResource(BOOLEAN_ATTRIBUTE, Attribute.class);
