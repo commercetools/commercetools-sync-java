@@ -129,8 +129,10 @@ public class VariantReferenceReplacementUtils {
     }
 
     private static Optional<Reference<Product>> getProductReference(@Nonnull final Attribute attribute) {
-        return isProductReference(attribute)
-            ? Optional.of(attribute.getValue(AttributeAccess.ofProductReference())) : Optional.empty();
+        return Optional.of(attribute)
+                       .filter(VariantReferenceReplacementUtils::isProductReference)
+                       .map(productReferenceAttribute -> productReferenceAttribute
+                           .getValue(AttributeAccess.ofProductReference()));
     }
 
     @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
@@ -145,8 +147,10 @@ public class VariantReferenceReplacementUtils {
     }
 
     private static Optional<Set<Reference<Product>>> getProductReferenceSet(@Nonnull final Attribute attribute) {
-        return isProductReferenceSet(attribute)
-            ? Optional.of(attribute.getValue(AttributeAccess.ofProductReferenceSet())) : Optional.empty();
+        return Optional.of(attribute)
+                       .filter(VariantReferenceReplacementUtils::isProductReferenceSet)
+                       .map(productReferenceSetAttribute -> productReferenceSetAttribute
+                           .getValue(AttributeAccess.ofProductReferenceSet()));
     }
 
     static boolean isProductReference(@Nonnull final Attribute attribute) {
