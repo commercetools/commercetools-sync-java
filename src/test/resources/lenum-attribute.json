@@ -1,0 +1,9 @@
+{
+  "name": "lenum",
+  "value": {
+    "fr": "#FR Legal Text",
+    "it": "#IT Legal Text",
+    "de": "#DE Legal Text",
+    "en": "#EN Legal Text"
+  }
+}

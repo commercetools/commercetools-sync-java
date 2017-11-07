@@ -1,0 +1,7 @@
+{
+  "name": "money",
+  "value": {
+    "currencyCode": "EUR",
+    "centAmount": 2300
+  }
+}

@@ -53,6 +53,22 @@ public class ProductSyncMockUtils {
     public static final String PRODUCT_TYPE_RESOURCE_PATH = "product-type.json";
     public static final String PRODUCT_TYPE_NO_KEY_RESOURCE_PATH = "product-type-no-key.json";
     public static final String CATEGORY_KEY_1_RESOURCE_PATH = "category-key-1.json";
+    public static final String BOOLEAN_ATTRIBUTE = "boolean-attribute.json";
+    public static final String TEXT_ATTRIBUTE = "text-attribute.json";
+    public static final String LTEXT_ATTRIBUTE = "ltext-attribute.json";
+    public static final String ENUM_ATTRIBUTE = "enum-attribute.json";
+    public static final String LENUM_ATTRIBUTE = "lenum-attribute.json";
+    public static final String NUMBER_ATTRIBUTE = "number-attribute.json";
+    public static final String MONEY_ATTRIBUTE = "money-attribute.json";
+    public static final String DATE_ATTRIBUTE = "date-attribute.json";
+    public static final String TIME_ATTRIBUTE = "time-attribute.json";
+    public static final String DATE_TIME_ATTRIBUTE = "datetime-attribute.json";
+    public static final String PRODUCT_REFERENCE_ATTRIBUTE = "product-reference-attribute.json";
+    public static final String PRODUCT_REFERENCE_SET_ATTRIBUTE = "product-reference-set-attribute.json";
+    public static final String LTEXT_SET_ATTRIBUTE = "ltext-set-attribute.json";
+
+
+
 
     /**
      * Unfortunately, <a href="http://dev.commercetools.com/http-api-projects-products.html#category-order-hints">

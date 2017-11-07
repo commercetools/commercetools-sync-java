@@ -1,0 +1,21 @@
+{
+  "name": "productReferenceSet",
+  "value": [
+    {
+      "id": "53c4a8b4-754f-4b95-b6f2-3e1e70e3d0c3",
+      "typeId": "product"
+    },
+    {
+      "id": "d50346ce-097f-42d7-8f7c-8286f710c8f9",
+      "typeId": "product"
+    },
+    {
+      "id": "14398b24-4e2b-4ddc-b1df-c25f772cf39d",
+      "typeId": "product"
+    },
+    {
+      "id": "8fca7651-1238-4093-8d16-e6f78dd2809d",
+      "typeId": "product"
+    }
+  ]
+}
