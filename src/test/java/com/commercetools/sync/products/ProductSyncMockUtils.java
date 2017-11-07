@@ -64,6 +64,7 @@ public class ProductSyncMockUtils {
     public static final String TIME_ATTRIBUTE = "time-attribute.json";
     public static final String DATE_TIME_ATTRIBUTE = "datetime-attribute.json";
     public static final String PRODUCT_REFERENCE_ATTRIBUTE = "product-reference-attribute.json";
+    public static final String CATEGORY_REFERENCE_ATTRIBUTE = "category-reference-attribute.json";
     public static final String PRODUCT_REFERENCE_SET_ATTRIBUTE = "product-reference-set-attribute.json";
     public static final String LTEXT_SET_ATTRIBUTE = "ltext-set-attribute.json";
 

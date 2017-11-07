@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.BOOLEAN_ATTRIBUTE;
+import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_REFERENCE_ATTRIBUTE;
 import static com.commercetools.sync.products.ProductSyncMockUtils.DATE_ATTRIBUTE;
 import static com.commercetools.sync.products.ProductSyncMockUtils.DATE_TIME_ATTRIBUTE;
 import static com.commercetools.sync.products.ProductSyncMockUtils.ENUM_ATTRIBUTE;
@@ -363,6 +364,10 @@ public class VariantReferenceReplacementUtilsTest {
             readObjectFromResource(PRODUCT_REFERENCE_SET_ATTRIBUTE, Attribute.class);
         assertThat(isProductReference(productReferenceSetAttribute)).isFalse();
 
+        final Attribute categoryReferenceAttribute =
+            readObjectFromResource(CATEGORY_REFERENCE_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReference(categoryReferenceAttribute)).isFalse();
+
         final Attribute ltextSetAttribute = readObjectFromResource(LTEXT_SET_ATTRIBUTE, Attribute.class);
         assertThat(isProductReference(ltextSetAttribute)).isFalse();
 
@@ -406,6 +411,10 @@ public class VariantReferenceReplacementUtilsTest {
         final Attribute productReferenceAttribute =
             readObjectFromResource(PRODUCT_REFERENCE_ATTRIBUTE, Attribute.class);
         assertThat(isProductReferenceSet(productReferenceAttribute)).isFalse();
+
+        final Attribute categoryReferenceAttribute =
+            readObjectFromResource(CATEGORY_REFERENCE_ATTRIBUTE, Attribute.class);
+        assertThat(isProductReferenceSet(categoryReferenceAttribute)).isFalse();
 
         final Attribute ltextSetAttribute = readObjectFromResource(LTEXT_SET_ATTRIBUTE, Attribute.class);
         assertThat(isProductReferenceSet(ltextSetAttribute)).isFalse();
