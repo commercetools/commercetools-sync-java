@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
+import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -165,8 +166,8 @@ public class VariantReferenceReplacementUtils {
 
     private static boolean isValueAProductReference(@Nonnull final JsonNode valueAsJsonNode) {
         if (valueAsJsonNode.isContainerNode()) {
-            final JsonNode typeIdNode = valueAsJsonNode.get("typeId");
-            return typeIdNode != null && "product".equals(typeIdNode.asText());
+            final JsonNode typeIdNode = valueAsJsonNode.get(REFERENCE_TYPE_ID_FIELD);
+            return typeIdNode != null && Product.referenceTypeId().equals(typeIdNode.asText());
         }
         return false;
     }
