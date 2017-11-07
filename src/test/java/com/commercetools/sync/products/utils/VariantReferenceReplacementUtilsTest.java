@@ -389,16 +389,16 @@ public class VariantReferenceReplacementUtilsTest {
         assertThat(isProductReferenceSet(lenumAttribute)).isFalse();
 
         final Attribute numberAttribute = readObjectFromResource(NUMBER_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(numberAttribute)).isFalse();
+        assertThat(isProductReferenceSet(numberAttribute)).isFalse();
 
         final Attribute moneyAttribute = readObjectFromResource(MONEY_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(moneyAttribute)).isFalse();
+        assertThat(isProductReferenceSet(moneyAttribute)).isFalse();
 
         final Attribute dateAttribute = readObjectFromResource(DATE_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(dateAttribute)).isFalse();
+        assertThat(isProductReferenceSet(dateAttribute)).isFalse();
 
         final Attribute timeAttribute = readObjectFromResource(TIME_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(timeAttribute)).isFalse();
+        assertThat(isProductReferenceSet(timeAttribute)).isFalse();
 
         final Attribute dateTimeAttribute = readObjectFromResource(DATE_TIME_ATTRIBUTE, Attribute.class);
         assertThat(isProductReferenceSet(dateTimeAttribute)).isFalse();
@@ -408,7 +408,7 @@ public class VariantReferenceReplacementUtilsTest {
         assertThat(isProductReferenceSet(productReferenceAttribute)).isFalse();
 
         final Attribute ltextSetAttribute = readObjectFromResource(LTEXT_SET_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(ltextSetAttribute)).isFalse();
+        assertThat(isProductReferenceSet(ltextSetAttribute)).isFalse();
 
         final Attribute productReferenceSetAttribute =
             readObjectFromResource(PRODUCT_REFERENCE_SET_ATTRIBUTE, Attribute.class);
