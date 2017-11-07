@@ -166,7 +166,7 @@ public class VariantReferenceReplacementUtils {
     private static boolean isValueAProductReference(@Nonnull final JsonNode valueAsJsonNode) {
         if (valueAsJsonNode.isContainerNode()) {
             final JsonNode typeIdNode = valueAsJsonNode.get("typeId");
-            return typeIdNode != null && Objects.equals(typeIdNode.asText(), "product");
+            return typeIdNode != null && "product".equals(typeIdNode.asText());
         }
         return false;
     }
