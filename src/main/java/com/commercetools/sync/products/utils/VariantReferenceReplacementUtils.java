@@ -1,7 +1,8 @@
 package com.commercetools.sync.products.utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.json.JsonException;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
@@ -128,11 +129,8 @@ public class VariantReferenceReplacementUtils {
     }
 
     private static Optional<Reference<Product>> getProductReference(@Nonnull final Attribute attribute) {
-        try {
-            return Optional.of(attribute.getValue(AttributeAccess.ofProductReference()));
-        } catch (final JsonException exception) {
-            return Optional.empty();
-        }
+        return isProductReference(attribute)
+            ? Optional.of(attribute.getValue(AttributeAccess.ofProductReference())) : Optional.empty();
     }
 
     @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
@@ -147,10 +145,25 @@ public class VariantReferenceReplacementUtils {
     }
 
     private static Optional<Set<Reference<Product>>> getProductReferenceSet(@Nonnull final Attribute attribute) {
-        try {
-            return Optional.of(attribute.getValue(AttributeAccess.ofProductReferenceSet()));
-        } catch (final JsonException exception) {
-            return Optional.empty();
+        return isProductReferenceSet(attribute)
+            ? Optional.of(attribute.getValue(AttributeAccess.ofProductReferenceSet())) : Optional.empty();
+    }
+
+    static boolean isProductReference(@Nonnull final Attribute attribute) {
+        final JsonNode valueAsJsonNode = attribute.getValueAsJsonNode();
+        return !(valueAsJsonNode instanceof ArrayNode) && isValueAProductReference(valueAsJsonNode);
+    }
+
+    static boolean isProductReferenceSet(@Nonnull final Attribute attribute) {
+        final JsonNode valueAsJsonNode = attribute.getValueAsJsonNode();
+        return (valueAsJsonNode instanceof ArrayNode) && isValueAProductReference(valueAsJsonNode.elements().next());
+    }
+
+    private static boolean isValueAProductReference(@Nonnull final JsonNode valueAsJsonNode) {
+        if (valueAsJsonNode.isContainerNode()) {
+            final JsonNode typeIdNode = valueAsJsonNode.get("typeId");
+            return typeIdNode != null && Objects.equals(typeIdNode.asText(), "product");
         }
+        return false;
     }
 }
