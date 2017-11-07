@@ -47,7 +47,7 @@ are breaking changes. If there are, then a migration guide should be provided.
 
 **Bug Fixes** (1)
 - **Product Sync** - Fixes an issue with `replaceAttributesReferencesIdsWithKeys` which nullifies localized text attributes due 
-to json parsing not throwing exception on parsing it to reference set. [#179](https://github.com/commercetools/commercetools-sync-java/issues/179)
+to JSON parsing not throwing exception on parsing it to reference set. [#179](https://github.com/commercetools/commercetools-sync-java/issues/179)
 
 
 ### v1.0.0-M3 -  Nov 3, 2017
