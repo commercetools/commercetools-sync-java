@@ -238,7 +238,7 @@ public class CategorySyncIT {
 
         final CategorySyncOptions categorySyncOptions =
             CategorySyncOptionsBuilder.of(spyClient)
-                                      .errorCallBack((errorMessage, error) -> {
+                                      .errorCallback((errorMessage, error) -> {
                                           errorMessages.add(errorMessage);
                                           errors.add(error);
                                       })

@@ -55,11 +55,11 @@ public class BaseSyncOptions<U> {
     }
 
     /**
-     * Returns the {@code errorCallBack} {@link BiConsumer}&lt;{@link String}, {@link Throwable}&gt; function set to
+     * Returns the {@code errorCallback} {@link BiConsumer}&lt;{@link String}, {@link Throwable}&gt; function set to
      * {@code this} {@link BaseSyncOptions}. It represents the callback that is called whenever an event occurs during
      * the sync process that represents an error.
      *
-     * @return the {@code errorCallBack} {@link BiConsumer}&lt;{@link String}, {@link Throwable}&gt; function set to
+     * @return the {@code errorCallback} {@link BiConsumer}&lt;{@link String}, {@link Throwable}&gt; function set to
      *      {@code this} {@link BaseSyncOptions}
      */
     @Nullable
@@ -68,11 +68,11 @@ public class BaseSyncOptions<U> {
     }
 
     /**
-     * Returns the {@code warningCallBack} {@link Consumer}&lt;{@link String}&gt; function set to {@code this}
+     * Returns the {@code warningCallback} {@link Consumer}&lt;{@link String}&gt; function set to {@code this}
      * {@link BaseSyncOptions}. It represents the callback that is called whenever an event occurs
      * during the sync process that represents a warning.
      *
-     * @return the {@code warningCallBack} {@link Consumer}&lt;{@link String}&gt; function set to {@code this}
+     * @return the {@code warningCallback} {@link Consumer}&lt;{@link String}&gt; function set to {@code this}
      *      {@link BaseSyncOptions}
      */
     @Nullable
@@ -133,11 +133,11 @@ public class BaseSyncOptions<U> {
     }
 
     /**
-     * Given a {@code warningMessage} string, this method calls the {@code warningCallBack} function which is set
-     * to {@code this} instance of the {@link BaseSyncOptions}. If there {@code warningCallBack} is null, this
+     * Given a {@code warningMessage} string, this method calls the {@code warningCallback} function which is set
+     * to {@code this} instance of the {@link BaseSyncOptions}. If there {@code warningCallback} is null, this
      * method does nothing.
      *
-     * @param warningMessage the warning message to supply to the {@code warningCallBack} function.
+     * @param warningMessage the warning message to supply to the {@code warningCallback} function.
      */
     public void applyWarningCallback(@Nonnull final String warningMessage) {
         if (this.warningCallBack != null) {
@@ -146,12 +146,12 @@ public class BaseSyncOptions<U> {
     }
 
     /**
-     * Given an {@code errorMessage} and an {@code exception}, this method calls the {@code errorCallBack} function
-     * which is set to {@code this} instance of the {@link BaseSyncOptions}. If there {@code errorCallBack} is null,
+     * Given an {@code errorMessage} and an {@code exception}, this method calls the {@code errorCallback} function
+     * which is set to {@code this} instance of the {@link BaseSyncOptions}. If there {@code errorCallback} is null,
      * this method does nothing.
      *
-     * @param errorMessage the error message to supply as first param to the {@code errorCallBack} function.
-     * @param exception    optional {@link Throwable} instance to supply to the {@code errorCallBack} function as a
+     * @param errorMessage the error message to supply as first param to the {@code errorCallback} function.
+     * @param exception    optional {@link Throwable} instance to supply to the {@code errorCallback} function as a
      *                     second param.
      */
     public void applyErrorCallback(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
@@ -162,7 +162,7 @@ public class BaseSyncOptions<U> {
 
     /**
      *
-     * @param errorMessage the error message to supply as first param to the {@code errorCallBack} function.
+     * @param errorMessage the error message to supply as first param to the {@code errorCallback} function.
      * @see #applyErrorCallback(String, Throwable) applyErrorCallback(String, Throwable)
      */
     public void applyErrorCallback(@Nonnull final String errorMessage) {

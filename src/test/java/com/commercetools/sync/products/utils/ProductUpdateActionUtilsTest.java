@@ -189,7 +189,7 @@ public class ProductUpdateActionUtilsTest {
 
         final List<String> errorsCatcher = new ArrayList<>();
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallBack((message, exception) -> errorsCatcher.add(message))
+            .errorCallback((message, exception) -> errorsCatcher.add(message))
             .build();
 
         final List<UpdateAction<Product>> updateActions =
@@ -255,7 +255,7 @@ public class ProductUpdateActionUtilsTest {
 
         final List<String> errorsCatcher = new ArrayList<>();
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallBack((message, exception) -> errorsCatcher.add(message))
+            .errorCallback((message, exception) -> errorsCatcher.add(message))
             .build();
 
         final List<UpdateAction<Product>> changeMasterVariant =

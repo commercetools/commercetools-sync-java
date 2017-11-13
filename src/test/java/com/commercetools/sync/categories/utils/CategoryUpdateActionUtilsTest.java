@@ -224,7 +224,7 @@ public class CategoryUpdateActionUtilsTest {
         final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .warningCallBack(
+                                                                                  .warningCallback(
                                                                                       updateActionWarningCallBack)
                                                                                   .build();
 
@@ -249,7 +249,7 @@ public class CategoryUpdateActionUtilsTest {
         final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .warningCallBack(
+                                                                                  .warningCallback(
                                                                                       updateActionWarningCallBack)
                                                                                   .build();
 
@@ -299,7 +299,7 @@ public class CategoryUpdateActionUtilsTest {
         final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .warningCallBack(
+                                                                                  .warningCallback(
                                                                                       updateActionWarningCallBack)
                                                                                   .build();
 
@@ -324,7 +324,7 @@ public class CategoryUpdateActionUtilsTest {
         final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .warningCallBack(
+                                                                                  .warningCallback(
                                                                                       updateActionWarningCallBack)
                                                                                   .build();
 

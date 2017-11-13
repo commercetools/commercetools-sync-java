@@ -49,7 +49,7 @@ public class CategorySyncTest {
         errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
         categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
-                                                        .errorCallBack((errorMessage, exception) -> {
+                                                        .errorCallback((errorMessage, exception) -> {
                                                             errorCallBackMessages.add(errorMessage);
                                                             errorCallBackExceptions.add(exception);
                                                         })
@@ -430,7 +430,7 @@ public class CategorySyncTest {
         final int batchSize = 1;
         CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(mock(SphereClient.class))
-            .errorCallBack(
+            .errorCallback(
                 (errorMessage, exception) -> {
                     errorCallBackMessages.add(errorMessage);
                     errorCallBackExceptions.add(exception);
@@ -473,7 +473,7 @@ public class CategorySyncTest {
         // With Default batch size
 
         categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                        .errorCallBack((errorMessage, exception) -> {
+                                                        .errorCallback((errorMessage, exception) -> {
                                                             errorCallBackMessages.add(errorMessage);
                                                             errorCallBackExceptions.add(exception);
                                                         })

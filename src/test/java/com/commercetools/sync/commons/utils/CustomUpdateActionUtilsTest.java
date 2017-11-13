@@ -102,7 +102,7 @@ public class CustomUpdateActionUtilsTest {
 
         // Mock sync options
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .errorCallBack(
+                                                                                  .errorCallback(
                                                                                       updateActionErrorCallBack)
                                                                                   .build();
 
@@ -166,7 +166,7 @@ public class CustomUpdateActionUtilsTest {
 
         // Mock sync options
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .errorCallBack(
+                                                                                  .errorCallback(
                                                                                       updateActionErrorCallBack)
                                                                                   .build();
 

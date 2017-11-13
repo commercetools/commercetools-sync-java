@@ -82,11 +82,11 @@ public class CategorySyncIT {
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallBack((errorMessage, exception) -> {
+            .errorCallback((errorMessage, exception) -> {
                 callBackErrorResponses.add(errorMessage);
                 callBackExceptions.add(exception);
             })
-            .warningCallBack((warningMessage) -> callBackWarningResponses.add(warningMessage))
+            .warningCallback((warningMessage) -> callBackWarningResponses.add(warningMessage))
             .build();
         categorySync = new CategorySync(categorySyncOptions);
     }

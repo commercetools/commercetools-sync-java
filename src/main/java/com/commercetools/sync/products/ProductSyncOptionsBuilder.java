@@ -82,8 +82,8 @@ public final class ProductSyncOptionsBuilder
     public ProductSyncOptions build() {
         return new ProductSyncOptions(
             ctpClient,
-            errorCallBack,
-            warningCallBack,
+            errorCallback,
+            warningCallback,
             batchSize,
             removeOtherLocales,
             removeOtherSetEntries,

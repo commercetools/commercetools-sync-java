@@ -57,8 +57,8 @@ public final class InventorySyncOptionsBuilder extends
     public InventorySyncOptions build() {
         return new InventorySyncOptions(
             this.ctpClient,
-            this.errorCallBack,
-            this.warningCallBack,
+            this.errorCallback,
+            this.warningCallback,
             this.batchSize,
             this.removeOtherLocales,
             this.removeOtherSetEntries,

@@ -581,7 +581,7 @@ public class InventorySyncTest {
                                           .setBatchSize(batchSize)
                                           .ensureChannels(ensureChannels)
                                           .allowUuidKeys(allowUuid)
-                                          .errorCallBack((callBackError, exception) -> {
+                                          .errorCallback((callBackError, exception) -> {
                                               errorCallBackMessages.add(callBackError);
                                               errorCallBackExceptions.add(exception);
                                           })

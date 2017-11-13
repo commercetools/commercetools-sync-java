@@ -38,7 +38,7 @@ public class StateServiceIT {
         warnings = new ArrayList<>();
         oldState = createState(CTP_TARGET_CLIENT, STATE_TYPE);
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                               .warningCallBack(warnings::add)
+                                                                               .warningCallback(warnings::add)
                                                                                .build();
         stateService = new StateServiceImpl(productSyncOptions, STATE_TYPE);
     }

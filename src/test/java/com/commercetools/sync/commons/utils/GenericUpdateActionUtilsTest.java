@@ -85,7 +85,7 @@ public class GenericUpdateActionUtilsTest {
 
         // Mock sync options
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                          .errorCallBack(updateActionErrorCallBack)
+                                                                          .errorCallback(updateActionErrorCallBack)
                                                                           .build();
 
         final UpdateAction<Cart> updateAction = buildTypedSetCustomTypeUpdateAction("key", fieldsJsonMap,
@@ -151,7 +151,7 @@ public class GenericUpdateActionUtilsTest {
 
         // Mock sync options
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                          .errorCallBack(updateActionErrorCallBack)
+                                                                          .errorCallback(updateActionErrorCallBack)
                                                                           .build();
 
         final UpdateAction<Cart> updateAction = buildTypedRemoveCustomTypeUpdateAction(cart, syncOptions)
@@ -226,7 +226,7 @@ public class GenericUpdateActionUtilsTest {
         };
 
         final BaseSyncOptions baseSyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                          .errorCallBack(updateActionErrorCallBack)
+                                                                          .errorCallback(updateActionErrorCallBack)
                                                                           .build();
 
         final UpdateAction<Cart> updateAction =

@@ -118,8 +118,8 @@ public class ProductSyncFilterIT {
         };
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                        .errorCallBack(errorCallBack)
-                                        .warningCallBack(warningCallBack)
+                                        .errorCallback(errorCallBack)
+                                        .warningCallback(warningCallBack)
                                         .beforeUpdateCallback(actionsCallBack);
     }
 

@@ -90,8 +90,8 @@ public class BuildProductVariantImageUpdateActionsIT {
 
 
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                               .errorCallBack(errorCallBack)
-                                                                               .warningCallBack(warningCallBack)
+                                                                               .errorCallback(errorCallBack)
+                                                                               .warningCallback(warningCallBack)
                                                                                .beforeUpdateCallback(
                                                                                    updateActionsCollector)
                                                                                .build();

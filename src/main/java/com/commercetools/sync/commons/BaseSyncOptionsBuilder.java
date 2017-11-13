@@ -11,8 +11,8 @@ import java.util.function.Function;
 
 public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T, S, U>, S extends BaseSyncOptions, U> {
     protected SphereClient ctpClient;
-    protected BiConsumer<String, Throwable> errorCallBack;
-    protected Consumer<String> warningCallBack;
+    protected BiConsumer<String, Throwable> errorCallback;
+    protected Consumer<String> warningCallback;
     protected int batchSize = 30;
     protected boolean removeOtherLocales = true;
     protected boolean removeOtherSetEntries = true;
@@ -22,26 +22,26 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     protected Function<List<UpdateAction<U>>, List<UpdateAction<U>>> beforeUpdateCallback;
 
     /**
-     * Sets the {@code errorCallBack} function of the sync module. This callback will be called whenever an event occurs
+     * Sets the {@code errorCallback} function of the sync module. This callback will be called whenever an event occurs
      * that leads to an error alert from the sync process.
      *
-     * @param errorCallBack the new value to set to the error callback.
+     * @param errorCallback the new value to set to the error callback.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setErrorCallBack(@Nonnull final BiConsumer<String, Throwable> errorCallBack) {
-        this.errorCallBack = errorCallBack;
+    public T errorCallback(@Nonnull final BiConsumer<String, Throwable> errorCallback) {
+        this.errorCallback = errorCallback;
         return getThis();
     }
 
     /**
-     * Sets the {@code warningCallBack} function of the sync module. This callback will be called whenever an event
+     * Sets the {@code warningCallback} function of the sync module. This callback will be called whenever an event
      * occurs that leads to a warning alert from the sync process.
      *
-     * @param warningCallBack the new value to set to the warning callback.
+     * @param warningCallback the new value to set to the warning callback.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setWarningCallBack(@Nonnull final Consumer<String> warningCallBack) {
-        this.warningCallBack = warningCallBack;
+    public T warningCallback(@Nonnull final Consumer<String> warningCallback) {
+        this.warningCallback = warningCallback;
         return getThis();
     }
 

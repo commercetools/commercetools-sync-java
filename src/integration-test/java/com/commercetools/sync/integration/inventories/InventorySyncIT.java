@@ -433,7 +433,7 @@ public class InventorySyncIT {
         BiConsumer<String, Throwable> countingErrorCallback = (string, throwable) ->
             invocationCounter.incrementAndGet();
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-            .errorCallBack(countingErrorCallback)
+            .errorCallback(countingErrorCallback)
             .ensureChannels(false).build();
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(newInventories).toCompletableFuture()

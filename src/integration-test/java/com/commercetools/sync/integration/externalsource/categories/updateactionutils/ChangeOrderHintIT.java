@@ -64,7 +64,7 @@ public class ChangeOrderHintIT {
     public void setupTest() {
         callBackResponses = new ArrayList<>();
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                        .warningCallBack(callBackResponses::add)
+                                                        .warningCallback(callBackResponses::add)
                                                         .build();
     }
 

@@ -37,8 +37,8 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
     public CategorySyncOptions build() {
         return new CategorySyncOptions(
             this.ctpClient,
-            this.errorCallBack,
-            this.warningCallBack,
+            this.errorCallback,
+            this.warningCallback,
             this.batchSize,
             this.removeOtherLocales,
             this.removeOtherSetEntries,
