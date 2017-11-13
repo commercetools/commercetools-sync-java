@@ -74,7 +74,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * @param removeOtherLocales new value to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setRemoveOtherLocales(final boolean removeOtherLocales) {
+    public T removeOtherLocales(final boolean removeOtherLocales) {
         this.removeOtherLocales = removeOtherLocales;
         return getThis();
     }
@@ -87,7 +87,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * @param removeOtherSetEntries new value to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setRemoveOtherSetEntries(final boolean removeOtherSetEntries) {
+    public T removeOtherSetEntries(final boolean removeOtherSetEntries) {
         this.removeOtherSetEntries = removeOtherSetEntries;
         return getThis();
     }
@@ -100,7 +100,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * @param removeOtherCollectionEntries new value to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setRemoveOtherCollectionEntries(final boolean removeOtherCollectionEntries) {
+    public T removeOtherCollectionEntries(final boolean removeOtherCollectionEntries) {
         this.removeOtherCollectionEntries = removeOtherCollectionEntries;
         return getThis();
     }
@@ -113,7 +113,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * @param removeOtherProperties new value to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setRemoveOtherProperties(final boolean removeOtherProperties) {
+    public T removeOtherProperties(final boolean removeOtherProperties) {
         this.removeOtherProperties = removeOtherProperties;
         return getThis();
     }

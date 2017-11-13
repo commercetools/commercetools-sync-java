@@ -81,7 +81,7 @@ public class ProductSyncOptionsBuilderTest {
 
     @Test
     public void setRemoveOtherCollectionEntries_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.setRemoveOtherCollectionEntries(false);
+        productSyncOptionsBuilder.removeOtherCollectionEntries(false);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.shouldRemoveOtherCollectionEntries()).isNotNull();
@@ -90,7 +90,7 @@ public class ProductSyncOptionsBuilderTest {
 
     @Test
     public void setRemoveOtherLocales_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.setRemoveOtherLocales(false);
+        productSyncOptionsBuilder.removeOtherLocales(false);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.shouldRemoveOtherLocales()).isNotNull();
@@ -99,7 +99,7 @@ public class ProductSyncOptionsBuilderTest {
 
     @Test
     public void setRemoveOtherProperties_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.setRemoveOtherProperties(false);
+        productSyncOptionsBuilder.removeOtherProperties(false);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.shouldRemoveOtherProperties()).isNotNull();
@@ -137,7 +137,7 @@ public class ProductSyncOptionsBuilderTest {
 
     @Test
     public void setRemoveOtherSetEntries_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.setRemoveOtherSetEntries(false);
+        productSyncOptionsBuilder.removeOtherSetEntries(false);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.shouldRemoveOtherSetEntries()).isNotNull();
@@ -157,7 +157,7 @@ public class ProductSyncOptionsBuilderTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
             .of(CTP_CLIENT)
             .allowUuidKeys(true)
-            .setRemoveOtherLocales(false)
+            .removeOtherLocales(false)
             .batchSize(30)
             .beforeUpdateCallback(updateActions -> Collections.emptyList())
             .build();
