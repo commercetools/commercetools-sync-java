@@ -33,13 +33,14 @@ public class CategorySyncOptionsTest {
     public void getUpdateActionsFilter_WithFilter_ShouldApplyFilterOnList() {
         final Function<List<UpdateAction<Category>>,
             List<UpdateAction<Category>>> clearListFilter = (updateActions -> Collections.emptyList());
-        categorySyncOptionsBuilder.setUpdateActionsFilter(clearListFilter);
+        categorySyncOptionsBuilder.beforeUpdateCallback(clearListFilter);
         final CategorySyncOptions syncOptions = categorySyncOptionsBuilder.build();
 
         final List<UpdateAction<Category>> updateActions = new ArrayList<>();
         updateActions.add(ChangeName.of(LocalizedString.of(Locale.ENGLISH, "name")));
 
-        final List<UpdateAction<Category>> resultantList = syncOptions.getUpdateActionsCallBack().apply(updateActions);
+        assertThat(syncOptions.getBeforeUpdateCallback()).isNotNull();
+        final List<UpdateAction<Category>> resultantList = syncOptions.getBeforeUpdateCallback().apply(updateActions);
 
         assertThat(updateActions).isNotEmpty();
         assertThat(resultantList).isEmpty();

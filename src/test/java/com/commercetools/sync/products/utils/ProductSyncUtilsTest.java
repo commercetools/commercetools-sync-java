@@ -139,7 +139,7 @@ public class ProductSyncUtilsTest {
                           .collect(Collectors.toList());
 
         productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                      .setUpdateActionsFilterCallBack(filterCategoryActions)
+                                                      .beforeUpdateCallback(filterCategoryActions)
                                                       .build();
 
         final List<UpdateAction<Product>> updateActions =

@@ -172,7 +172,7 @@ public class CategorySyncUtilsTest {
             };
 
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                        .setUpdateActionsFilter(reverseOrderFilter)
+                                                        .beforeUpdateCallback(reverseOrderFilter)
                                                         .build();
 
         final List<UpdateAction<Category>> updateActions =

@@ -69,7 +69,7 @@ public final class ProductSyncUtils {
         final List<UpdateAction<Product>> assetUpdateActions =
             buildAssetActions(oldProduct, newProduct, syncOptions);
         updateActions.addAll(assetUpdateActions);
-        return filterUpdateActions(updateActions, syncOptions.getUpdateActionsCallBack());
+        return filterUpdateActions(updateActions, syncOptions.getBeforeUpdateCallback());
     }
 
     /**

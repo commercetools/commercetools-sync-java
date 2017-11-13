@@ -38,7 +38,7 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.shouldRemoveOtherVariants()).isTrue();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
         assertThat(productSyncOptions.getSyncFilter()).isSameAs(SyncFilter.of());
-        assertThat(productSyncOptions.getUpdateActionsCallBack()).isNull();
+        assertThat(productSyncOptions.getBeforeUpdateCallback()).isNull();
         assertThat(productSyncOptions.getErrorCallBack()).isNull();
         assertThat(productSyncOptions.getWarningCallBack()).isNull();
         assertThat(productSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
@@ -68,13 +68,13 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void setUpdateActionsFilter_WithFilter_ShouldSetFilter() {
+    public void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
         final Function<List<UpdateAction<Product>>,
                     List<UpdateAction<Product>>> clearListFilter = (updateActions -> Collections.emptyList());
-        productSyncOptionsBuilder.setUpdateActionsFilterCallBack(clearListFilter);
+        productSyncOptionsBuilder.beforeUpdateCallback(clearListFilter);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.getUpdateActionsCallBack()).isNotNull();
+        assertThat(productSyncOptions.getBeforeUpdateCallback()).isNotNull();
     }
 
     @Test
@@ -157,7 +157,7 @@ public class ProductSyncOptionsBuilderTest {
             .setAllowUuidKeys(true)
             .setRemoveOtherLocales(false)
             .setBatchSize(30)
-            .setUpdateActionsFilterCallBack(updateActions -> Collections.emptyList())
+            .beforeUpdateCallback(updateActions -> Collections.emptyList())
             .build();
         assertThat(productSyncOptions).isNotNull();
     }
