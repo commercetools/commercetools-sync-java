@@ -1,21 +1,16 @@
 package com.commercetools.sync.products;
 
-import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 
 import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.function.Function;
 
 public final class ProductSyncOptionsBuilder
-    extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions> {
+    extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions, Product> {
     public static final int BATCH_SIZE_DEFAULT = 30;
     private boolean removeOtherVariants = true;
     private SyncFilter syncFilter;
-    private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsCallBack;
     static final boolean ENSURE_CHANNELS_DEFAULT = false;
     private boolean ensurePriceChannels = ENSURE_CHANNELS_DEFAULT;
 
@@ -66,20 +61,6 @@ public final class ProductSyncOptionsBuilder
     }
 
     /**
-     * Sets the update actions filter callback which can be applied on generated list of update actions to produce
-     * a resultant list after the filter function has been applied.
-     *
-     * @param updateActionsCallBack filter function which can be applied on generated list of update actions
-     * @return {@code this} instance of {@link CategorySyncOptionsBuilder}
-     */
-    @Nonnull
-    public ProductSyncOptionsBuilder setUpdateActionsFilterCallBack(@Nonnull final Function<List<UpdateAction<Product>>,
-        List<UpdateAction<Product>>> updateActionsCallBack) {
-        this.updateActionsCallBack = updateActionsCallBack;
-        return this;
-    }
-
-    /**
      * Set option that indicates whether sync process should create price channel of given key when it doesn't exists
      * in a target project yet. If set to {@code true} sync process would try to create new price channel of given key,
      * otherwise sync process would log error and fail to process draft with given price channel key.
@@ -111,7 +92,7 @@ public final class ProductSyncOptionsBuilder
             allowUuid,
             removeOtherVariants,
             syncFilter,
-            updateActionsCallBack,
+            beforeUpdateCallback,
             ensurePriceChannels
         );
     }

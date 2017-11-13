@@ -2,6 +2,7 @@ package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.inventory.InventoryEntry;
 
 import javax.annotation.Nonnull;
 
@@ -9,7 +10,7 @@ import javax.annotation.Nonnull;
  * Builder for creation of {@link InventorySyncOptions}.
  */
 public final class InventorySyncOptionsBuilder extends
-        BaseSyncOptionsBuilder<InventorySyncOptionsBuilder, InventorySyncOptions> {
+        BaseSyncOptionsBuilder<InventorySyncOptionsBuilder, InventorySyncOptions, InventoryEntry> {
     static final int BATCH_SIZE_DEFAULT = 150;
     static final boolean ENSURE_CHANNELS_DEFAULT = false;
     private boolean ensureChannels = ENSURE_CHANNELS_DEFAULT;
@@ -64,7 +65,8 @@ public final class InventorySyncOptionsBuilder extends
             this.removeOtherCollectionEntries,
             this.removeOtherProperties,
             this.allowUuid,
-            this.ensureChannels);
+            this.ensureChannels,
+            this.beforeUpdateCallback);
     }
 
     /**

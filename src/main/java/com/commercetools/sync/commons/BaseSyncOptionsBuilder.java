@@ -1,12 +1,15 @@
 package com.commercetools.sync.commons;
 
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T, S>, S extends BaseSyncOptions> {
+public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T, S, U>, S extends BaseSyncOptions, U> {
     protected SphereClient ctpClient;
     protected BiConsumer<String, Throwable> errorCallBack;
     protected Consumer<String> warningCallBack;
@@ -16,6 +19,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     protected boolean removeOtherCollectionEntries = true;
     protected boolean removeOtherProperties = true;
     protected boolean allowUuid = false;
+    protected Function<List<UpdateAction<U>>, List<UpdateAction<U>>> beforeUpdateCallback;
 
     /**
      * Sets the {@code errorCallBack} function of the sync module. This callback will be called whenever an event occurs
@@ -124,6 +128,19 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      */
     public T setAllowUuidKeys(final boolean allowUuid) {
         this.allowUuid = allowUuid;
+        return getThis();
+    }
+
+    /**
+     * Sets the beforeUpdateCallback function which can be applied on the generated list of update actions to produce
+     * a resultant list after the {@code beforeUpdateCallback} function has been applied.
+     *
+     * @param beforeUpdateCallback function which can be applied on generated list of update actions.
+     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
+     */
+    public T beforeUpdateCallback(@Nonnull final Function<List<UpdateAction<U>>, List<UpdateAction<U>>>
+                                      beforeUpdateCallback) {
+        this.beforeUpdateCallback = beforeUpdateCallback;
         return getThis();
     }
 
