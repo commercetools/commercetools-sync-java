@@ -41,7 +41,7 @@ are breaking changes. If there are, then a migration guide should be provided.
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 ### v1.0.0-M4 -  Nov 7, 2017
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M4...v1.0.0-M4) |
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M3...v1.0.0-M4) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M4/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M4)
 
