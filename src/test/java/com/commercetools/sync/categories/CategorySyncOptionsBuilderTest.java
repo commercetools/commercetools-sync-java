@@ -89,20 +89,20 @@ public class CategorySyncOptionsBuilderTest {
     }
 
     @Test
-    public void setErrorCallBack_WithCallBack_ShouldSetCallBack() {
+    public void errorCallBack_WithCallBack_ShouldSetCallBack() {
         final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
         };
-        categorySyncOptionsBuilder.setErrorCallBack(mockErrorCallBack);
+        categorySyncOptionsBuilder.errorCallBack(mockErrorCallBack);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.getErrorCallBack()).isNotNull();
     }
 
     @Test
-    public void setWarningCallBack_WithCallBack_ShouldSetCallBack() {
+    public void warningCallBack_WithCallBack_ShouldSetCallBack() {
         final Consumer<String> mockWarningCallBack = (warningMessage) -> {
         };
-        categorySyncOptionsBuilder.setWarningCallBack(mockWarningCallBack);
+        categorySyncOptionsBuilder.warningCallBack(mockWarningCallBack);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.getWarningCallBack()).isNotNull();
