@@ -12,8 +12,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public final class CategorySyncOptions extends BaseSyncOptions {
-    private final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsCallBack;
+public final class CategorySyncOptions extends BaseSyncOptions<Category> {
 
     CategorySyncOptions(@Nonnull final SphereClient ctpClient,
                         @Nullable final BiConsumer<String, Throwable> updateActionErrorCallBack,
@@ -25,7 +24,7 @@ public final class CategorySyncOptions extends BaseSyncOptions {
                         final boolean removeOtherProperties,
                         final boolean allowUuid,
                         @Nullable final Function<List<UpdateAction<Category>>,
-                          List<UpdateAction<Category>>> updateActionsCallBack) {
+                          List<UpdateAction<Category>>> beforeUpdateCallback) {
         super(ctpClient,
             updateActionErrorCallBack,
             updateActionWarningCallBack,
@@ -34,21 +33,7 @@ public final class CategorySyncOptions extends BaseSyncOptions {
             removeOtherSetEntries,
             removeOtherCollectionEntries,
             removeOtherProperties,
-            allowUuid);
-        this.updateActionsCallBack = updateActionsCallBack;
-    }
-
-    /**
-     * Returns the {@code updateActionsCallBack} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
-     * {@link Category}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@link Category}&gt;&gt;&gt; function set to
-     * {@code this} {@link CategorySyncOptions}. It represents a filter function which can be applied on generated list
-     * of update actions to produce a resultant list after the filter function has been applied.
-     *
-     * @return the {@code updateActionsCallBack} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
-     *         {@link Category}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@link Category}&gt;&gt;&gt; function
-     *         set to {@code this} {@link CategorySyncOptions}.
-     */
-    public Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> getUpdateActionsCallBack() {
-        return updateActionsCallBack;
+            allowUuid,
+            beforeUpdateCallback);
     }
 }

@@ -1,13 +1,16 @@
 package com.commercetools.sync.commons;
 
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-public class BaseSyncOptions {
+public class BaseSyncOptions<U> {
     private final SphereClient ctpClient;
     private final BiConsumer<String, Throwable> errorCallBack;
     private final Consumer<String> warningCallBack;
@@ -17,16 +20,19 @@ public class BaseSyncOptions {
     private boolean removeOtherCollectionEntries = true;
     private boolean removeOtherProperties = true;
     private boolean allowUuid = false;
+    private final Function<List<UpdateAction<U>>, List<UpdateAction<U>>> beforeUpdateCallback;
 
     protected BaseSyncOptions(@Nonnull final SphereClient ctpClient,
-                              final BiConsumer<String, Throwable> errorCallBack,
-                              final Consumer<String> warningCallBack,
+                              @Nullable final BiConsumer<String, Throwable> errorCallBack,
+                              @Nullable final Consumer<String> warningCallBack,
                               final int batchSize,
                               final boolean removeOtherLocales,
                               final boolean removeOtherSetEntries,
                               final boolean removeOtherCollectionEntries,
                               final boolean removeOtherProperties,
-                              final boolean allowUuid) {
+                              final boolean allowUuid,
+                              @Nullable final Function<List<UpdateAction<U>>, List<UpdateAction<U>>>
+                                  beforeUpdateCallback) {
         this.ctpClient = ctpClient;
         this.errorCallBack = errorCallBack;
         this.batchSize = batchSize;
@@ -36,6 +42,7 @@ public class BaseSyncOptions {
         this.removeOtherCollectionEntries = removeOtherCollectionEntries;
         this.removeOtherProperties = removeOtherProperties;
         this.allowUuid = allowUuid;
+        this.beforeUpdateCallback = beforeUpdateCallback;
     }
 
     /**
@@ -187,5 +194,20 @@ public class BaseSyncOptions {
      */
     public int getBatchSize() {
         return batchSize;
+    }
+
+    /**
+     * Returns the {@code beforeUpdateCallback} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
+     * {@code U}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@code U}&gt;&gt;&gt; function set to
+     * {@code this} {@link BaseSyncOptions}. It represents a callback function which is applied (if set) on the
+     * generated list of update actions to produce a resultant list after the filter function has been applied.
+     *
+     * @return the {@code beforeUpdateCallback} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
+     *         {@code U}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@code U}&gt;&gt;&gt; function
+     *         set to {@code this} {@link BaseSyncOptions}.
+     */
+    @Nullable
+    public Function<List<UpdateAction<U>>, List<UpdateAction<U>>> getBeforeUpdateCallback() {
+        return beforeUpdateCallback;
     }
 }
