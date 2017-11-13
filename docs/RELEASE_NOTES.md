@@ -52,6 +52,8 @@ are breaking changes. If there are, then a migration guide should be provided.
 - **Commons** - Change name of `setWarningCallBack` to `warningCallback`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 - **Commons** - Change name of `setErrorCallBack` to `errorCallback`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 - **Commons** - Change name of `setBatchSize` to `batchSize`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
+- **Commons** - Change name of `setRemoveOtherLocales`, `setRemoveOtherSetEntries`, `setRemoveOtherCollectionEntries` and `setRemoveOtherProperties` 
+to `removeOtherLocales`, `removeOtherSetEntries`, `removeOtherCollectionEntries` and `removeOtherProperties`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 -->
 
 
