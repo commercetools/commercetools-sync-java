@@ -107,8 +107,8 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void setAllowUuid_WithTrue_ShouldSetFlag() {
-        productSyncOptionsBuilder.setAllowUuidKeys(true);
+    public void allowUuid_WithTrue_ShouldSetFlag() {
+        productSyncOptionsBuilder.allowUuidKeys(true);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.shouldAllowUuidKeys()).isNotNull();
@@ -156,7 +156,7 @@ public class ProductSyncOptionsBuilderTest {
     public void productSyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
             .of(CTP_CLIENT)
-            .setAllowUuidKeys(true)
+            .allowUuidKeys(true)
             .setRemoveOtherLocales(false)
             .setBatchSize(30)
             .beforeUpdateCallback(updateActions -> Collections.emptyList())

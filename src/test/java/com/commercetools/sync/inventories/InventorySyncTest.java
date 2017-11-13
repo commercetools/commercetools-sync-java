@@ -215,7 +215,7 @@ public class InventorySyncTest {
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on InventoryEntryDraft"
                 + " with SKU:'%s'. Reason: %s: Failed to resolve supply channel reference on InventoryEntryDraft with"
                 + " SKU:'%s'. Reason: Found a UUID in the id field. Expecting a key without a UUID value. If you want"
-                + " to allow UUID values for reference keys, please use the setAllowUuidKeys(true) option in the sync"
+                + " to allow UUID values for reference keys, please use the allowUuidKeys(true) option in the sync"
                 + " options.", SKU_3, ReferenceResolutionException.class.getCanonicalName(), SKU_3));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -438,7 +438,7 @@ public class InventorySyncTest {
                 + " InventoryEntryDraft with SKU:'%s'. Reason:"
                 + " Found a UUID in the id field."
                 + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please"
-                + " use the setAllowUuidKeys(true) option in the sync options.", SKU_1,
+                + " use the allowUuidKeys(true) option in the sync options.", SKU_1,
             ReferenceResolutionException.class.getCanonicalName(), SKU_1));
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -580,7 +580,7 @@ public class InventorySyncTest {
         return InventorySyncOptionsBuilder.of(mock(SphereClient.class))
                                           .setBatchSize(batchSize)
                                           .ensureChannels(ensureChannels)
-                                          .setAllowUuidKeys(allowUuid)
+                                          .allowUuidKeys(allowUuid)
                                           .setErrorCallBack((callBackError, exception) -> {
                                               errorCallBackMessages.add(callBackError);
                                               errorCallBackExceptions.add(exception);
