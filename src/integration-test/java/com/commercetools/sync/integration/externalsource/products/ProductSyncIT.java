@@ -133,8 +133,8 @@ public class ProductSyncIT {
         final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                        .setErrorCallBack(errorCallBack)
-                                        .setWarningCallBack(warningCallBack)
+                                        .errorCallBack(errorCallBack)
+                                        .warningCallBack(warningCallBack)
                                         .build();
     }
 
@@ -233,14 +233,14 @@ public class ProductSyncIT {
             .thenCallRealMethod();
 
         final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder.of(spyClient)
-                                                                       .setErrorCallBack(
+                                                                       .errorCallBack(
                                                                            (errorMessage, exception) -> {
                                                                                errorCallBackMessages
                                                                                    .add(errorMessage);
                                                                                errorCallBackExceptions
                                                                                    .add(exception);
                                                                            })
-                                                                       .setWarningCallBack(warningMessage ->
+                                                                       .warningCallBack(warningMessage ->
                                                                            warningCallBackMessages
                                                                                .add(warningMessage))
                                                                        .build();

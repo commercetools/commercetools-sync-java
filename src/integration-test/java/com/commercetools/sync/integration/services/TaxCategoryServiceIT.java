@@ -38,7 +38,7 @@ public class TaxCategoryServiceIT {
         warnings = new ArrayList<>();
         oldTaxCategory = createTaxCategory(CTP_TARGET_CLIENT);
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                               .setWarningCallBack(warnings::add)
+                                                                               .warningCallBack(warnings::add)
                                                                                .build();
         taxCategoryService = new TaxCategoryServiceImpl(productSyncOptions);
     }

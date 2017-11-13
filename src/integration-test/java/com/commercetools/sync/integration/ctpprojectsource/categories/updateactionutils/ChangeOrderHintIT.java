@@ -60,7 +60,7 @@ public class ChangeOrderHintIT {
         deleteAllCategories(CTP_SOURCE_CLIENT);
         callBackResponses = new ArrayList<>();
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                        .setWarningCallBack(callBackResponses::add)
+                                                        .warningCallBack(callBackResponses::add)
                                                         .build();
     }
 

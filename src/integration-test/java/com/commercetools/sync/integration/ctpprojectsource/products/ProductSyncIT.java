@@ -149,8 +149,8 @@ public class ProductSyncIT {
 
     private ProductSyncOptions buildSyncOptions() {
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                        .setErrorCallBack(this::errorCallback)
-                                        .setWarningCallBack(warningCallBackMessages::add)
+                                        .errorCallBack(this::errorCallback)
+                                        .warningCallBack(warningCallBackMessages::add)
                                         .beforeUpdateCallback(this::beforeUpdateCallback)
                                         .build();
     }
@@ -279,8 +279,8 @@ public class ProductSyncIT {
         // Create custom options with whitelisting and action filter callback..
         final ProductSyncOptions customSyncOptions =
             ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                     .setErrorCallBack(this::errorCallback)
-                                     .setWarningCallBack(warningCallBackMessages::add)
+                                     .errorCallBack(this::errorCallback)
+                                     .warningCallBack(warningCallBackMessages::add)
                                      .beforeUpdateCallback(this::beforeUpdateCallback)
                                      .setSyncFilter(SyncFilter.ofWhiteList(ATTRIBUTES))
                                      .build();

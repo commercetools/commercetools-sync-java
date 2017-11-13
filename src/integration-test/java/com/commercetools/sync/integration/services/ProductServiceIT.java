@@ -96,14 +96,14 @@ public class ProductServiceIT {
         deleteAllProducts(CTP_TARGET_CLIENT);
 
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                               .setErrorCallBack(
+                                                                               .errorCallBack(
                                                                                    (errorMessage, exception) -> {
                                                                                        errorCallBackMessages
                                                                                            .add(errorMessage);
                                                                                        errorCallBackExceptions
                                                                                            .add(exception);
                                                                                    })
-                                                                               .setWarningCallBack(warningMessage ->
+                                                                               .warningCallBack(warningMessage ->
                                                                                    warningCallBackMessages
                                                                                        .add(warningMessage))
                                                                                .build();
@@ -208,7 +208,7 @@ public class ProductServiceIT {
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
         final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder.of(spyClient)
-                                                                         .setErrorCallBack(
+                                                                         .errorCallBack(
                                                                              (errorMessage, exception) -> {
                                                                                  errorCallBackMessages
                                                                                      .add(errorMessage);
@@ -658,7 +658,7 @@ public class ProductServiceIT {
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
         final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder.of(spyClient)
-                                                                       .setErrorCallBack(
+                                                                       .errorCallBack(
                                                                            (errorMessage, exception) -> {
                                                                                errorCallBackMessages
                                                                                    .add(errorMessage);
