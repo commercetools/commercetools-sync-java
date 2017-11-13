@@ -210,4 +210,20 @@ public class BaseSyncOptions<U> {
     public Function<List<UpdateAction<U>>, List<UpdateAction<U>>> getBeforeUpdateCallback() {
         return beforeUpdateCallback;
     }
+
+    /**
+     * Given a {@link List} of {@link UpdateAction}, this method applies the {@code beforeUpdateCallback} function
+     * which is set to {@code this} instance of the {@link BaseSyncOptions} and returns the result. If the
+     * {@code beforeUpdateCallback} is null, this method does nothing to the supplied list of update actions and returns
+     * the same list.
+     *
+     * @param updateActions the list of update actions to apply the {@code beforeUpdateCallback} function on.
+     * @return a list of update actions after applying the {@code beforeUpdateCallback} function on. If the
+     *         {@code beforeUpdateCallback} function was null, the supplied list of {@code updateActions} is returned as
+     *         is.
+     */
+    @Nonnull
+    public List<UpdateAction<U>> applyBeforeUpdateCallBack(@Nonnull final List<UpdateAction<U>> updateActions) {
+        return beforeUpdateCallback != null ? beforeUpdateCallback.apply(updateActions) : updateActions;
+    }
 }
