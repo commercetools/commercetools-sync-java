@@ -95,7 +95,7 @@ object properties. -->
   
   - The list of action groups allowed to be blacklist or whitelisted on products can be found [here](/src/main/java/com/commercetools/sync/products/ActionGroup.java). 
 
-- `updateActionsCallBack`
+- `beforeUpdateCallback`
 a filter function which can be applied on generated list of update actions to produce a resultant list after the filter 
 function has been applied.
 - `allowUuid`
