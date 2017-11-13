@@ -151,7 +151,7 @@ public class ProductSyncIT {
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                         .setErrorCallBack(this::errorCallback)
                                         .setWarningCallBack(warningCallBackMessages::add)
-                                        .setUpdateActionsFilterCallBack(this::updateActionsCallback)
+                                        .beforeUpdateCallback(this::beforeUpdateCallback)
                                         .build();
     }
 
@@ -160,7 +160,7 @@ public class ProductSyncIT {
         errorCallBackExceptions.add(exception);
     }
 
-    private List<UpdateAction<Product>> updateActionsCallback(@Nonnull final List<UpdateAction<Product>> builtActions) {
+    private List<UpdateAction<Product>> beforeUpdateCallback(@Nonnull final List<UpdateAction<Product>> builtActions) {
         updateActions.addAll(builtActions);
         return builtActions;
     }
@@ -281,7 +281,7 @@ public class ProductSyncIT {
             ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                      .setErrorCallBack(this::errorCallback)
                                      .setWarningCallBack(warningCallBackMessages::add)
-                                     .setUpdateActionsFilterCallBack(this::updateActionsCallback)
+                                     .beforeUpdateCallback(this::beforeUpdateCallback)
                                      .setSyncFilter(SyncFilter.ofWhiteList(ATTRIBUTES))
                                      .build();
         final ProductSync customSync = new ProductSync(customSyncOptions);

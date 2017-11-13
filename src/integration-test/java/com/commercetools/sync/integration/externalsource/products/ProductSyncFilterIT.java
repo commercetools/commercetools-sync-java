@@ -120,7 +120,7 @@ public class ProductSyncFilterIT {
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                         .setErrorCallBack(errorCallBack)
                                         .setWarningCallBack(warningCallBack)
-                                        .setUpdateActionsFilterCallBack(actionsCallBack);
+                                        .beforeUpdateCallback(actionsCallBack);
     }
 
     @AfterClass
