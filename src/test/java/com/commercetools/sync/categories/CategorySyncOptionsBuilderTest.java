@@ -1,8 +1,10 @@
 package com.commercetools.sync.categories;
 
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.LocalizedString;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -157,5 +159,34 @@ public class CategorySyncOptionsBuilderTest {
             .build();
         assertThat(categorySyncOptionsWithNegativeBatchSize.getBatchSize())
             .isEqualTo(CategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+    }
+
+    @Test
+    public void applyBeforeUpdateCallBack_WithNullCallback_ShouldReturnIdenticalList() {
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                  .build();
+        assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNull();
+
+        final List<UpdateAction<Category>> updateActions = Collections
+            .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+        final List<UpdateAction<Category>> filteredList = categorySyncOptions
+            .applyBeforeUpdateCallBack(updateActions);
+        assertThat(filteredList).isSameAs(updateActions);
+    }
+
+    @Test
+    public void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                  .beforeUpdateCallback(list ->
+                                                                                      Collections.emptyList())
+                                                                                  .build();
+        assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
+
+        final List<UpdateAction<Category>> updateActions = Collections
+            .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+        final List<UpdateAction<Category>> filteredList = categorySyncOptions
+            .applyBeforeUpdateCallBack(updateActions);
+        assertThat(filteredList).isNotEqualTo(updateActions);
+        assertThat(filteredList).isEmpty();
     }
 }

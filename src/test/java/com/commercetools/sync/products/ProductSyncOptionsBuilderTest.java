@@ -2,7 +2,9 @@ package com.commercetools.sync.products;
 
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -184,5 +186,32 @@ public class ProductSyncOptionsBuilderTest {
             .build();
         assertThat(productSyncOptionsWithNegativeBatchSize.getBatchSize())
             .isEqualTo(ProductSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+    }
+
+    @Test
+    public void applyBeforeUpdateCallBack_WithNullCallback_ShouldReturnIdenticalList() {
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
+                                                                               .build();
+        assertThat(productSyncOptions.getBeforeUpdateCallback()).isNull();
+
+        final List<UpdateAction<Product>> updateActions = Collections
+            .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+        final List<UpdateAction<Product>> filteredList = productSyncOptions.applyBeforeUpdateCallBack(updateActions);
+        assertThat(filteredList).isSameAs(updateActions);
+    }
+
+    @Test
+    public void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
+                                                                               .beforeUpdateCallback(list ->
+                                                                                   Collections.emptyList())
+                                                                               .build();
+        assertThat(productSyncOptions.getBeforeUpdateCallback()).isNotNull();
+
+        final List<UpdateAction<Product>> updateActions = Collections
+            .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+        final List<UpdateAction<Product>> filteredList = productSyncOptions.applyBeforeUpdateCallBack(updateActions);
+        assertThat(filteredList).isNotEqualTo(updateActions);
+        assertThat(filteredList).isEmpty();
     }
 }
