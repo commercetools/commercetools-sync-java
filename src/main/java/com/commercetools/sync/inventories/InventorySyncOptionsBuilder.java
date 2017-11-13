@@ -28,7 +28,7 @@ public final class InventorySyncOptionsBuilder extends
      */
     public static InventorySyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
         return new InventorySyncOptionsBuilder(ctpClient)
-            .setBatchSize(BATCH_SIZE_DEFAULT);
+            .batchSize(BATCH_SIZE_DEFAULT);
     }
 
     /**

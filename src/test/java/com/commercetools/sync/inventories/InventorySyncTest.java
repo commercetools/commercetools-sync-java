@@ -578,7 +578,7 @@ public class InventorySyncTest {
 
     private InventorySyncOptions getInventorySyncOptions(int batchSize, boolean ensureChannels, boolean allowUuid) {
         return InventorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                          .setBatchSize(batchSize)
+                                          .batchSize(batchSize)
                                           .ensureChannels(ensureChannels)
                                           .allowUuidKeys(allowUuid)
                                           .errorCallback((callBackError, exception) -> {

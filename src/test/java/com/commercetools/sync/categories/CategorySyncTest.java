@@ -435,7 +435,7 @@ public class CategorySyncTest {
                     errorCallBackMessages.add(errorMessage);
                     errorCallBackExceptions.add(exception);
                 })
-            .setBatchSize(batchSize)
+            .batchSize(batchSize)
             .build();
 
         final CategorySync categorySync =

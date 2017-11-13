@@ -59,7 +59,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      *                  or else will be ignored and default value of 30 would be used.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setBatchSize(final int batchSize) {
+    public T batchSize(final int batchSize) {
         if (batchSize > 0) {
             this.batchSize = batchSize;
         }

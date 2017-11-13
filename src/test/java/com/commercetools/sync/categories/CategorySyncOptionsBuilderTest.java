@@ -131,7 +131,7 @@ public class CategorySyncOptionsBuilderTest {
             .of(CTP_CLIENT)
             .allowUuidKeys(true)
             .setRemoveOtherLocales(false)
-            .setBatchSize(30)
+            .batchSize(30)
             .beforeUpdateCallback(updateActions -> Collections.emptyList())
             .build();
         assertThat(categorySyncOptions).isNotNull();
@@ -140,7 +140,7 @@ public class CategorySyncOptionsBuilderTest {
     @Test
     public void setBatchSize_WithPositiveValue_ShouldSetBatchSize() {
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .setBatchSize(10)
+                                                                                  .batchSize(10)
                                                                                   .build();
         assertThat(categorySyncOptions.getBatchSize()).isEqualTo(10);
     }
@@ -148,14 +148,14 @@ public class CategorySyncOptionsBuilderTest {
     @Test
     public void setBatchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
         final CategorySyncOptions categorySyncOptionsWithZeroBatchSize = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .setBatchSize(0)
+                                                                                  .batchSize(0)
                                                                                   .build();
         assertThat(categorySyncOptionsWithZeroBatchSize.getBatchSize())
             .isEqualTo(CategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
 
         final CategorySyncOptions categorySyncOptionsWithNegativeBatchSize  = CategorySyncOptionsBuilder
             .of(CTP_CLIENT)
-            .setBatchSize(-100)
+            .batchSize(-100)
             .build();
         assertThat(categorySyncOptionsWithNegativeBatchSize.getBatchSize())
             .isEqualTo(CategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);

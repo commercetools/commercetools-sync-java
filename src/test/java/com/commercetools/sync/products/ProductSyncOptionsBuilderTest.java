@@ -158,7 +158,7 @@ public class ProductSyncOptionsBuilderTest {
             .of(CTP_CLIENT)
             .allowUuidKeys(true)
             .setRemoveOtherLocales(false)
-            .setBatchSize(30)
+            .batchSize(30)
             .beforeUpdateCallback(updateActions -> Collections.emptyList())
             .build();
         assertThat(productSyncOptions).isNotNull();
@@ -167,7 +167,7 @@ public class ProductSyncOptionsBuilderTest {
     @Test
     public void setBatchSize_WithPositiveValue_ShouldSetBatchSize() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                               .setBatchSize(10)
+                                                                               .batchSize(10)
                                                                                .build();
         assertThat(productSyncOptions.getBatchSize()).isEqualTo(10);
     }
@@ -175,14 +175,14 @@ public class ProductSyncOptionsBuilderTest {
     @Test
     public void setBatchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
         final ProductSyncOptions productSyncOptionsWithZeroBatchSize = ProductSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                                .setBatchSize(0)
+                                                                                                .batchSize(0)
                                                                                                 .build();
         assertThat(productSyncOptionsWithZeroBatchSize.getBatchSize())
             .isEqualTo(ProductSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
 
         final ProductSyncOptions productSyncOptionsWithNegativeBatchSize = ProductSyncOptionsBuilder
             .of(CTP_CLIENT)
-            .setBatchSize(-100)
+            .batchSize(-100)
             .build();
         assertThat(productSyncOptionsWithNegativeBatchSize.getBatchSize())
             .isEqualTo(ProductSyncOptionsBuilder.BATCH_SIZE_DEFAULT);

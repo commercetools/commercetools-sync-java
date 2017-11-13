@@ -24,7 +24,7 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
      */
     public static CategorySyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
         return new CategorySyncOptionsBuilder(ctpClient)
-            .setBatchSize(BATCH_SIZE_DEFAULT);
+            .batchSize(BATCH_SIZE_DEFAULT);
     }
 
     /**

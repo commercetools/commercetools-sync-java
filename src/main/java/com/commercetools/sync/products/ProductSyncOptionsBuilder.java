@@ -19,7 +19,7 @@ public final class ProductSyncOptionsBuilder
     }
 
     public static ProductSyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
-        return new ProductSyncOptionsBuilder(ctpClient).setBatchSize(BATCH_SIZE_DEFAULT);
+        return new ProductSyncOptionsBuilder(ctpClient).batchSize(BATCH_SIZE_DEFAULT);
     }
 
     /**

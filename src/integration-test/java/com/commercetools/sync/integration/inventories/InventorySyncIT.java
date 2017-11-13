@@ -351,7 +351,7 @@ public class InventorySyncIT {
 
         //Set batch size of number less that new inventories size.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-            .setBatchSize(3).build();
+                                                                                     .batchSize(3).build();
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
 
         //Perform sync and ensure its results.
