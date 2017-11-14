@@ -1,6 +1,8 @@
 package com.commercetools.sync.categories;
 
+import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -11,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -44,9 +45,9 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
-        final Function<List<UpdateAction<Category>>,
-            List<UpdateAction<Category>>> clearListFilter = (updateActions -> Collections.emptyList());
-        categorySyncOptionsBuilder.beforeUpdateCallback(clearListFilter);
+        final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category, List<UpdateAction<Category>>>
+            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> Collections.emptyList();
+        categorySyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
@@ -132,7 +133,7 @@ public class CategorySyncOptionsBuilderTest {
             .allowUuidKeys(true)
             .removeOtherLocales(false)
             .batchSize(30)
-            .beforeUpdateCallback(updateActions -> Collections.emptyList())
+            .beforeUpdateCallback((updateActions, newCategory, oldCategory) -> Collections.emptyList())
             .build();
         assertThat(categorySyncOptions).isNotNull();
     }
@@ -170,22 +171,25 @@ public class CategorySyncOptionsBuilderTest {
         final List<UpdateAction<Category>> updateActions = Collections
             .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
         final List<UpdateAction<Category>> filteredList = categorySyncOptions
-            .applyBeforeUpdateCallBack(updateActions);
+            .applyBeforeUpdateCallBack(updateActions, mock(CategoryDraft.class), mock(Category.class));
         assertThat(filteredList).isSameAs(updateActions);
     }
 
     @Test
     public void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
+        final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category, List<UpdateAction<Category>>>
+            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> Collections.emptyList();
+
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .beforeUpdateCallback(list ->
-                                                                                      Collections.emptyList())
+                                                                                  .beforeUpdateCallback(
+                                                                                      beforeUpdateCallback)
                                                                                   .build();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
 
         final List<UpdateAction<Category>> updateActions = Collections
             .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
         final List<UpdateAction<Category>> filteredList = categorySyncOptions
-            .applyBeforeUpdateCallBack(updateActions);
+            .applyBeforeUpdateCallBack(updateActions, mock(CategoryDraft.class), mock(Category.class));
         assertThat(filteredList).isNotEqualTo(updateActions);
         assertThat(filteredList).isEmpty();
     }

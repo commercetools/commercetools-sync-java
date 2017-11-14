@@ -1,9 +1,11 @@
 package com.commercetools.sync.products;
 
+import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import org.junit.Test;
 
@@ -11,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static com.commercetools.sync.products.ActionGroup.IMAGES;
 import static com.commercetools.sync.products.SyncFilter.ofWhiteList;
@@ -71,9 +72,9 @@ public class ProductSyncOptionsBuilderTest {
 
     @Test
     public void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
-        final Function<List<UpdateAction<Product>>,
-                    List<UpdateAction<Product>>> clearListFilter = (updateActions -> Collections.emptyList());
-        productSyncOptionsBuilder.beforeUpdateCallback(clearListFilter);
+        final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            beforeUpdateCallback = (updateActions, newProduct, oldProduct) -> Collections.emptyList();
+        productSyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getBeforeUpdateCallback()).isNotNull();
@@ -159,7 +160,7 @@ public class ProductSyncOptionsBuilderTest {
             .allowUuidKeys(true)
             .removeOtherLocales(false)
             .batchSize(30)
-            .beforeUpdateCallback(updateActions -> Collections.emptyList())
+            .beforeUpdateCallback((updateActions, newCategory, oldCategory) -> Collections.emptyList())
             .build();
         assertThat(productSyncOptions).isNotNull();
     }
@@ -196,21 +197,25 @@ public class ProductSyncOptionsBuilderTest {
 
         final List<UpdateAction<Product>> updateActions = Collections
             .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
-        final List<UpdateAction<Product>> filteredList = productSyncOptions.applyBeforeUpdateCallBack(updateActions);
+        final List<UpdateAction<Product>> filteredList =
+            productSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(ProductDraft.class), mock(Product.class));
         assertThat(filteredList).isSameAs(updateActions);
     }
 
     @Test
     public void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
+        final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> Collections.emptyList();
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                               .beforeUpdateCallback(list ->
-                                                                                   Collections.emptyList())
+                                                                               .beforeUpdateCallback(
+                                                                                   beforeUpdateCallback)
                                                                                .build();
         assertThat(productSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
         final List<UpdateAction<Product>> updateActions = Collections
             .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
-        final List<UpdateAction<Product>> filteredList = productSyncOptions.applyBeforeUpdateCallBack(updateActions);
+        final List<UpdateAction<Product>> filteredList =
+            productSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(ProductDraft.class), mock(Product.class));
         assertThat(filteredList).isNotEqualTo(updateActions);
         assertThat(filteredList).isEmpty();
     }
