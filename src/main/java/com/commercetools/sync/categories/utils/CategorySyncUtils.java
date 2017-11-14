@@ -51,7 +51,7 @@ public final class CategorySyncUtils {
         final List<UpdateAction<Category>> assetUpdateActions =
             buildAssetActions(oldCategory, newCategory, syncOptions);
         updateActions.addAll(assetUpdateActions);
-        return syncOptions.applyBeforeUpdateCallBack(updateActions);
+        return syncOptions.applyBeforeUpdateCallBack(updateActions, newCategory, oldCategory);
     }
 
     /**
