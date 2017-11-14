@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.externalsource.products;
 
+import com.commercetools.sync.commons.utils.TriFunction;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
@@ -112,10 +112,11 @@ public class ProductSyncFilterIT {
 
         final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
 
-        final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> actionsCallBack = updateActions -> {
-            updateActionsFromSync.addAll(updateActions);
-            return updateActions;
-        };
+        final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            actionsCallBack = (updateActions, newDraft, oldProduct) -> {
+                updateActionsFromSync.addAll(updateActions);
+                return updateActions;
+            };
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                         .errorCallback(errorCallBack)
