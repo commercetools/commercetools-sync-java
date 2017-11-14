@@ -1,5 +1,6 @@
 package com.commercetools.sync.commons;
 
+import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 
@@ -8,9 +9,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
-public class BaseSyncOptions<U> {
+public class BaseSyncOptions<U, V> {
     private final SphereClient ctpClient;
     private final BiConsumer<String, Throwable> errorCallBack;
     private final Consumer<String> warningCallBack;
@@ -20,7 +20,7 @@ public class BaseSyncOptions<U> {
     private boolean removeOtherCollectionEntries = true;
     private boolean removeOtherProperties = true;
     private boolean allowUuid = false;
-    private final Function<List<UpdateAction<U>>, List<UpdateAction<U>>> beforeUpdateCallback;
+    private final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
 
     protected BaseSyncOptions(@Nonnull final SphereClient ctpClient,
                               @Nullable final BiConsumer<String, Throwable> errorCallBack,
@@ -31,7 +31,7 @@ public class BaseSyncOptions<U> {
                               final boolean removeOtherCollectionEntries,
                               final boolean removeOtherProperties,
                               final boolean allowUuid,
-                              @Nullable final Function<List<UpdateAction<U>>, List<UpdateAction<U>>>
+                              @Nullable final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
                                   beforeUpdateCallback) {
         this.ctpClient = ctpClient;
         this.errorCallBack = errorCallBack;
@@ -197,22 +197,23 @@ public class BaseSyncOptions<U> {
     }
 
     /**
-     * Returns the {@code beforeUpdateCallback} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
-     * {@code U}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@code U}&gt;&gt;&gt; function set to
-     * {@code this} {@link BaseSyncOptions}. It represents a callback function which is applied (if set) on the
+     * Returns the {@code beforeUpdateCallback} {@link TriFunction}&lt;{@link List}&lt;{@link UpdateAction}&lt;
+     * {@code U}&gt;&gt;, {@code V}, {@code U}, {@link List}&lt;{@link UpdateAction}&lt;{@code U}&gt;&gt;&gt; function
+     * set to {@code this} {@link BaseSyncOptions}. It represents a callback function which is applied (if set) on the
      * generated list of update actions to produce a resultant list after the filter function has been applied.
      *
-     * @return the {@code beforeUpdateCallback} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
-     *         {@code U}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@code U}&gt;&gt;&gt; function
-     *         set to {@code this} {@link BaseSyncOptions}.
+     * @return the {@code beforeUpdateCallback} {@link TriFunction}&lt;{@link List}&lt;{@link UpdateAction}&lt;
+     *         {@code U}&gt;&gt;, {@code V}, {@code U}, {@link List}&lt;{@link UpdateAction}&lt;{@code U}&gt;&gt;&gt;
+     *         function set to {@code this} {@link BaseSyncOptions}.
      */
     @Nullable
-    public Function<List<UpdateAction<U>>, List<UpdateAction<U>>> getBeforeUpdateCallback() {
+    public TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> getBeforeUpdateCallback() {
         return beforeUpdateCallback;
     }
 
     /**
-     * Given a {@link List} of {@link UpdateAction}, this method applies the {@code beforeUpdateCallback} function
+     * Given a {@link List} of {@link UpdateAction}, a new resource draft of type {@code V} and the old existing
+     * resource of the type {@code U}, this method applies the {@code beforeUpdateCallback} function
      * which is set to {@code this} instance of the {@link BaseSyncOptions} and returns the result. If the
      * {@code beforeUpdateCallback} is null, this method does nothing to the supplied list of update actions and returns
      * the same list.
@@ -223,7 +224,10 @@ public class BaseSyncOptions<U> {
      *         is.
      */
     @Nonnull
-    public List<UpdateAction<U>> applyBeforeUpdateCallBack(@Nonnull final List<UpdateAction<U>> updateActions) {
-        return beforeUpdateCallback != null ? beforeUpdateCallback.apply(updateActions) : updateActions;
+    public List<UpdateAction<U>> applyBeforeUpdateCallBack(@Nonnull final List<UpdateAction<U>> updateActions,
+                                                           @Nonnull final V newResourceDraft,
+                                                           @Nonnull final U oldResource) {
+        return beforeUpdateCallback != null
+            ? beforeUpdateCallback.apply(updateActions, newResourceDraft, oldResource) : updateActions;
     }
 }

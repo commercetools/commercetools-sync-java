@@ -1,5 +1,6 @@
 package com.commercetools.sync.commons;
 
+import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 
@@ -7,9 +8,10 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
-public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T, S, U>, S extends BaseSyncOptions, U> {
+public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T, S, U, V>,
+    S extends BaseSyncOptions, U, V> {
+
     protected SphereClient ctpClient;
     protected BiConsumer<String, Throwable> errorCallback;
     protected Consumer<String> warningCallback;
@@ -19,7 +21,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     protected boolean removeOtherCollectionEntries = true;
     protected boolean removeOtherProperties = true;
     protected boolean allowUuid = false;
-    protected Function<List<UpdateAction<U>>, List<UpdateAction<U>>> beforeUpdateCallback;
+    protected TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
 
     /**
      * Sets the {@code errorCallback} function of the sync module. This callback will be called whenever an event occurs
@@ -132,13 +134,15 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     }
 
     /**
-     * Sets the beforeUpdateCallback function which can be applied on the generated list of update actions to produce
-     * a resultant list after the {@code beforeUpdateCallback} function has been applied.
+     * Sets the beforeUpdateCallback {@link TriFunction} which can be applied on the supplied list of update actions
+     * generated from comparing an old resource of type {@code U} (e.g. {@link io.sphere.sdk.products.Product}) to a new
+     * draft of type {@code V} (e.g. {@link io.sphere.sdk.products.ProductDraft}). It results in a resultant list after
+     * the specified {@link TriFunction} {@code beforeUpdateCallback} function has been applied.
      *
      * @param beforeUpdateCallback function which can be applied on generated list of update actions.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T beforeUpdateCallback(@Nonnull final Function<List<UpdateAction<U>>, List<UpdateAction<U>>>
+    public T beforeUpdateCallback(@Nonnull final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
                                       beforeUpdateCallback) {
         this.beforeUpdateCallback = beforeUpdateCallback;
         return getThis();

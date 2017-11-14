@@ -3,12 +3,13 @@ package com.commercetools.sync.categories;
 
 import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.SphereClient;
 
 import javax.annotation.Nonnull;
 
 public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<CategorySyncOptionsBuilder,
-    CategorySyncOptions, Category> {
+    CategorySyncOptions, Category, CategoryDraft> {
     public static final int BATCH_SIZE_DEFAULT = 50;
 
     private CategorySyncOptionsBuilder(@Nonnull final SphereClient ctpClient) {

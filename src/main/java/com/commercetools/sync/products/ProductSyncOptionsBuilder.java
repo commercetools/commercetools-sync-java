@@ -3,11 +3,12 @@ package com.commercetools.sync.products;
 import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
 
 public final class ProductSyncOptionsBuilder
-    extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions, Product> {
+    extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions, Product, ProductDraft> {
     public static final int BATCH_SIZE_DEFAULT = 30;
     private boolean removeOtherVariants = true;
     private SyncFilter syncFilter;

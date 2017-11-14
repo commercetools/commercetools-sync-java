@@ -1,18 +1,19 @@
 package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
+import io.sphere.sdk.inventory.InventoryEntryDraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
-public final class InventorySyncOptions extends BaseSyncOptions<InventoryEntry> {
+public final class InventorySyncOptions extends BaseSyncOptions<InventoryEntry, InventoryEntryDraft> {
     private final boolean ensureChannels;
 
     InventorySyncOptions(@Nonnull final SphereClient ctpClient,
@@ -25,8 +26,8 @@ public final class InventorySyncOptions extends BaseSyncOptions<InventoryEntry> 
                          final boolean removeOtherProperties,
                          final boolean allowUuid,
                          boolean ensureChannels,
-                         @Nullable final Function<List<UpdateAction<InventoryEntry>>,
-                             List<UpdateAction<InventoryEntry>>> beforeUpdateCallback) {
+                         @Nullable final TriFunction<List<UpdateAction<InventoryEntry>>, InventoryEntryDraft,
+                             InventoryEntry, List<UpdateAction<InventoryEntry>>> beforeUpdateCallback) {
         super(ctpClient,
             updateActionErrorCallBack,
             updateActionWarningCallBack,
