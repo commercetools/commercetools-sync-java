@@ -72,11 +72,11 @@ public class TriFunctionTest {
     public void apply_WithIntegerParams_ShouldReturnCorrectResult() {
         final TriFunction<Integer, Integer, Integer, String>
             sumToString = (num1, num2, num3) -> {
-            num1 = num1 != null ? num1 : 0;
-            num2 = num2 != null ? num2 : 0;
-            num3 = num3 != null ? num3 : 0;
-            return String.format("The sum is: %d", num1 + num2 + num3);
-        };
+                num1 = num1 != null ? num1 : 0;
+                num2 = num2 != null ? num2 : 0;
+                num3 = num3 != null ? num3 : 0;
+                return String.format("The sum is: %d", num1 + num2 + num3);
+            };
 
         final String threeOnes = sumToString.apply(1, 1, 1);
         final String threeNulls = sumToString.apply(null, null, null);

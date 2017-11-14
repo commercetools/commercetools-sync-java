@@ -219,6 +219,8 @@ public class BaseSyncOptions<U, V> {
      * the same list.
      *
      * @param updateActions the list of update actions to apply the {@code beforeUpdateCallback} function on.
+     * @param newResourceDraft the new resource draft that is being compared to the old resource.
+     * @param oldResource the old resource that is being compared to the new draft.
      * @return a list of update actions after applying the {@code beforeUpdateCallback} function on. If the
      *         {@code beforeUpdateCallback} function was null, the supplied list of {@code updateActions} is returned as
      *         is.
