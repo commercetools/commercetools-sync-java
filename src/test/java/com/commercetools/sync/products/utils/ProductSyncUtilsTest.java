@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.utils;
 
+import com.commercetools.sync.commons.utils.TriFunction;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
@@ -28,7 +29,6 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
@@ -129,14 +129,14 @@ public class ProductSyncUtilsTest {
                 ProductType.referenceOfId("anyProductType"))
                 .build();
 
-        final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>>
-            filterCategoryActions = (unfilteredList) ->
-            unfilteredList.stream()
-                          .filter(productUpdateAction ->
-                              productUpdateAction instanceof RemoveFromCategory
-                                  || productUpdateAction instanceof AddToCategory
-                                  || productUpdateAction instanceof SetCategoryOrderHint)
-                          .collect(Collectors.toList());
+        final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            filterCategoryActions = (unfilteredList, newDraft, oldProduct) ->
+            unfilteredList != null ? unfilteredList.stream()
+                                                   .filter(productUpdateAction ->
+                                                       productUpdateAction instanceof RemoveFromCategory
+                                                           || productUpdateAction instanceof AddToCategory
+                                                           || productUpdateAction instanceof SetCategoryOrderHint)
+                                                   .collect(Collectors.toList()) : null;
 
         productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                       .beforeUpdateCallback(filterCategoryActions)
