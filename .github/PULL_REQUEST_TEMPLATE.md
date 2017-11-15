@@ -14,6 +14,7 @@
     - [ ] Unit 
     - [ ] Integration
 - [ ] Documentation
+- [ ] Add Release Notes entry.
 <!-- Two persons should review a PR, don't forget to assign them. -->
 
 #### Hints for Review
