@@ -341,9 +341,9 @@ public class ProductServiceIT {
 
         assertThat(errorCallBackExceptions).hasSize(2);
         assertThat(errorCallBackMessages).hasSize(2);
-        assertThat(errorCallBackMessages.get(0)).contains(" A duplicate value '\"rehruecken-o-kn\"' exists for field "
+        assertThat(errorCallBackMessages.get(0)).contains(" A duplicate value '\"english-slug\"' exists for field "
             + "'slug.en'");
-        assertThat(errorCallBackMessages.get(1)).contains(" A duplicate value '\"rehruecken-o-kn\"' exists for field "
+        assertThat(errorCallBackMessages.get(1)).contains(" A duplicate value '\"english-slug\"' exists for field "
             + "'slug.en'");
         assertThat(createdProducts).isEmpty();
     }
@@ -408,7 +408,7 @@ public class ProductServiceIT {
         assertThat(createdProductOptional).isEmpty();
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("A duplicate value '\\\"rehruecken-o-kn\\\"' exists for field"
+        assertThat(errorCallBackMessages.get(0)).contains("A duplicate value '\\\"english-slug\\\"' exists for field"
             + " 'slug.en' on");
 
         //assert CTP state
