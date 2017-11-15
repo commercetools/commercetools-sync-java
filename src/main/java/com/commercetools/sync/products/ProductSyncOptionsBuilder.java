@@ -56,7 +56,7 @@ public final class ProductSyncOptionsBuilder
      * @return {@code this} instance of {@link ProductSyncOptionsBuilder}
      */
     @Nonnull
-    public ProductSyncOptionsBuilder setSyncFilter(@Nonnull final SyncFilter syncFilter) {
+    public ProductSyncOptionsBuilder syncFilter(@Nonnull final SyncFilter syncFilter) {
         this.syncFilter = syncFilter;
         return this;
     }

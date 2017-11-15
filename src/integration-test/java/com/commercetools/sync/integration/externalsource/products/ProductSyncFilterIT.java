@@ -135,7 +135,7 @@ public class ProductSyncFilterIT {
                 createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, referenceOfId(productType.getKey()), null,
                     null, categoryReferencesWithKeys, createRandomCategoryOrderHints(categoryReferencesWithKeys));
 
-        final ProductSyncOptions syncOptions = syncOptionsBuilder.setSyncFilter(ofBlackList(CATEGORIES))
+        final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofBlackList(CATEGORIES))
                                                                  .build();
 
         final ProductSync productSync = new ProductSync(syncOptions);
@@ -163,7 +163,7 @@ public class ProductSyncFilterIT {
                 createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, referenceOfId(productType.getKey()), null,
                     null, categoryReferencesWithKeys, createRandomCategoryOrderHints(categoryReferencesWithKeys));
 
-        final ProductSyncOptions syncOptions = syncOptionsBuilder.setSyncFilter(ofWhiteList(NAME)).build();
+        final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofWhiteList(NAME)).build();
 
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =

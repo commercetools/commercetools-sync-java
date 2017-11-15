@@ -56,15 +56,15 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void setSyncFilter_WithNoSyncFilter_ShouldSetDefaultFilter() {
+    public void syncFilter_WithNoSyncFilter_ShouldSetDefaultFilter() {
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
         assertThat(productSyncOptions.getSyncFilter()).isSameAs(SyncFilter.of());
     }
 
     @Test
-    public void setSyncFilter_WithSyncFilter_ShouldSetFilter() {
-        productSyncOptionsBuilder.setSyncFilter(ofWhiteList(IMAGES));
+    public void syncFilter_WithSyncFilter_ShouldSetFilter() {
+        productSyncOptionsBuilder.syncFilter(ofWhiteList(IMAGES));
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();

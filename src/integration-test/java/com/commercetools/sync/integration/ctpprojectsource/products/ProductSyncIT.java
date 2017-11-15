@@ -284,7 +284,7 @@ public class ProductSyncIT {
                                      .errorCallback(this::errorCallback)
                                      .warningCallback(warningCallBackMessages::add)
                                      .beforeUpdateCallback(this::beforeUpdateCallback)
-                                     .setSyncFilter(SyncFilter.ofWhiteList(ATTRIBUTES))
+                                     .syncFilter(SyncFilter.ofWhiteList(ATTRIBUTES))
                                      .build();
         final ProductSync customSync = new ProductSync(customSyncOptions);
 
