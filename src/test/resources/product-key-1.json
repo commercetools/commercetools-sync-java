@@ -95,10 +95,10 @@
     },
     "staged": {
       "name": {
-        "en": "Rehrücken ohne Knochen"
+        "en": "english name"
       },
       "description": {
-        "en": "Die Rückenstücke des Rehs gelten als wahres Geschmackserlebnis und beherbergen die edelsten Teile des Rehs. Aus dem Rücken können Sie feine Filets herausschneiden, die sich hervorragend zum Kurzbraten oder Grillen eignen. Da der Knochen von uns bereits schonend entfernt wurde, können Sie sich voll und ganz auf den einzigartigen Geschmack konzentrieren."
+        "en": "english description."
       },
       "categories": [
         {
@@ -125,7 +125,7 @@
         "4dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.73"
       },
       "slug": {
-        "en": "rehruecken-o-kn"
+        "en": "english-slug"
       },
       "masterVariant": {
         "id": 1,

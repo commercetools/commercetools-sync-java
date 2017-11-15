@@ -35,7 +35,7 @@ public class BuildChangeNameUpdateActionTest {
 
     @Test
     public void buildChangeNameUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
-        final LocalizedString newName = LocalizedString.of(Locale.ENGLISH, "Rehrücken ohne Knochen");
+        final LocalizedString newName = LocalizedString.of(Locale.ENGLISH, "english name");
         final Optional<UpdateAction<Product>> changeNameUpdateAction =
             getChangeNameUpdateAction(MOCK_OLD_PUBLISHED_PRODUCT, newName);
 
