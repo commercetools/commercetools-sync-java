@@ -54,7 +54,6 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
-import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -147,10 +146,11 @@ public class ProductSyncSingleLocalizationIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
             executeBlocking(productSync.sync(singletonList(productDraft)));
-
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
-                + " failed to sync).", 1, 0, 1, 0));
+        
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
         assertThat(updateActionsFromSync.stream()
                                         .filter(updateAction -> updateAction instanceof ChangeName)
                                         .findFirst()
