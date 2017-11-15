@@ -144,9 +144,8 @@ public class ProductSyncSingleLocalizationIT {
             .build();
 
         final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics =
-            executeBlocking(productSync.sync(singletonList(productDraft)));
-        
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(singletonList(productDraft)));
+
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(1);
