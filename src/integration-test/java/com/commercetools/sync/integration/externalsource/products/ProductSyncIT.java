@@ -4,8 +4,6 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.ConcurrentModificationException;
@@ -61,8 +59,6 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
-import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -601,15 +597,9 @@ public class ProductSyncIT {
             .state(null)
             .build();
 
-        // Creating the product reference attribute value
-        final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
-        productReference.put(REFERENCE_TYPE_ID_FIELD, Product.referenceTypeId());
-        productReference.put(REFERENCE_ID_FIELD, product.getKey());
-
         // Creating the attribute draft with the product reference
-        final String productReferenceAttributeName = "product-reference";
         final AttributeDraft productReferenceAttribute =
-            AttributeDraft.of(productReferenceAttributeName, productReference);
+            AttributeDraft.of("product-reference", Reference.of(Product.referenceTypeId(), product.getKey()));
 
         // Creating the product variant draft with the product reference attribute
         final ProductVariantDraft draftMasterVariant = productDraft.getMasterVariant();
