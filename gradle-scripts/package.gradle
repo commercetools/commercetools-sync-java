@@ -1,12 +1,15 @@
 /**
  * Package sources to JARs
  */
+jar {
+    manifest {
+        attributes("Implementation-Title": rootProject.name, "Implementation-Version": rootProject.version)
+    }
+}
+
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
-    manifest {
-        attributes("Implementation-Title": project.name, "Implementation-Version": project.version)
-    }
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
