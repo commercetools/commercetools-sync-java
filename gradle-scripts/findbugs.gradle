@@ -11,6 +11,3 @@ tasks.withType(FindBugs) {
     }
 }
 
-findbugsTest.mustRunAfter findbugsMain
-findbugsIntegrationTest.mustRunAfter findbugsTest
-
