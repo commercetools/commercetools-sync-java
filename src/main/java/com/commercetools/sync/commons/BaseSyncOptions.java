@@ -15,7 +15,6 @@ public class BaseSyncOptions<U, V> {
     private final BiConsumer<String, Throwable> errorCallBack;
     private final Consumer<String> warningCallBack;
     private int batchSize;
-    private boolean removeOtherLocales = true;
     private boolean removeOtherSetEntries = true;
     private boolean removeOtherCollectionEntries = true;
     private boolean removeOtherProperties = true;
@@ -26,7 +25,6 @@ public class BaseSyncOptions<U, V> {
                               @Nullable final BiConsumer<String, Throwable> errorCallBack,
                               @Nullable final Consumer<String> warningCallBack,
                               final int batchSize,
-                              final boolean removeOtherLocales,
                               final boolean removeOtherSetEntries,
                               final boolean removeOtherCollectionEntries,
                               final boolean removeOtherProperties,
@@ -37,7 +35,6 @@ public class BaseSyncOptions<U, V> {
         this.errorCallBack = errorCallBack;
         this.batchSize = batchSize;
         this.warningCallBack = warningCallBack;
-        this.removeOtherLocales = removeOtherLocales;
         this.removeOtherSetEntries = removeOtherSetEntries;
         this.removeOtherCollectionEntries = removeOtherCollectionEntries;
         this.removeOtherProperties = removeOtherProperties;
@@ -78,19 +75,6 @@ public class BaseSyncOptions<U, V> {
     @Nullable
     public Consumer<String> getWarningCallBack() {
         return warningCallBack;
-    }
-
-    /**
-     * Returns a {@code boolean} flag which enables the sync module to add additional localizations without deleting
-     * existing ones, if set to {@code false}. If set to true, which is the default value of the option,
-     * it deletes the existing object properties.
-     *
-     * @return a {@code boolean} flag which enables the sync module to add additional localizations without deleting
-     *      existing ones, if set to {@code false}. If set to true, which is the default value of the option,
-     *      it deletes the existing object properties.
-     */
-    public boolean shouldRemoveOtherLocales() {
-        return removeOtherLocales;
     }
 
     /**

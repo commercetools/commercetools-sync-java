@@ -36,7 +36,6 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.shouldRemoveOtherCollectionEntries()).isTrue();
         assertThat(productSyncOptions.shouldRemoveOtherProperties()).isTrue();
         assertThat(productSyncOptions.shouldRemoveOtherSetEntries()).isTrue();
-        assertThat(productSyncOptions.shouldRemoveOtherLocales()).isTrue();
         assertThat(productSyncOptions.shouldAllowUuidKeys()).isFalse();
         assertThat(productSyncOptions.shouldRemoveOtherVariants()).isTrue();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
@@ -87,15 +86,6 @@ public class ProductSyncOptionsBuilderTest {
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.shouldRemoveOtherCollectionEntries()).isNotNull();
         assertThat(productSyncOptions.shouldRemoveOtherCollectionEntries()).isFalse();
-    }
-
-    @Test
-    public void setRemoveOtherLocales_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.removeOtherLocales(false);
-
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.shouldRemoveOtherLocales()).isNotNull();
-        assertThat(productSyncOptions.shouldRemoveOtherLocales()).isFalse();
     }
 
     @Test
@@ -158,7 +148,6 @@ public class ProductSyncOptionsBuilderTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
             .of(CTP_CLIENT)
             .allowUuidKeys(true)
-            .removeOtherLocales(false)
             .batchSize(30)
             .beforeUpdateCallback((updateActions, newCategory, oldCategory) -> Collections.emptyList())
             .build();

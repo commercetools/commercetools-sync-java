@@ -86,7 +86,6 @@ public final class ProductSyncOptionsBuilder
             errorCallback,
             warningCallback,
             batchSize,
-            removeOtherLocales,
             removeOtherSetEntries,
             removeOtherCollectionEntries,
             removeOtherProperties,

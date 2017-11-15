@@ -61,7 +61,6 @@ public final class InventorySyncOptionsBuilder extends
             this.errorCallback,
             this.warningCallback,
             this.batchSize,
-            this.removeOtherLocales,
             this.removeOtherSetEntries,
             this.removeOtherCollectionEntries,
             this.removeOtherProperties,

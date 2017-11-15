@@ -54,6 +54,7 @@ are breaking changes. If there are, then a migration guide should be provided.
 - **Commons** - Change name of `setBatchSize` to `batchSize`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 - **Commons** - Change name of `setRemoveOtherLocales`, `setRemoveOtherSetEntries`, `setRemoveOtherCollectionEntries` and `setRemoveOtherProperties` 
 to `removeOtherLocales`, `removeOtherSetEntries`, `removeOtherCollectionEntries` and `removeOtherProperties`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
+- **Commons** - Remove `setRemoveOtherLocales` option. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 -->
 
 

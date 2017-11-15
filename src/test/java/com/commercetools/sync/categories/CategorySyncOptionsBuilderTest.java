@@ -34,7 +34,6 @@ public class CategorySyncOptionsBuilderTest {
         assertThat(categorySyncOptions.shouldRemoveOtherCollectionEntries()).isTrue();
         assertThat(categorySyncOptions.shouldRemoveOtherProperties()).isTrue();
         assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isTrue();
-        assertThat(categorySyncOptions.shouldRemoveOtherLocales()).isTrue();
         assertThat(categorySyncOptions.shouldAllowUuidKeys()).isFalse();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNull();
         assertThat(categorySyncOptions.getErrorCallBack()).isNull();
@@ -60,15 +59,6 @@ public class CategorySyncOptionsBuilderTest {
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.shouldRemoveOtherCollectionEntries()).isNotNull();
         assertThat(categorySyncOptions.shouldRemoveOtherCollectionEntries()).isFalse();
-    }
-
-    @Test
-    public void setRemoveOtherLocales_WithFalse_ShouldSetFlag() {
-        categorySyncOptionsBuilder.removeOtherLocales(false);
-
-        final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
-        assertThat(categorySyncOptions.shouldRemoveOtherLocales()).isNotNull();
-        assertThat(categorySyncOptions.shouldRemoveOtherLocales()).isFalse();
     }
 
     @Test
@@ -131,7 +121,6 @@ public class CategorySyncOptionsBuilderTest {
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(CTP_CLIENT)
             .allowUuidKeys(true)
-            .removeOtherLocales(false)
             .batchSize(30)
             .beforeUpdateCallback((updateActions, newCategory, oldCategory) -> Collections.emptyList())
             .build();

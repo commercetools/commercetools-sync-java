@@ -16,7 +16,6 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     protected BiConsumer<String, Throwable> errorCallback;
     protected Consumer<String> warningCallback;
     protected int batchSize = 30;
-    protected boolean removeOtherLocales = true;
     protected boolean removeOtherSetEntries = true;
     protected boolean removeOtherCollectionEntries = true;
     protected boolean removeOtherProperties = true;
@@ -65,19 +64,6 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
         if (batchSize > 0) {
             this.batchSize = batchSize;
         }
-        return getThis();
-    }
-
-    /**
-     * Sets the {@code removeOtherLocales} boolean flag which adds additional localizations without deleting
-     * existing ones. If set to true, which is the default value of the option, it deletes the
-     * existing localizations. If set to false, it doesn't delete the existing ones.
-     *
-     * @param removeOtherLocales new value to set to the boolean flag.
-     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
-     */
-    public T removeOtherLocales(final boolean removeOtherLocales) {
-        this.removeOtherLocales = removeOtherLocales;
         return getThis();
     }
 
