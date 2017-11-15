@@ -46,7 +46,16 @@ are breaking changes. If there are, then a migration guide should be provided.
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M5/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M5)
 
-**Compatibility notes** (1)
+**New Features** (1)
+- **Inventory Sync** - Support of `beforeUpdateCallback` which is callback function that is applied on the generated list
+of update actions from syncing an old InventoryEntry with a new InventoryEntryDraft. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
+
+**Enhancements** (1)
+- **Commons** - `setUpdateActionsCallback` is now `beforeUpdateCallback` and takes a TriFunction instead of Function, 
+which adds more information about the generated list of update actions, namley, the old resource being updated and the new
+resource draft. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
+
+**Compatibility notes** (8)
 - **Commons** - Change name of `setUpdateActionsCallback` to `beforeUpdateCallback`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 - **Commons** - Change name of `setAllowUuid` to `allowUuid`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 - **Commons** - Change name of `setWarningCallBack` to `warningCallback`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
