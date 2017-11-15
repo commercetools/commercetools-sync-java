@@ -53,7 +53,7 @@ public class CategorySyncOptionsBuilderTest {
     }
 
     @Test
-    public void setRemoveOtherCollectionEntries_WithFalse_ShouldSetFlag() {
+    public void removeOtherCollectionEntries_WithFalse_ShouldSetFlag() {
         categorySyncOptionsBuilder.removeOtherCollectionEntries(false);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
@@ -62,7 +62,7 @@ public class CategorySyncOptionsBuilderTest {
     }
 
     @Test
-    public void setRemoveOtherProperties_WithFalse_ShouldSetFlag() {
+    public void removeOtherProperties_WithFalse_ShouldSetFlag() {
         categorySyncOptionsBuilder.removeOtherProperties(false);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
@@ -100,7 +100,7 @@ public class CategorySyncOptionsBuilderTest {
     }
 
     @Test
-    public void setRemoveOtherSetEntries_WithFalse_ShouldSetFlag() {
+    public void removeOtherSetEntries_WithFalse_ShouldSetFlag() {
         categorySyncOptionsBuilder.removeOtherSetEntries(false);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
@@ -128,7 +128,7 @@ public class CategorySyncOptionsBuilderTest {
     }
 
     @Test
-    public void setBatchSize_WithPositiveValue_ShouldSetBatchSize() {
+    public void batchSize_WithPositiveValue_ShouldSetBatchSize() {
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                                                   .batchSize(10)
                                                                                   .build();
@@ -136,7 +136,7 @@ public class CategorySyncOptionsBuilderTest {
     }
 
     @Test
-    public void setBatchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
+    public void batchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
         final CategorySyncOptions categorySyncOptionsWithZeroBatchSize = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                                                   .batchSize(0)
                                                                                   .build();
