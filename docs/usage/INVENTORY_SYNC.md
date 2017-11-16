@@ -129,6 +129,10 @@ object properties.
 - `allowUuid`
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
+- `beforeUpdateCallback`
+a filter function which can be applied on a generated list of update actions. It allows the user to intercept inventory 
+entry update and modify (add/remove) update actions just before they are send to CTP API.
+
 <!-- TODO Update above options with links to tests. Tests should be written when inventory sync could actually use them (when custom update actions would use them).  -->
 
 ## Under the hood

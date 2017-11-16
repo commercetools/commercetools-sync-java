@@ -94,8 +94,8 @@ object properties. -->
   - The list of action groups allowed to be blacklist or whitelisted on products can be found [here](/src/main/java/com/commercetools/sync/products/ActionGroup.java). 
 
 - `beforeUpdateCallback`
-a filter function which can be applied on generated list of update actions to produce a resultant list after the filter 
-function has been applied.
+a filter function which can be applied on a generated list of update actions. It allows the user to intercept product 
+update and modify (add/remove) update actions just before they are send to CTP API.
 - `allowUuid`
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
