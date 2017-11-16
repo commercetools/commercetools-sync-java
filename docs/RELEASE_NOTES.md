@@ -40,19 +40,23 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!--
-### v1.0.0-M5 -  Nov 7, 2017
+### v1.0.0-M5 -  Nov 16, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M4...v1.0.0-M5) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M5/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M5)
 
-**New Features** (1)
+**New Features** (3)
 - **Inventory Sync** - Introduced `beforeUpdateCallback` which is applied after generation of update actions and before 
 actual InventoryEntry update. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
+- **Build Tools** - Added `Add Release Notes entry` checkbox in PR template on Github repo. [#161](https://github.com/commercetools/commercetools-sync-java/issues/161)
+- **Commons** - Appended library name and version to User-Agent headers of JVM SDK clients using the library. [#142](https://github.com/commercetools/commercetools-sync-java/issues/142)
 
-**Enhancements** (1)
+**Enhancements** (3)
 - **Commons** - `setUpdateActionsCallback` has been renamed to `beforeUpdateCallback` and now takes a TriFunction instead 
 of Function, which adds more information about the generated list of update actions, namely, the old resource being 
 updated and the new resource draft. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
+- **Build Tools** - Explicitly specified gradle tasks execution order in execution-order.gradle. [#161](https://github.com/commercetools/commercetools-sync-java/issues/161)
+- **Build Tools** - Set PMD to run before Integration tests. [#161](https://github.com/commercetools/commercetools-sync-java/issues/161)
 
 **Build Tools** (1)
 - **Commons** - Appended library name and version to User-Agent headers of JVM SDK clients using the library. [#142](https://github.com/commercetools/commercetools-sync-java/issues/142)
@@ -71,6 +75,7 @@ updated and the new resource draft. [#169](https://github.com/commercetools/comm
 to `removeOtherSetEntries`, `removeOtherCollectionEntries` and `removeOtherProperties`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 - **Product Sync** - Renamed `setSyncFilter` to `syncFilter`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 -->
+
 ### v1.0.0-M4 -  Nov 7, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M3...v1.0.0-M4) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M4/) | 

@@ -19,5 +19,3 @@ task integrationTest(type: Test) {
     outputs.upToDateWhen { false }
 }
 
-check.dependsOn integrationTest
-integrationTest.mustRunAfter test

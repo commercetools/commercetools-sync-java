@@ -29,6 +29,3 @@ jacocoTestReport {
         csv.enabled = false
     }
 }
-
-check.dependsOn jacocoTestCoverageVerification
-test.finalizedBy jacocoTestReport
