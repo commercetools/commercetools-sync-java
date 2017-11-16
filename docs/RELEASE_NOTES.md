@@ -24,8 +24,7 @@
    - **Category Sync** - Sync now supports product variant images syncing. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
    - **Build Tools** - Convinient handelling of env vars for integration tests.
 
-6. Add Compatibility notes section, which specifies explicitly if there
-are breaking changes. If there are, then a migration guide should be provided.
+6. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 
 -->
 
@@ -61,7 +60,7 @@ resource draft. [#169](https://github.com/commercetools/commercetools-sync-java/
 **Doc Fixes** (1)
 - **Build Tools** - Adds Snyk vulnerabilities badge to repo README. [#188](https://github.com/commercetools/commercetools-sync-java/pull/188)
 
-**Compatibility notes** (8)
+**Migration guide** (8)
 - **Commons** - Change name of `setUpdateActionsCallback` to `beforeUpdateCallback`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 - **Commons** - Change name of `setAllowUuid` to `allowUuid`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 - **Commons** - Change name of `setWarningCallBack` to `warningCallback`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
@@ -108,7 +107,7 @@ Category and rebuilding build update actions. [#94](https://github.com/commercet
 - **Product Sync** - Typo fixes. [#172](https://github.com/commercetools/commercetools-sync-java/issues/172)
 - **Commons** - Provide inline example of how to use logging in callbacks. [#172](https://github.com/commercetools/commercetools-sync-java/issues/172)
 
-**Compatibility notes** (9)
+**Migration guide** (9)
 - **Product Sync** - Move `replaceProductsReferenceIdsWithKeys` from `SyncUtils` to `ProductReferenceReplacementUtils`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
 - **Product Sync** - Remove `replaceProductDraftsCategoryReferenceIdsWithKeys` which is not needed anymore. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
 - **Product Sync** - Remove `replaceProductDraftCategoryReferenceIdsWithKeys` which is not needed anymore. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120)
@@ -147,7 +146,7 @@ Category and rebuilding build update actions. [#94](https://github.com/commercet
  - **Commons** - Adds release notes doc. [#125](https://github.com/commercetools/commercetools-sync-java/issues/125)
  - **Build Tools** - Adds JavaDoc badge to repo. [#145](https://github.com/commercetools/commercetools-sync-java/issues/145)
 
-**Compatibility notes**
+**Migration guide**
 - No breaking changes introduced.
 
 
@@ -171,7 +170,7 @@ metaDescription, metaKeywords, masterVariant and searchKeywords. [#57](https://g
 - **Product Sync** -  Expose update action build utils for products variant images. [#100](https://github.com/commercetools/commercetools-sync-java/issues/100)
 - **Product Sync** -  Support syncing products against staged projection. [#93](https://github.com/commercetools/commercetools-sync-java/issues/93)
 
-**Compatibility notes**
+**Migration guide**
 - No breaking changes introduced.
 
 
