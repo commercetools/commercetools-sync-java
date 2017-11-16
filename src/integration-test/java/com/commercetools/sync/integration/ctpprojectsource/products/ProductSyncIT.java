@@ -160,11 +160,11 @@ public class ProductSyncIT {
         errorCallBackExceptions.add(exception);
     }
 
-    private List<UpdateAction<Product>> beforeUpdateCallback(@Nonnull final List<UpdateAction<Product>> builtActions,
+    private List<UpdateAction<Product>> beforeUpdateCallback(@Nonnull final List<UpdateAction<Product>> updateActions,
                                                              @Nonnull final ProductDraft productDraft,
                                                              @Nonnull final Product oldProduct) {
-        updateActions.addAll(builtActions);
-        return builtActions;
+        this.updateActions.addAll(updateActions);
+        return updateActions;
     }
 
     @AfterClass
