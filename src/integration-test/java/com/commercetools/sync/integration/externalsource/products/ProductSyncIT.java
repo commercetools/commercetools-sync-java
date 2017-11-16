@@ -14,7 +14,10 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.producttypes.ProductType;
@@ -514,9 +517,10 @@ public class ProductSyncIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(batch));
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
-                + " failed to sync).", 3, 0, 1, 2));
+        assertThat(syncStatistics.getProcessed()).isEqualTo(3);
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(syncStatistics.getFailed()).isEqualTo(2);
         assertThat(errorCallBackExceptions).hasSize(2);
         assertThat(errorCallBackMessages).hasSize(2);
         assertThat(errorCallBackMessages.get(0))
@@ -540,9 +544,10 @@ public class ProductSyncIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(batch));
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
-                + " failed to sync).", 2, 0, 1, 1));
+        assertThat(syncStatistics.getProcessed()).isEqualTo(2);
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(syncStatistics.getFailed()).isEqualTo(1);
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualToIgnoringCase("ProductDraft is null.");
@@ -575,9 +580,49 @@ public class ProductSyncIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(batch));
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
-                + " failed to sync).", 2, 0, 2, 0));
+        assertThat(syncStatistics.getProcessed()).isEqualTo(2);
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(2);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void sync_withProductBundle_shouldCreateProductReferencingExistingProduct() {
+        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+            ProductType.referenceOfId(productType.getKey()))
+            .taxCategory(null)
+            .state(null)
+            .build();
+
+        // Creating the attribute draft with the product reference
+        final AttributeDraft productReferenceAttribute =
+            AttributeDraft.of("product-reference", Reference.of(Product.referenceTypeId(), product.getKey()));
+
+        // Creating the product variant draft with the product reference attribute
+        final ProductVariantDraft draftMasterVariant = productDraft.getMasterVariant();
+        assertThat(draftMasterVariant).isNotNull();
+        final List<AttributeDraft> attributes = draftMasterVariant.getAttributes();
+        attributes.add(productReferenceAttribute);
+        final ProductVariantDraft masterVariant = ProductVariantDraftBuilder.of(draftMasterVariant)
+                                                                            .attributes(attributes)
+                                                                            .build();
+
+        final ProductDraft productDraftWithProductReference = ProductDraftBuilder.of(productDraft)
+                                                                                 .masterVariant(masterVariant)
+                                                                                 .build();
+
+
+        final ProductSync productSync = new ProductSync(syncOptions);
+        final ProductSyncStatistics syncStatistics =
+            executeBlocking(productSync.sync(singletonList(productDraftWithProductReference)));
+
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getCreated()).isEqualTo(1);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();

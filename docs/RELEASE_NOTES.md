@@ -55,6 +55,12 @@ of update actions from syncing an old InventoryEntry with a new InventoryEntryDr
 which adds more information about the generated list of update actions, namley, the old resource being updated and the new
 resource draft. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 
+**Build Tools** (1)
+- **Commons** - Append library name and version to User-Agent headers of JVM SDK clients using the library. [#142](https://github.com/commercetools/commercetools-sync-java/issues/142)
+
+**Doc Fixes** (1)
+- **Build Tools** - Adds Snyk vulnerabilities badge to repo README. [#188](https://github.com/commercetools/commercetools-sync-java/pull/188)
+
 **Compatibility notes** (8)
 - **Commons** - Change name of `setUpdateActionsCallback` to `beforeUpdateCallback`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 - **Commons** - Change name of `setAllowUuid` to `allowUuid`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
@@ -66,14 +72,12 @@ resource draft. [#169](https://github.com/commercetools/commercetools-sync-java/
 to `removeOtherSetEntries`, `removeOtherCollectionEntries` and `removeOtherProperties`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 - **Product Sync** - Change name of `setSyncFilter` to `syncFilter`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 -->
-
-
 ### v1.0.0-M4 -  Nov 7, 2017
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M4...v1.0.0-M4) |
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M3...v1.0.0-M4) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M4/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M4)
 
-**Bug Fixes** (1)
+**Hotfix** (1)
 - **Product Sync** - Fixes an issue with `replaceAttributesReferencesIdsWithKeys` which nullifies localized text attributes due 
 to JSON parsing not throwing exception on parsing it to reference set. [#179](https://github.com/commercetools/commercetools-sync-java/issues/179)
 

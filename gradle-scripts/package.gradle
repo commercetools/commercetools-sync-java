@@ -1,6 +1,12 @@
 /**
  * Package sources to JARs
  */
+jar {
+    manifest {
+        attributes("Implementation-Title": rootProject.name, "Implementation-Version": rootProject.version)
+    }
+}
+
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
