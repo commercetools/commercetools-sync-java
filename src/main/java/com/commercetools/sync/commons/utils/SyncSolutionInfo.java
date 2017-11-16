@@ -2,6 +2,7 @@ package com.commercetools.sync.commons.utils;
 
 import io.sphere.sdk.client.SolutionInfo;
 
+import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
 public class SyncSolutionInfo extends SolutionInfo {
@@ -16,13 +17,14 @@ public class SyncSolutionInfo extends SolutionInfo {
      *
      */
     public SyncSolutionInfo() {
+        final String libraryName = "commercetools-sync-java";
         final String implementationTitle = ofNullable(getClass().getPackage().getImplementationTitle())
-            .orElse("DEBUG-TITLE");
+            .orElse(libraryName);
         final String implementationVersion = ofNullable(getClass().getPackage().getImplementationVersion())
             .orElse("DEBUG-VERSION");
         setName(implementationTitle);
         setVersion(implementationVersion);
-        setWebsite("https://github.com/commercetools/commercetools-sync-java");
+        setWebsite(format("https://github.com/commercetools/%s", libraryName));
         setEmergencyContact("ps-dev@commercetools.com");
     }
 }
