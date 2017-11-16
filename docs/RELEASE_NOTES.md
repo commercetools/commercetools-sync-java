@@ -46,6 +46,9 @@ are breaking changes. If there are, then a migration guide should be provided.
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M5/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M5)
 
+**Build Tools** (1)
+- **Commons** - Append library name and version to User-Agent headers of JVM SDK clients using the library. [#142](https://github.com/commercetools/commercetools-sync-java/issues/142)
+
 **Doc Fixes** (1)
 - **Build Tools** - Adds Snyk vulnerabilities badge to repo README. [#188](https://github.com/commercetools/commercetools-sync-java/pull/188)
 -->
@@ -54,7 +57,7 @@ are breaking changes. If there are, then a migration guide should be provided.
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M4/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M4)
 
-**Bug Fixes** (1)
+**Hotfix** (1)
 - **Product Sync** - Fixes an issue with `replaceAttributesReferencesIdsWithKeys` which nullifies localized text attributes due 
 to JSON parsing not throwing exception on parsing it to reference set. [#179](https://github.com/commercetools/commercetools-sync-java/issues/179)
 
