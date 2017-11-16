@@ -35,11 +35,7 @@ public class BuildSetDescriptionUpdateActionTest {
 
     @Test
     public void buildSetDescriptionUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
-        final LocalizedString newDescription = LocalizedString.of(Locale.ENGLISH, "Die Rückenstücke des Rehs "
-            + "gelten als wahres Geschmackserlebnis und beherbergen die edelsten Teile des Rehs. Aus dem Rücken können"
-            + " Sie feine Filets herausschneiden, die sich hervorragend zum Kurzbraten oder Grillen eignen."
-            + " Da der Knochen von uns bereits schonend entfernt wurde, können Sie sich voll und ganz auf den"
-            + " einzigartigen Geschmack konzentrieren.");
+        final LocalizedString newDescription = LocalizedString.of(Locale.ENGLISH, "english description.");
         final Optional<UpdateAction<Product>> setDescriptionUpdateAction =
             getSetDescriptionUpdateAction(MOCK_OLD_PUBLISHED_PRODUCT, newDescription);
 

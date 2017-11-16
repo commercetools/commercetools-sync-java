@@ -1,35 +1,41 @@
 package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.inventory.InventoryEntry;
+import io.sphere.sdk.inventory.InventoryEntryDraft;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public final class InventorySyncOptions extends BaseSyncOptions {
-
+public final class InventorySyncOptions extends BaseSyncOptions<InventoryEntry, InventoryEntryDraft> {
     private final boolean ensureChannels;
 
     InventorySyncOptions(@Nonnull final SphereClient ctpClient,
-                         final BiConsumer<String, Throwable> updateActionErrorCallBack,
-                         final Consumer<String> updateActionWarningCallBack,
+                         @Nullable final BiConsumer<String, Throwable> updateActionErrorCallBack,
+                         @Nullable final Consumer<String> updateActionWarningCallBack,
                          final int batchSize,
-                         final boolean removeOtherLocales,
                          final boolean removeOtherSetEntries,
                          final boolean removeOtherCollectionEntries,
                          final boolean removeOtherProperties,
                          final boolean allowUuid,
-                         boolean ensureChannels) {
+                         boolean ensureChannels,
+                         @Nullable final TriFunction<List<UpdateAction<InventoryEntry>>, InventoryEntryDraft,
+                             InventoryEntry, List<UpdateAction<InventoryEntry>>> beforeUpdateCallback) {
         super(ctpClient,
             updateActionErrorCallBack,
             updateActionWarningCallBack,
             batchSize,
-            removeOtherLocales,
             removeOtherSetEntries,
             removeOtherCollectionEntries,
             removeOtherProperties,
-            allowUuid);
+            allowUuid,
+            beforeUpdateCallback);
         this.ensureChannels = ensureChannels;
 
     }

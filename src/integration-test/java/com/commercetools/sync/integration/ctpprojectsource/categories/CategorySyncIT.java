@@ -82,11 +82,11 @@ public class CategorySyncIT {
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .setErrorCallBack((errorMessage, exception) -> {
+            .errorCallback((errorMessage, exception) -> {
                 callBackErrorResponses.add(errorMessage);
                 callBackExceptions.add(exception);
             })
-            .setWarningCallBack((warningMessage) -> callBackWarningResponses.add(warningMessage))
+            .warningCallback((warningMessage) -> callBackWarningResponses.add(warningMessage))
             .build();
         categorySync = new CategorySync(categorySyncOptions);
     }
@@ -168,14 +168,14 @@ public class CategorySyncIT {
                 + " key:'%s'. Reason: %s: Failed to resolve custom type reference on "
                 + "CategoryDraft with key:'%s'. "
                 + "Reason: Found a UUID in the id field. Expecting a key without a UUID value. If you want to allow"
-                + " UUID values for reference keys, please use the setAllowUuidKeys(true) option in the sync options.",
+                + " UUID values for reference keys, please use the allowUuidKeys(true) option in the sync options.",
             key1, ReferenceResolutionException.class.getCanonicalName(), key1));
         final String key2 = categoryDrafts.get(1).getKey();
         assertThat(callBackErrorResponses.get(1)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
                 + " key:'%s'. Reason: %s: Failed to resolve custom type reference on "
                 + "CategoryDraft with key:'%s'. Reason: "
                 + "Found a UUID in the id field. Expecting a key without a UUID value. If you want to allow UUID values"
-                + " for reference keys, please use the setAllowUuidKeys(true) option in the sync options.",
+                + " for reference keys, please use the allowUuidKeys(true) option in the sync options.",
             key2, ReferenceResolutionException.class.getCanonicalName(), key2));
 
         assertThat(callBackExceptions).hasSize(2);

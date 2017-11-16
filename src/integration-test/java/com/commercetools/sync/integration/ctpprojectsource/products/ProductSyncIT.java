@@ -149,9 +149,9 @@ public class ProductSyncIT {
 
     private ProductSyncOptions buildSyncOptions() {
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                        .setErrorCallBack(this::errorCallback)
-                                        .setWarningCallBack(warningCallBackMessages::add)
-                                        .setUpdateActionsFilterCallBack(this::updateActionsCallback)
+                                        .errorCallback(this::errorCallback)
+                                        .warningCallback(warningCallBackMessages::add)
+                                        .beforeUpdateCallback(this::beforeUpdateCallback)
                                         .build();
     }
 
@@ -160,9 +160,11 @@ public class ProductSyncIT {
         errorCallBackExceptions.add(exception);
     }
 
-    private List<UpdateAction<Product>> updateActionsCallback(@Nonnull final List<UpdateAction<Product>> builtActions) {
-        updateActions.addAll(builtActions);
-        return builtActions;
+    private List<UpdateAction<Product>> beforeUpdateCallback(@Nonnull final List<UpdateAction<Product>> updateActions,
+                                                             @Nonnull final ProductDraft productDraft,
+                                                             @Nonnull final Product oldProduct) {
+        this.updateActions.addAll(updateActions);
+        return updateActions;
     }
 
     @AfterClass
@@ -279,10 +281,10 @@ public class ProductSyncIT {
         // Create custom options with whitelisting and action filter callback..
         final ProductSyncOptions customSyncOptions =
             ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                     .setErrorCallBack(this::errorCallback)
-                                     .setWarningCallBack(warningCallBackMessages::add)
-                                     .setUpdateActionsFilterCallBack(this::updateActionsCallback)
-                                     .setSyncFilter(SyncFilter.ofWhiteList(ATTRIBUTES))
+                                     .errorCallback(this::errorCallback)
+                                     .warningCallback(warningCallBackMessages::add)
+                                     .beforeUpdateCallback(this::beforeUpdateCallback)
+                                     .syncFilter(SyncFilter.ofWhiteList(ATTRIBUTES))
                                      .build();
         final ProductSync customSync = new ProductSync(customSyncOptions);
 

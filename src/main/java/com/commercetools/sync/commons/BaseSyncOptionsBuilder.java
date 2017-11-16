@@ -1,43 +1,48 @@
 package com.commercetools.sync.commons;
 
+import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T, S>, S extends BaseSyncOptions> {
+public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T, S, U, V>,
+    S extends BaseSyncOptions, U, V> {
+
     protected SphereClient ctpClient;
-    protected BiConsumer<String, Throwable> errorCallBack;
-    protected Consumer<String> warningCallBack;
+    protected BiConsumer<String, Throwable> errorCallback;
+    protected Consumer<String> warningCallback;
     protected int batchSize = 30;
-    protected boolean removeOtherLocales = true;
     protected boolean removeOtherSetEntries = true;
     protected boolean removeOtherCollectionEntries = true;
     protected boolean removeOtherProperties = true;
     protected boolean allowUuid = false;
+    protected TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
 
     /**
-     * Sets the {@code errorCallBack} function of the sync module. This callback will be called whenever an event occurs
+     * Sets the {@code errorCallback} function of the sync module. This callback will be called whenever an event occurs
      * that leads to an error alert from the sync process.
      *
-     * @param errorCallBack the new value to set to the error callback.
+     * @param errorCallback the new value to set to the error callback.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setErrorCallBack(@Nonnull final BiConsumer<String, Throwable> errorCallBack) {
-        this.errorCallBack = errorCallBack;
+    public T errorCallback(@Nonnull final BiConsumer<String, Throwable> errorCallback) {
+        this.errorCallback = errorCallback;
         return getThis();
     }
 
     /**
-     * Sets the {@code warningCallBack} function of the sync module. This callback will be called whenever an event
+     * Sets the {@code warningCallback} function of the sync module. This callback will be called whenever an event
      * occurs that leads to a warning alert from the sync process.
      *
-     * @param warningCallBack the new value to set to the warning callback.
+     * @param warningCallback the new value to set to the warning callback.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setWarningCallBack(@Nonnull final Consumer<String> warningCallBack) {
-        this.warningCallBack = warningCallBack;
+    public T warningCallback(@Nonnull final Consumer<String> warningCallback) {
+        this.warningCallback = warningCallback;
         return getThis();
     }
 
@@ -55,23 +60,10 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      *                  or else will be ignored and default value of 30 would be used.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setBatchSize(final int batchSize) {
+    public T batchSize(final int batchSize) {
         if (batchSize > 0) {
             this.batchSize = batchSize;
         }
-        return getThis();
-    }
-
-    /**
-     * Sets the {@code removeOtherLocales} boolean flag which adds additional localizations without deleting
-     * existing ones. If set to true, which is the default value of the option, it deletes the
-     * existing localizations. If set to false, it doesn't delete the existing ones.
-     *
-     * @param removeOtherLocales new value to set to the boolean flag.
-     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
-     */
-    public T setRemoveOtherLocales(final boolean removeOtherLocales) {
-        this.removeOtherLocales = removeOtherLocales;
         return getThis();
     }
 
@@ -83,7 +75,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * @param removeOtherSetEntries new value to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setRemoveOtherSetEntries(final boolean removeOtherSetEntries) {
+    public T removeOtherSetEntries(final boolean removeOtherSetEntries) {
         this.removeOtherSetEntries = removeOtherSetEntries;
         return getThis();
     }
@@ -96,7 +88,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * @param removeOtherCollectionEntries new value to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setRemoveOtherCollectionEntries(final boolean removeOtherCollectionEntries) {
+    public T removeOtherCollectionEntries(final boolean removeOtherCollectionEntries) {
         this.removeOtherCollectionEntries = removeOtherCollectionEntries;
         return getThis();
     }
@@ -109,7 +101,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * @param removeOtherProperties new value to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setRemoveOtherProperties(final boolean removeOtherProperties) {
+    public T removeOtherProperties(final boolean removeOtherProperties) {
         this.removeOtherProperties = removeOtherProperties;
         return getThis();
     }
@@ -119,11 +111,26 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * are in UUID format, then this flag must be set to true, otherwise the sync will fail to resolve the reference.
      * This flag, if set to true, enables the user to use keys with UUID format. By default, it is set to {@code false}.
      *
-     * @param allowUuid new vale to set to the boolean flag.
+     * @param allowUuid new value to set to the boolean flag.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T setAllowUuidKeys(final boolean allowUuid) {
+    public T allowUuidKeys(final boolean allowUuid) {
         this.allowUuid = allowUuid;
+        return getThis();
+    }
+
+    /**
+     * Sets the beforeUpdateCallback {@link TriFunction} which can be applied on the supplied list of update actions
+     * generated from comparing an old resource of type {@code U} (e.g. {@link io.sphere.sdk.products.Product}) to a new
+     * draft of type {@code V} (e.g. {@link io.sphere.sdk.products.ProductDraft}). It results in a resultant list after
+     * the specified {@link TriFunction} {@code beforeUpdateCallback} function has been applied.
+     *
+     * @param beforeUpdateCallback function which can be applied on generated list of update actions.
+     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
+     */
+    public T beforeUpdateCallback(@Nonnull final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
+                                      beforeUpdateCallback) {
+        this.beforeUpdateCallback = beforeUpdateCallback;
         return getThis();
     }
 

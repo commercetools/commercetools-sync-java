@@ -1,21 +1,17 @@
 package com.commercetools.sync.products;
 
-import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.function.Function;
 
 public final class ProductSyncOptionsBuilder
-    extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions> {
+    extends BaseSyncOptionsBuilder<ProductSyncOptionsBuilder, ProductSyncOptions, Product, ProductDraft> {
     public static final int BATCH_SIZE_DEFAULT = 30;
     private boolean removeOtherVariants = true;
     private SyncFilter syncFilter;
-    private Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsCallBack;
     static final boolean ENSURE_CHANNELS_DEFAULT = false;
     private boolean ensurePriceChannels = ENSURE_CHANNELS_DEFAULT;
 
@@ -24,7 +20,7 @@ public final class ProductSyncOptionsBuilder
     }
 
     public static ProductSyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
-        return new ProductSyncOptionsBuilder(ctpClient).setBatchSize(BATCH_SIZE_DEFAULT);
+        return new ProductSyncOptionsBuilder(ctpClient).batchSize(BATCH_SIZE_DEFAULT);
     }
 
     /**
@@ -60,22 +56,8 @@ public final class ProductSyncOptionsBuilder
      * @return {@code this} instance of {@link ProductSyncOptionsBuilder}
      */
     @Nonnull
-    public ProductSyncOptionsBuilder setSyncFilter(@Nonnull final SyncFilter syncFilter) {
+    public ProductSyncOptionsBuilder syncFilter(@Nonnull final SyncFilter syncFilter) {
         this.syncFilter = syncFilter;
-        return this;
-    }
-
-    /**
-     * Sets the update actions filter callback which can be applied on generated list of update actions to produce
-     * a resultant list after the filter function has been applied.
-     *
-     * @param updateActionsCallBack filter function which can be applied on generated list of update actions
-     * @return {@code this} instance of {@link CategorySyncOptionsBuilder}
-     */
-    @Nonnull
-    public ProductSyncOptionsBuilder setUpdateActionsFilterCallBack(@Nonnull final Function<List<UpdateAction<Product>>,
-        List<UpdateAction<Product>>> updateActionsCallBack) {
-        this.updateActionsCallBack = updateActionsCallBack;
         return this;
     }
 
@@ -101,17 +83,16 @@ public final class ProductSyncOptionsBuilder
     public ProductSyncOptions build() {
         return new ProductSyncOptions(
             ctpClient,
-            errorCallBack,
-            warningCallBack,
+            errorCallback,
+            warningCallback,
             batchSize,
-            removeOtherLocales,
             removeOtherSetEntries,
             removeOtherCollectionEntries,
             removeOtherProperties,
             allowUuid,
             removeOtherVariants,
             syncFilter,
-            updateActionsCallBack,
+            beforeUpdateCallback,
             ensurePriceChannels
         );
     }

@@ -7,12 +7,10 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeNameUpdateAction;
@@ -53,7 +51,7 @@ public final class CategorySyncUtils {
         final List<UpdateAction<Category>> assetUpdateActions =
             buildAssetActions(oldCategory, newCategory, syncOptions);
         updateActions.addAll(assetUpdateActions);
-        return filterUpdateActions(updateActions, syncOptions.getUpdateActionsCallBack());
+        return syncOptions.applyBeforeUpdateCallBack(updateActions, newCategory, oldCategory);
     }
 
     /**
@@ -110,22 +108,6 @@ public final class CategorySyncUtils {
                                                                   @Nonnull final CategorySyncOptions syncOptions) {
 
         return new ArrayList<>();
-    }
-
-    /**
-     * Applies a given filter function, if not null, {@code updateActionsFilter} on {@link List} of {@link UpdateAction}
-     * elements.
-     *
-     * @param updateActions       the list of update actions to apply the filter on.
-     * @param updateActionsFilter the filter functions to apply on the list of update actions
-     * @return a new resultant list from applying the filter function, if not null, on the supplied list. If the filter
-     *      function supplied was null, the same supplied list is returned as is.
-     */
-    @Nonnull
-    private static List<UpdateAction<Category>> filterUpdateActions(
-        @Nonnull final List<UpdateAction<Category>> updateActions,
-        @Nullable final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter) {
-        return updateActionsFilter != null ? updateActionsFilter.apply(updateActions) : updateActions;
     }
 
     /**

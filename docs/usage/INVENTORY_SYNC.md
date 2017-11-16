@@ -112,10 +112,6 @@ An example of use can be found [here](https://github.com/commercetools/commercet
 - `warningCallBack`
 a callback that is called whenever an event occurs during the sync process that represents a warning.
 
-- `removeOtherLocales`
-a flag which enables the sync module to add additional localizations without deleting existing ones, if set to `false`.
-If set to `true`, which is the default value of the option, it deletes the existing object properties.
-
 - `removeOtherSetEntries`
 a flag which enables the sync module to add additional Set entries without deleting existing ones, if set to `false`.
 If set to `true`, which is the default value of the option, it deletes the existing Set entries.
@@ -132,6 +128,10 @@ object properties.
 
 - `allowUuid`
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
+
+- `beforeUpdateCallback`
+a filter function which can be applied on a generated list of update actions. It allows the user to intercept inventory 
+entry update and modify (add/remove) update actions just before they are send to CTP API.
 
 <!-- TODO Update above options with links to tests. Tests should be written when inventory sync could actually use them (when custom update actions would use them).  -->
 

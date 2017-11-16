@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.externalsource.products.utils;
 
+import com.commercetools.sync.commons.utils.TriFunction;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -25,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
@@ -82,17 +82,17 @@ public class BuildProductVariantImageUpdateActionsIT {
 
         final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
 
-        final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsCollector =
-            updateActions -> {
+        final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            updateActionsCollector = (updateActions, newDraft, oldProduct) -> {
                 updateActionsBuiltBySync.addAll(updateActions);
                 return updateActions;
             };
 
 
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                               .setErrorCallBack(errorCallBack)
-                                                                               .setWarningCallBack(warningCallBack)
-                                                                               .setUpdateActionsFilterCallBack(
+                                                                               .errorCallback(errorCallBack)
+                                                                               .warningCallback(warningCallBack)
+                                                                               .beforeUpdateCallback(
                                                                                    updateActionsCollector)
                                                                                .build();
         productSync = new ProductSync(productSyncOptions);

@@ -9,13 +9,11 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionIfPassesFilter;
@@ -69,7 +67,7 @@ public final class ProductSyncUtils {
         final List<UpdateAction<Product>> assetUpdateActions =
             buildAssetActions(oldProduct, newProduct, syncOptions);
         updateActions.addAll(assetUpdateActions);
-        return filterUpdateActions(updateActions, syncOptions.getUpdateActionsCallBack());
+        return syncOptions.applyBeforeUpdateCallBack(updateActions, newProduct, oldProduct);
     }
 
     /**
@@ -179,22 +177,6 @@ public final class ProductSyncUtils {
                                                                  @Nonnull final ProductSyncOptions syncOptions) {
 
         return new ArrayList<>();
-    }
-
-    /**
-     * Applies a given filter function, if not null, {@code updateActionsFilter} on {@link List} of {@link UpdateAction}
-     * elements.
-     *
-     * @param updateActions       the list of update actions to apply the filter on.
-     * @param updateActionsFilter the filter functions to apply on the list of update actions
-     * @return a new resultant list from applying the filter function, if not null, on the supplied list. If the filter
-     *      function supplied was null, the same supplied list is returned as is.
-     */
-    @Nonnull
-    private static List<UpdateAction<Product>> filterUpdateActions(
-        @Nonnull final List<UpdateAction<Product>> updateActions,
-        @Nullable final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsFilter) {
-        return updateActionsFilter != null ? updateActionsFilter.apply(updateActions) : updateActions;
     }
 
     /**

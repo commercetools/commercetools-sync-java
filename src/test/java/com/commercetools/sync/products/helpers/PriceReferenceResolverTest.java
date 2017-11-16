@@ -55,7 +55,7 @@ public class PriceReferenceResolverTest {
     @Test
     public void resolveCustomTypeReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReferences() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                               .setAllowUuidKeys(true)
+                                                                               .allowUuidKeys(true)
                                                                                .build();
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeIdAndJson(UUID.randomUUID().toString(), new HashMap<>());
@@ -96,7 +96,7 @@ public class PriceReferenceResolverTest {
                 + " with country:'DE' and value: 'EUR 10.00000'. Reason: Found a UUID"
                 + " in the id field. Expecting a key without a UUID value. If you want to"
                 + " allow UUID values for reference keys, please use the "
-                + "setAllowUuidKeys(true) option in the sync options.");
+                + "allowUuidKeys(true) option in the sync options.");
     }
 
     @Test
@@ -191,7 +191,7 @@ public class PriceReferenceResolverTest {
     @Test
     public void resolveChannelReference_WithChannelKeyAsUuidSetAndAllowed_ShouldResolveChannelReference() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                               .setAllowUuidKeys(true)
+                                                                               .allowUuidKeys(true)
                                                                                .build();
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
@@ -224,7 +224,7 @@ public class PriceReferenceResolverTest {
             .hasMessage("Failed to resolve the channel reference on PriceDraft"
                 + " with country:'DE' and value: 'EUR 10.00000'. Reason: Found a UUID in the id field. Expecting a key"
                 + " without a UUID value. If you want to allow UUID values for reference keys, please"
-                + " use the setAllowUuidKeys(true) option in the sync options.");
+                + " use the allowUuidKeys(true) option in the sync options.");
     }
 
     @Test

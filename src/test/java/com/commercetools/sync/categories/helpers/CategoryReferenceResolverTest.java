@@ -67,7 +67,7 @@ public class CategoryReferenceResolverTest {
     @Test
     public void resolveCustomTypeReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReferences() {
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                                  .setAllowUuidKeys(true)
+                                                                                  .allowUuidKeys(true)
                                                                                   .build();
         final String uuidKey = String.valueOf(UUID.randomUUID());
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
@@ -101,7 +101,7 @@ public class CategoryReferenceResolverTest {
             .hasMessage("Failed to resolve parent reference on CategoryDraft with"
                 + " key:'key'. Reason: Found a UUID in the id field. Expecting a"
                 + " key without a UUID value. If you want to allow UUID values for"
-                + " reference keys, please use the setAllowUuidKeys(true) option in"
+                + " reference keys, please use the allowUuidKeys(true) option in"
                 + " the sync options.");
     }
 
@@ -161,7 +161,7 @@ public class CategoryReferenceResolverTest {
             .hasMessage("Failed to resolve custom type reference on CategoryDraft"
                 + " with key:'key'. Reason: Found a UUID in the id field. Expecting"
                 + " a key without a UUID value. If you want to allow UUID values for"
-                + " reference keys, please use the setAllowUuidKeys(true) option in"
+                + " reference keys, please use the allowUuidKeys(true) option in"
                 + " the sync options.");
     }
 

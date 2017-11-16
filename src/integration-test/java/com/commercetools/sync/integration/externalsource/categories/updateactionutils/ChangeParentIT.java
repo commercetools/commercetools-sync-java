@@ -65,7 +65,7 @@ public class ChangeParentIT {
     public void setupTest() {
         callBackResponses = new ArrayList<>();
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                        .setWarningCallBack(callBackResponses::add)
+                                                        .warningCallback(callBackResponses::add)
                                                         .build();
     }
 

@@ -77,7 +77,7 @@ public class InventoryReferenceResolverTest {
     @Test
     public void resolveCustomTypeReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReferences() {
         final InventorySyncOptions optionsWithAllowedUuid = InventorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                                    .setAllowUuidKeys(true)
+                                                                                    .allowUuidKeys(true)
                                                                                     .build();
         final InventoryEntryDraftBuilder draftBuilder = InventoryEntryDraftBuilder
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(UUID_KEY))
@@ -110,7 +110,7 @@ public class InventoryReferenceResolverTest {
                                              + " with SKU:'1000'. Reason: Found a UUID in the id field. Expecting a key"
                                              + " without a UUID"
                                              + " value. If you want to allow UUID values for reference keys, please"
-                                             + " use the setAllowUuidKeys(true) option in the sync options.");
+                                             + " use the allowUuidKeys(true) option in the sync options.");
                                      return null;
                                  }).toCompletableFuture().join();
     }
@@ -204,7 +204,7 @@ public class InventoryReferenceResolverTest {
                                  .isEqualTo("Failed to resolve custom type reference on InventoryEntryDraft"
                                          + " with SKU:'1000'. Reason: Found a UUID in the id field. Expecting a key"
                                          + " without a UUID value. If you want to allow UUID values for reference keys,"
-                                         + " please use the setAllowUuidKeys(true) option in the sync options.");
+                                         + " please use the allowUuidKeys(true) option in the sync options.");
                              return null;
                          }).toCompletableFuture().join();
     }

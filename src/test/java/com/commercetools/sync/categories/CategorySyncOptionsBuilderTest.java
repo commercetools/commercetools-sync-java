@@ -1,15 +1,18 @@
 package com.commercetools.sync.categories;
 
+import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.LocalizedString;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -31,9 +34,8 @@ public class CategorySyncOptionsBuilderTest {
         assertThat(categorySyncOptions.shouldRemoveOtherCollectionEntries()).isTrue();
         assertThat(categorySyncOptions.shouldRemoveOtherProperties()).isTrue();
         assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isTrue();
-        assertThat(categorySyncOptions.shouldRemoveOtherLocales()).isTrue();
         assertThat(categorySyncOptions.shouldAllowUuidKeys()).isFalse();
-        assertThat(categorySyncOptions.getUpdateActionsCallBack()).isNull();
+        assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNull();
         assertThat(categorySyncOptions.getErrorCallBack()).isNull();
         assertThat(categorySyncOptions.getWarningCallBack()).isNull();
         assertThat(categorySyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
@@ -41,18 +43,18 @@ public class CategorySyncOptionsBuilderTest {
     }
 
     @Test
-    public void setUpdateActionsFilter_WithFilter_ShouldSetFilter() {
-        final Function<List<UpdateAction<Category>>,
-            List<UpdateAction<Category>>> clearListFilter = (updateActions -> Collections.emptyList());
-        categorySyncOptionsBuilder.setUpdateActionsFilter(clearListFilter);
+    public void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
+        final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category, List<UpdateAction<Category>>>
+            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> Collections.emptyList();
+        categorySyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
-        assertThat(categorySyncOptions.getUpdateActionsCallBack()).isNotNull();
+        assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
     }
 
     @Test
-    public void setRemoveOtherCollectionEntries_WithFalse_ShouldSetFlag() {
-        categorySyncOptionsBuilder.setRemoveOtherCollectionEntries(false);
+    public void removeOtherCollectionEntries_WithFalse_ShouldSetFlag() {
+        categorySyncOptionsBuilder.removeOtherCollectionEntries(false);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.shouldRemoveOtherCollectionEntries()).isNotNull();
@@ -60,17 +62,8 @@ public class CategorySyncOptionsBuilderTest {
     }
 
     @Test
-    public void setRemoveOtherLocales_WithFalse_ShouldSetFlag() {
-        categorySyncOptionsBuilder.setRemoveOtherLocales(false);
-
-        final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
-        assertThat(categorySyncOptions.shouldRemoveOtherLocales()).isNotNull();
-        assertThat(categorySyncOptions.shouldRemoveOtherLocales()).isFalse();
-    }
-
-    @Test
-    public void setRemoveOtherProperties_WithFalse_ShouldSetFlag() {
-        categorySyncOptionsBuilder.setRemoveOtherProperties(false);
+    public void removeOtherProperties_WithFalse_ShouldSetFlag() {
+        categorySyncOptionsBuilder.removeOtherProperties(false);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.shouldRemoveOtherProperties()).isNotNull();
@@ -78,8 +71,8 @@ public class CategorySyncOptionsBuilderTest {
     }
 
     @Test
-    public void setAllowUuid_WithTrue_ShouldSetFlag() {
-        categorySyncOptionsBuilder.setAllowUuidKeys(true);
+    public void allowUuid_WithTrue_ShouldSetFlag() {
+        categorySyncOptionsBuilder.allowUuidKeys(true);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.shouldAllowUuidKeys()).isNotNull();
@@ -87,28 +80,28 @@ public class CategorySyncOptionsBuilderTest {
     }
 
     @Test
-    public void setErrorCallBack_WithCallBack_ShouldSetCallBack() {
+    public void errorCallBack_WithCallBack_ShouldSetCallBack() {
         final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
         };
-        categorySyncOptionsBuilder.setErrorCallBack(mockErrorCallBack);
+        categorySyncOptionsBuilder.errorCallback(mockErrorCallBack);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.getErrorCallBack()).isNotNull();
     }
 
     @Test
-    public void setWarningCallBack_WithCallBack_ShouldSetCallBack() {
+    public void warningCallBack_WithCallBack_ShouldSetCallBack() {
         final Consumer<String> mockWarningCallBack = (warningMessage) -> {
         };
-        categorySyncOptionsBuilder.setWarningCallBack(mockWarningCallBack);
+        categorySyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.getWarningCallBack()).isNotNull();
     }
 
     @Test
-    public void setRemoveOtherSetEntries_WithFalse_ShouldSetFlag() {
-        categorySyncOptionsBuilder.setRemoveOtherSetEntries(false);
+    public void removeOtherSetEntries_WithFalse_ShouldSetFlag() {
+        categorySyncOptionsBuilder.removeOtherSetEntries(false);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isNotNull();
@@ -127,35 +120,66 @@ public class CategorySyncOptionsBuilderTest {
     public void categorySyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(CTP_CLIENT)
-            .setAllowUuidKeys(true)
-            .setRemoveOtherLocales(false)
-            .setBatchSize(30)
-            .setUpdateActionsFilter(updateActions -> Collections.emptyList())
+            .allowUuidKeys(true)
+            .batchSize(30)
+            .beforeUpdateCallback((updateActions, newCategory, oldCategory) -> Collections.emptyList())
             .build();
         assertThat(categorySyncOptions).isNotNull();
     }
 
     @Test
-    public void setBatchSize_WithPositiveValue_ShouldSetBatchSize() {
+    public void batchSize_WithPositiveValue_ShouldSetBatchSize() {
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .setBatchSize(10)
+                                                                                  .batchSize(10)
                                                                                   .build();
         assertThat(categorySyncOptions.getBatchSize()).isEqualTo(10);
     }
 
     @Test
-    public void setBatchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
+    public void batchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
         final CategorySyncOptions categorySyncOptionsWithZeroBatchSize = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .setBatchSize(0)
+                                                                                  .batchSize(0)
                                                                                   .build();
         assertThat(categorySyncOptionsWithZeroBatchSize.getBatchSize())
             .isEqualTo(CategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
 
         final CategorySyncOptions categorySyncOptionsWithNegativeBatchSize  = CategorySyncOptionsBuilder
             .of(CTP_CLIENT)
-            .setBatchSize(-100)
+            .batchSize(-100)
             .build();
         assertThat(categorySyncOptionsWithNegativeBatchSize.getBatchSize())
             .isEqualTo(CategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+    }
+
+    @Test
+    public void applyBeforeUpdateCallBack_WithNullCallback_ShouldReturnIdenticalList() {
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                  .build();
+        assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNull();
+
+        final List<UpdateAction<Category>> updateActions = Collections
+            .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+        final List<UpdateAction<Category>> filteredList = categorySyncOptions
+            .applyBeforeUpdateCallBack(updateActions, mock(CategoryDraft.class), mock(Category.class));
+        assertThat(filteredList).isSameAs(updateActions);
+    }
+
+    @Test
+    public void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
+        final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category, List<UpdateAction<Category>>>
+            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> Collections.emptyList();
+
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                  .beforeUpdateCallback(
+                                                                                      beforeUpdateCallback)
+                                                                                  .build();
+        assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
+
+        final List<UpdateAction<Category>> updateActions = Collections
+            .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+        final List<UpdateAction<Category>> filteredList = categorySyncOptions
+            .applyBeforeUpdateCallBack(updateActions, mock(CategoryDraft.class), mock(Category.class));
+        assertThat(filteredList).isNotEqualTo(updateActions);
+        assertThat(filteredList).isEmpty();
     }
 }

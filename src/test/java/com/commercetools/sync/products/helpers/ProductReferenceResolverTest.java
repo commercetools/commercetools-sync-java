@@ -80,7 +80,7 @@ public class ProductReferenceResolverTest {
     @Test
     public void resolveProductTypeReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReference() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                               .setAllowUuidKeys(true)
+                                                                               .allowUuidKeys(true)
                                                                                .build();
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
@@ -119,7 +119,7 @@ public class ProductReferenceResolverTest {
                 + " with key:'" + productBuilder.getKey() + "'. Reason: Found a UUID"
                 + " in the id field. Expecting a key without a UUID value. If you want to"
                 + " allow UUID values for reference keys, please use the "
-                + "setAllowUuidKeys(true) option in the sync options.");
+                + "allowUuidKeys(true) option in the sync options.");
     }
 
     @Test
@@ -185,7 +185,7 @@ public class ProductReferenceResolverTest {
     @Test
     public void resolveTaxCategoryReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReference() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                               .setAllowUuidKeys(true)
+                                                                               .allowUuidKeys(true)
                                                                                .build();
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .taxCategory(TaxCategory.referenceOfId(UUID.randomUUID().toString()));
@@ -227,7 +227,7 @@ public class ProductReferenceResolverTest {
                 + " with key:'" + productBuilder.getKey() + "'. Reason: Found a UUID"
                 + " in the id field. Expecting a key without a UUID value. If you want to"
                 + " allow UUID values for reference keys, please use the "
-                + "setAllowUuidKeys(true) option in the sync options.");
+                + "allowUuidKeys(true) option in the sync options.");
     }
 
     @Test
@@ -306,7 +306,7 @@ public class ProductReferenceResolverTest {
     @Test
     public void resolveStateReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReference() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                               .setAllowUuidKeys(true)
+                                                                               .allowUuidKeys(true)
                                                                                .build();
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .state(State.referenceOfId(UUID.randomUUID().toString()));
@@ -348,7 +348,7 @@ public class ProductReferenceResolverTest {
                 + " with key:'" + productBuilder.getKey() + "'. Reason: Found a UUID"
                 + " in the id field. Expecting a key without a UUID value. If you want to"
                 + " allow UUID values for reference keys, please use the "
-                + "setAllowUuidKeys(true) option in the sync options.");
+                + "allowUuidKeys(true) option in the sync options.");
     }
 
     @Test
