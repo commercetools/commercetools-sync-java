@@ -46,11 +46,16 @@ are breaking changes. If there are, then a migration guide should be provided.
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M5/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M5)
 
-**Build Tools** (1)
+**New Features** (2)
+- **Build Tools** - Add `Add Release Notes entry` checkbox in PR template on Github repo. [#161](https://github.com/commercetools/commercetools-sync-java/issues/161)
 - **Commons** - Append library name and version to User-Agent headers of JVM SDK clients using the library. [#142](https://github.com/commercetools/commercetools-sync-java/issues/142)
 
+**Enhancements** (2)
+- **Build Tools** - Explicitlty specifify gradle tasks execution order in execution-order.gradle. [#161](https://github.com/commercetools/commercetools-sync-java/issues/161)
+- **Build Tools** - Run PMD before Integration tests. [#161](https://github.com/commercetools/commercetools-sync-java/issues/161)
+
 **Doc Fixes** (1)
-- **Build Tools** - Adds Snyk vulnerabilities badge to repo README. [#188](https://github.com/commercetools/commercetools-sync-java/pull/188)
+- **Build Tools** - Add Snyk vulnerabilities badge to repo README. [#188](https://github.com/commercetools/commercetools-sync-java/pull/188)
 -->
 ### v1.0.0-M4 -  Nov 7, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M3...v1.0.0-M4) |
