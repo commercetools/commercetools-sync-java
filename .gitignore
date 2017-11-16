@@ -6,3 +6,17 @@
 # gradle specific
 .gradle/
 build/
+
+Thumbs.db
+.DS_Store
+.gradle
+build
+bin
+.classpath
+.project
+.settings
+exploration
+*.iml
+*.ipr
+*.iws
+.idea
