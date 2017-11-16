@@ -1,9 +1,5 @@
 package com.commercetools.sync.products.templates.beforeupdatecallback;
 
-import com.commercetools.sync.products.ProductSync;
-import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.LocalizedStringEntry;
@@ -17,7 +13,6 @@ import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.producttypes.ProductType;
-import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -30,21 +25,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 final class SyncSingleLocale {
-
-    private static void sync(@Nonnull final SphereClient ctpClient,
-                                @Nonnull final Logger logger,
-                                @Nonnull final List<ProductDraft> newProductDrafts) {
-        final ProductSyncOptions syncOptions =
-            ProductSyncOptionsBuilder.of(ctpClient)
-                                     .errorCallback(logger::error)
-                                     .warningCallback(logger::warn)
-                                     .beforeUpdateCallback(SyncSingleLocale::syncFrenchDataOnly)
-                                     .build();
-
-        final ProductSync productSync = new ProductSync(syncOptions);
-        productSync.sync(newProductDrafts).toCompletableFuture().join();
-    }
-
     /**
      * Takes in a {@link List} of product update actions that was built from comparing a {@code newDraft} and an
      * {@code oldProduct} and maps the update actions so that only localizations with value {@link Locale#FRENCH}
