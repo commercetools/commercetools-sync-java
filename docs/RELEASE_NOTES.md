@@ -118,6 +118,7 @@ Category and rebuilding build update actions. [#94](https://github.com/commercet
 - **Commons** - Removed slf4j-simple dependency. [#172](https://github.com/commercetools/commercetools-sync-java/issues/172)
 - **Commons** - Used implementation instead of compile configuration for dependencies. [#172](https://github.com/commercetools/commercetools-sync-java/issues/172)
 
+
 ### v1.0.0-M2 -  Oct 12, 2017 
 
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M2-beta...v1.0.0-M2) |
@@ -146,13 +147,10 @@ Category and rebuilding build update actions. [#94](https://github.com/commercet
  - **Commons** - Added release notes doc. [#125](https://github.com/commercetools/commercetools-sync-java/issues/125)
  - **Build Tools** - Added JavaDoc badge to repo. [#145](https://github.com/commercetools/commercetools-sync-java/issues/145)
 
-**Migration guide**
-- No breaking changes introduced.
-
-
 ### v1.0.0-M2-beta -  Sep 28, 2017 
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M1...v1.0.0-M2-beta) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M2-beta)
+
 
 **Beta Features** (11)
 - **Product Sync** - Introduced syncing products name, categories, categoryOrderHints, description, slug,  metaTitle, 
@@ -169,9 +167,6 @@ metaDescription, metaKeywords, masterVariant and searchKeywords. [#57](https://g
 - **Product Sync** -  Introduced syncing products variant images. [#100](https://github.com/commercetools/commercetools-sync-java/issues/100)
 - **Product Sync** -  Exposed update action build utils for products variant images. [#100](https://github.com/commercetools/commercetools-sync-java/issues/100)
 - **Product Sync** -  Introduced syncing products against staged projection. [#93](https://github.com/commercetools/commercetools-sync-java/issues/93)
-
-**Migration guide**
-- No breaking changes introduced.
 
 
 ### v1.0.0-M1 -  Sep 06, 2017
