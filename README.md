@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/commercetools/commercetools-sync-java.svg?branch=master)](https://travis-ci.org/commercetools/commercetools-sync-java)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
 [![Download](https://api.bintray.com/packages/commercetools/maven/commercetools-sync-java/images/download.svg) ](https://bintray.com/commercetools/maven/commercetools-sync-java/_latestVersion)
-[![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M4/)
+[![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M5/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
 Java API which exposes utilities for building update actions and automatic syncing of CTP data from external sources 
@@ -53,17 +53,17 @@ most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>v1.0.0-M4</version>
+  <version>v1.0.0-M5</version>
 </dependency>
 ````
 #### Gradle
 ````groovy
-implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M4'
+implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M5'
 ````
 <!-- TODO #### SBT 
 ````java
 libraryDependencies ++= Seq(
-    "com.commercetools" % "commercetools-sync-java" % "v1.0.0-M4",
+    "com.commercetools" % "commercetools-sync-java" % "v1.0.0-M5",
  )
 ````-->
 

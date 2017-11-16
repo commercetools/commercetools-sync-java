@@ -32,6 +32,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [v1.0.0-M5 -  Nov 16, 2017](#v100-m5----nov-16-2017)
 - [v1.0.0-M4 -  Nov 7, 2017](#v100-m4----nov-7-2017)
 - [v1.0.0-M3 -  Nov 3, 2017](#v100-m3----nov-3-2017)
 - [v1.0.0-M2 -  Oct 12, 2017](#v100-m2----oct-12-2017)
@@ -39,7 +40,7 @@
 - [v1.0.0-M1 -  Sep 06, 2017](#v100-m1----sep-06-2017)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-<!--
+
 ### v1.0.0-M5 -  Nov 16, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M4...v1.0.0-M5) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M5/) | 
@@ -74,7 +75,6 @@ updated and the new resource draft. [#169](https://github.com/commercetools/comm
 - **Commons** - Renamed `setRemoveOtherSetEntries`, `setRemoveOtherCollectionEntries` and `setRemoveOtherProperties` 
 to `removeOtherSetEntries`, `removeOtherCollectionEntries` and `removeOtherProperties`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 - **Product Sync** - Renamed `setSyncFilter` to `syncFilter`. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
--->
 
 ### v1.0.0-M4 -  Nov 7, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M3...v1.0.0-M4) |
