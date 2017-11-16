@@ -51,7 +51,7 @@ actual InventoryEntry update. [#169](https://github.com/commercetools/commerceto
 
 **Enhancements** (1)
 - **Commons** - `setUpdateActionsCallback` is now `beforeUpdateCallback` and takes a TriFunction instead of Function, 
-which adds more information about the generated list of update actions, namley, the old resource being updated and the new
+which adds more information about the generated list of update actions, namely, the old resource being updated and the new
 resource draft. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 
 **Build Tools** (1)
