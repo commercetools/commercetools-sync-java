@@ -35,7 +35,7 @@ public class BuildChangeSlugUpdateActionTest {
 
     @Test
     public void buildChangeSlugUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
-        final LocalizedString newSlug = LocalizedString.of(Locale.ENGLISH, "rehruecken-o-kn");
+        final LocalizedString newSlug = LocalizedString.of(Locale.ENGLISH, "english-slug");
         final Optional<UpdateAction<Product>> changeSlugUpdateAction =
             getChangeSlugUpdateAction(MOCK_OLD_PUBLISHED_PRODUCT, newSlug);
 

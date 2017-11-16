@@ -3,6 +3,7 @@ package com.commercetools.sync.categories.utils;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
+import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
@@ -23,7 +24,6 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Function;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
@@ -165,14 +165,16 @@ public class CategorySyncUtilsTest {
             "differentOrderHint",
             "differentParentId");
 
-        final Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>>
-            reverseOrderFilter = (unfilteredList) -> {
-                Collections.reverse(unfilteredList);
-                return unfilteredList;
+        final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category, List<UpdateAction<Category>>>
+            reverseOrderFilter = (updateActions, newCategory, oldCategory) -> {
+                if (updateActions != null) {
+                    Collections.reverse(updateActions);
+                }
+                return updateActions;
             };
 
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                        .setUpdateActionsFilter(reverseOrderFilter)
+                                                        .beforeUpdateCallback(reverseOrderFilter)
                                                         .build();
 
         final List<UpdateAction<Category>> updateActions =

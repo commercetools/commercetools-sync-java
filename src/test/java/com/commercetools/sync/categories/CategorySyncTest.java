@@ -49,7 +49,7 @@ public class CategorySyncTest {
         errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
         categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
-                                                        .setErrorCallBack((errorMessage, exception) -> {
+                                                        .errorCallback((errorMessage, exception) -> {
                                                             errorCallBackMessages.add(errorMessage);
                                                             errorCallBackExceptions.add(exception);
                                                         })
@@ -226,7 +226,7 @@ public class CategorySyncTest {
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
             + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
             + " with key:'key'. Reason: Found a UUID in the id field. Expecting a key without a UUID"
-            + " value. If you want to allow UUID values for reference keys, please use the setAllowUuidKeys(true)"
+            + " value. If you want to allow UUID values for reference keys, please use the allowUuidKeys(true)"
             + " option in the sync options.", ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -354,7 +354,7 @@ public class CategorySyncTest {
             + " key:'key'. Reason: %s: Failed to resolve custom type reference on "
             + "CategoryDraft with key:'key'. Reason: Found a UUID in the id field. Expecting a key"
             + " without a UUID value. If you want to allow UUID values for reference keys, please use the"
-            + " setAllowUuidKeys(true) option in the sync options.",
+            + " allowUuidKeys(true) option in the sync options.",
             ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -364,7 +364,7 @@ public class CategorySyncTest {
     @Test
     public void sync_WithAllowedUuidCustomTypeKey_ShouldSync() {
         categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                        .setAllowUuidKeys(true)
+                                                        .allowUuidKeys(true)
                                                         .build();
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
             getMockCategoryService());
@@ -430,12 +430,12 @@ public class CategorySyncTest {
         final int batchSize = 1;
         CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(mock(SphereClient.class))
-            .setErrorCallBack(
+            .errorCallback(
                 (errorMessage, exception) -> {
                     errorCallBackMessages.add(errorMessage);
                     errorCallBackExceptions.add(exception);
                 })
-            .setBatchSize(batchSize)
+            .batchSize(batchSize)
             .build();
 
         final CategorySync categorySync =
@@ -473,7 +473,7 @@ public class CategorySyncTest {
         // With Default batch size
 
         categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                        .setErrorCallBack((errorMessage, exception) -> {
+                                                        .errorCallback((errorMessage, exception) -> {
                                                             errorCallBackMessages.add(errorMessage);
                                                             errorCallBackExceptions.add(exception);
                                                         })

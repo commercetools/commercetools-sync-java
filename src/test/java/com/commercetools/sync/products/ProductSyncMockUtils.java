@@ -69,8 +69,6 @@ public class ProductSyncMockUtils {
     public static final String LTEXT_SET_ATTRIBUTE = "ltext-set-attribute.json";
 
 
-
-
     /**
      * Unfortunately, <a href="http://dev.commercetools.com/http-api-projects-products.html#category-order-hints">
      * <i>Category Order Hints</i></a> in CTP platform is quite picky: it requires number values as a string

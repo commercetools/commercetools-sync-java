@@ -1,15 +1,18 @@
 package com.commercetools.sync.products;
 
+import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static com.commercetools.sync.products.ActionGroup.IMAGES;
 import static com.commercetools.sync.products.SyncFilter.ofWhiteList;
@@ -33,12 +36,11 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.shouldRemoveOtherCollectionEntries()).isTrue();
         assertThat(productSyncOptions.shouldRemoveOtherProperties()).isTrue();
         assertThat(productSyncOptions.shouldRemoveOtherSetEntries()).isTrue();
-        assertThat(productSyncOptions.shouldRemoveOtherLocales()).isTrue();
         assertThat(productSyncOptions.shouldAllowUuidKeys()).isFalse();
         assertThat(productSyncOptions.shouldRemoveOtherVariants()).isTrue();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
         assertThat(productSyncOptions.getSyncFilter()).isSameAs(SyncFilter.of());
-        assertThat(productSyncOptions.getUpdateActionsCallBack()).isNull();
+        assertThat(productSyncOptions.getBeforeUpdateCallback()).isNull();
         assertThat(productSyncOptions.getErrorCallBack()).isNull();
         assertThat(productSyncOptions.getWarningCallBack()).isNull();
         assertThat(productSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
@@ -53,33 +55,33 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void setSyncFilter_WithNoSyncFilter_ShouldSetDefaultFilter() {
+    public void syncFilter_WithNoSyncFilter_ShouldSetDefaultFilter() {
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
         assertThat(productSyncOptions.getSyncFilter()).isSameAs(SyncFilter.of());
     }
 
     @Test
-    public void setSyncFilter_WithSyncFilter_ShouldSetFilter() {
-        productSyncOptionsBuilder.setSyncFilter(ofWhiteList(IMAGES));
+    public void syncFilter_WithSyncFilter_ShouldSetFilter() {
+        productSyncOptionsBuilder.syncFilter(ofWhiteList(IMAGES));
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
     }
 
     @Test
-    public void setUpdateActionsFilter_WithFilter_ShouldSetFilter() {
-        final Function<List<UpdateAction<Product>>,
-                    List<UpdateAction<Product>>> clearListFilter = (updateActions -> Collections.emptyList());
-        productSyncOptionsBuilder.setUpdateActionsFilterCallBack(clearListFilter);
+    public void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
+        final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            beforeUpdateCallback = (updateActions, newProduct, oldProduct) -> Collections.emptyList();
+        productSyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.getUpdateActionsCallBack()).isNotNull();
+        assertThat(productSyncOptions.getBeforeUpdateCallback()).isNotNull();
     }
 
     @Test
-    public void setRemoveOtherCollectionEntries_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.setRemoveOtherCollectionEntries(false);
+    public void removeOtherCollectionEntries_WithFalse_ShouldSetFlag() {
+        productSyncOptionsBuilder.removeOtherCollectionEntries(false);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.shouldRemoveOtherCollectionEntries()).isNotNull();
@@ -87,17 +89,8 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void setRemoveOtherLocales_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.setRemoveOtherLocales(false);
-
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.shouldRemoveOtherLocales()).isNotNull();
-        assertThat(productSyncOptions.shouldRemoveOtherLocales()).isFalse();
-    }
-
-    @Test
-    public void setRemoveOtherProperties_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.setRemoveOtherProperties(false);
+    public void removeOtherProperties_WithFalse_ShouldSetFlag() {
+        productSyncOptionsBuilder.removeOtherProperties(false);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.shouldRemoveOtherProperties()).isNotNull();
@@ -105,8 +98,8 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void setAllowUuid_WithTrue_ShouldSetFlag() {
-        productSyncOptionsBuilder.setAllowUuidKeys(true);
+    public void allowUuid_WithTrue_ShouldSetFlag() {
+        productSyncOptionsBuilder.allowUuidKeys(true);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.shouldAllowUuidKeys()).isNotNull();
@@ -114,28 +107,28 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void setErrorCallBack_WithCallBack_ShouldSetCallBack() {
+    public void errorCallBack_WithCallBack_ShouldSetCallBack() {
         final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
         };
-        productSyncOptionsBuilder.setErrorCallBack(mockErrorCallBack);
+        productSyncOptionsBuilder.errorCallback(mockErrorCallBack);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getErrorCallBack()).isNotNull();
     }
 
     @Test
-    public void setWarningCallBack_WithCallBack_ShouldSetCallBack() {
+    public void warningCallBack_WithCallBack_ShouldSetCallBack() {
         final Consumer<String> mockWarningCallBack = (warningMessage) -> {
         };
-        productSyncOptionsBuilder.setWarningCallBack(mockWarningCallBack);
+        productSyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getWarningCallBack()).isNotNull();
     }
 
     @Test
-    public void setRemoveOtherSetEntries_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.setRemoveOtherSetEntries(false);
+    public void removeOtherSetEntries_WithFalse_ShouldSetFlag() {
+        productSyncOptionsBuilder.removeOtherSetEntries(false);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.shouldRemoveOtherSetEntries()).isNotNull();
@@ -154,35 +147,65 @@ public class ProductSyncOptionsBuilderTest {
     public void productSyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
             .of(CTP_CLIENT)
-            .setAllowUuidKeys(true)
-            .setRemoveOtherLocales(false)
-            .setBatchSize(30)
-            .setUpdateActionsFilterCallBack(updateActions -> Collections.emptyList())
+            .allowUuidKeys(true)
+            .batchSize(30)
+            .beforeUpdateCallback((updateActions, newCategory, oldCategory) -> Collections.emptyList())
             .build();
         assertThat(productSyncOptions).isNotNull();
     }
 
     @Test
-    public void setBatchSize_WithPositiveValue_ShouldSetBatchSize() {
+    public void batchSize_WithPositiveValue_ShouldSetBatchSize() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                               .setBatchSize(10)
+                                                                               .batchSize(10)
                                                                                .build();
         assertThat(productSyncOptions.getBatchSize()).isEqualTo(10);
     }
 
     @Test
-    public void setBatchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
+    public void batchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
         final ProductSyncOptions productSyncOptionsWithZeroBatchSize = ProductSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                                .setBatchSize(0)
+                                                                                                .batchSize(0)
                                                                                                 .build();
         assertThat(productSyncOptionsWithZeroBatchSize.getBatchSize())
             .isEqualTo(ProductSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
 
         final ProductSyncOptions productSyncOptionsWithNegativeBatchSize = ProductSyncOptionsBuilder
             .of(CTP_CLIENT)
-            .setBatchSize(-100)
+            .batchSize(-100)
             .build();
         assertThat(productSyncOptionsWithNegativeBatchSize.getBatchSize())
             .isEqualTo(ProductSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+    }
+
+    @Test
+    public void applyBeforeUpdateCallBack_WithNullCallback_ShouldReturnIdenticalList() {
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
+                                                                               .build();
+        assertThat(productSyncOptions.getBeforeUpdateCallback()).isNull();
+
+        final List<UpdateAction<Product>> updateActions = Collections
+            .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+        final List<UpdateAction<Product>> filteredList =
+            productSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(ProductDraft.class), mock(Product.class));
+        assertThat(filteredList).isSameAs(updateActions);
+    }
+
+    @Test
+    public void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
+        final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> Collections.emptyList();
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
+                                                                               .beforeUpdateCallback(
+                                                                                   beforeUpdateCallback)
+                                                                               .build();
+        assertThat(productSyncOptions.getBeforeUpdateCallback()).isNotNull();
+
+        final List<UpdateAction<Product>> updateActions = Collections
+            .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+        final List<UpdateAction<Product>> filteredList =
+            productSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(ProductDraft.class), mock(Product.class));
+        assertThat(filteredList).isNotEqualTo(updateActions);
+        assertThat(filteredList).isEmpty();
     }
 }

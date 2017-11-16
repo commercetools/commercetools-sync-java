@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.externalsource.products;
 
+import com.commercetools.sync.commons.utils.TriFunction;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
@@ -112,15 +112,16 @@ public class ProductSyncFilterIT {
 
         final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
 
-        final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> actionsCallBack = updateActions -> {
-            updateActionsFromSync.addAll(updateActions);
-            return updateActions;
-        };
+        final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            actionsCallBack = (updateActions, newDraft, oldProduct) -> {
+                updateActionsFromSync.addAll(updateActions);
+                return updateActions;
+            };
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                        .setErrorCallBack(errorCallBack)
-                                        .setWarningCallBack(warningCallBack)
-                                        .setUpdateActionsFilterCallBack(actionsCallBack);
+                                        .errorCallback(errorCallBack)
+                                        .warningCallback(warningCallBack)
+                                        .beforeUpdateCallback(actionsCallBack);
     }
 
     @AfterClass
@@ -134,7 +135,7 @@ public class ProductSyncFilterIT {
                 createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, referenceOfId(productType.getKey()), null,
                     null, categoryReferencesWithKeys, createRandomCategoryOrderHints(categoryReferencesWithKeys));
 
-        final ProductSyncOptions syncOptions = syncOptionsBuilder.setSyncFilter(ofBlackList(CATEGORIES))
+        final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofBlackList(CATEGORIES))
                                                                  .build();
 
         final ProductSync productSync = new ProductSync(syncOptions);
@@ -162,7 +163,7 @@ public class ProductSyncFilterIT {
                 createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, referenceOfId(productType.getKey()), null,
                     null, categoryReferencesWithKeys, createRandomCategoryOrderHints(categoryReferencesWithKeys));
 
-        final ProductSyncOptions syncOptions = syncOptionsBuilder.setSyncFilter(ofWhiteList(NAME)).build();
+        final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofWhiteList(NAME)).build();
 
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =

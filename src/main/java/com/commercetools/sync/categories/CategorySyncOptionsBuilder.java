@@ -3,17 +3,14 @@ package com.commercetools.sync.categories;
 
 import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.function.Function;
 
 public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<CategorySyncOptionsBuilder,
-    CategorySyncOptions> {
+    CategorySyncOptions, Category, CategoryDraft> {
     public static final int BATCH_SIZE_DEFAULT = 50;
-    private Function<List<UpdateAction<Category>>, List<UpdateAction<Category>>> updateActionsFilter;
 
     private CategorySyncOptionsBuilder(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
@@ -28,20 +25,7 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
      */
     public static CategorySyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
         return new CategorySyncOptionsBuilder(ctpClient)
-            .setBatchSize(BATCH_SIZE_DEFAULT);
-    }
-
-    /**
-     * Sets the updateActions filter function which can be applied on generated list of update actions to produce
-     * a resultant list after the filter function has been applied.
-     *
-     * @param updateActionsFilter filter function which can be applied on generated list of update actions
-     * @return {@code this} instance of {@link CategorySyncOptionsBuilder}
-     */
-    public CategorySyncOptionsBuilder setUpdateActionsFilter(@Nonnull final Function<List<UpdateAction<Category>>,
-        List<UpdateAction<Category>>> updateActionsFilter) {
-        this.updateActionsFilter = updateActionsFilter;
-        return this;
+            .batchSize(BATCH_SIZE_DEFAULT);
     }
 
     /**
@@ -54,15 +38,14 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
     public CategorySyncOptions build() {
         return new CategorySyncOptions(
             this.ctpClient,
-            this.errorCallBack,
-            this.warningCallBack,
+            this.errorCallback,
+            this.warningCallback,
             this.batchSize,
-            this.removeOtherLocales,
             this.removeOtherSetEntries,
             this.removeOtherCollectionEntries,
             this.removeOtherProperties,
             this.allowUuid,
-            this.updateActionsFilter);
+            this.beforeUpdateCallback);
     }
 
     /**

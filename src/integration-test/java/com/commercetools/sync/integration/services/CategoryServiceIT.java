@@ -76,14 +76,14 @@ public class CategoryServiceIT {
         deleteAllCategories(CTP_TARGET_CLIENT);
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                                  .setErrorCallBack(
+                                                                                  .errorCallback(
                                                                                       (errorMessage, exception) -> {
                                                                                           errorCallBackMessages
                                                                                               .add(errorMessage);
                                                                                           errorCallBackExceptions
                                                                                               .add(exception);
                                                                                       })
-                                                                                  .setWarningCallBack(
+                                                                                  .warningCallback(
                                                                                       warningMessage ->
                                                                                           warningCallBackMessages
                                                                                               .add(warningMessage))
@@ -181,7 +181,7 @@ public class CategoryServiceIT {
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
         final CategorySyncOptions spyOptions = CategorySyncOptionsBuilder.of(spyClient)
-                                                                           .setErrorCallBack(
+                                                                           .errorCallback(
                                                                                (errorMessage, exception) -> {
                                                                                    errorCallBackMessages
                                                                                        .add(errorMessage);
@@ -508,7 +508,7 @@ public class CategoryServiceIT {
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
         final CategorySyncOptions spyOptions = CategorySyncOptionsBuilder.of(spyClient)
-                                                                         .setErrorCallBack(
+                                                                         .errorCallback(
                                                                              (errorMessage, exception) -> {
                                                                                  errorCallBackMessages
                                                                                      .add(errorMessage);

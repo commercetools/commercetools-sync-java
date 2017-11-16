@@ -54,6 +54,6 @@ public final class InventorySyncUtils {
                   .map(Optional::get)
                   .collect(toList());
         actions.addAll(buildCustomUpdateActions(oldEntry, newEntry, syncOptions));
-        return actions;
+        return syncOptions.applyBeforeUpdateCallBack(actions, newEntry, oldEntry);
     }
 }

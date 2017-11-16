@@ -67,9 +67,6 @@ events.
 a callback that is called whenever an event occurs during the sync process that represents a warning. Currently, these 
 events.
 <!--
-- `removeOtherLocales`
-a flag which enables the sync module to add additional localizations without deleting existing ones, if set to `false`. 
-If set to `true`, which is the default value of the option, it deletes the existing object properties.
 - `removeOtherSetEntries`
 a flag which enables the sync module to add additional Set entries without deleting existing ones, if set to `false`. 
 If set to `true`, which is the default value of the option, it deletes the existing Set entries.
@@ -81,9 +78,9 @@ entries.
 a flag which enables the sync module to add additional object properties (e.g. custom fields, etc..) without deleting 
 existing ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing 
 object properties. -->
-- `updateActionsCallBack`
-a filter function which can be applied on generated list of update actions to produce a resultant list after the filter 
-function has been applied.
+- `beforeUpdateCallback`
+a filter function which can be applied on a generated list of update actions. It allows the user to intercept category 
+update and modify (add/remove) update actions just before they are send to CTP API.
 - `allowUuid`
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 

@@ -19,7 +19,7 @@ public class InventorySyncOptionsTest {
     @Test
     public void build_WithAllFieldsSet_ShouldReturnProperOptionsInstance() {
         final InventorySyncOptions options = InventorySyncOptionsBuilder.of(mock(SphereClient.class))
-                .setBatchSize(10)
+                .batchSize(10)
                 .ensureChannels(true)
                 .build();
         assertThat(options).isNotNull();
@@ -30,8 +30,8 @@ public class InventorySyncOptionsTest {
     @Test
     public void setBatchSize_WithZeroOrNegativePassed_ShouldNotSetBatchSize() {
         final InventorySyncOptionsBuilder builder = InventorySyncOptionsBuilder.of(mock(SphereClient.class));
-        final InventorySyncOptions optionsWithZero = builder.setBatchSize(0).build();
-        final InventorySyncOptions optionsWithNegative = builder.setBatchSize(-1).build();
+        final InventorySyncOptions optionsWithZero = builder.batchSize(0).build();
+        final InventorySyncOptions optionsWithNegative = builder.batchSize(-1).build();
         assertThat(optionsWithZero.getBatchSize()).isEqualTo(InventorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
         assertThat(optionsWithNegative.getBatchSize()).isEqualTo(InventorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
     }

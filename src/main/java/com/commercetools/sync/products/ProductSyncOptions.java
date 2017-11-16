@@ -1,51 +1,45 @@
 package com.commercetools.sync.products;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static java.util.Optional.ofNullable;
 
 /**
  * TODO: removeOtherVariants, whiteList, blackList, auto publish, revert staged changes, update staged.
  */
-public class ProductSyncOptions extends BaseSyncOptions {
+public class ProductSyncOptions extends BaseSyncOptions<Product, ProductDraft> {
     private final boolean removeOtherVariants; // whether to remove other product variants or not.
-
-    // defines which attributes to calculate update actions to black list or white list
-    private final SyncFilter syncFilter;
-
-    // optional callback function which can be applied on the generated list of update actions
-    private final Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> updateActionsCallBack;
+    private final SyncFilter syncFilter; // which attributes to calculate update actions to black list or white list
     private final boolean ensurePriceChannels;
 
     ProductSyncOptions(@Nonnull final SphereClient ctpClient,
                        @Nullable final BiConsumer<String, Throwable> errorCallBack,
                        @Nullable final Consumer<String> warningCallBack,
                        final int batchSize,
-                       final boolean removeOtherLocales,
                        final boolean removeOtherSetEntries,
                        final boolean removeOtherCollectionEntries,
                        final boolean removeOtherProperties,
                        final boolean allowUuid,
                        final boolean removeOtherVariants,
                        @Nullable final SyncFilter syncFilter,
-                       @Nullable final Function<List<UpdateAction<Product>>,
-                           List<UpdateAction<Product>>> updateActionsCallBack,
+                       @Nullable final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product,
+                           List<UpdateAction<Product>>> beforeUpdateCallback,
                        boolean ensurePriceChannels) {
-        super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherLocales, removeOtherSetEntries,
-            removeOtherCollectionEntries, removeOtherProperties, allowUuid);
+        super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherSetEntries, removeOtherCollectionEntries,
+            removeOtherProperties, allowUuid, beforeUpdateCallback);
         this.removeOtherVariants = removeOtherVariants;
         this.syncFilter = ofNullable(syncFilter).orElseGet(SyncFilter::of);
-        this.updateActionsCallBack = updateActionsCallBack;
         this.ensurePriceChannels = ensurePriceChannels;
     }
 
@@ -62,21 +56,6 @@ public class ProductSyncOptions extends BaseSyncOptions {
     @Nonnull
     public SyncFilter getSyncFilter() {
         return syncFilter;
-    }
-
-    /**
-     * Returns the {@code updateActionsCallBack} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
-     * {@link Product}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@link Product}&gt;&gt;&gt; function set to
-     * {@code this} {@link ProductSyncOptions}. It represents a filter function which can be applied on generated list
-     * of update actions to produce a resultant list after the filter function has been applied.
-     *
-     * @return the {@code updateActionsFilter} {@link Function}&lt;{@link List}&lt;{@link UpdateAction}&lt;
-     *         {@link Product}&gt;&gt;, {@link List}&lt;{@link UpdateAction}&lt;{@link Product}&gt;&gt;&gt; function
-     *         set to {@code this} {@link ProductSyncOptions}.
-     */
-    @Nullable
-    public Function<List<UpdateAction<Product>>, List<UpdateAction<Product>>> getUpdateActionsCallBack() {
-        return updateActionsCallBack;
     }
 
     /**
