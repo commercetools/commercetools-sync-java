@@ -21,6 +21,9 @@ pmdIntegrationTest.mustRunAfter pmdTest
 findbugsTest.mustRunAfter findbugsMain
 findbugsIntegrationTest.mustRunAfter findbugsTest
 
+//Jacoco sub-tasks execution order
+jacocoTestReport.mustRunAfter jacocoTestCoverageVerification
+
 /**
  * Global execution order
  */
@@ -36,3 +39,9 @@ test.mustRunAfter findbugsIntegrationTest
 // Ensure integration tests are run after unit tests and are part of check
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test
+// Ensure jacocoTestCoverageVerification and jacocoTestReport are part of check
+check.dependsOn jacocoTestCoverageVerification
+check.dependsOn jacocoTestReport
+// Ensure jacocoTestCoverageVerification and jacocoTestReport run after integrationTest
+jacocoTestCoverageVerification.mustRunAfter integrationTest
+jacocoTestReport.mustRunAfter integrationTest
