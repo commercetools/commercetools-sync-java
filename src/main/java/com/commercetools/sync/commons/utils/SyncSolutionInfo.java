@@ -2,7 +2,9 @@ package com.commercetools.sync.commons.utils;
 
 import io.sphere.sdk.client.SolutionInfo;
 
-import static java.util.Optional.ofNullable;
+import javax.annotation.Nullable;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class SyncSolutionInfo extends SolutionInfo {
     /**
@@ -15,11 +17,17 @@ public class SyncSolutionInfo extends SolutionInfo {
      *
      */
     public SyncSolutionInfo() {
-        final String implementationTitle = ofNullable(getClass().getPackage().getImplementationTitle())
-            .orElse("commercetools-sync-java");
-        final String implementationVersion = ofNullable(getClass().getPackage().getImplementationVersion())
-            .orElse("DEBUG-VERSION");
-        setName(implementationTitle);
-        setVersion(implementationVersion);
+        final String implementationTitle = getClass().getPackage().getImplementationTitle();
+        final String implementationVersion = getClass().getPackage().getImplementationVersion();
+        final String solutionName = isAttributeUnspecified(implementationTitle)
+            ? "commercetools-sync-java" : implementationTitle;
+        final String solutionVersion = isAttributeUnspecified(implementationVersion)
+            ? "DEBUG-VERSION" : implementationVersion;
+        setName(solutionName);
+        setVersion(solutionVersion);
+    }
+
+    private boolean isAttributeUnspecified(@Nullable final String attributeValue) {
+        return isBlank(attributeValue) || "unspecified".equals(attributeValue);
     }
 }
