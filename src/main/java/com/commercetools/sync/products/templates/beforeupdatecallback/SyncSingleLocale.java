@@ -26,24 +26,24 @@ import static java.util.stream.Collectors.toMap;
 
 final class SyncSingleLocale {
     /**
-     * Takes in a {@link List} of product update actions that was built from comparing a {@code newDraft} and an
+     * Takes in a {@link List} of product update actions that was built from comparing a {@code newProductDraft} and an
      * {@code oldProduct} and maps the update actions so that only localizations with value {@link Locale#FRENCH}
      * are synced and all the other locales are left untouched.
      *
-     * @param updateActions the update actions built from comparing {@code newDraft} and {@code oldProduct}.
-     * @param newDraft      the new {@link ProductDraft} being synced.
+     * @param updateActions the update actions built from comparing {@code newProductDraft} and {@code oldProduct}.
+     * @param newProductDraft      the new {@link ProductDraft} being synced.
      * @param oldProduct    the old existing {@link Product}.
      * @return a new list of update actions that corresponds to changes on French localizations only.
      */
-    private static List<UpdateAction<Product>> syncFrenchDataOnly(
+    public static List<UpdateAction<Product>> syncFrenchDataOnly(
         @Nonnull final List<UpdateAction<Product>> updateActions,
-        @Nonnull final ProductDraft newDraft,
-        @Nonnull final Product oldProduct) {
-        final ProductType productType = oldProduct.getProductType().getObj();
-        assert productType != null;
+        @Nonnull final ProductDraft newProductDraft,
+        @Nonnull final Product oldProduct,
+        @Nonnull final ProductType productType) {
         return updateActions.stream()
                             .map(action ->
-                                filterSingleLocalization(action, newDraft, oldProduct, productType, Locale.FRENCH))
+                                filterSingleLocalization(action, newProductDraft, oldProduct, productType,
+                                    Locale.FRENCH))
                             .filter(Optional::isPresent)
                             .map(Optional::get)
                             .collect(toList());
@@ -67,41 +67,41 @@ final class SyncSingleLocale {
      * other hand, if the change was in the supplied locale value then the update action is modified so that it only
      * corresponds to the change in that locale value.
      *
-     * @param updateAction the update action built from comparing {@code newDraft} and {@code oldProduct}.
-     * @param newDraft     the new {@link ProductDraft} being synced.
+     * @param updateAction the update action built from comparing {@code newProductDraft} and {@code oldProduct}.
+     * @param newProductDraft     the new {@link ProductDraft} being synced.
      * @param oldProduct   the old existing {@link Product}.
      * @param locale       the locale value to only compare and map the update action to accordingly.
      * @return an optional containing the mapped update action or empty value if an update action is not needed.
      */
     private static Optional<UpdateAction<Product>> filterSingleLocalization(
         @Nonnull final UpdateAction<Product> updateAction,
-        @Nonnull final ProductDraft newDraft,
+        @Nonnull final ProductDraft newProductDraft,
         @Nonnull final Product oldProduct,
         @Nonnull final ProductType productType,
         //TODO: RIGHT NOW NOT USED BUT WILL BE EXTENDED LATER WITH USAGE AND TESTS. GITHUB ISSUE #189
         @Nonnull final Locale locale) {
         if (updateAction instanceof ChangeName) {
-            return filterLocalizedField(newDraft, oldProduct, locale, ProductDraft::getName, ProductData::getName,
-                ChangeName::of);
+            return filterLocalizedField(newProductDraft, oldProduct, locale, ProductDraft::getName,
+                ProductData::getName, ChangeName::of);
         }
         if (updateAction instanceof SetDescription) {
-            return filterLocalizedField(newDraft, oldProduct, locale, ProductDraft::getDescription,
+            return filterLocalizedField(newProductDraft, oldProduct, locale, ProductDraft::getDescription,
                 ProductData::getDescription, SetDescription::of);
         }
         if (updateAction instanceof ChangeSlug) {
-            return filterLocalizedField(newDraft, oldProduct, locale, ProductDraft::getSlug, ProductData::getSlug,
-                ChangeSlug::of);
+            return filterLocalizedField(newProductDraft, oldProduct, locale, ProductDraft::getSlug,
+                ProductData::getSlug, ChangeSlug::of);
         }
         if (updateAction instanceof SetMetaTitle) {
-            return filterLocalizedField(newDraft, oldProduct, locale, ProductDraft::getMetaTitle,
+            return filterLocalizedField(newProductDraft, oldProduct, locale, ProductDraft::getMetaTitle,
                 ProductData::getMetaTitle, SetMetaTitle::of);
         }
         if (updateAction instanceof SetMetaDescription) {
-            return filterLocalizedField(newDraft, oldProduct, locale, ProductDraft::getMetaDescription,
+            return filterLocalizedField(newProductDraft, oldProduct, locale, ProductDraft::getMetaDescription,
                 ProductData::getMetaDescription, SetMetaDescription::of);
         }
         if (updateAction instanceof SetMetaKeywords) {
-            return filterLocalizedField(newDraft, oldProduct, locale, ProductDraft::getMetaKeywords,
+            return filterLocalizedField(newProductDraft, oldProduct, locale, ProductDraft::getMetaKeywords,
                 ProductData::getMetaKeywords, SetMetaKeywords::of);
         }
         return Optional.of(updateAction);
