@@ -35,7 +35,7 @@ final class SyncSingleLocale {
      * @param oldProduct    the old existing {@link Product}.
      * @return a new list of update actions that corresponds to changes on French localizations only.
      */
-    public static List<UpdateAction<Product>> syncFrenchDataOnly(
+    private static List<UpdateAction<Product>> syncFrenchDataOnly(
         @Nonnull final List<UpdateAction<Product>> updateActions,
         @Nonnull final ProductDraft newProductDraft,
         @Nonnull final Product oldProduct,
