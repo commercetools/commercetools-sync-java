@@ -7,6 +7,8 @@ import javax.annotation.Nullable;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class SyncSolutionInfo extends SolutionInfo {
+    static final String UNSPECIFIED = "unspecified";
+
     /**
      * Extends {@link SolutionInfo} class of the JVM SDK to append to the User-Agent header with information of the
      * commercetools-sync-java library
@@ -27,7 +29,7 @@ public class SyncSolutionInfo extends SolutionInfo {
         setVersion(solutionVersion);
     }
 
-    private boolean isAttributeUnspecified(@Nullable final String attributeValue) {
-        return isBlank(attributeValue) || "unspecified".equals(attributeValue);
+    static boolean isAttributeUnspecified(@Nullable final String attributeValue) {
+        return isBlank(attributeValue) || UNSPECIFIED.equals(attributeValue);
     }
 }
