@@ -23,7 +23,7 @@ gitPublish {
     }
 
     // message used when committing changes
-    commitMessage = "Publishing a new java doc for $rootProject.version version"
+    commitMessage = "Publishing a new java doc for $rootProject.version version."
 }
 
 gitPublishReset {
