@@ -3,6 +3,7 @@
  */
 jar {
     manifest {
+        // These attribute are used in the SyncSolutionInfo.java. Please don't remove!
         attributes("Implementation-Title": rootProject.name, "Implementation-Version": rootProject.version)
     }
 }

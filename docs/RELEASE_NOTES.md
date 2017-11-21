@@ -15,6 +15,7 @@
    **New Features** (n)
    **Beta Features** (n)
    **Major Enhancements** (n)
+   **Changes** (n)
    **Breaking Changes** (n)
    **Enhancements** (n)
    **Doc Fixes** (n)
@@ -40,7 +41,20 @@
 - [v1.0.0-M1 -  Sep 06, 2017](#v100-m1----sep-06-2017)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!--
+### v1.0.0-M6 -  Nov 16, 2017
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M5...v1.0.0-M6) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M6/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M6)
 
+**Changes** (1)
+- **Commons** - Removed website and emergency contact e-mail appened in User-Agent headers of JVM SDK clients using the 
+library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/191)
+
+**Bug Fixes** (1)
+- **Commons** - Fixed library version in User-Agent headers of JVM SDK clients using the library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/191)
+
+-->
 ### v1.0.0-M5 -  Nov 16, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M4...v1.0.0-M5) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M5/) | 

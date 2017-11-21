@@ -161,7 +161,7 @@ public class ProductSyncIT {
     }
 
     private List<UpdateAction<Product>> beforeUpdateCallback(@Nonnull final List<UpdateAction<Product>> updateActions,
-                                                             @Nonnull final ProductDraft productDraft,
+                                                             @Nonnull final ProductDraft newProductDraft,
                                                              @Nonnull final Product oldProduct) {
         this.updateActions.addAll(updateActions);
         return updateActions;
