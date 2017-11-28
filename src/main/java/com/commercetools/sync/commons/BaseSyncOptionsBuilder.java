@@ -6,7 +6,6 @@ import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -23,7 +22,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     protected boolean removeOtherProperties = true;
     protected boolean allowUuid = false;
     protected TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
-    protected Function<V, Optional<V>> beforeCreateCallback;
+    protected Function<V, V> beforeCreateCallback;
 
     /**
      * Sets the {@code errorCallback} function of the sync module. This callback will be called whenever an event occurs
@@ -146,7 +145,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * @param beforeCreateCallback function which can be applied on a new draft before it's created by the sync.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T beforeCreateCallback(@Nonnull final Function<V, Optional<V>> beforeCreateCallback) {
+    public T beforeCreateCallback(@Nonnull final Function<V, V> beforeCreateCallback) {
         this.beforeCreateCallback = beforeCreateCallback;
         return getThis();
     }

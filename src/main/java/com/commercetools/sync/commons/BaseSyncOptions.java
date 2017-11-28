@@ -22,7 +22,7 @@ public class BaseSyncOptions<U, V> {
     private boolean removeOtherProperties = true;
     private boolean allowUuid = false;
     private final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
-    private final Function<V, Optional<V>> beforeCreateCallback;
+    private final Function<V, V> beforeCreateCallback;
 
     protected BaseSyncOptions(@Nonnull final SphereClient ctpClient,
                               @Nullable final BiConsumer<String, Throwable> errorCallBack,
@@ -34,7 +34,7 @@ public class BaseSyncOptions<U, V> {
                               final boolean allowUuid,
                               @Nullable final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
                                   beforeUpdateCallback,
-                              @Nullable final Function<V, Optional<V>> beforeCreateCallback) {
+                              @Nullable final Function<V, V> beforeCreateCallback) {
         this.ctpClient = ctpClient;
         this.errorCallBack = errorCallBack;
         this.batchSize = batchSize;
@@ -210,7 +210,7 @@ public class BaseSyncOptions<U, V> {
      *         function set to {@code this} {@link BaseSyncOptions}.
      */
     @Nullable
-    public Function<V, Optional<V>> getBeforeCreateCallback() {
+    public Function<V, V> getBeforeCreateCallback() {
         return beforeCreateCallback;
     }
 
@@ -249,8 +249,8 @@ public class BaseSyncOptions<U, V> {
      */
     @Nonnull
     public Optional<V> applyBeforeCreateCallBack(@Nonnull final V newResourceDraft) {
-        return beforeCreateCallback != null
-                ? beforeCreateCallback.apply(newResourceDraft) : Optional.of(newResourceDraft);
+        return Optional.ofNullable(
+                beforeCreateCallback != null ? beforeCreateCallback.apply(newResourceDraft) : newResourceDraft);
     }
 
 

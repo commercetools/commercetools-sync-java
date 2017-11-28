@@ -10,7 +10,6 @@ import io.sphere.sdk.products.ProductDraft;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -37,7 +36,7 @@ public class ProductSyncOptions extends BaseSyncOptions<Product, ProductDraft> {
                        @Nullable final SyncFilter syncFilter,
                        @Nullable final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product,
                            List<UpdateAction<Product>>> beforeUpdateCallback,
-                       @Nullable final Function<ProductDraft, Optional<ProductDraft>> beforeCreateCallback,
+                       @Nullable final Function<ProductDraft, ProductDraft> beforeCreateCallback,
                        boolean ensurePriceChannels) {
         super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherSetEntries, removeOtherCollectionEntries,
             removeOtherProperties, allowUuid, beforeUpdateCallback, beforeCreateCallback);
