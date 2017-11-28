@@ -3,21 +3,25 @@ package com.commercetools.sync.products;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static com.commercetools.sync.products.ActionGroup.IMAGES;
 import static com.commercetools.sync.products.SyncFilter.ofWhiteList;
+import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ProductSyncOptionsBuilderTest {
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
@@ -41,6 +45,7 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
         assertThat(productSyncOptions.getSyncFilter()).isSameAs(SyncFilter.of());
         assertThat(productSyncOptions.getBeforeUpdateCallback()).isNull();
+        assertThat(productSyncOptions.getBeforeCreateCallback()).isNull();
         assertThat(productSyncOptions.getErrorCallBack()).isNull();
         assertThat(productSyncOptions.getWarningCallBack()).isNull();
         assertThat(productSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
@@ -77,6 +82,14 @@ public class ProductSyncOptionsBuilderTest {
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getBeforeUpdateCallback()).isNotNull();
+    }
+
+    @Test
+    public void beforeCreateCallback_WithFilterAsCallback_ShouldSetCallback() {
+        productSyncOptionsBuilder.beforeCreateCallback((newProduct) -> null);
+
+        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
+        assertThat(productSyncOptions.getBeforeCreateCallback()).isNotNull();
     }
 
     @Test
@@ -149,6 +162,7 @@ public class ProductSyncOptionsBuilderTest {
             .of(CTP_CLIENT)
             .allowUuidKeys(true)
             .batchSize(30)
+            .beforeCreateCallback((newProduct) -> null)
             .beforeUpdateCallback((updateActions, newCategory, oldCategory) -> Collections.emptyList())
             .build();
         assertThat(productSyncOptions).isNotNull();
@@ -185,7 +199,7 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getBeforeUpdateCallback()).isNull();
 
         final List<UpdateAction<Product>> updateActions = Collections
-            .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+            .singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<Product>> filteredList =
             productSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(ProductDraft.class), mock(Product.class));
         assertThat(filteredList).isSameAs(updateActions);
@@ -201,11 +215,44 @@ public class ProductSyncOptionsBuilderTest {
                                                                                .build();
         assertThat(productSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-        final List<UpdateAction<Product>> updateActions = Collections
-            .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+        final List<UpdateAction<Product>> updateActions = Collections.singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<Product>> filteredList =
             productSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(ProductDraft.class), mock(Product.class));
         assertThat(filteredList).isNotEqualTo(updateActions);
         assertThat(filteredList).isEmpty();
+    }
+
+    @Test
+    public void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredDraft() {
+        final Function<ProductDraft, ProductDraft> draftFunction =
+                productDraft -> ProductDraftBuilder.of(productDraft)
+                                                   .key(productDraft.getKey() + "_filteredKey").build();
+
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
+                .beforeCreateCallback(draftFunction)
+                .build();
+        assertThat(productSyncOptions.getBeforeCreateCallback()).isNotNull();
+
+        final ProductDraft resourceDraft = mock(ProductDraft.class);
+        when(resourceDraft.getKey()).thenReturn("myKey");
+
+
+        final Optional<ProductDraft> filteredDraft =
+                productSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+
+        assertThat(filteredDraft).isNotEmpty();
+        assertThat(filteredDraft.get().getKey()).isEqualTo("myKey_filteredKey");
+    }
+
+    @Test
+    public void applyBeforeCreateCallBack_WithNullCallback_ShouldReturnIdenticalDraftInOptional() {
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT).build();
+        assertThat(productSyncOptions.getBeforeCreateCallback()).isNull();
+
+        final ProductDraft resourceDraft = mock(ProductDraft.class);
+        final Optional<ProductDraft> filteredDraft =
+                productSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+
+        assertThat(filteredDraft).containsSame(resourceDraft);
     }
 }
