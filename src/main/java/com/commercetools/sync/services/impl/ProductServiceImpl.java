@@ -157,18 +157,22 @@ public class ProductServiceImpl implements ProductService {
     @Nonnull
     @Override
     public CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
-        return syncOptions.getCtpClient().execute(ProductCreateCommand.of(productDraft))
-                          .handle((createdProduct, sphereException) -> {
-                              if (sphereException != null) {
-                                  syncOptions
-                                      .applyErrorCallback(format(CREATE_FAILED, productDraft.getKey(),
-                                          sphereException), sphereException);
-                                  return Optional.empty();
-                              } else {
-                                  keyToIdCache.put(createdProduct.getKey(), createdProduct.getId());
-                                  return Optional.of(createdProduct);
-                              }
-                          });
+        final Function<ProductDraft, CompletionStage<Optional<Product>>> draftCreator = draft ->
+                syncOptions.getCtpClient().execute(ProductCreateCommand.of(draft))
+                        .handle((createdProduct, sphereException) -> {
+                            if (sphereException != null) {
+                                syncOptions.applyErrorCallback(format(CREATE_FAILED, draft.getKey(), sphereException),
+                                    sphereException);
+                                return Optional.empty();
+                            } else {
+                                keyToIdCache.put(createdProduct.getKey(), createdProduct.getId());
+                                return Optional.of(createdProduct);
+                            }
+        });
+
+        return syncOptions.applyBeforeCreateCallBack(productDraft)
+                          .map(draftCreator)
+                          .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty()));
     }
 
     @Nonnull

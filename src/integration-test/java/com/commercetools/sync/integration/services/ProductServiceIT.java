@@ -12,6 +12,7 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
@@ -35,6 +36,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
@@ -387,6 +389,106 @@ public class ProductServiceIT {
         assertThat(fetchedProduct.getMasterData().getCurrent().getSlug())
             .isEqualTo(createdProduct.getMasterData().getCurrent().getSlug());
         assertThat(fetchedProduct.getKey()).isEqualTo(newKey);
+    }
+
+    @Test
+    public void createProduct_WithBeforeCreateCallbackSet_ShouldCreateFilteredProduct() {
+        final String keyPostfix = "_filteredKey";
+
+        // callback function that post fixes the product draft key with "_filteredKey"
+        final Function<ProductDraft, ProductDraft> draftFunction = productDraft ->
+                ProductDraftBuilder.of(productDraft).key(format("%s%s", productDraft.getKey(), keyPostfix)).build();
+
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                .errorCallback((errorMessage, exception) -> {
+                            errorCallBackMessages.add(errorMessage);
+                            errorCallBackExceptions.add(exception);
+                })
+                .warningCallback(warningMessage -> warningCallBackMessages.add(warningMessage))
+                .beforeCreateCallback(draftFunction)
+                .build();
+        final ProductService productService = new ProductServiceImpl(productSyncOptions);
+
+        // create a draft based of the same existing product but with different key, slug and master variant SKU since
+        // these values should be unique on CTP for the product to be created.
+        final String newKey = "newKey";
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
+                productType.toReference())
+                .key(newKey)
+                .taxCategory(null)
+                .state(null)
+                .categories(Collections.emptyList())
+                .categoryOrderHints(null)
+                .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
+                .masterVariant(ProductVariantDraftBuilder.of().build())
+                .build();
+
+        final Optional<Product> createdProductOptional = productService.createProduct(productDraft1)
+                .toCompletableFuture().join();
+
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(createdProductOptional).isNotEmpty();
+
+        final Product createdProduct = createdProductOptional.get();
+        //Query for a product with key post fixed with "_filteredKey" added by the callback
+        final String keyWithCallbackPostFix = format("%s%s", newKey, keyPostfix);
+        final Optional<Product> productOptional = CTP_TARGET_CLIENT
+                .execute(ProductQuery.of()
+                        .withPredicates(QueryPredicate.of(format("key = \"%s\"", keyWithCallbackPostFix))))
+                .toCompletableFuture().join().head();
+
+        assertThat(productOptional).isNotEmpty();
+        final Product fetchedProduct = productOptional.get();
+        assertThat(fetchedProduct.getKey()).isEqualTo(keyWithCallbackPostFix);
+
+        assertThat(fetchedProduct.getMasterData().getCurrent().getName())
+                .isEqualTo(createdProduct.getMasterData().getCurrent().getName());
+    }
+
+    @Test
+    public void createProduct_WithBeforeCreateCallbackToSkipSet_ShouldNotCreateProduct() {
+        // callback function that skips product creation
+        final Function<ProductDraft, ProductDraft> draftFunction = productDraft -> null;
+
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                .errorCallback((errorMessage, exception) -> {
+                    errorCallBackMessages.add(errorMessage);
+                    errorCallBackExceptions.add(exception);
+                })
+                .warningCallback(warningMessage -> warningCallBackMessages.add(warningMessage))
+                .beforeCreateCallback(draftFunction)
+                .build();
+        final ProductService productService = new ProductServiceImpl(productSyncOptions);
+
+        // create a draft based of the same existing product but with different key, slug and master variant SKU since
+        // these values should be unique on CTP for the product to be created.
+        final String newKey = "newKey";
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
+                productType.toReference())
+                .key(newKey)
+                .taxCategory(null)
+                .state(null)
+                .categories(Collections.emptyList())
+                .categoryOrderHints(null)
+                .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
+                .masterVariant(ProductVariantDraftBuilder.of().build())
+                .build();
+
+        final Optional<Product> createdProductOptional = productService.createProduct(productDraft1)
+                .toCompletableFuture().join();
+
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(createdProductOptional).isEmpty();
+
+        //Assert that product with key doesn not exist in CTP.
+        final Optional<Product> productOptional = CTP_TARGET_CLIENT
+                .execute(ProductQuery.of()
+                        .withPredicates(QueryPredicate.of(format("key = \"%s\"", newKey))))
+                .toCompletableFuture().join().head();
+
+        assertThat(productOptional).isEmpty();
     }
 
     @Test
