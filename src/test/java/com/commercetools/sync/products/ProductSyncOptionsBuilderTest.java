@@ -224,9 +224,8 @@ public class ProductSyncOptionsBuilderTest {
 
     @Test
     public void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredDraft() {
-        final Function<ProductDraft, ProductDraft> draftFunction =
-                productDraft -> ProductDraftBuilder.of(productDraft)
-                                                   .key(productDraft.getKey() + "_filteredKey").build();
+        final Function<ProductDraft, ProductDraft> draftFunction = productDraft -> ProductDraftBuilder.of(productDraft)
+                .key(productDraft.getKey() + "_filteredKey").build();
 
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
                 .beforeCreateCallback(draftFunction)

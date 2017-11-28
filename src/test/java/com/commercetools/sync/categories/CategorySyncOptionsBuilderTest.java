@@ -211,9 +211,10 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredList() {
-        final Function<CategoryDraft, CategoryDraft> draftFunction =
-                categoryDraft -> CategoryDraftBuilder.of(categoryDraft)
-                                                     .key(categoryDraft.getKey() + "_filterPostFix").build();
+        final Function<CategoryDraft, CategoryDraft> draftFunction = categoryDraft ->
+                CategoryDraftBuilder.of(categoryDraft)
+                                    .key(categoryDraft.getKey() + "_filterPostFix")
+                                    .build();
 
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                                           .beforeCreateCallback(draftFunction)
