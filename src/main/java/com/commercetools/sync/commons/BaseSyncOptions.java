@@ -12,6 +12,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static java.util.Collections.emptyList;
+
 public class BaseSyncOptions<U, V> {
     private final SphereClient ctpClient;
     private final BiConsumer<String, Throwable> errorCallBack;
@@ -232,8 +234,13 @@ public class BaseSyncOptions<U, V> {
     public List<UpdateAction<U>> applyBeforeUpdateCallBack(@Nonnull final List<UpdateAction<U>> updateActions,
                                                            @Nonnull final V newResourceDraft,
                                                            @Nonnull final U oldResource) {
-        return beforeUpdateCallback != null
-            ? beforeUpdateCallback.apply(updateActions, newResourceDraft, oldResource) : updateActions;
+        if (beforeUpdateCallback == null) {
+            return updateActions;
+        } else {
+            final List<UpdateAction<U>> callbackResult =
+                    beforeUpdateCallback.apply(updateActions, newResourceDraft, oldResource);
+            return callbackResult != null ? callbackResult : emptyList(); //TODO: IS THIS CORRECT BEHAVIOUR!?
+        }
     }
 
     /**
