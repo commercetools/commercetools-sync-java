@@ -7,8 +7,10 @@ import io.sphere.sdk.commands.UpdateAction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class BaseSyncOptions<U, V> {
     private final SphereClient ctpClient;
@@ -20,6 +22,7 @@ public class BaseSyncOptions<U, V> {
     private boolean removeOtherProperties = true;
     private boolean allowUuid = false;
     private final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
+    private final Function<V, Optional<V>> beforeCreateCallback;
 
     protected BaseSyncOptions(@Nonnull final SphereClient ctpClient,
                               @Nullable final BiConsumer<String, Throwable> errorCallBack,
@@ -30,7 +33,8 @@ public class BaseSyncOptions<U, V> {
                               final boolean removeOtherProperties,
                               final boolean allowUuid,
                               @Nullable final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
-                                  beforeUpdateCallback) {
+                                  beforeUpdateCallback,
+                              @Nullable final Function<V, Optional<V>> beforeCreateCallback) {
         this.ctpClient = ctpClient;
         this.errorCallBack = errorCallBack;
         this.batchSize = batchSize;
@@ -40,6 +44,7 @@ public class BaseSyncOptions<U, V> {
         this.removeOtherProperties = removeOtherProperties;
         this.allowUuid = allowUuid;
         this.beforeUpdateCallback = beforeUpdateCallback;
+        this.beforeCreateCallback = beforeCreateCallback;
     }
 
     /**
@@ -196,6 +201,20 @@ public class BaseSyncOptions<U, V> {
     }
 
     /**
+     * Returns the {@code beforeCreateCallback} {@link Function}&lt;{@code V}, {@link Optional}&lt;{@code V}&gt;&gt;
+     * function set to {@code this} {@link BaseSyncOptions}. It represents a callback function which is applied (if set)
+     * on the resource draft of type {@code V} before it is created to produce a resultant draft after the filter
+     * function has been applied.
+     *
+     * @return the {@code beforeUpdateCallback} {@link Function}&lt;{@code V}, {@link Optional}&lt;{@code V}&gt;&gt;
+     *         function set to {@code this} {@link BaseSyncOptions}.
+     */
+    @Nullable
+    public Function<V, Optional<V>> getBeforeCreateCallback() {
+        return beforeCreateCallback;
+    }
+
+    /**
      * Given a {@link List} of {@link UpdateAction}, a new resource draft of type {@code V} and the old existing
      * resource of the type {@code U}, this method applies the {@code beforeUpdateCallback} function
      * which is set to {@code this} instance of the {@link BaseSyncOptions} and returns the result. If the
@@ -216,4 +235,23 @@ public class BaseSyncOptions<U, V> {
         return beforeUpdateCallback != null
             ? beforeUpdateCallback.apply(updateActions, newResourceDraft, oldResource) : updateActions;
     }
+
+    /**
+     * Given a new resource draft of type {@code V} this method applies the {@code beforeCreateCallback} function
+     * which is set to {@code this} instance of the {@link BaseSyncOptions} and returns the result. If the
+     * {@code beforeCreateCallback} is null, this method does nothing to the supplied resource draft and returns
+     * it as is, wrapped in an optional.
+     *
+     * @param newResourceDraft the new resource draft that should be created.
+     * @return an optional containing the resultant resource draft after applying the {@code beforeCreateCallback}
+     *         function on. If the {@code beforeCreateCallback} function was null, the supplied resource draft is
+     *         returned as is, wrapped in an optional.
+     */
+    @Nonnull
+    public Optional<V> applyBeforeCreateCallBack(@Nonnull final V newResourceDraft) {
+        return beforeCreateCallback != null
+                ? beforeCreateCallback.apply(newResourceDraft) : Optional.of(newResourceDraft);
+    }
+
+
 }
