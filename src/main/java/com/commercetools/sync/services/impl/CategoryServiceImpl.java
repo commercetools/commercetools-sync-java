@@ -1,7 +1,7 @@
 package com.commercetools.sync.services.impl;
 
 
-import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
@@ -25,8 +25,10 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.services.ServiceUtils.applyCallbackAndCreate;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -35,7 +37,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
 public final class CategoryServiceImpl implements CategoryService {
-    private final BaseSyncOptions syncOptions;
+    private final CategorySyncOptions syncOptions;
     private boolean isCached = false;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private static final String CREATE_FAILED = "Failed to create CategoryDraft with key: '%s'. Reason: %s";
@@ -43,7 +45,7 @@ public final class CategoryServiceImpl implements CategoryService {
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
         + "category matching.";
 
-    public CategoryServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
+    public CategoryServiceImpl(@Nonnull final CategorySyncOptions syncOptions) {
         this.syncOptions = syncOptions;
     }
 
