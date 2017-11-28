@@ -431,6 +431,7 @@ public class ProductServiceIT {
         assertThat(createdProductOptional).isNotEmpty();
 
         final Product createdProduct = createdProductOptional.get();
+
         //Query for a product with key post fixed with "_filteredKey" added by the callback
         final String keyWithCallbackPostFix = format("%s%s", newKey, keyPostfix);
         final Optional<Product> productOptional = CTP_TARGET_CLIENT
