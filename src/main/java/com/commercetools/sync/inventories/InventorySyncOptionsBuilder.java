@@ -67,6 +67,7 @@ public final class InventorySyncOptionsBuilder extends
             allowUuid,
             ensureChannels,
             beforeUpdateCallback,
+            beforeCreateCallback);
     }
 
     /**
