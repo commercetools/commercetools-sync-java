@@ -93,6 +93,7 @@ public final class ProductSyncOptionsBuilder
             removeOtherVariants,
             syncFilter,
             beforeUpdateCallback,
+            beforeCreateCallback,
             ensurePriceChannels
         );
     }
