@@ -46,6 +46,7 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
             removeOtherProperties,
             allowUuid,
             beforeUpdateCallback,
+            beforeCreateCallback);
     }
 
     /**

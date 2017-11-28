@@ -10,8 +10,10 @@ import io.sphere.sdk.commands.UpdateAction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public final class CategorySyncOptions extends BaseSyncOptions<Category, CategoryDraft> {
 
@@ -24,7 +26,8 @@ public final class CategorySyncOptions extends BaseSyncOptions<Category, Categor
                         final boolean removeOtherProperties,
                         final boolean allowUuid,
                         @Nullable final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category,
-                                                    List<UpdateAction<Category>>> beforeUpdateCallback) {
+                                                    List<UpdateAction<Category>>> beforeUpdateCallback,
+                        @Nullable final Function<CategoryDraft, Optional<CategoryDraft>> beforeCreateCallback) {
         super(ctpClient,
             updateActionErrorCallBack,
             updateActionWarningCallBack,
@@ -33,6 +36,7 @@ public final class CategorySyncOptions extends BaseSyncOptions<Category, Categor
             removeOtherCollectionEntries,
             removeOtherProperties,
             allowUuid,
-            beforeUpdateCallback);
+            beforeUpdateCallback,
+            beforeCreateCallback);
     }
 }
