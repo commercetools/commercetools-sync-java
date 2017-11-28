@@ -32,9 +32,9 @@ public class ServiceUtils {
             @Nonnull final Function<S, DraftBasedCreateCommand<T, S>> createCommandFunction,
             @Nonnull final TriFunction<S, T, Throwable, Optional<T>> responseHandler) {
         return syncOptions.applyBeforeCreateCallBack(resourceDraft)
-                .map(draft -> syncOptions.getCtpClient().execute(createCommandFunction.apply(resourceDraft))
+                .map(mappedDraft -> syncOptions.getCtpClient().execute(createCommandFunction.apply(mappedDraft))
                         .handle((createdResource, sphereException) ->
-                                responseHandler.apply(draft, createdResource, sphereException)))
+                                responseHandler.apply(mappedDraft, createdResource, sphereException)))
                 .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty()));
 
     }
