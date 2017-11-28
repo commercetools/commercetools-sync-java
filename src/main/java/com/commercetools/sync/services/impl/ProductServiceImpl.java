@@ -168,7 +168,7 @@ public class ProductServiceImpl implements ProductService {
                                 keyToIdCache.put(createdProduct.getKey(), createdProduct.getId());
                                 return Optional.of(createdProduct);
                             }
-        });
+                        });
 
         return syncOptions.applyBeforeCreateCallBack(productDraft)
                           .map(draftCreator)

@@ -401,8 +401,8 @@ public class ProductServiceIT {
 
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                 .errorCallback((errorMessage, exception) -> {
-                            errorCallBackMessages.add(errorMessage);
-                            errorCallBackExceptions.add(exception);
+                    errorCallBackMessages.add(errorMessage);
+                    errorCallBackExceptions.add(exception);
                 })
                 .warningCallback(warningMessage -> warningCallBackMessages.add(warningMessage))
                 .beforeCreateCallback(draftFunction)
