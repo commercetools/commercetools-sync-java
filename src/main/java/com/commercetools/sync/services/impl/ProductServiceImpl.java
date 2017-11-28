@@ -27,8 +27,10 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.services.ServiceUtils.applyCallbackAndCreate;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -157,22 +159,26 @@ public class ProductServiceImpl implements ProductService {
     @Nonnull
     @Override
     public CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
-        final Function<ProductDraft, CompletionStage<Optional<Product>>> draftCreator = draft ->
-                syncOptions.getCtpClient().execute(ProductCreateCommand.of(draft))
-                        .handle((createdProduct, sphereException) -> {
-                            if (sphereException != null) {
-                                syncOptions.applyErrorCallback(format(CREATE_FAILED, draft.getKey(), sphereException),
-                                    sphereException);
-                                return Optional.empty();
-                            } else {
-                                keyToIdCache.put(createdProduct.getKey(), createdProduct.getId());
-                                return Optional.of(createdProduct);
-                            }
-                        });
+        return applyCallbackAndCreate(productDraft, syncOptions, ProductCreateCommand::of, this::handleProductCreation);
+    }
 
-        return syncOptions.applyBeforeCreateCallBack(productDraft)
-                          .map(draftCreator)
-                          .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty()));
+    private Optional<Product> handleProductCreation(
+            @Nonnull final ProductDraft draft,
+            @Nullable final Product createdProduct,
+            @Nullable final Throwable sphereException) {
+
+        final Supplier<Optional<Product>> onFailure = () -> {
+            syncOptions.applyErrorCallback(format(CREATE_FAILED, draft.getKey(), sphereException), sphereException);
+            return Optional.empty();
+        };
+
+        @SuppressWarnings("ConstantConditions") //createdProduct is only invoked if not null.
+        final Supplier<Optional<Product>> onSuccess = () -> {
+            keyToIdCache.put(createdProduct.getKey(), createdProduct.getId());
+            return Optional.of(createdProduct);
+        };
+
+        return createdProduct != null ? onSuccess.get() : onFailure.get();
     }
 
     @Nonnull

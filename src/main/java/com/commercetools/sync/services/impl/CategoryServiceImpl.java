@@ -143,21 +143,29 @@ public final class CategoryServiceImpl implements CategoryService {
     @Nonnull
     @Override
     public CompletionStage<Optional<Category>> createCategory(@Nonnull final CategoryDraft categoryDraft) {
-        final CategoryCreateCommand categoryCreateCommand = CategoryCreateCommand.of(categoryDraft);
-        return syncOptions.getCtpClient().execute(categoryCreateCommand)
-                          .handle((createdCategory, sphereException) -> {
-                              // TODO: Refactor to reuse below duplicate code and ProductServiceImpl.
-                              if (sphereException != null) {
-                                  syncOptions
-                                      .applyErrorCallback(format(CREATE_FAILED, categoryDraft.getKey(),
-                                          sphereException), sphereException);
-                                  return Optional.empty();
-                              } else {
-                                  keyToIdCache.put(createdCategory.getKey(), createdCategory.getId());
-                                  return Optional.of(createdCategory);
-                              }
-                          });
+        return applyCallbackAndCreate(categoryDraft, syncOptions, CategoryCreateCommand::of,
+                this::handleCategoryCreation);
     }
+
+    private Optional<Category> handleCategoryCreation(
+            @Nonnull final CategoryDraft draft,
+            @Nullable final Category createdCategory,
+            @Nullable final Throwable sphereException) {
+
+        final Supplier<Optional<Category>> onFailure = () -> {
+            syncOptions.applyErrorCallback(format(CREATE_FAILED, draft.getKey(), sphereException), sphereException);
+            return Optional.empty();
+        };
+
+        @SuppressWarnings("ConstantConditions") //createdCategory is only invoked if not null.
+        final Supplier<Optional<Category>> onSuccess = () -> {
+            keyToIdCache.put(createdCategory.getKey(), createdCategory.getId());
+            return Optional.of(createdCategory);
+        };
+
+        return createdCategory != null ? onSuccess.get() : onFailure.get();
+    }
+
 
     @Nonnull
     @Override
