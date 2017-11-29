@@ -34,7 +34,6 @@ public class ProductSyncOptionsBuilderTest {
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions).isNotNull();
         assertThat(productSyncOptions.shouldAllowUuidKeys()).isFalse();
-        assertThat(productSyncOptions.shouldRemoveOtherVariants()).isTrue();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
         assertThat(productSyncOptions.getSyncFilter()).isSameAs(SyncFilter.of());
         assertThat(productSyncOptions.getBeforeUpdateCallback()).isNull();
@@ -42,13 +41,6 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getWarningCallBack()).isNull();
         assertThat(productSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
         assertThat(productSyncOptions.getBatchSize()).isEqualTo(ProductSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
-    }
-
-    @Test
-    public void removeOtherVariants_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.removeOtherVariants(false);
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.shouldRemoveOtherVariants()).isFalse();
     }
 
     @Test

@@ -16,10 +16,9 @@ import java.util.function.Consumer;
 import static java.util.Optional.ofNullable;
 
 /**
- * TODO: removeOtherVariants, whiteList, blackList, auto publish, revert staged changes, update staged.
+ * TODO: auto publish, revert staged changes, update staged.
  */
 public class ProductSyncOptions extends BaseSyncOptions<Product, ProductDraft> {
-    private final boolean removeOtherVariants; // whether to remove other product variants or not.
     private final SyncFilter syncFilter; // which attributes to calculate update actions to black list or white list
     private final boolean ensurePriceChannels;
 
@@ -28,19 +27,13 @@ public class ProductSyncOptions extends BaseSyncOptions<Product, ProductDraft> {
                        @Nullable final Consumer<String> warningCallBack,
                        final int batchSize,
                        final boolean allowUuid,
-                       final boolean removeOtherVariants,
                        @Nullable final SyncFilter syncFilter,
                        @Nullable final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product,
                            List<UpdateAction<Product>>> beforeUpdateCallback,
                        boolean ensurePriceChannels) {
         super(ctpClient, errorCallBack, warningCallBack, batchSize, allowUuid, beforeUpdateCallback);
-        this.removeOtherVariants = removeOtherVariants;
         this.syncFilter = ofNullable(syncFilter).orElseGet(SyncFilter::of);
         this.ensurePriceChannels = ensurePriceChannels;
-    }
-
-    boolean shouldRemoveOtherVariants() {
-        return removeOtherVariants;
     }
 
     /**
