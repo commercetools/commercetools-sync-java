@@ -221,14 +221,14 @@ public class BaseSyncOptions<U, V> {
      * resource of the type {@code U}, this method applies the {@code beforeUpdateCallback} function
      * which is set to {@code this} instance of the {@link BaseSyncOptions} and returns the result. If the
      * {@code beforeUpdateCallback} is null, this method does nothing to the supplied list of update actions and returns
-     * the same list.
+     * the same list. If the result of the callback is null, an empty list is returned.
      *
      * @param updateActions the list of update actions to apply the {@code beforeUpdateCallback} function on.
      * @param newResourceDraft the new resource draft that is being compared to the old resource.
      * @param oldResource the old resource that is being compared to the new draft.
      * @return a list of update actions after applying the {@code beforeUpdateCallback} function on. If the
      *         {@code beforeUpdateCallback} function was null, the supplied list of {@code updateActions} is returned as
-     *         is.
+     *         is. If the return of the callback was null, an empty list is returned.
      */
     @Nonnull
     public List<UpdateAction<U>> applyBeforeUpdateCallBack(@Nonnull final List<UpdateAction<U>> updateActions,
@@ -239,7 +239,7 @@ public class BaseSyncOptions<U, V> {
         } else {
             final List<UpdateAction<U>> callbackResult =
                     beforeUpdateCallback.apply(updateActions, newResourceDraft, oldResource);
-            return callbackResult != null ? callbackResult : emptyList(); //TODO: IS THIS CORRECT BEHAVIOUR!?
+            return callbackResult != null ? callbackResult : emptyList();
         }
     }
 
