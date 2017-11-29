@@ -27,10 +27,8 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.services.ServiceUtils.applyCallbackAndCreate;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -159,26 +157,21 @@ public class ProductServiceImpl implements ProductService {
     @Nonnull
     @Override
     public CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
-        return applyCallbackAndCreate(productDraft, syncOptions, ProductCreateCommand::of, this::handleProductCreation);
+        return syncOptions.applyCallbackAndCreate(productDraft, ProductCreateCommand::of, this::handleProductCreation);
     }
 
+    @Nonnull
     private Optional<Product> handleProductCreation(
-            @Nonnull final ProductDraft draft,
-            @Nullable final Product createdProduct,
-            @Nullable final Throwable sphereException) {
-
-        final Supplier<Optional<Product>> onFailure = () -> {
-            syncOptions.applyErrorCallback(format(CREATE_FAILED, draft.getKey(), sphereException), sphereException);
-            return Optional.empty();
-        };
-
-        @SuppressWarnings("ConstantConditions") //createdProduct is only invoked if not null.
-        final Supplier<Optional<Product>> onSuccess = () -> {
+        @Nonnull final ProductDraft draft,
+        @Nullable final Product createdProduct,
+        @Nullable final Throwable sphereException) {
+        if (createdProduct != null) {
             keyToIdCache.put(createdProduct.getKey(), createdProduct.getId());
             return Optional.of(createdProduct);
-        };
-
-        return createdProduct != null ? onSuccess.get() : onFailure.get();
+        } else {
+            syncOptions.applyErrorCallback(format(CREATE_FAILED, draft.getKey(), sphereException), sphereException);
+            return Optional.empty();
+        }
     }
 
     @Nonnull

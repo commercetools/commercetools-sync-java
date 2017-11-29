@@ -25,10 +25,8 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.services.ServiceUtils.applyCallbackAndCreate;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -145,27 +143,22 @@ public final class CategoryServiceImpl implements CategoryService {
     @Nonnull
     @Override
     public CompletionStage<Optional<Category>> createCategory(@Nonnull final CategoryDraft categoryDraft) {
-        return applyCallbackAndCreate(categoryDraft, syncOptions, CategoryCreateCommand::of,
-                this::handleCategoryCreation);
+        return
+            syncOptions.applyCallbackAndCreate(categoryDraft, CategoryCreateCommand::of, this::handleCategoryCreation);
     }
 
+    @Nonnull
     private Optional<Category> handleCategoryCreation(
-            @Nonnull final CategoryDraft draft,
-            @Nullable final Category createdCategory,
-            @Nullable final Throwable sphereException) {
-
-        final Supplier<Optional<Category>> onFailure = () -> {
-            syncOptions.applyErrorCallback(format(CREATE_FAILED, draft.getKey(), sphereException), sphereException);
-            return Optional.empty();
-        };
-
-        @SuppressWarnings("ConstantConditions") //createdCategory is only invoked if not null.
-        final Supplier<Optional<Category>> onSuccess = () -> {
+        @Nonnull final CategoryDraft draft,
+        @Nullable final Category createdCategory,
+        @Nullable final Throwable sphereException) {
+        if (createdCategory != null) {
             keyToIdCache.put(createdCategory.getKey(), createdCategory.getId());
             return Optional.of(createdCategory);
-        };
-
-        return createdCategory != null ? onSuccess.get() : onFailure.get();
+        } else {
+            syncOptions.applyErrorCallback(format(CREATE_FAILED, draft.getKey(), sphereException), sphereException);
+            return Optional.empty();
+        }
     }
 
 
