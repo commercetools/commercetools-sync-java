@@ -206,6 +206,23 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
+    public void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
+        final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> null;
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
+                                                                               .beforeUpdateCallback(
+                                                                                   beforeUpdateCallback)
+                                                                               .build();
+        assertThat(productSyncOptions.getBeforeUpdateCallback()).isNotNull();
+
+        final List<UpdateAction<Product>> updateActions = Collections.singletonList(ChangeName.of(ofEnglish("name")));
+        final List<UpdateAction<Product>> filteredList =
+            productSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(ProductDraft.class), mock(Product.class));
+        assertThat(filteredList).isNotEqualTo(updateActions);
+        assertThat(filteredList).isEmpty();
+    }
+
+    @Test
     public void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
         final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
             beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> Collections.emptyList();
@@ -224,20 +241,20 @@ public class ProductSyncOptionsBuilderTest {
 
     @Test
     public void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredDraft() {
-        final Function<ProductDraft, ProductDraft> draftFunction = productDraft -> ProductDraftBuilder.of(productDraft)
-                .key(productDraft.getKey() + "_filteredKey").build();
+        final Function<ProductDraft, ProductDraft> draftFunction =
+            productDraft -> ProductDraftBuilder.of(productDraft)
+                                               .key(productDraft.getKey() + "_filteredKey").build();
 
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
-                .beforeCreateCallback(draftFunction)
-                .build();
+                                                                               .beforeCreateCallback(draftFunction)
+                                                                               .build();
         assertThat(productSyncOptions.getBeforeCreateCallback()).isNotNull();
 
         final ProductDraft resourceDraft = mock(ProductDraft.class);
         when(resourceDraft.getKey()).thenReturn("myKey");
 
 
-        final Optional<ProductDraft> filteredDraft =
-                productSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        final Optional<ProductDraft> filteredDraft = productSyncOptions.applyBeforeCreateCallBack(resourceDraft);
 
         assertThat(filteredDraft).isNotEmpty();
         assertThat(filteredDraft.get().getKey()).isEqualTo("myKey_filteredKey");
@@ -249,9 +266,22 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getBeforeCreateCallback()).isNull();
 
         final ProductDraft resourceDraft = mock(ProductDraft.class);
-        final Optional<ProductDraft> filteredDraft =
-                productSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        final Optional<ProductDraft> filteredDraft = productSyncOptions.applyBeforeCreateCallBack(resourceDraft);
 
         assertThat(filteredDraft).containsSame(resourceDraft);
+    }
+
+    @Test
+    public void applyBeforeCreateCallBack_WithNullReturnCallback_ShouldReturnEmptyOptional() {
+        final Function<ProductDraft, ProductDraft> draftFunction = productDraft -> null;
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
+                                                                               .beforeCreateCallback(draftFunction)
+                                                                               .build();
+        assertThat(productSyncOptions.getBeforeCreateCallback()).isNotNull();
+
+        final ProductDraft resourceDraft = mock(ProductDraft.class);
+        final Optional<ProductDraft> filteredDraft = productSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+
+        assertThat(filteredDraft).isEmpty();
     }
 }
