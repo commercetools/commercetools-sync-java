@@ -54,6 +54,10 @@ library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/
 **Bug Fixes** (1)
 - **Commons** - Fixed library version in User-Agent headers of JVM SDK clients using the library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/191)
 
+**Migration guide** (2)
+- **Product Sync** - Removed `removeOtherVariants` option which is already done by the sync by default. [#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
+- **Commons** - Removed `removeOtherSetEntries`, `removeOtherCollectionEntries` and `removeOtherProperties`. [#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
+
 -->
 ### v1.0.0-M5 -  Nov 16, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M4...v1.0.0-M5) |
