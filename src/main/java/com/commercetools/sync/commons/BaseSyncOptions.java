@@ -245,9 +245,13 @@ public class BaseSyncOptions<U, V> {
 
     /**
      * Given a new resource draft of type {@code V} this method applies the {@code beforeCreateCallback} function
-     * which is set to {@code this} instance of the {@link BaseSyncOptions} and returns the result. If the
-     * {@code beforeCreateCallback} is null, this method does nothing to the supplied resource draft and returns
-     * it as is, wrapped in an optional.
+     * which is set to {@code this} instance of the {@link BaseSyncOptions} and returns the result.
+     * <ul>
+     *     <li>If the {@code beforeCreateCallback} is null, this method does nothing to the supplied resource draft and
+     *     returns it as is, wrapped in an optional.</li>
+     *     <li>If the return of {@code beforeCreateCallback} is null, an empty optional is returned.</li>
+     *     <li>Otherwise, the result of the {@code beforeCreateCallback} is returned in the optional.</li>
+     * </ul>
      *
      * @param newResourceDraft the new resource draft that should be created.
      * @return an optional containing the resultant resource draft after applying the {@code beforeCreateCallback}
