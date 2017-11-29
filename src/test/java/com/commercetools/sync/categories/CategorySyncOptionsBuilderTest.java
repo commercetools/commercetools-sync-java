@@ -31,9 +31,6 @@ public class CategorySyncOptionsBuilderTest {
     public void build_WithClient_ShouldBuildCategorySyncOptions() {
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions).isNotNull();
-        assertThat(categorySyncOptions.shouldRemoveOtherCollectionEntries()).isTrue();
-        assertThat(categorySyncOptions.shouldRemoveOtherProperties()).isTrue();
-        assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isTrue();
         assertThat(categorySyncOptions.shouldAllowUuidKeys()).isFalse();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNull();
         assertThat(categorySyncOptions.getErrorCallBack()).isNull();
@@ -50,24 +47,6 @@ public class CategorySyncOptionsBuilderTest {
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
-    }
-
-    @Test
-    public void removeOtherCollectionEntries_WithFalse_ShouldSetFlag() {
-        categorySyncOptionsBuilder.removeOtherCollectionEntries(false);
-
-        final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
-        assertThat(categorySyncOptions.shouldRemoveOtherCollectionEntries()).isNotNull();
-        assertThat(categorySyncOptions.shouldRemoveOtherCollectionEntries()).isFalse();
-    }
-
-    @Test
-    public void removeOtherProperties_WithFalse_ShouldSetFlag() {
-        categorySyncOptionsBuilder.removeOtherProperties(false);
-
-        final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
-        assertThat(categorySyncOptions.shouldRemoveOtherProperties()).isNotNull();
-        assertThat(categorySyncOptions.shouldRemoveOtherProperties()).isFalse();
     }
 
     @Test
@@ -97,15 +76,6 @@ public class CategorySyncOptionsBuilderTest {
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.getWarningCallBack()).isNotNull();
-    }
-
-    @Test
-    public void removeOtherSetEntries_WithFalse_ShouldSetFlag() {
-        categorySyncOptionsBuilder.removeOtherSetEntries(false);
-
-        final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
-        assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isNotNull();
-        assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isFalse();
     }
 
     @Test

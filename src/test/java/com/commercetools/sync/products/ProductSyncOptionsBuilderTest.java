@@ -33,9 +33,6 @@ public class ProductSyncOptionsBuilderTest {
     public void build_WithClient_ShouldBuildProductSyncOptions() {
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions).isNotNull();
-        assertThat(productSyncOptions.shouldRemoveOtherCollectionEntries()).isTrue();
-        assertThat(productSyncOptions.shouldRemoveOtherProperties()).isTrue();
-        assertThat(productSyncOptions.shouldRemoveOtherSetEntries()).isTrue();
         assertThat(productSyncOptions.shouldAllowUuidKeys()).isFalse();
         assertThat(productSyncOptions.shouldRemoveOtherVariants()).isTrue();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
@@ -80,24 +77,6 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void removeOtherCollectionEntries_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.removeOtherCollectionEntries(false);
-
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.shouldRemoveOtherCollectionEntries()).isNotNull();
-        assertThat(productSyncOptions.shouldRemoveOtherCollectionEntries()).isFalse();
-    }
-
-    @Test
-    public void removeOtherProperties_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.removeOtherProperties(false);
-
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.shouldRemoveOtherProperties()).isNotNull();
-        assertThat(productSyncOptions.shouldRemoveOtherProperties()).isFalse();
-    }
-
-    @Test
     public void allowUuid_WithTrue_ShouldSetFlag() {
         productSyncOptionsBuilder.allowUuidKeys(true);
 
@@ -124,15 +103,6 @@ public class ProductSyncOptionsBuilderTest {
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getWarningCallBack()).isNotNull();
-    }
-
-    @Test
-    public void removeOtherSetEntries_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.removeOtherSetEntries(false);
-
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.shouldRemoveOtherSetEntries()).isNotNull();
-        assertThat(productSyncOptions.shouldRemoveOtherSetEntries()).isFalse();
     }
 
     @Test

@@ -27,17 +27,13 @@ public class ProductSyncOptions extends BaseSyncOptions<Product, ProductDraft> {
                        @Nullable final BiConsumer<String, Throwable> errorCallBack,
                        @Nullable final Consumer<String> warningCallBack,
                        final int batchSize,
-                       final boolean removeOtherSetEntries,
-                       final boolean removeOtherCollectionEntries,
-                       final boolean removeOtherProperties,
                        final boolean allowUuid,
                        final boolean removeOtherVariants,
                        @Nullable final SyncFilter syncFilter,
                        @Nullable final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product,
                            List<UpdateAction<Product>>> beforeUpdateCallback,
                        boolean ensurePriceChannels) {
-        super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherSetEntries, removeOtherCollectionEntries,
-            removeOtherProperties, allowUuid, beforeUpdateCallback);
+        super(ctpClient, errorCallBack, warningCallBack, batchSize, allowUuid, beforeUpdateCallback);
         this.removeOtherVariants = removeOtherVariants;
         this.syncFilter = ofNullable(syncFilter).orElseGet(SyncFilter::of);
         this.ensurePriceChannels = ensurePriceChannels;

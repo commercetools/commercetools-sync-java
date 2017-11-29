@@ -112,20 +112,6 @@ An example of use can be found [here](https://github.com/commercetools/commercet
 - `warningCallBack`
 a callback that is called whenever an event occurs during the sync process that represents a warning.
 
-- `removeOtherSetEntries`
-a flag which enables the sync module to add additional Set entries without deleting existing ones, if set to `false`.
-If set to `true`, which is the default value of the option, it deletes the existing Set entries.
-
-- `removeOtherCollectionEntries`
-a flag which enables the sync module to add collection (e.g. Assets, Images etc.) entries without deleting existing
-ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing collection
-entries.
-
-- `removeOtherProperties`
-a flag which enables the sync module to add additional object properties (e.g. custom fields, etc..) without deleting
-existing ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing
-object properties.
-
 - `allowUuid`
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
