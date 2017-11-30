@@ -17,7 +17,7 @@ import java.util.function.Function;
 import static java.util.Optional.ofNullable;
 
 /**
- * TODO: auto publish, revert staged changes, update staged.
+ * TODO: auto publish, revert staged changes, update current.
  */
 public class ProductSyncOptions extends BaseSyncOptions<Product, ProductDraft> {
     private final SyncFilter syncFilter; // which attributes to calculate update actions to black list or white list
