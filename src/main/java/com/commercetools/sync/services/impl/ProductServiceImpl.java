@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -32,18 +31,14 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class ProductServiceImpl implements ProductService {
-    private boolean isCached = false;
-    private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
-    private final ProductSyncOptions syncOptions;
-
+public class ProductServiceImpl extends BaseService<Product, ProductDraft> implements ProductService {
     private static final String CREATE_FAILED = "Failed to create ProductDraft with key: '%s'. Reason: %s";
     private static final String FETCH_FAILED = "Failed to fetch products with keys: '%s'. Reason: %s";
     private static final String PRODUCT_KEY_NOT_SET = "Product with id: '%s' has no key set. Keys are required for "
         + "product matching.";
 
     public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
-        this.syncOptions = syncOptions;
+        super(syncOptions);
     }
 
     @Nonnull
@@ -157,7 +152,7 @@ public class ProductServiceImpl implements ProductService {
     @Nonnull
     @Override
     public CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
-        return syncOptions.applyCallbackAndCreate(productDraft, ProductCreateCommand::of, this::handleProductCreation);
+        return applyCallbackAndCreate(productDraft, ProductCreateCommand::of, this::handleProductCreation);
     }
 
     @Nonnull
