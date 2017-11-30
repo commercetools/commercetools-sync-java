@@ -133,6 +133,10 @@ a flag, if set to `true`, enables the user to use keys with UUID format for refe
 a filter function which can be applied on a generated list of update actions. It allows the user to intercept inventory 
 entry update and modify (add/remove) update actions just before they are send to CTP API.
 
+- `beforeCreateCallback`
+a filter function which can be applied on a inventoryEntry draft before a request to create it on CTP is issued. It allows the 
+user to intercept inventoryEntry create requests modify the draft before the create request is sent to CTP API.
+
 <!-- TODO Update above options with links to tests. Tests should be written when inventory sync could actually use them (when custom update actions would use them).  -->
 
 ## Under the hood

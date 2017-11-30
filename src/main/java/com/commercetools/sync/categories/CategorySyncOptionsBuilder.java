@@ -37,15 +37,16 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
     @Override
     public CategorySyncOptions build() {
         return new CategorySyncOptions(
-            this.ctpClient,
-            this.errorCallback,
-            this.warningCallback,
-            this.batchSize,
-            this.removeOtherSetEntries,
-            this.removeOtherCollectionEntries,
-            this.removeOtherProperties,
-            this.allowUuid,
-            this.beforeUpdateCallback);
+            ctpClient,
+            errorCallback,
+            warningCallback,
+            batchSize,
+            removeOtherSetEntries,
+            removeOtherCollectionEntries,
+            removeOtherProperties,
+            allowUuid,
+            beforeUpdateCallback,
+            beforeCreateCallback);
     }
 
     /**

@@ -20,7 +20,9 @@ import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
+import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
+import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.taxcategories.TaxCategory;
@@ -31,10 +33,12 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -163,6 +167,57 @@ public class ProductSyncIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void sync_withNewProductAndBeforeCreateCallback_shouldCreateProduct() {
+        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+                ProductType.referenceOfId(productType.getKey()))
+                .taxCategory(null)
+                .state(null)
+                .build();
+
+        final String keyPrefix = "callback_";
+        final ProductSyncOptions options = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                .errorCallback((errorMessage, exception) -> {
+                    errorCallBackMessages.add(errorMessage);
+                    errorCallBackExceptions.add(exception);
+                })
+                .warningCallback(warningMessage -> warningCallBackMessages.add(warningMessage))
+                .beforeCreateCallback(draft -> prefixDraftKey(draft, keyPrefix))
+                .build();
+
+        final ProductSync productSync = new ProductSync(options);
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(singletonList(productDraft)));
+
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getCreated()).isEqualTo(1);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+
+        //Query for a product with key prefixed with "callback_" added by the callback
+
+        final String keyWithCallbackPrefix = format("%s%s", keyPrefix, productDraft.getKey());
+        final Optional<Product> productOptional = CTP_TARGET_CLIENT
+                .execute(ProductQuery.of()
+                        .withPredicates(QueryPredicate.of(format("key = \"%s\"", keyWithCallbackPrefix))))
+                .toCompletableFuture().join().head();
+
+        assertThat(productOptional).isNotEmpty();
+        final Product fetchedProduct = productOptional.get();
+        assertThat(fetchedProduct.getKey()).isEqualTo(keyWithCallbackPrefix);
+        assertThat(fetchedProduct.getMasterData().getCurrent().getName()).isEqualTo(productDraft.getName());
+    }
+
+    @Nonnull
+    private static ProductDraft prefixDraftKey(@Nonnull final ProductDraft productDraft, @Nonnull final String prefix) {
+        final String newKey = format("%s%s", prefix, productDraft.getKey());
+        return ProductDraftBuilder.of(productDraft)
+                                  .key(newKey)
+                                  .build();
     }
 
     @Test
