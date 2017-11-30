@@ -29,6 +29,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -37,6 +38,7 @@ public class ProductServiceImpl implements ProductService {
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private final ProductSyncOptions syncOptions;
 
+    private static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;
     private static final String CREATE_FAILED = "Failed to create ProductDraft with key: '%s'. Reason: %s";
     private static final String FETCH_FAILED = "Failed to fetch products with keys: '%s'. Reason: %s";
     private static final String PRODUCT_KEY_NOT_SET = "Product with id: '%s' has no key set. Keys are required for "
@@ -178,7 +180,21 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public CompletionStage<Product> updateProduct(@Nonnull final Product product,
                                                   @Nonnull final List<UpdateAction<Product>> updateActions) {
-        return syncOptions.getCtpClient().execute(ProductUpdateCommand.of(product, updateActions));
+
+        final List<List<UpdateAction<Product>>> actionBatches =
+            batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
+        return updateBatches(actionBatches, CompletableFuture.completedFuture(product));
+    }
+
+    private CompletionStage<Product> updateBatches(
+        @Nonnull final List<List<UpdateAction<Product>>> batches,
+        @Nonnull final CompletionStage<Product> result) {
+        if (batches.isEmpty()) {
+            return result;
+        }
+        final List<UpdateAction<Product>> firstBatch = batches.remove(0);
+        return updateBatches(batches, result.thenCompose(updatedProduct ->
+            syncOptions.getCtpClient().execute(ProductUpdateCommand.of(updatedProduct, firstBatch))));
     }
 
     @Nonnull
