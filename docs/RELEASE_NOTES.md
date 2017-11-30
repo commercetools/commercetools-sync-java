@@ -56,7 +56,8 @@
 - **Commons** - Fixed library version in User-Agent headers of JVM SDK clients using the library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/191)
 
 **Migration guide** (6)
-- **Product Sync** - Removed `removeOtherVariants` option which is already done by the sync by default. [#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
+- **Product Sync** - Removed `removeOtherVariants` option which is already done by the sync by default. Removal of 
+variants can be prevented through the beforeUpdateCallback. For an example how this can be done (Please see [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/templates/beforeupdatecallback/KeepOtherVariantSyncsIT.java).[#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
 - **Commons** - Removed `removeOtherSetEntries`, `removeOtherCollectionEntries` and `removeOtherProperties`. [#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
 - **Commons** - Removed website and emergency contact e-mail appened in User-Agent headers of JVM SDK clients using the 
 library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/191)
