@@ -558,6 +558,41 @@ public class ProductServiceIT {
 
     @Test
     @SuppressWarnings("ConstantConditions")
+    public void updateProduct_WithInvalidChanges_ShouldNotUpdateProduct() {
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+            productType.toReference())
+            .categories(Collections.emptyList())
+            .taxCategory(null)
+            .state(null)
+            .categoryOrderHints(null)
+            .build();
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft1)).toCompletableFuture().join();
+
+
+        final ChangeSlug changeSlugUpdateAction = ChangeSlug.of(productDraft1.getSlug());
+
+        productService.updateProduct(product, Collections.singletonList(changeSlugUpdateAction))
+                      .exceptionally(exception -> {
+                          assertThat(exception).isNotNull();
+                          assertThat(exception.getMessage()).contains(format("A duplicate value '\"%s\"' exists for "
+                              + "field 'slug.en'", productDraft1.getSlug().get(Locale.ENGLISH)));
+                          return null;
+                      })
+                      .toCompletableFuture().join();
+
+
+        //assert CTP state
+        final Optional<Product> fetchedProductOptional = CTP_TARGET_CLIENT
+            .execute(ProductQuery.of()
+                                 .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
+            .toCompletableFuture().join().head();
+
+        assertThat(fetchedProductOptional).isNotEmpty();
+        final Product fetchedProduct = fetchedProductOptional.get();
+        assertThat(fetchedProduct.getMasterData().getCurrent().getSlug()).isNotEqualTo(productDraft1.getSlug());
+    }
+    @Test
+    @SuppressWarnings("ConstantConditions")
     public void publishProduct_ThatIsAlreadyPublished_ShouldThrowException() {
         productService.publishProduct(product)
                       .exceptionally(exception -> {
@@ -673,42 +708,6 @@ public class ProductServiceIT {
             .isEqualTo(revertedProduct.getMasterData().getStaged().getName());
         assertThat(revertedProduct.getMasterData().isPublished()).isTrue();
         assertThat(revertedProduct.getMasterData().hasStagedChanges()).isFalse();
-    }
-
-    @Test
-    @SuppressWarnings("ConstantConditions")
-    public void updateProduct_WithInvalidChanges_ShouldNotUpdateProduct() {
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-            productType.toReference())
-            .categories(Collections.emptyList())
-            .taxCategory(null)
-            .state(null)
-            .categoryOrderHints(null)
-            .build();
-        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft1)).toCompletableFuture().join();
-
-
-        final ChangeSlug changeSlugUpdateAction = ChangeSlug.of(productDraft1.getSlug());
-
-        productService.updateProduct(product, Collections.singletonList(changeSlugUpdateAction))
-                       .exceptionally(exception -> {
-                           assertThat(exception).isNotNull();
-                           assertThat(exception.getMessage()).contains(format("A duplicate value '\"%s\"' exists for "
-                               + "field 'slug.en'", productDraft1.getSlug().get(Locale.ENGLISH)));
-                           return null;
-                       })
-                       .toCompletableFuture().join();
-
-
-        //assert CTP state
-        final Optional<Product> fetchedProductOptional = CTP_TARGET_CLIENT
-            .execute(ProductQuery.of()
-                                 .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
-            .toCompletableFuture().join().head();
-
-        assertThat(fetchedProductOptional).isNotEmpty();
-        final Product fetchedProduct = fetchedProductOptional.get();
-        assertThat(fetchedProduct.getMasterData().getCurrent().getSlug()).isNotEqualTo(productDraft1.getSlug());
     }
 
     @Test
