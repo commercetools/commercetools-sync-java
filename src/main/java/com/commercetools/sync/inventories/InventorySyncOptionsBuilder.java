@@ -57,13 +57,14 @@ public final class InventorySyncOptionsBuilder extends
     @Override
     public InventorySyncOptions build() {
         return new InventorySyncOptions(
-            this.ctpClient,
-            this.errorCallback,
-            this.warningCallback,
-            this.batchSize,
-            this.allowUuid,
-            this.ensureChannels,
-            this.beforeUpdateCallback);
+            ctpClient,
+            errorCallback,
+            warningCallback,
+            batchSize,
+            allowUuid,
+            ensureChannels,
+            beforeUpdateCallback,
+            beforeCreateCallback);
     }
 
     /**

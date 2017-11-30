@@ -1,7 +1,7 @@
 package com.commercetools.sync.services.impl;
 
 
-import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
@@ -35,7 +35,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
 public final class CategoryServiceImpl implements CategoryService {
-    private final BaseSyncOptions syncOptions;
+    private final CategorySyncOptions syncOptions;
     private boolean isCached = false;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private static final String CREATE_FAILED = "Failed to create CategoryDraft with key: '%s'. Reason: %s";
@@ -43,7 +43,7 @@ public final class CategoryServiceImpl implements CategoryService {
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
         + "category matching.";
 
-    public CategoryServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
+    public CategoryServiceImpl(@Nonnull final CategorySyncOptions syncOptions) {
         this.syncOptions = syncOptions;
     }
 
@@ -143,21 +143,24 @@ public final class CategoryServiceImpl implements CategoryService {
     @Nonnull
     @Override
     public CompletionStage<Optional<Category>> createCategory(@Nonnull final CategoryDraft categoryDraft) {
-        final CategoryCreateCommand categoryCreateCommand = CategoryCreateCommand.of(categoryDraft);
-        return syncOptions.getCtpClient().execute(categoryCreateCommand)
-                          .handle((createdCategory, sphereException) -> {
-                              // TODO: Refactor to reuse below duplicate code and ProductServiceImpl.
-                              if (sphereException != null) {
-                                  syncOptions
-                                      .applyErrorCallback(format(CREATE_FAILED, categoryDraft.getKey(),
-                                          sphereException), sphereException);
-                                  return Optional.empty();
-                              } else {
-                                  keyToIdCache.put(createdCategory.getKey(), createdCategory.getId());
-                                  return Optional.of(createdCategory);
-                              }
-                          });
+        return
+            syncOptions.applyCallbackAndCreate(categoryDraft, CategoryCreateCommand::of, this::handleCategoryCreation);
     }
+
+    @Nonnull
+    private Optional<Category> handleCategoryCreation(
+        @Nonnull final CategoryDraft draft,
+        @Nullable final Category createdCategory,
+        @Nullable final Throwable sphereException) {
+        if (createdCategory != null) {
+            keyToIdCache.put(createdCategory.getKey(), createdCategory.getId());
+            return Optional.of(createdCategory);
+        } else {
+            syncOptions.applyErrorCallback(format(CREATE_FAILED, draft.getKey(), sphereException), sphereException);
+            return Optional.empty();
+        }
+    }
+
 
     @Nonnull
     @Override

@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static java.util.Optional.ofNullable;
 
@@ -30,8 +31,10 @@ public class ProductSyncOptions extends BaseSyncOptions<Product, ProductDraft> {
                        @Nullable final SyncFilter syncFilter,
                        @Nullable final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product,
                            List<UpdateAction<Product>>> beforeUpdateCallback,
+                       @Nullable final Function<ProductDraft, ProductDraft> beforeCreateCallback,
                        boolean ensurePriceChannels) {
-        super(ctpClient, errorCallBack, warningCallBack, batchSize, allowUuid, beforeUpdateCallback);
+        super(ctpClient, errorCallBack, warningCallBack, batchSize, allowUuid, beforeUpdateCallback,
+            beforeCreateCallback);
         this.syncFilter = ofNullable(syncFilter).orElseGet(SyncFilter::of);
         this.ensurePriceChannels = ensurePriceChannels;
     }

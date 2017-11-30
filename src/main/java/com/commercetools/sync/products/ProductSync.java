@@ -1,5 +1,6 @@
 package com.commercetools.sync.products;
 
+import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
@@ -70,9 +71,12 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
      */
     public ProductSync(@Nonnull final ProductSyncOptions productSyncOptions) {
         this(productSyncOptions, new ProductServiceImpl(productSyncOptions),
-            new ProductTypeServiceImpl(productSyncOptions), new CategoryServiceImpl(productSyncOptions),
-            new TypeServiceImpl(productSyncOptions), new ChannelServiceImpl(productSyncOptions),
-            new TaxCategoryServiceImpl(productSyncOptions), new StateServiceImpl(productSyncOptions, PRODUCT_STATE));
+                new ProductTypeServiceImpl(productSyncOptions),
+                new CategoryServiceImpl(CategorySyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
+                new TypeServiceImpl(productSyncOptions),
+                new ChannelServiceImpl(productSyncOptions),
+                new TaxCategoryServiceImpl(productSyncOptions),
+                new StateServiceImpl(productSyncOptions, PRODUCT_STATE));
     }
 
     ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService,

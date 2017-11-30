@@ -74,6 +74,7 @@ public final class ProductSyncOptionsBuilder
             allowUuid,
             syncFilter,
             beforeUpdateCallback,
+            beforeCreateCallback,
             ensurePriceChannels
         );
     }

@@ -157,18 +157,21 @@ public class ProductServiceImpl implements ProductService {
     @Nonnull
     @Override
     public CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
-        return syncOptions.getCtpClient().execute(ProductCreateCommand.of(productDraft))
-                          .handle((createdProduct, sphereException) -> {
-                              if (sphereException != null) {
-                                  syncOptions
-                                      .applyErrorCallback(format(CREATE_FAILED, productDraft.getKey(),
-                                          sphereException), sphereException);
-                                  return Optional.empty();
-                              } else {
-                                  keyToIdCache.put(createdProduct.getKey(), createdProduct.getId());
-                                  return Optional.of(createdProduct);
-                              }
-                          });
+        return syncOptions.applyCallbackAndCreate(productDraft, ProductCreateCommand::of, this::handleProductCreation);
+    }
+
+    @Nonnull
+    private Optional<Product> handleProductCreation(
+        @Nonnull final ProductDraft draft,
+        @Nullable final Product createdProduct,
+        @Nullable final Throwable sphereException) {
+        if (createdProduct != null) {
+            keyToIdCache.put(createdProduct.getKey(), createdProduct.getId());
+            return Optional.of(createdProduct);
+        } else {
+            syncOptions.applyErrorCallback(format(CREATE_FAILED, draft.getKey(), sphereException), sphereException);
+            return Optional.empty();
+        }
     }
 
     @Nonnull

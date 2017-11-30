@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public final class InventorySyncOptions extends BaseSyncOptions<InventoryEntry, InventoryEntryDraft> {
     private final boolean ensureChannels;
@@ -23,13 +24,15 @@ public final class InventorySyncOptions extends BaseSyncOptions<InventoryEntry, 
                          final boolean allowUuid,
                          boolean ensureChannels,
                          @Nullable final TriFunction<List<UpdateAction<InventoryEntry>>, InventoryEntryDraft,
-                             InventoryEntry, List<UpdateAction<InventoryEntry>>> beforeUpdateCallback) {
+                             InventoryEntry, List<UpdateAction<InventoryEntry>>> beforeUpdateCallback,
+                         @Nullable final Function<InventoryEntryDraft, InventoryEntryDraft> beforeCreateCallback) {
         super(ctpClient,
             updateActionErrorCallBack,
             updateActionWarningCallBack,
             batchSize,
             allowUuid,
-            beforeUpdateCallback);
+            beforeUpdateCallback,
+            beforeCreateCallback);
         this.ensureChannels = ensureChannels;
 
     }

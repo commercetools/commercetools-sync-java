@@ -3,19 +3,24 @@ package com.commercetools.sync.categories;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
+import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class CategorySyncOptionsBuilderTest {
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
@@ -33,6 +38,7 @@ public class CategorySyncOptionsBuilderTest {
         assertThat(categorySyncOptions).isNotNull();
         assertThat(categorySyncOptions.shouldAllowUuidKeys()).isFalse();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNull();
+        assertThat(categorySyncOptions.getBeforeCreateCallback()).isNull();
         assertThat(categorySyncOptions.getErrorCallBack()).isNull();
         assertThat(categorySyncOptions.getWarningCallBack()).isNull();
         assertThat(categorySyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
@@ -47,6 +53,15 @@ public class CategorySyncOptionsBuilderTest {
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
+    }
+
+    @Test
+    public void beforeCreateCallback_WithFilterAsCallback_ShouldSetCallback() {
+        final Function<CategoryDraft, CategoryDraft> draftFunction = categoryDraft -> null;
+        categorySyncOptionsBuilder.beforeCreateCallback(draftFunction);
+
+        final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
+        assertThat(categorySyncOptions.getBeforeCreateCallback()).isNotNull();
     }
 
     @Test
@@ -93,6 +108,7 @@ public class CategorySyncOptionsBuilderTest {
             .allowUuidKeys(true)
             .batchSize(30)
             .beforeUpdateCallback((updateActions, newCategory, oldCategory) -> Collections.emptyList())
+            .beforeCreateCallback(newCategoryDraft -> null)
             .build();
         assertThat(categorySyncOptions).isNotNull();
     }
@@ -127,8 +143,7 @@ public class CategorySyncOptionsBuilderTest {
                                                                                   .build();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNull();
 
-        final List<UpdateAction<Category>> updateActions = Collections
-            .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+        final List<UpdateAction<Category>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<Category>> filteredList = categorySyncOptions
             .applyBeforeUpdateCallBack(updateActions, mock(CategoryDraft.class), mock(Category.class));
         assertThat(filteredList).isSameAs(updateActions);
@@ -145,11 +160,76 @@ public class CategorySyncOptionsBuilderTest {
                                                                                   .build();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-        final List<UpdateAction<Category>> updateActions = Collections
-            .singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+        final List<UpdateAction<Category>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<Category>> filteredList = categorySyncOptions
             .applyBeforeUpdateCallBack(updateActions, mock(CategoryDraft.class), mock(Category.class));
         assertThat(filteredList).isNotEqualTo(updateActions);
         assertThat(filteredList).isEmpty();
+    }
+
+    @Test
+    public void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
+        final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category, List<UpdateAction<Category>>>
+            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> null;
+
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                  .beforeUpdateCallback(
+                                                                                      beforeUpdateCallback)
+                                                                                  .build();
+        assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
+
+        final List<UpdateAction<Category>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
+        final List<UpdateAction<Category>> filteredList = categorySyncOptions
+            .applyBeforeUpdateCallBack(updateActions, mock(CategoryDraft.class), mock(Category.class));
+
+        assertThat(filteredList).isEmpty();
+    }
+
+    @Test
+    public void applyBeforeCreateCallBack_WithNullCallback_ShouldReturnIdenticalDraft() {
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                  .build();
+        assertThat(categorySyncOptions.getBeforeCreateCallback()).isNull();
+
+        final CategoryDraft resourceDraft = mock(CategoryDraft.class);
+        final Optional<CategoryDraft> filteredDraft = categorySyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        assertThat(filteredDraft).containsSame(resourceDraft);
+    }
+
+    @Test
+    public void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredList() {
+        final Function<CategoryDraft, CategoryDraft> draftFunction = categoryDraft ->
+                CategoryDraftBuilder.of(categoryDraft)
+                                    .key(categoryDraft.getKey() + "_filterPostFix")
+                                    .build();
+
+        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                                          .beforeCreateCallback(draftFunction)
+                                                                          .build();
+        assertThat(syncOptions.getBeforeCreateCallback()).isNotNull();
+
+        final CategoryDraft resourceDraft = mock(CategoryDraft.class);
+        when(resourceDraft.getKey()).thenReturn("myKey");
+
+
+        final Optional<CategoryDraft> filteredDraft = syncOptions.applyBeforeCreateCallBack(resourceDraft);
+
+        assertThat(filteredDraft).isNotEmpty();
+        assertThat(filteredDraft.get().getKey()).isEqualTo("myKey_filterPostFix");
+    }
+
+    @Test
+    public void applyBeforeCreateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
+        final Function<CategoryDraft, CategoryDraft> draftFunction = categoryDraft -> null;
+
+        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                                          .beforeCreateCallback(draftFunction)
+                                                                          .build();
+        assertThat(syncOptions.getBeforeCreateCallback()).isNotNull();
+
+        final CategoryDraft resourceDraft = mock(CategoryDraft.class);
+        final Optional<CategoryDraft> filteredDraft = syncOptions.applyBeforeCreateCallBack(resourceDraft);
+        
+        assertThat(filteredDraft).isEmpty();
     }
 }

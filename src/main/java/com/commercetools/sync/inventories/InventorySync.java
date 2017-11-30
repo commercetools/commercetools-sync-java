@@ -308,15 +308,18 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @return a future which contains an empty result after execution of the create.
      */
     private CompletionStage<Void> create(@Nonnull final InventoryEntryDraft draft) {
-        return inventoryService.createInventoryEntry(draft)
-            .thenAccept(createdInventory -> statistics.incrementCreated())
-            .exceptionally(exception -> {
-                final Reference<Channel> supplyChannel = draft.getSupplyChannel();
-                final String errorMessage = format(CTP_INVENTORY_ENTRY_CREATE_FAILED, draft.getSku(),
-                    supplyChannel != null ? supplyChannel.getId() : null);
-                handleError(errorMessage, exception, 1);
-                return null;
-            });
+        return syncOptions.applyBeforeCreateCallBack(draft)
+                .map(inventoryService::createInventoryEntry)
+                .map(creationFuture -> creationFuture
+                                .thenAccept(createdInventory -> statistics.incrementCreated())
+                                .exceptionally(exception -> {
+                                    final Reference<Channel> supplyChannel = draft.getSupplyChannel();
+                                    final String errorMessage = format(CTP_INVENTORY_ENTRY_CREATE_FAILED,
+                                            draft.getSku(), supplyChannel != null ? supplyChannel.getId() : null);
+                                    handleError(errorMessage, exception, 1);
+                                    return null;
+                                }))
+                .orElseGet(() -> CompletableFuture.completedFuture(null));
     }
 
     /**

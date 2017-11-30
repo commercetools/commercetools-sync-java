@@ -42,23 +42,29 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <!--
-### v1.0.0-M6 -  Nov 16, 2017
+### v1.0.0-M6 -  Dec 1, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M5...v1.0.0-M6) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M6/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M6)
 
-**Changes** (1)
-- **Commons** - Removed website and emergency contact e-mail appened in User-Agent headers of JVM SDK clients using the 
-library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/191)
+**New Features** (3)
+- **Category Sync** - Introduced `beforeCreateCallback` option which is callback applied on a category draft before a request to create it on CTP is issued. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
+- **Product Sync** - Introduced `beforeCreateCallback` option which is callback applied on a product draft before a request to create it on CTP is issued. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
+- **Inventory Sync** - Introduced `beforeCreateCallback` option which is callback applied on a inventoryEntry draft before a request to create it on CTP is issued. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
 
 **Bug Fixes** (1)
 - **Commons** - Fixed library version in User-Agent headers of JVM SDK clients using the library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/191)
 
-**Migration guide** (2)
+**Migration guide** (6)
 - **Product Sync** - Removed `removeOtherVariants` option which is already done by the sync by default. [#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
 - **Commons** - Removed `removeOtherSetEntries`, `removeOtherCollectionEntries` and `removeOtherProperties`. [#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
+- **Commons** - Removed website and emergency contact e-mail appened in User-Agent headers of JVM SDK clients using the 
+library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/191)
+- **Category Sync** - `beforeUpdateCallback` now treats a null return as an empty list of update actions. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
+- **Product Sync** - `beforeUpdateCallback` now treats a null return as an empty list of update actions. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
+- **Inventory Sync** - `beforeUpdateCallback` now treats a null return as an empty list of update actions. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
+--> 
 
--->
 ### v1.0.0-M5 -  Nov 16, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M4...v1.0.0-M5) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M5/) | 
