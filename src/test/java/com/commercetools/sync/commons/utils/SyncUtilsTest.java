@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
-import static com.commercetools.sync.commons.utils.SyncUtils.batchDrafts;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceCustomTypeIdWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,13 +35,13 @@ public class SyncUtilsTest {
             categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key" + i, "parentKey",
                 "customTypeId", new HashMap<>()));
         }
-        final List<List<CategoryDraft>> batches = batchDrafts(categoryDrafts, 10);
+        final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 10);
         assertThat(batches.size()).isEqualTo(numberOfCategoryDrafts / batchSize);
     }
 
     @Test
     public void batchCategories_WithEmptyListAndAnySize_ShouldReturnNoBatches() {
-        final List<List<CategoryDraft>> batches = batchDrafts(new ArrayList<>(), 100);
+        final List<List<CategoryDraft>> batches = batchElements(new ArrayList<>(), 100);
         assertThat(batches.size()).isEqualTo(0);
     }
 
@@ -54,7 +54,7 @@ public class SyncUtilsTest {
             categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key" + i, "parentKey",
                 "customTypeId", new HashMap<>()));
         }
-        final List<List<CategoryDraft>> batches = batchDrafts(categoryDrafts, -100);
+        final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, -100);
         assertThat(batches.size()).isEqualTo(0);
     }
 

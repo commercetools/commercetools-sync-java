@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.buildCategoryQuery;
 import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.replaceCategoriesReferenceIdsWithKeys;
-import static com.commercetools.sync.commons.utils.SyncUtils.batchDrafts;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
@@ -220,7 +220,7 @@ public class CategorySyncIT {
         Collections.shuffle(categoryDrafts);
 
         // Simulate batches of categories where not all parent references are supplied at once.
-        final List<List<CategoryDraft>> batches = batchDrafts(categoryDrafts, 13);
+        final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 13);
 
         final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
             CompletableFuture.completedFuture(null)).toCompletableFuture().join();
@@ -276,7 +276,7 @@ public class CategorySyncIT {
         final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
         Collections.shuffle(categoryDrafts);
 
-        final List<List<CategoryDraft>> batches = batchDrafts(categoryDrafts, 13);
+        final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 13);
 
         final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
             CompletableFuture.completedFuture(null)).toCompletableFuture().join();
@@ -322,7 +322,7 @@ public class CategorySyncIT {
         final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
         Collections.shuffle(categoryDrafts);
 
-        final List<List<CategoryDraft>> batches = batchDrafts(categoryDrafts, 1);
+        final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 1);
 
         final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
             CompletableFuture.completedFuture(null)).toCompletableFuture().join();
@@ -394,7 +394,7 @@ public class CategorySyncIT {
         // To simulate the new parent coming in a later draft
         Collections.reverse(categoryDrafts);
 
-        final List<List<CategoryDraft>> batches = batchDrafts(categoryDrafts, 1);
+        final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 1);
 
         final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
             CompletableFuture.completedFuture(null)).toCompletableFuture().join();

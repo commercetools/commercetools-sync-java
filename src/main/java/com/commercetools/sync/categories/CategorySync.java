@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
-import static com.commercetools.sync.commons.utils.SyncUtils.batchDrafts;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -110,7 +110,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     @Override
     protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<CategoryDraft> categoryDrafts) {
-        final List<List<CategoryDraft>> batches = batchDrafts(categoryDrafts, syncOptions.getBatchSize());
+        final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, syncOptions.getBatchSize());
         return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
 
