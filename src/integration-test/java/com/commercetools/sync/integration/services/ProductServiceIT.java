@@ -8,6 +8,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
@@ -37,6 +38,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
@@ -591,6 +594,42 @@ public class ProductServiceIT {
         final Product fetchedProduct = fetchedProductOptional.get();
         assertThat(fetchedProduct.getMasterData().getCurrent().getSlug()).isNotEqualTo(productDraft1.getSlug());
     }
+
+    @Test
+    @SuppressWarnings("ConstantConditions")
+    public void updateProduct_WithMoreThan500Actions_ShouldNotFail() {
+        final Optional<Product> productOptional = CTP_TARGET_CLIENT
+            .execute(ProductQuery.of()
+                                 .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
+            .toCompletableFuture().join().head();
+
+        final List<UpdateAction<Product>> updateActions =
+            IntStream.range(1, 502)
+                     .mapToObj(i -> ChangeName.of(LocalizedString.of(Locale.GERMAN, format("version:%s", i))))
+                     .collect(Collectors.toList());
+
+
+        final Product updatedProduct = productService.updateProduct(productOptional.get(), updateActions)
+                                                     .toCompletableFuture().join();
+        assertThat(updatedProduct).isNotNull();
+
+        //assert CTP state
+        final Optional<Product> fetchedProductOptional = CTP_TARGET_CLIENT
+            .execute(ProductQuery.of()
+                                 .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
+            .toCompletableFuture().join().head();
+
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(fetchedProductOptional).isNotEmpty();
+        final Product fetchedProduct = fetchedProductOptional.get();
+        assertThat(fetchedProduct.getMasterData().getCurrent().getName())
+            .isEqualTo(updatedProduct.getMasterData().getCurrent().getName());
+        assertThat(fetchedProduct.getMasterData().getCurrent().getSlug())
+            .isEqualTo(updatedProduct.getMasterData().getCurrent().getSlug());
+        assertThat(fetchedProduct.getKey()).isEqualTo(updatedProduct.getKey());
+    }
+
     @Test
     @SuppressWarnings("ConstantConditions")
     public void publishProduct_ThatIsAlreadyPublished_ShouldThrowException() {
