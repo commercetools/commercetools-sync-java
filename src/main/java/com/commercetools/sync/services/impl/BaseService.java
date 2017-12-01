@@ -44,7 +44,7 @@ class BaseService<U extends Resource<U>, V> {
      * callback an empty optional is returned as the resulting future.
      *
      * @param resourceDraft         draft to apply callback on and then create on CTP.
-     * @param draftKeyMapper        mapper function to get the key of the {@code resourceDraft}.
+     * @param draftKey              draft key.
      * @param createCommandFunction the create command query to create the resource on CTP.
      * @return a future containing an optional which might contain the resource if successfully created or empty
      *         otherwise.
@@ -52,9 +52,8 @@ class BaseService<U extends Resource<U>, V> {
     @Nonnull
     CompletionStage<Optional<U>> applyCallbackAndCreate(
         @Nonnull final V resourceDraft,
-        @Nonnull final Function<V, String> draftKeyMapper,
+        @Nullable final String draftKey,
         @Nonnull final Function<V, DraftBasedCreateCommand<U, V>> createCommandFunction) {
-        final String draftKey = draftKeyMapper.apply(resourceDraft);
         if (isBlank(draftKey)) {
             syncOptions.applyErrorCallback(format(CREATE_FAILED, draftKey, "Draft key is blank!"));
             return CompletableFuture.completedFuture(Optional.empty());
