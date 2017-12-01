@@ -10,6 +10,9 @@
   it out or delete it from the file. -->
 
 <module name="Checker">
+    <module name="SuppressionFilter">
+        <property name="file" value="config/checkstyle/suppressions.xml" />
+    </module>
     <property name="charset" value="UTF-8" />
 
     <property name="severity" value="warning" />
