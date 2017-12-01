@@ -151,7 +151,7 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
     @Nonnull
     @Override
     public CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
-        return applyCallbackAndCreate(productDraft, ProductDraft::getKey, ProductCreateCommand::of);
+        return applyCallbackAndCreate(productDraft, productDraft.getKey(), ProductCreateCommand::of);
     }
 
     @Nonnull

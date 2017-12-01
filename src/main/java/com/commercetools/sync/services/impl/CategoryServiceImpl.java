@@ -138,7 +138,7 @@ public final class CategoryServiceImpl extends BaseService<Category, CategoryDra
     @Nonnull
     @Override
     public CompletionStage<Optional<Category>> createCategory(@Nonnull final CategoryDraft categoryDraft) {
-        return applyCallbackAndCreate(categoryDraft, CategoryDraft::getKey, CategoryCreateCommand::of);
+        return applyCallbackAndCreate(categoryDraft, categoryDraft.getKey(), CategoryCreateCommand::of);
     }
 
     @Nonnull
