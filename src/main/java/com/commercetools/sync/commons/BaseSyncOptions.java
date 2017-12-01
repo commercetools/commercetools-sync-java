@@ -2,15 +2,12 @@ package com.commercetools.sync.commons;
 
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -218,30 +215,4 @@ public class BaseSyncOptions<U, V> {
         return Optional.ofNullable(
                 beforeCreateCallback != null ? beforeCreateCallback.apply(newResourceDraft) : newResourceDraft);
     }
-
-    /**
-     * Applies the BeforeCreateCallback function on a supplied draft, then attempts to create it on CTP if it's not
-     * empty, then applies the supplied handler on the response from CTP. If the draft was empty after applying the
-     * callback an empty optional is returned as the resulting future.
-     *
-     * @param resourceDraft         draft to apply callback on and then create on CTP.
-     * @param createCommandFunction the create command query to create the resource on CTP.
-     * @param responseHandler       defines how to handle the response from CTP.
-     * @return a future containing an optional which might contain the resource if successfully created or empty
-     *         otherwise.
-     */
-    @Nonnull
-    public CompletionStage<Optional<U>> applyCallbackAndCreate(
-        @Nonnull final V resourceDraft,
-        @Nonnull final Function<V, DraftBasedCreateCommand<U, V>> createCommandFunction,
-        @Nonnull final TriFunction<V, U, Throwable, Optional<U>> responseHandler) {
-        return applyBeforeCreateCallBack(resourceDraft)
-            .map(mappedDraft -> ctpClient.execute(createCommandFunction.apply(mappedDraft))
-                                         .handle((createdResource, sphereException) ->
-                                             responseHandler.apply(mappedDraft, createdResource, sphereException)))
-            .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty()));
-
-    }
-
-
 }

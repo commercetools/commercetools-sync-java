@@ -2,6 +2,7 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
+import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
@@ -13,9 +14,11 @@ import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.commands.updateactions.RevertStagedChanges;
 import io.sphere.sdk.queries.QueryPredicate;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -34,27 +37,68 @@ public class ProductServiceTest {
 
     private ProductServiceImpl service;
     private ProductSyncOptions productSyncOptions;
+    private List<String> errorMessages;
+    private List<Throwable> errorExceptions;
 
     @Before
     public void setUp() {
-        productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        errorMessages = new ArrayList<>();
+        errorExceptions = new ArrayList<>();
+        productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                      .errorCallback((errorMessage, errorException) -> {
+                                                          errorMessages.add(errorMessage);
+                                                          errorExceptions.add(errorException);
+                                                      })
+                                                      .build();
         service = new ProductServiceImpl(productSyncOptions);
     }
 
     @Test
-    public void createProduct_WithMockCtpResponse_ShouldReturnMock() {
+    public void createProduct_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
-        when(mock.getKey()).thenReturn("productKey");
         when(mock.getId()).thenReturn("productId");
 
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
 
         final ProductDraft draft = mock(ProductDraft.class);
+        when(draft.getKey()).thenReturn("productKey");
         final Optional<Product> productOptional = service.createProduct(draft).toCompletableFuture().join();
 
         assertThat(productOptional).isNotEmpty();
-        assertThat(productOptional.get()).isSameAs(mock);
+        assertThat(productOptional).containsSame(mock);
         verify(productSyncOptions.getCtpClient()).execute(eq(ProductCreateCommand.of(draft)));
+    }
+
+    @Test
+    public void createProduct_WithUnSuccessfulMockCtpResponse_ShouldNotCreateProduct() {
+        final Product mock = mock(Product.class);
+        when(mock.getId()).thenReturn("productId");
+
+        when(productSyncOptions.getCtpClient().execute(any()))
+            .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
+
+        final ProductDraft draft = mock(ProductDraft.class);
+        when(draft.getKey()).thenReturn("productKey");
+        final Optional<Product> productOptional = service.createProduct(draft).toCompletableFuture().join();
+
+        assertThat(productOptional).isEmpty();
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errorExceptions).hasSize(1);
+        assertThat(errorExceptions.get(0)).isExactlyInstanceOf(BadRequestException.class);
+        assertThat(errorMessages.get(0)).contains("Failed to create draft with key: 'productKey'.");
+        assertThat(errorMessages.get(0)).contains("BadRequestException");
+    }
+
+    @Test
+    public void createProduct_WithDraftWithoutKey_ShouldNotCreateProduct() {
+        final ProductDraft draft = mock(ProductDraft.class);
+        final Optional<Product> productOptional = service.createProduct(draft).toCompletableFuture().join();
+
+        assertThat(productOptional).isEmpty();
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errorExceptions).hasSize(1);
+        assertThat(errorMessages.get(0))
+            .isEqualTo("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
     }
 
     @Test

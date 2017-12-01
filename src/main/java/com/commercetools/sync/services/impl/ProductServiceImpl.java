@@ -24,28 +24,22 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class ProductServiceImpl implements ProductService {
-    private boolean isCached = false;
-    private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
-    private final ProductSyncOptions syncOptions;
 
-    private static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;
-    private static final String CREATE_FAILED = "Failed to create ProductDraft with key: '%s'. Reason: %s";
+public class ProductServiceImpl extends BaseService<Product, ProductDraft> implements ProductService {
     private static final String FETCH_FAILED = "Failed to fetch products with keys: '%s'. Reason: %s";
     private static final String PRODUCT_KEY_NOT_SET = "Product with id: '%s' has no key set. Keys are required for "
         + "product matching.";
 
+
     public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
-        this.syncOptions = syncOptions;
+        super(syncOptions);
     }
 
     @Nonnull
@@ -159,42 +153,14 @@ public class ProductServiceImpl implements ProductService {
     @Nonnull
     @Override
     public CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
-        return syncOptions.applyCallbackAndCreate(productDraft, ProductCreateCommand::of, this::handleProductCreation);
-    }
-
-    @Nonnull
-    private Optional<Product> handleProductCreation(
-        @Nonnull final ProductDraft draft,
-        @Nullable final Product createdProduct,
-        @Nullable final Throwable sphereException) {
-        if (createdProduct != null) {
-            keyToIdCache.put(createdProduct.getKey(), createdProduct.getId());
-            return Optional.of(createdProduct);
-        } else {
-            syncOptions.applyErrorCallback(format(CREATE_FAILED, draft.getKey(), sphereException), sphereException);
-            return Optional.empty();
-        }
+        return applyCallbackAndCreate(productDraft, ProductDraft::getKey, ProductCreateCommand::of);
     }
 
     @Nonnull
     @Override
     public CompletionStage<Product> updateProduct(@Nonnull final Product product,
                                                   @Nonnull final List<UpdateAction<Product>> updateActions) {
-
-        final List<List<UpdateAction<Product>>> actionBatches =
-            batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
-        return updateBatches(actionBatches, CompletableFuture.completedFuture(product));
-    }
-
-    private CompletionStage<Product> updateBatches(
-        @Nonnull final List<List<UpdateAction<Product>>> batches,
-        @Nonnull final CompletionStage<Product> result) {
-        if (batches.isEmpty()) {
-            return result;
-        }
-        final List<UpdateAction<Product>> firstBatch = batches.remove(0);
-        return updateBatches(batches, result.thenCompose(updatedProduct ->
-            syncOptions.getCtpClient().execute(ProductUpdateCommand.of(updatedProduct, firstBatch))));
+        return updateResource(product, ProductUpdateCommand::of, updateActions);
     }
 
     @Nonnull
