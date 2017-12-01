@@ -19,9 +19,6 @@ public class BaseSyncOptions<U, V> {
     private final BiConsumer<String, Throwable> errorCallBack;
     private final Consumer<String> warningCallBack;
     private int batchSize;
-    private boolean removeOtherSetEntries = true;
-    private boolean removeOtherCollectionEntries = true;
-    private boolean removeOtherProperties = true;
     private boolean allowUuid = false;
     private final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
     private final Function<V, V> beforeCreateCallback;
@@ -30,9 +27,6 @@ public class BaseSyncOptions<U, V> {
                               @Nullable final BiConsumer<String, Throwable> errorCallBack,
                               @Nullable final Consumer<String> warningCallBack,
                               final int batchSize,
-                              final boolean removeOtherSetEntries,
-                              final boolean removeOtherCollectionEntries,
-                              final boolean removeOtherProperties,
                               final boolean allowUuid,
                               @Nullable final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
                                   beforeUpdateCallback,
@@ -41,9 +35,6 @@ public class BaseSyncOptions<U, V> {
         this.errorCallBack = errorCallBack;
         this.batchSize = batchSize;
         this.warningCallBack = warningCallBack;
-        this.removeOtherSetEntries = removeOtherSetEntries;
-        this.removeOtherCollectionEntries = removeOtherCollectionEntries;
-        this.removeOtherProperties = removeOtherProperties;
         this.allowUuid = allowUuid;
         this.beforeUpdateCallback = beforeUpdateCallback;
         this.beforeCreateCallback = beforeCreateCallback;
@@ -82,45 +73,6 @@ public class BaseSyncOptions<U, V> {
     @Nullable
     public Consumer<String> getWarningCallBack() {
         return warningCallBack;
-    }
-
-    /**
-     * Returns a {@code boolean} flag which enables the sync module to add additional Set entries without deleting
-     * existing ones, if set to {@code false}. If set to true, which is the default value of the option,
-     * it deletes the existing Set entries.
-     *
-     * @return a {@code boolean} flag which enables the sync module to add additional Set entries without deleting
-     *      existing ones, if set to {@code false}. If set to true, which is the default value of the option,
-     *      it deletes the existing Set entries.
-     */
-    public boolean shouldRemoveOtherSetEntries() {
-        return removeOtherSetEntries;
-    }
-
-    /**
-     * Returns a {@code boolean} flag which enables the sync module to add collection (e.g. Assets, Images etc.) entries
-     * without deleting existing ones, if set to {@code false}. If set to true, which is the default value of the
-     * option, it deletes the existing collection entries.
-     *
-     * @return a {@code boolean} flag which enables the sync module to add collection (e.g. Assets, Images etc.) entries
-     *      without deleting existing ones, if set to {@code false}. If set to true, which is the default value of the
-     *      option, it deletes the existing collection entries.
-     */
-    public boolean shouldRemoveOtherCollectionEntries() {
-        return removeOtherCollectionEntries;
-    }
-
-    /**
-     * Returns a {@code boolean} flag which enables the sync module to add additional object properties (e.g. custom
-     * fields, product attributes, etc..) without deleting existing ones, if set to {@code false}. If set to true,
-     * which is the default value of the option, it deletes the existing object properties.
-     *
-     * @return a {@code boolean} flag which enables the sync module to add additional object properties (e.g. custom
-     *      fields, product attributes, etc..) without deleting existing ones, if set to {@code false}. If set to true,
-     *      which is the default value of the option, it deletes the existing object properties.
-     */
-    public boolean shouldRemoveOtherProperties() {
-        return removeOtherProperties;
     }
 
     /**

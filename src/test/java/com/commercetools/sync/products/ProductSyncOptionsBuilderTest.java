@@ -37,11 +37,7 @@ public class ProductSyncOptionsBuilderTest {
     public void build_WithClient_ShouldBuildProductSyncOptions() {
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions).isNotNull();
-        assertThat(productSyncOptions.shouldRemoveOtherCollectionEntries()).isTrue();
-        assertThat(productSyncOptions.shouldRemoveOtherProperties()).isTrue();
-        assertThat(productSyncOptions.shouldRemoveOtherSetEntries()).isTrue();
         assertThat(productSyncOptions.shouldAllowUuidKeys()).isFalse();
-        assertThat(productSyncOptions.shouldRemoveOtherVariants()).isTrue();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
         assertThat(productSyncOptions.getSyncFilter()).isSameAs(SyncFilter.of());
         assertThat(productSyncOptions.getBeforeUpdateCallback()).isNull();
@@ -50,13 +46,6 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getWarningCallBack()).isNull();
         assertThat(productSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
         assertThat(productSyncOptions.getBatchSize()).isEqualTo(ProductSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
-    }
-
-    @Test
-    public void removeOtherVariants_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.removeOtherVariants(false);
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.shouldRemoveOtherVariants()).isFalse();
     }
 
     @Test
@@ -92,23 +81,6 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getBeforeCreateCallback()).isNotNull();
     }
 
-    @Test
-    public void removeOtherCollectionEntries_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.removeOtherCollectionEntries(false);
-
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.shouldRemoveOtherCollectionEntries()).isNotNull();
-        assertThat(productSyncOptions.shouldRemoveOtherCollectionEntries()).isFalse();
-    }
-
-    @Test
-    public void removeOtherProperties_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.removeOtherProperties(false);
-
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.shouldRemoveOtherProperties()).isNotNull();
-        assertThat(productSyncOptions.shouldRemoveOtherProperties()).isFalse();
-    }
 
     @Test
     public void allowUuid_WithTrue_ShouldSetFlag() {
@@ -137,15 +109,6 @@ public class ProductSyncOptionsBuilderTest {
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getWarningCallBack()).isNotNull();
-    }
-
-    @Test
-    public void removeOtherSetEntries_WithFalse_ShouldSetFlag() {
-        productSyncOptionsBuilder.removeOtherSetEntries(false);
-
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.shouldRemoveOtherSetEntries()).isNotNull();
-        assertThat(productSyncOptions.shouldRemoveOtherSetEntries()).isFalse();
     }
 
     @Test

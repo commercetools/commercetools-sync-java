@@ -383,9 +383,10 @@ public class ProductSyncIT {
                                             .thenCompose(result -> productSync.sync(batch2))
                                             .thenCompose(result -> productSync.sync(batch3)));
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
-                + " failed to sync).", 3, 1, 2, 0));
+        assertThat(syncStatistics.getProcessed()).isEqualTo(3);
+        assertThat(syncStatistics.getCreated()).isEqualTo(1);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(2);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
