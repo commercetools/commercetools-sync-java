@@ -55,6 +55,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
@@ -255,7 +256,7 @@ public class ProductServiceIT {
             .key("newKey")
             .taxCategory(null)
             .state(null)
-            .categories(Collections.emptyList())
+            .categories(emptyList())
             .categoryOrderHints(null)
             .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
             .masterVariant(ProductVariantDraftBuilder.of().build())
@@ -285,7 +286,7 @@ public class ProductServiceIT {
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
             productType.toReference())
             .key("1")
-            .categories(Collections.emptyList())
+            .categories(emptyList())
             .categoryOrderHints(null)
             .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
             .masterVariant(ProductVariantDraftBuilder.of().build())
@@ -318,7 +319,7 @@ public class ProductServiceIT {
             .key("newKey")
             .taxCategory(null)
             .state(null)
-            .categories(Collections.emptyList())
+            .categories(emptyList())
             .categoryOrderHints(null)
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
@@ -328,7 +329,7 @@ public class ProductServiceIT {
             .key("newKey1")
             .taxCategory(null)
             .state(null)
-            .categories(Collections.emptyList())
+            .categories(emptyList())
             .categoryOrderHints(null)
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
@@ -353,18 +354,12 @@ public class ProductServiceIT {
     @Test
     @SuppressWarnings("ConstantConditions")
     public void createProduct_WithValidProduct_ShouldCreateProduct() {
-        // create a draft based of the same existing product but with different key, slug and master variant SKU since
-        // these values should be unique on CTP for the product to be created.
-        final String newKey = "newKey";
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             productType.toReference())
-            .key(newKey)
             .taxCategory(null)
             .state(null)
-            .categories(Collections.emptyList())
+            .categories(emptyList())
             .categoryOrderHints(null)
-            .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
-            .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
 
         final Optional<Product> createdProductOptional = productService.createProduct(productDraft1)
@@ -379,7 +374,7 @@ public class ProductServiceIT {
         //assert CTP state
         final Optional<Product> productOptional = CTP_TARGET_CLIENT
             .execute(ProductQuery.of()
-                                  .withPredicates(QueryPredicate.of(format("key = \"%s\"", newKey))))
+                                  .withPredicates(QueryPredicate.of(format("key = \"%s\"", productDraft1.getKey()))))
             .toCompletableFuture().join().head();
 
         assertThat(productOptional).isNotEmpty();
@@ -388,7 +383,7 @@ public class ProductServiceIT {
             .isEqualTo(createdProduct.getMasterData().getCurrent().getName());
         assertThat(fetchedProduct.getMasterData().getCurrent().getSlug())
             .isEqualTo(createdProduct.getMasterData().getCurrent().getSlug());
-        assertThat(fetchedProduct.getKey()).isEqualTo(newKey);
+        assertThat(fetchedProduct.getKey()).isEqualTo(productDraft1.getKey());
     }
 
     @Test
@@ -409,18 +404,12 @@ public class ProductServiceIT {
                 .build();
         final ProductService productService = new ProductServiceImpl(productSyncOptions);
 
-        // create a draft based of the same existing product but with different key, slug and master variant SKU since
-        // these values should be unique on CTP for the product to be created.
-        final String newKey = "newKey";
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
                 productType.toReference())
-                .key(newKey)
                 .taxCategory(null)
                 .state(null)
-                .categories(Collections.emptyList())
+                .categories(emptyList())
                 .categoryOrderHints(null)
-                .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
-                .masterVariant(ProductVariantDraftBuilder.of().build())
                 .build();
 
         final Optional<Product> createdProductOptional = productService.createProduct(productDraft1)
@@ -433,7 +422,7 @@ public class ProductServiceIT {
         final Product createdProduct = createdProductOptional.get();
 
         //Query for a product with key post fixed with "_filteredKey" added by the callback
-        final String keyWithCallbackPostFix = format("%s%s", newKey, keyPostfix);
+        final String keyWithCallbackPostFix = format("%s%s", productDraft1.getKey(), keyPostfix);
         final Optional<Product> productOptional = CTP_TARGET_CLIENT
                 .execute(ProductQuery.of()
                         .withPredicates(QueryPredicate.of(format("key = \"%s\"", keyWithCallbackPostFix))))
@@ -470,7 +459,7 @@ public class ProductServiceIT {
                 .key(newKey)
                 .taxCategory(null)
                 .state(null)
-                .categories(Collections.emptyList())
+                .categories(emptyList())
                 .categoryOrderHints(null)
                 .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
                 .masterVariant(ProductVariantDraftBuilder.of().build())
@@ -501,7 +490,7 @@ public class ProductServiceIT {
             .key(newKey)
             .taxCategory(null)
             .state(null)
-            .categories(Collections.emptyList())
+            .categories(emptyList())
             .categoryOrderHints(null)
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
@@ -603,7 +592,7 @@ public class ProductServiceIT {
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             productType.toReference())
             .key(newKey)
-            .categories(Collections.emptyList())
+            .categories(emptyList())
             .categoryOrderHints(null)
             .taxCategory(null)
             .state(null)
@@ -680,7 +669,7 @@ public class ProductServiceIT {
     public void updateProduct_WithInvalidChanges_ShouldNotUpdateProduct() {
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             productType.toReference())
-            .categories(Collections.emptyList())
+            .categories(emptyList())
             .taxCategory(null)
             .state(null)
             .categoryOrderHints(null)
@@ -811,22 +800,18 @@ public class ProductServiceIT {
         // Fetch any product to populate cache
         productService.fetchCachedProductId("anyKey").toCompletableFuture().join();
 
-        final String newKey = "newKey";
-        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
+        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             productType.toReference())
-            .key(newKey)
             .taxCategory(null)
             .state(null)
-            .categories(Collections.emptyList())
+            .categories(emptyList())
             .categoryOrderHints(null)
-            .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
-            .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
 
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
         final Optional<String> newProductId =
-            productService.fetchCachedProductId(newKey).toCompletableFuture().join();
+            productService.fetchCachedProductId(productDraft.getKey()).toCompletableFuture().join();
 
         assertThat(newProductId).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
