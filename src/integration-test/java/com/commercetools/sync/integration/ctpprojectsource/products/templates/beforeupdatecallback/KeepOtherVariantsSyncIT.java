@@ -33,7 +33,6 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.lang.String.format;
-import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -71,10 +70,6 @@ public class KeepOtherVariantsSyncIT {
         syncOptions = getProductSyncOptions();
         final ProductDraft productDraft =
             createProductDraftBuilder(PRODUCT_WITH_VARS_RESOURCE_PATH, productType.toReference())
-                .categories(emptySet())
-                .categoryOrderHints(null)
-                .taxCategory(null)
-                .state(null)
                 .build();
         oldProduct = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)));
     }
@@ -109,10 +104,6 @@ public class KeepOtherVariantsSyncIT {
     public void sync_withRemovedVariants_shouldNotRemoveVariants() {
         final ProductDraft productDraft =
             createProductDraftBuilder(PRODUCT_NO_VARS_RESOURCE_PATH, referenceOfId(productType.getKey()))
-                .categories(emptySet())
-                .categoryOrderHints(null)
-                .taxCategory(null)
-                .state(null)
                 .build();
 
         // old product has 1 variant
