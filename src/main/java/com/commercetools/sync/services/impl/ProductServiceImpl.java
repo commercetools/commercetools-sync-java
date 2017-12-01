@@ -32,7 +32,6 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ProductServiceImpl extends BaseService<Product, ProductDraft> implements ProductService {
-    private static final String CREATE_FAILED = "Failed to create ProductDraft with key: '%s'. Reason: %s";
     private static final String FETCH_FAILED = "Failed to fetch products with keys: '%s'. Reason: %s";
     private static final String PRODUCT_KEY_NOT_SET = "Product with id: '%s' has no key set. Keys are required for "
         + "product matching.";
@@ -152,21 +151,7 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
     @Nonnull
     @Override
     public CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
-        return applyCallbackAndCreate(productDraft, ProductCreateCommand::of, this::handleProductCreation);
-    }
-
-    @Nonnull
-    private Optional<Product> handleProductCreation(
-        @Nonnull final ProductDraft draft,
-        @Nullable final Product createdProduct,
-        @Nullable final Throwable sphereException) {
-        if (createdProduct != null) {
-            keyToIdCache.put(createdProduct.getKey(), createdProduct.getId());
-            return Optional.of(createdProduct);
-        } else {
-            syncOptions.applyErrorCallback(format(CREATE_FAILED, draft.getKey(), sphereException), sphereException);
-            return Optional.empty();
-        }
+        return applyCallbackAndCreate(productDraft, ProductDraft::getKey, ProductCreateCommand::of);
     }
 
     @Nonnull

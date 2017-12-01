@@ -34,7 +34,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
 public final class CategoryServiceImpl extends BaseService<Category, CategoryDraft> implements CategoryService {
-    private static final String CREATE_FAILED = "Failed to create CategoryDraft with key: '%s'. Reason: %s";
     private static final String FETCH_FAILED = "Failed to fetch Categories with keys: '%s'. Reason: %s";
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
         + "category matching.";
@@ -139,23 +138,8 @@ public final class CategoryServiceImpl extends BaseService<Category, CategoryDra
     @Nonnull
     @Override
     public CompletionStage<Optional<Category>> createCategory(@Nonnull final CategoryDraft categoryDraft) {
-        return applyCallbackAndCreate(categoryDraft, CategoryCreateCommand::of, this::handleCategoryCreation);
+        return applyCallbackAndCreate(categoryDraft, CategoryDraft::getKey, CategoryCreateCommand::of);
     }
-
-    @Nonnull
-    private Optional<Category> handleCategoryCreation(
-        @Nonnull final CategoryDraft draft,
-        @Nullable final Category createdCategory,
-        @Nullable final Throwable sphereException) {
-        if (createdCategory != null) {
-            keyToIdCache.put(createdCategory.getKey(), createdCategory.getId());
-            return Optional.of(createdCategory);
-        } else {
-            syncOptions.applyErrorCallback(format(CREATE_FAILED, draft.getKey(), sphereException), sphereException);
-            return Optional.empty();
-        }
-    }
-
 
     @Nonnull
     @Override
