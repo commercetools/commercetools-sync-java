@@ -58,11 +58,11 @@
 **Migration guide** (6)
 - **Product Sync** - Removed `removeOtherVariants` option which is already done by the sync by default. Removal of 
 variants can be prevented through the beforeUpdateCallback. Please check [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/templates/beforeupdatecallback/KeepOtherVariantsSyncIT.java)
- for an example of how this can be done. [#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
+an example of how this can be done. [#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
 - **Commons** - Removed `removeOtherSetEntries`, `removeOtherCollectionEntries` and `removeOtherProperties` options 
-which are already done by the sync by default. Such options can be disbaled through the beforeUpdateCallback. Please 
+which are already done by the sync by default. The aforementioned options (and even more use cases) can now be covered with help of the beforeCreateCallback and beforeUpdateCallback. Please 
 check [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/templates/beforeupdatecallback/KeepOtherVariantsSyncIT.java) 
-for an example of how removal of variants can be disabled. [#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
+an example of how removal of variants can be disabled. [#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
 - **Commons** - Removed website and emergency contact e-mail appened in User-Agent headers of JVM SDK clients using the 
 library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/191)
 - **Category Sync** - `beforeUpdateCallback` now treats a null return as an empty list of update actions. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
