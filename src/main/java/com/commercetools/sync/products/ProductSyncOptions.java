@@ -17,10 +17,9 @@ import java.util.function.Function;
 import static java.util.Optional.ofNullable;
 
 /**
- * TODO: removeOtherVariants, whiteList, blackList, auto publish, revert staged changes, update staged.
+ * TODO: auto publish, revert staged changes, update current.
  */
 public class ProductSyncOptions extends BaseSyncOptions<Product, ProductDraft> {
-    private final boolean removeOtherVariants; // whether to remove other product variants or not.
     private final SyncFilter syncFilter; // which attributes to calculate update actions to black list or white list
     private final boolean ensurePriceChannels;
 
@@ -28,25 +27,16 @@ public class ProductSyncOptions extends BaseSyncOptions<Product, ProductDraft> {
                        @Nullable final BiConsumer<String, Throwable> errorCallBack,
                        @Nullable final Consumer<String> warningCallBack,
                        final int batchSize,
-                       final boolean removeOtherSetEntries,
-                       final boolean removeOtherCollectionEntries,
-                       final boolean removeOtherProperties,
                        final boolean allowUuid,
-                       final boolean removeOtherVariants,
                        @Nullable final SyncFilter syncFilter,
                        @Nullable final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product,
                            List<UpdateAction<Product>>> beforeUpdateCallback,
                        @Nullable final Function<ProductDraft, ProductDraft> beforeCreateCallback,
                        boolean ensurePriceChannels) {
-        super(ctpClient, errorCallBack, warningCallBack, batchSize, removeOtherSetEntries, removeOtherCollectionEntries,
-            removeOtherProperties, allowUuid, beforeUpdateCallback, beforeCreateCallback);
-        this.removeOtherVariants = removeOtherVariants;
+        super(ctpClient, errorCallBack, warningCallBack, batchSize, allowUuid, beforeUpdateCallback,
+            beforeCreateCallback);
         this.syncFilter = ofNullable(syncFilter).orElseGet(SyncFilter::of);
         this.ensurePriceChannels = ensurePriceChannels;
-    }
-
-    boolean shouldRemoveOtherVariants() {
-        return removeOtherVariants;
     }
 
     /**

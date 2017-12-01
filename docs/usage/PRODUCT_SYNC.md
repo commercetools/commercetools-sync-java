@@ -66,19 +66,7 @@ events.
 - `warningCallBack` 
 a callback that is called whenever an event occurs during the sync process that represents a warning. Currently, these 
 events.
-<!-- 
-If set to `true`, which is the default value of the option, it deletes the existing object properties.
-- `removeOtherSetEntries`
-a flag which enables the sync module to add additional Set entries without deleting existing ones, if set to `false`. 
-If set to `true`, which is the default value of the option, it deletes the existing Set entries.
-- `removeOtherCollectionEntries`
-a flag which enables the sync module to add collection (e.g. Assets, Images etc.) entries without deleting existing 
-ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing collection 
-entries.
-- `removeOtherProperties`
-a flag which enables the sync module to add additional object properties (e.g. custom fields, etc..) without deleting 
-existing ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing 
-object properties. -->
+
 - `syncFilter`
  represents either a blacklist or a whitelist for filtering certain update action groups. 
   - __Blacklisting__ an update action group means that everything in products will be synced except for any group 

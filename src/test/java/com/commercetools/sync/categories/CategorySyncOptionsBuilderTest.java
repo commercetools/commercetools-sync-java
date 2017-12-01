@@ -7,7 +7,6 @@ import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -17,6 +16,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -36,9 +36,6 @@ public class CategorySyncOptionsBuilderTest {
     public void build_WithClient_ShouldBuildCategorySyncOptions() {
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions).isNotNull();
-        assertThat(categorySyncOptions.shouldRemoveOtherCollectionEntries()).isTrue();
-        assertThat(categorySyncOptions.shouldRemoveOtherProperties()).isTrue();
-        assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isTrue();
         assertThat(categorySyncOptions.shouldAllowUuidKeys()).isFalse();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNull();
         assertThat(categorySyncOptions.getBeforeCreateCallback()).isNull();
@@ -68,24 +65,6 @@ public class CategorySyncOptionsBuilderTest {
     }
 
     @Test
-    public void removeOtherCollectionEntries_WithFalse_ShouldSetFlag() {
-        categorySyncOptionsBuilder.removeOtherCollectionEntries(false);
-
-        final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
-        assertThat(categorySyncOptions.shouldRemoveOtherCollectionEntries()).isNotNull();
-        assertThat(categorySyncOptions.shouldRemoveOtherCollectionEntries()).isFalse();
-    }
-
-    @Test
-    public void removeOtherProperties_WithFalse_ShouldSetFlag() {
-        categorySyncOptionsBuilder.removeOtherProperties(false);
-
-        final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
-        assertThat(categorySyncOptions.shouldRemoveOtherProperties()).isNotNull();
-        assertThat(categorySyncOptions.shouldRemoveOtherProperties()).isFalse();
-    }
-
-    @Test
     public void allowUuid_WithTrue_ShouldSetFlag() {
         categorySyncOptionsBuilder.allowUuidKeys(true);
 
@@ -112,15 +91,6 @@ public class CategorySyncOptionsBuilderTest {
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.getWarningCallBack()).isNotNull();
-    }
-
-    @Test
-    public void removeOtherSetEntries_WithFalse_ShouldSetFlag() {
-        categorySyncOptionsBuilder.removeOtherSetEntries(false);
-
-        final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
-        assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isNotNull();
-        assertThat(categorySyncOptions.shouldRemoveOtherSetEntries()).isFalse();
     }
 
     @Test
@@ -173,8 +143,7 @@ public class CategorySyncOptionsBuilderTest {
                                                                                   .build();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNull();
 
-        final List<UpdateAction<Category>> updateActions =
-            singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+        final List<UpdateAction<Category>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<Category>> filteredList = categorySyncOptions
             .applyBeforeUpdateCallBack(updateActions, mock(CategoryDraft.class), mock(Category.class));
         assertThat(filteredList).isSameAs(updateActions);
@@ -191,8 +160,7 @@ public class CategorySyncOptionsBuilderTest {
                                                                                   .build();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-        final List<UpdateAction<Category>> updateActions =
-            singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+        final List<UpdateAction<Category>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<Category>> filteredList = categorySyncOptions
             .applyBeforeUpdateCallBack(updateActions, mock(CategoryDraft.class), mock(Category.class));
         assertThat(filteredList).isNotEqualTo(updateActions);
@@ -210,8 +178,7 @@ public class CategorySyncOptionsBuilderTest {
                                                                                   .build();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-        final List<UpdateAction<Category>> updateActions =
-            singletonList(ChangeName.of(LocalizedString.ofEnglish("name")));
+        final List<UpdateAction<Category>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<Category>> filteredList = categorySyncOptions
             .applyBeforeUpdateCallBack(updateActions, mock(CategoryDraft.class), mock(Category.class));
 
