@@ -12,7 +12,15 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-class BaseService<U, V> {
+import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
+/**
+ * @param <U> Resource (e.g. {@link io.sphere.sdk.products.Product}, {@link io.sphere.sdk.categories.Category}, etc..
+ * @param <V> Resource Draft (e.g. {@link io.sphere.sdk.products.ProductDraft},
+ *            {@link io.sphere.sdk.categories.CategoryDraft}, etc..
+ */
+class BaseService<U extends Resource<U>, V> {
     final BaseSyncOptions<U, V> syncOptions;
     boolean isCached = false;
     final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
