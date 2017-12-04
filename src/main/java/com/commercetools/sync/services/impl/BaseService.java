@@ -107,11 +107,10 @@ class BaseService<U extends Resource<U>, V> {
 
     /**
      * Given a list of update actions batches represented by a {@link List}&lt;{@link List}&gt; of {@link UpdateAction},
-     * this method recursively executes the update command, computed by {@code updateCommandFunction}, on each batch,
-     * then removes the batch, until there are no more batches.
+     * this method executes the update command, computed by {@code updateCommandFunction}, on each batch.
      *
-     * @param result                in the first call of this recursive method, this result is normally a completed
-     *                              future containing the resource to update, it is then used withing each recursive
+     * @param result                in the first call of this method, this result is normally a completed
+     *                              future containing the resource to update, it is then used within each iteration of
      *                              batch execution to have the latest resource (with version) once the previous batch
      *                              has finished execution.
      * @param updateCommandFunction a {@link BiFunction} used to compute the update command required to update the
@@ -125,13 +124,11 @@ class BaseService<U extends Resource<U>, V> {
         @Nonnull final CompletionStage<U> result,
         @Nonnull final BiFunction<U, List<? extends UpdateAction<U>>, UpdateCommand<U>> updateCommandFunction,
         @Nonnull final List<List<UpdateAction<U>>> batches) {
-        if (batches.isEmpty()) {
-            return result;
+        CompletionStage<U> resultStage = result;
+        for (final List<UpdateAction<U>> batch : batches) {
+            resultStage = resultStage.thenCompose(updatedProduct ->
+                syncOptions.getCtpClient().execute(updateCommandFunction.apply(updatedProduct, batch)));
         }
-        final List<UpdateAction<U>> nextBatch = batches.remove(0);
-        final CompletionStage<U> nextBatchUpdateFuture = result.thenCompose(updatedProduct ->
-            syncOptions.getCtpClient().execute(updateCommandFunction.apply(updatedProduct, nextBatch))
-        );
-        return updateBatches(nextBatchUpdateFuture, updateCommandFunction, batches);
+        return resultStage;
     }
 }
