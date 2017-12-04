@@ -114,10 +114,10 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 2, 0, 2, 0, 0));
-
+        assertThat(syncStatistics.getProcessed()).isEqualTo(2);
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(2);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
