@@ -592,8 +592,11 @@ public class ProductServiceIT {
                                  .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
             .toCompletableFuture().join().head();
 
+
+        // Update the product 501 times with a different name every time. [1 (inclusive) -> 502 (exclusive)]
+        final int numberOfUpdateActions = 502;
         final List<UpdateAction<Product>> updateActions =
-            IntStream.range(1, 502)
+            IntStream.range(1, numberOfUpdateActions)
                      .mapToObj(i -> ChangeName.of(LocalizedString.of(Locale.GERMAN, format("version:%s", i))))
                      .collect(Collectors.toList());
 
@@ -612,11 +615,11 @@ public class ProductServiceIT {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(fetchedProductOptional).isNotEmpty();
         final Product fetchedProduct = fetchedProductOptional.get();
-        assertThat(fetchedProduct.getMasterData().getCurrent().getName())
-            .isEqualTo(updatedProduct.getMasterData().getCurrent().getName());
-        assertThat(fetchedProduct.getMasterData().getCurrent().getSlug())
-            .isEqualTo(updatedProduct.getMasterData().getCurrent().getSlug());
-        assertThat(fetchedProduct.getKey()).isEqualTo(updatedProduct.getKey());
+
+        // Test that the fetched product has a version number equal to the number of update actions applied on it.
+        assertThat(fetchedProduct.getVersion()).isEqualTo(numberOfUpdateActions);
+        assertThat(fetchedProduct.getMasterData().getStaged().getName())
+            .isEqualTo(LocalizedString.of(Locale.GERMAN, format("version:%s", numberOfUpdateActions - 1)));
     }
 
     @Test
