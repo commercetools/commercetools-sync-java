@@ -13,13 +13,16 @@ Java API which exposes utilities for building update actions and automatic synci
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 - [Usage](#usage)
+
+- [Usage](#usage)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
     - [Maven](#maven)
     - [Gradle](#gradle)
+    - [SBT](#sbt)
+    - [Ivy](#ivy)
 - [Roadmap](#roadmap)
-- [Release Notes](/docs/RELEASE_NOTES.md)
-- [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M1/)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 ## Usage
 
@@ -58,14 +61,17 @@ most popular ones:
 ````
 #### Gradle
 ````groovy
-implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M5'
+implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M6'
 ````
-<!-- TODO #### SBT 
-````java
-libraryDependencies ++= Seq(
-    "com.commercetools" % "commercetools-sync-java" % "v1.0.0-M5",
- )
-````-->
+#### SBT 
+````
+libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "v1.0.0-M6"
+````
+#### Ivy 
+````xml
+<dependency org="com.commercetools" name="commercetools-sync-java" rev="v1.0.0-M6"/>
+````
+
 
 ## Roadmap
 https://github.com/commercetools/commercetools-sync-java/milestones
