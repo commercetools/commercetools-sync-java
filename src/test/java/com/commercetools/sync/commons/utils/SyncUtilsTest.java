@@ -66,7 +66,8 @@ public class SyncUtilsTest {
 
         final Integer numberOfElementsAfterBatching = batches.stream()
                                                              .map(List::size)
-                                                             .reduce(0, (a, b) -> a + b);
+                                                             .reduce(0,
+                                                                 (element1, element2) -> element1 + element2);
 
         assertThat(numberOfElementsAfterBatching).isEqualTo(numberOfElements);
 
