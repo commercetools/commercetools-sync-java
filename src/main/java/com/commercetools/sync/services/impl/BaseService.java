@@ -84,6 +84,18 @@ class BaseService<U extends Resource<U>, V> {
         }
     }
 
+    /**
+     * Executes update request(s) on the {@code resource} with all the {@code updateActions} using the
+     * {@code updateCommandFunction} while taking care of the CTP constraint of 500 update actions per request by
+     * batching update actions into requests of 500 actions each.
+     *
+     * @param resource              The resource to update.
+     * @param updateCommandFunction a {@link BiFunction} used to compute the update command required to update the
+     *                              resource.
+     * @param updateActions         the update actions to execute on the resource.
+     * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an instance of
+     *         the resource {@link U} after all the update actions have been executed.
+     */
     @Nonnull
     CompletionStage<U> updateResource(
         @Nonnull final U resource,
@@ -93,6 +105,22 @@ class BaseService<U extends Resource<U>, V> {
         return updateBatches(CompletableFuture.completedFuture(resource), updateCommandFunction, actionBatches);
     }
 
+    /**
+     * Given a list of update actions batches represented by a {@link List}&lt;{@link List}&gt; of {@link UpdateAction},
+     * this method recursively executes the update command, computed by {@code updateCommandFunction}, on each batch,
+     * then removes the batch, until there are no more batches.
+     *
+     * @param result                in the first call of this recursive method, this result is normally a completed
+     *                              future containing the resource to update, it is then used withing each recursive
+     *                              batch execution to have the latest resource (with version) once the previous batch
+     *                              has finished execution.
+     * @param updateCommandFunction a {@link BiFunction} used to compute the update command required to update the
+     *                              resource.
+     * @param batches               the batches of update actions to execute.
+     * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an instance of
+     *         the resource {@link U} after all the update actions in all batches have been executed.
+     */
+    @Nonnull
     private CompletionStage<U> updateBatches(
         @Nonnull final CompletionStage<U> result,
         @Nonnull final BiFunction<U, List<? extends UpdateAction<U>>, UpdateCommand<U>> updateCommandFunction,
