@@ -33,6 +33,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [v1.0.0-M6 -  Dec 4, 2017](#v100-m6----dec-4-2017)
 - [v1.0.0-M5 -  Nov 16, 2017](#v100-m5----nov-16-2017)
 - [v1.0.0-M4 -  Nov 7, 2017](#v100-m4----nov-7-2017)
 - [v1.0.0-M3 -  Nov 3, 2017](#v100-m3----nov-3-2017)
@@ -41,8 +42,15 @@
 - [v1.0.0-M1 -  Sep 06, 2017](#v100-m1----sep-06-2017)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 <!--
-### v1.0.0-M6 -  Dec 1, 2017
+### v1.0.0-M7 -  Dec 19, 2017
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M6...v1.0.0-M7) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M7/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M7)
+-->
+
+### v1.0.0-M6 -  Dec 4, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M5...v1.0.0-M6) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M6/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M6)
@@ -68,7 +76,7 @@ library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/
 - **Category Sync** - `beforeUpdateCallback` now treats a null return as an empty list of update actions. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
 - **Product Sync** - `beforeUpdateCallback` now treats a null return as an empty list of update actions. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
 - **Inventory Sync** - `beforeUpdateCallback` now treats a null return as an empty list of update actions. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
---> 
+
 
 ### v1.0.0-M5 -  Nov 16, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M4...v1.0.0-M5) |
