@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 public class SyncUtilsTest {
 
     @Test
-    public void batchCategories_WithValidSize_ShouldReturnCorrectBatches() {
+    public void batchElements_WithValidSize_ShouldReturnCorrectBatches() {
         final int numberOfCategoryDrafts = 160;
         final int batchSize = 10;
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
@@ -46,7 +46,7 @@ public class SyncUtilsTest {
     }
 
     @Test
-    public void batchCategories_WithNegativeSize_ShouldReturnNoBatches() {
+    public void batchElements_WithNegativeSize_ShouldReturnNoBatches() {
         final int numberOfCategoryDrafts = 160;
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
 
