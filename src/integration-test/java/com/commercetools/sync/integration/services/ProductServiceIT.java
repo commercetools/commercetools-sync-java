@@ -11,11 +11,14 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.products.Image;
+import io.sphere.sdk.products.ImageDimensions;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
+import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.products.queries.ProductQuery;
@@ -517,17 +520,12 @@ public class ProductServiceIT {
     @Test
     @SuppressWarnings("ConstantConditions")
     public void updateProduct_WithValidChanges_ShouldUpdateProductCorrectly() {
-        final Optional<Product> productOptional = CTP_TARGET_CLIENT
-            .execute(ProductQuery.of()
-                                 .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
-            .toCompletableFuture().join().head();
-
         final String newProductName = "This is my new name!";
         final ChangeName changeNameUpdateAction = ChangeName
             .of(LocalizedString.of(Locale.GERMAN, newProductName));
 
         final Product updatedProduct = productService
-            .updateProduct(productOptional.get(), Collections.singletonList(changeNameUpdateAction))
+            .updateProduct(product, Collections.singletonList(changeNameUpdateAction))
             .toCompletableFuture().join();
         assertThat(updatedProduct).isNotNull();
 
@@ -587,21 +585,15 @@ public class ProductServiceIT {
     @Test
     @SuppressWarnings("ConstantConditions")
     public void updateProduct_WithMoreThan500Actions_ShouldNotFail() {
-        final Optional<Product> productOptional = CTP_TARGET_CLIENT
-            .execute(ProductQuery.of()
-                                 .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
-            .toCompletableFuture().join().head();
-
-
-        // Update the product 501 times with a different name every time. [1 (inclusive) -> 502 (exclusive)]
-        final int numberOfUpdateActions = 502;
+        // Update the product 501 times with a different name every time.
+        final int numberOfUpdateActions = 501;
         final List<UpdateAction<Product>> updateActions =
-            IntStream.range(1, numberOfUpdateActions)
-                     .mapToObj(i -> ChangeName.of(LocalizedString.of(Locale.GERMAN, format("version:%s", i))))
+            IntStream.range(1, numberOfUpdateActions + 1)
+                     .mapToObj(i -> ChangeName.of(LocalizedString.of(Locale.GERMAN, format("name:%s", i))))
                      .collect(Collectors.toList());
 
 
-        final Product updatedProduct = productService.updateProduct(productOptional.get(), updateActions)
+        final Product updatedProduct = productService.updateProduct(product, updateActions)
                                                      .toCompletableFuture().join();
         assertThat(updatedProduct).isNotNull();
 
@@ -617,9 +609,48 @@ public class ProductServiceIT {
         final Product fetchedProduct = fetchedProductOptional.get();
 
         // Test that the fetched product has a version number equal to the number of update actions applied on it.
-        assertThat(fetchedProduct.getVersion()).isEqualTo(numberOfUpdateActions);
+        assertThat(fetchedProduct.getVersion()).isEqualTo(numberOfUpdateActions + 1);
         assertThat(fetchedProduct.getMasterData().getStaged().getName())
-            .isEqualTo(LocalizedString.of(Locale.GERMAN, format("version:%s", numberOfUpdateActions - 1)));
+            .isEqualTo(LocalizedString.of(Locale.GERMAN, format("name:%s", numberOfUpdateActions)));
+    }
+
+    @Test
+    @SuppressWarnings("ConstantConditions")
+    public void updateProduct_WithMoreThan500ImageAdditions_ShouldHaveAllNewImages() {
+        final Integer productMasterVariantId = product.getMasterData().getStaged().getMasterVariant().getId();
+
+        // Update the product by adding 600 images in separate update actions
+        final int numberOfImages = 600;
+        final List<Image> addedImages = new ArrayList<>();
+        final List<UpdateAction<Product>> updateActions =
+            IntStream.range(1, numberOfImages + 1)
+                     .mapToObj(i -> {
+                         final Image newExternalImage = Image.of(format("image#%s", i), ImageDimensions.of(10, 10));
+                         addedImages.add(newExternalImage); // keep track of added images.
+                         return AddExternalImage.of(newExternalImage, productMasterVariantId);
+                     })
+                     .collect(Collectors.toList());
+
+        final Product updatedProduct = productService.updateProduct(product, updateActions)
+                                                     .toCompletableFuture().join();
+        assertThat(updatedProduct).isNotNull();
+
+        //assert CTP state
+        final Optional<Product> fetchedProductOptional = CTP_TARGET_CLIENT
+            .execute(ProductQuery.of()
+                                 .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
+            .toCompletableFuture().join().head();
+
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(fetchedProductOptional).isNotEmpty();
+
+        final Product fetchedProduct = fetchedProductOptional.get();
+        assertThat(fetchedProduct.getVersion()).isEqualTo(numberOfImages + 1);
+        // Test that the fetched product has exactly the 600 images added before.
+        final List<Image> currentMasterVariantImages = fetchedProduct.getMasterData().getStaged()
+                                                                     .getMasterVariant().getImages();
+        assertThat(currentMasterVariantImages).containsAll(addedImages);
     }
 
     @Test
