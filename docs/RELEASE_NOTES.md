@@ -33,7 +33,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-- [v1.0.0-M6 -  Dec 4, 2017](#v100-m6----dec-4-2017)
+- [v1.0.0-M6 -  Dec 5, 2017](#v100-m6----dec-5-2017)
 - [v1.0.0-M5 -  Nov 16, 2017](#v100-m5----nov-16-2017)
 - [v1.0.0-M4 -  Nov 7, 2017](#v100-m4----nov-7-2017)
 - [v1.0.0-M3 -  Nov 3, 2017](#v100-m3----nov-3-2017)
