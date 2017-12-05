@@ -50,7 +50,7 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M7)
 -->
 
-### v1.0.0-M6 -  Dec 4, 2017
+### v1.0.0-M6 -  Dec 5, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M5...v1.0.0-M6) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M6/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M6)
