@@ -608,8 +608,7 @@ public class ProductServiceIT {
         assertThat(fetchedProductOptional).isNotEmpty();
         final Product fetchedProduct = fetchedProductOptional.get();
 
-        // Test that the fetched product has a version number equal to the number of update actions applied on it.
-        assertThat(fetchedProduct.getVersion()).isEqualTo(numberOfUpdateActions + 1);
+        // Test that the fetched product has the name of the last update action that was applied.
         assertThat(fetchedProduct.getMasterData().getStaged().getName())
             .isEqualTo(LocalizedString.of(Locale.GERMAN, format("name:%s", numberOfUpdateActions)));
     }
