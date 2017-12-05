@@ -64,12 +64,24 @@ public class SyncUtilsTest {
         final int expectedNumberOfBatches = getExpectedNumberOfBatches(numberOfElements, batchSize);
         assertThat(batches.size()).isEqualTo(expectedNumberOfBatches);
 
+        // Assert correct size of elements after batching
         final Integer numberOfElementsAfterBatching = batches.stream()
                                                              .map(List::size)
                                                              .reduce(0,
                                                                  (element1, element2) -> element1 + element2);
 
         assertThat(numberOfElementsAfterBatching).isEqualTo(numberOfElements);
+
+
+        // Assert the separation on batches
+        final int remainder = numberOfElements % batchSize;
+        if (remainder == 0) {
+            final int numberOfDistinctBatchSizes = batches.stream().collect(Collectors.groupingBy(List::size)).size();
+            assertThat(numberOfDistinctBatchSizes).isEqualTo(1);
+        } else {
+            final List<String> lastBatch = batches.get(batches.size() - 1);
+            assertThat(lastBatch).hasSize(remainder);
+        }
 
         // Assert that all elements have been batched in correct order
         final List<String> flatBatches = batches.stream()
