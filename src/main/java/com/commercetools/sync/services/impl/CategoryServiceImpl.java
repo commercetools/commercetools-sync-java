@@ -144,9 +144,7 @@ public final class CategoryServiceImpl extends BaseService<Category, CategoryDra
     @Nonnull
     @Override
     public CompletionStage<Category> updateCategory(@Nonnull final Category category,
-                                                              @Nonnull final List<UpdateAction<Category>>
-                                                                  updateActions) {
-        final CategoryUpdateCommand categoryUpdateCommand = CategoryUpdateCommand.of(category, updateActions);
-        return syncOptions.getCtpClient().execute(categoryUpdateCommand);
+                                                    @Nonnull final List<UpdateAction<Category>> updateActions) {
+        return updateResource(category, CategoryUpdateCommand::of, updateActions);
     }
 }

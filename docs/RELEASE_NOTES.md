@@ -60,11 +60,15 @@
 - **Product Sync** - Introduced `beforeCreateCallback` option which is callback applied on a product draft before a request to create it on CTP is issued. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
 - **Inventory Sync** - Introduced `beforeCreateCallback` option which is callback applied on a inventoryEntry draft before a request to create it on CTP is issued. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
 
+**Major Enhancements** (2)
+- **Category Sync** - Introduced batching on update action requests to allow for requesting updates of more than 500 actions. [#21](https://github.com/commercetools/commercetools-sync-java/issues/21)
+- **Product Sync** - Introduced batching on update action requests to allow for requesting updates of more than 500 actions. [#21](https://github.com/commercetools/commercetools-sync-java/issues/21)
+
 **Bug Fixes** (1)
 - **Commons** - Fixed library version in User-Agent headers of JVM SDK clients using the library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/191)
 
 **Documentation** (1)
-- **Commons** - Add [Code of Conduct](/docs/CODE_OF_CONDUCT.md) doc.
+- **Commons** - Added [Code of Conduct](/docs/CODE_OF_CONDUCT.md) doc.
 
 **Migration guide** (6)
 - **Product Sync** - Removed `removeOtherVariants` option which is already done by the sync by default. Removal of 
