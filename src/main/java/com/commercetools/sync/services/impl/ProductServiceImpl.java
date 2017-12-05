@@ -31,10 +31,12 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+
 public class ProductServiceImpl extends BaseService<Product, ProductDraft> implements ProductService {
     private static final String FETCH_FAILED = "Failed to fetch products with keys: '%s'. Reason: %s";
     private static final String PRODUCT_KEY_NOT_SET = "Product with id: '%s' has no key set. Keys are required for "
         + "product matching.";
+
 
     public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
         super(syncOptions);
@@ -158,7 +160,7 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
     @Override
     public CompletionStage<Product> updateProduct(@Nonnull final Product product,
                                                   @Nonnull final List<UpdateAction<Product>> updateActions) {
-        return syncOptions.getCtpClient().execute(ProductUpdateCommand.of(product, updateActions));
+        return updateResource(product, ProductUpdateCommand::of, updateActions);
     }
 
     @Nonnull
