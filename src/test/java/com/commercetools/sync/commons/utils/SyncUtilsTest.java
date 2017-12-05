@@ -73,7 +73,7 @@ public class SyncUtilsTest {
         assertThat(numberOfElementsAfterBatching).isEqualTo(numberOfElements);
 
 
-        // Assert the separation on batches
+        // Assert correct splitting of batches
         final int remainder = numberOfElements % batchSize;
         if (remainder == 0) {
             final int numberOfDistinctBatchSizes = batches.stream().collect(Collectors.groupingBy(List::size)).size();
