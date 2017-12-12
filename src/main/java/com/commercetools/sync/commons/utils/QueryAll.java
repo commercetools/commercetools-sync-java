@@ -15,10 +15,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
-final class QueryAll<T, C extends QueryDsl<T, C>> {
+final class QueryAll<T extends Resource, C extends QueryDsl<T, C>> {
     private final QueryDsl<T, C> baseQuery;
     private final long pageSize;
 
@@ -92,6 +93,50 @@ final class QueryAll<T, C extends QueryDsl<T, C>> {
                          .collect(toList());
     }
 
+    private <S> CompletionStage<List<S>> queryPagesAndApplyFunctions(final SphereClient client,
+                                                                       final Function<List<T>, S> pageMapper) {
+
+        return fetchNextPage(new FetchAllHelper<>(client, pageMapper, new ArrayList<>(), queryPage(client), baseQuery, pageSize))
+            .thenApply(FetchAllHelper::getMappedResultsTillNow);
+    }
+
+    private <S> CompletionStage<FetchAllHelper<T, S, C>> fetchNextPage(final FetchAllHelper<T, S, C> fetchAllHelper) {
+        final CompletionStage<PagedQueryResult<T>> currentPagedResult = fetchAllHelper.getPagedResult();
+        if (currentPagedResult != null) {
+            return currentPagedResult.thenCompose(pagedResult -> {
+                final List<T> currentPageElements = pagedResult.getResults();
+
+                FetchAllHelper<T, S, C> newFetchAllHelper;
+
+                if (currentPageElements.size() > 0) {
+                    /*fetchAllHelper.intermediateResult.add(fetchAllHelper.pageMapper.apply(currentPageElements));*/
+                    final String lastElementId = currentPageElements.get(currentPageElements.size() - 1).getId();
+                    final QueryPredicate<T> queryPredicate = QueryPredicate.of(format("id > \"%s\"", lastElementId));
+                    fetchAllHelper.processCurrentPage();
+                    newFetchAllHelper = fetchAllHelper.copy(queryPage(fetchAllHelper.getClient(), queryPredicate));
+                } else {
+                    newFetchAllHelper = fetchAllHelper.copy(null);
+                }
+                return fetchNextPage(newFetchAllHelper);
+            });
+        }
+        return completedFuture(fetchAllHelper);
+    }
+
+    @Nonnull
+    private CompletionStage<PagedQueryResult<T>> queryPage(@Nonnull final SphereClient client,
+                                                           @Nullable final QueryPredicate<T> queryPredicate) {
+        final QueryDsl<T, C> query = baseQuery
+            .withLimit(pageSize)
+            .withSort(QuerySort.of("id asc"));
+        return client.execute(queryPredicate != null ? query.withPredicates(queryPredicate) : query);
+    }
+
+    @Nonnull
+    private CompletionStage<PagedQueryResult<T>> queryPage(@Nonnull final SphereClient client) {
+        return queryPage(client, null);
+    }
+
     /**
      * Given a callback {@link Function}, this method first calculates the total number of pages resulting from the
      * query, then it applies this callback on each page of the results from {@link this} instance's {@code baseQuery}
@@ -159,8 +204,11 @@ final class QueryAll<T, C extends QueryDsl<T, C>> {
     }
 
     @Nonnull
-    static <T, C extends QueryDsl<T, C>> QueryAll<T, C> of(@Nonnull final QueryDsl<T, C> baseQuery,
+    static <T extends Resource, C extends QueryDsl<T, C>> QueryAll<T, C> of(@Nonnull final QueryDsl<T, C> baseQuery,
                                                            final int pageSize) {
         return new QueryAll<>(baseQuery, pageSize);
     }
+
+
 }
+

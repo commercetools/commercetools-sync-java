@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.queries.QueryDsl;
 
 import javax.annotation.Nonnull;
@@ -31,7 +32,7 @@ public final class CtpQueryUtils {
      * @return elements
      */
     @Nonnull
-    public static <T, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
+    public static <T extends Resource, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
                  @Nonnull final Function<List<T>, S> callBack) {
         return queryAll(client, query, callBack, DEFAULT_PAGE_SIZE);
@@ -49,7 +50,7 @@ public final class CtpQueryUtils {
      * @return elements
      */
     @Nonnull
-    public static <T, C extends QueryDsl<T, C>> CompletionStage<Void>
+    public static <T extends Resource, C extends QueryDsl<T, C>> CompletionStage<Void>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
                  @Nonnull final Consumer<List<T>> consumer) {
         return queryAll(client, query, consumer, DEFAULT_PAGE_SIZE);
@@ -71,7 +72,7 @@ public final class CtpQueryUtils {
      * @return elements
      */
     @Nonnull
-    public static <T, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
+    public static <T extends Resource, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
                  @Nonnull final Function<List<T>, S> callback, final int pageSize) {
         return QueryAll.of(query, pageSize).run(client, callback);
@@ -90,7 +91,7 @@ public final class CtpQueryUtils {
      * @return elements
      */
     @Nonnull
-    public static <T, C extends QueryDsl<T, C>> CompletionStage<Void>
+    public static <T extends Resource, C extends QueryDsl<T, C>> CompletionStage<Void>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
                  @Nonnull final Consumer<List<T>> consumer, final int pageSize) {
         return QueryAll.of(query, pageSize).run(client, consumer);
