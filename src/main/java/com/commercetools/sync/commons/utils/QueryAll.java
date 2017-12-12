@@ -103,21 +103,9 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>> {
     private <S> CompletionStage<FetchAllHelper<T, S, C>> fetchNextPage(final FetchAllHelper<T, S, C> fetchAllHelper) {
         final CompletionStage<PagedQueryResult<T>> currentPagedResult = fetchAllHelper.getPagedResult();
         if (currentPagedResult != null) {
-            return currentPagedResult.thenCompose(pagedResult -> {
-                final List<T> currentPageElements = pagedResult.getResults();
-
-                FetchAllHelper<T, S, C> newFetchAllHelper;
-
-                if (currentPageElements.size() > 0) {
-                    /*fetchAllHelper.intermediateResult.add(fetchAllHelper.pageMapper.apply(currentPageElements));*/
-                    final String lastElementId = currentPageElements.get(currentPageElements.size() - 1).getId();
-                    final QueryPredicate<T> queryPredicate = QueryPredicate.of(format("id > \"%s\"", lastElementId));
-                    fetchAllHelper.processCurrentPage();
-                    newFetchAllHelper = fetchAllHelper.copy(queryPage(fetchAllHelper.getClient(), queryPredicate));
-                } else {
-                    newFetchAllHelper = fetchAllHelper.copy(null);
-                }
-                return fetchNextPage(newFetchAllHelper);
+            return currentPagedResult.thenCompose(page -> {
+                final FetchAllHelper<T, S, C> nextPageHelper = fetchAllHelper.processPageAndFetchNext(page);
+                return fetchNextPage(nextPageHelper);
             });
         }
         return completedFuture(fetchAllHelper);

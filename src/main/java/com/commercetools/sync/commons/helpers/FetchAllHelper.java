@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
+import static java.lang.String.format;
+
 public class FetchAllHelper<T extends Resource, S, C extends QueryDsl<T, C>> {
     private final SphereClient client;
     private final Function<List<T>, S> pageMapper;
@@ -52,6 +54,16 @@ public class FetchAllHelper<T extends Resource, S, C extends QueryDsl<T, C>> {
         this.pageSize = pageSize;
     }
 
+    public FetchAllHelper<T, S, C> processPageAndFetchNext(@Nonnull final PagedQueryResult<T> page) {
+        final List<T> currentPageElements = page.getResults();
+        CompletionStage<PagedQueryResult<T>> nextPage = null;
+        if (currentPageElements.size() > 0) {
+            processCurrentPage();
+            nextPage = getNextPage(currentPageElements);
+        }
+        return new FetchAllHelper<>(client, pageMapper, mappedResultsTillNow, nextPage, baseQuery, pageSize);
+    }
+
     public void processCurrentPage() {
         if (pagedResult != null) {
             pagedResult.thenAccept(pagedQueryResult -> {
@@ -63,6 +75,13 @@ public class FetchAllHelper<T extends Resource, S, C extends QueryDsl<T, C>> {
                 }
             });
         }
+    }
+
+    @Nonnull
+    private CompletionStage<PagedQueryResult<T>> getNextPage(@Nonnull final List<T> currentPageElements) {
+        final String lastElementId = currentPageElements.get(currentPageElements.size() - 1).getId();
+        final QueryPredicate<T> queryPredicate = QueryPredicate.of(format("id > \"%s\"", lastElementId));
+        return queryPage(client, queryPredicate);
     }
 
     public FetchAllHelper<T, S, C> copy(@Nullable final CompletionStage<PagedQueryResult<T>> pagedResult) {
