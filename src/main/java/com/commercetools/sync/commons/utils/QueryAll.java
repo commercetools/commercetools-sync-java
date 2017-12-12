@@ -94,21 +94,9 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>> {
     }
 
     private <S> CompletionStage<List<S>> queryPagesAndApplyFunctions(final SphereClient client,
-                                                                       final Function<List<T>, S> pageMapper) {
-
-        return fetchNextPage(new FetchAllHelper<>(client, pageMapper, new ArrayList<>(), queryPage(client), baseQuery, pageSize))
-            .thenApply(FetchAllHelper::getMappedResultsTillNow);
-    }
-
-    private <S> CompletionStage<FetchAllHelper<T, S, C>> fetchNextPage(final FetchAllHelper<T, S, C> fetchAllHelper) {
-        final CompletionStage<PagedQueryResult<T>> currentPagedResult = fetchAllHelper.getPagedResult();
-        if (currentPagedResult != null) {
-            return currentPagedResult.thenCompose(page -> {
-                final FetchAllHelper<T, S, C> nextPageHelper = fetchAllHelper.processPageAndFetchNext(page);
-                return fetchNextPage(nextPageHelper);
-            });
-        }
-        return completedFuture(fetchAllHelper);
+                                                                     final Function<List<T>, S> pageMapper) {
+        final FetchAllHelper<T, S, C> fetchAllHelper = new FetchAllHelper<>(client, pageMapper, baseQuery, pageSize);
+        return fetchAllHelper.fetchAll();
     }
 
     @Nonnull
