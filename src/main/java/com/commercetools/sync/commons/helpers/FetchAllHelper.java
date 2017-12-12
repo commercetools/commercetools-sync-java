@@ -9,11 +9,13 @@ import io.sphere.sdk.queries.QuerySort;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
 import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public class FetchAllHelper<T extends Resource, S, C extends QueryDsl<T, C>> {
     private final SphereClient client;
@@ -54,38 +56,59 @@ public class FetchAllHelper<T extends Resource, S, C extends QueryDsl<T, C>> {
         this.pageSize = pageSize;
     }
 
-    public FetchAllHelper<T, S, C> processPageAndFetchNext(@Nonnull final PagedQueryResult<T> page) {
-        final List<T> currentPageElements = page.getResults();
-        CompletionStage<PagedQueryResult<T>> nextPage = null;
-        if (currentPageElements.size() > 0) {
-            processCurrentPage();
-            nextPage = getNextPage(currentPageElements);
-        }
-        return new FetchAllHelper<>(client, pageMapper, mappedResultsTillNow, nextPage, baseQuery, pageSize);
+    public FetchAllHelper(@Nonnull final SphereClient client,
+                          @Nonnull final Function<List<T>, S> pageMapper,
+                          @Nonnull final QueryDsl<T, C> baseQuery,
+                          final long pageSize) {
+        this.client = client;
+        this.pageMapper = pageMapper;
+        this.baseQuery = baseQuery;
+        this.pageSize = pageSize;
+
+        this.mappedResultsTillNow = new ArrayList<>();
+        this.pagedResult = queryPage(client);
     }
 
-    public void processCurrentPage() {
-        if (pagedResult != null) {
-            pagedResult.thenAccept(pagedQueryResult -> {
-                final List<T> pageElements = pagedQueryResult.getResults();
+    public CompletionStage<List<S>> fetchAll() {
+        return fetchNextPages(this).thenApply(FetchAllHelper::getMappedResultsTillNow);
+    }
 
-                if (pageElements.size() > 0) {
-                    final S mappedPage = pageMapper.apply(pageElements);
-                    mappedResultsTillNow.add(mappedPage);
-                }
+    private CompletionStage<FetchAllHelper<T, S, C>> fetchNextPages(final FetchAllHelper<T, S, C> currentPageFetcher) {
+        final CompletionStage<PagedQueryResult<T>> currentPageStage = currentPageFetcher.getPagedResult();
+        if (currentPageStage != null) {
+            return currentPageStage.thenCompose(currentPage -> {
+                final FetchAllHelper<T, S, C> nextPageFetcher =
+                    currentPageFetcher.processPageAndGetNextPageFetcher(currentPage);
+                return fetchNextPages(nextPageFetcher);
             });
+        }
+        return completedFuture(currentPageFetcher);
+    }
+
+    private FetchAllHelper<T, S, C> processPageAndGetNextPageFetcher(@Nonnull final PagedQueryResult<T> page) {
+        final List<T> currentPageElements = page.getResults();
+        CompletionStage<PagedQueryResult<T>> nextPageStage = null;
+
+        if (currentPageElements.size() > 0) {
+            applyPageMapperAndAppendResults(page);
+            nextPageStage = getNextPageStage(currentPageElements);
+        }
+        return new FetchAllHelper<>(client, pageMapper, mappedResultsTillNow, nextPageStage, baseQuery, pageSize);
+    }
+
+    private void applyPageMapperAndAppendResults(@Nonnull final PagedQueryResult<T> page) {
+        final List<T> pageElements = page.getResults();
+        if (pageElements.size() > 0) {
+            final S mappedPage = pageMapper.apply(pageElements);
+            mappedResultsTillNow.add(mappedPage);
         }
     }
 
     @Nonnull
-    private CompletionStage<PagedQueryResult<T>> getNextPage(@Nonnull final List<T> currentPageElements) {
+    private CompletionStage<PagedQueryResult<T>> getNextPageStage(@Nonnull final List<T> currentPageElements) {
         final String lastElementId = currentPageElements.get(currentPageElements.size() - 1).getId();
         final QueryPredicate<T> queryPredicate = QueryPredicate.of(format("id > \"%s\"", lastElementId));
         return queryPage(client, queryPredicate);
-    }
-
-    public FetchAllHelper<T, S, C> copy(@Nullable final CompletionStage<PagedQueryResult<T>> pagedResult) {
-        return new FetchAllHelper<>(this.client, this.pageMapper, this.mappedResultsTillNow, pagedResult, this.baseQuery, this.pageSize);
     }
 
     @Nonnull
