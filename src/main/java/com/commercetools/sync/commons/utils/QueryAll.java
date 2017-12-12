@@ -180,7 +180,8 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>> {
     @Nonnull
     private CompletionStage<PagedQueryResult<T>> queryPage(final SphereClient client, final long pageNumber) {
         final QueryDsl<T, C> query = baseQuery
-            .withOffset(pageNumber * pageSize)
+            .withLimit(pageSize)
+            .withSort(QuerySort.of("id asc"))
             .withLimit(pageSize);
         return client.execute(query);
     }
