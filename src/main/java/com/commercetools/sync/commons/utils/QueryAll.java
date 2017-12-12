@@ -1,11 +1,15 @@
 package com.commercetools.sync.commons.utils;
 
+import com.commercetools.sync.commons.helpers.FetchAllHelper;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.queries.QueryDsl;
+import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.queries.QuerySort;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -15,8 +19,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
-import static java.lang.String.format;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
 final class QueryAll<T extends Resource, C extends QueryDsl<T, C>> {
@@ -40,17 +42,7 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>> {
      */
     @Nonnull
     <S> CompletionStage<List<S>> run(final SphereClient client, final Function<List<T>, S> callback) {
-        return queryPage(client, 0).thenCompose(result -> {
-            final List<CompletableFuture<S>> futureResults = new ArrayList<>();
-
-            final S callbackResult = callback.apply(result.getResults());
-            final List<CompletableFuture<S>> nextPagesCallbackResults =
-                queryNextPages(client, result.getTotal(), callback);
-
-            futureResults.add(completedFuture(callbackResult));
-            futureResults.addAll(nextPagesCallbackResults);
-            return transformListOfFuturesToFutureOfLists(futureResults);
-        });
+        return queryPagesAndApplyFunctions(client, callback);
     }
 
     /**
