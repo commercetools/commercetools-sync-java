@@ -119,7 +119,7 @@ class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
     private CompletionStage<PagedQueryResult<T>> queryPage(@Nonnull final SphereClient client,
                                                            @Nullable final QueryPredicate<T> queryPredicate) {
         final QueryDsl<T, C> query = baseQuery
-            .withLimit(this.pageSize)
+            .withLimit(pageSize)
             .withSort(QuerySort.of("id asc"));
         return client.execute(queryPredicate != null ? query.withPredicates(queryPredicate) : query);
     }
