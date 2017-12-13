@@ -47,7 +47,7 @@ public class QueryAllTest {
 
     @Test
     public void run_WithCallback_ShouldApplyCallback() {
-        final QueryAll<Category, Optional<Category>, CategoryQuery> query =
+        final QueryAll<Category, CategoryQuery, Optional<Category>> query =
             QueryAll.of(sphereClient, CategoryQuery.of(), DEFAULT_PAGE_SIZE);
 
         final Function<List<Category>, Optional<Category>> getFirstCategoryInPage =
@@ -64,7 +64,7 @@ public class QueryAllTest {
 
     @Test
     public void run_WithConsumer_ShouldApplyConsumer() {
-        final QueryAll<Category, Void, CategoryQuery> query =
+        final QueryAll<Category, CategoryQuery, Void> query =
             QueryAll.of(sphereClient, CategoryQuery.of(), DEFAULT_PAGE_SIZE);
         final List<String> categoryIds = new ArrayList<>();
 

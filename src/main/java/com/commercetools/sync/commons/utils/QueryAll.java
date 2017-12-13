@@ -18,13 +18,15 @@ import java.util.function.Function;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
-final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
+final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
     private final SphereClient client;
-    private Function<List<T>, S> pageMapper;
-    private Consumer<List<T>> pageConsumer;
-    private final List<S> mappedResultsTillNow;
     private final QueryDsl<T, C> baseQuery;
     private final long pageSize;
+
+    private Function<List<T>, S> pageMapper;
+    private final List<S> mappedResultsTillNow;
+
+    private Consumer<List<T>> pageConsumer;
 
     private QueryAll(@Nonnull final SphereClient client,
                      @Nonnull final QueryDsl<T, C> baseQuery,
@@ -37,7 +39,7 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
     }
 
     @Nonnull
-    static <T extends Resource, S, C extends QueryDsl<T, C>> QueryAll<T, S, C> of(
+    static <T extends Resource, C extends QueryDsl<T, C>, S> QueryAll<T, C, S> of(
         @Nonnull final SphereClient client,
         @Nonnull final QueryDsl<T, C> baseQuery,
         final int pageSize) {
@@ -86,7 +88,7 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
      * @return a future containing this instance of {@link QueryAll} as a result.
      */
     @Nonnull
-    private CompletionStage<QueryAll<T, S, C>> queryNextPages(
+    private CompletionStage<QueryAll<T, C, S>> queryNextPages(
         @Nullable final CompletionStage<PagedQueryResult<T>> currentPageStage) {
         if (currentPageStage != null) {
             return currentPageStage
