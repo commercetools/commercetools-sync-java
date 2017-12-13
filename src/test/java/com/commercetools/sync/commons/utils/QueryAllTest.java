@@ -18,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static io.sphere.sdk.queries.QueryExecutionUtils.DEFAULT_PAGE_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -46,49 +47,33 @@ public class QueryAllTest {
 
     @Test
     public void run_WithCallback_ShouldApplyCallback() {
-        final QueryAll<Category, CategoryQuery> query = QueryAll.of(CategoryQuery.of(), 1);
+        final QueryAll<Category, Optional<Category>, CategoryQuery> query =
+            QueryAll.of(sphereClient, CategoryQuery.of(), DEFAULT_PAGE_SIZE);
 
         final Function<List<Category>, Optional<Category>> getFirstCategoryInPage =
             categoryPage -> categoryPage.isEmpty() ? Optional.empty() : Optional.of(categoryPage.get(0));
 
-        final List<Optional<Category>> firstCategories = query.run(sphereClient, getFirstCategoryInPage)
-                                                   .toCompletableFuture()
-                                                   .join();
-        assertThat(firstCategories).hasSize(4);
-        firstCategories.stream()
-                       .filter(Optional::isPresent)
-                       .map(Optional::get)
-                       .map(Category::getKey)
-                       .forEach(key -> assertThat(key).isEqualTo(CATEGORY_KEY));
+        final List<Optional<Category>> firstCategories = query.run(getFirstCategoryInPage)
+                                                              .toCompletableFuture()
+                                                              .join();
+
+        assertThat(firstCategories).hasSize(1);
+        assertThat(firstCategories.get(0)).isPresent();
+        assertThat(firstCategories.get(0).get().getKey()).isEqualTo(CATEGORY_KEY);
     }
 
     @Test
     public void run_WithConsumer_ShouldApplyConsumer() {
-        final QueryAll<Category, CategoryQuery> query = QueryAll.of(CategoryQuery.of(), 1);
+        final QueryAll<Category, Void, CategoryQuery> query =
+            QueryAll.of(sphereClient, CategoryQuery.of(), DEFAULT_PAGE_SIZE);
         final List<String> categoryIds = new ArrayList<>();
 
         final Consumer<List<Category>> categoryIdCollector = page ->
             page.forEach(category -> categoryIds.add(category.getId()));
 
-        query.run(sphereClient, categoryIdCollector)
-             .toCompletableFuture()
-             .join();
+        query.run(categoryIdCollector).toCompletableFuture().join();
 
-        assertThat(categoryIds).hasSize(16);
+        assertThat(categoryIds).hasSize(4);
         categoryIds.forEach(id -> assertThat(id).isEqualTo(CATEGORY_ID));
-    }
-
-    @Test
-    public void getTotalNumberOfPages_WithUniformSplitting_ShouldReturnCorrectTotal() {
-        final QueryAll<Category, CategoryQuery> query = QueryAll.of(CategoryQuery.of(), 2);
-        final long totalNumberOfPages = query.getTotalNumberOfPages(10);
-        assertThat(totalNumberOfPages).isEqualTo(5);
-    }
-
-    @Test
-    public void getTotalNumberOfPages_WithNonUniformSplitting_ShouldReturnCorrectTotal() {
-        final QueryAll<Category, CategoryQuery> query = QueryAll.of(CategoryQuery.of(), 2);
-        final long totalNumberOfPages = query.getTotalNumberOfPages(7);
-        assertThat(totalNumberOfPages).isEqualTo(4);
     }
 }
