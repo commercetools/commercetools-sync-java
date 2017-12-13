@@ -18,10 +18,12 @@ public final class CtpQueryUtils {
     }
 
     /**
-     * Queries all elements matching a query by using a limit based pagination with page size 500.
-     * The method takes a callback {@link Function} that returns a result of type {@code <S>} that is returned on every
-     * page of elements queried. Eventually, the method returns a {@link CompletionStage} that contains a list of all
-     * the results of the callbacks returned from every page.
+     * Queries all elements matching a query by using a limit based pagination with a combination of id sorting and a
+     * page size 500. More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset.
+     *
+     * <p>The method takes a callback {@link Function} that returns a result of type {@code <S>} that is returned on
+     * every page of elements queried. Eventually, the method returns a {@link CompletionStage} that contains a list of
+     * all the results of the callbacks returned from every page.
      *
      * @param client   commercetools client
      * @param query    query containing predicates and expansion paths
@@ -39,8 +41,10 @@ public final class CtpQueryUtils {
     }
 
     /**
-     * Queries all elements matching a query by using a limit based pagination with page size 500. The method takes a
-     * consumer {@link Consumer} that is applied on on every page of elements queried.
+     * Queries all elements matching a query by using a limit based pagination with a combination of id sorting and a
+     * page size 500. More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset
+     *
+     * <p>The method takes a consumer {@link Consumer} that is applied on on every page of elements queried.
      *
      * @param client commercetools client
      * @param query  query containing predicates and expansion paths
@@ -57,10 +61,12 @@ public final class CtpQueryUtils {
     }
 
     /**
-     * Queries all elements matching a query by using a limit based pagination. The method takes a callback
-     * {@link Function} that returns a result of type {@code <S>} that is returned on every page of elements queried.
-     * Eventually, the method returns a {@link CompletionStage} that contains a list of all the results of the
-     * callbacks returned from every page.
+     * Queries all elements matching a query by using a limit based pagination with a combination of id sorting and a
+     * page size 500. More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset.
+     *
+     * <p>The method takes a callback {@link Function} that returns a result of type {@code <S>} that is returned on
+     * every page of elements queried. Eventually, the method returns a {@link CompletionStage} that contains a list of
+     * all the results of the callbacks returned from every page.
      *
      * @param client   commercetools client
      * @param query    query containing predicates and expansion paths
@@ -80,8 +86,10 @@ public final class CtpQueryUtils {
     }
 
     /**
-     * Queries all elements matching a query by using a limit based pagination. The method takes a consumer
-     * {@link Consumer} that is applied on on every page of elements queried.
+     * Queries all elements matching a query by using a limit based pagination with a combination of id sorting and a
+     * page size 500. More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset
+     *
+     * <p>The method takes a consumer {@link Consumer} that is applied on on every page of elements queried.
      *
      * @param client commercetools client
      * @param query  query containing predicates and expansion paths
