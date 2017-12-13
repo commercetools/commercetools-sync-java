@@ -97,7 +97,6 @@ public class CtpQueryUtilsIT {
         assertThat(productKeys).containsAll(expectedListOfKeys);
     }
 
-
     @Test
     public void queryAll_WithPageConsumerAndUniformPageSplitting_ShouldAcceptConsumerOnAllPages() {
         final ArrayList<String> productKeys = new ArrayList<>();
