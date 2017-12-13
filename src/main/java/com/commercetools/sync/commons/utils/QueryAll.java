@@ -18,7 +18,7 @@ import java.util.function.Function;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
-class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
+final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
     private final SphereClient client;
     private Function<List<T>, S> pageMapper;
     private Consumer<List<T>> pageConsumer;
