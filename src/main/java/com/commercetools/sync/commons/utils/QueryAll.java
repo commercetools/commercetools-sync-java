@@ -53,7 +53,7 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
         this.pageSize = pageSize;
 
         this.mappedResultsTillNow = new ArrayList<>();
-        this.pagedResult = queryPage(client);
+        this.pagedResult = queryPage();
     }
 
     @Nonnull
@@ -147,11 +147,10 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
      *         instance's {@code pageSize} and optionally appending the {@code queryPredicate} if it is not null.
      */
     @Nonnull
-    private CompletionStage<PagedQueryResult<T>> queryPage(@Nonnull final SphereClient client,
-                                                           @Nullable final QueryPredicate<T> queryPredicate) {
         final QueryDsl<T, C> query = baseQuery
             .withLimit(pageSize)
             .withSort(QuerySort.of("id asc"));
+    private CompletionStage<PagedQueryResult<T>> queryPage(@Nullable final QueryPredicate<T> queryPredicate) {
         return client.execute(queryPredicate != null ? query.withPredicates(queryPredicate) : query);
     }
 
@@ -161,7 +160,7 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
      * @return a future containing the results of the requested page of applying the query with {@code pageSize}.
      */
     @Nonnull
-    private CompletionStage<PagedQueryResult<T>> queryPage(@Nonnull final SphereClient client) {
-        return queryPage(client, null);
+    private CompletionStage<PagedQueryResult<T>> queryPage() {
+        return queryPage(null);
     }
 }
