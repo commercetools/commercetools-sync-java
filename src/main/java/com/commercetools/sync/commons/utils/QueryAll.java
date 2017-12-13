@@ -89,11 +89,15 @@ class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
         final List<T> currentPageElements = page.getResults();
         CompletionStage<PagedQueryResult<T>> nextPageStage = null;
 
-        if (currentPageElements.size() > 0) {
+        if (currentPageElements.size() == pageSize) {
             mapOrConsume(currentPageElements);
             nextPageStage = getNextPageStage(currentPageElements);
+        } else {
+            if (currentPageElements.size() > 0) {
+                mapOrConsume(currentPageElements);
+            }
         }
-        return new QueryAll<>(client, pageMapper, mappedResultsTillNow, nextPageStage, baseQuery, pageSize);
+        return new QueryAll<>(client, mappedResultsTillNow, nextPageStage, baseQuery, pageSize);
     }
 
     private void mapOrConsume(@Nonnull final List<T> pageElements) {
