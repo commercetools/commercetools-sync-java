@@ -18,14 +18,14 @@ public final class CtpQueryUtils {
     }
 
     /**
-     * Queries all elements matching a query by using an offset based pagination with page size 500.
+     * Queries all elements matching a query by using a limit based pagination with page size 500.
      * The method takes a callback {@link Function} that returns a result of type {@code <S>} that is returned on every
      * page of elements queried. Eventually, the method returns a {@link CompletionStage} that contains a list of all
      * the results of the callbacks returned from every page.
      *
      * @param client   commercetools client
      * @param query    query containing predicates and expansion paths
-     * @param callBack callback function that is called on every page queried.
+     * @param pageMapper callback function that is called on every page queried.
      * @param <T>      type of one query result element
      * @param <C>      type of the query
      * @param <S>      type of the returned result of the callback function on every page.
@@ -34,17 +34,17 @@ public final class CtpQueryUtils {
     @Nonnull
     public static <T extends Resource, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
-                 @Nonnull final Function<List<T>, S> callBack) {
-        return queryAll(client, query, callBack, DEFAULT_PAGE_SIZE);
+                 @Nonnull final Function<List<T>, S> pageMapper) {
+        return queryAll(client, query, pageMapper, DEFAULT_PAGE_SIZE);
     }
 
     /**
-     * Queries all elements matching a query by using an offset based pagination with page size 500. The method takes a
+     * Queries all elements matching a query by using a limit based pagination with page size 500. The method takes a
      * consumer {@link Consumer} that is applied on on every page of elements queried.
      *
      * @param client commercetools client
      * @param query  query containing predicates and expansion paths
-     * @param consumer that is applied on every page queried.
+     * @param pageConsumer that is applied on every page queried.
      * @param <T>    type of one query result element
      * @param <C>    type of the query
      * @return elements
@@ -52,19 +52,19 @@ public final class CtpQueryUtils {
     @Nonnull
     public static <T extends Resource, C extends QueryDsl<T, C>> CompletionStage<Void>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
-                 @Nonnull final Consumer<List<T>> consumer) {
-        return queryAll(client, query, consumer, DEFAULT_PAGE_SIZE);
+                 @Nonnull final Consumer<List<T>> pageConsumer) {
+        return queryAll(client, query, pageConsumer, DEFAULT_PAGE_SIZE);
     }
 
     /**
-     * Queries all elements matching a query by using an offset based pagination. The method takes a callback
+     * Queries all elements matching a query by using a limit based pagination. The method takes a callback
      * {@link Function} that returns a result of type {@code <S>} that is returned on every page of elements queried.
      * Eventually, the method returns a {@link CompletionStage} that contains a list of all the results of the
      * callbacks returned from every page.
      *
      * @param client   commercetools client
      * @param query    query containing predicates and expansion paths
-     * @param callback callback function that is called on every page queried.
+     * @param pageMapper callback function that is called on every page queried.
      * @param <T>      type of one query result element
      * @param <C>      type of the query
      * @param <S>      type of the returned result of the callback function on every page.
@@ -74,18 +74,18 @@ public final class CtpQueryUtils {
     @Nonnull
     public static <T extends Resource, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
-                 @Nonnull final Function<List<T>, S> callback, final int pageSize) {
+                 @Nonnull final Function<List<T>, S> pageMapper, final int pageSize) {
         final QueryAll<T, C, S> queryAll = QueryAll.of(client, query, pageSize);
-        return queryAll.run(callback);
+        return queryAll.run(pageMapper);
     }
 
     /**
-     * Queries all elements matching a query by using an offset based pagination. The method takes a consumer
+     * Queries all elements matching a query by using a limit based pagination. The method takes a consumer
      * {@link Consumer} that is applied on on every page of elements queried.
      *
      * @param client commercetools client
      * @param query  query containing predicates and expansion paths
-     * @param consumer that is applied on every page queried.
+     * @param pageConsumer that is applied on every page queried.
      * @param <T>    type of one query result element
      * @param <C>    type of the query
      * @param pageSize the page size.
@@ -94,8 +94,8 @@ public final class CtpQueryUtils {
     @Nonnull
     public static <T extends Resource, C extends QueryDsl<T, C>> CompletionStage<Void>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
-                 @Nonnull final Consumer<List<T>> consumer, final int pageSize) {
+                 @Nonnull final Consumer<List<T>> pageConsumer, final int pageSize) {
         final QueryAll<T, C, Void> queryAll = QueryAll.of(client, query, pageSize);
-        return queryAll.run(consumer);
+        return queryAll.run(pageConsumer);
     }
 }
