@@ -22,7 +22,6 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
     private final SphereClient client;
     private Function<List<T>, S> pageMapper;
     private Consumer<List<T>> pageConsumer;
-    private final CompletionStage<PagedQueryResult<T>> pagedResult;
     private final List<S> mappedResultsTillNow;
     private final QueryDsl<T, C> baseQuery;
     private final long pageSize;
@@ -35,7 +34,6 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
         this.baseQuery = !baseQuery.sort().isEmpty() ? baseQuery : baseQuery.withSort(QuerySort.of("id asc"));
         this.pageSize = pageSize;
         this.mappedResultsTillNow = new ArrayList<>();
-        this.pagedResult = queryPage();
     }
 
     @Nonnull
@@ -58,7 +56,8 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
     @Nonnull
     CompletionStage<List<S>> run(@Nonnull final Function<List<T>, S> pageMapper) {
         this.pageMapper = pageMapper;
-        return queryNextPages(pagedResult)
+        final CompletionStage<PagedQueryResult<T>> firstPage = queryPage();
+        return queryNextPages(firstPage)
             .thenApply(nextPage -> nextPage.mappedResultsTillNow);
     }
 
@@ -73,7 +72,8 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
     @Nonnull
     CompletionStage<Void> run(@Nonnull final Consumer<List<T>> pageConsumer) {
         this.pageConsumer = pageConsumer;
-        return queryNextPages(pagedResult).thenAccept(result -> { });
+        final CompletionStage<PagedQueryResult<T>> firstPage = queryPage();
+        return queryNextPages(firstPage).thenAccept(result -> { });
     }
 
     /**
