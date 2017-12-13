@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
+import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.queries.QueryDsl;
 import io.sphere.sdk.types.commands.TypeDeleteCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
@@ -64,7 +65,7 @@ public final class ITUtils {
      * @param resourceMapper       defines a mapper function that should be applied on each resource in the fetched page
      *                             from the query on the specified CTP project.
      */
-    public static <T, C extends QueryDsl<T, C>> void queryAndApply(
+    public static <T extends Resource, C extends QueryDsl<T, C>> void queryAndApply(
         @Nonnull final SphereClient ctpClient,
         @Nonnull final Supplier<QueryDsl<T, C>> queryRequestSupplier,
         @Nonnull final Function<T, SphereRequest<T>> resourceMapper) {
