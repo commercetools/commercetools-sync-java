@@ -50,6 +50,19 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M7)
 -->
 
+
+<!--
+### v1.0.0-M7 -  Dec 13, 2017
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M6...v1.0.0-M7) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M7/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M7)
+
+**Bug Fixes** (1)
+- **Commons** - Changed offset based pagination of Query all elements mechanism to limit with sorted ids based approach 
+to mitigate problems of offset based approach. [#210](https://github.com/commercetools/commercetools-sync-java/issues/210)
+
+-->
+
 ### v1.0.0-M6 -  Dec 5, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M5...v1.0.0-M6) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M6/) | 
