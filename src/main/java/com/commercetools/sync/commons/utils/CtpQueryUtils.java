@@ -25,13 +25,13 @@ public final class CtpQueryUtils {
      * every page of elements queried. Eventually, the method returns a {@link CompletionStage} that contains a list of
      * all the results of the callbacks returned from every page.
      *
-     * @param client   commercetools client
-     * @param query    query containing predicates and expansion paths
-     * @param pageMapper callback function that is called on every page queried.
-     * @param <T>      type of one query result element
-     * @param <C>      type of the query
-     * @param <S>      type of the returned result of the callback function on every page.
-     * @return elements
+     * @param client     commercetools client
+     * @param query      query containing predicates and expansion paths
+     * @param pageMapper callback function that is called on every page queried
+     * @param <T>        type of one query result element
+     * @param <C>        type of the query
+     * @param <S>        type of the returned result of the callback function on every page.
+     * @return a completion stage containing a list of mapped pages as a result.
      */
     @Nonnull
     public static <T extends Resource, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
@@ -46,12 +46,12 @@ public final class CtpQueryUtils {
      *
      * <p>The method takes a consumer {@link Consumer} that is applied on on every page of elements queried.
      *
-     * @param client commercetools client
-     * @param query  query containing predicates and expansion paths
-     * @param pageConsumer that is applied on every page queried.
-     * @param <T>    type of one query result element
-     * @param <C>    type of the query
-     * @return elements
+     * @param client       commercetools client
+     * @param query        query containing predicates and expansion paths
+     * @param pageConsumer consumer applied on every page queried
+     * @param <T>          type of one query result element
+     * @param <C>          type of the query
+     * @return a completion stage containing void as a result after the consumer was applied on all pages.
      */
     @Nonnull
     public static <T extends Resource, C extends QueryDsl<T, C>> CompletionStage<Void>
@@ -68,14 +68,14 @@ public final class CtpQueryUtils {
      * every page of elements queried. Eventually, the method returns a {@link CompletionStage} that contains a list of
      * all the results of the callbacks returned from every page.
      *
-     * @param client   commercetools client
-     * @param query    query containing predicates and expansion paths
-     * @param pageMapper callback function that is called on every page queried.
-     * @param <T>      type of one query result element
-     * @param <C>      type of the query
-     * @param <S>      type of the returned result of the callback function on every page.
-     * @param pageSize the page size.
-     * @return elements
+     * @param client     commercetools client
+     * @param query      query containing predicates and expansion paths
+     * @param pageMapper callback function that is called on every page queried
+     * @param <T>        type of one query result element
+     * @param <C>        type of the query
+     * @param <S>        type of the returned result of the callback function on every page.
+     * @param pageSize   the page size.
+     * @return a completion stage containing a list of mapped pages as a result.
      */
     @Nonnull
     public static <T extends Resource, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
@@ -91,13 +91,13 @@ public final class CtpQueryUtils {
      *
      * <p>The method takes a consumer {@link Consumer} that is applied on on every page of elements queried.
      *
-     * @param client commercetools client
-     * @param query  query containing predicates and expansion paths
-     * @param pageConsumer that is applied on every page queried.
-     * @param <T>    type of one query result element
-     * @param <C>    type of the query
-     * @param pageSize the page size.
-     * @return elements
+     * @param client       commercetools client
+     * @param query        query containing predicates and expansion paths
+     * @param pageConsumer consumer applied on every page queried
+     * @param <T>          type of one query result element
+     * @param <C>          type of the query
+     * @param pageSize     the page size
+     * @return a completion stage containing void as a result after the consumer was applied on all pages.
      */
     @Nonnull
     public static <T extends Resource, C extends QueryDsl<T, C>> CompletionStage<Void>
