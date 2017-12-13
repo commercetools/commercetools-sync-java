@@ -83,7 +83,7 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
         if (currentPageStage != null) {
             return currentPageStage.thenCompose(currentPage -> {
                 final QueryAll<T, S, C> nextPageFetcher =
-                    currentPageFetcher.processPageAndGetNextPageFetcher(currentPage);
+                    currentPageFetcher.processResultAndGetNextQuery(currentPage);
                 return queryNextPages(nextPageFetcher);
             });
         }
@@ -91,7 +91,7 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
     }
 
     @Nonnull
-    private QueryAll<T, S, C> processPageAndGetNextPageFetcher(@Nonnull final PagedQueryResult<T> page) {
+    private QueryAll<T, S, C> processResultAndGetNextQuery(@Nonnull final PagedQueryResult<T> page) {
         final List<T> currentPageElements = page.getResults();
         CompletionStage<PagedQueryResult<T>> nextPageStage = null;
 
