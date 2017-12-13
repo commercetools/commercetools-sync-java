@@ -30,13 +30,11 @@ class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
     private final long pageSize;
 
     private QueryAll(@Nonnull final SphereClient client,
-                     @Nonnull final Function<List<T>, S> pageMapper,
                      @Nonnull final List<S> mappedResultsTillNow,
                      @Nullable final CompletionStage<PagedQueryResult<T>> pagedResult,
                      @Nonnull final QueryDsl<T, C> baseQuery,
                      final long pageSize) {
         this.client = client;
-        this.pageMapper = pageMapper;
         this.mappedResultsTillNow = mappedResultsTillNow;
         this.pagedResult = pagedResult;
         this.baseQuery = baseQuery;
