@@ -22,10 +22,8 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
     private final SphereClient client;
     private Function<List<T>, S> pageMapper;
     private Consumer<List<T>> pageConsumer;
-
     private final CompletionStage<PagedQueryResult<T>> pagedResult;
     private final List<S> mappedResultsTillNow;
-
     private final QueryDsl<T, C> baseQuery;
     private final long pageSize;
 
@@ -45,50 +43,82 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
         @Nonnull final SphereClient client,
         @Nonnull final QueryDsl<T, C> baseQuery,
         final int pageSize) {
+
         return new QueryAll<>(client, baseQuery, pageSize);
     }
 
+    /**
+     * Given a {@link Function} to a page of resources of type {@code T} that returns a mapped result of type {@code S},
+     * this method sets this instance's {@code pageMapper} to the supplied value, then it makes requests to fetch the
+     * entire result space of the resource {@code T} on CTP, while applying the function on each fetched page.
+     *
+     * @param pageMapper the function to apply on each fetched page of the result space.
+     * @return a future containing a list of mapped results of type {@code S}, after the function applied all the pages.
+     */
     @Nonnull
     CompletionStage<List<S>> run(@Nonnull final Function<List<T>, S> pageMapper) {
         this.pageMapper = pageMapper;
-        return queryNextPages(this)
+        return queryNextPages(pagedResult)
             .thenApply(nextPage -> nextPage.mappedResultsTillNow);
     }
 
+    /**
+     * Given a {@link Consumer} to a page of resources of type {@code T}, this method sets this instance's
+     * {@code pageConsumer} to the supplied value, then it makes requests to fetch the entire result space of the
+     * resource {@code T} on CTP, while accepting the consumer on each fetched page.
+     *
+     * @param pageConsumer the consumer to accept on each fetched page of the result space.
+     * @return a future containing void after the consumer accepted all the pages.
+     */
     @Nonnull
     CompletionStage<Void> run(@Nonnull final Consumer<List<T>> pageConsumer) {
         this.pageConsumer = pageConsumer;
-        return queryNextPages(this).thenAccept(result -> { });
+        return queryNextPages(pagedResult).thenAccept(result -> { });
     }
 
+    /**
+     * Given a future containing a current page result {@link PagedQueryResult}, this method checks if the future is not
+     * null. If it is not, then it processes the result and attempts to fetch a next page, then it recursivley calls
+     * itself on the next page. If there is no next page, then the future would be null and this method would just
+     * return a future containing this instance of {@link QueryAll} as a result.
+     *
+     * @param currentPageStage a future containing a result {@link PagedQueryResult}.
+     * @return a future containing this instance of {@link QueryAll} as a result.
+     */
     @Nonnull
-    private CompletionStage<QueryAll<T, S, C>> queryNextPages(@Nonnull final QueryAll<T, S, C> currentPageFetcher) {
-        final CompletionStage<PagedQueryResult<T>> currentPageStage = currentPageFetcher.pagedResult;
+    private CompletionStage<QueryAll<T, S, C>> queryNextPages(
+        @Nullable final CompletionStage<PagedQueryResult<T>> currentPageStage) {
         if (currentPageStage != null) {
-            return currentPageStage.thenCompose(currentPage -> {
-                final QueryAll<T, S, C> nextPageFetcher =
-                    currentPageFetcher.processResultAndGetNextQuery(currentPage);
-                return queryNextPages(nextPageFetcher);
-            });
+            return currentPageStage
+                .thenCompose(currentPage -> queryNextPages(processPageAndGetNext(currentPage)));
         }
-        return completedFuture(currentPageFetcher);
+        return completedFuture(this);
     }
 
-    @Nonnull
-    private QueryAll<T, S, C> processResultAndGetNextQuery(@Nonnull final PagedQueryResult<T> page) {
+    /**
+     * Given a result {@link PagedQueryResult}, this method checks if there are elements in the result (size > 0), then
+     * it maps or consumes the resultant list using this instance's {@code pageMapper} or {code pageConsumer} whichever
+     * is available. Then, it checks if this page is the last page or not (by checking if the result size is equal to
+     * this instance's {@code pageSize}). If It is, then it means there might be still more results. However, if
+     * it is less, then it means for sure there are no more results and this is the last page. If there is a next page,
+     * then a new future of the next page is returned. If there are no more results, the method returns null.
+     *
+     * @param page the current page result.
+     * @return If there is a next page, then a new future of the next page is returned. If there are no more results,
+     *         the method returns null.
+     */
+    @Nullable
+    private CompletionStage<PagedQueryResult<T>> processPageAndGetNext(@Nonnull final PagedQueryResult<T> page) {
         final List<T> currentPageElements = page.getResults();
-        CompletionStage<PagedQueryResult<T>> nextPageStage = null;
-
         if (currentPageElements.size() == pageSize) {
             mapOrConsume(currentPageElements);
-            nextPageStage = getNextPageStage(currentPageElements);
+            return getNextPageStage(currentPageElements);
         } else {
             if (currentPageElements.size() > 0) {
                 mapOrConsume(currentPageElements);
             }
         }
-        return
-            new QueryAll<>(client, pageMapper, pageConsumer, mappedResultsTillNow, nextPageStage, baseQuery, pageSize);
+        return null;
     }
 
     /**
