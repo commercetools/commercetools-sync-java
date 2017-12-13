@@ -107,6 +107,13 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
             new QueryAll<>(client, pageMapper, pageConsumer, mappedResultsTillNow, nextPageStage, baseQuery, pageSize);
     }
 
+    /**
+     * Given a list of page elements of resource {@code T}, this method checks if this instance's {@code pageConsumer}
+     * or {@code pageMapper} is set (not null). The one which is set is then applied on the list of page elements.
+     *
+     *
+     * @param pageElements list of page elements of resource {@code T}.
+     */
     private void mapOrConsume(@Nonnull final List<T> pageElements) {
         if (pageConsumer != null) {
             pageConsumer.accept(pageElements);
@@ -115,6 +122,15 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
         }
     }
 
+    /**
+     * Given a list of page elements of resource {@code T}, this method gets the id of the last element in the list
+     * and creates a future containing the fetched results which have an id greater than the id of the last element
+     * in the list.
+     *
+     * @param pageElements list of page elements of resource {@code T}.
+     * @return a future containing the fetched results which have an id greater than the id of the last element
+     *          in the list.
+     */
     @Nonnull
     private CompletionStage<PagedQueryResult<T>> getNextPageStage(@Nonnull final List<T> currentPageElements) {
         final String lastElementId = currentPageElements.get(currentPageElements.size() - 1).getId();
@@ -122,6 +138,14 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
         return queryPage(client, queryPredicate);
     }
 
+    /**
+     * Gets the results of {@link this} instance's query with a limit of this instance's {@code pageSize} and optionally
+     * appending the {@code queryPredicate} if it is not null.
+     *
+     * @param queryPredicate query predicate to append if not null.
+     * @return a future containing the results of the requested page of applying the query with a limit of this
+     *         instance's {@code pageSize} and optionally appending the {@code queryPredicate} if it is not null.
+     */
     @Nonnull
     private CompletionStage<PagedQueryResult<T>> queryPage(@Nonnull final SphereClient client,
                                                            @Nullable final QueryPredicate<T> queryPredicate) {
@@ -131,6 +155,11 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
         return client.execute(queryPredicate != null ? query.withPredicates(queryPredicate) : query);
     }
 
+    /**
+     * Gets the results of {@link this} instance's query with a limit of this instance's {@code pageSize}.
+     *
+     * @return a future containing the results of the requested page of applying the query with {@code pageSize}.
+     */
     @Nonnull
     private CompletionStage<PagedQueryResult<T>> queryPage(@Nonnull final SphereClient client) {
         return queryPage(client, null);
