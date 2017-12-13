@@ -65,19 +65,20 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
     }
 
     @Nonnull
-    CompletionStage<List<S>> run(final Function<List<T>, S> pageMapper) {
+    CompletionStage<List<S>> run(@Nonnull final Function<List<T>, S> pageMapper) {
         this.pageMapper = pageMapper;
         return queryNextPages(this)
             .thenApply(nextPage -> nextPage.mappedResultsTillNow);
     }
 
     @Nonnull
-    CompletionStage<Void> run(final Consumer<List<T>> pageConsumer) {
+    CompletionStage<Void> run(@Nonnull final Consumer<List<T>> pageConsumer) {
         this.pageConsumer = pageConsumer;
         return queryNextPages(this).thenAccept(result -> { });
     }
 
-    private CompletionStage<QueryAll<T, S, C>> queryNextPages(final QueryAll<T, S, C> currentPageFetcher) {
+    @Nonnull
+    private CompletionStage<QueryAll<T, S, C>> queryNextPages(@Nonnull final QueryAll<T, S, C> currentPageFetcher) {
         final CompletionStage<PagedQueryResult<T>> currentPageStage = currentPageFetcher.pagedResult;
         if (currentPageStage != null) {
             return currentPageStage.thenCompose(currentPage -> {
@@ -89,6 +90,7 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
         return completedFuture(currentPageFetcher);
     }
 
+    @Nonnull
     private QueryAll<T, S, C> processPageAndGetNextPageFetcher(@Nonnull final PagedQueryResult<T> page) {
         final List<T> currentPageElements = page.getResults();
         CompletionStage<PagedQueryResult<T>> nextPageStage = null;
