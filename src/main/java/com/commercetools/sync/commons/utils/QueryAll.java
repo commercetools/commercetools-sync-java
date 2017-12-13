@@ -147,10 +147,8 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
      *         instance's {@code pageSize} and optionally appending the {@code queryPredicate} if it is not null.
      */
     @Nonnull
-        final QueryDsl<T, C> query = baseQuery
-            .withLimit(pageSize)
-            .withSort(QuerySort.of("id asc"));
     private CompletionStage<PagedQueryResult<T>> queryPage(@Nullable final QueryPredicate<T> queryPredicate) {
+        final QueryDsl<T, C> query = baseQuery.withLimit(pageSize);
         return client.execute(queryPredicate != null ? query.withPredicates(queryPredicate) : query);
     }
 
