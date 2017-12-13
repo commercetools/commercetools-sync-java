@@ -132,10 +132,10 @@ final class QueryAll<T extends Resource, S, C extends QueryDsl<T, C>> {
      *          in the list.
      */
     @Nonnull
-    private CompletionStage<PagedQueryResult<T>> getNextPageStage(@Nonnull final List<T> currentPageElements) {
-        final String lastElementId = currentPageElements.get(currentPageElements.size() - 1).getId();
+    private CompletionStage<PagedQueryResult<T>> getNextPageStage(@Nonnull final List<T> pageElements) {
+        final String lastElementId = pageElements.get(pageElements.size() - 1).getId();
         final QueryPredicate<T> queryPredicate = QueryPredicate.of(format("id > \"%s\"", lastElementId));
-        return queryPage(client, queryPredicate);
+        return queryPage(queryPredicate);
     }
 
     /**
