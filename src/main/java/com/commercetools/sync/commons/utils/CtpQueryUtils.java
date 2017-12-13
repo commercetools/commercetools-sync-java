@@ -61,8 +61,9 @@ public final class CtpQueryUtils {
     }
 
     /**
-     * Queries all elements matching a query by using a limit based pagination with a combination of id sorting and a
-     * page size 500. More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset.
+     * Queries all elements matching a query by using a limit based pagination with a combination of id sorting and the
+     * supplied {@code pageSize}.
+     * More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset.
      *
      * <p>The method takes a callback {@link Function} that returns a result of type {@code <S>} that is returned on
      * every page of elements queried. Eventually, the method returns a {@link CompletionStage} that contains a list of
@@ -86,8 +87,9 @@ public final class CtpQueryUtils {
     }
 
     /**
-     * Queries all elements matching a query by using a limit based pagination with a combination of id sorting and a
-     * page size 500. More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset
+     * Queries all elements matching a query by using a limit based pagination with a combination of id sorting and the
+     * supplied {@code pageSize}.
+     * More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset
      *
      * <p>The method takes a consumer {@link Consumer} that is applied on on every page of elements queried.
      *
