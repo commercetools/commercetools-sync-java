@@ -60,7 +60,7 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
         this.pageMapper = pageMapper;
         final CompletionStage<PagedQueryResult<T>> firstPage = queryPage();
         return queryNextPages(firstPage)
-            .thenApply(nextPage -> nextPage.mappedResultsTillNow);
+            .thenApply(result -> result.mappedResultsTillNow);
     }
 
     /**
