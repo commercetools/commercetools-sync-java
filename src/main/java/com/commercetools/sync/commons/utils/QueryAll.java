@@ -75,7 +75,7 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
     CompletionStage<Void> run(@Nonnull final Consumer<List<T>> pageConsumer) {
         this.pageConsumer = pageConsumer;
         final CompletionStage<PagedQueryResult<T>> firstPage = queryPage();
-        return queryNextPages(firstPage).thenAccept(result -> { });
+        return queryNextPages(firstPage).thenAccept(ignoredResult -> { });
     }
 
     /**
