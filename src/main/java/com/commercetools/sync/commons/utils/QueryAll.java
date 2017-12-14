@@ -60,7 +60,7 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
         this.pageMapper = pageMapper;
         final CompletionStage<PagedQueryResult<T>> firstPage = queryPage();
         return queryNextPages(firstPage)
-            .thenApply(result -> result.mappedResultsTillNow);
+            .thenApply(voidResult -> this.mappedResultsTillNow);
     }
 
     /**
@@ -75,52 +75,43 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
     CompletionStage<Void> run(@Nonnull final Consumer<List<T>> pageConsumer) {
         this.pageConsumer = pageConsumer;
         final CompletionStage<PagedQueryResult<T>> firstPage = queryPage();
-        return queryNextPages(firstPage).thenAccept(ignoredResult -> { });
+        return queryNextPages(firstPage).thenAccept(voidResult -> { });
     }
 
     /**
-     * Given a future containing a current page result {@link PagedQueryResult}, this method checks if the future is not
-     * null. If it is not, then it processes the result and attempts to fetch a next page, then it recursivley composes
-     * a new completion stage by calling itself on the next page. If there is no next page, then the future would be
-     * null and this method would just return a future containing this instance of {@link QueryAll} as a result.
+     * Given a completion stage {@code currentPageStage} containing a current page result {@link PagedQueryResult}, this
+     * method composes the completion stage by first checking if the result is null or not. If it is not, then it
+     * recursivley (by calling itself with the next page's completion stage result) composes to the supplied stage,
+     * stages of the all next pages' processing. If there is no next page, then the result of the
+     * {@code currentPageStage} would be null and this method would just return a completed future containing
+     * containing null result, which in turn signals the last page of processing.
      *
      * @param currentPageStage a future containing a result {@link PagedQueryResult}.
-     * @return a future containing this instance of {@link QueryAll} as a result.
      */
     @Nonnull
-    private CompletionStage<QueryAll<T, C, S>> queryNextPages(
-        @Nullable final CompletionStage<PagedQueryResult<T>> currentPageStage) {
-        if (currentPageStage != null) {
-            return currentPageStage
-                .thenCompose(currentPage -> queryNextPages(processPageAndGetNext(currentPage)));
-        }
-        return completedFuture(this);
+    private CompletionStage<Void> queryNextPages(@Nonnull final CompletionStage<PagedQueryResult<T>> currentPageStage) {
+        return currentPageStage.thenCompose(currentPage ->
+            currentPage != null ? queryNextPages(processPageAndGetNext(currentPage)) : completedFuture(null));
     }
 
     /**
-     * Given a result {@link PagedQueryResult}, this method checks if there are elements in the result (size > 0), then
-     * it maps or consumes the resultant list using this instance's {@code pageMapper} or {code pageConsumer} whichever
-     * is available. Then, it checks if this page is the last page or not (by checking if the result size is equal to
-     * this instance's {@code pageSize}). If It is, then it means there might be still more results. However, if
-     * it is less, then it means for sure there are no more results and this is the last page. If there is a next page,
-     * then a new future of the next page is returned. If there are no more results, the method returns null.
+     * Given a page result {@link PagedQueryResult}, this method checks if there are elements in the result (size > 0),
+     * then it maps or consumes the resultant list using this instance's {@code pageMapper} or {code pageConsumer}
+     * whichever is available. Then it attempts to fetch the next page if it exists and returns a completion stage
+     * containing the result of the next page. If there is a next page, then a new future of the next page is returned.
+     * If there are no more results, the method returns a completed future containing null.
      *
      * @param page the current page result.
      * @return If there is a next page, then a new future of the next page is returned. If there are no more results,
-     *         the method returns null.
+     *         the method returns a completed future containing null.
      */
-    @Nullable
+    @Nonnull
     private CompletionStage<PagedQueryResult<T>> processPageAndGetNext(@Nonnull final PagedQueryResult<T> page) {
         final List<T> currentPageElements = page.getResults();
-        if (currentPageElements.size() == pageSize) {
+        if (currentPageElements.size() > 0) {
             mapOrConsume(currentPageElements);
-            return getNextPageStage(currentPageElements);
-        } else {
-            if (currentPageElements.size() > 0) {
-                mapOrConsume(currentPageElements);
-            }
         }
-        return null;
+        return getNextPageStage(currentPageElements);
     }
 
     /**
@@ -143,15 +134,25 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
      * and creates a future containing the fetched results which have an id greater than the id of the last element
      * in the list.
      *
+     * Given a list of page elements of resource {@code T}, this method checks if this page is the last page or not by
+     * checking if the result size is equal to this instance's {@code pageSize}). If It is, then it means there might be
+     * still more results. However, if not, then it means for sure there are no more results and this is the last page.
+     * If there is a next page, the id of the last element in the list is fetched and a future is created containing the
+     * fetched results which have an id greater than the id of the last element in the list and this future is returned.
+     * If there are no more results, the method returns a completed future containing null.
+     *
      * @param pageElements list of page elements of resource {@code T}.
      * @return a future containing the fetched results which have an id greater than the id of the last element
      *          in the list.
      */
     @Nonnull
     private CompletionStage<PagedQueryResult<T>> getNextPageStage(@Nonnull final List<T> pageElements) {
-        final String lastElementId = pageElements.get(pageElements.size() - 1).getId();
-        final QueryPredicate<T> queryPredicate = QueryPredicate.of(format("id > \"%s\"", lastElementId));
-        return queryPage(queryPredicate);
+        if (pageElements.size() == pageSize) {
+            final String lastElementId = pageElements.get(pageElements.size() - 1).getId();
+            final QueryPredicate<T> queryPredicate = QueryPredicate.of(format("id > \"%s\"", lastElementId));
+            return queryPage(queryPredicate);
+        }
+        return completedFuture(null);
     }
 
     /**
