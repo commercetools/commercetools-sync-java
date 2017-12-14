@@ -80,9 +80,9 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
 
     /**
      * Given a future containing a current page result {@link PagedQueryResult}, this method checks if the future is not
-     * null. If it is not, then it processes the result and attempts to fetch a next page, then it recursivley calls
-     * itself on the next page. If there is no next page, then the future would be null and this method would just
-     * return a future containing this instance of {@link QueryAll} as a result.
+     * null. If it is not, then it processes the result and attempts to fetch a next page, then it recursivley composes
+     * a new completion stage by calling itself on the next page. If there is no next page, then the future would be
+     * null and this method would just return a future containing this instance of {@link QueryAll} as a result.
      *
      * @param currentPageStage a future containing a result {@link PagedQueryResult}.
      * @return a future containing this instance of {@link QueryAll} as a result.
