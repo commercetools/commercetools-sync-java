@@ -130,10 +130,6 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
     }
 
     /**
-     * Given a list of page elements of resource {@code T}, this method gets the id of the last element in the list
-     * and creates a future containing the fetched results which have an id greater than the id of the last element
-     * in the list.
-     *
      * Given a list of page elements of resource {@code T}, this method checks if this page is the last page or not by
      * checking if the result size is equal to this instance's {@code pageSize}). If It is, then it means there might be
      * still more results. However, if not, then it means for sure there are no more results and this is the last page.
