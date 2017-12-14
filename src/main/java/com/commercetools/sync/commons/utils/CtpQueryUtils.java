@@ -25,6 +25,8 @@ public final class CtpQueryUtils {
      * every page of elements queried. Eventually, the method returns a {@link CompletionStage} that contains a list of
      * all the results of the callbacks returned from every page.
      *
+     * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.
+     *
      * @param client     commercetools client
      * @param query      query containing predicates and expansion paths
      * @param pageMapper callback function that is called on every page queried
@@ -45,6 +47,8 @@ public final class CtpQueryUtils {
      * page size 500. More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset
      *
      * <p>The method takes a consumer {@link Consumer} that is applied on on every page of elements queried.
+     *
+     * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.
      *
      * @param client       commercetools client
      * @param query        query containing predicates and expansion paths
@@ -69,6 +73,8 @@ public final class CtpQueryUtils {
      * every page of elements queried. Eventually, the method returns a {@link CompletionStage} that contains a list of
      * all the results of the callbacks returned from every page.
      *
+     * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.
+     *
      * @param client     commercetools client
      * @param query      query containing predicates and expansion paths
      * @param pageMapper callback function that is called on every page queried
@@ -92,6 +98,8 @@ public final class CtpQueryUtils {
      * More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset
      *
      * <p>The method takes a consumer {@link Consumer} that is applied on on every page of elements queried.
+     *
+     * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.
      *
      * @param client       commercetools client
      * @param query        query containing predicates and expansion paths
