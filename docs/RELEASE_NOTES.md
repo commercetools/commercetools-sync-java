@@ -33,7 +33,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-- [v1.0.0-M7 -  Dec 14, 2017](#v100-m7----dec-14-2017)
+- [v1.0.0-M7 -  Dec 15, 2017](#v100-m7----dec-15-2017)
 - [v1.0.0-M6 -  Dec 5, 2017](#v100-m6----dec-5-2017)
 - [v1.0.0-M5 -  Nov 16, 2017](#v100-m5----nov-16-2017)
 - [v1.0.0-M4 -  Nov 7, 2017](#v100-m4----nov-7-2017)
@@ -53,7 +53,7 @@
 
 
 
-### v1.0.0-M7 -  Dec 14, 2017
+### v1.0.0-M7 -  Dec 15, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M6...v1.0.0-M7) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M7/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M7)
