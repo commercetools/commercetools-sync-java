@@ -4,6 +4,7 @@ apply plugin: 'checkstyle'
 apply plugin: 'pmd'
 apply plugin: 'jacoco'
 apply plugin: 'findbugs'
+apply plugin: 'com.github.spotbugs'
 
 /**
  * Plugins needed for publishing the library to bintray.
