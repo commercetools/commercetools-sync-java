@@ -104,9 +104,7 @@ public class CtpQueryUtilsIT {
         final Set<String> pageCategoryKeys = new HashSet<>();
         categoryPages.forEach(page -> {
             assertThat(page.size()).isEqualTo(2);
-            page.forEach(category -> {
-                pageCategoryKeys.add(category.getKey());
-            });
+            page.forEach(category -> pageCategoryKeys.add(category.getKey()));
         });
         assertThat(pageCategoryKeys).hasSize(numberOfCategories);
     }

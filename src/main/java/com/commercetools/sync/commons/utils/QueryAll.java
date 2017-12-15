@@ -1,166 +1,179 @@
 package com.commercetools.sync.commons.utils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.queries.QueryDsl;
+import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.queries.QuerySort;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.LongStream;
 
+import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.stream.Collectors.toList;
 
-final class QueryAll<T, C extends QueryDsl<T, C>> {
+final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
+    private final SphereClient client;
     private final QueryDsl<T, C> baseQuery;
     private final long pageSize;
 
-    private QueryAll(final QueryDsl<T, C> baseQuery, final long pageSize) {
+    private Function<List<T>, S> pageMapper;
+    private final List<S> mappedResultsTillNow;
+
+    private Consumer<List<T>> pageConsumer;
+
+    private QueryAll(@Nonnull final SphereClient client,
+                     @Nonnull final QueryDsl<T, C> baseQuery,
+                     final long pageSize) {
+
+        this.client = client;
         this.baseQuery = !baseQuery.sort().isEmpty() ? baseQuery : baseQuery.withSort(QuerySort.of("id asc"));
         this.pageSize = pageSize;
-    }
-
-    /**
-     * Given a {@code callback} {@link Function}, this method applies this callback on each page of the results from
-     * {@link this} instance's {@code baseQuery} and returns a future containing a list containing the results of this
-     * callback on each page.
-     *
-     * @param client   the CTP client that the query is run on.
-     * @param callback the callback that gets called on each page of results.
-     * @param <S>      the type of the result of the callback on each page.
-     * @return a future containing a list of results of the callback on each page.
-     */
-    @Nonnull
-    <S> CompletionStage<List<S>> run(final SphereClient client, final Function<List<T>, S> callback) {
-        return queryPage(client, 0).thenCompose(result -> {
-            final List<CompletableFuture<S>> futureResults = new ArrayList<>();
-
-            final S callbackResult = callback.apply(result.getResults());
-            final List<CompletableFuture<S>> nextPagesCallbackResults =
-                queryNextPages(client, result.getTotal(), callback);
-
-            futureResults.add(completedFuture(callbackResult));
-            futureResults.addAll(nextPagesCallbackResults);
-            return transformListOfFuturesToFutureOfLists(futureResults);
-        });
-    }
-
-    /**
-     * Given a {@link Consumer}, this method applies this consumer on each page of the results from
-     * {@link this} instance's {@code baseQuery}.
-     *
-     * @param client   the CTP client that the query is run on.
-     * @param consumer the consumer that gets called on each page of results.
-     * @return an empty future.
-     */
-    @Nonnull
-    CompletionStage<Void> run(final SphereClient client, final Consumer<List<T>> consumer) {
-        return queryPage(client, 0).thenCompose(result -> {
-            final List<CompletableFuture<Void>> futureResults = new ArrayList<>();
-            consumer.accept(result.getResults());
-            futureResults.addAll(queryNextPages(client, result.getTotal(), consumer));
-            return CompletableFuture.allOf(futureResults.toArray(new CompletableFuture[futureResults.size()]));
-        });
-    }
-
-    /**
-     * Given a {@link Consumer}, this method first calculates the total numbr of pages resulting from the query, then
-     * it applies this consumer on each page of the results from {@link this} instance's {@code baseQuery}
-     * and returns a list of futures after applying of this consumer on each page.
-     *
-     * @param client        the CTP client that the query is run on.
-     * @param totalElements the total number of elements resulting from the query.
-     * @param consumer      the consumer to apply on each page of results.
-     * @return a list of futures of applying the consumer on each page of results.
-     */
-    @Nonnull
-    private List<CompletableFuture<Void>> queryNextPages(final SphereClient client, final long totalElements,
-                                                         final Consumer<List<T>> consumer) {
-        final long totalPages = getTotalNumberOfPages(totalElements);
-        return LongStream.range(1, totalPages)
-                         .mapToObj(page -> queryPage(client, page)
-                             .thenApply(PagedQueryResult::getResults)
-                             .thenAccept(consumer)
-                             .toCompletableFuture())
-                         .collect(toList());
-    }
-
-    /**
-     * Given a callback {@link Function}, this method first calculates the total number of pages resulting from the
-     * query, then it applies this callback on each page of the results from {@link this} instance's {@code baseQuery}
-     * and returns a list containing the result of this callback on each page.
-     *
-     * @param client        the CTP client that the query is run on.
-     * @param totalElements the total number of elements resulting from the query.
-     * @param callback      the callback to apply on each page of results.
-     * @return a list of futures containing the results of applying the callback on each page of results.
-     */
-    @Nonnull
-    private <S> List<CompletableFuture<S>> queryNextPages(final SphereClient client, final long totalElements,
-                                                          final Function<List<T>, S> callback) {
-        final long totalPages = getTotalNumberOfPages(totalElements);
-        return LongStream.range(1, totalPages)
-                         .mapToObj(page -> queryPage(client, page)
-                             .thenApply(PagedQueryResult::getResults)
-                             .thenApply(callback)
-                             .toCompletableFuture())
-                         .collect(toList());
-    }
-
-    /**
-     * Given a total number of elements {@code totalElements} this method calculates the number of pages needed that
-     * would be needed to cover all the elements with set {@code pageSize} of {@link this} instance.
-     *
-     * @param totalElements number of elements to get the number of pages for.
-     * @return the total number of pages.
-     */
-    long getTotalNumberOfPages(final long totalElements) {
-        return (long) Math.ceil((double) totalElements / pageSize);
-    }
-
-    /**
-     * Gets the results of {@link this} instance's query for a specific page with {@code pageNumber}.
-     *
-     * @param client     the CTP client that the query is run on.
-     * @param pageNumber the page number to get the results for.
-     * @return a future containing the results of the requested page of applying the query.
-     */
-    @Nonnull
-    private CompletionStage<PagedQueryResult<T>> queryPage(final SphereClient client, final long pageNumber) {
-        final QueryDsl<T, C> query = baseQuery
-            .withOffset(pageNumber * pageSize)
-            .withLimit(pageSize);
-        return client.execute(query);
-    }
-
-    /**
-     * Given a list of futures, this method converts it to a future containing a list of results of these futures after
-     * executing them in parallel with {@link CompletableFuture#allOf(CompletableFuture[])}.
-     *
-     * @param futures list of futures.
-     * @param <S>     the type of the results of the futures.
-     * @return a future containing a list of the results of the input futures.
-     */
-    @Nonnull
-    private <S> CompletableFuture<List<S>> transformListOfFuturesToFutureOfLists(
-        final List<CompletableFuture<S>> futures) {
-        final CompletableFuture[] futuresAsArray = futures.toArray(new CompletableFuture[futures.size()]);
-        return CompletableFuture.allOf(futuresAsArray)
-                                .thenApply(x -> futures.stream()
-                                                       .map(CompletableFuture::join)
-                                                       .collect(Collectors.toList()));
+        this.mappedResultsTillNow = new ArrayList<>();
     }
 
     @Nonnull
-    static <T, C extends QueryDsl<T, C>> QueryAll<T, C> of(@Nonnull final QueryDsl<T, C> baseQuery,
-                                                           final int pageSize) {
-        return new QueryAll<>(baseQuery, pageSize);
+    static <T extends Resource, C extends QueryDsl<T, C>, S> QueryAll<T, C, S> of(
+        @Nonnull final SphereClient client,
+        @Nonnull final QueryDsl<T, C> baseQuery,
+        final int pageSize) {
+
+        return new QueryAll<>(client, baseQuery, pageSize);
+    }
+
+    /**
+     * Given a {@link Function} to a page of resources of type {@code T} that returns a mapped result of type {@code S},
+     * this method sets this instance's {@code pageMapper} to the supplied value, then it makes requests to fetch the
+     * entire result space of the resource {@code T} on CTP, while applying the function on each fetched page.
+     *
+     * @param pageMapper the function to apply on each fetched page of the result space.
+     * @return a future containing a list of mapped results of type {@code S}, after the function applied all the pages.
+     */
+    @Nonnull
+    CompletionStage<List<S>> run(@Nonnull final Function<List<T>, S> pageMapper) {
+        this.pageMapper = pageMapper;
+        final CompletionStage<PagedQueryResult<T>> firstPage = queryPage();
+        return queryNextPages(firstPage)
+            .thenApply(voidResult -> this.mappedResultsTillNow);
+    }
+
+    /**
+     * Given a {@link Consumer} to a page of resources of type {@code T}, this method sets this instance's
+     * {@code pageConsumer} to the supplied value, then it makes requests to fetch the entire result space of the
+     * resource {@code T} on CTP, while accepting the consumer on each fetched page.
+     *
+     * @param pageConsumer the consumer to accept on each fetched page of the result space.
+     * @return a future containing void after the consumer accepted all the pages.
+     */
+    @Nonnull
+    CompletionStage<Void> run(@Nonnull final Consumer<List<T>> pageConsumer) {
+        this.pageConsumer = pageConsumer;
+        final CompletionStage<PagedQueryResult<T>> firstPage = queryPage();
+        return queryNextPages(firstPage).thenAccept(voidResult -> { });
+    }
+
+    /**
+     * Given a completion stage {@code currentPageStage} containing a current page result {@link PagedQueryResult}, this
+     * method composes the completion stage by first checking if the result is null or not. If it is not, then it
+     * recursivley (by calling itself with the next page's completion stage result) composes to the supplied stage,
+     * stages of the all next pages' processing. If there is no next page, then the result of the
+     * {@code currentPageStage} would be null and this method would just return a completed future containing
+     * containing null result, which in turn signals the last page of processing.
+     *
+     * @param currentPageStage a future containing a result {@link PagedQueryResult}.
+     */
+    @Nonnull
+    private CompletionStage<Void> queryNextPages(@Nonnull final CompletionStage<PagedQueryResult<T>> currentPageStage) {
+        return currentPageStage.thenCompose(currentPage ->
+            currentPage != null ? queryNextPages(processPageAndGetNext(currentPage)) : completedFuture(null));
+    }
+
+    /**
+     * Given a page result {@link PagedQueryResult}, this method checks if there are elements in the result (size > 0),
+     * then it maps or consumes the resultant list using this instance's {@code pageMapper} or {code pageConsumer}
+     * whichever is available. Then it attempts to fetch the next page if it exists and returns a completion stage
+     * containing the result of the next page. If there is a next page, then a new future of the next page is returned.
+     * If there are no more results, the method returns a completed future containing null.
+     *
+     * @param page the current page result.
+     * @return If there is a next page, then a new future of the next page is returned. If there are no more results,
+     *         the method returns a completed future containing null.
+     */
+    @Nonnull
+    private CompletionStage<PagedQueryResult<T>> processPageAndGetNext(@Nonnull final PagedQueryResult<T> page) {
+        final List<T> currentPageElements = page.getResults();
+        if (currentPageElements.size() > 0) {
+            mapOrConsume(currentPageElements);
+        }
+        return getNextPageStage(currentPageElements);
+    }
+
+    /**
+     * Given a list of page elements of resource {@code T}, this method checks if this instance's {@code pageConsumer}
+     * or {@code pageMapper} is set (not null). The one which is set is then applied on the list of page elements.
+     *
+     *
+     * @param pageElements list of page elements of resource {@code T}.
+     */
+    private void mapOrConsume(@Nonnull final List<T> pageElements) {
+        if (pageConsumer != null) {
+            pageConsumer.accept(pageElements);
+        } else {
+            mappedResultsTillNow.add(pageMapper.apply(pageElements));
+        }
+    }
+
+    /**
+     * Given a list of page elements of resource {@code T}, this method checks if this page is the last page or not by
+     * checking if the result size is equal to this instance's {@code pageSize}). If It is, then it means there might be
+     * still more results. However, if not, then it means for sure there are no more results and this is the last page.
+     * If there is a next page, the id of the last element in the list is fetched and a future is created containing the
+     * fetched results which have an id greater than the id of the last element in the list and this future is returned.
+     * If there are no more results, the method returns a completed future containing null.
+     *
+     * @param pageElements list of page elements of resource {@code T}.
+     * @return a future containing the fetched results which have an id greater than the id of the last element
+     *          in the list.
+     */
+    @Nonnull
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // `https://github.com/findbugsproject/findbugs/issues/79
+    private CompletionStage<PagedQueryResult<T>> getNextPageStage(@Nonnull final List<T> pageElements) {
+        if (pageElements.size() == pageSize) {
+            final String lastElementId = pageElements.get(pageElements.size() - 1).getId();
+            final QueryPredicate<T> queryPredicate = QueryPredicate.of(format("id > \"%s\"", lastElementId));
+            return queryPage(queryPredicate);
+        }
+        return completedFuture(null);
+    }
+
+    /**
+     * Gets the results of {@link this} instance's query with a limit of this instance's {@code pageSize} and optionally
+     * appending the {@code queryPredicate} if it is not null.
+     *
+     * @param queryPredicate query predicate to append if not null.
+     * @return a future containing the results of the requested page of applying the query with a limit of this
+     *         instance's {@code pageSize} and optionally appending the {@code queryPredicate} if it is not null.
+     */
+    @Nonnull
+    private CompletionStage<PagedQueryResult<T>> queryPage(@Nullable final QueryPredicate<T> queryPredicate) {
+        final QueryDsl<T, C> query = baseQuery.withLimit(pageSize);
+        return client.execute(queryPredicate != null ? query.withPredicates(queryPredicate) : query);
+    }
+
+    /**
+     * Gets the results of {@link this} instance's query with a limit of this instance's {@code pageSize}.
+     *
+     * @return a future containing the results of the requested page of applying the query with {@code pageSize}.
+     */
+    @Nonnull
+    private CompletionStage<PagedQueryResult<T>> queryPage() {
+        return queryPage(null);
     }
 }
