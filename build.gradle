@@ -1,21 +1,7 @@
-buildscript {
-    ext {
-        bintrayGradlePluginVersion = '1.7.3'
-        gradleGitPublish = '0.3.0'
-        testLoggerVersion = '1.1.2'
-    }
-    repositories {
-        mavenCentral()
-        jcenter()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${bintrayGradlePluginVersion}"
-        classpath "org.ajoberstar:gradle-git-publish:${gradleGitPublish}"
-        classpath "com.adarshr:gradle-test-logger-plugin:${testLoggerVersion}"
-    }
+plugins {
+    id 'com.jfrog.bintray' version '1.7.3'
+    id 'org.ajoberstar.git-publish' version '0.3.0'
+    id "com.adarshr.test-logger" version '1.1.2'
 }
 
 apply from: "$rootDir/gradle-scripts/plugins.gradle"
