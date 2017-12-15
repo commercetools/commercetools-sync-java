@@ -6,14 +6,12 @@ ext{
     checkstyleVersion = '7.7'
     pmdVersion = '5.6.1'
     jacocoVersion = '0.7.9'
-    spotbugsVersion = '3.1.1'
 }
 
 dependencies {
     implementation "com.commercetools.sdk.jvm.core:commercetools-models:${commercetoolsJvmSdkVersion}"
     implementation "com.commercetools.sdk.jvm.core:commercetools-java-client:${commercetoolsJvmSdkVersion}"
     implementation "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
-    compileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugsVersion}"
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
     testImplementation "junit:junit:${jUnitVersion}"
     testImplementation "org.assertj:assertj-core:${assertjVersion}"
