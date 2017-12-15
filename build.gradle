@@ -2,7 +2,7 @@ buildscript {
     ext {
         bintrayGradlePluginVersion = '1.7.3'
         gradleGitPublish = '0.3.0'
-        spotbugsVersion = '3.1.1'
+        spotbugsGradlePluginVersion = '1.6.0'
         testLoggerVersion = '1.1.2'
     }
     repositories {
@@ -15,8 +15,8 @@ buildscript {
     dependencies {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${bintrayGradlePluginVersion}"
         classpath "org.ajoberstar:gradle-git-publish:${gradleGitPublish}"
-        classpath "gradle.plugin.com.github.spotbugs:gradlePlugin:${spotbugsVersion}"
-        classpath "com.adarshr:gradle-test-logger-plugin:$testLoggerVersion"
+        classpath "gradle.plugin.com.github.spotbugs:gradlePlugin:${spotbugsGradlePluginVersion}"
+        classpath "com.adarshr:gradle-test-logger-plugin:${testLoggerVersion}"
     }
 }
 
@@ -32,6 +32,7 @@ apply from: "$rootDir/gradle-scripts/dependencies.gradle"
 apply from: "$rootDir/gradle-scripts/checkstyle.gradle"
 apply from: "$rootDir/gradle-scripts/pmd.gradle"
 apply from: "$rootDir/gradle-scripts/jacoco.gradle"
+apply from: "$rootDir/gradle-scripts/spotbugs.gradle"
 apply from: "$rootDir/gradle-scripts/maven-publish.gradle"
 apply from: "$rootDir/gradle-scripts/bintray-publish.gradle"
 apply from: "$rootDir/gradle-scripts/oss-publish.gradle"
