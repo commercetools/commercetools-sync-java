@@ -1,5 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.queries.PagedQueryResult;
@@ -142,6 +143,7 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
      *          in the list.
      */
     @Nonnull
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // `https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<PagedQueryResult<T>> getNextPageStage(@Nonnull final List<T> pageElements) {
         if (pageElements.size() == pageSize) {
             final String lastElementId = pageElements.get(pageElements.size() - 1).getId();
