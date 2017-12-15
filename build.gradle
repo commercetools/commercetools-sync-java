@@ -14,7 +14,7 @@ buildscript {
     dependencies {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${bintrayGradlePluginVersion}"
         classpath "org.ajoberstar:gradle-git-publish:${gradleGitPublish}"
-        classpath "com.adarshr:gradle-test-logger-plugin:$testLoggerVersion"
+        classpath "com.adarshr:gradle-test-logger-plugin:${testLoggerVersion}"
     }
 }
 
