@@ -3,7 +3,6 @@ apply plugin: 'maven'
 apply plugin: 'checkstyle'
 apply plugin: 'pmd'
 apply plugin: 'jacoco'
-apply plugin: 'com.github.spotbugs'
 
 /**
  * Plugins needed for publishing the library to bintray.
@@ -14,8 +13,5 @@ apply plugin: 'com.github.spotbugs'
  * https://github.com/gradle/gradle/issues/1118
  *
  * */
-apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 apply plugin: 'java-library'
-apply plugin: 'org.ajoberstar.git-publish'
-apply plugin: 'com.adarshr.test-logger'
