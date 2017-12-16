@@ -3,6 +3,14 @@ addons:
   apt:
     packages:
     - oracle-java8-installer
+  sonarcloud:
+    organization: "heshammassoud-github"
+    token:
+      secure: mYl9cdNnKsuilJxJiH1c7r6Bn5B2nXiuC9ywkvJthO2DpRLoV0L2EXFR0EcrA3VBlaPLXxYnG6oMiVrdDBGC27nqK3hFogWsGLt8BVYn31qksAD0GDR37bMXeoUiH9bk944EcJ/xrxmNhGdRJUK1Ul5bAx0jAF/2duQTIII2RlsysUGyBxvON0fBAu2pLRLqpM2fKpPMiuAfprbq4MzRLataSnGAGdZL1eavcvUJ9jLqrgxJVWKV5xRwjUBPJNtDapF64T1Mqdqg4okiwFytMj2tQlGV5I4+33LlVeWtYv6Qt86WYeWghbNJnsN1yjqguVZqL46lYTU9sg5fDRB852QvOUwdrDZ+j7Iy0QuAaUndgLx+zd3ETHw6jgx4VOqJ4q9mkPFeP7tx9or2BJUAibE0jg4jJq6tgRYFw8oRbeDVagrILrV2deX4TC0ZjqS+3cTAf1Kt6vf/40ynhyvpdKEWyejGsMWgQiTg5SGMqOeNxvjWgy1bHzGL6IXAvxVicfFrYMX9buwjJMYD9c6BJ2Y/QCUQMNiLELCuq8/DTdvqZCxbuubHWA5lJPd3iNiwVoYSI8yeJzzURvaCHiqEEH7TvUl3ktniGUa6WQbydHMfNd+b/uNN6l0w9YkBWRj36eTzsT74SQaBhbrVZ0YodFt5wMivdJbQmv4oSMxj3mI=
+    github_token:
+      secure: OMn01T6ATuBKrmYsBdn81KwcER3scJfIJmhFFT2yzM4F5O21WrMeunlWmAsedOKEeSebvCLHb5axqS1v92/RJnl4vnW0Sh1hQ6t3nKMHcmx+CfKp6kSvAjfV2bJiaBDjPLoBlRjrntNtVASIi/GGnhq1hzfwa/Ck4MHToDlM744BSb4lGoTpUeRTEkeJ27l9ssI6Jk8Y5k6zIpz9A4IrgaECPYJ4Gkn4ubhPXcEZRXGSDora6oN+h4qcDivfWP1v6YB+UbWe7PI2eH+tO8sNjdyuoha3X760x7Jbf2PYo17IFQesVtWoflKp0sO/MfnilN90uRBs4KvBdG7GQsBJV5kJq5LO9kuFb91jPMZFCNEDjFVJOdKiMZZ/wL9w4veq3NsmSrrjsQL2Skq288/X467MHkdrZRosYpbJdvsd5Yrp2bazC4YLGXEV2Jh6NLOWHB1COuCOFe3ipZ9mFbHPj/79m05omFDqnsrAh+udNqCJC46TI+SiWCbkP1OqAivPGti+ICD53dNyjieAxP1ocy3bJpSgqZT5OUh+COn07fprfIv3Wjg4qBUmYgIKwjwuzMrzTr/TXIMt8h5aH0I/cASss8qxyQ1AHmwv8cM2tNkOeCdV6OUkwQI0Ncgl01tDBtJ3rqyk3Q/toF61pNjEVa3nKShsfmcJ0h7BNcLdP50=
+script:
+  - sonar-scanner
 language: java
 dist: trusty
 jdk:
@@ -19,7 +27,6 @@ cache:
   - $HOME/.gradle/wrapper/
 after_success:
 - bash <(curl -s https://codecov.io/bash)
-- ./gradlew sonarqube -Dsonar.organization=heshammassoud-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
 - ./travis-publish.sh || travis_terminate 1
 notifications:
   hipchat:
