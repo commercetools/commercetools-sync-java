@@ -412,9 +412,6 @@ public class InventorySyncIT {
         assertThat(inventorySyncStatistics.getUpdated()).isEqualTo(1);
         assertThat(inventorySyncStatistics.getFailed()).isEqualTo(0);
         assertThat(inventorySyncStatistics.getLatestBatchProcessingTimeInMillis()).isGreaterThan(0L);
-        assertThat(inventorySyncStatistics.getReportMessage())
-            .isEqualTo("Summary: 3 inventory entries were processed in total (1 created, 1 updated and 0 failed to sync"
-                + ").");
     }
 
     @Test

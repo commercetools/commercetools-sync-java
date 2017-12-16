@@ -66,8 +66,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getProductRef
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
-import static java.lang.String.format;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductSyncIT {
     private static ProductType sourceProductType;
@@ -192,9 +191,10 @@ public class ProductSyncIT {
 
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
-                + " failed to sync).", 1, 0, 1, 0));
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
 
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
@@ -225,9 +225,10 @@ public class ProductSyncIT {
 
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
-                + " failed to sync).", 1, 0, 1, 0));
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
 
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
@@ -267,9 +268,10 @@ public class ProductSyncIT {
 
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
-                + " failed to sync).", 1, 0, 1, 0));
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
 
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
@@ -367,9 +369,10 @@ public class ProductSyncIT {
 
         final ProductSyncStatistics syncStatistics =  customSync.sync(productDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
-                + " failed to sync).", 3, 0, 1, 0));
+        assertThat(syncStatistics.getProcessed()).isEqualTo(3);
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
 
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();

@@ -50,7 +50,6 @@ import static com.commercetools.sync.products.SyncFilter.ofBlackList;
 import static com.commercetools.sync.products.SyncFilter.ofWhiteList;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
-import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -142,10 +141,11 @@ public class ProductSyncFilterIT {
         final ProductSyncStatistics syncStatistics =
                 executeBlocking(productSync.sync(singletonList(productDraft)));
 
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
 
-        assertThat(syncStatistics.getReportMessage())
-                .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
-                        + " failed to sync).", 1, 0, 1, 0));
         assertThat(updateActionsFromSync.stream()
                 .noneMatch(updateAction -> updateAction instanceof RemoveFromCategory)).isTrue();
         assertThat(updateActionsFromSync.stream()
@@ -169,9 +169,11 @@ public class ProductSyncFilterIT {
         final ProductSyncStatistics syncStatistics =
                 executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThat(syncStatistics.getReportMessage())
-                .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
-                        + " failed to sync).", 1, 0, 1, 0));
+        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(syncStatistics.getCreated()).isEqualTo(0);
+        assertThat(syncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(syncStatistics.getFailed()).isEqualTo(0);
+
         assertThat(updateActionsFromSync).hasSize(1);
         final UpdateAction<Product> updateAction = updateActionsFromSync.get(0);
         assertThat(updateAction.getAction()).isEqualTo("changeName");

@@ -1,6 +1,7 @@
 package com.commercetools.sync.categories;
 
 
+import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -201,4 +202,14 @@ public class CategorySyncMockUtils {
             .parent(Category.referenceOfId(parentId))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(customTypeId, customFields));
     }
+
+
+    @Nonnull
+    public static Integer getNumberOfCategoriesWithMissingParents(@Nonnull final CategorySyncStatistics statistics) {
+        return statistics.getCategoryKeysWithMissingParents().values()
+                             .stream()
+                             .map(ArrayList::size)
+                             .reduce(0, Integer::sum);
+    }
+
 }
