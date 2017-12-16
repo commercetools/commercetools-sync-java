@@ -1,0 +1,5 @@
+sonarqube {
+    properties {
+        property "sonar.jacoco.itReportPath", "$buildDir/jacoco/integrationTest.exec"
+    }
+}
