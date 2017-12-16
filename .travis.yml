@@ -6,7 +6,7 @@ addons:
   sonarcloud:
     organization: "heshammassoud-github"
     branches:
-          - $TRAVIS_BRANCH
+          - 214-sonarcloud
     token:
       secure: mYl9cdNnKsuilJxJiH1c7r6Bn5B2nXiuC9ywkvJthO2DpRLoV0L2EXFR0EcrA3VBlaPLXxYnG6oMiVrdDBGC27nqK3hFogWsGLt8BVYn31qksAD0GDR37bMXeoUiH9bk944EcJ/xrxmNhGdRJUK1Ul5bAx0jAF/2duQTIII2RlsysUGyBxvON0fBAu2pLRLqpM2fKpPMiuAfprbq4MzRLataSnGAGdZL1eavcvUJ9jLqrgxJVWKV5xRwjUBPJNtDapF64T1Mqdqg4okiwFytMj2tQlGV5I4+33LlVeWtYv6Qt86WYeWghbNJnsN1yjqguVZqL46lYTU9sg5fDRB852QvOUwdrDZ+j7Iy0QuAaUndgLx+zd3ETHw6jgx4VOqJ4q9mkPFeP7tx9or2BJUAibE0jg4jJq6tgRYFw8oRbeDVagrILrV2deX4TC0ZjqS+3cTAf1Kt6vf/40ynhyvpdKEWyejGsMWgQiTg5SGMqOeNxvjWgy1bHzGL6IXAvxVicfFrYMX9buwjJMYD9c6BJ2Y/QCUQMNiLELCuq8/DTdvqZCxbuubHWA5lJPd3iNiwVoYSI8yeJzzURvaCHiqEEH7TvUl3ktniGUa6WQbydHMfNd+b/uNN6l0w9YkBWRj36eTzsT74SQaBhbrVZ0YodFt5wMivdJbQmv4oSMxj3mI=
     github_token:
