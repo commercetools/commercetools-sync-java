@@ -21,7 +21,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
-import static com.commercetools.sync.categories.CategorySyncMockUtils.getNumberOfCategoriesWithMissingParents;
 import static com.commercetools.sync.commons.MockUtils.getMockCategoryService;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static java.lang.String.format;
@@ -437,7 +436,7 @@ public class CategorySyncTest {
         assertThat(syncStatistics.getCreated()).isEqualTo(expectedNumberOfCategoriesCreated);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(categoryDrafts.size());
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(categoryDrafts.size());
 
 
         assertThat(errorCallBackMessages).hasSize(0);
@@ -473,7 +472,7 @@ public class CategorySyncTest {
         assertThat(syncStatisticsWithDefaultBatchSize.getCreated()).isEqualTo(expectedNumberOfCategoriesCreated);
         assertThat(syncStatisticsWithDefaultBatchSize.getUpdated()).isEqualTo(0);
         assertThat(syncStatisticsWithDefaultBatchSize.getFailed()).isEqualTo(expectedFailedCategories);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(categoryDrafts.size());
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(categoryDrafts.size());
 
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);

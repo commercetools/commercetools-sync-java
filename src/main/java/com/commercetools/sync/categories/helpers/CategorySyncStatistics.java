@@ -33,13 +33,11 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
     public String getReportMessage() {
         reportMessage = format("Summary: %s categories were processed in total "
                 + "(%s created, %s updated, %s failed to sync and %s categories with a missing parent).",
-            getProcessed(), getCreated(), getUpdated(), getFailed(),
-            getNumberOfCategoriesWithMissingParents(categoryKeysWithMissingParents));
+            getProcessed(), getCreated(), getUpdated(), getFailed(), getNumberOfCategoriesWithMissingParents());
         return reportMessage;
     }
 
-    static int getNumberOfCategoriesWithMissingParents(
-        @Nonnull final Map<String, ArrayList<String>> categoryKeysWithMissingParents) {
+    public int getNumberOfCategoriesWithMissingParents() {
         return categoryKeysWithMissingParents.values()
                                              .stream()
                                              .filter(Objects::nonNull)

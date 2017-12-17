@@ -8,11 +8,11 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.commercetools.sync.commons.MockUtils.getStatisticsAsJsonString;
-import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CategorySyncStatisticsTest {
@@ -170,15 +170,18 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void getNumberOfCategoriesWithMissingParents_WithEmptyMap_ShouldReturn0() {
-        final int numberOfCategoriesWithMissingParents = CategorySyncStatistics
-            .getNumberOfCategoriesWithMissingParents(new HashMap<>());
-        assertThat(numberOfCategoriesWithMissingParents).isZero();
+    public void getNumberOfCategoriesWithMissingParents_WithEmptyAndNullValues_ShouldReturn0() {
+        final Map<String, List<String>> categoryKeysWithMissingParents = new HashMap<>();
+        categoryKeysWithMissingParents.put("parent1", null);
+        categoryKeysWithMissingParents.put("parent2", emptyList());
+
+        categorySyncStatistics.setCategoryKeysWithMissingParents(categoryKeysWithMissingParents);
+        assertThat(categorySyncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
     }
 
     @Test
     public void getNumberOfCategoriesWithMissingParents_WithNonEmptyMap_ShouldReturnCorrectNumberOfChildren() {
-        final Map<String, ArrayList<String>> categoryKeysWithMissingParents = new HashMap<>();
+        final Map<String, List<String>> categoryKeysWithMissingParents = new HashMap<>();
         final ArrayList<String> firstMissingParentChildrenKeys = new ArrayList<>();
         firstMissingParentChildrenKeys.add("key1");
         firstMissingParentChildrenKeys.add("key2");
@@ -190,8 +193,9 @@ public class CategorySyncStatisticsTest {
         categoryKeysWithMissingParents.put("parent1", firstMissingParentChildrenKeys);
         categoryKeysWithMissingParents.put("parent2", secondMissingParentChildrenKeys);
 
-        final int numberOfCategoriesWithMissingParents = CategorySyncStatistics
-            .getNumberOfCategoriesWithMissingParents(categoryKeysWithMissingParents);
-        assertThat(numberOfCategoriesWithMissingParents).isEqualTo(4);
+
+        categorySyncStatistics.setCategoryKeysWithMissingParents(categoryKeysWithMissingParents);
+
+        assertThat(categorySyncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(4);
     }
 }
