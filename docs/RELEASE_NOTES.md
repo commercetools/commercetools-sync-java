@@ -45,10 +45,25 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <!--
-### v1.0.0-M8 -  Dec 28, 2017
+### v1.0.0-M9 -  Jan 10, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M6...v1.0.0-M7) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M7/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M7)
+-->
+
+
+<!--
+### v1.0.0-M8 -  Dec 28, 2017
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M7...v1.0.0-M8) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M8/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M8)
+
+**New Features** (1)
+- **Category Sync** - Exposed new method in CategorySyncStatistics#getNumberOfCategoriesWithMissingParents which gets the
+total number of categories with missing parents from the statistics instance. [#186](https://github.com/commercetools/commercetools-sync-java/issues/186)
+
+**Changes** (1)
+- **Product Sync** - Change of wording in the product sync statistics report message. [#186](https://github.com/commercetools/commercetools-sync-java/issues/186)
 -->
 
 
