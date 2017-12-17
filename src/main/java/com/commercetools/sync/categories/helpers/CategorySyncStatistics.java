@@ -4,8 +4,8 @@ package com.commercetools.sync.categories.helpers;
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
@@ -15,7 +15,7 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
      * Map that represents categories with missing parents; the keys of the map are the keys of the missing parent
      * categories and the value of each is a list of the children category keys.
      */
-    private Map<String, ArrayList<String>> categoryKeysWithMissingParents = new HashMap<>();
+    private Map<String, List<String>> categoryKeysWithMissingParents = new HashMap<>();
 
     public CategorySyncStatistics() {
         super();
@@ -45,12 +45,12 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
                                       .reduce(0, Integer::sum);
     }
 
-    public Map<String, ArrayList<String>> getCategoryKeysWithMissingParents() {
+    public Map<String, List<String>> getCategoryKeysWithMissingParents() {
         return categoryKeysWithMissingParents;
     }
 
     public void setCategoryKeysWithMissingParents(@Nonnull final
-                                                  Map<String, ArrayList<String>> categoryKeysWithMissingParents) {
+                                                  Map<String, List<String>> categoryKeysWithMissingParents) {
         this.categoryKeysWithMissingParents = categoryKeysWithMissingParents;
     }
 }
