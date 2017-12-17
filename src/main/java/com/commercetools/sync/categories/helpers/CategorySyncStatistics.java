@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static java.lang.String.format;
 
@@ -40,9 +41,10 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
     static int getNumberOfCategoriesWithMissingParents(
         @Nonnull final Map<String, ArrayList<String>> categoryKeysWithMissingParents) {
         return categoryKeysWithMissingParents.values()
-                                      .stream()
-                                      .map(ArrayList::size)
-                                      .reduce(0, Integer::sum);
+                                             .stream()
+                                             .filter(Objects::nonNull)
+                                             .map(List::size)
+                                             .reduce(0, Integer::sum);
     }
 
     public Map<String, List<String>> getCategoryKeysWithMissingParents() {
