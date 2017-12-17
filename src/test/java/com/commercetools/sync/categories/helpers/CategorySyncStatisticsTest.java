@@ -1,8 +1,6 @@
 package com.commercetools.sync.categories.helpers;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import io.netty.util.internal.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -94,79 +92,19 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void getStatisticsAsJsonString_WithoutCalculatingProcessingTime_ShouldGetCorrectJsonString()
-        throws JsonProcessingException {
-        categorySyncStatistics.incrementCreated();
-        categorySyncStatistics.incrementProcessed();
+    public void setAndGetCategoryKeysWithMissingParents_WithAnyMap_ShouldSetAndGetMapCorrectly() {
+        final HashMap<String, List<String>> catKeysWithMissingParents = new HashMap<>();
+        categorySyncStatistics.setCategoryKeysWithMissingParents(catKeysWithMissingParents);
 
-        categorySyncStatistics.incrementFailed();
-        categorySyncStatistics.incrementProcessed();
-
-        categorySyncStatistics.incrementUpdated();
-        categorySyncStatistics.incrementProcessed();
-
-        final String statisticsAsJsonString = getStatisticsAsJsonString(categorySyncStatistics);
-        assertThat(statisticsAsJsonString)
-                .isEqualTo("{\"reportMessage\":\"Summary: 3 categories were processed in total (1 created, 1 updated, "
-                  + "1 failed to sync and 0 categories with a missing parent).\",\""
-                    + "updated\":1,\""
-                    + "created\":1,\""
-                    + "failed\":1,\""
-                    + "processed\":3,\""
-                    + "latestBatchProcessingTimeInDays\":"
-                    + categorySyncStatistics.getLatestBatchProcessingTimeInDays()
-                    + ",\""
-                    + "latestBatchProcessingTimeInHours\":"
-                    + categorySyncStatistics.getLatestBatchProcessingTimeInHours()
-                    + ",\"latestBatchProcessingTimeInMinutes\":"
-                    + categorySyncStatistics.getLatestBatchProcessingTimeInMinutes()
-                    + ",\"latestBatchProcessingTimeInSeconds\":"
-                    + categorySyncStatistics.getLatestBatchProcessingTimeInSeconds()
-                    + ",\"latestBatchProcessingTimeInMillis\":"
-                    + categorySyncStatistics.getLatestBatchProcessingTimeInMillis()
-                    + ",\"latestBatchHumanReadableProcessingTime\":\""
-                    + categorySyncStatistics.getLatestBatchHumanReadableProcessingTime()
-                    + "\",\"categoryKeysWithMissingParents\":"
-                    + categorySyncStatistics.getCategoryKeysWithMissingParents() + "}");
+        assertThat(categorySyncStatistics.getCategoryKeysWithMissingParents()).isSameAs(catKeysWithMissingParents);
     }
 
     @Test
-    public void getStatisticsAsJsonString_WithCalculatingProcessingTime_ShouldGetCorrectJsonString()
-        throws JsonProcessingException {
-        categorySyncStatistics.incrementCreated();
-        categorySyncStatistics.incrementProcessed();
+    public void getNumberOfCategoriesWithMissingParents_WithEmptyMap_ShouldReturn0() {
+        final HashMap<String, List<String>> catKeysWithMissingParents = new HashMap<>();
+        categorySyncStatistics.setCategoryKeysWithMissingParents(catKeysWithMissingParents);
 
-        categorySyncStatistics.incrementFailed();
-        categorySyncStatistics.incrementProcessed();
-
-        categorySyncStatistics.incrementUpdated();
-        categorySyncStatistics.incrementProcessed();
-
-        categorySyncStatistics.calculateProcessingTime();
-
-        final String statisticsAsJsonString = getStatisticsAsJsonString(categorySyncStatistics);
-        assertThat(statisticsAsJsonString)
-            .isEqualTo("{\"reportMessage\":\"Summary: 3 categories were processed in total (1 created, 1 updated, "
-                + "1 failed to sync and 0 categories with a missing parent).\",\""
-                + "updated\":1,\""
-                + "created\":1,\""
-                + "failed\":1,\""
-                + "processed\":3,\""
-                + "latestBatchProcessingTimeInDays\":"
-                + categorySyncStatistics.getLatestBatchProcessingTimeInDays()
-                + ",\""
-                + "latestBatchProcessingTimeInHours\":"
-                + categorySyncStatistics.getLatestBatchProcessingTimeInHours()
-                + ",\"latestBatchProcessingTimeInMinutes\":"
-                + categorySyncStatistics.getLatestBatchProcessingTimeInMinutes()
-                + ",\"latestBatchProcessingTimeInSeconds\":"
-                + categorySyncStatistics.getLatestBatchProcessingTimeInSeconds()
-                + ",\"latestBatchProcessingTimeInMillis\":"
-                + categorySyncStatistics.getLatestBatchProcessingTimeInMillis()
-                + ",\"latestBatchHumanReadableProcessingTime\":\""
-                + categorySyncStatistics.getLatestBatchHumanReadableProcessingTime()
-                + "\",\"categoryKeysWithMissingParents\":"
-                + categorySyncStatistics.getCategoryKeysWithMissingParents() + "}");
+        assertThat(categorySyncStatistics.getNumberOfCategoriesWithMissingParents()).isZero();
     }
 
     @Test
