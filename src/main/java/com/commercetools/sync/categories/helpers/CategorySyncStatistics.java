@@ -37,6 +37,11 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
         return reportMessage;
     }
 
+    /**
+     * Returns the total number of categories with missing parents.
+     *
+     * @return the total number of categories with missing parents.
+     */
     public int getNumberOfCategoriesWithMissingParents() {
         return categoryKeysWithMissingParents.values()
                                              .stream()
