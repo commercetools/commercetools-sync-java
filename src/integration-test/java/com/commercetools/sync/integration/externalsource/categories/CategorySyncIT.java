@@ -35,7 +35,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-import static com.commercetools.sync.categories.CategorySyncMockUtils.getNumberOfCategoriesWithMissingParents;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
@@ -124,7 +123,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(1);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
     }
 
     @Test
@@ -142,7 +141,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getFailed()).isEqualTo(1);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
     }
 
     @Test
@@ -161,7 +160,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
     }
 
     @Test
@@ -180,7 +179,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(1);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
     }
 
     @Test
@@ -335,7 +334,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(1);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
     }
 
     @Test
@@ -424,7 +423,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(3);
         assertThat(syncStatistics.getUpdated()).isEqualTo(1);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
     }
 
     @Test
@@ -458,7 +457,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(1);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
 
         final Optional<Category> optionalResult = CTP_TARGET_CLIENT.execute(CategoryQuery.of().bySlug(Locale.ENGLISH,
             categoryDraft1.getSlug().get(Locale.ENGLISH))).toCompletableFuture().join().head();
@@ -530,7 +529,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(5);
         assertThat(syncStatistics.getUpdated()).isEqualTo(1);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
     }
 
     @Test
@@ -597,7 +596,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(5);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getFailed()).isEqualTo(1);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
     }
 
     @Test
@@ -664,7 +663,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(4);
         assertThat(syncStatistics.getUpdated()).isEqualTo(1);
         assertThat(syncStatistics.getFailed()).isEqualTo(1);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
     }
 
     @Test
@@ -696,7 +695,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(1);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getFailed()).isEqualTo(1);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
     }
 
     @Test
@@ -726,7 +725,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(1);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
     }
 
     @Test
@@ -758,11 +757,11 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
 
-        final Map<String, ArrayList<String>> categoryKeysWithMissingParents = syncStatistics
+        final Map<String, List<String>> categoryKeysWithMissingParents = syncStatistics
             .getCategoryKeysWithMissingParents();
         assertThat(categoryKeysWithMissingParents).hasSize(1);
 
-        final ArrayList<String> missingParentsChildren = categoryKeysWithMissingParents.get(nonExistingParentKey);
+        final List<String> missingParentsChildren = categoryKeysWithMissingParents.get(nonExistingParentKey);
         assertThat(missingParentsChildren).hasSize(1);
 
         final String childrenKeys = missingParentsChildren.get(0);

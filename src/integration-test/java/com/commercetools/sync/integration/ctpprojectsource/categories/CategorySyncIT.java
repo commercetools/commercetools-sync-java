@@ -26,7 +26,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.categories.CategorySyncMockUtils.getNumberOfCategoriesWithMissingParents;
 import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.buildCategoryQuery;
 import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.replaceCategoriesReferenceIdsWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
@@ -141,7 +140,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(1);
         assertThat(syncStatistics.getUpdated()).isEqualTo(2);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
 
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
@@ -166,7 +165,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getFailed()).isEqualTo(2);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
 
         assertThat(callBackErrorResponses).hasSize(2);
         final String key1 = categoryDrafts.get(0).getKey();
@@ -235,7 +234,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(130);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
 
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
@@ -294,7 +293,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(120);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
 
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
@@ -342,7 +341,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(1);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
 
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
@@ -416,7 +415,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(1);
         assertThat(syncStatistics.getUpdated()).isEqualTo(1);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
 
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
@@ -470,7 +469,7 @@ public class CategorySyncIT {
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getFailed()).isEqualTo(2);
-        assertThat(getNumberOfCategoriesWithMissingParents(syncStatistics)).isEqualTo(0);
+        assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
 
         assertThat(callBackErrorResponses).hasSize(2);
         assertThat(callBackErrorResponses.get(0))
