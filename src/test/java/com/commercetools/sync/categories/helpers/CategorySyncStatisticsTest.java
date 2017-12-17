@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,28 +66,14 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void calculateProcessingTime_ShouldSetProcessingTimeInAllUnitsAndHumanReadableString() throws
-        InterruptedException {
-        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInMillis()).isEqualTo(0);
-        assertThat(categorySyncStatistics.getLatestBatchHumanReadableProcessingTime())
-            .isEqualTo(StringUtil.EMPTY_STRING);
+    public void getReportMessage_WithIncrementedStats_ShouldGetCorrectMessage() {
+        categorySyncStatistics.incrementCreated(1);
+        categorySyncStatistics.incrementFailed(1);
+        categorySyncStatistics.incrementUpdated(1);
+        categorySyncStatistics.incrementProcessed(3);
 
-        final int waitingTimeInMillis = 100;
-        Thread.sleep(waitingTimeInMillis);
-        categorySyncStatistics.calculateProcessingTime();
-
-        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInDays()).isGreaterThanOrEqualTo(0);
-        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInHours()).isGreaterThanOrEqualTo(0);
-        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInMinutes()).isGreaterThanOrEqualTo(0);
-        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInSeconds())
-            .isGreaterThanOrEqualTo(waitingTimeInMillis / 1000);
-        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInMillis())
-            .isGreaterThanOrEqualTo(waitingTimeInMillis);
-
-        final long remainingMillis = categorySyncStatistics.getLatestBatchProcessingTimeInMillis()
-            - TimeUnit.SECONDS.toMillis(categorySyncStatistics.getLatestBatchProcessingTimeInSeconds());
-        assertThat(categorySyncStatistics.getLatestBatchHumanReadableProcessingTime()).contains(format(", %dms",
-            remainingMillis));
+        assertThat(categorySyncStatistics.getReportMessage()).isEqualTo("Summary: 3 categories were processed in total "
+            + "(1 created, 1 updated, 1 failed to sync and 0 categories with a missing parent).");
     }
 
     @Test
