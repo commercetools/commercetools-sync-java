@@ -63,7 +63,7 @@
 total number of categories with missing parents from the statistics instance. [#186](https://github.com/commercetools/commercetools-sync-java/issues/186)
 
 **Changes** (1)
-- **Product Sync** - Change of wording in the product sync statistics report message. [#186](https://github.com/commercetools/commercetools-sync-java/issues/186)
+- **Product Sync** - Changed product sync statistics report message wording. [#186](https://github.com/commercetools/commercetools-sync-java/issues/186)
 -->
 
 
