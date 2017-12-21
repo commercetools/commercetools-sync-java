@@ -112,6 +112,28 @@ public class MockUtils {
         return categoryService;
     }
 
+    public static CategoryService mockCategoryService(@Nonnull final Set<Category> existingCategories,
+                                                      @Nonnull final Set<Category> createdCategories) {
+        final CategoryService mockCategoryService = mock(CategoryService.class);
+        when(mockCategoryService.fetchMatchingCategoriesByKeys(any()))
+            .thenReturn(CompletableFuture.completedFuture(existingCategories));
+
+        final Map<String, String> keyToIds =
+            existingCategories.stream().collect(Collectors.toMap(Category::getKey, Category::getId));
+        when(mockCategoryService.cacheKeysToIds()).thenReturn(completedFuture(keyToIds));
+
+        when(mockCategoryService.createCategories(any())).thenReturn(completedFuture(createdCategories));
+        return mockCategoryService;
+    }
+
+    public static CategoryService mockCategoryService(@Nonnull final Set<Category> existingCategories,
+                                                      @Nonnull final Set<Category> createdCategories,
+                                                      @Nonnull final Category updatedCategory) {
+        final CategoryService mockCategoryService = mockCategoryService(existingCategories, createdCategories);
+        when(mockCategoryService.updateCategory(any(), any())).thenReturn(completedFuture(updatedCategory));
+        return mockCategoryService;
+    }
+
     /**
      * Creates a mock {@link TypeService} that returns a dummy type id of value "typeId" instance whenever the
      * following method is called on the service:
