@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.commercetools.sync.commons.MockUtils.getMockCustomFieldsDraft;
 import static org.mockito.Mockito.mock;
@@ -63,6 +64,9 @@ public class CategorySyncMockUtils {
         when(category.getMetaKeywords()).thenReturn(LocalizedString.of(locale, metaKeywords));
         when(category.getOrderHint()).thenReturn(orderHint);
         when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
+        when(category.toReference()).thenReturn(Category.referenceOfId(UUID.randomUUID().toString()));
+        return category;
+    }
     }
 
     /**
