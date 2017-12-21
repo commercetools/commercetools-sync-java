@@ -275,7 +275,7 @@ public class CategoryReferenceResolverTest {
             .isCompletedWithValueMatching(resolvedDraft -> resolvedDraft.getCategories().isEmpty());
     }
 
-    @Ignore("TODO: SHOULD FAIL ON RESOLUTION IF NOT FOUND ON FETCH GITHUB ISSUE#")
+    @Ignore("TODO: SHOULD FAIL ON RESOLUTION IF NOT FOUND ON FETCH GITHUB ISSUE#219")
     @Test
     public void resolveCategoryReferences_WithANonExistentCategoryReference_ShouldNotResolveReference() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
