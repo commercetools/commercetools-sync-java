@@ -67,6 +67,13 @@ public class CategorySyncMockUtils {
         when(category.toReference()).thenReturn(Category.referenceOfId(UUID.randomUUID().toString()));
         return category;
     }
+
+    public static Category getMockCategory(@Nonnull final String id, @Nonnull final String key) {
+        final Category category = mock(Category.class);
+        when(category.getKey()).thenReturn(key);
+        when(category.getId()).thenReturn(id);
+        when(category.toReference()).thenReturn(Category.referenceOfId(id));
+        return category;
     }
 
     /**
