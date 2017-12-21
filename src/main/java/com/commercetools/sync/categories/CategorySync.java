@@ -163,11 +163,11 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                                         .thenAccept(fetchedCategories ->
                                                             processFetchedCategories(fetchedCategories,
                                                                 referencesResolvedDrafts, keyToIdCache))
-                                                        .thenAccept(result ->
+                                                        .thenAccept(ignoredResult ->
                                                             updateCategoriesSequentially(categoryDraftsToUpdate))
-                                                        .thenCompose(result ->
+                                                        .thenCompose(ignoredResult ->
                                                             updateCategoriesInParallel(categoryDraftsToUpdate))
-                                                        .thenApply((result) -> {
+                                                        .thenApply((ignoredResult) -> {
                                                             statistics.incrementProcessed(numberOfNewDraftsToProcess);
                                                             return statistics;
                                                         });
