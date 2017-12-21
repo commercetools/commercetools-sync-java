@@ -28,10 +28,7 @@ public final class AssertionUtils {
                                         final int updated,
                                         final int failed,
                                         final int numberOfCategoriesWithMissingParents) {
-        assertThat(syncStatistics.getProcessed()).isEqualTo(processed);
-        assertThat(syncStatistics.getCreated()).isEqualTo(created);
-        assertThat(syncStatistics.getUpdated()).isEqualTo(updated);
-        assertThat(syncStatistics.getFailed()).isEqualTo(failed);
+        assertStatistics(syncStatistics, processed, created, updated, failed);
         assertThat(syncStatistics.getNumberOfCategoriesWithMissingParents())
             .isEqualTo(numberOfCategoriesWithMissingParents);
     }
