@@ -647,7 +647,7 @@ public class ProductSyncIT {
         final ProductSyncStatistics syncStatistics =
             executeBlocking(productSync.sync(singletonList(productDraftWithProductReference)));
 
-        assertStatistics(syncStatistics, 1, 0, 0, 0);
+        assertStatistics(syncStatistics, 1, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
