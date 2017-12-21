@@ -167,19 +167,20 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         @Nonnull final ProductDraftBuilder draftBuilder) {
         final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = draftBuilder.getCategories();
         final Set<String> categoryKeys = new HashSet<>();
-
-        categoryResourceIdentifiers.forEach(categoryResourceIdentifier -> {
+        for (ResourceIdentifier<Category> categoryResourceIdentifier: categoryResourceIdentifiers) {
             if (categoryResourceIdentifier != null) {
                 try {
                     final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier,
                         options.shouldAllowUuidKeys());
                     categoryKeys.add(categoryKey);
                 } catch (ReferenceResolutionException referenceResolutionException) {
-                    options.applyErrorCallback(format(FAILED_TO_RESOLVE_CATEGORY, draftBuilder.getKey(),
-                        referenceResolutionException), referenceResolutionException);
+                    return exceptionallyCompletedFuture(
+                        new ReferenceResolutionException(
+                            format(FAILED_TO_RESOLVE_REFERENCE, categoryResourceIdentifier.getTypeId(),
+                                draftBuilder.getKey(),referenceResolutionException.getMessage())));
                 }
             }
-        });
+        }
         return fetchAndResolveCategoryReferences(draftBuilder, categoryKeys);
     }
 
