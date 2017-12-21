@@ -428,7 +428,7 @@ public class CategorySyncTest {
     @Test
     public void sync_WithBatchSizeSet_ShouldCallSyncOnEachBatch() {
         final int batchSize = 1;
-        CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(mock(SphereClient.class))
             .errorCallback(
                 (errorMessage, exception) -> {
@@ -437,73 +437,51 @@ public class CategorySyncTest {
                 })
             .batchSize(batchSize)
             .build();
+        final int numberOfCategoryDrafts  = 160;
+        final List<Category> mockedCreatedCategories =
+            IntStream.range(0, numberOfCategoryDrafts )
+                     .mapToObj(i -> getMockCategory(UUID.randomUUID().toString(), "key" + i))
+                     .collect(Collectors.toList());
+        final List<CategoryDraft> categoryDrafts =
+            mockedCreatedCategories.stream()
+                                   .map(category -> CategoryDraftBuilder.of(category).build())
+                                   .collect(Collectors.toList());
+        final CategoryService mockCategoryService =
+            mockCategoryService(emptySet(), new HashSet<>(mockedCreatedCategories));
+        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
+            mockCategoryService);
+        final CategorySync syncSpy = spy(categorySync);
 
-        final CategorySync categorySync =
-            new CategorySync(categorySyncOptions, getMockTypeService(), getMockCategoryService());
-
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-
-        final int numberOfCategoryDrafts = 160;
-        for (int i = 0; i < numberOfCategoryDrafts; i++) {
-            categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key" + i, "parentKey",
-                "customTypeId", new HashMap<>()));
-        }
-
-        final CategorySync mockCategorySync = spy(categorySync);
-
-        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(categoryDrafts)
-                                                                      .toCompletableFuture().join();
+        syncSpy.sync(categoryDrafts).toCompletableFuture().join();
 
         int expectedNumberOfCalls = (int) (Math.ceil(numberOfCategoryDrafts / batchSize) + 1);
-        verify(mockCategorySync, times(expectedNumberOfCalls)).syncBatches(any(), any());
-
-        int expectedNumberOfCategoriesCreated = expectedNumberOfCalls - 1;
-        assertThat(syncStatistics.getCreated()).isEqualTo(expectedNumberOfCategoriesCreated);
-        assertThat(syncStatistics.getFailed()).isEqualTo(0);
-        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
-        assertThat(syncStatistics.getProcessed()).isEqualTo(categoryDrafts.size());
-        assertThat(syncStatistics.getReportMessage()).isEqualTo(format("Summary: %s categories were processed"
-                + " in total (%s created, 0 updated, 0 failed to sync and %s categories with a missing parent).",
-            categoryDrafts.size(),
-            expectedNumberOfCategoriesCreated,
-            categoryDrafts.size()));
+        verify(syncSpy, times(expectedNumberOfCalls)).syncBatches(any(), any());
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
+    }
 
-        // With Default batch size
+    @Test
+    public void sync_WithDefaultBatchSize_ShouldCallSyncOnEachBatch() {
+        final int numberOfCategoryDrafts  = 160;
+        final List<Category> mockedCreatedCategories =
+            IntStream.range(0, numberOfCategoryDrafts )
+                     .mapToObj(i -> getMockCategory(UUID.randomUUID().toString(), "key" + i))
+                     .collect(Collectors.toList());
+        final List<CategoryDraft> categoryDrafts =
+            mockedCreatedCategories.stream()
+                                   .map(category -> CategoryDraftBuilder.of(category).build())
+                                   .collect(Collectors.toList());
+        final CategoryService mockCategoryService =
+            mockCategoryService(emptySet(), new HashSet<>(mockedCreatedCategories));
+        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
+            mockCategoryService);
+        final CategorySync syncSpy = spy(categorySync);
 
-        categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                        .errorCallback((errorMessage, exception) -> {
-                                                            errorCallBackMessages.add(errorMessage);
-                                                            errorCallBackExceptions.add(exception);
-                                                        })
-                                                        .build();
+        syncSpy.sync(categoryDrafts).toCompletableFuture().join();
 
-        final CategorySync categorySyncWithDefaultBatchSize = new CategorySync(categorySyncOptions,
-            getMockTypeService(), getMockCategoryService());
-        final CategorySync mockCategorySyncWithDefaultBatchSize = spy(categorySyncWithDefaultBatchSize);
-
-        final CategorySyncStatistics syncStatisticsWithDefaultBatchSize = mockCategorySyncWithDefaultBatchSize
-            .sync(categoryDrafts)
-            .toCompletableFuture().join();
-
-        expectedNumberOfCalls =
+        final int expectedNumberOfCalls =
             (int) (Math.ceil(numberOfCategoryDrafts / (double) CategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT) + 1);
-
-        verify(mockCategorySyncWithDefaultBatchSize, times(expectedNumberOfCalls)).syncBatches(any(), any());
-
-
-        expectedNumberOfCategoriesCreated = expectedNumberOfCalls - 1;
-        final int expectedFailedCategories = categoryDrafts.size() - (expectedNumberOfCategoriesCreated);
-
-        assertThat(syncStatisticsWithDefaultBatchSize.getCreated()).isEqualTo(expectedNumberOfCategoriesCreated);
-        assertThat(syncStatisticsWithDefaultBatchSize.getFailed()).isEqualTo(expectedFailedCategories);
-        assertThat(syncStatisticsWithDefaultBatchSize.getUpdated()).isEqualTo(0);
-        assertThat(syncStatisticsWithDefaultBatchSize.getProcessed()).isEqualTo(categoryDrafts.size());
-        assertThat(syncStatisticsWithDefaultBatchSize.getReportMessage())
-            .isEqualTo(format("Summary: %s categories were processed in total (%s created, 0 updated, %s failed to sync"
-                    + " and %s categories with a missing parent).", categoryDrafts.size(),
-                expectedNumberOfCategoriesCreated, expectedFailedCategories, categoryDrafts.size()));
+        verify(syncSpy, times(expectedNumberOfCalls)).syncBatches(any(), any());
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
