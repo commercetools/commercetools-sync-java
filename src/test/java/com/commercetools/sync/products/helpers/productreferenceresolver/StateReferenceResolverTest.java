@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
+import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.StateService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
@@ -22,7 +23,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import static com.commercetools.sync.commons.MockUtils.getMockCategoryService;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
@@ -54,7 +54,7 @@ public class StateReferenceResolverTest {
         stateService = getMockStateService(STATE_ID);
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
         referenceResolver = new ProductReferenceResolver(syncOptions, getMockProductTypeService(PRODUCT_TYPE_ID),
-            getMockCategoryService(), getMockTypeService(),
+            mock(CategoryService.class), getMockTypeService(),
             getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
             getMockTaxCategoryService(TAX_CATEGORY_ID), stateService,getMockProductService(PRODUCT_ID));
     }
@@ -68,7 +68,7 @@ public class StateReferenceResolverTest {
             .state(State.referenceOfId(UUID.randomUUID().toString()));
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
-            getMockProductTypeService(PRODUCT_TYPE_ID), getMockCategoryService(), getMockTypeService(),
+            getMockProductTypeService(PRODUCT_TYPE_ID), mock(CategoryService.class), getMockTypeService(),
             getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
             getMockTaxCategoryService(TAX_CATEGORY_ID), stateService, getMockProductService(PRODUCT_ID));
 
