@@ -12,18 +12,24 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
-import static com.commercetools.sync.commons.MockUtils.getMockCategoryService;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
+import static com.commercetools.sync.commons.MockUtils.mockCategoryService;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -33,9 +39,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class CategorySyncTest {
-    private CategorySync categorySync;
     private CategorySyncOptions categorySyncOptions;
-
     private List<String> errorCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
 
@@ -54,19 +58,15 @@ public class CategorySyncTest {
                                                             errorCallBackExceptions.add(exception);
                                                         })
                                                         .build();
-        categorySync = new CategorySync(categorySyncOptions, getMockTypeService(), getMockCategoryService());
     }
 
     @Test
     public void sync_WithEmptyListOfDrafts_ShouldNotProcessAnyCategories() {
-        final CategoryService mockCategoryService = getMockCategoryService();
-        when(mockCategoryService.fetchMatchingCategoriesByKeys(any()))
-            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
-
+        final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
         final CategorySync mockCategorySync =
             new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
 
-        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(new ArrayList<>())
+        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(emptyList())
                                                                       .toCompletableFuture().join();
 
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
@@ -81,17 +81,11 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithANullDraft_ShouldBeCountedAsFailed() {
-        final CategoryService mockCategoryService = getMockCategoryService();
-        when(mockCategoryService.fetchMatchingCategoriesByKeys(any()))
-            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
-
+        final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
         final CategorySync mockCategorySync =
             new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
 
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(null);
-
-        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(categoryDrafts)
+        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(singletonList(null))
                                                                       .toCompletableFuture().join();
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getFailed()).isEqualTo(1);
@@ -107,16 +101,11 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithADraftWithNoSetKey_ShouldFailSync() {
-        final CategoryService mockCategoryService = getMockCategoryService();
-        when(mockCategoryService.fetchMatchingCategoriesByKeys(any()))
-            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
-
+        final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
         final CategorySync mockCategorySync =
             new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
-
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "noKeyDraft", "no-key-id-draft",null));
-
+        final List<CategoryDraft> categoryDrafts = singletonList(
+            getMockCategoryDraft(Locale.ENGLISH, "noKeyDraft", "no-key-id-draft",null));
 
         final CategorySyncStatistics syncStatistics = mockCategorySync.sync(categoryDrafts)
                                                                       .toCompletableFuture().join();
@@ -135,16 +124,12 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithNoExistingCategory_ShouldCreateCategory() {
-        final CategoryService mockCategoryService = getMockCategoryService();
-        when(mockCategoryService.fetchMatchingCategoriesByKeys(any()))
-            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
-
+        final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
+        final CategoryService mockCategoryService = mockCategoryService(emptySet(), singleton(mockCategory));
         final CategorySync mockCategorySync =
             new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
-
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "newKey", "parentKey",
-            "customTypeId", new HashMap<>()));
+        final List<CategoryDraft> categoryDrafts = singletonList(
+            getMockCategoryDraft(Locale.ENGLISH, "name", "newKey", "parentKey", "customTypeId", new HashMap<>()));
 
         final CategorySyncStatistics syncStatistics = mockCategorySync.sync(categoryDrafts)
                                                                       .toCompletableFuture().join();
@@ -161,12 +146,17 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithExistingCategory_ShouldUpdateCategory() {
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
-            "customTypeId", new HashMap<>()));
+        final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
+        final CategoryService mockCategoryService =
+            mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
+        final CategorySync mockCategorySync =
+            new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
+        final List<CategoryDraft> categoryDrafts = singletonList(
+            getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey", "customTypeId", new HashMap<>()));
 
-        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts)
-                                                                  .toCompletableFuture().join();
+        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(categoryDrafts)
+                                                                      .toCompletableFuture().join();
+
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(1);
@@ -179,7 +169,9 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithIdenticalExistingCategory_ShouldNotUpdateCategory() {
-        final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH,
+        final Category mockCategory = getMockCategory(
+            UUID.randomUUID().toString(),
+            Locale.ENGLISH,
             "name",
             "slug",
             "key",
@@ -190,10 +182,13 @@ public class CategorySyncTest {
             "metaKeywords",
             "orderHint",
             "parentId");
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-        categoryDrafts.add(categoryDraft);
+        final CategoryDraft identicalCategoryDraft = CategoryDraftBuilder.of(mockCategory).build();
+        final CategoryService mockCategoryService = mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
+        final CategorySync mockCategorySync =
+            new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
+        final List<CategoryDraft> categoryDrafts = singletonList(identicalCategoryDraft);
 
-        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(categoryDrafts).toCompletableFuture().join();
 
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
@@ -207,12 +202,12 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithExistingCategoryButWithNotAllowedUuidReferenceResolution_ShouldFailSync() {
+        final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
+        final CategoryService mockCategoryService = mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
-            getMockCategoryService());
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-
-        final String parentUuid = String.valueOf(UUID.randomUUID());
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", parentUuid,
+            mockCategoryService);
+        final List<CategoryDraft> categoryDrafts = singletonList(
+            getMockCategoryDraft(Locale.ENGLISH, "name", "key", UUID.randomUUID().toString(),
             "customTypeId", new HashMap<>()));
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
@@ -234,11 +229,12 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithExistingCategoryButWithNullParentReference_ShouldFailSync() {
+        final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
+        final CategoryService mockCategoryService =
+            mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
-            getMockCategoryService());
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", null,
+            mockCategoryService);
+        final List<CategoryDraft> categoryDrafts = singletonList(getMockCategoryDraft(Locale.ENGLISH, "name", "key", null,
             "customTypeId", new HashMap<>()));
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
@@ -259,16 +255,18 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithExistingCategoryButWithNoCustomType_ShouldSync() {
+        final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
+        final CategoryService mockCategoryService =
+            mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
-            getMockCategoryService());
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
+            mockCategoryService);
 
         final CategoryDraft categoryDraft = mock(CategoryDraft.class);
         when(categoryDraft.getName()).thenReturn(LocalizedString.of(Locale.ENGLISH, "name"));
         when(categoryDraft.getKey()).thenReturn("key");
         when(categoryDraft.getCustom()).thenReturn(null);
 
-        categoryDrafts.add(categoryDraft);
+        final List<CategoryDraft> categoryDrafts = singletonList(categoryDraft);
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
@@ -283,11 +281,13 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithExistingCategoryButWithEmptyParentReference_ShouldFailSync() {
+        final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
+        final CategoryService mockCategoryService =
+            mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
-            getMockCategoryService());
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "",
+            mockCategoryService);
+        final List<CategoryDraft> categoryDrafts = singletonList(
+            getMockCategoryDraft(Locale.ENGLISH, "name", "key", "",
             "customTypeId", new HashMap<>()));
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
@@ -308,12 +308,14 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithExistingCategoryButWithEmptyCustomTypeReference_ShouldFailSync() {
+        final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
+        final CategoryService mockCategoryService =
+            mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
-            getMockCategoryService());
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
-            "", new HashMap<>()));
+            mockCategoryService);
+        final List<CategoryDraft> categoryDrafts = singletonList(
+            getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
+                "", new HashMap<>()));
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
@@ -334,13 +336,14 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithNotAllowedUuidCustomTypeKey_ShouldFailSync() {
+        final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
+        final CategoryService mockCategoryService =
+            mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
-            getMockCategoryService());
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
-
-        final String uuidCustomTypeKey = UUID.randomUUID().toString();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
-            uuidCustomTypeKey, new HashMap<>()));
+            mockCategoryService);
+        final List<CategoryDraft> categoryDrafts = singletonList(
+            getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
+                UUID.randomUUID().toString(), new HashMap<>()));
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
@@ -366,13 +369,15 @@ public class CategorySyncTest {
         categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
                                                         .allowUuidKeys(true)
                                                         .build();
-        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
-            getMockCategoryService());
-        final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
 
-        final String uuidCustomTypeKey = UUID.randomUUID().toString();
-        categoryDrafts.add(getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
-            uuidCustomTypeKey, new HashMap<>()));
+        final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
+        final CategoryService mockCategoryService =
+            mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
+        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
+            mockCategoryService);
+        final List<CategoryDraft> categoryDrafts = singletonList(
+            getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
+                UUID.randomUUID().toString(), new HashMap<>()));
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
