@@ -140,9 +140,15 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     /**
-     * Add Javadoc.
-     * @param draftBuilder TODO
-     * @return TODO
+     * Given a {@link ProductDraftBuilder} this method attempts to resolve the product type to return a
+     * {@link CompletionStage} which contains a new instance of the builder with the resolved product type reference.
+     * The key of the product type reference is either taken from the expanded reference or taken from the value of the
+     * id field.
+     *
+     * @param draftBuilder the productDraft to resolve its product type reference.
+     * @return a {@link CompletionStage} that contains as a result a new builder instance with resolved product type
+     *         reference or, in case an error occurs during reference resolution,
+     *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
     public CompletionStage<ProductDraftBuilder> resolveProductTypeReference(
@@ -158,9 +164,14 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     /**
-     * Add Javadoc.
-     * @param draftBuilder TODO
-     * @return TODO
+     * Given a {@link ProductDraftBuilder} this method attempts to resolve the categories and categoryOrderHints to
+     * return a {@link CompletionStage} which contains a new instance of the builder with the resolved references.
+     * The key of the category references is either taken from the expanded references or taken from the value of the
+     * id fields.
+     *
+     * @param draftBuilder the productDraft to resolve its category and categoryOrderHints references.
+     * @return a {@link CompletionStage} that contains as a result a new builder instance with resolved references or,
+     *         in case an error occurs during reference resolution, a {@link ReferenceResolutionException}.
      */
     @Nonnull
     public CompletionStage<ProductDraftBuilder> resolveCategoryReferences(
@@ -243,9 +254,15 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     /**
-     * TODO
-     * @param draftBuilder TODO
-     * @return TODO
+     * Given a {@link ProductDraftBuilder} this method attempts to resolve the tax category to return a
+     * {@link CompletionStage} which contains a new instance of the builder with the resolved tax category reference.
+     * The key of the tax category reference is either taken from the expanded reference or taken from the value of the
+     * id field.
+     *
+     * @param draftBuilder the productDraft to resolve its tax category reference.
+     * @return a {@link CompletionStage} that contains as a result a new builder instance with resolved tax category
+     *         reference or, in case an error occurs during reference resolution,
+     *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
     public CompletionStage<ProductDraftBuilder> resolveTaxCategoryReferences(
@@ -255,9 +272,14 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     /**
-     * TODO
-     * @param draftBuilder TODO
-     * @return TODO
+     * Given a {@link ProductDraftBuilder} this method attempts to resolve the state to return a {@link CompletionStage}
+     * which contains a new instance of the builder with the resolved state reference. The key of the state reference is
+     * either taken from the expanded reference or taken from the value of the id field.
+     *
+     * @param draftBuilder the productDraft to resolve its state reference.
+     * @return a {@link CompletionStage} that contains as a result a new builder instance with resolved state
+     *         reference or, in case an error occurs during reference resolution,
+     *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
     public CompletionStage<ProductDraftBuilder> resolveStateReferences(
