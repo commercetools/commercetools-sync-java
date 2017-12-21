@@ -51,6 +51,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         + "ProductDraft with key:'%s'.";
     private static final String FAILED_TO_RESOLVE_CATEGORY = "Failed to resolve category reference on "
         + "ProductDraft with key:'%s'. Reason: %s";
+    private static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve reference '%s' on ProductDraft with "
+        + "key:'%s'. Reason: %s";
 
     /**
      * Takes a {@link ProductSyncOptions} instance, a {@link ProductTypeService}, a {@link CategoryService}, a
@@ -296,8 +298,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         } catch (ReferenceResolutionException referenceResolutionException) {
             return exceptionallyCompletedFuture(
                 new ReferenceResolutionException(
-                    format("Failed to resolve reference '%s' on ProductDraft with key:'%s'. Reason: %s",
-                        reference.getTypeId(), draftBuilder.getKey(), referenceResolutionException.getMessage())));
+                    format(FAILED_TO_RESOLVE_REFERENCE, reference.getTypeId(), draftBuilder.getKey(),
+                        referenceResolutionException.getMessage())));
         }
     }
 
