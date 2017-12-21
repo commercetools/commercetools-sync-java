@@ -169,19 +169,7 @@ public class CategorySyncTest {
 
     @Test
     public void sync_WithIdenticalExistingCategory_ShouldNotUpdateCategory() {
-        final Category mockCategory = getMockCategory(
-            UUID.randomUUID().toString(),
-            Locale.ENGLISH,
-            "name",
-            "slug",
-            "key",
-            "externalId",
-            "description",
-            "metaDescription",
-            "metaTitle",
-            "metaKeywords",
-            "orderHint",
-            "parentId");
+        final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
         final CategoryDraft identicalCategoryDraft = CategoryDraftBuilder.of(mockCategory).build();
         final CategoryService mockCategoryService = mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
         final CategorySync mockCategorySync =
