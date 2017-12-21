@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public final class ProductReferenceResolver extends BaseReferenceResolver<ProductDraft, ProductSyncOptions> {
@@ -205,8 +206,9 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             .thenApply(categories ->
                 categories.stream().map(category -> {
                     final Reference<Category> categoryReference = category.toReference();
-                    if (categoryOrderHints != null && !categoryOrderHints.getAsMap().isEmpty()) {
-                        categoryOrderHintsMap.put(category.getId(), categoryOrderHints.get(category.getKey()));
+                    if (categoryOrderHints != null) {
+                        ofNullable(categoryOrderHints.get(category.getKey()))
+                            .ifPresent(orderHintValue -> categoryOrderHintsMap.put(category.getId(), orderHintValue));
                     }
                     return categoryReference;
                 }).collect(Collectors.toList()))
