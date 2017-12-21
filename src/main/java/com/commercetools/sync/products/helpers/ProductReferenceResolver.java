@@ -138,9 +138,14 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                 .thenApply(draftBuilder::variants);
     }
 
+    /**
+     * Add Javadoc.
+     * @param draftBuilder TODO
+     * @return TODO
+     */
     @Nonnull
-    CompletionStage<ProductDraftBuilder> resolveProductTypeReference(
-            @Nonnull final ProductDraftBuilder draftBuilder) {
+    public CompletionStage<ProductDraftBuilder> resolveProductTypeReference(
+        @Nonnull final ProductDraftBuilder draftBuilder) {
         final ResourceIdentifier<ProductType> productTypeResourceIdentifier = draftBuilder.getProductType();
         return getProductTypeId(productTypeResourceIdentifier,
             format(FAILED_TO_RESOLVE_PRODUCT_TYPE, draftBuilder.getKey()))
@@ -151,9 +156,14 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             });
     }
 
+    /**
+     * Add Javadoc.
+     * @param draftBuilder TODO
+     * @return TODO
+     */
     @Nonnull
-    private CompletionStage<ProductDraftBuilder> resolveCategoryReferences(
-            @Nonnull final ProductDraftBuilder draftBuilder) {
+    public CompletionStage<ProductDraftBuilder> resolveCategoryReferences(
+        @Nonnull final ProductDraftBuilder draftBuilder) {
         final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = draftBuilder.getCategories();
         final Set<String> categoryKeys = new HashSet<>();
 
@@ -229,16 +239,26 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         }
     }
 
+    /**
+     * TODO
+     * @param draftBuilder TODO
+     * @return TODO
+     */
     @Nonnull
-    CompletionStage<ProductDraftBuilder> resolveTaxCategoryReferences(
-            @Nonnull final ProductDraftBuilder draftBuilder) {
+    public CompletionStage<ProductDraftBuilder> resolveTaxCategoryReferences(
+        @Nonnull final ProductDraftBuilder draftBuilder) {
         return resolveReference(draftBuilder, draftBuilder.getTaxCategory(),
             taxCategoryService::fetchCachedTaxCategoryId, TaxCategory::referenceOfId, ProductDraftBuilder::taxCategory);
     }
 
+    /**
+     * TODO
+     * @param draftBuilder TODO
+     * @return TODO
+     */
     @Nonnull
-    CompletionStage<ProductDraftBuilder> resolveStateReferences(
-            @Nonnull final ProductDraftBuilder draftBuilder) {
+    public CompletionStage<ProductDraftBuilder> resolveStateReferences(
+        @Nonnull final ProductDraftBuilder draftBuilder) {
         return resolveReference(draftBuilder, draftBuilder.getState(),
             stateService::fetchCachedStateId, State::referenceOfId, ProductDraftBuilder::state);
     }
