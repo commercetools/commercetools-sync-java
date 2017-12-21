@@ -49,8 +49,6 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
     private static final String FAILED_TO_RESOLVE_PRODUCT_TYPE = "Failed to resolve product type reference on "
         + "ProductDraft with key:'%s'.";
-    private static final String FAILED_TO_RESOLVE_CATEGORY = "Failed to resolve category reference on "
-        + "ProductDraft with key:'%s'. Reason: %s";
     private static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve reference '%s' on ProductDraft with "
         + "key:'%s'. Reason: %s";
 
