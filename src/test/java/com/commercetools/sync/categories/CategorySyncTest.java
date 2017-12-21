@@ -182,8 +182,6 @@ public class CategorySyncTest {
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo("Summary: 1 categories were processed in "
-            + "total (0 created, 0 updated, 0 failed to sync and 1 categories with a missing parent).");
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
