@@ -171,12 +171,14 @@ public class CategorySyncTest {
     public void sync_WithIdenticalExistingCategory_ShouldNotUpdateCategory() {
         final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
         final CategoryDraft identicalCategoryDraft = CategoryDraftBuilder.of(mockCategory).build();
-        final CategoryService mockCategoryService = mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
+        final CategoryService mockCategoryService =
+            mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
         final CategorySync mockCategorySync =
             new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
         final List<CategoryDraft> categoryDrafts = singletonList(identicalCategoryDraft);
 
-        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(categoryDrafts).toCompletableFuture().join();
+        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(categoryDrafts)
+                                                                      .toCompletableFuture().join();
 
         assertThat(syncStatistics.getCreated()).isEqualTo(0);
         assertThat(syncStatistics.getFailed()).isEqualTo(0);
@@ -189,7 +191,8 @@ public class CategorySyncTest {
     @Test
     public void sync_WithExistingCategoryButWithNotAllowedUuidReferenceResolution_ShouldFailSync() {
         final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
-        final CategoryService mockCategoryService = mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
+        final CategoryService mockCategoryService =
+            mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
             mockCategoryService);
         final List<CategoryDraft> categoryDrafts = singletonList(
@@ -220,8 +223,8 @@ public class CategorySyncTest {
             mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
             mockCategoryService);
-        final List<CategoryDraft> categoryDrafts = singletonList(getMockCategoryDraft(Locale.ENGLISH, "name", "key", null,
-            "customTypeId", new HashMap<>()));
+        final List<CategoryDraft> categoryDrafts = singletonList(
+            getMockCategoryDraft(Locale.ENGLISH, "name", "key", null,"customTypeId", new HashMap<>()));
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
         assertThat(syncStatistics.getCreated()).isEqualTo(0);

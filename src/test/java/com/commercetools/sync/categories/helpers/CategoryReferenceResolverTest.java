@@ -37,9 +37,10 @@ public class CategoryReferenceResolverTest {
 
     private TypeService typeService;
     private CategoryService categoryService;
-    private final String CACHED_CATEGORY_ID = UUID.randomUUID().toString();
-    private final String CACHED_CATEGORY_KEY = "someKey";
     private CategorySyncOptions syncOptions;
+    
+    private static final String CACHED_CATEGORY_ID = UUID.randomUUID().toString();
+    private static final String CACHED_CATEGORY_KEY = "someKey";
 
     /**
      * Sets up the services and the options needed for reference resolution.
