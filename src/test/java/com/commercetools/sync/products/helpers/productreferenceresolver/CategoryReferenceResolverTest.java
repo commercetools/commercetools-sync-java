@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,14 +30,15 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
-import static com.commercetools.sync.commons.MockUtils.getMockCategoryService;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
+import static com.commercetools.sync.commons.MockUtils.mockCategoryService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockTaxCategoryService;
+import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
@@ -55,26 +57,21 @@ public class CategoryReferenceResolverTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .allowUuidKeys(true)
                                                                                .build();
-
         final int nCategories = 10;
         final List<Category> categories = IntStream.range(0, nCategories)
                                                    .mapToObj(i -> i + "")
                                                    .map(key -> getMockCategory(key, key))
                                                    .collect(Collectors.toList());
-
-        final CategoryService mockCategoryService = getMockCategoryService(categories);
+        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), emptySet());
         final List<Reference<Category>> categoryReferences = categories.stream()
                                                                        .map(Category::toReference)
                                                                        .collect(Collectors.toList());
         final Map<String, String> categoryOrderHintValues = categories.stream()
                                                                        .collect(Collectors.toMap(Category::getKey,
                                                                            Category::getId));
-
         final CategoryOrderHints categoryOrderHints = CategoryOrderHints.of(categoryOrderHintValues);
-
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .categories(categoryReferences).categoryOrderHints(categoryOrderHints);
-
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             getMockProductTypeService(PRODUCT_TYPE_ID), mockCategoryService, getMockTypeService(),
             getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
@@ -87,7 +84,6 @@ public class CategoryReferenceResolverTest {
         assertThat(resolvedDraft.getCategories()).isNotNull();
         assertThat(resolvedDraft.getCategories()).hasSize(nCategories);
         assertThat(resolvedDraft.getCategories()).containsOnlyElementsOf(categoryReferences);
-
         assertThat(resolvedDraft.getCategoryOrderHints()).isNotNull();
         assertThat(resolvedDraft.getCategoryOrderHints().getAsMap()).hasSize(categoryOrderHintValues.size());
     }
@@ -97,21 +93,17 @@ public class CategoryReferenceResolverTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .allowUuidKeys(true)
                                                                                .build();
-
         final int nCategories = 10;
         final List<Category> categories = IntStream.range(0, nCategories)
                                                    .mapToObj(i -> i + "")
                                                    .map(key -> getMockCategory(key, key))
                                                    .collect(Collectors.toList());
-
-        final CategoryService mockCategoryService = getMockCategoryService(categories);
+        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), emptySet());
         final List<Reference<Category>> categoryReferences = categories.stream()
                                                                        .map(Category::toReference)
                                                                        .collect(Collectors.toList());
-
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .categories(categoryReferences);
-
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             getMockProductTypeService(PRODUCT_TYPE_ID), mockCategoryService, getMockTypeService(),
             getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
@@ -124,7 +116,6 @@ public class CategoryReferenceResolverTest {
         assertThat(resolvedDraft.getCategories()).isNotNull();
         assertThat(resolvedDraft.getCategories()).hasSize(nCategories);
         assertThat(resolvedDraft.getCategories()).containsOnlyElementsOf(categoryReferences);
-
         assertThat(resolvedDraft.getCategoryOrderHints()).isNotNull();
         assertThat(resolvedDraft.getCategoryOrderHints().getAsMap()).isEmpty();
     }
@@ -134,26 +125,21 @@ public class CategoryReferenceResolverTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .allowUuidKeys(true)
                                                                                .build();
-
         final int nCategories = 10;
         final List<Category> categories = IntStream.range(0, nCategories)
                                                    .mapToObj(i -> i + "")
                                                    .map(key -> getMockCategory(key, key))
                                                    .collect(Collectors.toList());
-
-        final CategoryService mockCategoryService = getMockCategoryService(categories);
+        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), emptySet());
         final List<Reference<Category>> categoryReferences = categories.stream()
                                                                        .map(Category::toReference)
                                                                        .collect(Collectors.toList());
         final Map<String, String> categoryOrderHintValues = categories.stream().limit(3)
                                                                       .collect(Collectors.toMap(Category::getKey,
                                                                           (category -> "0.00" + category.getId())));
-
         final CategoryOrderHints categoryOrderHints = CategoryOrderHints.of(categoryOrderHintValues);
-
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .categories(categoryReferences).categoryOrderHints(categoryOrderHints);
-
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             getMockProductTypeService(PRODUCT_TYPE_ID), mockCategoryService, getMockTypeService(),
             getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
@@ -166,7 +152,6 @@ public class CategoryReferenceResolverTest {
         assertThat(resolvedDraft.getCategories()).isNotNull();
         assertThat(resolvedDraft.getCategories()).hasSize(nCategories);
         assertThat(resolvedDraft.getCategories()).containsOnlyElementsOf(categoryReferences);
-
         assertThat(resolvedDraft.getCategoryOrderHints()).isNotNull();
         assertThat(resolvedDraft.getCategoryOrderHints().getAsMap()).hasSize(3);
     }
@@ -176,26 +161,21 @@ public class CategoryReferenceResolverTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .allowUuidKeys(true)
                                                                                .build();
-
         final int nCategories = 10;
         final List<Category> categories = IntStream.range(0, nCategories)
                                                    .mapToObj(i -> UUID.randomUUID().toString())
                                                    .map(key -> getMockCategory(key, key))
                                                    .collect(Collectors.toList());
-
-        final CategoryService mockCategoryService = getMockCategoryService(categories);
+        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), emptySet());
         final List<Reference<Category>> categoryReferences = categories.stream()
                                                                        .map(Category::toReference)
                                                                        .collect(Collectors.toList());
         final Map<String, String> categoryOrderHintValues = categories.stream()
                                                                       .collect(Collectors.toMap(Category::getKey,
                                                                           Resource::getId));
-
         final CategoryOrderHints categoryOrderHints = CategoryOrderHints.of(categoryOrderHintValues);
-
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .categories(categoryReferences).categoryOrderHints(categoryOrderHints);
-
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             getMockProductTypeService(PRODUCT_TYPE_ID), mockCategoryService, getMockTypeService(),
             getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
@@ -208,7 +188,6 @@ public class CategoryReferenceResolverTest {
         assertThat(resolvedDraft.getCategories()).isNotNull();
         assertThat(resolvedDraft.getCategories()).hasSize(nCategories);
         assertThat(resolvedDraft.getCategories()).containsOnlyElementsOf(categoryReferences);
-
         assertThat(resolvedDraft.getCategoryOrderHints()).isNotNull();
         assertThat(resolvedDraft.getCategoryOrderHints().getAsMap()).hasSize(categoryOrderHintValues.size());
     }
@@ -218,26 +197,21 @@ public class CategoryReferenceResolverTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .allowUuidKeys(false)
                                                                                .build();
-
         final int nCategories = 10;
         final List<Category> categories = IntStream.range(0, nCategories)
                                                    .mapToObj(i -> UUID.randomUUID().toString())
                                                    .map(key -> getMockCategory(key, key))
                                                    .collect(Collectors.toList());
-
-        final CategoryService mockCategoryService = getMockCategoryService(categories);
+        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), emptySet());
         final List<Reference<Category>> categoryReferences = categories.stream()
                                                                        .map(Category::toReference)
                                                                        .collect(Collectors.toList());
         final Map<String, String> categoryOrderHintValues = categories.stream()
                                                                       .collect(Collectors.toMap(Category::getKey,
                                                                           Resource::getId));
-
         final CategoryOrderHints categoryOrderHints = CategoryOrderHints.of(categoryOrderHintValues);
-
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .categories(categoryReferences).categoryOrderHints(categoryOrderHints);
-
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             getMockProductTypeService(PRODUCT_TYPE_ID), mockCategoryService, getMockTypeService(),
             getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
@@ -259,9 +233,7 @@ public class CategoryReferenceResolverTest {
     public void resolveCategoryReferences_WithNullCategoryReferences_ShouldNotResolveReferences() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
-
-
-        final CategoryService mockCategoryService = getMockCategoryService(Collections.emptyList());
+        final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid();
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
@@ -280,8 +252,7 @@ public class CategoryReferenceResolverTest {
     public void resolveCategoryReferences_WithANonExistentCategoryReference_ShouldNotResolveReference() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
-
-        final CategoryService mockCategoryService = getMockCategoryService(Collections.emptyList());
+        final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .categories(Collections.singleton(Category.referenceOfId("non-existent-category")));
 
@@ -303,8 +274,7 @@ public class CategoryReferenceResolverTest {
     public void resolveCategoryReferences_WithNullIdOnCategoryReference_ShouldNotResolveReference() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
-
-        final CategoryService mockCategoryService = getMockCategoryService(Collections.emptyList());
+        final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .categories(Collections.singleton(Category.referenceOfId(null)));
 
@@ -327,8 +297,7 @@ public class CategoryReferenceResolverTest {
     public void resolveCategoryReferences_WithEmptyIdOnCategoryReference_ShouldNotResolveReference() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
-
-        final CategoryService mockCategoryService = getMockCategoryService(Collections.emptyList());
+        final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .categories(Collections.singleton(Category.referenceOfId("")));
 
@@ -352,11 +321,11 @@ public class CategoryReferenceResolverTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
         final Category category = getMockCategory("categoryKey", "categoryKey");
-        final List<Category> categoryList = Collections.singletonList(category);
-        final List<Reference<Category>> references = categoryList.stream().map(Category::toReference)
-                                                                 .collect(Collectors.toList());
+        final List<Category> categories = Collections.singletonList(category);
+        final List<Reference<Category>> references = categories.stream().map(Category::toReference)
+                                                               .collect(Collectors.toList());
 
-        final CategoryService mockCategoryService = getMockCategoryService(categoryList);
+        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), emptySet());
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid().categories(references);
 
         final CompletableFuture<Set<Category>> futureThrowingSphereException = new CompletableFuture<>();
