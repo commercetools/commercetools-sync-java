@@ -46,17 +46,20 @@
 
 <!--
 ### v1.0.0-M9 -  Jan 10, 2018
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M6...v1.0.0-M7) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M7/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M7)
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M8...v1.0.0-M9) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M9/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M9)
 -->
-
 
 <!--
 ### v1.0.0-M8 -  Dec 28, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M7...v1.0.0-M8) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M8/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M8)
+
+
+**Enhancements** (1)
+- **Build Tools** - Bumped Gradle to version 4.4. [#205](https://github.com/commercetools/commercetools-sync-java/issues/205)
 
 **New Features** (1)
 - **Category Sync** - Exposed new method in CategorySyncStatistics#getNumberOfCategoriesWithMissingParents which gets the
