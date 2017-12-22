@@ -1,26 +1,14 @@
-package com.commercetools.sync.commons.asserts.syncStatistic;
+package com.commercetools.sync.commons.asserts.statistics;
 
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class CategorySyncStatisticsAssert
+public final class CategorySyncStatisticsAssert
     extends AbstractSyncStatisticsAssert<CategorySyncStatisticsAssert, CategorySyncStatistics> {
 
-    private CategorySyncStatisticsAssert(@Nullable final CategorySyncStatistics actual) {
+    CategorySyncStatisticsAssert(@Nullable final CategorySyncStatistics actual) {
         super(actual, CategorySyncStatisticsAssert.class);
-    }
-
-    /**
-     * Create assertion for {@link CategorySyncStatistics}.
-     *
-     * @param statistics the actual value.
-     * @return the created assertion object.
-     */
-    @Nonnull
-    public static CategorySyncStatisticsAssert assertThat(@Nullable final CategorySyncStatistics statistics) {
-        return new CategorySyncStatisticsAssert(statistics);
     }
 
     /**
