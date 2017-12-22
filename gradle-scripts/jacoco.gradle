@@ -24,7 +24,7 @@ jacocoTestReport {
     executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
     reports {
         xml.enabled = true
-        xml.destination = "${buildDir}/reports/jacoco/report.xml"
+        xml.setDestination(file("${buildDir}/reports/jacoco/report.xml"))
         html.enabled = false
         csv.enabled = false
     }
