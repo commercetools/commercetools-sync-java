@@ -102,8 +102,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         return resolveProductTypeReference(ProductDraftBuilder.of(productDraft))
             .thenCompose(this::resolveCategoryReferences)
             .thenCompose(this::resolveAllVariantsReferences)
-            .thenCompose(this::resolveTaxCategoryReferences)
-            .thenCompose(this::resolveStateReferences)
+            .thenCompose(this::resolveTaxCategoryReference)
+            .thenCompose(this::resolveStateReference)
             .thenApply(ProductDraftBuilder::build);
     }
 
@@ -265,7 +265,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    public CompletionStage<ProductDraftBuilder> resolveTaxCategoryReferences(
+    public CompletionStage<ProductDraftBuilder> resolveTaxCategoryReference(
         @Nonnull final ProductDraftBuilder draftBuilder) {
         return resolveReference(draftBuilder, draftBuilder.getTaxCategory(),
             taxCategoryService::fetchCachedTaxCategoryId, TaxCategory::referenceOfId, ProductDraftBuilder::taxCategory);
@@ -282,7 +282,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    public CompletionStage<ProductDraftBuilder> resolveStateReferences(
+    public CompletionStage<ProductDraftBuilder> resolveStateReference(
         @Nonnull final ProductDraftBuilder draftBuilder) {
         return resolveReference(draftBuilder, draftBuilder.getState(),
             stateService::fetchCachedStateId, State::referenceOfId, ProductDraftBuilder::state);

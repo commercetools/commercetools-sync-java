@@ -72,7 +72,7 @@ public class StateReferenceResolverTest {
             getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
             getMockTaxCategoryService(TAX_CATEGORY_ID), stateService, getMockProductService(PRODUCT_ID));
 
-        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveStateReferences(productBuilder)
+        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveStateReference(productBuilder)
                                                                           .toCompletableFuture().join();
 
         assertThat(resolvedDraft.getState()).isNotNull();
@@ -84,7 +84,7 @@ public class StateReferenceResolverTest {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .state(State.referenceOfId("stateKey"));
 
-        final ProductDraftBuilder resolvedDraft = referenceResolver.resolveStateReferences(productBuilder)
+        final ProductDraftBuilder resolvedDraft = referenceResolver.resolveStateReference(productBuilder)
                                                                    .toCompletableFuture().join();
 
         assertThat(resolvedDraft.getState()).isNotNull();
@@ -97,7 +97,7 @@ public class StateReferenceResolverTest {
             .state(State.referenceOfId(UUID.randomUUID().toString()))
             .key("dummyKey");
 
-        assertThat(referenceResolver.resolveStateReferences(productBuilder).toCompletableFuture())
+        assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
@@ -113,7 +113,7 @@ public class StateReferenceResolverTest {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .key("dummyKey");
 
-        assertThat(referenceResolver.resolveStateReferences(productBuilder).toCompletableFuture())
+        assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft -> Objects.isNull(resolvedDraft.getState()));
     }
@@ -127,7 +127,7 @@ public class StateReferenceResolverTest {
         when(stateService.fetchCachedStateId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        assertThat(referenceResolver.resolveStateReferences(productBuilder).toCompletableFuture())
+        assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft ->
                 Objects.nonNull(resolvedDraft.getState())
@@ -140,7 +140,7 @@ public class StateReferenceResolverTest {
             .state(Reference.of(State.referenceTypeId(), (String)null))
             .key("dummyKey");
 
-        assertThat(referenceResolver.resolveStateReferences(productBuilder).toCompletableFuture())
+        assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
@@ -155,7 +155,7 @@ public class StateReferenceResolverTest {
             .state(State.referenceOfId(""))
             .key("dummyKey");
 
-        assertThat(referenceResolver.resolveStateReferences(productBuilder).toCompletableFuture())
+        assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
@@ -174,7 +174,7 @@ public class StateReferenceResolverTest {
         futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
         when(stateService.fetchCachedStateId(anyString())).thenReturn(futureThrowingSphereException);
 
-        assertThat(referenceResolver.resolveStateReferences(productBuilder).toCompletableFuture())
+        assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)

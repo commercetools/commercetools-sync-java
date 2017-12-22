@@ -72,7 +72,7 @@ public class TaxCategoryReferenceResolverTest {
             getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)), taxCategoryService,
             getMockStateService(STATE_ID), getMockProductService(PRODUCT_ID));
 
-        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveTaxCategoryReferences(productBuilder)
+        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveTaxCategoryReference(productBuilder)
                                                                           .toCompletableFuture().join();
 
         assertThat(resolvedDraft.getTaxCategory()).isNotNull();
@@ -84,7 +84,7 @@ public class TaxCategoryReferenceResolverTest {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .taxCategory(TaxCategory.referenceOfId("taxCategoryKey"));
 
-        final ProductDraftBuilder resolvedDraft = referenceResolver.resolveTaxCategoryReferences(productBuilder)
+        final ProductDraftBuilder resolvedDraft = referenceResolver.resolveTaxCategoryReference(productBuilder)
                                                                    .toCompletableFuture().join();
 
         assertThat(resolvedDraft.getTaxCategory()).isNotNull();
@@ -97,7 +97,7 @@ public class TaxCategoryReferenceResolverTest {
             .taxCategory(TaxCategory.referenceOfId(UUID.randomUUID().toString()))
             .key("dummyKey");
 
-        assertThat(referenceResolver.resolveTaxCategoryReferences(productBuilder).toCompletableFuture())
+        assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
@@ -113,7 +113,7 @@ public class TaxCategoryReferenceResolverTest {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .key("dummyKey");
 
-        assertThat(referenceResolver.resolveTaxCategoryReferences(productBuilder).toCompletableFuture())
+        assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder).toCompletableFuture())
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft -> Objects.isNull(resolvedDraft.getTaxCategory()));
     }
@@ -127,7 +127,7 @@ public class TaxCategoryReferenceResolverTest {
         when(taxCategoryService.fetchCachedTaxCategoryId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        assertThat(referenceResolver.resolveTaxCategoryReferences(productBuilder).toCompletableFuture())
+        assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder).toCompletableFuture())
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft ->
                 Objects.nonNull(resolvedDraft.getTaxCategory())
@@ -140,7 +140,7 @@ public class TaxCategoryReferenceResolverTest {
             .taxCategory(Reference.of(TaxCategory.referenceTypeId(), (String)null))
             .key("dummyKey");
 
-        assertThat(referenceResolver.resolveTaxCategoryReferences(productBuilder).toCompletableFuture())
+        assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
@@ -155,7 +155,7 @@ public class TaxCategoryReferenceResolverTest {
             .taxCategory(TaxCategory.referenceOfId(""))
             .key("dummyKey");
 
-        assertThat(referenceResolver.resolveTaxCategoryReferences(productBuilder).toCompletableFuture())
+        assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
@@ -174,7 +174,7 @@ public class TaxCategoryReferenceResolverTest {
         futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
         when(taxCategoryService.fetchCachedTaxCategoryId(anyString())).thenReturn(futureThrowingSphereException);
 
-        assertThat(referenceResolver.resolveTaxCategoryReferences(productBuilder).toCompletableFuture())
+        assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
