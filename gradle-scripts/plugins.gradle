@@ -14,7 +14,5 @@ apply plugin: 'findbugs'
  * https://github.com/gradle/gradle/issues/1118
  *
  * */
-apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 apply plugin: 'java-library'
-apply plugin: 'org.ajoberstar.git-publish'
