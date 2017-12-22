@@ -55,6 +55,7 @@ import static com.commercetools.sync.inventories.utils.InventoryReferenceReplace
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 
 /**
  * Contains integration tests of inventory sync.
@@ -102,7 +103,7 @@ public class InventorySyncIT {
         //Sync and ensure that proper statistics were returned.
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(singletonList(newInventoryDraft))
             .toCompletableFuture().join();
-        assertStatistics(inventorySyncStatistics, 1, 0, 1, 0);
+        assertThat(inventorySyncStatistics).hasValues(1, 0, 1, 0);
 
         //Ensure that old entry has correct values after sync.
         final Optional<InventoryEntry> oldInventoryAfterSync =
@@ -127,7 +128,7 @@ public class InventorySyncIT {
         //Sync and ensure that proper statistics were returned.
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(singletonList(newInventoryDraft))
             .toCompletableFuture().join();
-        assertStatistics(inventorySyncStatistics, 1, 1, 0, 0);
+        assertThat(inventorySyncStatistics).hasValues(1, 1, 0, 0);
 
         //Ensure that old entry has correct values after sync.
         final Optional<InventoryEntry> oldInventoryAfterSync =
@@ -163,7 +164,7 @@ public class InventorySyncIT {
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(singletonList(newInventoryDraft))
             .toCompletableFuture().join();
-        assertStatistics(inventorySyncStatistics, 1, 0, 1, 0);
+        assertThat(inventorySyncStatistics).hasValues(1, 0, 1, 0);
 
         //Ensure old entry values after sync.
         final Optional<InventoryEntry> oldInventoryAfterSync =
@@ -204,7 +205,8 @@ public class InventorySyncIT {
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(singletonList(newInventoryDraft))
             .toCompletableFuture().join();
-        assertStatistics(inventorySyncStatistics, 1, 0, 1, 0);
+        assertThat(inventorySyncStatistics).hasValues(1, 0, 1, 0);
+
 
         //Ensure old entry values after sync.
         final Optional<InventoryEntry> oldInventoryAfterSync =
@@ -231,7 +233,7 @@ public class InventorySyncIT {
         //Sync and ensure that proper statistics were returned.
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(singletonList(newInventoryDraft))
             .toCompletableFuture().join();
-        assertStatistics(inventorySyncStatistics, 1, 1, 0, 0);
+        assertThat(inventorySyncStatistics).hasValues(1, 1, 0, 0);
 
         //Ensure that supply channel exists before sync.
         final Optional<Channel> oldSupplyChannelAfterSync = getChannelByKey(CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_2);
@@ -280,7 +282,7 @@ public class InventorySyncIT {
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(singletonList(newInventoryDraft))
             .toCompletableFuture().join();
-        assertStatistics(inventorySyncStatistics, 1, 0, 1, 0);
+        assertThat(inventorySyncStatistics).hasValues(1, 0, 1, 0);
 
         //Ensure old entry values after sync.
         final Optional<InventoryEntry> oldInventoryAfterSync =
@@ -314,7 +316,7 @@ public class InventorySyncIT {
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(newInventories).toCompletableFuture()
             .join();
-        assertStatistics(inventorySyncStatistics, 3, 1,1, 0);
+        assertThat(inventorySyncStatistics).hasValues(3, 1, 1, 0);
     }
 
     @Test
@@ -334,7 +336,7 @@ public class InventorySyncIT {
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(newInventories).toCompletableFuture()
             .join();
-        assertStatistics(inventorySyncStatistics, 3, 0,1, 1);
+        assertThat(inventorySyncStatistics).hasValues(3, 0, 1, 1);
     }
 
     @Ignore
@@ -357,7 +359,7 @@ public class InventorySyncIT {
         //Perform sync and ensure its results.
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(newInventories).toCompletableFuture()
             .join();
-        assertStatistics(inventorySyncStatistics, 10, 10, 0,0);
+        assertThat(inventorySyncStatistics).hasValues(10, 10, 0, 0);
 
         //Ensure inventory entries amount in target project after sync.
         final List<InventoryEntry> oldEntriesAfterSync = CTP_TARGET_CLIENT.execute(InventoryEntryQuery.of())
@@ -386,7 +388,7 @@ public class InventorySyncIT {
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(newInventories).toCompletableFuture()
             .join();
-        assertStatistics(inventorySyncStatistics, 3, 1,1, 0);
+        assertThat(inventorySyncStatistics).hasValues(3, 1, 1, 0);
     }
 
     @Test
@@ -406,15 +408,8 @@ public class InventorySyncIT {
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(newInventories).toCompletableFuture()
             .join();
-        assertStatistics(inventorySyncStatistics, 3, 1,1, 0);
-        assertThat(inventorySyncStatistics.getProcessed()).isEqualTo(3);
-        assertThat(inventorySyncStatistics.getCreated()).isEqualTo(1);
-        assertThat(inventorySyncStatistics.getUpdated()).isEqualTo(1);
-        assertThat(inventorySyncStatistics.getFailed()).isEqualTo(0);
+        assertThat(inventorySyncStatistics).hasValues(3, 1, 1, 0);
         assertThat(inventorySyncStatistics.getLatestBatchProcessingTimeInMillis()).isGreaterThan(0L);
-        assertThat(inventorySyncStatistics.getReportMessage())
-            .isEqualTo("Summary: 3 inventory entries were processed in total (1 created, 1 updated and 0 failed to sync"
-                + ").");
     }
 
     @Test
@@ -438,7 +433,7 @@ public class InventorySyncIT {
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(newInventories).toCompletableFuture()
             .join();
-        assertStatistics(inventorySyncStatistics, 3, 0,1, 1);
+        assertThat(inventorySyncStatistics).hasValues(3, 0, 1, 1);
         assertThat(invocationCounter.get()).isEqualTo(1);
     }
 
@@ -478,18 +473,6 @@ public class InventorySyncIT {
         //assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(60);
         //assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(0);
         //assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(0);
-    }
-
-    private void assertStatistics(@Nullable final InventorySyncStatistics statistics,
-                                  final int expectedProcessed,
-                                  final int expectedCreated,
-                                  final int expectedUpdated,
-                                  final int expectedFailed) {
-        assertThat(statistics).isNotNull();
-        assertThat(statistics.getProcessed()).isEqualTo(expectedProcessed);
-        assertThat(statistics.getCreated()).isEqualTo(expectedCreated);
-        assertThat(statistics.getUpdated()).isEqualTo(expectedUpdated);
-        assertThat(statistics.getFailed()).isEqualTo(expectedFailed);
     }
 
     private void assertValues(@Nonnull final InventoryEntry inventoryEntry,

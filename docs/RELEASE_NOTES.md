@@ -60,8 +60,14 @@
 
 **Enhancements** (1)
 - **Build Tools** - Bumped Gradle to version 4.4. [#205](https://github.com/commercetools/commercetools-sync-java/issues/205)
--->
 
+**New Features** (1)
+- **Category Sync** - Exposed new method in CategorySyncStatistics#getNumberOfCategoriesWithMissingParents which gets the
+total number of categories with missing parents from the statistics instance. [#186](https://github.com/commercetools/commercetools-sync-java/issues/186)
+
+**Changes** (1)
+- **Product Sync** - Changed product sync statistics report message wording. [#186](https://github.com/commercetools/commercetools-sync-java/issues/186)
+-->
 
 
 ### v1.0.0-M7 -  Dec 15, 2017
