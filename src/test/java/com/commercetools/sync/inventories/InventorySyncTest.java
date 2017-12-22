@@ -392,9 +392,6 @@ public class InventorySyncTest {
         assertThat(syncStatistics.getFailed()).isEqualTo(1);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo(
-            "Summary: 1 inventory entries were processed in total "
-                + "(0 created, 0 updated and 1 failed to sync).");
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve references on"
             + " InventoryEntryDraft with SKU:'%s'. Reason: %s: Failed to resolve custom type reference on "
@@ -429,9 +426,6 @@ public class InventorySyncTest {
         assertThat(syncStatistics.getFailed()).isEqualTo(1);
         assertThat(syncStatistics.getUpdated()).isEqualTo(0);
         assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getReportMessage()).isEqualTo(
-            "Summary: 1 inventory entries were processed in total "
-                + "(0 created, 0 updated and 1 failed to sync).");
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve references on"
                 + " InventoryEntryDraft with SKU:'%s'. Reason: %s: Failed to resolve custom type reference on"
@@ -474,9 +468,6 @@ public class InventorySyncTest {
         assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(0);
         assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(1);
         assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getReportMessage()).isEqualTo(
-            "Summary: 1 inventory entries were processed in total "
-                + "(0 created, 1 updated and 0 failed to sync).");
     }
 
     @Test
