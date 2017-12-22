@@ -1,4 +1,4 @@
-package com.commercetools.sync.commons.asserts.syncStatistic;
+package com.commercetools.sync.commons.asserts.statistics;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import org.assertj.core.api.AbstractAssert;

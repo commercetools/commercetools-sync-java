@@ -28,7 +28,7 @@ import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import static com.commercetools.sync.commons.asserts.syncStatistic.ProductSyncStatisticAssert.assertThatStatistic;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
@@ -142,7 +142,7 @@ public class ProductSyncFilterIT {
         final ProductSyncStatistics syncStatistics =
                 executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThatStatistic(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
         assertThat(updateActionsFromSync.stream()
                 .noneMatch(updateAction -> updateAction instanceof RemoveFromCategory)).isTrue();
         assertThat(updateActionsFromSync.stream()
@@ -166,7 +166,7 @@ public class ProductSyncFilterIT {
         final ProductSyncStatistics syncStatistics =
                 executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThatStatistic(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
         assertThat(updateActionsFromSync).hasSize(1);
         final UpdateAction<Product> updateAction = updateActionsFromSync.get(0);
         assertThat(updateAction.getAction()).isEqualTo("changeName");
