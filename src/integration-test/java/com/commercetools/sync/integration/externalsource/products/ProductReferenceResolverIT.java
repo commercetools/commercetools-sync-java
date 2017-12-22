@@ -37,6 +37,7 @@ import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 
 public class ProductReferenceResolverIT {
 
@@ -102,11 +103,7 @@ public class ProductReferenceResolverIT {
         final ProductSyncStatistics syncStatistics =
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getCreated()).isEqualTo(0);
-        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
-        assertThat(syncStatistics.getFailed()).isEqualTo(1);
-
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackExceptions).hasSize(1);
         final Throwable exception = errorCallBackExceptions.get(0);
         assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class)
