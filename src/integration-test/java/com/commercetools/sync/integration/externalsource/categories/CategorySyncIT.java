@@ -151,8 +151,7 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
                                                         .toCompletableFuture().join();
-
-        assertThat(true).isFalse();
+        
         assertThat(syncStatistics).hasValues(1, 0, 0, 0, 0);
     }
 
