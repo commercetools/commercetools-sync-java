@@ -7,18 +7,14 @@ import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.producttypes.ProductType;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +30,7 @@ import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.MockUtils.mockCategoryService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductTypeUuid;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
@@ -345,17 +342,6 @@ public class CategoryReferenceResolverTest {
             .hasMessageContaining("CTP error on fetch");
     }
 
-    @Nonnull
-    private static ProductDraftBuilder getBuilderWithProductTypeRefId(@Nonnull final String refId) {
-        return ProductDraftBuilder.of(ProductType.referenceOfId(refId),
-            LocalizedString.ofEnglish("testName"),
-            LocalizedString.ofEnglish("testSlug"),
-            (ProductVariantDraft)null);
-    }
 
-    @Nonnull
-    private static ProductDraftBuilder getBuilderWithRandomProductTypeUuid() {
-        return getBuilderWithProductTypeRefId(UUID.randomUUID().toString());
-    }
 
 }

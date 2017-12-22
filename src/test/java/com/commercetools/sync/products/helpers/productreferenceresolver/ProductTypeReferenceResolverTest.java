@@ -7,24 +7,23 @@ import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ProductTypeService;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.producttypes.ProductType;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithProductTypeRef;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithProductTypeRefId;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductTypeUuid;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
@@ -164,28 +163,5 @@ public class ProductTypeReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
             .hasMessageContaining("CTP error on fetch");
-    }
-
-
-    @Nonnull
-    private static ProductDraftBuilder getBuilderWithProductTypeRefId(@Nonnull final String refId) {
-        return ProductDraftBuilder.of(ProductType.referenceOfId(refId),
-            LocalizedString.ofEnglish("testName"),
-            LocalizedString.ofEnglish("testSlug"),
-            (ProductVariantDraft)null);
-    }
-
-    @Nonnull
-    private static ProductDraftBuilder getBuilderWithProductTypeRef(
-        @Nonnull final Reference<ProductType> reference) {
-        return ProductDraftBuilder.of(reference,
-            LocalizedString.ofEnglish("testName"),
-            LocalizedString.ofEnglish("testSlug"),
-            (ProductVariantDraft)null);
-    }
-
-    @Nonnull
-    private static ProductDraftBuilder getBuilderWithRandomProductTypeUuid() {
-        return getBuilderWithProductTypeRefId(UUID.randomUUID().toString());
     }
 }
