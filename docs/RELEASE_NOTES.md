@@ -70,7 +70,6 @@ total number of categories with missing parents from the statistics instance. [#
 -->
 
 
-
 ### v1.0.0-M7 -  Dec 15, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M6...v1.0.0-M7) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M7/) | 
