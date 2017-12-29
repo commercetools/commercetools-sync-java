@@ -199,7 +199,7 @@ public final class CategoryITUtils {
      * @param categoryDrafts the drafts to build the categories from.
      */
     public static List<Category> createCategories(@Nonnull final SphereClient ctpClient,
-                                        @Nonnull final List<CategoryDraft> categoryDrafts) {
+                                                  @Nonnull final List<CategoryDraft> categoryDrafts) {
         final List<CompletableFuture<Category>> futures = new ArrayList<>();
         for (CategoryDraft categoryDraft : categoryDrafts) {
             final CategoryCreateCommand categoryCreateCommand = CategoryCreateCommand.of(categoryDraft);

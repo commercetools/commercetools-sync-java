@@ -35,6 +35,7 @@ import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 
 public class KeepOtherVariantsSyncIT {
 
@@ -114,10 +115,8 @@ public class KeepOtherVariantsSyncIT {
         final ProductSync productSync = new ProductSync(syncOptions);
 
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(singletonList(productDraft)));
-        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
-        assertThat(syncStatistics.getCreated()).isEqualTo(0);
-        assertThat(syncStatistics.getUpdated()).isEqualTo(1);
-        assertThat(syncStatistics.getFailed()).isEqualTo(0);
+
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();

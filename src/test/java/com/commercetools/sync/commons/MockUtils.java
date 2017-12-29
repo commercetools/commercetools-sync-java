@@ -8,21 +8,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
-import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -46,70 +42,26 @@ public class MockUtils {
         return CustomFieldsDraft.ofTypeIdAndJson("StepCategoryTypeId", customFieldsJsons);
     }
 
-    /**
-     * Creates a mock {@link CategoryService} that returns a mocked {@link Category} instance whenever any of the
-     * following methods are called:
-     * <ul>
-     * <li>{@link CategoryService#createCategory(CategoryDraft)}</li>
-     * <li>{@link CategoryService#updateCategory(Category, List)}</li>
-     * <li>{@link CategoryService#createCategories(Set)}</li>
-     * <li>{@link CategoryService#fetchMatchingCategoriesByKeys(Set)}</li>
-     *
-     * </ul>
-     * or returns a dummy category id of value "parentId" whenever the following method is called on the service:
-     * <ul>
-     * <li>{@link CategoryService#fetchCachedCategoryId(String)}</li>
-     * </ul>
-     *
-     * <p>The mocked category returned has the following fields:
-     * <ul>
-     * <li>name: {"en": "name"}</li>
-     * <li>slug: {"en": "slug"}</li>
-     * <li>key: "key"</li>
-     * <li>externalId: "externalId"</li>
-     * <li>description: {"en": "description"}</li>
-     * <li>metaDescription: {"en": "metaDescription"}</li>
-     * <li>metaTitle: {"en": "metaTitle"}</li>
-     * <li>metaKeywords: {"en": "metaKeywords"}</li>
-     * <li>orderHint: "orderHint"</li>
-     * <li>parentId: "parentId"</li>
-     * </ul>
-     *
-     * @return the created mock of the {@link CategoryService}.
-     */
-    public static CategoryService getMockCategoryService() {
-        final Category category = getMockCategory(Locale.ENGLISH,
-            "name",
-            "slug",
-            "key",
-            "externalId",
-            "description",
-            "metaDescription",
-            "metaTitle",
-            "metaKeywords",
-            "orderHint",
-            "parentId");
+    public static CategoryService mockCategoryService(@Nonnull final Set<Category> existingCategories,
+                                                      @Nonnull final Set<Category> createdCategories) {
+        final CategoryService mockCategoryService = mock(CategoryService.class);
+        when(mockCategoryService.fetchMatchingCategoriesByKeys(any()))
+            .thenReturn(CompletableFuture.completedFuture(existingCategories));
 
+        final Map<String, String> keyToIds =
+            existingCategories.stream().collect(Collectors.toMap(Category::getKey, Category::getId));
+        when(mockCategoryService.cacheKeysToIds()).thenReturn(completedFuture(keyToIds));
 
-        final CategoryService categoryService = mock(CategoryService.class);
-        when(categoryService.updateCategory(any(), any()))
-            .thenReturn(CompletableFuture.completedFuture(category));
-        when(categoryService.createCategory(any()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.of(category)));
-        when(categoryService.fetchCachedCategoryId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.of("parentId")));
-        when(categoryService.createCategories(any()))
-            .thenReturn(CompletableFuture.completedFuture(Collections.singleton(category)));
-        when(categoryService.createCategories(Collections.emptySet()))
-            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
-        when(categoryService.fetchMatchingCategoriesByKeys(any()))
-            .thenReturn(CompletableFuture.completedFuture(Collections.singleton(category)));
+        when(mockCategoryService.createCategories(any())).thenReturn(completedFuture(createdCategories));
+        return mockCategoryService;
+    }
 
-        Map<String, String> mockCategoryKeyToIdCache = new HashMap<>();
-        mockCategoryKeyToIdCache.put(category.getKey(), String.valueOf(UUID.randomUUID()));
-        when(categoryService.cacheKeysToIds())
-            .thenReturn(CompletableFuture.completedFuture(mockCategoryKeyToIdCache));
-        return categoryService;
+    public static CategoryService mockCategoryService(@Nonnull final Set<Category> existingCategories,
+                                                      @Nonnull final Set<Category> createdCategories,
+                                                      @Nonnull final Category updatedCategory) {
+        final CategoryService mockCategoryService = mockCategoryService(existingCategories, createdCategories);
+        when(mockCategoryService.updateCategory(any(), any())).thenReturn(completedFuture(updatedCategory));
+        return mockCategoryService;
     }
 
     /**
@@ -124,7 +76,7 @@ public class MockUtils {
     public static TypeService getMockTypeService() {
         final TypeService typeService = mock(TypeService.class);
         when(typeService.fetchCachedTypeId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.of("typeId")));
+            .thenReturn(completedFuture(Optional.of("typeId")));
         return typeService;
     }
 

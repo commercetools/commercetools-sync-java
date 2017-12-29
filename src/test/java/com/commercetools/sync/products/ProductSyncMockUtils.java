@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Price;
@@ -321,5 +322,27 @@ public class ProductSyncMockUtils {
         productReference.put("typeId", "product");
         productReference.put("id", id);
         return productReference;
+    }
+
+    @Nonnull
+    public static ProductDraftBuilder getBuilderWithProductTypeRefId(@Nonnull final String refId) {
+        return ProductDraftBuilder.of(ProductType.referenceOfId(refId),
+            LocalizedString.ofEnglish("testName"),
+            LocalizedString.ofEnglish("testSlug"),
+            (ProductVariantDraft)null);
+    }
+
+    @Nonnull
+    public static ProductDraftBuilder getBuilderWithRandomProductTypeUuid() {
+        return getBuilderWithProductTypeRefId(UUID.randomUUID().toString());
+    }
+
+    @Nonnull
+    public static ProductDraftBuilder getBuilderWithProductTypeRef(
+        @Nonnull final Reference<ProductType> reference) {
+        return ProductDraftBuilder.of(reference,
+            LocalizedString.ofEnglish("testName"),
+            LocalizedString.ofEnglish("testSlug"),
+            (ProductVariantDraft)null);
     }
 }

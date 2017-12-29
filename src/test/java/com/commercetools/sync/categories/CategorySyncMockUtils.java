@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.commercetools.sync.commons.MockUtils.getMockCustomFieldsDraft;
 import static org.mockito.Mockito.mock;
@@ -52,18 +53,27 @@ public class CategorySyncMockUtils {
                                            @Nonnull final String metaKeywords,
                                            @Nonnull final String orderHint,
                                            @Nonnull final String parentId) {
-        final Category oldCategory = mock(Category.class);
-        when(oldCategory.getName()).thenReturn(LocalizedString.of(locale, name));
-        when(oldCategory.getSlug()).thenReturn(LocalizedString.of(locale, slug));
-        when(oldCategory.getKey()).thenReturn(key);
-        when(oldCategory.getExternalId()).thenReturn(externalId);
-        when(oldCategory.getDescription()).thenReturn(LocalizedString.of(locale, description));
-        when(oldCategory.getMetaDescription()).thenReturn(LocalizedString.of(locale, metaDescription));
-        when(oldCategory.getMetaTitle()).thenReturn(LocalizedString.of(locale, metaTitle));
-        when(oldCategory.getMetaKeywords()).thenReturn(LocalizedString.of(locale, metaKeywords));
-        when(oldCategory.getOrderHint()).thenReturn(orderHint);
-        when(oldCategory.getParent()).thenReturn(Category.referenceOfId(parentId));
-        return oldCategory;
+        final Category category = mock(Category.class);
+        when(category.getName()).thenReturn(LocalizedString.of(locale, name));
+        when(category.getSlug()).thenReturn(LocalizedString.of(locale, slug));
+        when(category.getKey()).thenReturn(key);
+        when(category.getExternalId()).thenReturn(externalId);
+        when(category.getDescription()).thenReturn(LocalizedString.of(locale, description));
+        when(category.getMetaDescription()).thenReturn(LocalizedString.of(locale, metaDescription));
+        when(category.getMetaTitle()).thenReturn(LocalizedString.of(locale, metaTitle));
+        when(category.getMetaKeywords()).thenReturn(LocalizedString.of(locale, metaKeywords));
+        when(category.getOrderHint()).thenReturn(orderHint);
+        when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
+        when(category.toReference()).thenReturn(Category.referenceOfId(UUID.randomUUID().toString()));
+        return category;
+    }
+
+    public static Category getMockCategory(@Nonnull final String id, @Nonnull final String key) {
+        final Category category = mock(Category.class);
+        when(category.getKey()).thenReturn(key);
+        when(category.getId()).thenReturn(id);
+        when(category.toReference()).thenReturn(Category.referenceOfId(id));
+        return category;
     }
 
     /**

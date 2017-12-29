@@ -33,6 +33,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [v1.0.0-M8 -  Dec 29, 2017](#v100-m8----dec-29-2017)
 - [v1.0.0-M7 -  Dec 15, 2017](#v100-m7----dec-15-2017)
 - [v1.0.0-M6 -  Dec 5, 2017](#v100-m6----dec-5-2017)
 - [v1.0.0-M5 -  Nov 16, 2017](#v100-m5----nov-16-2017)
@@ -45,29 +46,28 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <!--
-### v1.0.0-M9 -  Jan 10, 2018
+### v1.0.0-M9 -  Jan 15, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M8...v1.0.0-M9) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M9/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M9)
 -->
 
-<!--
-### v1.0.0-M8 -  Dec 28, 2017
+### v1.0.0-M8 -  Dec 29, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M7...v1.0.0-M8) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M8/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M8)
 
+**New Features** (1)
+- **Category Sync** - Exposed new method `CategorySyncStatistics#getNumberOfCategoriesWithMissingParents` which gets the
+total number of categories with missing parents from the statistics instance. [#186](https://github.com/commercetools/commercetools-sync-java/issues/186)
+
+**Changes** (2)
+- **Product Sync** - Changed product sync statistics report message wording. [#186](https://github.com/commercetools/commercetools-sync-java/issues/186)
+- **Product Sync** - Exposed new methods `ProductReferenceResolver#resolveStateReference`, `ProductReferenceResolver#resolveTaxCategoryReference`, `ProductReferenceResolver#resolveCategoryReferences` and `ProductReferenceResolver#resolveProductTypeReference`.
+[#218](https://github.com/commercetools/commercetools-sync-java/issues/218)
 
 **Enhancements** (1)
 - **Build Tools** - Bumped Gradle to version 4.4. [#205](https://github.com/commercetools/commercetools-sync-java/issues/205)
-
-**New Features** (1)
-- **Category Sync** - Exposed new method in CategorySyncStatistics#getNumberOfCategoriesWithMissingParents which gets the
-total number of categories with missing parents from the statistics instance. [#186](https://github.com/commercetools/commercetools-sync-java/issues/186)
-
-**Changes** (1)
-- **Product Sync** - Changed product sync statistics report message wording. [#186](https://github.com/commercetools/commercetools-sync-java/issues/186)
--->
 
 
 ### v1.0.0-M7 -  Dec 15, 2017

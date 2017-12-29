@@ -40,6 +40,7 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -118,10 +119,8 @@ public class InventorySyncTest {
                 .join();
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(9);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(3);
-        assertThat(stats.getUpdated()).isEqualTo(3);
+
+        assertThat(stats).hasValues(9, 3, 3, 0);
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
@@ -132,11 +131,8 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(emptyList())
                 .toCompletableFuture()
                 .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(0);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+
+        assertThat(stats).hasValues(0, 0, 0, 0);
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
@@ -149,10 +145,8 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNewChannel))
                 .toCompletableFuture()
                 .join();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+
+        assertThat(stats).hasValues(1, 1, 0, 0);
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
@@ -175,10 +169,8 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNewChannel))
                 .toCompletableFuture()
                 .join();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+
+        assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on InventoryEntryDraft"
                 + " with SKU:'%s'. Reason: %s: Failed to resolve supply channel reference on InventoryEntryDraft with"
@@ -207,10 +199,8 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNewChannel))
                                                            .toCompletableFuture()
                                                            .join();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+
+        assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on InventoryEntryDraft"
                 + " with SKU:'%s'. Reason: %s: Failed to resolve supply channel reference on InventoryEntryDraft with"
@@ -229,10 +219,8 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNullSku))
                 .toCompletableFuture()
                 .join();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+
+        assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process inventory entry without SKU.");
         assertThat(errorCallBackExceptions).hasSize(1);
@@ -246,10 +234,8 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithEmptySku))
                 .toCompletableFuture()
                 .join();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+
+        assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process inventory entry without SKU.");
         assertThat(errorCallBackExceptions).hasSize(1);
@@ -274,11 +260,7 @@ public class InventorySyncTest {
                 .toCompletableFuture()
                 .join();
 
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(9);
-        assertThat(stats.getFailed()).isEqualTo(3);
-        assertThat(stats.getCreated()).isEqualTo(5);
-        assertThat(stats.getUpdated()).isEqualTo(1);
+        assertThat(stats).hasValues(9, 5, 1, 3);
         assertThat(errorCallBackMessages).hasSize(3);
         assertThat(errorCallBackExceptions).hasSize(3);
     }
@@ -298,11 +280,8 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(drafts)
                 .toCompletableFuture()
                 .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(9);
-        assertThat(stats.getFailed()).isEqualTo(6);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+
+        assertThat(stats).hasValues(9, 0, 0, 6);
         assertThat(errorCallBackMessages).hasSize(6);
         assertThat(errorCallBackExceptions).hasSize(6);
     }
@@ -325,11 +304,8 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(Collections.singletonList(inventoryEntryDraft))
                                                            .toCompletableFuture()
                                                            .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+
+        assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(
@@ -356,11 +332,8 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(Collections.singletonList(inventoryEntryDraft))
                                                            .toCompletableFuture()
                                                            .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+
+        assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(
@@ -388,10 +361,8 @@ public class InventorySyncTest {
         newDrafts.add(draftWithNullCustomTypeId);
 
         final InventorySyncStatistics syncStatistics = inventorySync.sync(newDrafts).toCompletableFuture().join();
-        assertThat(syncStatistics.getCreated()).isEqualTo(0);
-        assertThat(syncStatistics.getFailed()).isEqualTo(1);
-        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
-        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve references on"
             + " InventoryEntryDraft with SKU:'%s'. Reason: %s: Failed to resolve custom type reference on "
@@ -422,10 +393,8 @@ public class InventorySyncTest {
         newDrafts.add(draftWithNullCustomTypeId);
 
         final InventorySyncStatistics syncStatistics = inventorySync.sync(newDrafts).toCompletableFuture().join();
-        assertThat(syncStatistics.getCreated()).isEqualTo(0);
-        assertThat(syncStatistics.getFailed()).isEqualTo(1);
-        assertThat(syncStatistics.getUpdated()).isEqualTo(0);
-        assertThat(syncStatistics.getProcessed()).isEqualTo(1);
+
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve references on"
                 + " InventoryEntryDraft with SKU:'%s'. Reason: %s: Failed to resolve custom type reference on"
@@ -463,11 +432,8 @@ public class InventorySyncTest {
                                .withCustom(CustomFieldsDraft.ofTypeIdAndJson(uuidCustomTypeKey, new HashMap<>()));
         newDrafts.add(draftWithNullCustomTypeId);
 
-        inventorySync.sync(newDrafts);
-        assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(0);
-        assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(1);
-        assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(1);
+        final InventorySyncStatistics syncStatistics = inventorySync.sync(newDrafts).toCompletableFuture().join();
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
     }
 
     @Test
@@ -489,11 +455,7 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(newInventoryDraft))
                                                            .toCompletableFuture()
                                                            .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(0);
-        assertThat(stats.getCreated()).isEqualTo(1);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+        assertThat(stats).hasValues(1, 1, 0, 0);
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
     }
@@ -518,11 +480,8 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(newInventoryDraft))
             .toCompletableFuture()
             .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+
+        assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve supply channel reference on"
                 + " InventoryEntryDraft with SKU:'%s'.", SKU_1));
@@ -548,11 +507,8 @@ public class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(null))
             .toCompletableFuture()
             .join();
-        assertThat(stats).isNotNull();
-        assertThat(stats.getProcessed()).isEqualTo(1);
-        assertThat(stats.getFailed()).isEqualTo(1);
-        assertThat(stats.getCreated()).isEqualTo(0);
-        assertThat(stats.getUpdated()).isEqualTo(0);
+
+        assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process null inventory draft.");
         assertThat(errorCallBackExceptions).isNotEmpty();
