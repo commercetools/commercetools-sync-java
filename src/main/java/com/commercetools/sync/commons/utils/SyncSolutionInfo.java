@@ -5,7 +5,7 @@ import io.sphere.sdk.client.SolutionInfo;
 public final class SyncSolutionInfo extends SolutionInfo {
     private static final String LIB_NAME = "commercetools-sync-java";
     /**
-     * This value is injected from set-solutioninfo-version.sh.
+     * This value is injected by the script at gradle-scripts/version-setter.gradle.
      */
     private static final String LIB_VERSION = "#{LIB_VERSION}";
 
