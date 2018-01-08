@@ -11,8 +11,8 @@ if [ "$TAG" ]; then
   set LIB_VERSION=${TAG}
   fi
 
-echo "\n\nInjecting library version '$LIB_VERSION' into $SOLUTION_INFO_PATH\n\n"
 sed -i "" "s/$VERSION_PLACEHOLDER/$LIB_VERSION/g" "$SOLUTION_INFO_PATH"
+printf "\n\nInjecting library version '$LIB_VERSION' into $SOLUTION_INFO_PATH\n\n"
 
 
 
