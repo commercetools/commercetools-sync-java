@@ -5,11 +5,16 @@ task injectVersion {
             'the CI tool (e.g. Travis.)'
     doLast {
         def versionFile = 'src/main/java/com/commercetools/sync/commons/utils/SyncSolutionInfo.java'
+        def versionFileContents = new File(versionFile).text
         def versionPlaceholder = '#{LIB_VERSION}'
         def libVersion = 'dev-version'
         def isPr = System.getenv('TRAVIS_PULL_REQUEST')
         def tagName = System.getenv('TRAVIS_TAG')
 
+        if (!versionFileContents.contains(versionPlaceholder)) {
+            throw new InvalidUserCodeException("$versionFile doesn't containt placeholder: $versionPlaceholder. Please "
+                    + "make sure the file contains the placeholder, in order for the version to be injected correctly.")
+        }
 
         if (isPr.equals("false") && tagName) {
             libVersion = tagName
