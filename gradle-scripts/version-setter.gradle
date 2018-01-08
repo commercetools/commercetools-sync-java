@@ -22,10 +22,6 @@ task injectVersion {
 
         if (libVersion) {
             println "Injecting the version: '$libVersion' in $versionFile"
-            copy {
-                from(versionFile)
-                into('build/tmp/solutionInfo') //Backup original file.
-            }
             ant.replace(file: versionFile, token: versionPlaceholder, value: libVersion)
         } else {
             throw new InvalidUserDataException("Unable to set library version in $versionFile. Please make sure the" +
