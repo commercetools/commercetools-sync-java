@@ -50,6 +50,13 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M8...v1.0.0-M9) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M9/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M9)
+
+
+**Bug Fixes** (1)
+- **Commons** - Fixed library version in User-Agent headers of JVM SDK clients using the library. Now it's fetched
+ from the JAR manifest but injected from set-solutioninfo-version.sh [#227](https://github.com/commercetools/commercetools-sync-java/issues/227)
+
+
 -->
 
 ### v1.0.0-M8 -  Dec 29, 2017
