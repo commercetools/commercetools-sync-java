@@ -53,8 +53,8 @@
 
 
 **Bug Fixes** (1)
-- **Commons** - Fixed library version in User-Agent headers of JVM SDK clients using the library. Now it's fetched
- from the JAR manifest but injected from set-solutioninfo-version.sh [#227](https://github.com/commercetools/commercetools-sync-java/issues/227)
+- **Commons** - Fixed library version in User-Agent headers of JVM SDK clients using the library. Now it is not fetched
+ from the JAR manifest but injected by gradle-scripts/version-setter.gradle. [#227](https://github.com/commercetools/commercetools-sync-java/issues/227)
 
 
 -->
