@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 export SOLUTION_INFO_PATH="src/main/java/com/commercetools/sync/commons/utils/SyncSolutionInfo.java"
 export VERSION_PLACEHOLDER="#{LIB_VERSION}"
