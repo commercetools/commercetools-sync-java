@@ -12,8 +12,9 @@ task injectVersion {
         def tagName = System.getenv('TRAVIS_TAG')
 
         if (!versionFileContents.contains(versionPlaceholder)) {
-            throw new InvalidUserCodeException("$versionFile doesn't containt placeholder: $versionPlaceholder. Please "
-                    + "make sure the file contains the placeholder, in order for the version to be injected correctly.")
+            throw new InvalidUserCodeException("$versionFile does not contain the placeholder: $versionPlaceholder. " +
+                    "Please make sure the file contains the placeholder, in order for the version to be injected " +
+                    "correctly.")
         }
 
         if (isPr.equals("false") && tagName) {
