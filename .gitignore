@@ -2,7 +2,6 @@
 /.idea
 .DS_Store
 *.iml
-*.bak
 
 # gradle specific
 .gradle/
