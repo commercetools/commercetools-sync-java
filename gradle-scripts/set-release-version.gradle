@@ -1,4 +1,4 @@
-task injectVersion {
+task setReleaseVersion {
     description 'If the env var "TRAVIS_TAG" is set, injects the value in the ' +
             'src/main/java/com/commercetools/sync/commons/utils/SyncSolutionInfo.java. Otherwise, if the env var is not ' +
             'set it sets the version to the value "dev-version". Note: Should only be executed before compilation in ' +
@@ -8,7 +8,6 @@ task injectVersion {
         def versionFileContents = new File(versionFile).text
         def versionPlaceholder = '#{LIB_VERSION}'
         def libVersion = 'dev-version'
-        def isPr = System.getenv('TRAVIS_PULL_REQUEST')
         def tagName = System.getenv('TRAVIS_TAG')
 
         if (!versionFileContents.contains(versionPlaceholder)) {
@@ -17,7 +16,8 @@ task injectVersion {
                     "correctly.")
         }
 
-        if (isPr.equals("false") && tagName) {
+        // if build was triggered by a git tag, set version to tag name
+        if (tagName) {
             libVersion = tagName
         }
 
