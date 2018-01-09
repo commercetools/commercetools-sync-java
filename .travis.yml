@@ -8,7 +8,7 @@ dist: trusty
 jdk:
 - openjdk8
 install: true # skips travis' default installation step which executes gradle assemble.
-before_script: ./gradlew injectVersion
+before_script: ./gradlew setReleaseVersion
 script: ./gradlew clean build
 # The before_cache and the cache steps cache the gradle installation on travis.
 before_cache:
