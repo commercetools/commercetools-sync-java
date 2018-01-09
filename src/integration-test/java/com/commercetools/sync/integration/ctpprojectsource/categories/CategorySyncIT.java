@@ -28,7 +28,8 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.buildCategoryQuery;
 import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.replaceCategoriesReferenceIdsWithKeys;
-import static com.commercetools.sync.commons.utils.SyncUtils.batchDrafts;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
@@ -114,10 +115,7 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 2, 0, 2, 0, 0));
-
+        assertThat(syncStatistics).hasValues(2, 0, 2, 0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
@@ -136,10 +134,7 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 3, 1, 2, 0, 0));
-
+        assertThat(syncStatistics).hasValues(3, 1, 2, 0, 0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
@@ -159,9 +154,7 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 2, 0, 0, 2, 0));
+        assertThat(syncStatistics).hasValues(2, 0, 0, 2, 0);
         assertThat(callBackErrorResponses).hasSize(2);
         final String key1 = categoryDrafts.get(0).getKey();
         assertThat(callBackErrorResponses.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
@@ -220,14 +213,12 @@ public class CategorySyncIT {
         Collections.shuffle(categoryDrafts);
 
         // Simulate batches of categories where not all parent references are supplied at once.
-        final List<List<CategoryDraft>> batches = batchDrafts(categoryDrafts, 13);
+        final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 13);
 
         final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
             CompletableFuture.completedFuture(null)).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 130, 130, 0, 0, 0));
+        assertThat(syncStatistics).hasValues(130, 130, 0, 0, 0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
@@ -276,15 +267,12 @@ public class CategorySyncIT {
         final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
         Collections.shuffle(categoryDrafts);
 
-        final List<List<CategoryDraft>> batches = batchDrafts(categoryDrafts, 13);
+        final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 13);
 
         final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
             CompletableFuture.completedFuture(null)).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 130, 0, 120, 0, 0));
-
+        assertThat(syncStatistics).hasValues(130, 0, 120, 0, 0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
@@ -322,15 +310,12 @@ public class CategorySyncIT {
         final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
         Collections.shuffle(categoryDrafts);
 
-        final List<List<CategoryDraft>> batches = batchDrafts(categoryDrafts, 1);
+        final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 1);
 
         final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
             CompletableFuture.completedFuture(null)).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 3, 0, 1, 0, 0));
-
+        assertThat(syncStatistics).hasValues(3, 0, 1, 0, 0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
@@ -394,15 +379,12 @@ public class CategorySyncIT {
         // To simulate the new parent coming in a later draft
         Collections.reverse(categoryDrafts);
 
-        final List<List<CategoryDraft>> batches = batchDrafts(categoryDrafts, 1);
+        final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 1);
 
         final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
             CompletableFuture.completedFuture(null)).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 2, 1, 1, 0, 0));
-
+        assertThat(syncStatistics).hasValues(2, 1, 1, 0, 0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
@@ -451,10 +433,7 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 2, 0, 0, 2, 0));
-
+        assertThat(syncStatistics).hasValues(2, 0, 0, 2, 0);
         assertThat(callBackErrorResponses).hasSize(2);
         assertThat(callBackErrorResponses.get(0))
             .containsPattern("A duplicate value '.*' exists for field 'slug\\.en' on ");

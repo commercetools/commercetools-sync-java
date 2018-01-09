@@ -33,6 +33,9 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [v1.0.0-M8 -  Dec 29, 2017](#v100-m8----dec-29-2017)
+- [v1.0.0-M7 -  Dec 15, 2017](#v100-m7----dec-15-2017)
+- [v1.0.0-M6 -  Dec 5, 2017](#v100-m6----dec-5-2017)
 - [v1.0.0-M5 -  Nov 16, 2017](#v100-m5----nov-16-2017)
 - [v1.0.0-M4 -  Nov 7, 2017](#v100-m4----nov-7-2017)
 - [v1.0.0-M3 -  Nov 3, 2017](#v100-m3----nov-3-2017)
@@ -41,8 +44,50 @@
 - [v1.0.0-M1 -  Sep 06, 2017](#v100-m1----sep-06-2017)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 <!--
-### v1.0.0-M6 -  Dec 1, 2017
+### v1.0.0-M9 -  Jan 15, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M8...v1.0.0-M9) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M9/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M9)
+
+
+**Bug Fixes** (1)
+- **Commons** - Fixed library version in User-Agent headers of JVM SDK clients using the library. Now it is not fetched
+ from the JAR manifest but injected by gradle-scripts/set-release-version.gradle. [#227](https://github.com/commercetools/commercetools-sync-java/issues/227)
+
+
+-->
+
+### v1.0.0-M8 -  Dec 29, 2017
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M7...v1.0.0-M8) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M8/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M8)
+
+**New Features** (1)
+- **Category Sync** - Exposed new method `CategorySyncStatistics#getNumberOfCategoriesWithMissingParents` which gets the
+total number of categories with missing parents from the statistics instance. [#186](https://github.com/commercetools/commercetools-sync-java/issues/186)
+
+**Changes** (2)
+- **Product Sync** - Changed product sync statistics report message wording. [#186](https://github.com/commercetools/commercetools-sync-java/issues/186)
+- **Product Sync** - Exposed new methods `ProductReferenceResolver#resolveStateReference`, `ProductReferenceResolver#resolveTaxCategoryReference`, `ProductReferenceResolver#resolveCategoryReferences` and `ProductReferenceResolver#resolveProductTypeReference`.
+[#218](https://github.com/commercetools/commercetools-sync-java/issues/218)
+
+**Enhancements** (1)
+- **Build Tools** - Bumped Gradle to version 4.4. [#205](https://github.com/commercetools/commercetools-sync-java/issues/205)
+
+
+### v1.0.0-M7 -  Dec 15, 2017
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M6...v1.0.0-M7) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M7/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M7)
+
+**Bug Fixes** (1)
+- **Commons** - Changed offset-based pagination of querying all elements to a limit-based with sorted ids approach 
+to mitigate problems of previous approach. [#210](https://github.com/commercetools/commercetools-sync-java/issues/210)
+
+
+### v1.0.0-M6 -  Dec 5, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M5...v1.0.0-M6) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M6/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M6)
@@ -52,17 +97,30 @@
 - **Product Sync** - Introduced `beforeCreateCallback` option which is callback applied on a product draft before a request to create it on CTP is issued. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
 - **Inventory Sync** - Introduced `beforeCreateCallback` option which is callback applied on a inventoryEntry draft before a request to create it on CTP is issued. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
 
+**Major Enhancements** (2)
+- **Category Sync** - Introduced batching on update action requests to allow for requesting updates of more than 500 actions. [#21](https://github.com/commercetools/commercetools-sync-java/issues/21)
+- **Product Sync** - Introduced batching on update action requests to allow for requesting updates of more than 500 actions. [#21](https://github.com/commercetools/commercetools-sync-java/issues/21)
+
 **Bug Fixes** (1)
 - **Commons** - Fixed library version in User-Agent headers of JVM SDK clients using the library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/191)
 
-**Migration guide** (4)
+**Documentation** (1)
+- **Commons** - Added [Code of Conduct](/docs/CODE_OF_CONDUCT.md) doc.
+
+**Migration guide** (6)
+- **Product Sync** - Removed `removeOtherVariants` option which is already done by the sync by default. Removal of 
+variants can be prevented through the beforeUpdateCallback. Please check [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/templates/beforeupdatecallback/KeepOtherVariantsSyncIT.java)
+an example of how this can be done. [#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
+- **Commons** - Removed `removeOtherSetEntries`, `removeOtherCollectionEntries` and `removeOtherProperties` options 
+which are already done by the sync by default. The aforementioned options (and even more use cases) can now be covered with help of the beforeCreateCallback and beforeUpdateCallback. Please 
+check [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/templates/beforeupdatecallback/KeepOtherVariantsSyncIT.java) 
+an example of how removal of variants can be disabled. [#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
 - **Commons** - Removed website and emergency contact e-mail appened in User-Agent headers of JVM SDK clients using the 
 library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/191)
 - **Category Sync** - `beforeUpdateCallback` now treats a null return as an empty list of update actions. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
 - **Product Sync** - `beforeUpdateCallback` now treats a null return as an empty list of update actions. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
 - **Inventory Sync** - `beforeUpdateCallback` now treats a null return as an empty list of update actions. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
 
---> 
 
 ### v1.0.0-M5 -  Nov 16, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M4...v1.0.0-M5) |

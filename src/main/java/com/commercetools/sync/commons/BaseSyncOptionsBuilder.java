@@ -17,9 +17,6 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     protected BiConsumer<String, Throwable> errorCallback;
     protected Consumer<String> warningCallback;
     protected int batchSize = 30;
-    protected boolean removeOtherSetEntries = true;
-    protected boolean removeOtherCollectionEntries = true;
-    protected boolean removeOtherProperties = true;
     protected boolean allowUuid = false;
     protected TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
     protected Function<V, V> beforeCreateCallback;
@@ -66,45 +63,6 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
         if (batchSize > 0) {
             this.batchSize = batchSize;
         }
-        return getThis();
-    }
-
-    /**
-     * Sets the {@code removeOtherSetEntries} boolean flag which adds additional Set entries without deleting
-     * existing ones. If set to true, which is the default value of the option, it deletes the
-     * existing Set entries. If set to false, it doesn't delete the existing ones.
-     *
-     * @param removeOtherSetEntries new value to set to the boolean flag.
-     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
-     */
-    public T removeOtherSetEntries(final boolean removeOtherSetEntries) {
-        this.removeOtherSetEntries = removeOtherSetEntries;
-        return getThis();
-    }
-
-    /**
-     * Sets the {@code removeOtherSetEntries} boolean flag which adds collection (e.g. Assets, Images etc.) entries
-     * without deleting existing ones. If set to true, which is the default value of the option, it deletes the
-     * existing collection entries. If set to false, it doesn't delete the existing ones.
-     *
-     * @param removeOtherCollectionEntries new value to set to the boolean flag.
-     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
-     */
-    public T removeOtherCollectionEntries(final boolean removeOtherCollectionEntries) {
-        this.removeOtherCollectionEntries = removeOtherCollectionEntries;
-        return getThis();
-    }
-
-    /**
-     * Sets the {@code removeOtherProperties} boolean flag which adds additional object properties (e.g. custom fields,
-     * product attributes, etc..) without deleting existing ones. If set to true, which is the default value of the
-     * option, it deletes the existing object properties. If set to false, it doesn't delete the existing ones.
-     *
-     * @param removeOtherProperties new value to set to the boolean flag.
-     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
-     */
-    public T removeOtherProperties(final boolean removeOtherProperties) {
-        this.removeOtherProperties = removeOtherProperties;
         return getThis();
     }
 

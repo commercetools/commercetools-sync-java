@@ -2,15 +2,12 @@ package com.commercetools.sync.commons;
 
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -22,9 +19,6 @@ public class BaseSyncOptions<U, V> {
     private final BiConsumer<String, Throwable> errorCallBack;
     private final Consumer<String> warningCallBack;
     private int batchSize;
-    private boolean removeOtherSetEntries = true;
-    private boolean removeOtherCollectionEntries = true;
-    private boolean removeOtherProperties = true;
     private boolean allowUuid = false;
     private final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
     private final Function<V, V> beforeCreateCallback;
@@ -33,9 +27,6 @@ public class BaseSyncOptions<U, V> {
                               @Nullable final BiConsumer<String, Throwable> errorCallBack,
                               @Nullable final Consumer<String> warningCallBack,
                               final int batchSize,
-                              final boolean removeOtherSetEntries,
-                              final boolean removeOtherCollectionEntries,
-                              final boolean removeOtherProperties,
                               final boolean allowUuid,
                               @Nullable final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
                                   beforeUpdateCallback,
@@ -44,9 +35,6 @@ public class BaseSyncOptions<U, V> {
         this.errorCallBack = errorCallBack;
         this.batchSize = batchSize;
         this.warningCallBack = warningCallBack;
-        this.removeOtherSetEntries = removeOtherSetEntries;
-        this.removeOtherCollectionEntries = removeOtherCollectionEntries;
-        this.removeOtherProperties = removeOtherProperties;
         this.allowUuid = allowUuid;
         this.beforeUpdateCallback = beforeUpdateCallback;
         this.beforeCreateCallback = beforeCreateCallback;
@@ -85,45 +73,6 @@ public class BaseSyncOptions<U, V> {
     @Nullable
     public Consumer<String> getWarningCallBack() {
         return warningCallBack;
-    }
-
-    /**
-     * Returns a {@code boolean} flag which enables the sync module to add additional Set entries without deleting
-     * existing ones, if set to {@code false}. If set to true, which is the default value of the option,
-     * it deletes the existing Set entries.
-     *
-     * @return a {@code boolean} flag which enables the sync module to add additional Set entries without deleting
-     *      existing ones, if set to {@code false}. If set to true, which is the default value of the option,
-     *      it deletes the existing Set entries.
-     */
-    public boolean shouldRemoveOtherSetEntries() {
-        return removeOtherSetEntries;
-    }
-
-    /**
-     * Returns a {@code boolean} flag which enables the sync module to add collection (e.g. Assets, Images etc.) entries
-     * without deleting existing ones, if set to {@code false}. If set to true, which is the default value of the
-     * option, it deletes the existing collection entries.
-     *
-     * @return a {@code boolean} flag which enables the sync module to add collection (e.g. Assets, Images etc.) entries
-     *      without deleting existing ones, if set to {@code false}. If set to true, which is the default value of the
-     *      option, it deletes the existing collection entries.
-     */
-    public boolean shouldRemoveOtherCollectionEntries() {
-        return removeOtherCollectionEntries;
-    }
-
-    /**
-     * Returns a {@code boolean} flag which enables the sync module to add additional object properties (e.g. custom
-     * fields, product attributes, etc..) without deleting existing ones, if set to {@code false}. If set to true,
-     * which is the default value of the option, it deletes the existing object properties.
-     *
-     * @return a {@code boolean} flag which enables the sync module to add additional object properties (e.g. custom
-     *      fields, product attributes, etc..) without deleting existing ones, if set to {@code false}. If set to true,
-     *      which is the default value of the option, it deletes the existing object properties.
-     */
-    public boolean shouldRemoveOtherProperties() {
-        return removeOtherProperties;
     }
 
     /**
@@ -266,30 +215,4 @@ public class BaseSyncOptions<U, V> {
         return Optional.ofNullable(
                 beforeCreateCallback != null ? beforeCreateCallback.apply(newResourceDraft) : newResourceDraft);
     }
-
-    /**
-     * Applies the BeforeCreateCallback function on a supplied draft, then attempts to create it on CTP if it's not
-     * empty, then applies the supplied handler on the response from CTP. If the draft was empty after applying the
-     * callback an empty optional is returned as the resulting future.
-     *
-     * @param resourceDraft         draft to apply callback on and then create on CTP.
-     * @param createCommandFunction the create command query to create the resource on CTP.
-     * @param responseHandler       defines how to handle the response from CTP.
-     * @return a future containing an optional which might contain the resource if successfully created or empty
-     *         otherwise.
-     */
-    @Nonnull
-    public CompletionStage<Optional<U>> applyCallbackAndCreate(
-        @Nonnull final V resourceDraft,
-        @Nonnull final Function<V, DraftBasedCreateCommand<U, V>> createCommandFunction,
-        @Nonnull final TriFunction<V, U, Throwable, Optional<U>> responseHandler) {
-        return applyBeforeCreateCallBack(resourceDraft)
-            .map(mappedDraft -> ctpClient.execute(createCommandFunction.apply(mappedDraft))
-                                         .handle((createdResource, sphereException) ->
-                                             responseHandler.apply(mappedDraft, createdResource, sphereException)))
-            .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty()));
-
-    }
-
-
 }

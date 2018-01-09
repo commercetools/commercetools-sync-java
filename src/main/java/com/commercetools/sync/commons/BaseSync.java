@@ -105,7 +105,8 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
         @Nonnull final Throwable sphereException,
         @Nonnull final Supplier<S> onConcurrentModificationSupplier,
         @Nonnull final Supplier<S> onOtherExceptionSupplier) {
-        if (sphereException instanceof ConcurrentModificationException) {
+        final Throwable completionExceptionCause = sphereException.getCause();
+        if (completionExceptionCause instanceof ConcurrentModificationException) {
             return onConcurrentModificationSupplier.get();
         }
         return onOtherExceptionSupplier.get();

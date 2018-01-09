@@ -15,21 +15,19 @@ import java.util.function.Supplier;
 public final class SyncUtils {
 
     /**
-     * Given a list of resource (e.g. categories, products, etc..) drafts and a {@code batchSize}, this method separates
-     * the drafts into batches with the {@code batchSize}. Each batch is represented by a
-     * {@link List} of resources and all the batches are grouped and represented by an
-     * {@link List}&lt;{@link List}&gt; of resources, which is returned by the method.
+     * Given a list of elements and a {@code batchSize}, this method distributes the elements into batches with the
+     * {@code batchSize}. Each batch is represented by a {@link List} of elements and all the batches are grouped and
+     * represented by a {@link List}&lt;{@link List}&gt; of elements, which is returned by the method.
      *
-     * @param <T>       the type of the draft resources.
-     * @param drafts    the list of drafts to split into batches.
+     * @param <T>       the type of the draft elements.
+     * @param elements  the list of elements to split into batches.
      * @param batchSize the size of each batch.
-     * @return a list of lists where each list represents a batch of resources.
+     * @return a list of lists where each list represents a batch of elements.
      */
-    public static <T> List<List<T>> batchDrafts(@Nonnull final List<T> drafts,
-                                                final int batchSize) {
+    public static <T> List<List<T>> batchElements(@Nonnull final List<T> elements, final int batchSize) {
         List<List<T>> batches = new ArrayList<>();
-        for (int i = 0; i < drafts.size() && batchSize > 0; i += batchSize) {
-            batches.add(drafts.subList(i, Math.min(i + batchSize, drafts.size())));
+        for (int i = 0; i < elements.size() && batchSize > 0; i += batchSize) {
+            batches.add(elements.subList(i, Math.min(i + batchSize, elements.size())));
         }
         return batches;
     }

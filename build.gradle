@@ -1,16 +1,7 @@
-buildscript {
-    ext {
-        bintrayGradlePluginVersion = '1.7.3'
-        gradleGitPublish = '0.3.0'
-    }
-    repositories {
-        mavenCentral()
-        jcenter()
-    }
-    dependencies {
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:${bintrayGradlePluginVersion}"
-        classpath "org.ajoberstar:gradle-git-publish:${gradleGitPublish}"
-    }
+plugins {
+    id 'com.jfrog.bintray' version '1.7.3'
+    id 'org.ajoberstar.git-publish' version '0.3.2'
+    id 'com.adarshr.test-logger' version '1.1.2'
 }
 
 apply from: "$rootDir/gradle-scripts/plugins.gradle"
@@ -20,7 +11,7 @@ apply from: "$rootDir/gradle-scripts/package.gradle"
 apply from: "$rootDir/gradle-scripts/java-compile.gradle"
 apply from: "$rootDir/gradle-scripts/repositories.gradle"
 apply from: "$rootDir/gradle-scripts/integration-tests.gradle"
-apply from: "$rootDir/gradle-scripts/test-logging.gradle"
+apply from: "$rootDir/gradle-scripts/test-logger.gradle"
 apply from: "$rootDir/gradle-scripts/dependencies.gradle"
 apply from: "$rootDir/gradle-scripts/checkstyle.gradle"
 apply from: "$rootDir/gradle-scripts/pmd.gradle"
@@ -30,4 +21,5 @@ apply from: "$rootDir/gradle-scripts/maven-publish.gradle"
 apply from: "$rootDir/gradle-scripts/bintray-publish.gradle"
 apply from: "$rootDir/gradle-scripts/oss-publish.gradle"
 apply from: "$rootDir/gradle-scripts/javadocs-publish.gradle"
+apply from: "$rootDir/gradle-scripts/set-release-version.gradle"
 apply from: "$rootDir/gradle-scripts/execution-order.gradle"

@@ -1,18 +1,15 @@
 package com.commercetools.sync.categories.helpers;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import io.netty.util.internal.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-import static com.commercetools.sync.commons.MockUtils.getStatisticsAsJsonString;
-import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CategorySyncStatisticsTest {
@@ -69,116 +66,45 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void calculateProcessingTime_ShouldSetProcessingTimeInAllUnitsAndHumanReadableString() throws
-        InterruptedException {
-        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInMillis()).isEqualTo(0);
-        assertThat(categorySyncStatistics.getLatestBatchHumanReadableProcessingTime())
-            .isEqualTo(StringUtil.EMPTY_STRING);
+    public void getReportMessage_WithIncrementedStats_ShouldGetCorrectMessage() {
+        categorySyncStatistics.incrementCreated(1);
+        categorySyncStatistics.incrementFailed(1);
+        categorySyncStatistics.incrementUpdated(1);
+        categorySyncStatistics.incrementProcessed(3);
 
-        final int waitingTimeInMillis = 100;
-        Thread.sleep(waitingTimeInMillis);
-        categorySyncStatistics.calculateProcessingTime();
-
-        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInDays()).isGreaterThanOrEqualTo(0);
-        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInHours()).isGreaterThanOrEqualTo(0);
-        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInMinutes()).isGreaterThanOrEqualTo(0);
-        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInSeconds())
-            .isGreaterThanOrEqualTo(waitingTimeInMillis / 1000);
-        assertThat(categorySyncStatistics.getLatestBatchProcessingTimeInMillis())
-            .isGreaterThanOrEqualTo(waitingTimeInMillis);
-
-        final long remainingMillis = categorySyncStatistics.getLatestBatchProcessingTimeInMillis()
-            - TimeUnit.SECONDS.toMillis(categorySyncStatistics.getLatestBatchProcessingTimeInSeconds());
-        assertThat(categorySyncStatistics.getLatestBatchHumanReadableProcessingTime()).contains(format(", %dms",
-            remainingMillis));
+        assertThat(categorySyncStatistics.getReportMessage()).isEqualTo("Summary: 3 categories were processed in total "
+            + "(1 created, 1 updated, 1 failed to sync and 0 categories with a missing parent).");
     }
 
     @Test
-    public void getStatisticsAsJsonString_WithoutCalculatingProcessingTime_ShouldGetCorrectJsonString()
-        throws JsonProcessingException {
-        categorySyncStatistics.incrementCreated();
-        categorySyncStatistics.incrementProcessed();
+    public void setAndGetCategoryKeysWithMissingParents_WithAnyMap_ShouldSetAndGetMapCorrectly() {
+        final HashMap<String, List<String>> catKeysWithMissingParents = new HashMap<>();
+        categorySyncStatistics.setCategoryKeysWithMissingParents(catKeysWithMissingParents);
 
-        categorySyncStatistics.incrementFailed();
-        categorySyncStatistics.incrementProcessed();
-
-        categorySyncStatistics.incrementUpdated();
-        categorySyncStatistics.incrementProcessed();
-
-        final String statisticsAsJsonString = getStatisticsAsJsonString(categorySyncStatistics);
-        assertThat(statisticsAsJsonString)
-                .isEqualTo("{\"reportMessage\":\"Summary: 3 categories were processed in total (1 created, 1 updated, "
-                  + "1 failed to sync and 0 categories with a missing parent).\",\""
-                    + "updated\":1,\""
-                    + "created\":1,\""
-                    + "failed\":1,\""
-                    + "processed\":3,\""
-                    + "latestBatchProcessingTimeInDays\":"
-                    + categorySyncStatistics.getLatestBatchProcessingTimeInDays()
-                    + ",\""
-                    + "latestBatchProcessingTimeInHours\":"
-                    + categorySyncStatistics.getLatestBatchProcessingTimeInHours()
-                    + ",\"latestBatchProcessingTimeInMinutes\":"
-                    + categorySyncStatistics.getLatestBatchProcessingTimeInMinutes()
-                    + ",\"latestBatchProcessingTimeInSeconds\":"
-                    + categorySyncStatistics.getLatestBatchProcessingTimeInSeconds()
-                    + ",\"latestBatchProcessingTimeInMillis\":"
-                    + categorySyncStatistics.getLatestBatchProcessingTimeInMillis()
-                    + ",\"latestBatchHumanReadableProcessingTime\":\""
-                    + categorySyncStatistics.getLatestBatchHumanReadableProcessingTime()
-                    + "\",\"categoryKeysWithMissingParents\":"
-                    + categorySyncStatistics.getCategoryKeysWithMissingParents() + "}");
-    }
-
-    @Test
-    public void getStatisticsAsJsonString_WithCalculatingProcessingTime_ShouldGetCorrectJsonString()
-        throws JsonProcessingException {
-        categorySyncStatistics.incrementCreated();
-        categorySyncStatistics.incrementProcessed();
-
-        categorySyncStatistics.incrementFailed();
-        categorySyncStatistics.incrementProcessed();
-
-        categorySyncStatistics.incrementUpdated();
-        categorySyncStatistics.incrementProcessed();
-
-        categorySyncStatistics.calculateProcessingTime();
-
-        final String statisticsAsJsonString = getStatisticsAsJsonString(categorySyncStatistics);
-        assertThat(statisticsAsJsonString)
-            .isEqualTo("{\"reportMessage\":\"Summary: 3 categories were processed in total (1 created, 1 updated, "
-                + "1 failed to sync and 0 categories with a missing parent).\",\""
-                + "updated\":1,\""
-                + "created\":1,\""
-                + "failed\":1,\""
-                + "processed\":3,\""
-                + "latestBatchProcessingTimeInDays\":"
-                + categorySyncStatistics.getLatestBatchProcessingTimeInDays()
-                + ",\""
-                + "latestBatchProcessingTimeInHours\":"
-                + categorySyncStatistics.getLatestBatchProcessingTimeInHours()
-                + ",\"latestBatchProcessingTimeInMinutes\":"
-                + categorySyncStatistics.getLatestBatchProcessingTimeInMinutes()
-                + ",\"latestBatchProcessingTimeInSeconds\":"
-                + categorySyncStatistics.getLatestBatchProcessingTimeInSeconds()
-                + ",\"latestBatchProcessingTimeInMillis\":"
-                + categorySyncStatistics.getLatestBatchProcessingTimeInMillis()
-                + ",\"latestBatchHumanReadableProcessingTime\":\""
-                + categorySyncStatistics.getLatestBatchHumanReadableProcessingTime()
-                + "\",\"categoryKeysWithMissingParents\":"
-                + categorySyncStatistics.getCategoryKeysWithMissingParents() + "}");
+        assertThat(categorySyncStatistics.getCategoryKeysWithMissingParents()).isSameAs(catKeysWithMissingParents);
     }
 
     @Test
     public void getNumberOfCategoriesWithMissingParents_WithEmptyMap_ShouldReturn0() {
-        final int numberOfCategoriesWithMissingParents = CategorySyncStatistics
-            .getNumberOfCategoriesWithMissingParents(new HashMap<>());
-        assertThat(numberOfCategoriesWithMissingParents).isZero();
+        final HashMap<String, List<String>> catKeysWithMissingParents = new HashMap<>();
+        categorySyncStatistics.setCategoryKeysWithMissingParents(catKeysWithMissingParents);
+
+        assertThat(categorySyncStatistics.getNumberOfCategoriesWithMissingParents()).isZero();
+    }
+
+    @Test
+    public void getNumberOfCategoriesWithMissingParents_WithEmptyAndNullValues_ShouldReturn0() {
+        final Map<String, List<String>> categoryKeysWithMissingParents = new HashMap<>();
+        categoryKeysWithMissingParents.put("parent1", null);
+        categoryKeysWithMissingParents.put("parent2", emptyList());
+
+        categorySyncStatistics.setCategoryKeysWithMissingParents(categoryKeysWithMissingParents);
+        assertThat(categorySyncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
     }
 
     @Test
     public void getNumberOfCategoriesWithMissingParents_WithNonEmptyMap_ShouldReturnCorrectNumberOfChildren() {
-        final Map<String, ArrayList<String>> categoryKeysWithMissingParents = new HashMap<>();
+        final Map<String, List<String>> categoryKeysWithMissingParents = new HashMap<>();
         final ArrayList<String> firstMissingParentChildrenKeys = new ArrayList<>();
         firstMissingParentChildrenKeys.add("key1");
         firstMissingParentChildrenKeys.add("key2");
@@ -190,8 +116,9 @@ public class CategorySyncStatisticsTest {
         categoryKeysWithMissingParents.put("parent1", firstMissingParentChildrenKeys);
         categoryKeysWithMissingParents.put("parent2", secondMissingParentChildrenKeys);
 
-        final int numberOfCategoriesWithMissingParents = CategorySyncStatistics
-            .getNumberOfCategoriesWithMissingParents(categoryKeysWithMissingParents);
-        assertThat(numberOfCategoriesWithMissingParents).isEqualTo(4);
+
+        categorySyncStatistics.setCategoryKeysWithMissingParents(categoryKeysWithMissingParents);
+
+        assertThat(categorySyncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(4);
     }
 }

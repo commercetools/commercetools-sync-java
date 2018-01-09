@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,17 +33,13 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * Implementation of CategoryService interface.
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
-public final class CategoryServiceImpl implements CategoryService {
-    private final CategorySyncOptions syncOptions;
-    private boolean isCached = false;
-    private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
-    private static final String CREATE_FAILED = "Failed to create CategoryDraft with key: '%s'. Reason: %s";
+public final class CategoryServiceImpl extends BaseService<Category, CategoryDraft> implements CategoryService {
     private static final String FETCH_FAILED = "Failed to fetch Categories with keys: '%s'. Reason: %s";
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
         + "category matching.";
 
     public CategoryServiceImpl(@Nonnull final CategorySyncOptions syncOptions) {
-        this.syncOptions = syncOptions;
+        super(syncOptions);
     }
 
     @Nonnull
@@ -143,31 +138,13 @@ public final class CategoryServiceImpl implements CategoryService {
     @Nonnull
     @Override
     public CompletionStage<Optional<Category>> createCategory(@Nonnull final CategoryDraft categoryDraft) {
-        return
-            syncOptions.applyCallbackAndCreate(categoryDraft, CategoryCreateCommand::of, this::handleCategoryCreation);
+        return applyCallbackAndCreate(categoryDraft, categoryDraft.getKey(), CategoryCreateCommand::of);
     }
-
-    @Nonnull
-    private Optional<Category> handleCategoryCreation(
-        @Nonnull final CategoryDraft draft,
-        @Nullable final Category createdCategory,
-        @Nullable final Throwable sphereException) {
-        if (createdCategory != null) {
-            keyToIdCache.put(createdCategory.getKey(), createdCategory.getId());
-            return Optional.of(createdCategory);
-        } else {
-            syncOptions.applyErrorCallback(format(CREATE_FAILED, draft.getKey(), sphereException), sphereException);
-            return Optional.empty();
-        }
-    }
-
 
     @Nonnull
     @Override
     public CompletionStage<Category> updateCategory(@Nonnull final Category category,
-                                                              @Nonnull final List<UpdateAction<Category>>
-                                                                  updateActions) {
-        final CategoryUpdateCommand categoryUpdateCommand = CategoryUpdateCommand.of(category, updateActions);
-        return syncOptions.getCtpClient().execute(categoryUpdateCommand);
+                                                    @Nonnull final List<UpdateAction<Category>> updateActions) {
+        return updateResource(category, CategoryUpdateCommand::of, updateActions);
     }
 }

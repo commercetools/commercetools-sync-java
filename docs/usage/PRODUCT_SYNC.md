@@ -69,19 +69,7 @@ events.
 - `warningCallBack` 
 a callback that is called whenever an event occurs during the sync process that represents a warning. Currently, these 
 events.
-<!-- 
-If set to `true`, which is the default value of the option, it deletes the existing object properties.
-- `removeOtherSetEntries`
-a flag which enables the sync module to add additional Set entries without deleting existing ones, if set to `false`. 
-If set to `true`, which is the default value of the option, it deletes the existing Set entries.
-- `removeOtherCollectionEntries`
-a flag which enables the sync module to add collection (e.g. Assets, Images etc.) entries without deleting existing 
-ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing collection 
-entries.
-- `removeOtherProperties`
-a flag which enables the sync module to add additional object properties (e.g. custom fields, etc..) without deleting 
-existing ones, if set to `false`. If set to `true`, which is the default value of the option, it deletes the existing 
-object properties. -->
+
 - `syncFilter`
  represents either a blacklist or a whitelist for filtering certain update action groups. 
   - __Blacklisting__ an update action group means that everything in products will be synced except for any group 
@@ -133,7 +121,7 @@ human readable format.
 ````java
 final ProductSyncStatistics stats = syncStatisticsStage.toCompletebleFuture().join();
 stats.getReportMessage(); 
-/*"Summary: 2000 products were processed in total (1000 created, 995 updated and 5 products failed to sync)."*/
+/*"Summary: 2000 products were processed in total (1000 created, 995 updated and 5 failed to sync)."*/
 ````
 
 __Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:

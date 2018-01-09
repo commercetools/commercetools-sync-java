@@ -1,0 +1,41 @@
+{
+  "key": "keep-other-variants-callback-test",
+  "masterData": {
+    "staged": {
+      "name": {
+        "en": "english name"
+      },
+      "categories": [
+      ],
+      "slug": {
+        "en": "english-slug"
+      },
+      "masterVariant": {
+        "id": 1,
+        "key": "with-variants-mv",
+        "sku": "with-variants-mv",
+        "attributes": [
+          {
+            "name": "priceInfo",
+            "value": "64,90/kg"
+          }
+        ]
+      },
+      "variants": [
+        {
+          "id": 3,
+          "key": "with-variants-v1",
+          "sku": "with-variants-v1",
+          "attributes": [
+            {
+              "name": "priceInfo",
+              "value": "64,90/kg"
+            }
+          ]
+        }
+      ]
+    },
+    "published": true,
+    "hasStagedChanges": true
+  }
+}

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Price;
@@ -50,6 +51,8 @@ public class ProductSyncMockUtils {
     public static final String PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH =
         "product-key-1-changed-with-prices.json";
     public static final String PRODUCT_KEY_2_RESOURCE_PATH = "product-key-2.json";
+    public static final String PRODUCT_WITH_VARS_RESOURCE_PATH = "product-with-variants.json";
+    public static final String PRODUCT_NO_VARS_RESOURCE_PATH = "product-with-no-variants.json";
     public static final String PRODUCT_TYPE_RESOURCE_PATH = "product-type.json";
     public static final String PRODUCT_TYPE_NO_KEY_RESOURCE_PATH = "product-type-no-key.json";
     public static final String CATEGORY_KEY_1_RESOURCE_PATH = "category-key-1.json";
@@ -319,5 +322,27 @@ public class ProductSyncMockUtils {
         productReference.put("typeId", "product");
         productReference.put("id", id);
         return productReference;
+    }
+
+    @Nonnull
+    public static ProductDraftBuilder getBuilderWithProductTypeRefId(@Nonnull final String refId) {
+        return ProductDraftBuilder.of(ProductType.referenceOfId(refId),
+            LocalizedString.ofEnglish("testName"),
+            LocalizedString.ofEnglish("testSlug"),
+            (ProductVariantDraft)null);
+    }
+
+    @Nonnull
+    public static ProductDraftBuilder getBuilderWithRandomProductTypeUuid() {
+        return getBuilderWithProductTypeRefId(UUID.randomUUID().toString());
+    }
+
+    @Nonnull
+    public static ProductDraftBuilder getBuilderWithProductTypeRef(
+        @Nonnull final Reference<ProductType> reference) {
+        return ProductDraftBuilder.of(reference,
+            LocalizedString.ofEnglish("testName"),
+            LocalizedString.ofEnglish("testSlug"),
+            (ProductVariantDraft)null);
     }
 }

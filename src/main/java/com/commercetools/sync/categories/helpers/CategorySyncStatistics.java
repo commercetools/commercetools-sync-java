@@ -4,9 +4,10 @@ package com.commercetools.sync.categories.helpers;
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static java.lang.String.format;
 
@@ -15,7 +16,7 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
      * Map that represents categories with missing parents; the keys of the map are the keys of the missing parent
      * categories and the value of each is a list of the children category keys.
      */
-    private Map<String, ArrayList<String>> categoryKeysWithMissingParents = new HashMap<>();
+    private Map<String, List<String>> categoryKeysWithMissingParents = new HashMap<>();
 
     public CategorySyncStatistics() {
         super();
@@ -32,25 +33,29 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
     public String getReportMessage() {
         reportMessage = format("Summary: %s categories were processed in total "
                 + "(%s created, %s updated, %s failed to sync and %s categories with a missing parent).",
-            getProcessed(), getCreated(), getUpdated(), getFailed(),
-            getNumberOfCategoriesWithMissingParents(categoryKeysWithMissingParents));
+            getProcessed(), getCreated(), getUpdated(), getFailed(), getNumberOfCategoriesWithMissingParents());
         return reportMessage;
     }
 
-    static int getNumberOfCategoriesWithMissingParents(
-        @Nonnull final Map<String, ArrayList<String>> categoryKeysWithMissingParents) {
+    /**
+     * Returns the total number of categories with missing parents.
+     *
+     * @return the total number of categories with missing parents.
+     */
+    public int getNumberOfCategoriesWithMissingParents() {
         return categoryKeysWithMissingParents.values()
-                                      .stream()
-                                      .map(ArrayList::size)
-                                      .reduce(0, Integer::sum);
+                                             .stream()
+                                             .filter(Objects::nonNull)
+                                             .map(List::size)
+                                             .reduce(0, Integer::sum);
     }
 
-    public Map<String, ArrayList<String>> getCategoryKeysWithMissingParents() {
+    public Map<String, List<String>> getCategoryKeysWithMissingParents() {
         return categoryKeysWithMissingParents;
     }
 
     public void setCategoryKeysWithMissingParents(@Nonnull final
-                                                  Map<String, ArrayList<String>> categoryKeysWithMissingParents) {
+                                                  Map<String, List<String>> categoryKeysWithMissingParents) {
         this.categoryKeysWithMissingParents = categoryKeysWithMissingParents;
     }
 }

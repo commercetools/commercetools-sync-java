@@ -38,7 +38,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.SyncUtils.batchDrafts;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
 import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
 import static java.lang.String.format;
@@ -92,7 +92,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     @Override
     protected CompletionStage<ProductSyncStatistics> process(@Nonnull final List<ProductDraft> resourceDrafts) {
-        final List<List<ProductDraft>> batches = batchDrafts(resourceDrafts, syncOptions.getBatchSize());
+        final List<List<ProductDraft>> batches = batchElements(resourceDrafts, syncOptions.getBatchSize());
         return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
 
@@ -157,7 +157,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                                 }
                                                 final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
                                                     productDraft.getKey(), actualException);
-                                                handleError(errorMessage, referenceResolutionException);
+                                                handleError(errorMessage, actualException);
                                                 return null;
                                             }).toCompletableFuture().join();
                 } else {
