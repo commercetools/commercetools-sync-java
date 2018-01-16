@@ -23,8 +23,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CompletionException;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
@@ -46,7 +46,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomC
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
 import static java.lang.String.format;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductReferenceResolverIT {
     private static ProductType productTypeSource;
@@ -142,10 +142,7 @@ public class ProductReferenceResolverIT {
 
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
-                + " failed to sync).", 1, 1, 0, 0));
-
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(warningCallBackMessages).hasSize(1);
@@ -167,18 +164,14 @@ public class ProductReferenceResolverIT {
 
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d products were processed in total (%d created, %d updated and %d products"
-                + " failed to sync).", 1, 0, 0, 1));
-
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on ProductDraft with"
             + " key:'%s'. Reason: %s: Failed to resolve product type reference on ProductDraft with key:'%s'."
                 + " Reason: Reference 'id' field value is blank (null/empty).",
             productDraft.getKey(), ReferenceResolutionException.class.getCanonicalName(), productDraft.getKey()));
         assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
         assertThat(warningCallBackMessages).isEmpty();
     }
 }

@@ -157,7 +157,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                                 }
                                                 final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
                                                     productDraft.getKey(), actualException);
-                                                handleError(errorMessage, referenceResolutionException);
+                                                handleError(errorMessage, actualException);
                                                 return null;
                                             }).toCompletableFuture().join();
                 } else {

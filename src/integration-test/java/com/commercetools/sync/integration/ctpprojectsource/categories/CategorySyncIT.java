@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.buildCategoryQuery;
 import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.replaceCategoriesReferenceIdsWithKeys;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
@@ -113,10 +114,7 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getProcessed()).isEqualTo(2);
-        assertThat(syncStatistics.getCreated()).isEqualTo(0);
-        assertThat(syncStatistics.getUpdated()).isEqualTo(2);
-        assertThat(syncStatistics.getFailed()).isEqualTo(0);
+        assertThat(syncStatistics).hasValues(2, 0, 2, 0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
@@ -135,10 +133,7 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 3, 1, 2, 0, 0));
-
+        assertThat(syncStatistics).hasValues(3, 1, 2, 0, 0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
@@ -158,9 +153,7 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 2, 0, 0, 2, 0));
+        assertThat(syncStatistics).hasValues(2, 0, 0, 2, 0);
         assertThat(callBackErrorResponses).hasSize(2);
         final String key1 = categoryDrafts.get(0).getKey();
         assertThat(callBackErrorResponses.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
@@ -223,9 +216,7 @@ public class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
             CompletableFuture.completedFuture(null)).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 130, 130, 0, 0, 0));
+        assertThat(syncStatistics).hasValues(130, 130, 0, 0, 0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
@@ -278,10 +269,7 @@ public class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
             CompletableFuture.completedFuture(null)).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 130, 0, 120, 0, 0));
-
+        assertThat(syncStatistics).hasValues(130, 0, 120, 0, 0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
@@ -323,10 +311,7 @@ public class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
             CompletableFuture.completedFuture(null)).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 3, 0, 1, 0, 0));
-
+        assertThat(syncStatistics).hasValues(3, 0, 1, 0, 0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
@@ -394,10 +379,7 @@ public class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
             CompletableFuture.completedFuture(null)).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 2, 1, 1, 0, 0));
-
+        assertThat(syncStatistics).hasValues(2, 1, 1, 0, 0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
@@ -446,10 +428,7 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to "
-                + "sync and %s categories with a missing parent).", 2, 0, 0, 2, 0));
-
+        assertThat(syncStatistics).hasValues(2, 0, 0, 2, 0);
         assertThat(callBackErrorResponses).hasSize(2);
         assertThat(callBackErrorResponses.get(0))
             .containsPattern("A duplicate value '.*' exists for field 'slug\\.en' on ");

@@ -46,7 +46,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private final CategoryService categoryService;
     private final CategoryReferenceResolver referenceResolver;
 
-    private final Map<String, ArrayList<String>> categoryKeysWithMissingParents = new HashMap<>();
+    private final Map<String, List<String>> categoryKeysWithMissingParents = new HashMap<>();
     private final Set<String> processedCategoryKeys = new HashSet<>();
 
     private Set<CategoryDraft> existingCategoryDrafts = new HashSet<>();
@@ -162,11 +162,11 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                                         .thenAccept(fetchedCategories ->
                                                             processFetchedCategories(fetchedCategories,
                                                                 referencesResolvedDrafts, keyToIdCache))
-                                                        .thenAccept(result ->
+                                                        .thenAccept(ignoredResult ->
                                                             updateCategoriesSequentially(categoryDraftsToUpdate))
-                                                        .thenCompose(result ->
+                                                        .thenCompose(ignoredResult ->
                                                             updateCategoriesInParallel(categoryDraftsToUpdate))
-                                                        .thenApply((result) -> {
+                                                        .thenApply((ignoredResult) -> {
                                                             statistics.incrementProcessed(numberOfNewDraftsToProcess);
                                                             return statistics;
                                                         });
@@ -311,7 +311,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param parentKey   the key of the missing parent.
      */
     private void addCategoryKeyToMissingParentsMap(@Nonnull final String categoryKey, @Nonnull final String parentKey) {
-        final ArrayList<String> childCategoryKeys = categoryKeysWithMissingParents.get(parentKey);
+        final List<String> childCategoryKeys = categoryKeysWithMissingParents.get(parentKey);
         if (childCategoryKeys != null) {
             childCategoryKeys.add(categoryKey);
         } else {
@@ -354,7 +354,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         createdCategories.forEach(createdCategory -> {
             final String createdCategoryKey = createdCategory.getKey();
             processedCategoryKeys.add(createdCategoryKey);
-            final ArrayList<String> childCategoryKeys = categoryKeysWithMissingParents.get(createdCategoryKey);
+            final List<String> childCategoryKeys = categoryKeysWithMissingParents.get(createdCategoryKey);
             if (childCategoryKeys != null) {
                 for (String childCategoryKey : childCategoryKeys) {
                     categoryKeysWithResolvedParents.add(childCategoryKey);
