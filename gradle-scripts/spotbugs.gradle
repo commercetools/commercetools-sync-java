@@ -1,0 +1,13 @@
+/**
+ * SpotBugs configuration.
+ */
+spotbugs {
+    toolVersion = '3.1.1'
+}
+
+// To generate an HTML report instead of XML
+tasks.withType(SpotBugsTask) {
+    reports {
+        xml.enabled = false
+    }
+}
