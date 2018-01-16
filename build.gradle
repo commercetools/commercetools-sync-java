@@ -7,6 +7,12 @@ plugins {
 
 apply from: "$rootDir/gradle-scripts/plugins.gradle"
 apply from: "$rootDir/gradle-scripts/extensions.gradle"
+
+// Workaround to be able to access SpotBugsTask from external gradle script.
+// More info: https://discuss.gradle.org/t/buildscript-dependencies-in-external-script/23243
+project.extensions.extraProperties.set('SpotBugsTask', com.github.spotbugs.SpotBugsTask)
+apply from: "$rootDir/gradle-scripts/spotbugs.gradle"
+
 apply from: "$rootDir/gradle-scripts/project-info.gradle"
 apply from: "$rootDir/gradle-scripts/package.gradle"
 apply from: "$rootDir/gradle-scripts/java-compile.gradle"
