@@ -113,6 +113,8 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
                                 }
                                 return fetchedProducts.stream()
                                                       .flatMap(List::stream)
+                                                      .peek(product ->
+                                                          keyToIdCache.put(product.getKey(), product.getId()))
                                                       .collect(Collectors.toSet());
                             });
     }
@@ -123,9 +125,15 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
-        final QueryPredicate<Product> queryPredicate = buildProductKeysQueryPredicate(Collections.singleton(key));
+        final QueryPredicate<Product> queryPredicate = buildProductKeysQueryPredicate(singleton(key));
         return syncOptions.getCtpClient().execute(ProductQuery.of().withPredicates(queryPredicate))
-                          .thenApply(PagedResult::head)
+                          .thenApply(productPagedQueryResult -> //Cache after fetch
+                              productPagedQueryResult.head()
+                                                     .map(product -> {
+                                                         keyToIdCache.put(product.getKey(), product.getId());
+                                                         return product;
+                                                     })
+                          )
                           .exceptionally(sphereException -> {
                               syncOptions
                                       .applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);

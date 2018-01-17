@@ -281,6 +281,29 @@ public class ProductServiceIT {
     }
 
     @Test
+    public void fetchMatchingProductsByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedProductsIds() {
+        final String oldKey = product.getKey();
+        final Set<Product> fetchedProducts = productService.fetchMatchingProductsByKeys(singleton(oldKey))
+                                                           .toCompletableFuture().join();
+        assertThat(fetchedProducts).hasSize(1);
+
+        // Change product oldKey on ctp
+        final String newKey = "newKey";
+        productService.updateProduct(product, Collections.singletonList(SetKey.of(newKey)))
+                      .toCompletableFuture()
+                      .join();
+
+        // Fetch cached id by old key
+        final Optional<String> cachedProductId = productService.getIdFromCacheOrFetch(oldKey)
+                                                               .toCompletableFuture().join();
+
+        assertThat(cachedProductId).isNotEmpty();
+        assertThat(cachedProductId).contains(product.getId());
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
     public void createProducts_WithAllValidProducts_ShouldCreateProducts() {
         // create a draft based of the same existing product but with different key, slug and master variant SKU since
         // these values should be unique on CTP for the product to be created.
