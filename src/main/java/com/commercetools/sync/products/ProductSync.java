@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
@@ -56,9 +57,9 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private final ProductTypeService productTypeService;
     private final ProductReferenceResolver productReferenceResolver;
 
-    private Map<ProductDraft, Product> productsToSync = new HashMap<>();
-    private Set<ProductDraft> existingDrafts = new HashSet<>();
-    private Set<ProductDraft> draftsToCreate = new HashSet<>();
+    private Map<ProductDraft, Product> productsToSync = new ConcurrentHashMap<>();
+    private Set<ProductDraft> existingDrafts = ConcurrentHashMap.newKeySet();
+    private Set<ProductDraft> draftsToCreate = ConcurrentHashMap.newKeySet();
 
     /**
      * Takes a {@link ProductSyncOptions} instance to instantiate a new {@link ProductSync} instance that could be
