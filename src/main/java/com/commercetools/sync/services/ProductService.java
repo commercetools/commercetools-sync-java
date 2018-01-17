@@ -36,15 +36,18 @@ public interface ProductService {
     CompletionStage<Optional<String>> fetchCachedProductId(@Nullable final String key);
 
     /**
-     * If not already done once before, it fetches all the product keys from the CTP project defined in a potentially
-     * injected {@link SphereClient} and stores a mapping for every product to id in {@link Map}
-     * and returns this cached map.
+     * Filters out the keys which are already cached and fetches only the not-cached product keys from the CTP project
+     * defined in a potentially injected {@link SphereClient} and stores a mapping for every product to id in
+     * the cached map of keys -&gt; ids and returns this cached map.
+     *
+     * <p>Note: If all the supplied keys are already cached, the cached map is returned right away with no request to
+     * CTP.
      *
      * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of all
      *          product keys -&gt; ids
      */
     @Nonnull
-    CompletionStage<Map<String, String>> cacheKeysToIds();
+    CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> productKeys);
 
     /**
      * Given a {@link Set} of product keys, this method fetches a set of all the products matching this given set of
