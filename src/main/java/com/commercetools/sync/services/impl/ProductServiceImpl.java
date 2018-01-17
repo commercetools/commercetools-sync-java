@@ -33,9 +33,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ProductServiceImpl extends BaseService<Product, ProductDraft> implements ProductService {
     private static final String FETCH_FAILED = "Failed to fetch products with keys: '%s'. Reason: %s";
-    private static final String PRODUCT_KEY_NOT_SET = "Product with id: '%s' has no key set. Keys are required for "
-        + "product matching.";
-
 
     public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
         super(syncOptions);
