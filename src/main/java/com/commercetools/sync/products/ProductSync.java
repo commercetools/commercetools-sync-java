@@ -21,7 +21,6 @@ import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
@@ -59,6 +58,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private final ProductReferenceResolver productReferenceResolver;
 
     private Map<ProductDraft, Product> productsToSync = new HashMap<>();
+    private Set<ProductDraft> existingDrafts = new HashSet<>();
     private Set<ProductDraft> draftsToCreate = new HashSet<>();
 
     /**
@@ -111,12 +111,13 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     protected CompletionStage<ProductSyncStatistics> processBatch(@Nonnull final List<ProductDraft> batch) {
         productsToSync = new HashMap<>();
         draftsToCreate = new HashSet<>();
+        existingDrafts = new HashSet<>();
         return productService.cacheKeysToIds()
                              .thenCompose(keyToIdCache -> {
-                                 final Set<String> productDraftKeys = getProductDraftKeys(batch);
+                                 prepareDraftsForProcessing(batch, keyToIdCache);
+                                 final Set<String> productDraftKeys = getProductDraftKeys(existingDrafts);
                                  return productService.fetchMatchingProductsByKeys(productDraftKeys)
-                                                      .thenAccept(matchingProducts ->
-                                                          processFetchedProducts(matchingProducts, batch))
+                                                      .thenAccept(this::processFetchedProducts)
                                                       .thenCompose(result -> createOrUpdateProducts())
                                                       .thenApply(result -> {
                                                           statistics.incrementProcessed(batch.size());
@@ -125,27 +126,16 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                              });
     }
 
-    @Nonnull
-    private Set<String> getProductDraftKeys(@Nonnull final List<ProductDraft> productDrafts) {
-        return productDrafts.stream()
-                            .filter(Objects::nonNull)
-                            .map(ProductDraft::getKey)
-                            .filter(StringUtils::isNotBlank)
-                            .collect(Collectors.toSet());
-    }
-
-    private void processFetchedProducts(@Nonnull final Set<Product> matchingProducts,
-                                        @Nonnull final List<ProductDraft> productDrafts) {
+    private void prepareDraftsForProcessing(@Nonnull final List<ProductDraft> productDrafts,
+                                            @Nonnull final Map<String, String> keyToIdCache) {
         for (ProductDraft productDraft : productDrafts) {
             if (productDraft != null) {
                 final String productKey = productDraft.getKey();
                 if (isNotBlank(productKey)) {
                     productReferenceResolver.resolveReferences(productDraft)
                                             .thenAccept(referencesResolvedDraft -> {
-                                                final Optional<Product> existingProduct =
-                                                    getProductByKeyIfExists(matchingProducts, productKey);
-                                                if (existingProduct.isPresent()) {
-                                                    productsToSync.put(referencesResolvedDraft, existingProduct.get());
+                                                if (keyToIdCache.containsKey(productKey)) {
+                                                    existingDrafts.add(referencesResolvedDraft);
                                                 } else {
                                                     draftsToCreate.add(referencesResolvedDraft);
                                                 }
@@ -171,6 +161,17 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     @Nonnull
+    private Set<String> getProductDraftKeys(@Nonnull final Set<ProductDraft> productDrafts) {
+        return productDrafts.stream()
+                            .map(ProductDraft::getKey)
+                            .collect(Collectors.toSet());
+    }
+
+
+    private void processFetchedProducts(@Nonnull final Set<Product> fetchedProducts) {
+        existingDrafts.forEach(existingDraft ->
+            getProductByKeyIfExists(fetchedProducts, Objects.requireNonNull(existingDraft.getKey()))
+                .ifPresent(product -> productsToSync.put(existingDraft, product)));
     }
 
     @Nonnull
