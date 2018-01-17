@@ -130,6 +130,17 @@ public class ProductServiceTest {
     }
 
     @Test
+    public void buildProductKeysQueryPredicate_WithSomeBlankProductKeys_ShouldBuildCorrectQuery() {
+        final HashSet<String> productKeys = new HashSet<>();
+        productKeys.add("key1");
+        productKeys.add("key2");
+        productKeys.add("");
+        productKeys.add(null);
+        final QueryPredicate<Product> queryPredicate = service.buildProductKeysQueryPredicate(productKeys);
+        assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in (\"key1\", \"key2\")");
+    }
+
+    @Test
     public void publishProduct_WithMockCtpResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
