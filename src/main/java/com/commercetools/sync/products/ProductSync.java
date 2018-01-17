@@ -171,11 +171,6 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     @Nonnull
-    private CompletionStage<Void> createOrUpdateProducts() {
-        return productService.createProducts(draftsToCreate)
-                             .thenAccept(createdProducts ->
-                                 processCreatedProducts(createdProducts, draftsToCreate.size()))
-                             .thenCompose(result -> syncProducts(productsToSync));
     }
 
     @Nonnull
@@ -184,6 +179,14 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         return products.stream()
                        .filter(product -> Objects.equals(product.getKey(), key))
                        .findFirst();
+    }
+
+    @Nonnull
+    private CompletionStage<Void> createOrUpdateProducts() {
+        return productService.createProducts(draftsToCreate)
+                             .thenAccept(createdProducts ->
+                                 processCreatedProducts(createdProducts, draftsToCreate.size()))
+                             .thenCompose(result -> syncProducts(productsToSync));
     }
 
     private void processCreatedProducts(@Nonnull final Set<Product> createdProducts,
