@@ -240,7 +240,7 @@ public class ProductUpdateActionUtilsTest {
 
         final List<String> errorMessages = new ArrayList<>();
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                        .errorCallback((msg, err)->
+                                                                        .errorCallback((msg, err) ->
                                                                             errorMessages.add(msg))
                                                                         .build();
         List<RemoveVariant> updateActions = buildRemoveVariantUpdateActions(productOld, oldVariants, newVariants,

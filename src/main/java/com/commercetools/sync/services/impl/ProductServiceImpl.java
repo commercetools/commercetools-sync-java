@@ -74,7 +74,7 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
                             .thenApply(result -> keyToIdCache);
     }
 
-    private void cacheProductIds(@Nonnull final List<Product> products){
+    private void cacheProductIds(@Nonnull final List<Product> products) {
         products.forEach(product -> keyToIdCache.put(product.getKey(), product.getId()));
     }
 

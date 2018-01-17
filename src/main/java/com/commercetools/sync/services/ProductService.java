@@ -40,6 +40,8 @@ public interface ProductService {
      * <p>Note: If all the supplied keys are already cached, the cached map is returned right away with no request to
      * CTP.
      *
+     * @param productKeys the product keys to fetch and cache the ids for.
+     *
      * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of all
      *          product keys -&gt; ids
      */
