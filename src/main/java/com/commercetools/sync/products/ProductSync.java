@@ -2,6 +2,7 @@ package com.commercetools.sync.products;
 
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.products.helpers.BatchProcessor;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
@@ -112,7 +113,10 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         productsToSync = new HashMap<>();
         draftsToCreate = new HashSet<>();
         existingDrafts = new HashSet<>();
-        return productService.cacheKeysToIds()
+
+
+        final Set<String> batchKeys = new BatchProcessor(batch, this).validateAndGetKeys();
+        return productService.cacheKeysToIds(batchKeys)
                              .thenCompose(keyToIdCache -> {
                                  prepareDraftsForProcessing(batch, keyToIdCache);
                                  final Set<String> productDraftKeys = getProductDraftKeys(existingDrafts);
