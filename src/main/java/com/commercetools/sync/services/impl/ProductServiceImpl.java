@@ -83,8 +83,9 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
 
     QueryPredicate<Product> buildProductKeysQueryPredicate(@Nonnull final Set<String> productKeys) {
         final List<String> keysSurroundedWithDoubleQuotes = productKeys.stream()
-                                                .map(productKey -> format("\"%s\"", productKey))
-                                                .collect(Collectors.toList());
+                                                                       .filter(StringUtils::isNotBlank)
+                                                                       .map(productKey -> format("\"%s\"", productKey))
+                                                                       .collect(Collectors.toList());
         String keysQueryString = keysSurroundedWithDoubleQuotes.toString();
         // Strip square brackets from list string. For example: ["key1", "key2"] -> "key1", "key2"
         keysQueryString = keysQueryString.substring(1, keysQueryString.length() - 1);
