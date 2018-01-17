@@ -345,7 +345,7 @@ public class ProductSyncIT {
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey4")
             .slug(LocalizedString.of(Locale.ENGLISH, "slug4"))
-            .masterVariant(ProductVariantDraftBuilder.of().key("v4").build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("v4").sku("sku4").build())
             .build();
 
         final List<ProductDraft> batch2 = new ArrayList<>();
@@ -359,7 +359,7 @@ public class ProductSyncIT {
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey3")
             .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
-            .masterVariant(ProductVariantDraftBuilder.of().key("v3").build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("v3").sku("sku3").build())
             .build();
 
         final List<ProductDraft> batch3 = new ArrayList<>();
@@ -393,7 +393,7 @@ public class ProductSyncIT {
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey3")
             .slug(LocalizedString.of(Locale.ENGLISH, "slug3"))
-            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("mv3").sku("sku3").build())
             .build();
 
         final ProductDraft key4Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
@@ -404,7 +404,7 @@ public class ProductSyncIT {
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey4")
             .slug(LocalizedString.of(Locale.ENGLISH, "slug4"))
-            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("mv4").sku("sku4").build())
             .build();
 
         final ProductDraft key5Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
@@ -415,7 +415,7 @@ public class ProductSyncIT {
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey5")
             .slug(LocalizedString.of(Locale.ENGLISH, "slug5"))
-            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("mv5").sku("sku5").build())
             .build();
 
         final ProductDraft key6Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
@@ -426,7 +426,7 @@ public class ProductSyncIT {
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey6")
             .slug(LocalizedString.of(Locale.ENGLISH, "slug6"))
-            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("mv6").sku("sku6").build())
             .build();
 
         final List<ProductDraft> batch = new ArrayList<>();
@@ -460,7 +460,7 @@ public class ProductSyncIT {
             .categories(new ArrayList<>())
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey3")
-            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("k3").sku("s3").build())
             .build();
 
         final ProductDraft key4Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
@@ -470,7 +470,7 @@ public class ProductSyncIT {
             .categories(new ArrayList<>())
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey4")
-            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("k4").sku("s4").build())
             .build();
 
         final ProductDraft key5Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
@@ -480,7 +480,7 @@ public class ProductSyncIT {
             .categories(new ArrayList<>())
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey5")
-            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("k5").sku("s5").build())
             .build();
 
         final ProductDraft key6Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
@@ -490,7 +490,7 @@ public class ProductSyncIT {
             .categories(new ArrayList<>())
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey6")
-            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("k6").sku("s6").build())
             .build();
 
         final List<ProductDraft> batch = new ArrayList<>();
@@ -558,9 +558,9 @@ public class ProductSyncIT {
         assertThat(errorCallBackExceptions).hasSize(2);
         assertThat(errorCallBackMessages).hasSize(2);
         assertThat(errorCallBackMessages.get(0))
-            .isEqualToIgnoringCase(format("ProductDraft with name: %s doesn't have a key.", key3Draft.getName()));
+            .containsIgnoringCase(format("ProductDraft with name: %s doesn't have a key.", key3Draft.getName()));
         assertThat(errorCallBackMessages.get(1))
-            .isEqualToIgnoringCase(format("ProductDraft with name: %s doesn't have a key.", key4Draft.getName()));
+            .containsIgnoringCase(format("ProductDraft with name: %s doesn't have a key.", key4Draft.getName()));
         assertThat(warningCallBackMessages).isEmpty();
     }
 
