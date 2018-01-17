@@ -218,7 +218,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                         }).orElseGet(() -> {
                             final String errorMessage = format(UPDATE_FAILED, oldProduct.getKey(),
                                     FAILED_TO_FETCH_PRODUCT_TYPE);
-                            handleError(errorMessage, null);
+                            handleError(errorMessage);
                             return CompletableFuture.completedFuture(Optional.of(oldProduct));
                         })
                 );
@@ -267,10 +267,21 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 .thenCompose(productOptional -> productOptional
                         .map(fetchedProduct -> fetchProductAttributesMetadataAndUpdate(fetchedProduct, newProduct))
                         .orElseGet(() -> {
-                            handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE), null);
+                            handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE));
                             return CompletableFuture.completedFuture(productOptional);
                         })
                 );
+    }
+
+    /**
+     * Given a {@link String} {@code errorMessage}, this method calls the optional error callback specified in the
+     * {@code syncOptions} and updates the {@code statistics} instance by incrementing the total number of failed
+     * products to sync.
+     *
+     * @param errorMessage The error message describing the reason(s) of failure.
+     */
+    private void handleError(@Nonnull final String errorMessage) {
+        handleError(errorMessage, null);
     }
 
     /**
