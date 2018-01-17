@@ -113,10 +113,12 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         existingDrafts = new HashSet<>();
 
 
-        final Set<String> batchKeys = new BatchProcessor(batch, this).validateAndGetKeys();
-        return productService.cacheKeysToIds(batchKeys)
+        final BatchProcessor batchProcessor = new BatchProcessor(batch, this);
+        batchProcessor.validateBatch();
+
+        return productService.cacheKeysToIds(batchProcessor.getKeysToCache())
                              .thenCompose(keyToIdCache -> {
-                                 prepareDraftsForProcessing(batch, keyToIdCache);
+                                 prepareDraftsForProcessing(batchProcessor.getValidDrafts(), keyToIdCache);
                                  final Set<String> productDraftKeys = getProductDraftKeys(existingDrafts);
                                  return productService.fetchMatchingProductsByKeys(productDraftKeys)
                                                       .thenAccept(this::processFetchedProducts)
@@ -129,7 +131,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
 
-    private void prepareDraftsForProcessing(@Nonnull final List<ProductDraft> productDrafts,
+    private void prepareDraftsForProcessing(@Nonnull final Set<ProductDraft> productDrafts,
                                             @Nonnull final Map<String, String> keyToIdCache) {
         productDrafts
             .forEach(productDraft ->
