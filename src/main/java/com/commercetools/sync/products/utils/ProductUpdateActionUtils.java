@@ -393,10 +393,10 @@ public final class ProductUpdateActionUtils {
         final List<ProductVariantDraft> newAllProductVariants = new ArrayList<>(newProduct.getVariants());
         newAllProductVariants.add(newProduct.getMasterVariant());
 
-        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-
         // 1. Remove missing variants, but keep master variant (MV can't be removed)
-        updateActions.addAll(buildRemoveVariantUpdateActions(oldProductVariantsNoMaster, newAllProductVariants));
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>(
+            buildRemoveVariantUpdateActions(oldProduct, oldProductVariantsNoMaster, newAllProductVariants,
+                syncOptions));
 
         for (ProductVariantDraft newProductVariant : newAllProductVariants) {
             if (newProductVariant == null) {
@@ -463,20 +463,28 @@ public final class ProductUpdateActionUtils {
      * If you add first, the update action could fail due to having a duplicate {@code key} or {@code sku} with variants
      * which were expected to be removed anyways. So issuing remove update action first will fix such issue.
      *
+     * @param product            the product which contains the variants compared.
      * @param oldProductVariants [variantKey-variant] map of old variants. Master variant must be included.
      * @param newProductVariants list of new product variants list <b>with resolved references prices references</b>.
      *                            Master variant must be included.
+     * @param syncOptions        the sync options wrapper which contains options related to the sync process
      * @return list of update actions to remove missing variants.
      */
     @Nonnull
     public static List<RemoveVariant> buildRemoveVariantUpdateActions(
-            @Nonnull final Map<String, ProductVariant> oldProductVariants,
-            @Nonnull final List<ProductVariantDraft> newProductVariants) {
+        @Nonnull final Product product,
+        @Nonnull final Map<String, ProductVariant> oldProductVariants,
+        @Nonnull final List<ProductVariantDraft> newProductVariants,
+        @Nonnull final ProductSyncOptions syncOptions) {
 
         // copy the map and remove from the copy duplicate items
         Map<String, ProductVariant> productsToRemove = new HashMap<>(oldProductVariants);
 
         for (ProductVariantDraft newVariant : newProductVariants) {
+            if (newVariant == null) {
+                handleBuildVariantsUpdateActionsError(product, NULL_VARIANT, syncOptions);
+                continue;
+            }
             if (productsToRemove.containsKey(newVariant.getKey())) {
                 productsToRemove.remove(newVariant.getKey());
             }
