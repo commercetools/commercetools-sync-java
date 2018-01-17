@@ -42,11 +42,9 @@ import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
 import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static java.util.Objects.requireNonNull;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
-    private static final String PRODUCT_DRAFT_KEY_NOT_SET = "ProductDraft with name: %s doesn't have a key.";
-    private static final String PRODUCT_DRAFT_IS_NULL = "ProductDraft is null.";
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
     private static final String UNEXPECTED_DELETE = "Product with key: '%s' was deleted unexpectedly.";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
@@ -130,39 +128,31 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                              });
     }
 
+
     private void prepareDraftsForProcessing(@Nonnull final List<ProductDraft> productDrafts,
                                             @Nonnull final Map<String, String> keyToIdCache) {
-        for (ProductDraft productDraft : productDrafts) {
-            if (productDraft != null) {
-                final String productKey = productDraft.getKey();
-                if (isNotBlank(productKey)) {
-                    productReferenceResolver.resolveReferences(productDraft)
-                                            .thenAccept(referencesResolvedDraft -> {
-                                                if (keyToIdCache.containsKey(productKey)) {
-                                                    existingDrafts.add(referencesResolvedDraft);
-                                                } else {
-                                                    draftsToCreate.add(referencesResolvedDraft);
-                                                }
-                                            })
-                                            .exceptionally(referenceResolutionException -> {
-                                                Throwable actualException = referenceResolutionException;
-                                                if (referenceResolutionException instanceof CompletionException) {
-                                                    actualException = referenceResolutionException.getCause();
-                                                }
-                                                final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
-                                                    productDraft.getKey(), actualException);
-                                                handleError(errorMessage, actualException);
-                                                return null;
-                                            }).toCompletableFuture().join();
-                } else {
-                    final String errorMessage = format(PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName());
-                    handleError(errorMessage, null);
-                }
-            } else {
-                handleError(PRODUCT_DRAFT_IS_NULL, null);
-            }
-        }
+        productDrafts
+            .forEach(productDraft ->
+                productReferenceResolver.resolveReferences(productDraft)
+                                        .thenAccept(referencesResolvedDraft -> {
+                                            if (keyToIdCache.containsKey(productDraft.getKey())) {
+                                                existingDrafts.add(referencesResolvedDraft);
+                                            } else {
+                                                draftsToCreate.add(referencesResolvedDraft);
+                                            }
+                                        })
+                                        .exceptionally(referenceResolutionException -> {
+                                            Throwable actualException = referenceResolutionException;
+                                            if (referenceResolutionException instanceof CompletionException) {
+                                                actualException = referenceResolutionException.getCause();
+                                            }
+                                            final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
+                                                productDraft.getKey(), actualException);
+                                            handleError(errorMessage, actualException);
+                                            return null;
+                                        }).toCompletableFuture().join());
     }
+
 
     @Nonnull
     private Set<String> getProductDraftKeys(@Nonnull final Set<ProductDraft> productDrafts) {
@@ -174,7 +164,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     private void processFetchedProducts(@Nonnull final Set<Product> fetchedProducts) {
         existingDrafts.forEach(existingDraft ->
-            getProductByKeyIfExists(fetchedProducts, Objects.requireNonNull(existingDraft.getKey()))
+            getProductByKeyIfExists(fetchedProducts, requireNonNull(existingDraft.getKey()))
                 .ifPresent(product -> productsToSync.put(existingDraft, product)));
     }
 
