@@ -10,11 +10,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
-import java.util.Spliterator;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -23,8 +24,9 @@ import static com.commercetools.sync.products.helpers.VariantReferenceResolver.R
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.isProductReference;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -41,8 +43,8 @@ public class BatchProcessor {
 
     private final List<ProductDraft> productDrafts;
     private final ProductSync productSync;
-    private final Set<ProductDraft> validDrafts = ConcurrentHashMap.newKeySet();
-    private final Set<String> keysToCache = ConcurrentHashMap.newKeySet();
+    private final Set<ProductDraft> validDrafts = new HashSet<>();
+    private final Set<String> keysToCache = new HashSet<>();
 
     public BatchProcessor(@Nonnull final List<ProductDraft> productDrafts, @Nonnull final ProductSync productSync) {
         this.productDrafts = productDrafts;
@@ -108,10 +110,14 @@ public class BatchProcessor {
     @Nonnull
     static Set<String> getReferencedProductKeys(@Nonnull final ProductVariantDraft variantDraft) {
         final List<AttributeDraft> attributeDrafts = variantDraft.getAttributes();
-        return attributeDrafts != null ? attributeDrafts.stream().filter(Objects::nonNull)
-                                                        .map(BatchProcessor::getReferencedProductKeys)
-                                                        .flatMap(Collection::stream)
-                                                        .collect(Collectors.toSet()) : emptySet();
+        if (attributeDrafts == null) {
+            return emptySet();
+        }
+        return attributeDrafts.stream()
+                              .filter(Objects::nonNull)
+                              .map(BatchProcessor::getReferencedProductKeys)
+                              .flatMap(Collection::stream)
+                              .collect(Collectors.toSet());
     }
 
     /**
@@ -126,15 +132,10 @@ public class BatchProcessor {
         if (attributeDraftValue == null) {
             return emptySet();
         }
-        if (attributeDraftValue.isArray()) {
-            return getReferencedProductKeysFromSet(attributeDraft);
-        } else {
-            if (isProductReference(attributeDraftValue)) {
-                final String productKeyFromReference = getProductKeyFromReference(attributeDraftValue);
-                return productKeyFromReference != null ? singleton(productKeyFromReference) : emptySet();
-            }
-            return emptySet();
-        }
+        return attributeDraftValue.isArray() ?
+            getReferencedProductKeysFromSet(attributeDraftValue) :
+            getProductKeyFromReference(attributeDraftValue).map(Collections::singleton)
+                                                           .orElse(emptySet());
     }
 
     /**
@@ -145,15 +146,12 @@ public class BatchProcessor {
      * @return set of referenced product keys given an attribute draft.
      */
     @Nonnull
-        final JsonNode attributeDraftValue = attributeDraft.getValue();
-        final Spliterator<JsonNode> attributeReferencesIterator = attributeDraftValue.spliterator();
-
-        return StreamSupport.stream(attributeReferencesIterator, false)
     static Set<String> getReferencedProductKeysFromSet(@Nonnull final JsonNode referenceSet) {
+        return StreamSupport.stream(referenceSet.spliterator(), false)
                             .filter(Objects::nonNull)
-                            .filter(reference -> !reference.isNull())
                             .map(BatchProcessor::getProductKeyFromReference)
-                            .filter(Objects::nonNull)
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
                             .collect(Collectors.toSet());
     }
 
@@ -169,11 +167,6 @@ public class BatchProcessor {
             ofNullable(referenceValue.get(REFERENCE_ID_FIELD)).map(JsonNode::asText) : empty();
     }
 
-        final List<String> errorMessages = new ArrayList<>(
-            getVariantDraftErrorsAndAcceptConsumer(productDraft.getMasterVariant(), "masterVariant",
-                requireNonNull(productDraft.getKey()), variantConsumer));
-
-        for (int i = 0; i < productDraft.getVariants().size(); i++) {
     /**
      * Gets a list of error messages that exist on a product draft. Only if there are no errors
      * on the product draft then it accepts the supplied {@code variantConsumer} on all the variants
@@ -194,6 +187,13 @@ public class BatchProcessor {
     static List<String> getProductDraftErrorsAndAcceptConsumer(@Nonnull final ProductDraft productDraft,
                                                                @Nonnull final Consumer<ProductVariantDraft>
                                                                    variantConsumer) {
+        final List<String> errorMessages = new ArrayList<>();
+        final List<ProductVariantDraft> allVariants = new ArrayList<>();
+        allVariants.add(productDraft.getMasterVariant());
+        if (productDraft.getVariants() != null) {
+            allVariants.addAll(productDraft.getVariants());
+        }
+        for (int i = 0; i < allVariants.size(); i++) {
             errorMessages.addAll(getVariantDraftErrors(allVariants.get(i), i, requireNonNull(productDraft.getKey())));
         }
 
