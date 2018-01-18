@@ -31,7 +31,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class BatchProcessor {
-    static final String PRODUCT_DRAFT_KEY_NOT_SET = "ProductDraft with name: '%s' doesn't have a key. "
+    static final String PRODUCT_DRAFT_KEY_NOT_SET = "ProductDraft with name: %s doesn't have a key. "
         + "Please make sure all product drafts have keys.";
     static final String PRODUCT_DRAFT_IS_NULL = "ProductDraft is null.";
     static final String PRODUCT_VARIANT_DRAFT_IS_NULL = "ProductVariantDraft at position '%d' of ProductDraft "
