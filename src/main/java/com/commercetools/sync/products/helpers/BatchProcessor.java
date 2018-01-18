@@ -139,7 +139,7 @@ public class BatchProcessor {
     }
 
     /**
-     * Gets a set of referenced product keys (if any) given a JsonNode representin a
+     * Gets a set of referenced product keys (if any) given a JsonNode representing a
      * reference set.
      *
      * @param referenceSet the product reference set JsonNode.
