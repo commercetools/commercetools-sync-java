@@ -29,15 +29,15 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class BatchProcessor {
-    private static final String PRODUCT_DRAFT_KEY_NOT_SET = "ProductDraft with name: %s doesn't have a key. "
+    static final String PRODUCT_DRAFT_KEY_NOT_SET = "ProductDraft with name: '%s' doesn't have a key. "
         + "Please make sure all product drafts have keys.";
-    private static final String PRODUCT_DRAFT_IS_NULL = "ProductDraft is null.";
-    private static final String PRODUCT_VARIANT_DRAFT_IS_NULL = "ProductVariantDraft at position [%s] of ProductDraft "
-        + "with key %s is null.";
-    private static final String PRODUCT_VARIANT_DRAFT_SKU_NOT_SET = "ProductVariantDraft at position [%s] of "
-        + "ProductDraft with key %s has no SKU set. Please make sure all variants have SKUs.";
-    private static final String PRODUCT_VARIANT_DRAFT_KEY_NOT_SET = "ProductVariantDraft at position [%s] of "
-        + "ProductDraft with key %s has no key set. Please make sure all variants have keys.";
+    static final String PRODUCT_DRAFT_IS_NULL = "ProductDraft is null.";
+    static final String PRODUCT_VARIANT_DRAFT_IS_NULL = "ProductVariantDraft at position '%d' of ProductDraft "
+        + "with key '%s' is null.";
+    static final String PRODUCT_VARIANT_DRAFT_SKU_NOT_SET = "ProductVariantDraft at position '%d' of "
+        + "ProductDraft with key '%s' has no SKU set. Please make sure all variants have SKUs.";
+    static final String PRODUCT_VARIANT_DRAFT_KEY_NOT_SET = "ProductVariantDraft at position '%d' of "
+        + "ProductDraft with key '%s' has no key set. Please make sure all variants have keys.";
 
     private final List<ProductDraft> productDrafts;
     private final ProductSync productSync;
