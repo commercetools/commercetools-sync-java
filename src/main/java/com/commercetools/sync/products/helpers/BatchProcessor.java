@@ -50,18 +50,21 @@ public class BatchProcessor {
     }
 
     /**
-     * This method validates the batch of drafts, and only for valid drafts it TODO: NEED TO FIX DOCU.
+     * This method validates the batch of drafts, and only for valid drafts it adds the valid draft
+     * to {@code validDrafts} set, and adds the keys of all referenced products to
+     * {@code keysToCache}.
+     *
      *
      * <p>A valid product draft is one which satisfies the following conditions:
      * <ol>
-     *     <li>It has a key which is not blank (null/empty)</li>
-     *     <li>It has all variants and master variant valid</li>
-     *     <li>A variant is valid if it satisfies the following conditions:
-     *          <ol>
-     *              <li>It has a key which is not blank (null/empty)</li>
-     *              <li>It has a SKU which is not blank (null/empty)</li>
-     *          </ol>
-     *     </li>
+     * <li>It has a key which is not blank (null/empty)</li>
+     * <li>It has all variants AND master variant valid</li>
+     * <li>A variant is valid if it satisfies the following conditions:
+     * <ol>
+     * <li>It has a key which is not blank (null/empty)</li>
+     * <li>It has a SKU which is not blank (null/empty)</li>
+     * </ol>
+     * </li>
      * </ol>
      */
     public void validateBatch() {
@@ -69,10 +72,8 @@ public class BatchProcessor {
             if (productDraft != null) {
                 final String productKey = productDraft.getKey();
                 if (isNotBlank(productKey)) {
-
                     final Consumer<ProductVariantDraft> productVariantDraftConsumer =
                         productVariantDraft -> keysToCache.addAll(getReferencedProductKeys(productVariantDraft));
-
                     // Validate draft and add referenced keys
                     final List<String> draftErrors = getProductDraftErrorsAndAcceptConsumer(productDraft,
                         productVariantDraftConsumer);
@@ -84,7 +85,6 @@ public class BatchProcessor {
                         keysToCache.add(productKey);
                         validDrafts.add(productDraft);
                     }
-
                 } else {
                     final String errorMessage = format(PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName());
                     handleError(errorMessage);
