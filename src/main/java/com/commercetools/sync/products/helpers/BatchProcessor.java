@@ -161,6 +161,11 @@ public class BatchProcessor {
             errorMessages.addAll(getVariantDraftErrors(allVariants.get(i), i, requireNonNull(productDraft.getKey())));
         }
 
+        // Only if there is no errors on all variants, then accept consumer.
+        if (errorMessages.isEmpty()) {
+            allVariants.forEach(variantConsumer);
+        }
+
         return errorMessages;
     }
 
@@ -176,11 +181,6 @@ public class BatchProcessor {
             }
             if (isBlank(productVariantDraft.getSku())) {
                 errorMessages.add(format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, variantPosition, productDraftKey));
-            }
-
-            // Only if there is no errors accept consumer.
-            if (errorMessages.isEmpty()) {
-                variantConsumer.accept(productVariantDraft);
             }
         } else {
             errorMessages.add(format(PRODUCT_VARIANT_DRAFT_IS_NULL, variantPosition, productDraftKey));
