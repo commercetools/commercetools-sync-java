@@ -218,15 +218,14 @@ public class ProductUpdateActionUtilsTest {
         ArrayList<ProductVariantDraft> newVariants = new ArrayList<>(productDraftNew.getVariants());
         newVariants.add(productDraftNew.getMasterVariant());
 
-        List<RemoveVariant> updateActions = buildRemoveVariantUpdateActions(productOld, oldVariants, newVariants,
-            mock(ProductSyncOptions.class));
+        List<RemoveVariant> updateActions = buildRemoveVariantUpdateActions(oldVariants, newVariants);
         assertThat(updateActions)
             .containsExactlyInAnyOrder(RemoveVariant.of(1), RemoveVariant.of(2), RemoveVariant.of(3));
         // removes master (1) and two other variants (2, 3)
     }
 
     @Test
-    public void buildRemoveVariantUpdateAction_WithNullVariants_removesOnlyMissedVariants() {
+    public void buildRemoveVariantUpdateAction_WithNullVariants_removesOnlyMissedVariantsAndSKipsNullVariants() {
         Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
         ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
 
@@ -238,18 +237,10 @@ public class ProductUpdateActionUtilsTest {
         newVariants.add(productDraftNew.getMasterVariant());
         newVariants.add(null);
 
-        final List<String> errorMessages = new ArrayList<>();
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                        .errorCallback((msg, err) ->
-                                                                            errorMessages.add(msg))
-                                                                        .build();
-        List<RemoveVariant> updateActions = buildRemoveVariantUpdateActions(productOld, oldVariants, newVariants,
-            syncOptions);
+        List<RemoveVariant> updateActions = buildRemoveVariantUpdateActions(oldVariants, newVariants);
         assertThat(updateActions)
             .containsExactlyInAnyOrder(RemoveVariant.of(1), RemoveVariant.of(2), RemoveVariant.of(3));
         // removes master (1) and two other variants (2, 3)
-        assertThat(errorMessages).hasSize(1);
-        assertThat(errorMessages.get(0)).contains("The variant is null.");
     }
 
     @Test
