@@ -158,19 +158,17 @@ public class BatchProcessor {
                 requireNonNull(productDraft.getKey()), variantConsumer));
 
         for (int i = 0; i < productDraft.getVariants().size(); i++) {
-            errorMessages.addAll(
-                getVariantDraftErrorsAndAcceptConsumer(productDraft.getVariants().get(i), format("%d", i + 1),
-                    productDraft.getKey(), variantConsumer));
+            errorMessages.addAll(getVariantDraftErrors(allVariants.get(i), i, requireNonNull(productDraft.getKey())));
         }
 
         return errorMessages;
     }
 
     private List<String> getVariantDraftErrorsAndAcceptConsumer(@Nullable final ProductVariantDraft productVariantDraft,
-                                                                @Nonnull final String variantPosition,
                                                                 @Nonnull final String productDraftKey,
                                                                 @Nonnull final Consumer<ProductVariantDraft>
                                                                     variantConsumer) {
+                                              final int variantPosition,
         final List<String> errorMessages = new ArrayList<>();
         if (productVariantDraft != null) {
             if (isBlank(productVariantDraft.getKey())) {
