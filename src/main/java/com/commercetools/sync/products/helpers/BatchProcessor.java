@@ -171,8 +171,6 @@ public class BatchProcessor {
 
     private List<String> getVariantDraftErrorsAndAcceptConsumer(@Nullable final ProductVariantDraft productVariantDraft,
                                                                 @Nonnull final String productDraftKey,
-                                                                @Nonnull final Consumer<ProductVariantDraft>
-                                                                    variantConsumer) {
                                               final int variantPosition,
         final List<String> errorMessages = new ArrayList<>();
         if (productVariantDraft != null) {
