@@ -68,6 +68,8 @@ import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ProductServiceIT {
@@ -201,6 +203,39 @@ public class ProductServiceIT {
         cache = productService.cacheKeysToIds(emptySet()).toCompletableFuture().join();
         assertThat(cache).hasSize(1); // Since cache has been fed with a product key
 
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void cacheKeysToIds_WithAlreadyCachedKeys_ShouldNotMakeRequestsAndReturnCurrentCache() {
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(spyClient)
+                                                                               .errorCallback(
+                                                                                   (errorMessage, exception) -> {
+                                                                                       errorCallBackMessages
+                                                                                           .add(errorMessage);
+                                                                                       errorCallBackExceptions
+                                                                                           .add(exception);
+                                                                                   })
+                                                                               .warningCallback(warningMessage ->
+                                                                                   warningCallBackMessages
+                                                                                       .add(warningMessage))
+                                                                               .build();
+        final ProductService spyProductService = new ProductServiceImpl(productSyncOptions);
+
+
+        Map<String, String> cache = spyProductService.cacheKeysToIds(singleton(product.getKey()))
+                                                     .toCompletableFuture().join();
+        assertThat(cache).hasSize(1);
+
+        // Attempt to cache same (already cached) key.
+        cache = spyProductService.cacheKeysToIds(singleton(product.getKey()))
+                                 .toCompletableFuture().join();
+        assertThat(cache).hasSize(1);
+
+        // verify only 1 request was made to fetch id the first time, but not second time since it's already in cache.
+        verify(spyClient, times(1)).execute(any());
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
     }
