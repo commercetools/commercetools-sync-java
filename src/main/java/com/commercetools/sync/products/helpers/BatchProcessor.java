@@ -96,12 +96,17 @@ public class BatchProcessor {
     }
 
     /**
+     * Get a set of referenced product keys on all attribute drafts on the supplied Product
+     * Variant Draft.
+     *
      * Note: Null attributes are skipped since they are validated at a later stage in
-     *   ({@link com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils})
-     * @param variantDraft the variant draft to get the referenced product keys for.
+     * ({@link com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils})
+     *
+     * @param variantDraft the variant draft to get the referenced product keys from.
      * @return the set of referenced product keys.
      */
-    private Set<String> getReferencedProductKeys(@Nonnull final ProductVariantDraft variantDraft) {
+    @Nonnull
+    static Set<String> getReferencedProductKeys(@Nonnull final ProductVariantDraft variantDraft) {
         final List<AttributeDraft> attributeDrafts = variantDraft.getAttributes();
         return attributeDrafts != null ? attributeDrafts.stream().filter(Objects::nonNull)
                                                         .map(BatchProcessor::getReferencedProductKeys)
@@ -111,11 +116,12 @@ public class BatchProcessor {
 
     /**
      * Get a set of referenced product keys given an attribute draft.
+     *
      * @param attributeDraft the attribute to get the referenced keys from.
      * @return set of referenced product keys given an attribute draft.
      */
     @Nonnull
-    public static Set<String> getReferencedProductKeys(@Nonnull final AttributeDraft attributeDraft) {
+    static Set<String> getReferencedProductKeys(@Nonnull final AttributeDraft attributeDraft) {
         final JsonNode attributeDraftValue = attributeDraft.getValue();
         if (attributeDraftValue == null) {
             return emptySet();
@@ -131,13 +137,19 @@ public class BatchProcessor {
         }
     }
 
+    /**
+     * Gets a set of referenced product keys (if any) given a JsonNode representin a
+     * reference set.
+     *
+     * @param referenceSet the product reference set JsonNode.
+     * @return set of referenced product keys given an attribute draft.
+     */
     @Nonnull
-    private static Set<String> getReferencedProductKeysFromSet(
-        @Nonnull final AttributeDraft attributeDraft) {
         final JsonNode attributeDraftValue = attributeDraft.getValue();
         final Spliterator<JsonNode> attributeReferencesIterator = attributeDraftValue.spliterator();
 
         return StreamSupport.stream(attributeReferencesIterator, false)
+    static Set<String> getReferencedProductKeysFromSet(@Nonnull final JsonNode referenceSet) {
                             .filter(Objects::nonNull)
                             .filter(reference -> !reference.isNull())
                             .map(BatchProcessor::getProductKeyFromReference)
@@ -145,19 +157,43 @@ public class BatchProcessor {
                             .collect(Collectors.toSet());
     }
 
-    @Nullable
-    private static String getProductKeyFromReference(@Nonnull final JsonNode referenceValue) {
-        return referenceValue.get(REFERENCE_ID_FIELD).asText();
+    /**
+     * Gets a referenced product key (if any) given a JsonNode representing a reference.
+     *
+     * @param referenceValue the product reference JsonNode.
+     * @return referenced product key given a JsonNode.
+     */
+    @Nonnull
+    static Optional<String> getProductKeyFromReference(@Nonnull final JsonNode referenceValue) {
+        return isProductReference(referenceValue) ?
+            ofNullable(referenceValue.get(REFERENCE_ID_FIELD)).map(JsonNode::asText) : empty();
     }
 
-    private List<String> getProductDraftErrorsAndAcceptConsumer(@Nonnull final ProductDraft productDraft,
-                                                                @Nonnull final Consumer<ProductVariantDraft>
-                                                                    variantConsumer) {
         final List<String> errorMessages = new ArrayList<>(
             getVariantDraftErrorsAndAcceptConsumer(productDraft.getMasterVariant(), "masterVariant",
                 requireNonNull(productDraft.getKey()), variantConsumer));
 
         for (int i = 0; i < productDraft.getVariants().size(); i++) {
+    /**
+     * Gets a list of error messages that exist on a product draft. Only if there are no errors
+     * on the product draft then it accepts the supplied {@code variantConsumer} on all the variants
+     * of the supplied product draft.
+     *
+     * <p>The errors that could exist on a product draft could be any of the following:
+     * <ul>
+     * <li>Null variant</li>
+     * <li>Variant key not set</li>
+     * <li>Variant sku not set</li>
+     * </ul>
+     *
+     * @param productDraft    the product draft to validate.
+     * @param variantConsumer the consumer to accept on all variants of product draft, if valid.
+     * @return a list of error messages resulting from the product draft validation.
+     */
+    @Nonnull
+    static List<String> getProductDraftErrorsAndAcceptConsumer(@Nonnull final ProductDraft productDraft,
+                                                               @Nonnull final Consumer<ProductVariantDraft>
+                                                                   variantConsumer) {
             errorMessages.addAll(getVariantDraftErrors(allVariants.get(i), i, requireNonNull(productDraft.getKey())));
         }
 
@@ -169,9 +205,24 @@ public class BatchProcessor {
         return errorMessages;
     }
 
-    private List<String> getVariantDraftErrorsAndAcceptConsumer(@Nullable final ProductVariantDraft productVariantDraft,
-                                                                @Nonnull final String productDraftKey,
+    /**
+     * Gets a list of error messages that exist on a product variant draft.
+     * <p>The errors that could exist on a product variant draft could be any of the following:
+     * <ul>
+     * <li>Null variant</li>
+     * <li>Variant key not set</li>
+     * <li>Variant sku not set</li>
+     * </ul>
+     *
+     * @param productVariantDraft the variant draft to validate.
+     * @param variantPosition     the position of the variant on the product draft (master variant is at position 0).
+     * @param productDraftKey     the key of the product draft.
+     * @return a list of error messages resulting from the variant validation.
+     */
+    @Nonnull
+    static List<String> getVariantDraftErrors(@Nullable final ProductVariantDraft productVariantDraft,
                                               final int variantPosition,
+                                              @Nonnull final String productDraftKey) {
         final List<String> errorMessages = new ArrayList<>();
         if (productVariantDraft != null) {
             if (isBlank(productVariantDraft.getKey())) {
