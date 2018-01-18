@@ -101,7 +101,7 @@ public class BatchProcessor {
      * Get a set of referenced product keys on all attribute drafts on the supplied Product
      * Variant Draft.
      *
-     * Note: Null attributes are skipped since they are validated at a later stage in
+     * <p>Note: Null attributes are skipped since they are validated at a later stage in
      * ({@link com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils})
      *
      * @param variantDraft the variant draft to get the referenced product keys from.
@@ -132,8 +132,8 @@ public class BatchProcessor {
         if (attributeDraftValue == null) {
             return emptySet();
         }
-        return attributeDraftValue.isArray() ?
-            getReferencedProductKeysFromSet(attributeDraftValue) :
+        return attributeDraftValue.isArray()
+            ? getReferencedProductKeysFromSet(attributeDraftValue) :
             getProductKeyFromReference(attributeDraftValue).map(Collections::singleton)
                                                            .orElse(emptySet());
     }
@@ -163,8 +163,8 @@ public class BatchProcessor {
      */
     @Nonnull
     static Optional<String> getProductKeyFromReference(@Nonnull final JsonNode referenceValue) {
-        return isProductReference(referenceValue) ?
-            ofNullable(referenceValue.get(REFERENCE_ID_FIELD)).map(JsonNode::asText) : empty();
+        return isProductReference(referenceValue)
+            ? ofNullable(referenceValue.get(REFERENCE_ID_FIELD)).map(JsonNode::asText) : empty();
     }
 
     /**
@@ -207,6 +207,7 @@ public class BatchProcessor {
 
     /**
      * Gets a list of error messages that exist on a product variant draft.
+     *
      * <p>The errors that could exist on a product variant draft could be any of the following:
      * <ul>
      * <li>Null variant</li>

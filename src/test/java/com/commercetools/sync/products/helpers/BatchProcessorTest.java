@@ -69,7 +69,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void getVariantDraftErrors_WithNokeyAndSKU_ShouldHaveValidationErrors() {
+    public void getVariantDraftErrors_WithNokeyAndSku_ShouldHaveValidationErrors() {
         final int variantPosition = 0;
         final String productDraftKey = "key";
         final List<String> validationErrors =
@@ -97,7 +97,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void getVariantDraftErrors_WithNoSKU_ShouldHaveSKUValidationError() {
+    public void getVariantDraftErrors_WithNoSku_ShouldHaveSkuValidationError() {
         final int variantPosition = 0;
         final String productDraftKey = "key";
         final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
@@ -112,7 +112,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void getVariantDraftErrors_WithSKUAndKey_ShouldHaveNoValidationErrors() {
+    public void getVariantDraftErrors_WithSkuAndKey_ShouldHaveNoValidationErrors() {
         final String productDraftKey = "key";
         final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
         when(productVariantDraft.getKey()).thenReturn("key");
@@ -126,7 +126,7 @@ public class BatchProcessorTest {
 
     @Test
     public void
-    getProductDraftErrorsAndAcceptConsumer_WithNullMVAndNullVariants_ShouldNotAcceptConsumerAndHaveValidationErrors() {
+        getProductDraftErrorsAndAcceptConsumer_WithNullMvAndNullVariants_ShouldNotAcceptConsumerAndHaveErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
         final ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn("key");
@@ -143,7 +143,7 @@ public class BatchProcessorTest {
 
     @Test
     public void
-    getProductDraftErrorsAndAcceptConsumer_WithNullMVAndNoVariants_ShouldNotAcceptConsumerAndHaveValidationErrors() {
+        getProductDraftErrorsAndAcceptConsumer_WithNullMvAndNoVariants_ShouldNotAcceptConsumerAndHaveErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
         final ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn("key");
@@ -159,7 +159,7 @@ public class BatchProcessorTest {
 
     @Test
     public void
-    getProductDraftErrorsAndAcceptConsumer_WithNullMVAndValidVariants_ShouldNotAcceptConsumerAndHaveValidationErrors() {
+        getProductDraftErrorsAndAcceptConsumer_WithNullMvAndValidVariants_ShouldNotAcceptConsumerAndHaveErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
 
         final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
@@ -181,7 +181,7 @@ public class BatchProcessorTest {
 
     @Test
     public void
-    getProductDraftErrorsAndAcceptConsumer_WithInValidMVAndValidVariants_ShouldNotAcceptConsumerAndHaveErrors() {
+        getProductDraftErrorsAndAcceptConsumer_WithInValidMvAndValidVariants_ShouldNotAcceptConsumerAndHaveErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
 
         final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
@@ -205,7 +205,7 @@ public class BatchProcessorTest {
 
     @Test
     public void
-    getProductDraftErrorsAndAcceptConsumer_WithValidMVAndValidVariants_ShouldNotAcceptConsumerAndHaveErrors() {
+        getProductDraftErrorsAndAcceptConsumer_WithValidMvAndValidVariants_ShouldNotAcceptConsumerAndHaveErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
 
         final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
