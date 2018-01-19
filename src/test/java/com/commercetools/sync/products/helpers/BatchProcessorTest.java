@@ -82,7 +82,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void getVariantDraftErrors_WithNokey_ShouldHaveKeyValidationError() {
+    public void getVariantDraftErrors_WithNoKey_ShouldHaveKeyValidationError() {
         final int variantPosition = 0;
         final String productDraftKey = "key";
         final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
@@ -205,7 +205,7 @@ public class BatchProcessorTest {
 
     @Test
     public void
-        getProductDraftErrorsAndAcceptConsumer_WithValidMvAndValidVariants_ShouldNotAcceptConsumerAndHaveErrors() {
+        getProductDraftErrorsAndAcceptConsumer_WithValidMvAndValidVariants_ShouldAcceptConsumerAndNoErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
 
         final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
