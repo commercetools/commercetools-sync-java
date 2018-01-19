@@ -1,4 +1,5 @@
-testlogger {
-    theme 'mocha'
-    slowThreshold 35000
+test {
+    testLogging {
+        showStandardStreams = true
+    }
 }
