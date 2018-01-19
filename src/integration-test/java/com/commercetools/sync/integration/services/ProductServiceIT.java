@@ -141,7 +141,7 @@ public class ProductServiceIT {
     }
 
     @Test
-    public void getIdFromCacheOrFetch_WithNotCachedExistingProduct_ShouldFetchProductAndCache() {
+    public void getIdFromCacheOrFetch_WithNotCachedExistingProduct_ShouldFetchProduct() {
         final Optional<String> productId = productService.getIdFromCacheOrFetch(product.getKey())
                                                          .toCompletableFuture()
                                                          .join();
