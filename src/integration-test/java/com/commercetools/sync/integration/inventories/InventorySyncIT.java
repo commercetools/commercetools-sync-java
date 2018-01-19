@@ -115,32 +115,27 @@ public class InventorySyncIT {
 
     @Test
     @SuppressWarnings("PMD")
-    public void sync_WithNewInventory_ShouldCreateInventory() {
-        //Ensure that old entry has correct values before sync.
-        final Optional<InventoryEntry> oldInventoryBeforeSync =
-            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_2, null);
-        assertThat(oldInventoryBeforeSync).isEmpty();
-
+    public void sync_10000NewInventories_ShouldCreateInventories() {
         //Prepare sync data.
         final List<InventoryEntryDraft> resourceDrafts = new ArrayList<>();
-
         for (int i = 0; i < 10000; i++) {
             resourceDrafts.add(
                 InventoryEntryDraftBuilder
                     .of(SKU_2 + i, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, null)
                     .build());
         }
-        final long now = System.currentTimeMillis();
+
 
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
 
-        //Sync and ensure that proper statistics were returned.
+
+        final long now = System.currentTimeMillis();
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(resourceDrafts)
                                                                              .toCompletableFuture().join();
-
         final long later = System.currentTimeMillis();
         final long totalTime = later - now;
+
         System.out.println("Syncing 10000 inventories (all creates) took " + totalTime + " milliseconds.");
         assertThat(inventorySyncStatistics).hasValues(10000, 10000, 0, 0);
     }

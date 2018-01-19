@@ -311,24 +311,7 @@ public class ProductSyncIT {
 
     @Test
     @SuppressWarnings("PMD")
-    public void sync_withMultipleBatchSyncing_ShouldSync() {
-        // Prepare existing products with keys: productKey1, productKey2, productKey3.
-        final ProductDraft key2Draft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH,
-            productType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
-            categoryReferencesWithIds, product.getMasterData().getStaged().getCategoryOrderHints());
-        executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(key2Draft)));
-
-        final ProductDraft key3Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference())
-            .categories(new ArrayList<>())
-            .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
-            .key("productKey3")
-            .slug(LocalizedString.of(Locale.ENGLISH, "slug3"))
-            .masterVariant(ProductVariantDraftBuilder.of().key("v3").build())
-            .taxCategory(TaxCategory.referenceOfId(targetTaxCategory.getId()))
-            .build();
-        executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(key3Draft)));
-
-
+    public void sync_10000NewProducts_ShouldCreateProducts() {
         final List<ProductDraft> batch1 = new ArrayList<>();
         for (int i = 0; i < 10000; i++) {
             batch1.add(
@@ -344,10 +327,11 @@ public class ProductSyncIT {
                     .build());
         }
 
-        final long now = System.currentTimeMillis();
-        final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(batch1));
 
+        final ProductSync productSync = new ProductSync(syncOptions);
+
+        final long now = System.currentTimeMillis();
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(batch1));
         final long later = System.currentTimeMillis();
         final long totalTime = later - now;
 
