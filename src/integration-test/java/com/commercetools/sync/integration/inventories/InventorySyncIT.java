@@ -143,12 +143,6 @@ public class InventorySyncIT {
         final long totalTime = later - now;
         System.out.println("Syncing 10000 inventories (all creates) took " + totalTime + " milliseconds.");
         assertThat(inventorySyncStatistics).hasValues(10000, 10000, 0, 0);
-
-        //Ensure that old entry has correct values after sync.
-        final Optional<InventoryEntry> oldInventoryAfterSync =
-            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_2, null);
-        assertThat(oldInventoryAfterSync).isNotEmpty();
-        assertValues(oldInventoryAfterSync.get(), QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2);
     }
 
     @Test
