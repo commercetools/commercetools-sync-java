@@ -321,7 +321,7 @@ public class ProductSyncIT {
                     .state(null)
                     .categories(new ArrayList<>())
                     .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
-                    .key("productKey" + i)
+                    .key("productKey_" + i)
                     .slug(LocalizedString.of(Locale.ENGLISH, "slug" + i))
                     .masterVariant(ProductVariantDraftBuilder.of().key("newV" + i).build())
                     .build());
@@ -335,8 +335,8 @@ public class ProductSyncIT {
         final long later = System.currentTimeMillis();
         final long totalTime = later - now;
 
-        System.out.println("Syncing 10000 products (all creates) took " + totalTime + " milliseconds.");
         assertThat(syncStatistics).hasValues(10000, 10000, 0, 0);
+        System.out.println("Syncing 10000 products (all creates) took " + totalTime + " milliseconds.");
 
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
