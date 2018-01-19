@@ -136,8 +136,8 @@ public class InventorySyncIT {
         final long later = System.currentTimeMillis();
         final long totalTime = later - now;
 
-        assertThat(inventorySyncStatistics).hasValues(10000, 10000, 0, 0);
         System.out.println("Syncing 10000 inventories (all creates) took " + totalTime + " milliseconds.");
+        assertThat(inventorySyncStatistics).hasValues(10000, 10000, 0, 0);
     }
 
     @Test
