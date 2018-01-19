@@ -338,16 +338,16 @@ public class ProductSyncIT {
 
         for (int i = 0; i < 10000; i++) {
             batch1.add(
-            createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-                ProductType.referenceOfId(productType.getKey()))
-                .taxCategory(null)
-                .state(null)
-                .categories(new ArrayList<>())
-                .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
-                .key("productKey" + i)
-                .slug(LocalizedString.of(Locale.ENGLISH, "slug" + i))
-                .masterVariant(ProductVariantDraftBuilder.of().key("newV" + i).build())
-                .build());
+                createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+                    ProductType.referenceOfId(productType.getKey()))
+                    .taxCategory(null)
+                    .state(null)
+                    .categories(new ArrayList<>())
+                    .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
+                    .key("productKey" + i)
+                    .slug(LocalizedString.of(Locale.ENGLISH, "slug" + i))
+                    .masterVariant(ProductVariantDraftBuilder.of().key("newV" + i).build())
+                    .build());
         }
 
         final ProductDraft key4Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
