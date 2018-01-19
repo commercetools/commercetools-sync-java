@@ -52,13 +52,13 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M9)
 
 **New Features** (1)
-- **Commons** - Added `getSyncOptions` on any of the `ProductSync`, `CategorySync` or `InventorySync`. [#230](https://github.com/commercetools/commercetools-sync-java/issues/230)
+- **Commons** - Added `getSyncOptions` to the `ProductSync`, `CategorySync` and `InventorySync`. [#230](https://github.com/commercetools/commercetools-sync-java/issues/230)
 
 **Changes** (1)
-- **Product Sync** - Added validation for product drafts' SKUs as a required field on the input product drafts since they will be used for product matching in the future. [#230](https://github.com/commercetools/commercetools-sync-java/issues/230)
+- **Product Sync** - Added validation for product drafts' SKUs as a required field on the input product drafts since SKUs will be used for product matching in the future. [#230](https://github.com/commercetools/commercetools-sync-java/issues/230)
 
 **Enhancements** (1)
-- **Product Sync** - Changed the product sync to cache product ids per batch as opposed to caching the entire products ids before sync products. [#230](https://github.com/commercetools/commercetools-sync-java/issues/230) 
+- **Product Sync** - Changed the product sync to cache product ids per batch as opposed to caching the entire products ids before syncing products. [#230](https://github.com/commercetools/commercetools-sync-java/issues/230) 
 
 **Bug Fixes** (1)
 - **Commons** - Fixed library version in User-Agent headers of JVM SDK clients using the library. Now it is not fetched
