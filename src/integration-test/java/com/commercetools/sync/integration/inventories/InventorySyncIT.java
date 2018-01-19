@@ -138,11 +138,11 @@ public class InventorySyncIT {
         //Sync and ensure that proper statistics were returned.
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(resourceDrafts)
                                                                              .toCompletableFuture().join();
-        assertThat(inventorySyncStatistics).hasValues(1, 1, 0, 0);
 
         final long later = System.currentTimeMillis();
         final long totalTime = later - now;
         System.out.println("Syncing 10000 inventories (all creates) took " + totalTime + " milliseconds.");
+        assertThat(inventorySyncStatistics).hasValues(10000, 10000, 0, 0);
 
         //Ensure that old entry has correct values after sync.
         final Optional<InventoryEntry> oldInventoryAfterSync =

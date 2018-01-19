@@ -344,48 +344,15 @@ public class ProductSyncIT {
                     .build());
         }
 
-        final ProductDraft key4Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-            ProductType.referenceOfId(productType.getKey()))
-            .taxCategory(null)
-            .state(null)
-            .categories(new ArrayList<>())
-            .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
-            .key("productKey4")
-            .slug(LocalizedString.of(Locale.ENGLISH, "slug4"))
-            .masterVariant(ProductVariantDraftBuilder.of().key("v4").build())
-            .build();
-
-        final List<ProductDraft> batch2 = new ArrayList<>();
-        batch2.add(key4Draft);
-
-        final ProductDraft key3DraftNewSlug = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-            ProductType.referenceOfId(productType.getKey()))
-            .taxCategory(null)
-            .state(null)
-            .categories(new ArrayList<>())
-            .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
-            .key("productKey3")
-            .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
-            .masterVariant(ProductVariantDraftBuilder.of().key("v3").build())
-            .build();
-
-        final List<ProductDraft> batch3 = new ArrayList<>();
-        batch3.add(key3DraftNewSlug);
-
         final long now = System.currentTimeMillis();
         final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics =
-                executeBlocking(productSync.sync(batch1)
-                                            .thenCompose(result -> productSync.sync(batch2))
-                                            .thenCompose(result -> productSync.sync(batch3)));
-
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(batch1));
 
         final long later = System.currentTimeMillis();
         final long totalTime = later - now;
 
         System.out.println("Syncing 10000 products (all creates) took " + totalTime + " milliseconds.");
-
-        assertThat(syncStatistics).hasValues(3, 1, 2, 0);
+        assertThat(syncStatistics).hasValues(10000, 10000, 0, 0);
 
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
