@@ -8,8 +8,7 @@ dist: trusty
 jdk:
 - openjdk8
 install: true # skips travis' default installation step which executes gradle assemble.
-# travis_wait: https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received
-script: travis_wait ./gradlew clean setReleaseVersion build
+script: ./gradlew clean setReleaseVersion build
 # The before_cache and the cache steps cache the gradle installation on travis.
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
