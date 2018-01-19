@@ -333,9 +333,22 @@ public class ProductSyncIT {
             ProductType.reference(productType.getKey()), TaxCategory.referenceOfId(targetTaxCategory.getKey()),
             State.referenceOfId(targetProductState.getKey()), categoryReferencesWithKeys,
             categoryOrderHintsWithKeys);
-
         final List<ProductDraft> batch1 = new ArrayList<>();
-        batch1.add(productDraft);
+        //batch1.add(productDraft);
+
+        for (int i = 0; i < 10000; i++) {
+            batch1.add(
+            createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+                ProductType.referenceOfId(productType.getKey()))
+                .taxCategory(null)
+                .state(null)
+                .categories(new ArrayList<>())
+                .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
+                .key("productKey" + i)
+                .slug(LocalizedString.of(Locale.ENGLISH, "slug" + i))
+                .masterVariant(ProductVariantDraftBuilder.of().key("newV" + i).build())
+                .build());
+        }
 
         final ProductDraft key4Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             ProductType.referenceOfId(productType.getKey()))
@@ -365,13 +378,19 @@ public class ProductSyncIT {
         final List<ProductDraft> batch3 = new ArrayList<>();
         batch3.add(key3DraftNewSlug);
 
+        final long now = System.currentTimeMillis();
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
                 executeBlocking(productSync.sync(batch1)
                                             .thenCompose(result -> productSync.sync(batch2))
                                             .thenCompose(result -> productSync.sync(batch3)));
 
+
+        final long later = System.currentTimeMillis();
+        final long totalTime = later - now;
+
         assertThat(syncStatistics).hasValues(3, 1, 2, 0);
+
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();

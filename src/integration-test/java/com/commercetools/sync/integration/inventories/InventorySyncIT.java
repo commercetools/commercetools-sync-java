@@ -24,6 +24,7 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -120,15 +121,26 @@ public class InventorySyncIT {
         assertThat(oldInventoryBeforeSync).isEmpty();
 
         //Prepare sync data.
-        final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
-            .of(SKU_2, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, null).build();
+        final List<InventoryEntryDraft> resourceDrafts = new ArrayList<>();
+
+        for (int i = 0; i < 10000; i++) {
+            resourceDrafts.add(
+                InventoryEntryDraftBuilder
+                    .of(SKU_2 + i, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, null)
+                    .build());
+        }
+        final long now = System.currentTimeMillis();
+
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
 
         //Sync and ensure that proper statistics were returned.
-        final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(singletonList(newInventoryDraft))
-            .toCompletableFuture().join();
+        final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(resourceDrafts)
+                                                                             .toCompletableFuture().join();
         assertThat(inventorySyncStatistics).hasValues(1, 1, 0, 0);
+
+        final long later = System.currentTimeMillis();
+        final long totalTime = later - now;
 
         //Ensure that old entry has correct values after sync.
         final Optional<InventoryEntry> oldInventoryAfterSync =
