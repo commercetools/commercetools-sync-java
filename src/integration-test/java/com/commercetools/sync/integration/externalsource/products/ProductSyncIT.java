@@ -310,6 +310,7 @@ public class ProductSyncIT {
     }
 
     @Test
+    @SuppressWarnings("PMD")
     public void sync_withMultipleBatchSyncing_ShouldSync() {
         // Prepare existing products with keys: productKey1, productKey2, productKey3.
         final ProductDraft key2Draft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH,
@@ -388,6 +389,7 @@ public class ProductSyncIT {
 
         final long later = System.currentTimeMillis();
         final long totalTime = later - now;
+
         System.out.println("Syncing 10000 products (all creates) took " + totalTime + " milliseconds.");
 
         assertThat(syncStatistics).hasValues(3, 1, 2, 0);

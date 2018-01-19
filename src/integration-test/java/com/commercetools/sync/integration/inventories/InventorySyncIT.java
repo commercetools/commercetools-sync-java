@@ -114,6 +114,7 @@ public class InventorySyncIT {
     }
 
     @Test
+    @SuppressWarnings("PMD")
     public void sync_WithNewInventory_ShouldCreateInventory() {
         //Ensure that old entry has correct values before sync.
         final Optional<InventoryEntry> oldInventoryBeforeSync =
