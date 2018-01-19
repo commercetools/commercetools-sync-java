@@ -182,12 +182,12 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private CompletionStage<Void> createOrUpdateProducts() {
         return productService.createProducts(draftsToCreate)
                              .thenAccept(createdProducts ->
-                                 processCreatedProducts(createdProducts, draftsToCreate.size()))
+                                 updateStatistics(createdProducts, draftsToCreate.size()))
                              .thenCompose(result -> syncProducts(productsToSync));
     }
 
-    private void processCreatedProducts(@Nonnull final Set<Product> createdProducts,
-                                        final int totalNumberOfDraftsToCreate) {
+    private void updateStatistics(@Nonnull final Set<Product> createdProducts,
+                                  final int totalNumberOfDraftsToCreate) {
         final int numberOfFailedCreations = totalNumberOfDraftsToCreate - createdProducts.size();
         statistics.incrementFailed(numberOfFailedCreations);
         statistics.incrementCreated(createdProducts.size());
