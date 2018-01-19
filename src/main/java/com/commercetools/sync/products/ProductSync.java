@@ -183,7 +183,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         return productService.createProducts(draftsToCreate)
                              .thenAccept(createdProducts ->
                                  updateStatistics(createdProducts, draftsToCreate.size()))
-                             .thenCompose(result -> syncProducts(productsToSync));
+                             .thenCompose(ignoredResult -> syncProducts(productsToSync));
     }
 
     private void updateStatistics(@Nonnull final Set<Product> createdProducts,
