@@ -388,6 +388,7 @@ public class ProductSyncIT {
 
         final long later = System.currentTimeMillis();
         final long totalTime = later - now;
+        System.out.println("Syncing 10000 products (all creates) took" + totalTime + "milliseconds.");
 
         assertThat(syncStatistics).hasValues(3, 1, 2, 0);
 

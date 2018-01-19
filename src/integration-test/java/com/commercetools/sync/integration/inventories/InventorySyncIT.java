@@ -141,6 +141,7 @@ public class InventorySyncIT {
 
         final long later = System.currentTimeMillis();
         final long totalTime = later - now;
+        System.out.println("Syncing 10000 inventories (all creates) took" + totalTime + "milliseconds.");
 
         //Ensure that old entry has correct values after sync.
         final Optional<InventoryEntry> oldInventoryAfterSync =
