@@ -48,19 +48,22 @@ public final class ProductITUtils {
     }
 
     /**
-     * Deletes all products from the CTP project defined by the {@code ctpClient}.
+     * Unpublishes all published products, then deletes all products from the CTP project defined by the
+     * {@code ctpClient}.
      *
-     * @param ctpClient defines the CTP project to delete the categories from.
+     * @param ctpClient defines the CTP project to delete the products from.
      */
     public static void deleteAllProducts(@Nonnull final SphereClient ctpClient) {
-        final Function<Product, SphereRequest<Product>> unpublishAndDelete = product -> {
-            if (product.getMasterData().isPublished()) {
-                product = ctpClient.execute(ProductUpdateCommand.of(product, Unpublish.of()))
-                                   .toCompletableFuture().join();
-            }
-            return ProductDeleteCommand.of(product);
-        };
-        queryAndApply(ctpClient, ProductQuery::of, unpublishAndDelete);
+        unPublishAllPublishedProducts(ctpClient);
+        queryAndApply(ctpClient, ProductQuery::of, ProductDeleteCommand::of);
+    }
+
+    private static void unPublishAllPublishedProducts(@Nonnull final SphereClient ctpClient) {
+        final Function<Product, SphereRequest<Product>> unPublish = product ->
+                ProductUpdateCommand.of(product, Unpublish.of());
+        final ProductQuery publishedProductsQuery = ProductQuery.of()
+                .withPredicates(p -> p.masterData().isPublished().is(true));
+        queryAndApply(ctpClient, () -> publishedProductsQuery, unPublish);
     }
 
     /**
