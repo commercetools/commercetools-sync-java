@@ -7,7 +7,7 @@
 | Sync 10000 products (all creates) | 118754 | 116732 | 122780 | 131493 | wip | wip |
 | Sync 10000 products (half creates/updates) | wip | wip | wip | wip | wip | wip |
 | Sync 10000 products (all updates) | wip | wip | wip | wip | wip | wip |
-| Sync 10000 inventories (all creates) | 59809 | 61849 | 54711 | 63200 | wip | wip |
+| Sync 10000 inventories (all creates) | 59809 | 61849 | 54711 | 63200 | 53610 | wip |
 | Sync 10000 inventories (half creates/updates) | wip | wip | wip | wip | wip | wip |
 | Sync 10000 inventories (all updates) | wip | wip | wip | wip | wip | wip |
 
