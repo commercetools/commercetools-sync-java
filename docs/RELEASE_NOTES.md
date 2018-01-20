@@ -49,7 +49,8 @@
 ### v1.0.0-M9 -  Jan 15, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M8...v1.0.0-M9) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M9/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M9)
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M9) |
+[Benchmarks](https://github.com/commercetools/commercetools-sync-java/blob/155-benchmark-tests/docs/BENCHMARKS.md#v100-m9)
 
 
 **Bug Fixes** (1)
@@ -62,7 +63,8 @@
 ### v1.0.0-M8 -  Dec 29, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M7...v1.0.0-M8) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M8/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M8)
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M8) |
+[Benchmarks](https://github.com/commercetools/commercetools-sync-java/blob/155-benchmark-tests/docs/BENCHMARKS.md#v100-m8)
 
 **New Features** (1)
 - **Category Sync** - Exposed new method `CategorySyncStatistics#getNumberOfCategoriesWithMissingParents` which gets the
