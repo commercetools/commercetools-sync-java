@@ -1,4 +1,4 @@
-integrationTest {
+benchmark {
     testLogging {
         events "standardOut"
     }

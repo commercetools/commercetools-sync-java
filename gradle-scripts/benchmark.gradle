@@ -1,0 +1,21 @@
+sourceSets {
+    benchmark {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir 'src/benchmark/java'
+        }
+        resources.srcDir 'src/benchmark/resources'
+    }
+}
+
+configurations {
+    benchmarkImplementation.extendsFrom implementation, testImplementation
+}
+
+task benchmark(type: Test) {
+    testClassesDirs = sourceSets.benchmark.output.classesDirs
+    classpath = sourceSets.benchmark.runtimeClasspath
+    outputs.upToDateWhen { false }
+}
+
