@@ -12,6 +12,7 @@ import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Locale;
@@ -22,6 +23,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Ignore
 public class TypeServiceIT {
     private TypeService typeService;
     private static final String OLD_TYPE_KEY = "old_type_key";

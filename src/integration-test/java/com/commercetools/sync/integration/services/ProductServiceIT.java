@@ -67,6 +67,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+@Ignore
 public class ProductServiceIT {
     private ProductService productService;
     private static ProductType productType;
