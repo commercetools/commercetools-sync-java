@@ -10,6 +10,9 @@
 | Sync 10000 inventories (all creates) | 59809 | 61849 | 54711 | 63200 | 53610 | 65323 | **59750** |
 | Sync 10000 inventories (half creates/updates) | wip | wip | wip | wip | wip | wip | **wip** |
 | Sync 10000 inventories (all updates) | wip | wip | wip | wip | wip | wip | **wip** |
+| Sync 10000 categories (all creates) | wip | wip | wip | wip | wip | wip | **wip** |
+| Sync 10000 categories (half creates/updates) | wip | wip | wip | wip | wip | wip | **wip** |
+| Sync 10000 categories (all updates) | wip | wip | wip | wip | wip | wip | **wip** |
 
 
 #### v1.0.0-M9
@@ -22,3 +25,6 @@
 | Sync 10000 inventories (all creates) | wip | wip | wip | wip | wip | wip | **wip** | **🐌 +100ms** |
 | Sync 10000 inventories (half creates/updates) | wip | wip | wip | wip | wip | wip | **wip** | **💨 -100ms** |
 | Sync 10000 inventories (all updates) | wip | wip | wip | wip | wip | wip | **wip** | **🐌 +100ms** |
+| Sync 10000 categories (all creates) | wip | wip | wip | wip | wip | wip | **wip** | **🐌 +100ms** |
+| Sync 10000 categories (half creates/updates) | wip | wip | wip | wip | wip | wip | **wip** | **💨 -100ms** |
+| Sync 10000 categories (all updates) | wip | wip | wip | wip | wip | wip | **wip** | **🐌 +100ms** |
