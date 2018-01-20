@@ -1,9 +1,3 @@
-benchmark {
-    testLogging {
-        events "standardOut"
-    }
-}
-
 testlogger {
     theme 'mocha'
     slowThreshold 35000
