@@ -1,4 +1,4 @@
-package com.commercetools.sync.benchmark.products;
+package com.commercetools.sync.benchmark;
 
 
 import org.junit.Test;
@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class ProductSyncBenchmark {
+
     @Test
     @SuppressWarnings("PMD")
     public void product_benchmark() {
