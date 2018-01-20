@@ -8,10 +8,12 @@ dist: trusty
 jdk:
 - openjdk8
 install: true # skips travis' default installation step which executes gradle assemble.
-env:
-  - TEST_SUITE=test
-  - TEST_SUITE=integrationTest
-script: ./gradlew clean setReleaseVersion $TEST_SUITE
+jobs:
+  include:
+    - stage: benchmark
+      script: ./gradlew clean benchmark
+    - stage: full build
+      script: ./gradlew clean setReleaseVersion build
 # The before_cache and the cache steps cache the gradle installation on travis.
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
