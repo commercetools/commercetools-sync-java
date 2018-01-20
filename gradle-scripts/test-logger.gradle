@@ -1,5 +1,5 @@
 test {
     testLogging {
-        showStandardStreams = true
+        events "standardOut", "passed", "skipped", "failed"
     }
 }
