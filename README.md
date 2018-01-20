@@ -22,7 +22,7 @@ Java API which exposes utilities for building update actions and automatic synci
 - [Roadmap](#roadmap)
 - [Release Notes](/docs/RELEASE_NOTES.md)
 - [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M8/)
-- [Benchmark Results](#benchmark-results)
+- [Benchmark Results](/docs/BENCHMARKS.md)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 ## Usage
@@ -76,9 +76,3 @@ libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "v1.0.0
 
 ## Roadmap
 https://github.com/commercetools/commercetools-sync-java/milestones
-
-## Benchmark Results
-| Test | Number of Resources | Time Taken |
-| :--- | :------------------ | :--------- | 
-| Sync products (all creates) | 10000 | #{inv_time} |
-| Sync inventories (all creates) | 10000 | #{inv_time} | 
