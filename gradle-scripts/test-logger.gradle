@@ -1,4 +1,4 @@
-test {
+integrationTest {
     testLogging {
         events "standardOut", "passed", "skipped", "failed"
     }
