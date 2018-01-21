@@ -14,6 +14,12 @@ configurations {
 }
 
 task benchmark(type: Test) {
+    doFirst{
+        def grgit = grgit.clone(dir: 'git_temp_dir/', uri: scmProjectUrl, checkout: true,
+                refToCheckout: '155-benchmark-tests')
+    }
+
+
     testClassesDirs = sourceSets.benchmark.output.classesDirs
     classpath = sourceSets.benchmark.runtimeClasspath
     outputs.upToDateWhen { false }
@@ -21,11 +27,8 @@ task benchmark(type: Test) {
 
 task benchmarkCommit() {
     doLast{
-        def grgit = grgit.clone(dir: 'git_temp_dir/', uri: scmProjectUrl, checkout: true,
-                refToCheckout: '155-benchmark-tests')
-        //def grgit = org.ajoberstar.grgit.Grgit.open(dir: '.')
         grgit.add(patterns: ['docs/BENCHMARKS.md'])
-        grgit.commit(message: 'Adding benchmark result.')
+        grgit.commit(message: 'Add benchmark result.')
         grgit.push()
         grgit.close()
     }
