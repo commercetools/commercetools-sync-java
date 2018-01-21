@@ -11,8 +11,8 @@ install: true # skips travis' default installation step which executes gradle as
 jobs:
   include:
     - stage: benchmark
-      if: branch = master
-      script: ./gradlew clean benchmark
+      #if: branch = master
+      script: ./gradlew clean benchmark benchmarkCommit
     - stage: full build
       script: ./gradlew clean setReleaseVersion build
 # The before_cache and the cache steps cache the gradle installation on travis.

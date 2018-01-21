@@ -19,3 +19,16 @@ task benchmark(type: Test) {
     outputs.upToDateWhen { false }
 }
 
+task benchmarkCommit() {
+    doLast{
+        def grgit = grgit.clone(dir: 'git_temp_dir/', uri: scmProjectUrl, checkout: true,
+                refToCheckout: '155-benchmark-tests')
+        //def grgit = org.ajoberstar.grgit.Grgit.open(dir: '.')
+        grgit.add(patterns: ['docs/BENCHMARKS.md'])
+        grgit.commit(message: 'Adding benchmark result.')
+        grgit.push()
+        grgit.close()
+    }
+}
+
+benchmarkCommit.mustRunAfter benchmark
