@@ -16,6 +16,7 @@ public class ProductSyncBenchmark {
     @SuppressWarnings("PMD")
     public void product_benchmark() {
         try {
+            System.out.println("Staring benchmark test..");
             replaceInFile();
         } catch (IOException e) {
             e.printStackTrace();
@@ -23,6 +24,7 @@ public class ProductSyncBenchmark {
     }
 
     private static void replaceInFile() throws IOException {
+        System.out.println("Staring file reading..");
         final Path path = Paths.get(System.getenv("TRAVIS_BUILD_DIR") + "/docs/BENCHMARKS.md");
         final Charset charset = StandardCharsets.UTF_8;
         final String search = "#test";
