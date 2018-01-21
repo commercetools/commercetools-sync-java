@@ -23,6 +23,7 @@ public class ProductSyncBenchmark {
     }
 
     private static void replaceInFile() throws IOException {
+        System.out.println("Staring file reading..");
         final Path path = Paths.get(System.getenv("TRAVIS_BUILD_DIR") + "/docs/BENCHMARKS.md");
         final Charset charset = StandardCharsets.UTF_8;
         final String search = "#test";
@@ -30,7 +31,11 @@ public class ProductSyncBenchmark {
 
         String content = new String(Files.readAllBytes(path), charset);
 
+        System.out.println("File '" + path + "' contents:\n" + content);
+
         content = content.replaceAll(search, replacement);
+
+        System.out.println("After replacement contents:\n" + content);
         Files.write(path, content.getBytes(charset));
     }
 }
