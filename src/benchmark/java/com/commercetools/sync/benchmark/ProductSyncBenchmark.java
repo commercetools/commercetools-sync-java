@@ -23,7 +23,7 @@ public class ProductSyncBenchmark {
     }
 
     private static void replaceInFile() throws IOException {
-        final Path path = Paths.get("commercetools/commercetools-sync-java/docs/BENCHMARKS.md");
+        final Path path = Paths.get(System.getenv("TRAVIS_BUILD_DIR") + "/docs/BENCHMARKS.md");
         final Charset charset = StandardCharsets.UTF_8;
         final String search = "#test";
         final String replacement = "auto injected from product benchmark";
