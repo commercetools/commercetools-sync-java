@@ -21,7 +21,7 @@ task benchmark(type: Test) {
 
 task benchmarkCommit() {
     doLast{
-        var filePath = System.getenv('TRAVIS_BUILD_DIR') + '/docs/BENCHMARKS.md'
+        def filePath = System.getenv('TRAVIS_BUILD_DIR') + '/docs/BENCHMARKS.md'
         printf('Will try to commit the file:' + filePath)
         grgit.add(patterns: [filePath])
         grgit.commit(message: 'Add benchmark result.')
