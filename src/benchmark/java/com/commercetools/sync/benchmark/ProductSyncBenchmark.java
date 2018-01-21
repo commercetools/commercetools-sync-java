@@ -22,13 +22,14 @@ public class ProductSyncBenchmark {
         }
     }
 
-    private static void  replaceInFile() throws IOException {
-        final Path path = Paths.get("docs/BENCHMARKS.md");
+    private static void replaceInFile() throws IOException {
+        final Path path = Paths.get("commercetools/commercetools-sync-java/docs/BENCHMARKS.md");
         final Charset charset = StandardCharsets.UTF_8;
         final String search = "#test";
         final String replacement = "auto injected from product benchmark";
 
         String content = new String(Files.readAllBytes(path), charset);
+
         content = content.replaceAll(search, replacement);
         Files.write(path, content.getBytes(charset));
     }
