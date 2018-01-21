@@ -24,7 +24,7 @@ public class ProductSyncBenchmark {
 
     private static void replaceInFile() throws IOException {
         System.out.println("Staring file reading..");
-        final Path path = Paths.get(System.getenv("TRAVIS_BUILD_DIR") + "git_temp_dir/docs/BENCHMARKS.md");
+        final Path path = Paths.get(System.getenv("TRAVIS_BUILD_DIR") + "/git_temp_dir/docs/BENCHMARKS.md");
         final Charset charset = StandardCharsets.UTF_8;
         final String search = "#test";
         final String replacement = "auto injected from product benchmark";
