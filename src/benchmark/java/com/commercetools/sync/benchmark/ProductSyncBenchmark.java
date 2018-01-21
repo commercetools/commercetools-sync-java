@@ -16,7 +16,6 @@ public class ProductSyncBenchmark {
     @SuppressWarnings("PMD")
     public void product_benchmark() {
         try {
-            System.out.println("Staring benchmark test..");
             replaceInFile();
         } catch (IOException e) {
             e.printStackTrace();
@@ -24,15 +23,12 @@ public class ProductSyncBenchmark {
     }
 
     private static void replaceInFile() throws IOException {
-        System.out.println("Staring file reading..");
         final Path path = Paths.get(System.getenv("TRAVIS_BUILD_DIR") + "/docs/BENCHMARKS.md");
         final Charset charset = StandardCharsets.UTF_8;
         final String search = "#test";
         final String replacement = "auto injected from product benchmark";
 
         String content = new String(Files.readAllBytes(path), charset);
-
-        System.out.println("File" + path + "contents:\n" + content);
 
         content = content.replaceAll(search, replacement);
         Files.write(path, content.getBytes(charset));
