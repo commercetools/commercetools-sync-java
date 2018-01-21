@@ -30,6 +30,8 @@ public class ProductSyncBenchmark {
 
         String content = new String(Files.readAllBytes(path), charset);
 
+        System.out.println("File" + path + "contents:\n" + content);
+
         content = content.replaceAll(search, replacement);
         Files.write(path, content.getBytes(charset));
     }
