@@ -14,12 +14,6 @@ configurations {
 }
 
 task benchmark(type: Test) {
-    doFirst{
-        def grgit = grgit.clone(dir: 'git_temp_dir/', uri: scmProjectUrl, checkout: true,
-                refToCheckout: '155-benchmark-tests')
-    }
-
-
     testClassesDirs = sourceSets.benchmark.output.classesDirs
     classpath = sourceSets.benchmark.runtimeClasspath
     outputs.upToDateWhen { false }
