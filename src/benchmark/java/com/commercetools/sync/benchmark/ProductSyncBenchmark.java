@@ -1,103 +1,125 @@
 package com.commercetools.sync.benchmark;
 
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.commercetools.sync.products.ProductSync;
+import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductVariantDraft;
+import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.producttypes.ProductType;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
-import static com.commercetools.sync.benchmark.BenchmarkUtils.BENCHMARK_RESULTS_FILE_PATH;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.CATEGORY_SYNC;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.EXECUTION_TIMES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.PRODUCT_SYNC;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.UTF8_CHARSET;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.VERSION_M8;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
+import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductSyncBenchmark {
+    private static ProductType productType;
+    private ProductSyncOptions syncOptions;
+    private List<String> errorCallBackMessages;
+    private List<String> warningCallBackMessages;
+    private List<Throwable> errorCallBackExceptions;
+
+    @BeforeClass
+    public static void setup() {
+        deleteProductSyncTestData(CTP_TARGET_CLIENT);
+        createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
+            OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
+        productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
+    }
+
+    @Before
+    public void setupTest() {
+        clearSyncTestCollections();
+        deleteAllProducts(CTP_TARGET_CLIENT);
+        syncOptions = buildSyncOptions();
+    }
+
+    private void clearSyncTestCollections() {
+        errorCallBackMessages = new ArrayList<>();
+        errorCallBackExceptions = new ArrayList<>();
+        warningCallBackMessages = new ArrayList<>();
+    }
+
+    private ProductSyncOptions buildSyncOptions() {
+        final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
+            errorCallBackMessages.add(errorMessage);
+            errorCallBackExceptions.add(exception);
+        };
+        final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
+
+        return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                                        .errorCallback(errorCallBack)
+                                        .warningCallback(warningCallBack)
+                                        .build();
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        deleteProductSyncTestData(CTP_TARGET_CLIENT);
+    }
 
     @Test
-    @SuppressWarnings("PMD")
-    public void product_benchmark() {
-        try {
-            final String resultsAsString = getFileContent(BENCHMARK_RESULTS_FILE_PATH);
-            final ObjectMapper mapper = new ObjectMapper();
-            final JsonNode actualObject = mapper.readTree(resultsAsString);
+    public void sync_NewProducts_ShouldCreateProducts() throws IOException {
+        final int numberOfProducts = 10;
+        final List<ProductDraft> productDrafts = buildProductDrafts(numberOfProducts);
 
+        // Sync drafts
+        final ProductSync productSync = new ProductSync(syncOptions);
 
-            final List<JsonNode> results = iteratorToList(actualObject.get(VERSION_M8)
-                                                                      .get(PRODUCT_SYNC)
-                                                                      .get(CREATES_ONLY)
-                                                                      .get(EXECUTION_TIMES)
-                                                                      .elements());
+        final long beforeSyncTime = System.currentTimeMillis();
+        final ProductSyncStatistics syncStatistics = productSync.sync(productDrafts).toCompletableFuture().join();
+        final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-            final double averageResults = getAverageResults(results);
-            System.out.println(averageResults);
+        assertThat(syncStatistics).hasValues(numberOfProducts, numberOfProducts, 0, 0);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+        saveNewResult(VERSION_M8, PRODUCT_SYNC, CREATES_ONLY, totalTime);
+    }
 
-            final JsonNode newResult = addNewResult(actualObject, VERSION_M8, CATEGORY_SYNC, CREATES_ONLY, 1891);
-
-            //replaceInFile(TRAVIS_TEMP_GIR_DIR_PATH + BENCHMARK_RESULTS_FILE_PATH, "#test", "auto injected from product benchmark");
-            writeToFile(newResult.toString(), BENCHMARK_RESULTS_FILE_PATH);
-        } catch (IOException e) {
-            e.printStackTrace();
+    @Nonnull
+    private List<ProductDraft> buildProductDrafts(final int numberOfProducts) {
+        final List<ProductDraft> productDrafts = new ArrayList<>();
+        final Reference<ProductType> draftsProductType = ProductType
+            .referenceOfId(ProductSyncBenchmark.productType.getKey());
+        for (int i = 0; i < numberOfProducts; i++) {
+            final ProductVariantDraft masterVariantDraft = ProductVariantDraftBuilder.of()
+                                                                                     .key("masterVariantKey_" + i)
+                                                                                     .build();
+            final ProductDraft productDraft = ProductDraftBuilder
+                .of(draftsProductType, ofEnglish("name_" + i), ofEnglish("slug_" + i), masterVariantDraft)
+                .key("productKey_" + i)
+                .build();
+            productDrafts.add(productDraft);
         }
-    }
-
-    private static JsonNode addNewResult(@Nonnull final JsonNode originalRoot,
-                                         @Nonnull final String version,
-                                         @Nonnull final String sync,
-                                         @Nonnull final String benchmark,
-                                         final double newResult) {
-
-        final ObjectNode rootNode = (ObjectNode) originalRoot;
-        final ObjectNode versionNode = (ObjectNode) rootNode.get(version);
-        final ObjectNode syncNode = (ObjectNode) versionNode.get(sync);
-        final ObjectNode benchmarkNode = (ObjectNode) syncNode.get(benchmark);
-
-        final List<JsonNode> results = iteratorToList(benchmarkNode.get(EXECUTION_TIMES).elements());
-
-        // Add newResult
-        results.add(JsonNodeFactory.instance.numberNode(newResult));
-
-        final JsonNode newResultsNode = benchmarkNode
-            .set(EXECUTION_TIMES, JsonNodeFactory.instance.arrayNode().addAll(results));
-        final JsonNode newSyncNode = syncNode.set(benchmark, newResultsNode);
-        final JsonNode newVersionNode = versionNode.set(sync, newSyncNode);
-        final JsonNode newRoot = rootNode.set(version, newVersionNode);
-        return newRoot;
-    }
-
-    private static <T> List<T> iteratorToList(@Nonnull final Iterator<T> iterator) {
-        final List<T> list = new ArrayList<>();
-        iterator.forEachRemaining(list::add);
-        return list;
-    }
-
-    private static double getAverageResults(@Nonnull final List<JsonNode> results) {
-        return results.stream().mapToDouble(JsonNode::asLong).average().orElse(0);
-    }
-
-
-    private static String getFileContent(@Nonnull final String path) throws IOException {
-        final byte[] fileBytes = Files.readAllBytes(Paths.get(path));
-        return new String(fileBytes, UTF8_CHARSET);
-    }
-
-    private static void writeToFile(@Nonnull final String content, @Nonnull final String path) throws IOException {
-        Files.write(Paths.get(path), content.getBytes(UTF8_CHARSET));
-    }
-
-    private static void replaceInFile(@Nonnull final String path, @Nonnull final String text, @Nonnull final String replacement) throws IOException {
-        final String contentAfterReplacement = getFileContent(path).replaceAll(text, replacement);
-        writeToFile(contentAfterReplacement, path);
+        return productDrafts;
     }
 }
