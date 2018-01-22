@@ -39,6 +39,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductITUtils.de
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
+import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -98,12 +99,14 @@ public class ProductSyncBenchmark {
         final ProductSync productSync = new ProductSync(syncOptions);
 
         final long beforeSyncTime = System.currentTimeMillis();
-        final ProductSyncStatistics syncStatistics = productSync.sync(productDrafts).toCompletableFuture().join();
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(productDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        assertThat(syncStatistics).hasValues(numberOfProducts, numberOfProducts, 0, 0);
+
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
+
+        assertThat(syncStatistics).hasValues(numberOfProducts, numberOfProducts, 0, 0);
         assertThat(warningCallBackMessages).isEmpty();
 
 
