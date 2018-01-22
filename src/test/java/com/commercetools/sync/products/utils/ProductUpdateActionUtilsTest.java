@@ -207,7 +207,7 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildRemoveVariantUpdateAction_removesMissedVariants() throws Exception {
+    public void buildRemoveVariantUpdateAction_removesMissedVariants() {
         Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
         ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
 
@@ -217,6 +217,25 @@ public class ProductUpdateActionUtilsTest {
 
         ArrayList<ProductVariantDraft> newVariants = new ArrayList<>(productDraftNew.getVariants());
         newVariants.add(productDraftNew.getMasterVariant());
+
+        List<RemoveVariant> updateActions = buildRemoveVariantUpdateActions(oldVariants, newVariants);
+        assertThat(updateActions)
+            .containsExactlyInAnyOrder(RemoveVariant.of(1), RemoveVariant.of(2), RemoveVariant.of(3));
+        // removes master (1) and two other variants (2, 3)
+    }
+
+    @Test
+    public void buildRemoveVariantUpdateAction_WithNullVariants_removesOnlyMissedVariantsAndSKipsNullVariants() {
+        Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+        ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
+
+        ProductData oldStaged = productOld.getMasterData().getStaged();
+        Map<String, ProductVariant> oldVariants =
+            collectionToMap(oldStaged.getAllVariants(), ProductVariant::getKey);
+
+        ArrayList<ProductVariantDraft> newVariants = new ArrayList<>(productDraftNew.getVariants());
+        newVariants.add(productDraftNew.getMasterVariant());
+        newVariants.add(null);
 
         List<RemoveVariant> updateActions = buildRemoveVariantUpdateActions(oldVariants, newVariants);
         assertThat(updateActions)

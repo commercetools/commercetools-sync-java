@@ -11,7 +11,6 @@ import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.commands.updateactions.RevertStagedChanges;
 import io.sphere.sdk.products.queries.ProductQuery;
-import io.sphere.sdk.queries.PagedResult;
 import io.sphere.sdk.queries.QueryPredicate;
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,19 +23,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 
 public class ProductServiceImpl extends BaseService<Product, ProductDraft> implements ProductService {
     private static final String FETCH_FAILED = "Failed to fetch products with keys: '%s'. Reason: %s";
-    private static final String PRODUCT_KEY_NOT_SET = "Product with id: '%s' has no key set. Keys are required for "
-        + "product matching.";
-
 
     public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
         super(syncOptions);
@@ -44,48 +40,49 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<String>> fetchCachedProductId(@Nullable final String key) {
+    public CompletionStage<Optional<String>> getIdFromCacheOrFetch(@Nullable final String key) {
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
-        if (isCached) {
-            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
+        if (keyToIdCache.containsKey(key)) {
+            return CompletableFuture.completedFuture(Optional.of(keyToIdCache.get(key)));
         }
         return cacheAndFetch(key);
     }
 
+    @Nonnull
     private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
-        return cacheKeysToIds()
-            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
+        return cacheKeysToIds(singleton(key)).thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Map<String, String>> cacheKeysToIds() {
-        if (isCached) {
+    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> productKeys) {
+        final Set<String> keysNotCached = productKeys.stream()
+                                                     .filter(StringUtils::isNotBlank)
+                                                     .filter(key -> !keyToIdCache.containsKey(key))
+                                                     .collect(Collectors.toSet());
+
+        if (keysNotCached.isEmpty()) {
             return CompletableFuture.completedFuture(keyToIdCache);
         }
 
-        final Consumer<List<Product>> productPageConsumer = productsPage ->
-            productsPage.forEach(product -> {
-                final String key = product.getKey();
-                final String id = product.getId();
-                if (StringUtils.isNotBlank(key)) {
-                    keyToIdCache.put(key, id);
-                } else {
-                    syncOptions.applyWarningCallback(format(PRODUCT_KEY_NOT_SET, id));
-                }
-            });
+        final ProductQuery productQuery = ProductQuery.of()
+                                                      .withPredicates(buildProductKeysQueryPredicate(keysNotCached));
 
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), ProductQuery.of(), productPageConsumer)
-                            .thenAccept(result -> isCached = true)
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), productQuery, this::cacheProductIds)
                             .thenApply(result -> keyToIdCache);
+    }
+
+    private void cacheProductIds(@Nonnull final List<Product> products) {
+        products.forEach(product -> keyToIdCache.put(product.getKey(), product.getId()));
     }
 
     QueryPredicate<Product> buildProductKeysQueryPredicate(@Nonnull final Set<String> productKeys) {
         final List<String> keysSurroundedWithDoubleQuotes = productKeys.stream()
-                                                .map(productKey -> format("\"%s\"", productKey))
-                                                .collect(Collectors.toList());
+                                                                       .filter(StringUtils::isNotBlank)
+                                                                       .map(productKey -> format("\"%s\"", productKey))
+                                                                       .collect(Collectors.toList());
         String keysQueryString = keysSurroundedWithDoubleQuotes.toString();
         // Strip square brackets from list string. For example: ["key1", "key2"] -> "key1", "key2"
         keysQueryString = keysQueryString.substring(1, keysQueryString.length() - 1);
@@ -100,8 +97,8 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
         }
 
         final Function<List<Product>, List<Product>> productPageCallBack = productsPage -> productsPage;
-
         final QueryPredicate<Product> queryPredicate = buildProductKeysQueryPredicate(productKeys);
+
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), ProductQuery.of().withPredicates(queryPredicate),
             productPageCallBack)
                             .handle((fetchedProducts, sphereException) -> {
@@ -113,6 +110,8 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
                                 }
                                 return fetchedProducts.stream()
                                                       .flatMap(List::stream)
+                                                      .peek(product ->
+                                                          keyToIdCache.put(product.getKey(), product.getId()))
                                                       .collect(Collectors.toSet());
                             });
     }
@@ -123,9 +122,15 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
-        final QueryPredicate<Product> queryPredicate = buildProductKeysQueryPredicate(Collections.singleton(key));
+        final QueryPredicate<Product> queryPredicate = buildProductKeysQueryPredicate(singleton(key));
         return syncOptions.getCtpClient().execute(ProductQuery.of().withPredicates(queryPredicate))
-                          .thenApply(PagedResult::head)
+                          .thenApply(productPagedQueryResult -> //Cache after fetch
+                              productPagedQueryResult.head()
+                                                     .map(product -> {
+                                                         keyToIdCache.put(product.getKey(), product.getId());
+                                                         return product;
+                                                     })
+                          )
                           .exceptionally(sphereException -> {
                               syncOptions
                                       .applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
