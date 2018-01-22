@@ -1,8 +1,8 @@
 sourceSets {
     benchmark {
         java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
+            compileClasspath += main.output + test.output + integrationTest.output
+            runtimeClasspath += main.output + test.output + integrationTest.output
             srcDir 'src/benchmark/java'
         }
         resources.srcDir 'src/benchmark/resources'
