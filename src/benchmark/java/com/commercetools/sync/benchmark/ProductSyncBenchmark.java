@@ -1,6 +1,7 @@
 package com.commercetools.sync.benchmark;
 
 
+import com.commercetools.sync.commons.utils.SyncSolutionInfo;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -26,7 +27,8 @@ import java.util.function.Consumer;
 
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.PRODUCT_SYNC;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.VERSION_M8;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.calculateDiff;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
@@ -38,6 +40,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductSyncBenchmark {
@@ -88,7 +91,7 @@ public class ProductSyncBenchmark {
 
     @Test
     public void sync_NewProducts_ShouldCreateProducts() throws IOException {
-        final int numberOfProducts = 10;
+        final int numberOfProducts = 100;
         final List<ProductDraft> productDrafts = buildProductDrafts(numberOfProducts);
 
         // Sync drafts
@@ -102,7 +105,14 @@ public class ProductSyncBenchmark {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
-        saveNewResult(VERSION_M8, PRODUCT_SYNC, CREATES_ONLY, totalTime);
+
+
+        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_ONLY, totalTime);
+        assertThat(diff).isLessThanOrEqualTo(THRESHOLD)
+                        .withFailMessage(format("Diff of benchmark '%e' is longer than expected"
+                            + " threshold of '%e'.", diff, THRESHOLD));
+
+        saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_ONLY, totalTime);
     }
 
     @Nonnull
