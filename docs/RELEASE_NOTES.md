@@ -33,6 +33,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [v1.0.0-M9 -  Jan 22, 2018](#v100-m9----jan-22-2018)
 - [v1.0.0-M8 -  Dec 29, 2017](#v100-m8----dec-29-2017)
 - [v1.0.0-M7 -  Dec 15, 2017](#v100-m7----dec-15-2017)
 - [v1.0.0-M6 -  Dec 5, 2017](#v100-m6----dec-5-2017)
@@ -46,7 +47,13 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <!--
-### v1.0.0-M9 -  Jan 19, 2018
+### v1.0.0-M10 -  Feb 07, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M9...v1.0.0-M10) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M10/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M10)
+-->
+
+### v1.0.0-M9 -  Jan 22, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M8...v1.0.0-M9) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M9/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M9)
@@ -64,8 +71,6 @@
 - **Commons** - Fixed library version in User-Agent headers of JVM SDK clients using the library. Now it is not fetched
  from the JAR manifest but injected by gradle-scripts/set-release-version.gradle. [#227](https://github.com/commercetools/commercetools-sync-java/issues/227)
 
-
--->
 
 ### v1.0.0-M8 -  Dec 29, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M7...v1.0.0-M8) |
