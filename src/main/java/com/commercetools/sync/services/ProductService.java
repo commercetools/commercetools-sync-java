@@ -17,7 +17,7 @@ public interface ProductService {
 
     /**
      * Given a {@code key}, if it is blank (null/empty), a completed future with an empty optional is returned.
-     * This method then checks if the cached map of product keys -&gt; ids contains the key, if it does, then an
+     * This method then checks if the cached map of product keys -&gt; ids contains the key. If it does, then an
      * optional containing the mapped id is returned. If the cache doesn't contain the key; this method attempts to
      * fetch the id of the key from the CTP project, caches it and returns a
      * {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's completion
