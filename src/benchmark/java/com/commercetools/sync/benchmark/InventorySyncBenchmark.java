@@ -9,7 +9,6 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -33,7 +32,7 @@ import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
+
 public class InventorySyncBenchmark {
     @Before
     public void setup() {
