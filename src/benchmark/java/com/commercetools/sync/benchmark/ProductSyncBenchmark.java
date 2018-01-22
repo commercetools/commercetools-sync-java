@@ -103,10 +103,11 @@ public class ProductSyncBenchmark {
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
 
-        assertThat(errorCallBackExceptions).isEmpty();
+
         assertThat(errorCallBackMessages).isEmpty();
 
         assertThat(syncStatistics).hasValues(numberOfProducts, numberOfProducts, 0, 0);
+        assertThat(errorCallBackExceptions).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
 
 
