@@ -12,7 +12,6 @@ import io.sphere.sdk.channels.commands.ChannelCreateCommand;
 import io.sphere.sdk.channels.queries.ChannelQuery;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -25,7 +24,6 @@ import static com.commercetools.sync.integration.inventories.utils.InventoryITUt
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateTargetProject;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
 public class ChannelServiceIT {
     private ChannelService channelService;
     private static final String CHANNEL_KEY = "channel_key";

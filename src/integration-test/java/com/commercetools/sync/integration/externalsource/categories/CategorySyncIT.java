@@ -21,7 +21,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -55,7 +54,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-@Ignore
 public class CategorySyncIT {
     private CategorySync categorySync;
     private static final String oldCategoryKey = "oldCategoryKey";

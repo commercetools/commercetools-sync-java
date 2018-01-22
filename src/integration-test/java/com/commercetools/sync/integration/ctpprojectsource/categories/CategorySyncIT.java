@@ -16,7 +16,6 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -47,7 +46,6 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
 public class CategorySyncIT {
     private CategorySync categorySync;
 

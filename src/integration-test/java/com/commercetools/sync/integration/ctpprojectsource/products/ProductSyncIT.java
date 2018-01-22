@@ -27,7 +27,6 @@ import io.sphere.sdk.taxcategories.TaxCategory;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -70,7 +69,6 @@ import static com.commercetools.sync.products.utils.ProductReferenceReplacementU
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
 public class ProductSyncIT {
     private static ProductType sourceProductType;
     private static ProductType targetProductType;
