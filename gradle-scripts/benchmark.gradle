@@ -14,6 +14,9 @@ configurations {
 }
 
 task benchmark(type: Test) {
+    doFirst{
+        grgit.clone(dir: 'tmp_git_dir/', uri: scmProjectUrl, checkout: true, refToCheckout: '155-benchmark-tests')
+    }
     testClassesDirs = sourceSets.benchmark.output.classesDirs
     classpath = sourceSets.benchmark.runtimeClasspath
     outputs.upToDateWhen { false }
@@ -21,13 +24,11 @@ task benchmark(type: Test) {
 
 task benchmarkCommit() {
     doLast{
-        def grgit = grgit.clone(dir: 'git_temp_dir/', uri: scmProjectUrl,
-                checkout: true, refToCheckout: '155-benchmark-tests')
-        grgit = grgit.open(dir: System.getenv('TRAVIS_BUILD_DIR') + '/tmp_git_dir')
-        grgit.add(patterns: ['benchmarks.json'])
-        grgit.commit(message: 'Add new benchmark result.')
-        grgit.push()
-        grgit.close()
+        def git = grgit.open(dir: System.getenv('TRAVIS_BUILD_DIR') + '/tmp_git_dir')
+        git.add(patterns: ['benchmarks.json'])
+        git.commit(message: 'Add new benchmark result.')
+        git.push()
+        git.close()
     }
 }
 
