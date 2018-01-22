@@ -10,17 +10,19 @@
           138008,
           123954
         ],
-        "average": 125287
+        "average": 125287,
+        "diff": 0
       },
       "updatesOnly": {
         "executionTimes": [],
-        "average": 0
+        "average": 0,
+        "diff": 0
       },
       "mix": {
         "executionTimes": [],
-        "average": 0
-      },
-      "diff": 0
+        "average": 0,
+        "diff": 0
+      }
     },
     "inventorySync": {
       "createsOnly": {
@@ -32,32 +34,36 @@
           53610,
           65323
         ],
-        "average": 59750
+        "average": 59750,
+        "diff": 0
       },
       "updatesOnly": {
         "executionTimes": [],
-        "average": 0
+        "average": 0,
+        "diff": 0
       },
       "mix": {
         "executionTimes": [],
-        "average": 0
-      },
-      "diff": 0
+        "average": 0,
+        "diff": 0
+      }
     },
     "categorySync": {
       "createsOnly": {
         "executionTimes": [],
-        "average": 0
+        "average": 0,
+        "diff": 0
       },
       "updatesOnly": {
         "executionTimes": [],
-        "average": 0
+        "average": 0,
+        "diff": 0
       },
       "mix": {
         "executionTimes": [],
-        "average": 0
-      },
-      "diff": 0
+        "average": 0,
+        "diff": 0
+      }
     }
   }
 }
