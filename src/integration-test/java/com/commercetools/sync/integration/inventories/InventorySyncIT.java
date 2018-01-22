@@ -24,7 +24,6 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -33,6 +32,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -43,7 +43,6 @@ import static com.commercetools.sync.integration.inventories.utils.InventoryITUt
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_1;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_2;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SKU_1;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SKU_2;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_1;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_2;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteChannelsFromTargetAndSource;
@@ -56,7 +55,6 @@ import static com.commercetools.sync.inventories.utils.InventoryReferenceReplace
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 
 /**
  * Contains integration tests of inventory sync.
@@ -111,33 +109,6 @@ public class InventorySyncIT {
             getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);
         assertThat(oldInventoryAfterSync).isNotEmpty();
         assertValues(oldInventoryAfterSync.get(), QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2);
-    }
-
-    @Test
-    @SuppressWarnings("PMD")
-    public void sync_10000NewInventories_ShouldCreateInventories() {
-        //Prepare sync data.
-        final List<InventoryEntryDraft> resourceDrafts = new ArrayList<>();
-        for (int i = 0; i < 10000; i++) {
-            resourceDrafts.add(
-                InventoryEntryDraftBuilder
-                    .of(SKU_2 + i, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, null)
-                    .build());
-        }
-
-
-        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
-        final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
-
-
-        final long now = System.currentTimeMillis();
-        final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(resourceDrafts)
-                                                                             .toCompletableFuture().join();
-        final long later = System.currentTimeMillis();
-        final long totalTime = later - now;
-
-        System.out.println("Syncing 10000 inventories (all creates) took " + totalTime + " milliseconds.");
-        assertThat(inventorySyncStatistics).hasValues(10000, 10000, 0, 0);
     }
 
     @Test

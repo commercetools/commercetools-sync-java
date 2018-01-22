@@ -310,40 +310,6 @@ public class ProductSyncIT {
     }
 
     @Test
-    @SuppressWarnings("PMD")
-    public void sync_10000NewProducts_ShouldCreateProducts() {
-        final List<ProductDraft> batch1 = new ArrayList<>();
-        for (int i = 0; i < 10000; i++) {
-            batch1.add(
-                createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-                    ProductType.referenceOfId(productType.getKey()))
-                    .taxCategory(null)
-                    .state(null)
-                    .categories(new ArrayList<>())
-                    .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
-                    .key("productKey_" + i)
-                    .slug(LocalizedString.of(Locale.ENGLISH, "slug" + i))
-                    .masterVariant(ProductVariantDraftBuilder.of().key("newV" + i).build())
-                    .build());
-        }
-
-
-        final ProductSync productSync = new ProductSync(syncOptions);
-
-        final long now = System.currentTimeMillis();
-        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(batch1));
-        final long later = System.currentTimeMillis();
-        final long totalTime = later - now;
-
-        System.out.println("Syncing 10000 products (all creates) took " + totalTime + " milliseconds.");
-        assertThat(syncStatistics).hasValues(10000, 10000, 0, 0);
-
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(warningCallBackMessages).isEmpty();
-    }
-
-    @Test
     public void sync_withSingleBatchSyncing_ShouldSync() {
         // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
