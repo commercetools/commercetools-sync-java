@@ -12,7 +12,7 @@ jobs:
   include:
     - stage: benchmark
       #if: branch = master
-      script: ./gradlew clean benchmark benchmarkCommit
+      script: ./gradlew clean setReleaseVersion benchmark benchmarkCommit
     - stage: full build
       script: ./gradlew clean setReleaseVersion build
 # The before_cache and the cache steps cache the gradle installation on travis.
