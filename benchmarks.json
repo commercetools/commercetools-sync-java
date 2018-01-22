@@ -1,0 +1,67 @@
+{
+  "v1.0.0-M8": {
+    "productSync": {
+      "createsOnly": {
+        "executionTimes": [
+          118754,
+          116732,
+          122780,
+          131493,
+          138008,
+          123954
+        ],
+        "average": 125287
+      },
+      "updatesOnly": {
+        "executionTimes": [],
+        "average": 0
+      },
+      "mix": {
+        "executionTimes": [],
+        "average": 0
+      },
+      "diff": 0
+    },
+    "inventorySync": {
+      "createsOnly": {
+        "executionTimes": [
+          59809,
+          61849,
+          54711,
+          63200,
+          53610,
+          65323
+        ],
+        "average": 59750
+      },
+      "updatesOnly": {
+        "executionTimes": [],
+        "average": 0
+      },
+      "mix": {
+        "executionTimes": [],
+        "average": 0
+      },
+      "diff": 0
+    },
+    "categorySync": {
+      "createsOnly": {
+        "executionTimes": [
+          1891,
+          1891.0,
+          1891.0
+        ],
+        "average": 0
+      },
+      "updatesOnly": {
+        "executionTimes": [],
+        "average": 0
+      },
+      "mix": {
+        "executionTimes": [],
+        "average": 0
+      },
+      "diff": 0
+    }
+  }
+}
