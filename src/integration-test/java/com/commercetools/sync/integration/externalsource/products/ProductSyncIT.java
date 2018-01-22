@@ -310,6 +310,74 @@ public class ProductSyncIT {
     }
 
     @Test
+    public void sync_withMultipleBatchSyncing_ShouldSync() {
+        // Prepare existing products with keys: productKey1, productKey2, productKey3.
+        final ProductDraft key2Draft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH,
+            productType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
+            categoryReferencesWithIds, product.getMasterData().getStaged().getCategoryOrderHints());
+        executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(key2Draft)));
+
+        final ProductDraft key3Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference())
+            .categories(new ArrayList<>())
+            .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
+            .key("productKey3")
+            .slug(LocalizedString.of(Locale.ENGLISH, "slug3"))
+            .masterVariant(ProductVariantDraftBuilder.of().key("v3").build())
+            .taxCategory(TaxCategory.referenceOfId(targetTaxCategory.getId()))
+            .build();
+        executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(key3Draft)));
+
+
+        // Prepare batches from external source
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+            ProductType.reference(productType.getKey()), TaxCategory.referenceOfId(targetTaxCategory.getKey()),
+            State.referenceOfId(targetProductState.getKey()), categoryReferencesWithKeys,
+            categoryOrderHintsWithKeys);
+
+        final List<ProductDraft> batch1 = new ArrayList<>();
+        batch1.add(productDraft);
+
+        final ProductDraft key4Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+            ProductType.referenceOfId(productType.getKey()))
+            .taxCategory(null)
+            .state(null)
+            .categories(new ArrayList<>())
+            .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
+            .key("productKey4")
+            .slug(LocalizedString.of(Locale.ENGLISH, "slug4"))
+            .masterVariant(ProductVariantDraftBuilder.of().key("v4").sku("sku4").build())
+            .build();
+
+        final List<ProductDraft> batch2 = new ArrayList<>();
+        batch2.add(key4Draft);
+
+        final ProductDraft key3DraftNewSlug = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+            ProductType.referenceOfId(productType.getKey()))
+            .taxCategory(null)
+            .state(null)
+            .categories(new ArrayList<>())
+            .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
+            .key("productKey3")
+            .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
+            .masterVariant(ProductVariantDraftBuilder.of().key("v3").sku("sku3").build())
+            .build();
+
+        final List<ProductDraft> batch3 = new ArrayList<>();
+        batch3.add(key3DraftNewSlug);
+
+        final ProductSync productSync = new ProductSync(syncOptions);
+        final ProductSyncStatistics syncStatistics =
+            executeBlocking(productSync.sync(batch1)
+                                       .thenCompose(result -> productSync.sync(batch2))
+                                       .thenCompose(result -> productSync.sync(batch3)));
+
+        assertThat(syncStatistics).hasValues(3, 1, 2, 0);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Test
     public void sync_withSingleBatchSyncing_ShouldSync() {
         // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
