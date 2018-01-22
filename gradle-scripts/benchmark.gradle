@@ -15,7 +15,7 @@ configurations {
 
 task benchmark(type: Test) {
     doFirst{
-        grgit.clone(dir: 'tmp_git_dir/', uri: scmProjectUrl, checkout: true, refToCheckout: System.getenv('TRAVIS_BRANCH'))
+        grgit.clone(dir: 'tmp_git_dir/', uri: scmProjectUrl, checkout: true, refToCheckout: '155-benchmark-tests')
     }
     testClassesDirs = sourceSets.benchmark.output.classesDirs
     classpath = sourceSets.benchmark.runtimeClasspath
