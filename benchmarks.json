@@ -46,11 +46,7 @@
     },
     "categorySync": {
       "createsOnly": {
-        "executionTimes": [
-          1891,
-          1891.0,
-          1891.0
-        ],
+        "executionTimes": [],
         "average": 0
       },
       "updatesOnly": {
