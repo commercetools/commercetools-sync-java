@@ -118,8 +118,7 @@ public class ProductSyncBenchmark {
     @Nonnull
     private List<ProductDraft> buildProductDrafts(final int numberOfProducts) {
         final List<ProductDraft> productDrafts = new ArrayList<>();
-        final Reference<ProductType> draftsProductType = ProductType
-            .referenceOfId(ProductSyncBenchmark.productType.getKey());
+        final Reference<ProductType> draftsProductType = ProductType.referenceOfId(productType.getKey());
         for (int i = 0; i < numberOfProducts; i++) {
             final ProductVariantDraft masterVariantDraft = ProductVariantDraftBuilder.of()
                                                                                      .key("masterVariantKey_" + i)
