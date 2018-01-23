@@ -52,7 +52,7 @@ public class InventorySyncBenchmark {
         deleteSupplyChannels(CTP_TARGET_CLIENT);
     }
 
-
+    @Ignore
     @Test
     public void sync_NewInventories_ShouldCreateInventories() throws IOException {
         final List<InventoryEntryDraft> inventoryEntryDrafts = buildInventoryDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
