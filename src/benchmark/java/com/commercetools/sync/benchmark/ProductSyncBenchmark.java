@@ -114,9 +114,10 @@ public class ProductSyncBenchmark {
 
 
         final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_ONLY, totalTime);
-        assertThat(diff).isLessThanOrEqualTo(THRESHOLD)
-                        .withFailMessage(format("Diff of benchmark '%e' is longer than expected"
-                            + " threshold of '%e'.", diff, THRESHOLD));
+        assertThat(diff)
+            .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%e'.",
+                diff, THRESHOLD))
+            .isLessThanOrEqualTo(THRESHOLD);
 
         saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_ONLY, totalTime);
     }
@@ -151,9 +152,9 @@ public class ProductSyncBenchmark {
 
 
         final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_ONLY, totalTime);
-        assertThat(diff).isLessThanOrEqualTo(THRESHOLD)
-                        .withFailMessage(format("Diff of benchmark '%e' is longer than expected"
-                            + " threshold of '%e'.", diff, THRESHOLD));
+        assertThat(diff).withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%e'.",
+            diff, THRESHOLD))
+                        .isLessThanOrEqualTo(THRESHOLD);
 
         saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, UPDATES_ONLY, totalTime);
     }
@@ -191,9 +192,9 @@ public class ProductSyncBenchmark {
 
 
         final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_ONLY, totalTime);
-        assertThat(diff).isLessThanOrEqualTo(THRESHOLD)
-                        .withFailMessage(format("Diff of benchmark '%e' is longer than expected"
-                            + " threshold of '%e'.", diff, THRESHOLD));
+        assertThat(diff).withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%e'.",
+            diff, THRESHOLD))
+                        .isLessThanOrEqualTo(THRESHOLD);
 
         saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_AND_UPDATES, totalTime);
     }
