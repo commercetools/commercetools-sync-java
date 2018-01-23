@@ -1,1 +1,122 @@
-{"v1.0.0-M8":{"productSync":{"createsOnly":{"executionTimes":[118754,116732,122780,131493,138008,123954],"average":125287,"diff":0},"updatesOnly":{"executionTimes":[],"average":0,"diff":0},"mix":{"executionTimes":[],"average":0,"diff":0}},"inventorySync":{"createsOnly":{"executionTimes":[59809,61849,54711,63200,53610,65323],"average":59750,"diff":0},"updatesOnly":{"executionTimes":[],"average":0,"diff":0},"mix":{"executionTimes":[],"average":0,"diff":0}},"categorySync":{"createsOnly":{"executionTimes":[],"average":0,"diff":0},"updatesOnly":{"executionTimes":[],"average":0,"diff":0},"mix":{"executionTimes":[],"average":0,"diff":0}}},"dev-version":{"productSync":{"createsOnly":{"executionTimes":[127881.0,122000.0,121091.0,121875.0,124817.0,119727.0,130149.0,671.0],"average":108526.375,"diff":-16760.625},"updatesOnly":{"executionTimes":[20000.0],"average":20000.0,"diff":20000.0},"mix":{"executionTimes":[70000.0],"average":70000.0,"diff":70000.0}},"inventorySync":{"createsOnly":{"executionTimes":[58248.0,53114.0,55309.0,54155.0,66849.0,75932.0,51329.0,467.0],"average":51925.375,"diff":-7824.625},"updatesOnly":{"executionTimes":[50000.0],"average":50000.0,"diff":50000.0},"mix":{"executionTimes":[30000.0],"average":30000.0,"diff":30000.0}},"categorySync":{"createsOnly":{"executionTimes":[20000.0],"average":20000.0,"diff":20000.0},"updatesOnly":{"executionTimes":[10000.0],"average":10000.0,"diff":10000.0},"mix":{"executionTimes":[30000.0],"average":30000.0,"diff":30000.0}}}}
+{
+  "v1.0.0-M8": {
+    "productSync": {
+      "createsOnly": {
+        "executionTimes": [
+          118754,
+          116732,
+          122780,
+          131493,
+          138008,
+          123954
+        ],
+        "average": 125287,
+        "diff": 0
+      },
+      "updatesOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "mix": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      }
+    },
+    "inventorySync": {
+      "createsOnly": {
+        "executionTimes": [
+          59809,
+          61849,
+          54711,
+          63200,
+          53610,
+          65323
+        ],
+        "average": 59750,
+        "diff": 0
+      },
+      "updatesOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "mix": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      }
+    },
+    "categorySync": {
+      "createsOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "updatesOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "mix": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      }
+    }
+  },
+  "dev-version": {
+    "productSync": {
+      "createsOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "updatesOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "mix": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      }
+    },
+    "inventorySync": {
+      "createsOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "updatesOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "mix": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      }
+    },
+    "categorySync": {
+      "createsOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "updatesOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "mix": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      }
+    }
+  }
+}
