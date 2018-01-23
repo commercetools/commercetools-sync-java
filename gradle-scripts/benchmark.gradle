@@ -24,8 +24,8 @@ task benchmark(type: Test) {
 
 task benchmarkCommit() {
     doLast{
-        def git = grgit.open(dir: System.getenv('TRAVIS_BUILD_DIR') + '/tmp_git_dir/benchmarks/')
-        git.add(patterns: ['benchmarks.json'])
+        def git = grgit.open(dir: System.getenv('TRAVIS_BUILD_DIR') + '/tmp_git_dir')
+        git.add(patterns: ['benchmarks/benchmarks.json'])
         git.commit(message: '#155: Add new benchmark result.')
         git.push()
         git.close()
