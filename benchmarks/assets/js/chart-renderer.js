@@ -107,7 +107,7 @@ window.onload = function () {
             },
             title: {
                 display: true,
-                text: 'Benchmarks',
+                text: 'commercetools-sync-java Benchmarks',
                 fontColor: 'white',
                 fontSize: 20
             },
