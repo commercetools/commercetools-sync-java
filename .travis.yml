@@ -6,7 +6,19 @@ jdk:
 install: true # skips travis' default installation step which executes gradle assemble.
 jobs:
   include:
-    - stage: benchmark
+    - stage: benchmark#1
+      #if: branch = master
+      script: ./gradlew clean setReleaseVersion benchmark benchmarkCommit
+    - stage: benchmark#2
+      #if: branch = master
+      script: ./gradlew clean setReleaseVersion benchmark benchmarkCommit
+    - stage: benchmark#3
+      #if: branch = master
+      script: ./gradlew clean setReleaseVersion benchmark benchmarkCommit
+    - stage: benchmark#4
+      #if: branch = master
+      script: ./gradlew clean setReleaseVersion benchmark benchmarkCommit
+    - stage: benchmark#5
       #if: branch = master
       script: ./gradlew clean setReleaseVersion benchmark benchmarkCommit
     - stage: full build
