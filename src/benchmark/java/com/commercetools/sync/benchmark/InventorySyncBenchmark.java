@@ -9,6 +9,7 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -76,12 +77,14 @@ public class InventorySyncBenchmark {
         saveNewResult(SyncSolutionInfo.LIB_VERSION, INVENTORY_SYNC, CREATES_ONLY, totalTime);
     }
 
+    @Ignore
     @Test
     public void sync_ExistingInventories_ShouldUpdateInventories() throws IOException {
         // TODO: SHOULD BE IMPLEMENTED.
         saveNewResult(SyncSolutionInfo.LIB_VERSION, INVENTORY_SYNC, UPDATES_ONLY, 50000);
     }
 
+    @Ignore
     @Test
     public void sync_WithSomeExistingInventories_ShouldSyncInventories() throws IOException {
         // TODO: SHOULD BE IMPLEMENTED.

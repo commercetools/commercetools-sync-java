@@ -1,6 +1,7 @@
 package com.commercetools.sync.benchmark;
 
 import com.commercetools.sync.commons.utils.SyncSolutionInfo;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -10,7 +11,7 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATE
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
-
+@Ignore
 public class CategorySyncBenchmark {
 
     @Test

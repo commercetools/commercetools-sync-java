@@ -15,6 +15,7 @@ import io.sphere.sdk.producttypes.ProductType;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -121,12 +122,14 @@ public class ProductSyncBenchmark {
         saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_ONLY, totalTime);
     }
 
+    @Ignore
     @Test
     public void sync_ExistingProducts_ShouldUpdateProducts() throws IOException {
         // TODO: SHOULD BE IMPLEMENTED.
         saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, UPDATES_ONLY, 20000);
     }
 
+    @Ignore
     @Test
     public void sync_WithSomeExistingProducts_ShouldSyncProducts() throws IOException {
         // TODO: SHOULD BE IMPLEMENTED.
