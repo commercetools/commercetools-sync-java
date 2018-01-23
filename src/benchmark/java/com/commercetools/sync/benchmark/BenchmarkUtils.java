@@ -33,7 +33,7 @@ public class BenchmarkUtils {
     public static final String EXECUTION_TIMES = "executionTimes";
     public static final String AVERAGE = "average";
     public static final String DIFF = "diff";
-    public static double THRESHOLD = 6000; //6 seconds in milliseconds
+    public static double THRESHOLD = 20000; //20 seconds in milliseconds
     public static int NUMBER_OF_RESOURCE_UNDER_TEST = 10000;
 
 
