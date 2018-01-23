@@ -1,7 +1,6 @@
 package com.commercetools.sync.integration.commons.utils;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sphere.sdk.client.SphereClient;
@@ -21,6 +20,7 @@ import java.util.stream.Stream;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static io.sphere.sdk.queries.QueryExecutionUtils.queryAll;
 
 public final class ITUtils {
 
@@ -69,17 +69,14 @@ public final class ITUtils {
         @Nonnull final SphereClient ctpClient,
         @Nonnull final Supplier<QueryDsl<T, C>> queryRequestSupplier,
         @Nonnull final Function<T, SphereRequest<T>> resourceMapper) {
+        queryAll(ctpClient, queryRequestSupplier.get(), resourceMapper)
+            .thenApply(sphereRequests -> sphereRequests.stream()
+                                                       .map(ctpClient::execute)
+                                                       .map(CompletionStage::toCompletableFuture))
+            .thenApply(stream -> stream.toArray(CompletableFuture[]::new))
+            .thenCompose(CompletableFuture::allOf)
+            .toCompletableFuture().join();
+    }
 
-        final Function<List<T>, Stream<CompletableFuture<T>>> pageMapper =
-            pageElements -> pageElements.stream()
-                                        .map(resourceMapper)
-                                        .map(ctpClient::execute)
-                                        .map(CompletionStage::toCompletableFuture);
-
-        CtpQueryUtils.queryAll(ctpClient, queryRequestSupplier.get(), pageMapper)
-                     .thenApply(list -> list.stream().flatMap(Function.identity()))
-                     .thenApply(stream -> stream.toArray(CompletableFuture[]::new))
-                     .thenCompose(CompletableFuture::allOf)
-                     .toCompletableFuture().join();
     }
 }
