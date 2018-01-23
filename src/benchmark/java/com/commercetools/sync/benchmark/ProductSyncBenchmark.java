@@ -26,7 +26,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
@@ -125,26 +124,23 @@ public class ProductSyncBenchmark {
     @Test
     public void sync_ExistingProducts_ShouldUpdateProducts() throws IOException {
         final List<ProductDraft> productDrafts = buildProductDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
-        // Create drafts to target project
+        // Create drafts to target project with different slugs
         CompletableFuture.allOf(productDrafts.stream()
+                                             .map(ProductDraftBuilder::of)
+                                             .map(builder -> builder.slug(
+                                                 ofEnglish(builder.getSlug().get(ENGLISH) + "_old")))
+                                             .map(builder -> builder.productType(productType.toReference()))
+                                             .map(ProductDraftBuilder::build)
                                              .map(draft -> CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(draft)))
                                              .map(CompletionStage::toCompletableFuture)
                                              .toArray(CompletableFuture[]::new))
                          .join();
 
-        // Create same drafts but with different slugs
-        final List<ProductDraft> newDrafts = productDrafts.stream()
-                                                           .map(ProductDraftBuilder::of)
-                                                           .map(builder -> builder.slug(
-                                                               ofEnglish(builder.getSlug().get(ENGLISH) + "_new")))
-                                                           .map(ProductDraftBuilder::build)
-                                                           .collect(Collectors.toList());
-
         // Sync new drafts
         final ProductSync productSync = new ProductSync(syncOptions);
 
         final long beforeSyncTime = System.currentTimeMillis();
-        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(newDrafts));
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(productDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
 
@@ -167,24 +163,18 @@ public class ProductSyncBenchmark {
         final List<ProductDraft> productDrafts = buildProductDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
         final int halfNumberOfDrafts = productDrafts.size() / 2;
         final List<ProductDraft> firstHalf = productDrafts.subList(0, halfNumberOfDrafts);
-        final List<ProductDraft> secondHalf = productDrafts.subList(halfNumberOfDrafts, productDrafts.size());
 
-
-        // Create drafts to target project
+        // Create first half of drafts to target project with different slugs
         CompletableFuture.allOf(firstHalf.stream()
+                                             .map(ProductDraftBuilder::of)
+                                             .map(builder -> builder.slug(
+                                                 ofEnglish(builder.getSlug().get(ENGLISH) + "_old")))
+                                             .map(builder -> builder.productType(productType.toReference()))
+                                             .map(ProductDraftBuilder::build)
                                              .map(draft -> CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(draft)))
                                              .map(CompletionStage::toCompletableFuture)
                                              .toArray(CompletableFuture[]::new))
                          .join();
-
-        // Create same first half drafts but with different slugs and exactly similar second half.
-        final List<ProductDraft> newDrafts = firstHalf.stream()
-                                                      .map(ProductDraftBuilder::of)
-                                                      .map(builder -> builder.slug(
-                                                          ofEnglish(builder.getSlug().get(ENGLISH) + "_new")))
-                                                      .map(ProductDraftBuilder::build)
-                                                      .collect(Collectors.toList());
-        newDrafts.addAll(secondHalf);
 
         // Sync new drafts
         final ProductSync productSync = new ProductSync(syncOptions);
