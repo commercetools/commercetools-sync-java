@@ -11,20 +11,22 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.producttypes.ProductType;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
@@ -46,6 +48,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.lang.String.format;
+import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductSyncBenchmark {
@@ -58,7 +61,7 @@ public class ProductSyncBenchmark {
     @BeforeClass
     public static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
-        createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
+        createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
@@ -105,12 +108,9 @@ public class ProductSyncBenchmark {
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(productDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-
-
-        assertThat(errorCallBackMessages).isEmpty();
-
         assertThat(syncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
 
 
@@ -122,18 +122,90 @@ public class ProductSyncBenchmark {
         saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_ONLY, totalTime);
     }
 
-    @Ignore
     @Test
     public void sync_ExistingProducts_ShouldUpdateProducts() throws IOException {
-        // TODO: SHOULD BE IMPLEMENTED.
-        saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, UPDATES_ONLY, 20000);
+        final List<ProductDraft> productDrafts = buildProductDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
+        // Create drafts to target project
+        CompletableFuture.allOf(productDrafts.stream()
+                                             .map(draft -> CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(draft)))
+                                             .map(CompletionStage::toCompletableFuture)
+                                             .toArray(CompletableFuture[]::new))
+                         .join();
+
+        // Create same drafts but with different slugs
+        final List<ProductDraft> newDrafts = productDrafts.stream()
+                                                           .map(ProductDraftBuilder::of)
+                                                           .map(builder -> builder.slug(
+                                                               ofEnglish(builder.getSlug().get(ENGLISH) + "_new")))
+                                                           .map(ProductDraftBuilder::build)
+                                                           .collect(Collectors.toList());
+
+        // Sync new drafts
+        final ProductSync productSync = new ProductSync(syncOptions);
+
+        final long beforeSyncTime = System.currentTimeMillis();
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(newDrafts));
+        final long totalTime = System.currentTimeMillis() - beforeSyncTime;
+
+
+        assertThat(syncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, 0, NUMBER_OF_RESOURCE_UNDER_TEST, 0);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+
+
+        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_ONLY, totalTime);
+        assertThat(diff).isLessThanOrEqualTo(THRESHOLD)
+                        .withFailMessage(format("Diff of benchmark '%e' is longer than expected"
+                            + " threshold of '%e'.", diff, THRESHOLD));
+
+        saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, UPDATES_ONLY, totalTime);
     }
 
-    @Ignore
     @Test
     public void sync_WithSomeExistingProducts_ShouldSyncProducts() throws IOException {
-        // TODO: SHOULD BE IMPLEMENTED.
-        saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_AND_UPDATES, 70000);
+        final List<ProductDraft> productDrafts = buildProductDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
+        final int halfNumberOfDrafts = productDrafts.size() / 2;
+        final List<ProductDraft> firstHalf = productDrafts.subList(0, halfNumberOfDrafts);
+        final List<ProductDraft> secondHalf = productDrafts.subList(halfNumberOfDrafts, productDrafts.size());
+
+
+        // Create drafts to target project
+        CompletableFuture.allOf(firstHalf.stream()
+                                             .map(draft -> CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(draft)))
+                                             .map(CompletionStage::toCompletableFuture)
+                                             .toArray(CompletableFuture[]::new))
+                         .join();
+
+        // Create same first half drafts but with different slugs and exactly similar second half.
+        final List<ProductDraft> newDrafts = firstHalf.stream()
+                                                      .map(ProductDraftBuilder::of)
+                                                      .map(builder -> builder.slug(
+                                                          ofEnglish(builder.getSlug().get(ENGLISH) + "_new")))
+                                                      .map(ProductDraftBuilder::build)
+                                                      .collect(Collectors.toList());
+        newDrafts.addAll(secondHalf);
+
+        // Sync new drafts
+        final ProductSync productSync = new ProductSync(syncOptions);
+
+        final long beforeSyncTime = System.currentTimeMillis();
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(productDrafts));
+        final long totalTime = System.currentTimeMillis() - beforeSyncTime;
+
+
+        assertThat(syncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, halfNumberOfDrafts, halfNumberOfDrafts, 0);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+
+
+        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_ONLY, totalTime);
+        assertThat(diff).isLessThanOrEqualTo(THRESHOLD)
+                        .withFailMessage(format("Diff of benchmark '%e' is longer than expected"
+                            + " threshold of '%e'.", diff, THRESHOLD));
+
+        saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_AND_UPDATES, totalTime);
     }
 
     @Nonnull
