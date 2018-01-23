@@ -21,6 +21,7 @@ import java.util.List;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.INVENTORY_SYNC;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.calculateDiff;
@@ -53,8 +54,7 @@ public class InventorySyncBenchmark {
 
     @Test
     public void sync_NewInventories_ShouldCreateInventories() throws IOException {
-        final int numberOfInventories = 10;
-        final List<InventoryEntryDraft> inventoryEntryDrafts = buildInventoryDrafts(numberOfInventories);
+        final List<InventoryEntryDraft> inventoryEntryDrafts = buildInventoryDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
 
 
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -67,7 +67,7 @@ public class InventorySyncBenchmark {
             executeBlocking(inventorySync.sync(inventoryEntryDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSync;
 
-        assertThat(inventorySyncStatistics).hasValues(numberOfInventories, numberOfInventories, 0, 0);
+        assertThat(inventorySyncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
 
         final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, INVENTORY_SYNC, CREATES_ONLY, totalTime);
         assertThat(diff).isLessThanOrEqualTo(THRESHOLD)

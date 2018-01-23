@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.PRODUCT_SYNC;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
@@ -94,8 +95,7 @@ public class ProductSyncBenchmark {
 
     @Test
     public void sync_NewProducts_ShouldCreateProducts() throws IOException {
-        final int numberOfProducts = 10;
-        final List<ProductDraft> productDrafts = buildProductDrafts(numberOfProducts);
+        final List<ProductDraft> productDrafts = buildProductDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
 
         // Sync drafts
         final ProductSync productSync = new ProductSync(syncOptions);
@@ -108,7 +108,7 @@ public class ProductSyncBenchmark {
 
         assertThat(errorCallBackMessages).isEmpty();
 
-        assertThat(syncStatistics).hasValues(numberOfProducts, numberOfProducts, 0, 0);
+        assertThat(syncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
 
