@@ -76,7 +76,7 @@ public final class ITUtils {
             .toCompletableFuture().join();
     }
 
-    public static <T extends Resource, C extends QueryDsl<T, C>> void queryAndApplyFuture(
+    public static <T extends Resource, C extends QueryDsl<T, C>> void queryAndCompose(
         @Nonnull final SphereClient ctpClient,
         @Nonnull final Supplier<QueryDsl<T, C>> queryRequestSupplier,
         @Nonnull final Function<T, CompletionStage> resourceMapper) {
