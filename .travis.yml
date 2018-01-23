@@ -7,19 +7,19 @@ install: true # skips travis' default installation step which executes gradle as
 jobs:
   include:
     - stage: benchmark#1
-      #if: branch = master
+      #if: tag IS present TODO: THIS SHOULD BE COMMENTED OUT AFTER MERGING. (JUST FOR TESTING)
       script: ./gradlew clean setReleaseVersion benchmark benchmarkCommit
     - stage: benchmark#2
-      #if: branch = master
+      if: tag IS present
       script: ./gradlew clean setReleaseVersion benchmark benchmarkCommit
     - stage: benchmark#3
-      #if: branch = master
+      if: tag IS present
       script: ./gradlew clean setReleaseVersion benchmark benchmarkCommit
     - stage: benchmark#4
-      #if: branch = master
+      if: tag IS present
       script: ./gradlew clean setReleaseVersion benchmark benchmarkCommit
     - stage: benchmark#5
-      #if: branch = master
+      if: tag IS present
       script: ./gradlew clean setReleaseVersion benchmark benchmarkCommit
     - stage: full build
       script: ./gradlew clean setReleaseVersion build
