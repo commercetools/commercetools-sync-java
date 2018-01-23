@@ -25,9 +25,11 @@ import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.PRODUCT_SYNC;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.calculateDiff;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
@@ -117,6 +119,18 @@ public class ProductSyncBenchmark {
                             + " threshold of '%e'.", diff, THRESHOLD));
 
         saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_ONLY, totalTime);
+    }
+
+    @Test
+    public void sync_ExistingProducts_ShouldUpdateProducts() throws IOException {
+        // TODO: SHOULD BE IMPLEMENTED.
+        saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, UPDATES_ONLY, 20000);
+    }
+
+    @Test
+    public void sync_WithSomeExistingProducts_ShouldSyncProducts() throws IOException {
+        // TODO: SHOULD BE IMPLEMENTED.
+        saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_AND_UPDATES, 70000);
     }
 
     @Nonnull

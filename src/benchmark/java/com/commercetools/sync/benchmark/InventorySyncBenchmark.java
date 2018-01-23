@@ -18,9 +18,11 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.INVENTORY_SYNC;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.calculateDiff;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
@@ -72,6 +74,18 @@ public class InventorySyncBenchmark {
                         .withFailMessage(format("Diff of benchmark '%e' is longer than expected"
                             + " threshold of '%e'.", diff, THRESHOLD));
         saveNewResult(SyncSolutionInfo.LIB_VERSION, INVENTORY_SYNC, CREATES_ONLY, totalTime);
+    }
+
+    @Test
+    public void sync_ExistingInventories_ShouldUpdateInventories() throws IOException {
+        // TODO: SHOULD BE IMPLEMENTED.
+        saveNewResult(SyncSolutionInfo.LIB_VERSION, INVENTORY_SYNC, UPDATES_ONLY, 50000);
+    }
+
+    @Test
+    public void sync_WithSomeExistingInventories_ShouldSyncInventories() throws IOException {
+        // TODO: SHOULD BE IMPLEMENTED.
+        saveNewResult(SyncSolutionInfo.LIB_VERSION, INVENTORY_SYNC, CREATES_AND_UPDATES, 30000);
     }
 
     @Nonnull
