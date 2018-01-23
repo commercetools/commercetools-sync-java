@@ -94,7 +94,7 @@ public class ProductSyncBenchmark {
 
     @Test
     public void sync_NewProducts_ShouldCreateProducts() throws IOException {
-        final int numberOfProducts = 10000;
+        final int numberOfProducts = 10;
         final List<ProductDraft> productDrafts = buildProductDrafts(numberOfProducts);
 
         // Sync drafts

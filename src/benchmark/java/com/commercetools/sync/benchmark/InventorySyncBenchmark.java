@@ -53,7 +53,7 @@ public class InventorySyncBenchmark {
 
     @Test
     public void sync_NewInventories_ShouldCreateInventories() throws IOException {
-        final int numberOfInventories = 10000;
+        final int numberOfInventories = 10;
         final List<InventoryEntryDraft> inventoryEntryDrafts = buildInventoryDrafts(numberOfInventories);
 
 
