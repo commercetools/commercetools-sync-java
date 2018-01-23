@@ -31,5 +31,3 @@ task benchmarkCommit() {
         git.close()
     }
 }
-
-benchmarkCommit.mustRunAfter benchmark
