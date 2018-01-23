@@ -15,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -71,9 +72,7 @@ public final class ITUtils {
             .thenApply(sphereRequests -> sphereRequests.stream()
                                                        .map(ctpClient::execute)
                                                        .map(CompletionStage::toCompletableFuture))
-            .thenApply(stream -> stream.toArray(CompletableFuture[]::new))
-            .thenCompose(CompletableFuture::allOf)
-            .toCompletableFuture().join();
+            .thenAccept(ITUtils::joinFutureStream);
     }
 
     public static <T extends Resource, C extends QueryDsl<T, C>> void queryAndCompose(
@@ -82,8 +81,11 @@ public final class ITUtils {
         @Nonnull final Function<T, CompletionStage> resourceMapper) {
         queryAll(ctpClient, queryRequestSupplier.get(), resourceMapper)
             .thenApply(stage -> stage.stream().map(CompletionStage::toCompletableFuture))
-            .thenApply(stream -> stream.toArray(CompletableFuture[]::new))
-            .thenCompose(CompletableFuture::allOf)
-            .toCompletableFuture().join();
+            .thenAccept(ITUtils::joinFutureStream);
+    }
+
+    private static <T> void joinFutureStream(@Nonnull final Stream<CompletableFuture<T>> futureStream) {
+        CompletableFuture.allOf(futureStream.toArray(CompletableFuture[]::new))
+                         .toCompletableFuture().join();
     }
 }
