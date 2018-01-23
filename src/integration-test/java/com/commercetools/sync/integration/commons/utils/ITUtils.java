@@ -11,12 +11,10 @@ import io.sphere.sdk.types.commands.TypeDeleteCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -78,5 +76,14 @@ public final class ITUtils {
             .toCompletableFuture().join();
     }
 
+    public static <T extends Resource, C extends QueryDsl<T, C>> void queryAndApplyFuture(
+        @Nonnull final SphereClient ctpClient,
+        @Nonnull final Supplier<QueryDsl<T, C>> queryRequestSupplier,
+        @Nonnull final Function<T, CompletionStage> resourceMapper) {
+        queryAll(ctpClient, queryRequestSupplier.get(), resourceMapper)
+            .thenApply(stage -> stage.stream().map(CompletionStage::toCompletableFuture))
+            .thenApply(stream -> stream.toArray(CompletableFuture[]::new))
+            .thenCompose(CompletableFuture::allOf)
+            .toCompletableFuture().join();
     }
 }
