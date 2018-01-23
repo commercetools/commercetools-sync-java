@@ -22,9 +22,8 @@ public class BenchmarkUtils {
     public static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
     public static final String BENCHMARK_RESULTS_FILE_NAME = "benchmarks.json";
     public static final String BENCHMARK_RESULTS_FILE_DIR = ofNullable(System.getenv("TRAVIS_BUILD_DIR"))
-        .map(path -> path + "/tmp_git_dir/").orElse("");
+        .map(path -> path + "/tmp_git_dir/benchmarks/").orElse("");
     public static final String BENCHMARK_RESULTS_FILE_PATH = BENCHMARK_RESULTS_FILE_DIR + BENCHMARK_RESULTS_FILE_NAME;
-    public static final String VERSION_M8 = "v1.0.0-M8";
     public static final String PRODUCT_SYNC = "productSync";
     public static final String INVENTORY_SYNC = "inventorySync";
     public static final String CATEGORY_SYNC = "categorySync";
