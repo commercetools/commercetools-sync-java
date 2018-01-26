@@ -7,5 +7,7 @@
 <suppressions>
     <!-- Suppressions for testing code -->
     <suppress checks="JavadocMethod"
-              files="[/\\]src[/\\]test[/\\]java[/\\]|[/\\]src[/\\]integration-test[/\\]java[/\\]"/>
+              files="[/\\]src[/\\]test[/\\]java[/\\]|
+              [/\\]src[/\\]integration-test[/\\]java[/\\]|
+              [/\\]src[/\\]benchmark[/\\]java[/\\]"/>
 </suppressions>
