@@ -7,6 +7,9 @@ import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
+import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
+import io.sphere.sdk.queries.PagedQueryResult;
+import io.sphere.sdk.queries.QueryPredicate;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -68,12 +71,35 @@ public class InventorySyncBenchmark {
             executeBlocking(inventorySync.sync(inventoryEntryDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSync;
 
-        assertThat(inventorySyncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
 
+        // Caclulate sync time and assert on threshold
         final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, INVENTORY_SYNC, CREATES_ONLY, totalTime);
         assertThat(diff).isLessThanOrEqualTo(THRESHOLD)
                         .withFailMessage(format("Diff of benchmark '%e' is longer than expected"
                             + " threshold of '%e'.", diff, THRESHOLD));
+
+        // Assert actual state of CTP project (number of updated inventories)
+        assertThat(CTP_TARGET_CLIENT.execute(InventoryEntryQuery.of()
+                                                                .withPredicates(QueryPredicate.of("version = \"2\"")))
+                                    .thenApply(PagedQueryResult::getTotal)
+                                    .thenApply(Long::intValue)
+                                    .toCompletableFuture())
+            .withFailMessage("Wrong total number of existing inventories with version \"2\" on CTP project")
+            .isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+
+        // Assert actual state of CTP project (total number of existing inventories)
+        assertThat(CTP_TARGET_CLIENT.execute(InventoryEntryQuery.of())
+                                    .thenApply(PagedQueryResult::getTotal)
+                                    .thenApply(Long::intValue)
+                                    .toCompletableFuture())
+            .withFailMessage("Wrong total number of existing inventories on CTP project")
+            .isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+
+
+        // Assert on sync statistics
+        assertThat(inventorySyncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
+
+
         saveNewResult(SyncSolutionInfo.LIB_VERSION, INVENTORY_SYNC, CREATES_ONLY, totalTime);
     }
 
