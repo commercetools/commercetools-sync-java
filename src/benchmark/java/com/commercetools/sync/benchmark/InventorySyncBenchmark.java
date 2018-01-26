@@ -100,8 +100,8 @@ public class InventorySyncBenchmark {
 
 
         // Assert on sync statistics
-        assertThat(inventorySyncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
-
+        assertThat(inventorySyncStatistics)
+            .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
 
         saveNewResult(SyncSolutionInfo.LIB_VERSION, INVENTORY_SYNC, CREATES_ONLY, totalTime);
     }
