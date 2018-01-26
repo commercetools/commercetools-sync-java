@@ -83,7 +83,6 @@ public class InventorySyncBenchmark {
                                     .thenApply(PagedQueryResult::getTotal)
                                     .thenApply(Long::intValue)
                                     .toCompletableFuture())
-            .withFailMessage("Wrong total number of existing inventories with version \"2\" on CTP project")
             .isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
         // Assert actual state of CTP project (total number of existing inventories)
@@ -91,7 +90,6 @@ public class InventorySyncBenchmark {
                                     .thenApply(PagedQueryResult::getTotal)
                                     .thenApply(Long::intValue)
                                     .toCompletableFuture())
-            .withFailMessage("Wrong total number of existing inventories on CTP project")
             .isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
 
