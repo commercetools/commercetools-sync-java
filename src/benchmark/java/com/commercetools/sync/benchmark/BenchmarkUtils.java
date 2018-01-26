@@ -19,29 +19,30 @@ import java.util.Optional;
 import static java.util.Optional.ofNullable;
 
 public class BenchmarkUtils {
-    public static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
-    public static final String BENCHMARK_RESULTS_FILE_NAME = "benchmarks.json";
-    public static final String BENCHMARK_RESULTS_FILE_DIR = ofNullable(System.getenv("TRAVIS_BUILD_DIR"))
+    private static final String BENCHMARK_RESULTS_FILE_NAME = "benchmarks.json";
+    private static final String BENCHMARK_RESULTS_FILE_DIR = ofNullable(System.getenv("TRAVIS_BUILD_DIR"))
         .map(path -> path + "/tmp_git_dir/benchmarks/").orElse("");
-    public static final String BENCHMARK_RESULTS_FILE_PATH = BENCHMARK_RESULTS_FILE_DIR + BENCHMARK_RESULTS_FILE_NAME;
-    public static final String PRODUCT_SYNC = "productSync";
-    public static final String INVENTORY_SYNC = "inventorySync";
-    public static final String CATEGORY_SYNC = "categorySync";
-    public static final String CREATES_ONLY = "createsOnly";
-    public static final String UPDATES_ONLY = "updatesOnly";
-    public static final String CREATES_AND_UPDATES = "mix";
-    public static final String EXECUTION_TIMES = "executionTimes";
-    public static final String AVERAGE = "average";
-    public static final String DIFF = "diff";
-    public static double THRESHOLD = 120000; //120 seconds in milliseconds
-    public static int NUMBER_OF_RESOURCE_UNDER_TEST = 10000;
+    private static final String BENCHMARK_RESULTS_FILE_PATH = BENCHMARK_RESULTS_FILE_DIR + BENCHMARK_RESULTS_FILE_NAME;
+    private static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
+    private static final String EXECUTION_TIMES = "executionTimes";
+    private static final String AVERAGE = "average";
+    private static final String DIFF = "diff";
+
+    static final String PRODUCT_SYNC = "productSync";
+    static final String INVENTORY_SYNC = "inventorySync";
+    static final String CATEGORY_SYNC = "categorySync";
+    static final String CREATES_ONLY = "createsOnly";
+    static final String UPDATES_ONLY = "updatesOnly";
+    static final String CREATES_AND_UPDATES = "mix";
+    static double THRESHOLD = 120000; //120 seconds in milliseconds
+    static int NUMBER_OF_RESOURCE_UNDER_TEST = 10000;
 
 
     static void saveNewResult(@Nonnull final String version,
                               @Nonnull final String sync,
                               @Nonnull final String benchmark,
                               final double newResult) throws IOException {
-        // Add new result, calculate average and persist new JSON.
+
         final JsonNode rootNode = new ObjectMapper().readTree(getFileContent(BENCHMARK_RESULTS_FILE_PATH));
         final JsonNode withNewResult = addNewResult(rootNode, version, sync, benchmark, newResult);
         writeToFile(withNewResult.toString(), BENCHMARK_RESULTS_FILE_PATH);
@@ -55,6 +56,7 @@ public class BenchmarkUtils {
         ObjectNode rootNode = (ObjectNode) originalRoot;
         ObjectNode versionNode = (ObjectNode) rootNode.get(version);
 
+        // If version doesn't exist yet, create a new JSON object for the new version.
         if (versionNode == null) {
             rootNode = createVersionNode(rootNode, version);
             versionNode = (ObjectNode) rootNode.get(version);
@@ -63,17 +65,19 @@ public class BenchmarkUtils {
         final ObjectNode syncNode = (ObjectNode) versionNode.get(sync);
         final ObjectNode benchmarkNode = (ObjectNode) syncNode.get(benchmark);
 
+        // Get current list of execution times for the specified benchmark of the specified sync module
+        // of the specified version.
         final List<JsonNode> results = iteratorToList(benchmarkNode.get(EXECUTION_TIMES).elements());
 
-        // Add newResult
+        // Add new result.
         results.add(JsonNodeFactory.instance.numberNode(newResult));
         benchmarkNode.set(EXECUTION_TIMES, JsonNodeFactory.instance.arrayNode().addAll(results));
 
-        // Add new average
+        // Compute new average and add to JSON Object
         final double averageResult = calculateAvg(results);
         benchmarkNode.set(AVERAGE, JsonNodeFactory.instance.numberNode(averageResult));
 
-        // Add new diff
+        // Compute new diff from the last version.
         final double diff = calculateDiff(rootNode, version, sync, benchmark, averageResult);
         benchmarkNode.set(DIFF, JsonNodeFactory.instance.numberNode(diff));
 
@@ -124,7 +128,6 @@ public class BenchmarkUtils {
                                 @Nonnull final String sync,
                                 @Nonnull final String benchmark,
                                 final double average) throws IOException {
-        // Add new result, calculate average and persist new JSON.
         final JsonNode rootNode = new ObjectMapper().readTree(getFileContent(BENCHMARK_RESULTS_FILE_PATH));
         return calculateDiff(rootNode, version, sync, benchmark, average);
     }
@@ -134,20 +137,26 @@ public class BenchmarkUtils {
                                 @Nonnull final String sync,
                                 @Nonnull final String benchmark,
                                 final double average) {
-        return getLatestVersionName(originalRoot, version).map(latestVersionName ->
-            originalRoot.get(latestVersionName).get(sync).get(benchmark).get(AVERAGE))
-                                                 .map(latestAverageNode -> average - latestAverageNode.asDouble())
-                                                 .orElse(average);
+        return getLatestVersionName(originalRoot, version)
+            .map(latestVersionName -> originalRoot.get(latestVersionName)
+                                                  .get(sync)
+                                                  .get(benchmark)
+                                                  .get(AVERAGE))
+            .map(latestAverageNode -> average - latestAverageNode.asDouble())
+            // if there is no latest version - the current average is the diff.
+            .orElse(average);
     }
 
     private static Optional<String> getLatestVersionName(@Nonnull final JsonNode originalRoot,
                                                          @Nonnull final String currentVersionName) {
         String latestVersion = null;
         final Iterator<String> versionIterator = originalRoot.fieldNames();
-        while (versionIterator.hasNext()) {
-            final String version = versionIterator.next();
-            if (!currentVersionName.equals(version)) {
-                latestVersion = version;
+        if (versionIterator != null) {
+            while (versionIterator.hasNext()) {
+                final String version = versionIterator.next();
+                if (!currentVersionName.equals(version)) {
+                    latestVersion = version;
+                }
             }
         }
         return ofNullable(latestVersion);
