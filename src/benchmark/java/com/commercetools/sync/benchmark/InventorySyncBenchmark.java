@@ -21,6 +21,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
@@ -78,19 +79,24 @@ public class InventorySyncBenchmark {
                         .isLessThanOrEqualTo(THRESHOLD);
 
         // Assert actual state of CTP project (number of updated inventories)
-        assertThat(CTP_TARGET_CLIENT.execute(InventoryEntryQuery.of()
-                                                                .withPredicates(QueryPredicate.of("version = \"2\"")))
-                                    .thenApply(PagedQueryResult::getTotal)
-                                    .thenApply(Long::intValue)
-                                    .toCompletableFuture())
-            .isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+        final CompletableFuture<Integer> totalUpdatedInventoriesFuture =
+            CTP_TARGET_CLIENT.execute(InventoryEntryQuery.of().withPredicates(QueryPredicate.of("version = \"2\"")))
+                             .thenApply(PagedQueryResult::getTotal)
+                             .thenApply(Long::intValue)
+                             .toCompletableFuture();
+
+        executeBlocking(totalUpdatedInventoriesFuture);
+        assertThat(totalUpdatedInventoriesFuture).isCompletedWithValue(0);
 
         // Assert actual state of CTP project (total number of existing inventories)
-        assertThat(CTP_TARGET_CLIENT.execute(InventoryEntryQuery.of())
-                                    .thenApply(PagedQueryResult::getTotal)
-                                    .thenApply(Long::intValue)
-                                    .toCompletableFuture())
-            .isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+        final CompletableFuture<Integer> totalNumberOfInventories =
+            CTP_TARGET_CLIENT.execute(InventoryEntryQuery.of())
+                             .thenApply(PagedQueryResult::getTotal)
+                             .thenApply(Long::intValue)
+                             .toCompletableFuture();
+
+        executeBlocking(totalNumberOfInventories);
+        assertThat(totalNumberOfInventories).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
 
         // Assert on sync statistics

@@ -49,7 +49,6 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -118,21 +117,24 @@ public class ProductSyncBenchmark {
             .isLessThanOrEqualTo(THRESHOLD);
 
         // Assert actual state of CTP project (number of updated products)
-        assertThat(CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged()
-                                                                   .withPredicates(QueryPredicate.of("version = \"2\"")))
-                                    .thenApply(PagedQueryResult::getTotal)
-                                    .thenApply(Long::intValue)
-                                    .toCompletableFuture())
-            .withFailMessage("Wrong total number of existing products with version \"2\" on CTP project")
-            .isCompletedWithValue(0);
+        final CompletableFuture<Integer> totalNumberOfUpdatedProducts =
+            CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged()
+                                                            .withPredicates(QueryPredicate.of("version = \"2\"")))
+                             .thenApply(PagedQueryResult::getTotal)
+                             .thenApply(Long::intValue)
+                             .toCompletableFuture();
+
+        executeBlocking(totalNumberOfUpdatedProducts);
+        assertThat(totalNumberOfUpdatedProducts).isCompletedWithValue(0);
 
         // Assert actual state of CTP project (total number of existing products)
-        assertThat(CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged())
-                                    .thenApply(PagedQueryResult::getTotal)
-                                    .thenApply(Long::intValue)
-                                    .toCompletableFuture())
-            .withFailMessage("Wrong total number of existing products on CTP project")
-            .isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+        final CompletableFuture<Integer> totalNumberOfProducts =
+            CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged())
+                             .thenApply(PagedQueryResult::getTotal)
+                             .thenApply(Long::intValue)
+                             .toCompletableFuture();
+        executeBlocking(totalNumberOfProducts);
+        assertThat(totalNumberOfProducts).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
 
         assertThat(syncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
@@ -174,19 +176,24 @@ public class ProductSyncBenchmark {
             .isLessThanOrEqualTo(THRESHOLD);
 
         // Assert actual state of CTP project (number of updated products)
-        assertThat(CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged()
-                                                        .withPredicates(QueryPredicate.of("version = \"2\"")))
-                         .thenApply(PagedQueryResult::getTotal)
-                         .thenApply(Long::intValue)
-                         .toCompletableFuture())
-            .isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+        final CompletableFuture<Integer> totalNumberOfUpdatedProducts =
+            CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged()
+                                                            .withPredicates(QueryPredicate.of("version = \"2\"")))
+                             .thenApply(PagedQueryResult::getTotal)
+                             .thenApply(Long::intValue)
+                             .toCompletableFuture();
+
+        executeBlocking(totalNumberOfUpdatedProducts);
+        assertThat(totalNumberOfUpdatedProducts).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
         // Assert actual state of CTP project (total number of existing products)
-        assertThat(CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged())
-                                    .thenApply(PagedQueryResult::getTotal)
-                                    .thenApply(Long::intValue)
-                                    .toCompletableFuture())
-            .isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+        final CompletableFuture<Integer> totalNumberOfProducts =
+            CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged())
+                             .thenApply(PagedQueryResult::getTotal)
+                             .thenApply(Long::intValue)
+                             .toCompletableFuture();
+        executeBlocking(totalNumberOfProducts);
+        assertThat(totalNumberOfProducts).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
         // Assert statistics
         assertThat(syncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, 0, NUMBER_OF_RESOURCE_UNDER_TEST, 0);
@@ -205,14 +212,14 @@ public class ProductSyncBenchmark {
 
         // Create first half of drafts to target project with different slugs
         CompletableFuture.allOf(firstHalf.stream()
-                                             .map(ProductDraftBuilder::of)
-                                             .map(builder -> builder.slug(
-                                                 ofEnglish(builder.getSlug().get(ENGLISH) + "_old")))
-                                             .map(builder -> builder.productType(productType.toReference()))
-                                             .map(ProductDraftBuilder::build)
-                                             .map(draft -> CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(draft)))
-                                             .map(CompletionStage::toCompletableFuture)
-                                             .toArray(CompletableFuture[]::new))
+                                         .map(ProductDraftBuilder::of)
+                                         .map(builder -> builder.slug(
+                                             ofEnglish(builder.getSlug().get(ENGLISH) + "_old")))
+                                         .map(builder -> builder.productType(productType.toReference()))
+                                         .map(ProductDraftBuilder::build)
+                                         .map(draft -> CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(draft)))
+                                         .map(CompletionStage::toCompletableFuture)
+                                         .toArray(CompletableFuture[]::new))
                          .join();
 
         // Sync new drafts
@@ -231,20 +238,24 @@ public class ProductSyncBenchmark {
             .isLessThanOrEqualTo(THRESHOLD);
 
         // Assert actual state of CTP project (number of updated products)
-        assertThat(CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged()
-                                                                   .withPredicates(QueryPredicate.of("version = \"2\"")))
-                                    .thenApply(PagedQueryResult::getTotal)
-                                    .thenApply(Long::intValue)
-                                    .toCompletableFuture())
-            .isCompletedWithValue(halfNumberOfDrafts);
+        final CompletableFuture<Integer> totalNumberOfUpdatedProducts =
+            CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged()
+                                                            .withPredicates(QueryPredicate.of("version = \"2\"")))
+                             .thenApply(PagedQueryResult::getTotal)
+                             .thenApply(Long::intValue)
+                             .toCompletableFuture();
+
+        executeBlocking(totalNumberOfUpdatedProducts);
+        assertThat(totalNumberOfUpdatedProducts).isCompletedWithValue(halfNumberOfDrafts);
 
         // Assert actual state of CTP project (total number of existing products)
-        assertThat(CTP_TARGET_CLIENT.execute(ProductProjectionQuery.of(STAGED))
-                                    .thenApply(PagedQueryResult::getTotal)
-                                    .thenApply(Long::intValue)
-                                    .toCompletableFuture())
-            .isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
-
+        final CompletableFuture<Integer> totalNumberOfProducts =
+            CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged())
+                             .thenApply(PagedQueryResult::getTotal)
+                             .thenApply(Long::intValue)
+                             .toCompletableFuture();
+        executeBlocking(totalNumberOfProducts);
+        assertThat(totalNumberOfProducts).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
 
         // Assert statistics
