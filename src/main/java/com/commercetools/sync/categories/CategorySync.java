@@ -49,14 +49,14 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private final CategoryReferenceResolver referenceResolver;
 
     private final Map<String, List<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
-    private final Set<String> processedCategoryKeys = new HashSet<>();
+    private final Set<String> processedCategoryKeys = ConcurrentHashMap.newKeySet();
 
     private Set<CategoryDraft> existingCategoryDrafts = new HashSet<>();
     private Set<CategoryDraft> newCategoryDrafts = new HashSet<>();
     private Set<CategoryDraft> referencesResolvedDrafts = new HashSet<>();
-    private Set<String> categoryKeysWithResolvedParents = new HashSet<>();
+    private Set<String> categoryKeysWithResolvedParents = ConcurrentHashMap.newKeySet();
     private Set<String> categoryKeysToFetch = new HashSet<>();
-    private Map<CategoryDraft, Category> categoryDraftsToUpdate = new HashMap<>();
+    private Map<CategoryDraft, Category> categoryDraftsToUpdate = new ConcurrentHashMap<>();
 
     /**
      * Takes a {@link CategorySyncOptions} instance to instantiate a new {@link CategorySync} instance that could be
