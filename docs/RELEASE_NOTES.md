@@ -51,6 +51,11 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M9...v1.0.0-M10) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M10/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M10)
+
+
+**Changes** (1)
+- **Commons** - Statistics counters are now of type `AtomicInteger` instead of int to support conccurency. [#242](https://github.com/commercetools/commercetools-sync-java/issues/242)
+
 -->
 
 ### v1.0.0-M9 -  Jan 22, 2018
