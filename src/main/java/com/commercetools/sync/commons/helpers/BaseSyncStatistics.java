@@ -3,15 +3,16 @@ package com.commercetools.sync.commons.helpers;
 import io.netty.util.internal.StringUtil;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.String.format;
 
 public abstract class BaseSyncStatistics {
     protected String reportMessage;
-    private int updated;
-    private int created;
-    private int failed;
-    private int processed;
+    private AtomicInteger updated;
+    private AtomicInteger created;
+    private AtomicInteger failed;
+    private AtomicInteger processed;
     private long latestBatchStartTime;
     private long latestBatchProcessingTimeInDays;
     private long latestBatchProcessingTimeInHours;
@@ -21,7 +22,15 @@ public abstract class BaseSyncStatistics {
     private String latestBatchHumanReadableProcessingTime;
 
 
+    /**
+     * Creates a new {@link BaseSyncStatistics} with initial values {@code 0} of created, updated, failed and processed
+     * counters, an empty reportMessage and latestBatchHumanReadableProcessingTime.
+     */
     public BaseSyncStatistics() {
+        updated = new AtomicInteger();
+        created = new AtomicInteger();
+        failed = new AtomicInteger();
+        processed = new AtomicInteger();
         reportMessage = StringUtil.EMPTY_STRING;
         latestBatchHumanReadableProcessingTime = StringUtil.EMPTY_STRING;
     }
@@ -40,7 +49,7 @@ public abstract class BaseSyncStatistics {
      *
      * @return total number of resources that were updated.
      */
-    public int getUpdated() {
+    public AtomicInteger getUpdated() {
         return updated;
     }
 
@@ -48,7 +57,7 @@ public abstract class BaseSyncStatistics {
      * Increments the total number of resource that were updated.
      */
     public void incrementUpdated() {
-        this.updated++;
+        updated.incrementAndGet();
     }
 
     /**
@@ -57,7 +66,7 @@ public abstract class BaseSyncStatistics {
      * @param times the total number of times to increment.
      */
     public void incrementUpdated(final int times) {
-        this.updated += times;
+        updated.addAndGet(times);
     }
 
     /**
@@ -65,7 +74,7 @@ public abstract class BaseSyncStatistics {
      *
      * @return total number of resources that were created.
      */
-    public int getCreated() {
+    public AtomicInteger getCreated() {
         return created;
     }
 
@@ -73,7 +82,7 @@ public abstract class BaseSyncStatistics {
      * Increments the total number of resource that were created.
      */
     public void incrementCreated() {
-        this.created++;
+        created.incrementAndGet();
     }
 
     /**
@@ -82,7 +91,7 @@ public abstract class BaseSyncStatistics {
      * @param times the total number of times to increment.
      */
     public void incrementCreated(final int times) {
-        this.created += times;
+        created.addAndGet(times);
     }
 
     /**
@@ -90,7 +99,7 @@ public abstract class BaseSyncStatistics {
      *
      * @return total number of resources that were processed/synced.
      */
-    public int getProcessed() {
+    public AtomicInteger getProcessed() {
         return processed;
     }
 
@@ -98,7 +107,7 @@ public abstract class BaseSyncStatistics {
      * Increments the total number of resources that were processed/synced.
      */
     public void incrementProcessed() {
-        this.processed++;
+        processed.incrementAndGet();
     }
 
     /**
@@ -107,7 +116,7 @@ public abstract class BaseSyncStatistics {
      * @param times the total number of times to increment.
      */
     public void incrementProcessed(final int times) {
-        this.processed += times;
+        processed.addAndGet(times);
     }
 
     /**
@@ -115,7 +124,7 @@ public abstract class BaseSyncStatistics {
      *
      * @return total number of resources that failed to sync.
      */
-    public int getFailed() {
+    public AtomicInteger getFailed() {
         return failed;
     }
 
@@ -124,7 +133,7 @@ public abstract class BaseSyncStatistics {
      *
      */
     public void incrementFailed() {
-        this.failed++;
+        failed.incrementAndGet();
     }
 
     /**
@@ -133,7 +142,7 @@ public abstract class BaseSyncStatistics {
      * @param times the total number of times to increment.
      */
     public void incrementFailed(final int times) {
-        this.failed += times;
+        failed.addAndGet(times);
     }
 
     /**
