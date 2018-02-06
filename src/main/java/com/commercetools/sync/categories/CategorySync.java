@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
@@ -47,7 +48,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private final CategoryService categoryService;
     private final CategoryReferenceResolver referenceResolver;
 
-    private final Map<String, List<String>> categoryKeysWithMissingParents = new HashMap<>();
+    private final Map<String, List<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
     private final Set<String> processedCategoryKeys = new HashSet<>();
 
     private Set<CategoryDraft> existingCategoryDrafts = new HashSet<>();
