@@ -83,8 +83,8 @@ streams, would look as follows:
 ```java
 final Logger logger = LoggerFactory.getLogger(MySync.class);
 final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(sphereClient)
-                                                                          .setErrorCallBack(logger::error)
-                                                                          .setWarningCallBack(logger::warn)
+                                                                          .errorCallBack(logger::error)
+                                                                          .warningCallBack(logger::warn)
                                                                           .build();
 ```
 

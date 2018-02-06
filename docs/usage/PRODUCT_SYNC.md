@@ -100,8 +100,8 @@ streams, would look as follows:
  ```java
  final Logger logger = LoggerFactory.getLogger(MySync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder.of(sphereClient)
-                                                                        .setErrorCallBack(logger::error)
-                                                                        .setWarningCallBack(logger::warn)
+                                                                        .errorCallBack(logger::error)
+                                                                        .warningCallBack(logger::warn)
                                                                         .build();
  ```
 
