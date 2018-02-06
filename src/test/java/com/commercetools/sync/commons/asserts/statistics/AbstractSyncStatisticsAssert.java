@@ -30,10 +30,10 @@ class AbstractSyncStatisticsAssert<S extends AbstractSyncStatisticsAssert<S, A>,
      */
     public S hasValues(final int processed, final int created, final int updated, final int failed) {
         assertThat(actual).isNotNull();
-        assertThat(actual.getProcessed()).isEqualTo(processed);
-        assertThat(actual.getCreated()).isEqualTo(created);
-        assertThat(actual.getUpdated()).isEqualTo(updated);
-        assertThat(actual.getFailed()).isEqualTo(failed);
+        assertThat(actual.getProcessed()).hasValue(processed);
+        assertThat(actual.getCreated()).hasValue(created);
+        assertThat(actual.getUpdated()).hasValue(updated);
+        assertThat(actual.getFailed()).hasValue(failed);
         return myself;
     }
 }

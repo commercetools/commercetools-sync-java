@@ -23,46 +23,46 @@ public class CategorySyncStatisticsTest {
 
     @Test
     public void getUpdated_WithNoUpdated_ShouldReturnZero() {
-        assertThat(categorySyncStatistics.getUpdated()).isEqualTo(0);
+        assertThat(categorySyncStatistics.getUpdated()).hasValue(0);
     }
 
     @Test
     public void incrementUpdated_ShouldIncrementUpdatedValue() {
         categorySyncStatistics.incrementUpdated();
-        assertThat(categorySyncStatistics.getUpdated()).isEqualTo(1);
+        assertThat(categorySyncStatistics.getUpdated()).hasValue(1);
     }
 
     @Test
     public void getCreated_WithNoCreated_ShouldReturnZero() {
-        assertThat(categorySyncStatistics.getCreated()).isEqualTo(0);
+        assertThat(categorySyncStatistics.getCreated()).hasValue(0);
     }
 
     @Test
     public void incrementCreated_ShouldIncrementCreatedValue() {
         categorySyncStatistics.incrementCreated();
-        assertThat(categorySyncStatistics.getCreated()).isEqualTo(1);
+        assertThat(categorySyncStatistics.getCreated()).hasValue(1);
     }
 
     @Test
     public void getProcessed_WithNoProcessed_ShouldReturnZero() {
-        assertThat(categorySyncStatistics.getProcessed()).isEqualTo(0);
+        assertThat(categorySyncStatistics.getProcessed()).hasValue(0);
     }
 
     @Test
     public void incrementProcessed_ShouldIncrementProcessedValue() {
         categorySyncStatistics.incrementProcessed();
-        assertThat(categorySyncStatistics.getProcessed()).isEqualTo(1);
+        assertThat(categorySyncStatistics.getProcessed()).hasValue(1);
     }
 
     @Test
     public void getFailed_WithNoFailed_ShouldReturnZero() {
-        assertThat(categorySyncStatistics.getFailed()).isEqualTo(0);
+        assertThat(categorySyncStatistics.getFailed()).hasValue(0);
     }
 
     @Test
     public void incrementFailed_ShouldIncrementFailedValue() {
         categorySyncStatistics.incrementFailed();
-        assertThat(categorySyncStatistics.getFailed()).isEqualTo(1);
+        assertThat(categorySyncStatistics.getFailed()).hasValue(1);
     }
 
     @Test
