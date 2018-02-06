@@ -604,7 +604,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     }
 
     /**
-     * Given a {@code categoryKey} this method removes its occurences from the map
+     * Given a {@code categoryKey} this method removes its occurrences from the map
      * {@code categoryKeysWithMissingParents}.
      *
      * @param categoryKey the category key to remove from {@code categoryKeysWithMissingParents}
