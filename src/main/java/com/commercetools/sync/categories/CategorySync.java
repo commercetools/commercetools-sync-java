@@ -178,7 +178,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     /**
      * Given a list of {@code CategoryDraft} elements. Calculates the number of drafts that need to be processed in this
      * batch, given they weren't processed before. Categories which were processed before, will have their keys stored
-     * in {@code processedCategoryKeys}. Added to the number of null categoryDrafts.
+     * in {@code processedCategoryKeys}. Added to the number of null categoryDrafts and categories with null keys.
      *
      * @param categoryDrafts the input list of category drafts in the sync batch.
      * @return the number of drafts that are needed to be processed.
@@ -187,11 +187,13 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         final int numberOfNullCategoryDrafts = categoryDrafts.stream()
                                                              .filter(Objects::isNull)
                                                              .collect(Collectors.toList()).size();
-        final int numberOfCategoryDraftsNotProcessedBefore = categoryDrafts.stream()
-                                       .filter(Objects::nonNull)
-                                       .map(CategoryDraft::getKey)
-                                       .filter(categoryDraftKey -> !processedCategoryKeys.contains(categoryDraftKey))
-                                       .collect(Collectors.toList()).size();
+        final int numberOfCategoryDraftsNotProcessedBefore =
+            categoryDrafts.stream()
+                          .filter(Objects::nonNull)
+                          .map(CategoryDraft::getKey)
+                          .filter(categoryDraftKey ->
+                              categoryDraftKey == null || !processedCategoryKeys.contains(categoryDraftKey))
+                          .collect(Collectors.toList()).size();
 
         return numberOfCategoryDraftsNotProcessedBefore + numberOfNullCategoryDrafts;
     }
