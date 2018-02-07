@@ -12,9 +12,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import static java.lang.String.format;
 
 public class CategorySyncStatistics extends BaseSyncStatistics {
+
     /**
-     * Map that represents categories with missing parents; the keys of the map are the keys of the missing parent
-     * categories and the value of each is a list of the children category keys.
+     * Map that represents categories with missing parents.
+     *
+     * <ul>
+     *     <li>key: key of the missing parent category</li>
+     *     <li>value: a list of the parent's children category keys</li>
+     * </ul>
+     *
      */
     private Map<String, List<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
 
