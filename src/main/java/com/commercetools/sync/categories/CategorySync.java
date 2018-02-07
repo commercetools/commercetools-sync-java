@@ -145,7 +145,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     @Override
     protected CompletionStage<CategorySyncStatistics> processBatch(@Nonnull final List<CategoryDraft> categoryDrafts) {
-        final int numberOfNewDraftsToProcess = getNumberOfProcessedCategories(categoryDrafts);
+        final int numberOfNewDraftsToProcess = getNumberOfDraftsToProcess(categoryDrafts);
         referencesResolvedDrafts = new HashSet<>();
         existingCategoryDrafts = new HashSet<>();
         newCategoryDrafts = new HashSet<>();
@@ -184,7 +184,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param categoryDrafts the input list of category drafts in the sync batch.
      * @return the number of drafts that are needed to be processed.
      */
-    private int getNumberOfProcessedCategories(@Nonnull final List<CategoryDraft> categoryDrafts) {
+    private int getNumberOfDraftsToProcess(@Nonnull final List<CategoryDraft> categoryDrafts) {
         final int numberOfNullCategoryDrafts = categoryDrafts.stream()
                                                              .filter(Objects::isNull)
                                                              .collect(Collectors.toList()).size();
