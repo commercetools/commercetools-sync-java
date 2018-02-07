@@ -11,12 +11,17 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
+import static java.util.Spliterators.spliteratorUnknownSize;
+import static java.util.stream.StreamSupport.stream;
 
 public class BenchmarkUtils {
     private static final String BENCHMARK_RESULTS_FILE_NAME = "benchmarks.json";
@@ -67,7 +72,7 @@ public class BenchmarkUtils {
 
         // Get current list of execution times for the specified benchmark of the specified sync module
         // of the specified version.
-        final List<JsonNode> results = iteratorToList(benchmarkNode.get(EXECUTION_TIMES).elements());
+        final List<JsonNode> results = toList(benchmarkNode.get(EXECUTION_TIMES).elements());
 
         // Add new result.
         results.add(JsonNodeFactory.instance.numberNode(newResult));
@@ -87,10 +92,14 @@ public class BenchmarkUtils {
         return newRoot;
     }
 
-    private static <T> List<T> iteratorToList(@Nonnull final Iterator<T> iterator) {
-        final List<T> list = new ArrayList<>();
-        iterator.forEachRemaining(list::add);
-        return list;
+    @Nonnull
+    private static <T> List<T> toList(@Nonnull final Iterator<T> iterator) {
+        return toStream(iterator).collect(Collectors.toList());
+    }
+
+    @Nonnull
+    private static <T> Stream<T> toStream(@Nonnull final Iterator<T> iterator) {
+        return stream(spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
     }
 
     private static double calculateAvg(@Nonnull final List<JsonNode> results) {
