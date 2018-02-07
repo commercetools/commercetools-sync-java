@@ -43,6 +43,7 @@ import static com.commercetools.sync.integration.inventories.utils.InventoryITUt
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_1;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_2;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SKU_1;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SKU_2;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_1;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_2;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteChannelsFromTargetAndSource;
@@ -107,6 +108,31 @@ public class InventorySyncIT {
         //Ensure that old entry has correct values after sync.
         final Optional<InventoryEntry> oldInventoryAfterSync =
             getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);
+        assertThat(oldInventoryAfterSync).isNotEmpty();
+        assertValues(oldInventoryAfterSync.get(), QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2);
+    }
+
+    @Test
+    public void sync_WithNewInventory_ShouldCreateInventory() {
+        //Ensure that old entry has correct values before sync.
+        final Optional<InventoryEntry> oldInventoryBeforeSync =
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_2, null);
+        assertThat(oldInventoryBeforeSync).isEmpty();
+
+        //Prepare sync data.
+        final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
+            .of(SKU_2, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, null).build();
+        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
+        final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
+
+        //Sync and ensure that proper statistics were returned.
+        final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(singletonList(newInventoryDraft))
+                                                                             .toCompletableFuture().join();
+        assertThat(inventorySyncStatistics).hasValues(1, 1, 0, 0);
+
+        //Ensure that old entry has correct values after sync.
+        final Optional<InventoryEntry> oldInventoryAfterSync =
+            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_2, null);
         assertThat(oldInventoryAfterSync).isNotEmpty();
         assertValues(oldInventoryAfterSync.get(), QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2);
     }
