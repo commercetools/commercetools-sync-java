@@ -177,9 +177,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     /**
      * Given a list of {@code CategoryDraft} elements, this method calculates the number of drafts that need to be
-     * processed in this batch, given they weren't processed before, plus the number of null categoryDrafts and
-     * categories with null keys. Categories which were processed before, will have their keys stored
-     * in {@code processedCategoryKeys}.
+     * processed in this batch, given they weren't processed before, plus the number of null drafts and drafts with null
+     * keys. Drafts which were processed before, will have their keys stored in {@code processedCategoryKeys}.
      *
      * @param categoryDrafts the input list of category drafts in the sync batch.
      * @return the number of drafts that are needed to be processed.
