@@ -18,7 +18,6 @@ import io.sphere.sdk.commands.UpdateAction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -48,15 +47,22 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private final CategoryService categoryService;
     private final CategoryReferenceResolver referenceResolver;
 
-    private final Map<String, List<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
-    private final Set<String> processedCategoryKeys = ConcurrentHashMap.newKeySet();
+    /**
+     * Maps and sets which are thread-safe.
+     */
+    private final ConcurrentHashMap<String, List<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap.KeySetView processedCategoryKeys = ConcurrentHashMap.newKeySet();
+    private ConcurrentHashMap.KeySetView categoryKeysWithResolvedParents = ConcurrentHashMap.newKeySet();
+    private ConcurrentHashMap<CategoryDraft, Category> categoryDraftsToUpdate = new ConcurrentHashMap<>();
 
+    /**
+     * Sets which are not thread-safe.
+     */
     private Set<CategoryDraft> existingCategoryDrafts = new HashSet<>();
     private Set<CategoryDraft> newCategoryDrafts = new HashSet<>();
     private Set<CategoryDraft> referencesResolvedDrafts = new HashSet<>();
-    private Set<String> categoryKeysWithResolvedParents = ConcurrentHashMap.newKeySet();
     private Set<String> categoryKeysToFetch = new HashSet<>();
-    private Map<CategoryDraft, Category> categoryDraftsToUpdate = new ConcurrentHashMap<>();
+
 
     /**
      * Takes a {@link CategorySyncOptions} instance to instantiate a new {@link CategorySync} instance that could be
@@ -149,8 +155,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         referencesResolvedDrafts = new HashSet<>();
         existingCategoryDrafts = new HashSet<>();
         newCategoryDrafts = new HashSet<>();
-        categoryKeysWithResolvedParents = new HashSet<>();
-        categoryDraftsToUpdate = new HashMap<>();
+
+        categoryKeysWithResolvedParents = ConcurrentHashMap.newKeySet();
+        categoryDraftsToUpdate = new ConcurrentHashMap<>();
 
         return categoryService.cacheKeysToIds()
                               .thenCompose(keyToIdCache -> {
