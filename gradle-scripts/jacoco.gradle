@@ -2,7 +2,6 @@
  * JaCoCo test coverage report generation and verification of coverage limit.
  *
  * If the code coverage is below 80% (minimum =0.8) the build should fail.
- * JaCoCo test coverage report generation.
  *
  */
 
@@ -19,7 +18,6 @@ jacocoTestCoverageVerification {
             }
         }
     }
-
 }
 
 jacocoTestReport {
