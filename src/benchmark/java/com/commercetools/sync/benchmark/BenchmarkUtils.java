@@ -18,7 +18,6 @@ import java.util.Spliterator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.Spliterators.spliteratorUnknownSize;
 import static java.util.stream.StreamSupport.stream;
@@ -158,17 +157,10 @@ public class BenchmarkUtils {
 
     private static Optional<String> getLatestVersionName(@Nonnull final JsonNode originalRoot,
                                                          @Nonnull final String currentVersionName) {
-        String latestVersion = null;
-        final Iterator<String> versionIterator = originalRoot.fieldNames();
-        if (versionIterator != null) {
-            while (versionIterator.hasNext()) {
-                final String version = versionIterator.next();
-                if (!currentVersionName.equals(version)) {
-                    latestVersion = version;
-                }
-            }
-        }
-        return ofNullable(latestVersion);
+        return ofNullable(originalRoot.fieldNames())
+            .flatMap(versionIterator ->
+                toStream(versionIterator).reduce((firstVersion, secondVersion) ->
+                    !currentVersionName.equals(secondVersion)? secondVersion: firstVersion));
     }
 
 
