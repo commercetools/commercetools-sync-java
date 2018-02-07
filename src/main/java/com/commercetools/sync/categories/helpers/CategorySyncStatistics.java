@@ -52,8 +52,8 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
         return categoryKeysWithMissingParents.values()
                                              .stream()
                                              .filter(Objects::nonNull)
-                                             .map(List::size)
-                                             .reduce(0, Integer::sum);
+                                             .mapToInt(List::size)
+                                             .sum();
     }
 
     public Map<String, List<String>> getCategoryKeysWithMissingParents() {
