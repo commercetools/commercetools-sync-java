@@ -54,6 +54,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+
 public class CategorySyncIT {
     private CategorySync categorySync;
     private static final String oldCategoryKey = "oldCategoryKey";
