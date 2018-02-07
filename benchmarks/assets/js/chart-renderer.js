@@ -115,6 +115,11 @@ window.onload = function () {
                 yAxes: [{
                     ticks : {
                         fontColor: 'white'
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Time to sync 10000 resources (in seconds)',
+                        fontColor: 'white'
                     }
                 }],
                 xAxes: [{
