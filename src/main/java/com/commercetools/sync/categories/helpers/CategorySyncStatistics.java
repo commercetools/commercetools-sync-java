@@ -76,14 +76,26 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
         this.categoryKeysWithMissingParents = categoryKeysWithMissingParents;
     }
 
-    @Nullable
-    public Set<String> getMissingParentCategoryChildrenKeys(@Nonnull final String missingParentCategoryKey) {
-        return categoryKeysWithMissingParents.get(missingParentCategoryKey);
-    }
-
-    public void putMissingParentCategoryChildrenKeys(@Nonnull final String missingParentCategoryKey,
-                                                     @Nonnull final Set<String> childrenKeys) {
-        categoryKeysWithMissingParents.put(missingParentCategoryKey, childrenKeys);
+    /**
+     * This method checks if there is an entry with the key of the {@code missingParentCategoryKey} in the
+     * {@code categoryKeysWithMissingParents}, if there isn't it creates a new entry with this parent key and as a value
+     * a new set containing the {@code childKey}. Otherwise, if there is already, it just adds the
+     * {@code categoryKey} to the existing set.
+     *
+     * @param missingParentCategoryKey the key of the missing parent.
+     * @param childKey                 the key of the category with a missing parent.
+     */
+    public void putMissingParentCategoryChildKey(@Nonnull final String missingParentCategoryKey,
+                                                 @Nonnull final String childKey) {
+        final Set<String> missingParentCategoryChildrenKeys =
+            categoryKeysWithMissingParents.get(missingParentCategoryKey);
+        if (missingParentCategoryChildrenKeys != null) {
+            missingParentCategoryChildrenKeys.add(childKey);
+        } else {
+            final Set<String> newChildCategoryKeys = new HashSet<>();
+            newChildCategoryKeys.add(childKey);
+            categoryKeysWithMissingParents.put(missingParentCategoryKey, newChildCategoryKeys);
+        }
     }
 
     /**

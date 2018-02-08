@@ -301,7 +301,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         return getParentCategoryKey(categoryDraft, syncOptions.shouldAllowUuidKeys())
             .map(parentCategoryKey -> {
                 if (isMissingCategory(parentCategoryKey, keyToIdCache)) {
-                    addCategoryKeyToMissingParentsMap(categoryDraft.getKey(), parentCategoryKey);
+                    statistics.putMissingParentCategoryChildKey(parentCategoryKey, categoryDraft.getKey());
                     return CategoryDraftBuilder.of(categoryDraft)
                                                .parent(null)
                                                .build();
@@ -321,26 +321,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private boolean isMissingCategory(@Nonnull final String categoryKey,
                                       @Nonnull final Map<String, String> keyToIdCache) {
         return !keyToIdCache.containsKey(categoryKey);
-    }
-
-    /**
-     * This method checks if there is an entry with the key of the missing parent category {@code parentKey} in the
-     * {@code categoryKeysWithMissingParents}, if there isn't it creates a new entry with this parent key and as a value
-     * a new list containing the {@code categoryKey}. Otherwise, if there is already, it just adds the
-     * {@code categoryKey} to the existing list.
-     *
-     * @param categoryKey the key of the category with a missing parent.
-     * @param parentKey   the key of the missing parent.
-     */
-    private void addCategoryKeyToMissingParentsMap(@Nonnull final String categoryKey, @Nonnull final String parentKey) {
-        final Set<String> childCategoryKeys = statistics.getMissingParentCategoryChildrenKeys(parentKey);
-        if (childCategoryKeys != null) {
-            childCategoryKeys.add(categoryKey);
-        } else {
-            final Set<String> newChildCategoryKeys = new HashSet<>();
-            newChildCategoryKeys.add(categoryKey);
-            statistics.putMissingParentCategoryChildrenKeys(parentKey, newChildCategoryKeys);
-        }
     }
 
 
