@@ -39,6 +39,9 @@ public abstract class BaseSyncStatistics {
      * Stores the current time of instantiation in the {@code latestBatchStartTime} instance variable that will be used
      * later when {@link BaseSyncStatistics#calculateProcessingTime()} is called to calculate the total time of
      * processing.
+     *
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
+     *
      */
     public void startTimer() {
         latestBatchStartTime = System.currentTimeMillis();
@@ -154,6 +157,9 @@ public abstract class BaseSyncStatistics {
      * {@code latestBatchProcessingTimeInMillis}. It also builds a human readable processing time, as string, in the
      * following format @{code "0d, 0h, 0m, 2s, 545ms"} and stores it in the publicly exposed
      * variable {@code latestBatchHumanReadableProcessingTime}.
+     *
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
+     *
      */
     public void calculateProcessingTime() {
         setProcessingTimeInAllUnits();
@@ -166,6 +172,9 @@ public abstract class BaseSyncStatistics {
      * {@code latestBatchProcessingTimeInDays}, {@code latestBatchProcessingTimeInHours},
      * {@code latestBatchProcessingTimeInMinutes},
      * {@code latestBatchProcessingTimeInSeconds} and {@code latestBatchProcessingTimeInMillis}.
+     *
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
+     *
      */
     private void setProcessingTimeInAllUnits() {
         latestBatchProcessingTimeInMillis = System.currentTimeMillis() - this.latestBatchStartTime;
@@ -178,6 +187,9 @@ public abstract class BaseSyncStatistics {
     /**
      * Builds a human readable processing time, as string, in the following format @{code "0d, 0h, 0m, 2s, 545ms"}
      * and stores it in the publicly exposed variable {@code latestBatchHumanReadableProcessingTime}.
+     *
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
+     *
      */
     private void setHumanReadableProcessingTime() {
         final long completeDaysInHours = TimeUnit.DAYS.toHours(latestBatchProcessingTimeInDays);
@@ -201,6 +213,7 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets the human readable processing time in the following format @{code "0d, 0h, 0m, 2s, 545ms"}.
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return the human readable processing time in the following format @{code "0d, 0h, 0m, 2s, 545ms"}
      */
@@ -210,6 +223,7 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets the number of days it took to process.
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return number of days taken to process.
      */
@@ -228,6 +242,7 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets the number of minutes it took to process.
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return number of minutes taken to process.
      */
@@ -237,6 +252,7 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets the number of seconds it took to process.
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return number of seconds taken to process.
      */
@@ -246,6 +262,7 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets the number of milliseconds it took to process.
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return number of milliseconds taken to process.
      */
@@ -255,6 +272,7 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets a summary message of the statistics report.
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return a summary message of the statistics report.
      */
