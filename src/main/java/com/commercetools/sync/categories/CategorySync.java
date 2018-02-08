@@ -224,7 +224,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *     <li>Checks if the draft is {@code null}, then the error callback is triggered and the
      *     draft is skipped.</li>
      *     <li>Then for each draft adds each with a non-existing parent in keyToId cached map to a map
-     *     {@code categoryKeysWithMissingParents} (mapping from parent key to list of subcategory keys)</li>
+     *     {@code statistics#categoryKeysWithMissingParents} (mapping from parent key to list of subcategory keys)</li>
      *     <li>Then it resolves the references (parent category reference and custom type reference) on each draft. For
      *     each draft with resolved references:
      *      <ol>
@@ -285,7 +285,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * This method first gets the parent key either from the expanded category object or from the id field on the
      * reference and validates it. If its valid, then it checks if the parent category is missing, this is done by
      * checking if the key exists in the {@code keyToIdCache} map. If it is missing, then it adds the key to the map
-     * {@code categoryKeysWithMissingParents}, then it returns a category draft identical to the supplied one
+     * {@code statistics#categoryKeysWithMissingParents}, then it returns a category draft identical to the supplied one
      * but with a {@code null} parent. If it is not missing, then the same identical category draft is returned with the
      * same parent.
      *
@@ -331,14 +331,14 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * statistics more than needed. For example, when updating the parent later on of this created category.
      * </li>
      *
-     * <li>Check if it exists in {@code categoryKeysWithMissingParents} as a missing parent, if it does then its
-     * children are now ready to update their parent field references with the created parent category. For each of
+     * <li>Check if it exists in {@code statistics#categoryKeysWithMissingParents} as a missing parent, if it does then
+     * its children are now ready to update their parent field references with the created parent category. For each of
      * these child categories do the following:
      * <ol>
      * <li>Add its key to the list {@code categoryKeysWithResolvedParents}.</li>
      * <li>If the key was in the {@code newCategoryDrafts} list, then it means it should have just been created.
      * Then it adds the category created to the {@code categoryDraftsToUpdate}. The draft is created from the
-     * created Category response from CTP but parent is taken from the {@code categoryKeysWithMissingParents}
+     * created Category response from CTP but parent is taken from the {@code statistics#categoryKeysWithMissingParents}
      * </li>
      * <li>Otherwise, if it wasn't in the {@code newCategoryDrafts} list, then it means it needs to be
      * fetched. Therefore, its key is added it to the {@code categoryKeysToFetch}</li>
@@ -391,7 +391,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * </li>
      * <li>If not, the draft is copied from the fetched category. </li>
      * <li>If the key of this draft exists in the {@code categoryKeysWithResolvedParents}, overwrite the parent with
-     * the parent saved in {@code categoryKeysWithMissingParents} for the draft.</li>
+     * the parent saved in {@code statistics#categoryKeysWithMissingParents} for the draft.</li>
      * <li>After a draft has been created, it is added to {@code categoryDraftsToUpdate} map as a key and
      * the value is the fetched {@link Category}.</li>
      * </ol>
