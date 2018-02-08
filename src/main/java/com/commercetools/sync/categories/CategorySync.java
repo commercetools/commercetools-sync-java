@@ -328,7 +328,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * This method does the following on each category created from the provided {@link Set} of categories:
      * <ol>
      * <li>Adds its keys to {@code processedCategoryKeys} in order to not increment updated and processed counters of
-     * statistics more than needed. For example, when updating the parent later on of this created category.\
+     * statistics more than needed. For example, when updating the parent later on of this created category.
      * </li>
      *
      * <li>Check if it exists in {@code categoryKeysWithMissingParents} as a missing parent, if it does then its

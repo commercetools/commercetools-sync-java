@@ -99,11 +99,12 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
     }
 
     /**
-     * Given a categoryKey {@code childCategoryKey} this method, checks in the {@code categoryKeysWithMissingParents}
-     * if it exists as a child to a missing parent, and returns the key of that missing parent. Otherwise, it returns
-     * null.
-     * @param childCategoryKey key of the category to look if it has a missing parent.
-     * @return the key of the parent category.
+     * Given a {@code childCategoryKey} this method, checks in the {@code categoryKeysWithMissingParents}
+     * if it exists as a child to a missing parent, and returns the key of first found (since a category can have only
+     * one parent) missing parent in an optional. Otherwise, it returns an empty optional.
+     *
+     * @param childCategoryKey key of the category to find it's has a missing parent key.
+     * @return the key of that missing parent in an optional, if it exists. Otherwise, it returns an empty optional.
      */
     @Nonnull
     public Optional<String> getMissingParentKey(@Nonnull final String childCategoryKey) {
@@ -121,7 +122,7 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
      *
      * <p>NOTE: When all the children keys of a missing parent are removed, the value of the map entry will be
      * an empty list. i.e. the entry itself will not be removed. However, this could be investigated whether removing
-     * the entry at all when the list is empty will affect the algorithm. TODO: GITHUB ISSUE#
+     * the entry at all when the list is empty will affect the algorithm. TODO: RELATED BUT NOT SAME AS GITHUB ISSUE#77
      *
      * @param childCategoryKey the child category key to remove from {@code categoryKeysWithMissingParents}
      */
