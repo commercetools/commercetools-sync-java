@@ -21,7 +21,6 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +33,9 @@ import java.util.stream.Collectors;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithChannelReference;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMockWithPrices;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -63,33 +65,31 @@ public class ProductReferenceReplacementUtilsTest {
         final Reference<Channel> channelReference = Reference
             .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
         final Price price = getPriceMockWithChannelReference(channelReference);
-        final ProductVariant productVariant = getProductVariantMockWithPrices(Collections.singletonList(price));
+        final ProductVariant productVariant = getProductVariantMockWithPrices(singletonList(price));
 
-        final Product productWithNonExpandedProductType = getProductMock(Collections.singletonList(productVariant));
+        final Product productWithNonExpandedProductType = getProductMock(singletonList(productVariant));
 
         when(productWithNonExpandedProductType.getProductType())
             .thenReturn(nonExpandedProductTypeReference);
         when(productWithNonExpandedProductType.getTaxCategory()).thenReturn(taxCategoryReference);
         when(productWithNonExpandedProductType.getState()).thenReturn(stateReference);
 
-        final Product productWithNonExpandedTaxCategory =
-            getProductMock(Collections.singletonList(productVariant));
+        final Product productWithNonExpandedTaxCategory = getProductMock(singletonList(productVariant));
 
         when(productWithNonExpandedTaxCategory.getProductType()).thenReturn(productTypeReference);
         when(productWithNonExpandedTaxCategory.getTaxCategory())
             .thenReturn(nonExpandedTaxCategoryReference);
         when(productWithNonExpandedTaxCategory.getState()).thenReturn(stateReference);
 
-        final Product productWithNonExpandedSate =
-            getProductMock(Collections.singletonList(productVariant));
+        final Product productWithNonExpandedSate = getProductMock(singletonList(productVariant));
 
         when(productWithNonExpandedSate.getProductType()).thenReturn(productTypeReference);
         when(productWithNonExpandedSate.getTaxCategory()).thenReturn(taxCategoryReference);
         when(productWithNonExpandedSate.getState()).thenReturn(nonExpandedStateReference);
 
 
-        final List<Product> products = Arrays
-            .asList(productWithNonExpandedProductType, productWithNonExpandedTaxCategory, productWithNonExpandedSate);
+        final List<Product> products =
+            asList(productWithNonExpandedProductType, productWithNonExpandedTaxCategory, productWithNonExpandedSate);
 
 
         final List<ProductDraft> productDraftsWithKeysOnReferences = ProductReferenceReplacementUtils
@@ -133,31 +133,29 @@ public class ProductReferenceReplacementUtilsTest {
         final Reference<Channel> channelReference = Reference
             .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
         final Price price = getPriceMockWithChannelReference(channelReference);
-        final ProductVariant productVariant = getProductVariantMockWithPrices(Collections.singletonList(price));
+        final ProductVariant productVariant = getProductVariantMockWithPrices(singletonList(price));
 
         final Category category = getCategoryMock(resourceKey);
         final Reference<Category> categoryReference =
             Reference.ofResourceTypeIdAndIdAndObj(Category.referenceTypeId(), category.getId(), category);
 
         final Product productWithNonExpandedProductType =
-            getProductMock(Collections.singleton(categoryReference), null,
-                Collections.singletonList(productVariant));
+            getProductMock(singleton(categoryReference), null, singletonList(productVariant));
 
         when(productWithNonExpandedProductType.getProductType())
             .thenReturn(nonExpandedProductTypeReference);
         when(productWithNonExpandedProductType.getTaxCategory()).thenReturn(taxCategoryReference);
         when(productWithNonExpandedProductType.getState()).thenReturn(stateReference);
 
-        final Product productWithNonExpandedTaxCategory =
-            getProductMock(Collections.singletonList(productVariant));
+        final Product productWithNonExpandedTaxCategory = getProductMock(singletonList(productVariant));
 
         when(productWithNonExpandedTaxCategory.getProductType()).thenReturn(productTypeReference);
         when(productWithNonExpandedTaxCategory.getTaxCategory())
             .thenReturn(nonExpandedTaxCategoryReference);
         when(productWithNonExpandedTaxCategory.getState()).thenReturn(stateReference);
 
-        final List<Product> products = Arrays
-            .asList(productWithNonExpandedProductType, productWithNonExpandedTaxCategory, null);
+        final List<Product> products =
+            asList(productWithNonExpandedProductType, productWithNonExpandedTaxCategory, null);
 
 
         final List<ProductDraft> productDraftsWithKeysOnReferences = ProductReferenceReplacementUtils
@@ -335,7 +333,7 @@ public class ProductReferenceReplacementUtilsTest {
     public void
         replaceCategoryReferencesIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
         final String categoryId = UUID.randomUUID().toString();
-        final Set<Reference<Category>> categoryReferences = Collections.singleton(Category.referenceOfId(categoryId));
+        final Set<Reference<Category>> categoryReferences = singleton(Category.referenceOfId(categoryId));
         final CategoryOrderHints categoryOrderHints = getCategoryOrderHintsMock(categoryReferences);
 
         final Product product = getProductMock(categoryReferences, categoryOrderHints);
@@ -356,7 +354,7 @@ public class ProductReferenceReplacementUtilsTest {
     public void
         replaceCategoryReferencesIdsWithKeys_WithNonExpandedReferencesAndNoCategoryOrderHints_ShouldNotReplaceIds() {
         final String categoryId = UUID.randomUUID().toString();
-        final Set<Reference<Category>> categoryReferences = Collections.singleton(Category.referenceOfId(categoryId));
+        final Set<Reference<Category>> categoryReferences = singleton(Category.referenceOfId(categoryId));
         final Product product = getProductMock(categoryReferences, null);
 
         final CategoryReferencePair categoryReferencePair =
@@ -378,7 +376,7 @@ public class ProductReferenceReplacementUtilsTest {
         final Reference<Category> categoryReference =
             Reference.ofResourceTypeIdAndIdAndObj(Category.referenceTypeId(), category.getId(), category);
 
-        final Set<Reference<Category>> categoryReferences = Collections.singleton(categoryReference);
+        final Set<Reference<Category>> categoryReferences = singleton(categoryReference);
         final CategoryOrderHints categoryOrderHints = getCategoryOrderHintsMock(categoryReferences);
 
         final Product product = getProductMock(categoryReferences, categoryOrderHints);
@@ -404,7 +402,7 @@ public class ProductReferenceReplacementUtilsTest {
         final Category category = getCategoryMock(categoryKey);
         final Reference<Category> categoryReference =
             Reference.ofResourceTypeIdAndIdAndObj(Category.referenceTypeId(), category.getId(), category);
-        final Product product = getProductMock(Collections.singleton(categoryReference), null);
+        final Product product = getProductMock(singleton(categoryReference), null);
 
         final CategoryReferencePair categoryReferencePair =
             ProductReferenceReplacementUtils.replaceCategoryReferencesIdsWithKeys(product);
@@ -436,8 +434,7 @@ public class ProductReferenceReplacementUtilsTest {
         categoryReferences.add(categoryReference1);
         categoryReferences.add(categoryReference2);
 
-        final CategoryOrderHints categoryOrderHints =
-            getCategoryOrderHintsMock(Collections.singleton(categoryReference1));
+        final CategoryOrderHints categoryOrderHints = getCategoryOrderHintsMock(singleton(categoryReference1));
 
         final Product product = getProductMock(categoryReferences, categoryOrderHints);
 
