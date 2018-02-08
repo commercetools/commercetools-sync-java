@@ -48,15 +48,28 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private final CategoryReferenceResolver referenceResolver;
 
     /**
-     * Maps and sets which are thread-safe.
+     * The following set ({@code processedCategoryKeys}) is thread-safe because it is accessed/modified in a concurrent
+     * context, specifically when updating products in parallel in
+     * {@link #updateCategory(Category, CategoryDraft, List)}. It also has a global scope across the entire sync
+     * process, which means the same instance is used across all batch executions.
      */
-    private final ConcurrentHashMap<String, List<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap.KeySetView processedCategoryKeys = ConcurrentHashMap.newKeySet();
-    private ConcurrentHashMap.KeySetView categoryKeysWithResolvedParents = ConcurrentHashMap.newKeySet();
+    private final ConcurrentHashMap.KeySetView<String, Boolean> processedCategoryKeys = ConcurrentHashMap.newKeySet();
+
+    /**
+     * The following set ({@code categoryKeysWithResolvedParents}) and map ({@code categoryDraftsToUpdate}) are
+     * thread-safe because they are accessed/modified in a concurrent context, specifically when updating products in
+     * parallel in {@link #updateCategoriesInParallel(Map)}. They have a local scope within every batch execution, which
+     * means that they are re-initialized on every {@link #processBatch(List)} call.
+     */
+    private ConcurrentHashMap.KeySetView<String, Boolean> categoryKeysWithResolvedParents =
+        ConcurrentHashMap.newKeySet();
     private ConcurrentHashMap<CategoryDraft, Category> categoryDraftsToUpdate = new ConcurrentHashMap<>();
 
     /**
-     * Sets which are not thread-safe.
+     * The following sets ({@code existingCategoryDrafts}, {@code newCategoryDrafts}, {@code referencesResolvedDrafts}
+     * and {@code categoryKeysToFetch}) are not thread-safe because they are accessed/modified in a
+     * non-concurrent/sequential context. They have a local scope within every batch execution, which
+     * means that they are re-initialized on every {@link #processBatch(List)} call.
      */
     private Set<CategoryDraft> existingCategoryDrafts = new HashSet<>();
     private Set<CategoryDraft> newCategoryDrafts = new HashSet<>();
@@ -95,7 +108,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         super(new CategorySyncStatistics(), syncOptions);
         this.categoryService = categoryService;
         this.referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
-        this.statistics.setCategoryKeysWithMissingParents(categoryKeysWithMissingParents);
     }
 
     /**
@@ -322,13 +334,13 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param parentKey   the key of the missing parent.
      */
     private void addCategoryKeyToMissingParentsMap(@Nonnull final String categoryKey, @Nonnull final String parentKey) {
-        final List<String> childCategoryKeys = categoryKeysWithMissingParents.get(parentKey);
+        final List<String> childCategoryKeys = statistics.getMissingParentCategoryChildrenKeys(parentKey);
         if (childCategoryKeys != null) {
             childCategoryKeys.add(categoryKey);
         } else {
             final ArrayList<String> newChildCategoryKeys = new ArrayList<>();
             newChildCategoryKeys.add(categoryKey);
-            categoryKeysWithMissingParents.put(parentKey, newChildCategoryKeys);
+            statistics.putMissingParentCategoryChildrenKeys(parentKey, newChildCategoryKeys);
         }
     }
 
@@ -365,7 +377,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         createdCategories.forEach(createdCategory -> {
             final String createdCategoryKey = createdCategory.getKey();
             processedCategoryKeys.add(createdCategoryKey);
-            final List<String> childCategoryKeys = categoryKeysWithMissingParents.get(createdCategoryKey);
+            final List<String> childCategoryKeys = statistics.getMissingParentCategoryChildrenKeys(createdCategoryKey);
             if (childCategoryKeys != null) {
                 for (String childCategoryKey : childCategoryKeys) {
                     categoryKeysWithResolvedParents.add(childCategoryKey);
@@ -425,31 +437,16 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 })
                                   .orElseGet(() -> CategoryDraftBuilder.of(fetchedCategory));
             if (categoryKeysWithResolvedParents.contains(fetchedCategoryKey)) {
-                final String parentKey = getMissingParentKey(fetchedCategoryKey);
-                final String parentId = keyToIdCache.get(parentKey);
-                categoryDraftBuilder.parent(Category.referenceOfId(parentId));
+                statistics.getMissingParentKey(fetchedCategoryKey)
+                          .ifPresent(missingParentKey -> {
+                              final String parentId = keyToIdCache.get(missingParentKey);
+                              categoryDraftBuilder.parent(Category.referenceOfId(parentId));
+                          });
             }
             categoryDraftsToUpdate.put(categoryDraftBuilder.build(), fetchedCategory);
         });
     }
 
-
-    /**
-     * Given a categoryKey {@code childCategoryKey} this method, checks in the {@code categoryKeysWithMissingParents}
-     * if it exists as a child to a missing parent, and returns the key of that missing parent. Otherwise, it returns
-     * null.
-     * @param childCategoryKey key of the category to look if it has a missing parent.
-     * @return the key of the parent category.
-     */
-    private String getMissingParentKey(@Nonnull final String childCategoryKey) {
-        return categoryKeysWithMissingParents.entrySet()
-                                             .stream()
-                                             .filter(missingParentEntry -> missingParentEntry.getValue().contains(
-                                                 childCategoryKey))
-                                             .findFirst()
-                                             .map(Map.Entry::getKey)
-                                             .orElse(null);
-    }
 
     /**
      * Given a {@link Set} of categories and a {@code key}. This method tries to find a category with this key in this
@@ -592,7 +589,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                           processedCategoryKeys.add(categoryKey);
                                       }
                                       if (categoryKeysWithResolvedParents.contains(categoryKey)) {
-                                          removeUpdatedCategoryFromMissingParentsMap(categoryKey);
+                                          statistics.removeChildCategoryKeyFromMissingParentsMap(categoryKey);
                                       }
                                       return CompletableFuture.completedFuture(null);
                                   }
@@ -610,16 +607,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                     handleError(format(UPDATE_FAILED, key, FETCH_ON_RETRY), null);
                                     return CompletableFuture.completedFuture(null);
                                 }));
-    }
-
-    /**
-     * Given a {@code categoryKey} this method removes its occurrences from the map
-     * {@code categoryKeysWithMissingParents}.
-     *
-     * @param categoryKey the category key to remove from {@code categoryKeysWithMissingParents}
-     */
-    private void removeUpdatedCategoryFromMissingParentsMap(@Nonnull final String categoryKey) {
-        categoryKeysWithMissingParents.forEach((key, value) -> value.remove(categoryKey));
     }
 
     /**
