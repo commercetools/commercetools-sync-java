@@ -213,6 +213,7 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets the human readable processing time in the following format @{code "0d, 0h, 0m, 2s, 545ms"}.
+     *
      * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return the human readable processing time in the following format @{code "0d, 0h, 0m, 2s, 545ms"}
@@ -223,6 +224,7 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets the number of days it took to process.
+     *
      * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return number of days taken to process.
@@ -242,6 +244,7 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets the number of minutes it took to process.
+     *
      * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return number of minutes taken to process.
@@ -252,6 +255,7 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets the number of seconds it took to process.
+     *
      * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return number of seconds taken to process.
@@ -262,6 +266,7 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets the number of milliseconds it took to process.
+     *
      * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return number of milliseconds taken to process.
@@ -272,6 +277,7 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets a summary message of the statistics report.
+     *
      * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return a summary message of the statistics report.
