@@ -356,7 +356,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         createdCategories.forEach(createdCategory -> {
             final String createdCategoryKey = createdCategory.getKey();
             processedCategoryKeys.add(createdCategoryKey);
-            final Set<String> childCategoryKeys = statistics.getMissingParentCategoryChildrenKeys(createdCategoryKey);
+            final Set<String> childCategoryKeys = statistics.getCategoryKeysWithMissingParents()
+                                                            .get(createdCategoryKey);
+
             if (childCategoryKeys != null) {
                 for (String childCategoryKey : childCategoryKeys) {
                     categoryKeysWithResolvedParents.add(childCategoryKey);
