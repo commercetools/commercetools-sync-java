@@ -6,11 +6,10 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +32,7 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
      * {@link com.commercetools.sync.categories.CategorySync#updateCategory(Category, CategoryDraft, List)}.
      *
      */
-    private Map<String, Set<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Set<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
 
     public CategorySyncStatistics() {
         super();
@@ -62,7 +61,6 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
     public int getNumberOfCategoriesWithMissingParents() {
         return categoryKeysWithMissingParents.values()
                                              .stream()
-                                             .filter(Objects::nonNull)
                                              .mapToInt(Set::size)
                                              .sum();
     }
