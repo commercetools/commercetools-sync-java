@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.String.format;
@@ -24,7 +25,7 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
      *
      * <ul>
      *     <li>key: key of the missing parent category</li>
-     *     <li>value: a list of the parent's children category keys</li>
+     *     <li>value: a set of the parent's children category keys</li>
      * </ul>
      *
      * <p>The map is thread-safe (by instantiating it with {@link ConcurrentHashMap}) because it is accessed/modified in
@@ -32,7 +33,7 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
      * {@link com.commercetools.sync.categories.CategorySync#updateCategory(Category, CategoryDraft, List)}.
      *
      */
-    private Map<String, List<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
+    private Map<String, Set<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
 
     public CategorySyncStatistics() {
         super();
@@ -62,26 +63,26 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
         return categoryKeysWithMissingParents.values()
                                              .stream()
                                              .filter(Objects::nonNull)
-                                             .mapToInt(List::size)
+                                             .mapToInt(Set::size)
                                              .sum();
     }
 
-    public Map<String, List<String>> getCategoryKeysWithMissingParents() {
+    public Map<String, Set<String>> getCategoryKeysWithMissingParents() {
         return Collections.unmodifiableMap(categoryKeysWithMissingParents);
     }
 
-    public void setCategoryKeysWithMissingParents(@Nonnull final ConcurrentHashMap<String, List<String>>
+    public void setCategoryKeysWithMissingParents(@Nonnull final ConcurrentHashMap<String, Set<String>>
                                                       categoryKeysWithMissingParents) {
         this.categoryKeysWithMissingParents = categoryKeysWithMissingParents;
     }
 
     @Nullable
-    public List<String> getMissingParentCategoryChildrenKeys(@Nonnull final String missingParentCategoryKey) {
+    public Set<String> getMissingParentCategoryChildrenKeys(@Nonnull final String missingParentCategoryKey) {
         return categoryKeysWithMissingParents.get(missingParentCategoryKey);
     }
 
     public void putMissingParentCategoryChildrenKeys(@Nonnull final String missingParentCategoryKey,
-                                                     @Nonnull final List<String> childrenKeys) {
+                                                     @Nonnull final Set<String> childrenKeys) {
         categoryKeysWithMissingParents.put(missingParentCategoryKey, childrenKeys);
     }
 

@@ -17,7 +17,6 @@ import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -334,11 +333,11 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param parentKey   the key of the missing parent.
      */
     private void addCategoryKeyToMissingParentsMap(@Nonnull final String categoryKey, @Nonnull final String parentKey) {
-        final List<String> childCategoryKeys = statistics.getMissingParentCategoryChildrenKeys(parentKey);
+        final Set<String> childCategoryKeys = statistics.getMissingParentCategoryChildrenKeys(parentKey);
         if (childCategoryKeys != null) {
             childCategoryKeys.add(categoryKey);
         } else {
-            final ArrayList<String> newChildCategoryKeys = new ArrayList<>();
+            final Set<String> newChildCategoryKeys = new HashSet<>();
             newChildCategoryKeys.add(categoryKey);
             statistics.putMissingParentCategoryChildrenKeys(parentKey, newChildCategoryKeys);
         }
@@ -377,7 +376,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         createdCategories.forEach(createdCategory -> {
             final String createdCategoryKey = createdCategory.getKey();
             processedCategoryKeys.add(createdCategoryKey);
-            final List<String> childCategoryKeys = statistics.getMissingParentCategoryChildrenKeys(createdCategoryKey);
+            final Set<String> childCategoryKeys = statistics.getMissingParentCategoryChildrenKeys(createdCategoryKey);
             if (childCategoryKeys != null) {
                 for (String childCategoryKey : childCategoryKeys) {
                     categoryKeysWithResolvedParents.add(childCategoryKey);
