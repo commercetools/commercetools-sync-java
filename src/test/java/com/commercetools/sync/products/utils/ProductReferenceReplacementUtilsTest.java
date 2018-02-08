@@ -175,7 +175,9 @@ public class ProductReferenceReplacementUtilsTest {
             productDraftsWithKeysOnReferences.get(0).getCategories();
 
         assertThat(categoryResourceIdentifiers).hasSize(1);
-        assertThat(categoryResourceIdentifiers).containsExactly(Category.referenceOfId(category.getKey()));
+
+        assertThat(categoryResourceIdentifiers)
+            .containsOnlyElementsOf(singletonList(Category.referenceOfId(category.getKey())));
 
         assertThat(productDraftsWithKeysOnReferences.get(1).getProductType().getId()).isEqualTo(productType.getKey());
         assertThat(productDraftsWithKeysOnReferences.get(1).getTaxCategory().getId()).isEqualTo(taxCategory.getId());
@@ -319,14 +321,14 @@ public class ProductReferenceReplacementUtilsTest {
         final ProductQuery productQuery = ProductReferenceReplacementUtils.buildProductQuery();
         assertThat(productQuery.expansionPaths()).hasSize(10);
         assertThat(productQuery.expansionPaths())
-            .containsExactly(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
+            .containsOnlyElementsOf(asList(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
                 ExpansionPath.of("state"), ExpansionPath.of("masterData.staged.categories[*]"),
                 ExpansionPath.of("masterData.staged.masterVariant.prices[*].channel"),
                 ExpansionPath.of("masterData.staged.variants[*].prices[*].channel"),
                 ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value"),
                 ExpansionPath.of("masterData.staged.variants[*].attributes[*].value"),
                 ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value[*]"),
-                ExpansionPath.of("masterData.staged.variants[*].attributes[*].value[*]"));
+                ExpansionPath.of("masterData.staged.variants[*].attributes[*].value[*]")));
     }
 
     @Test
