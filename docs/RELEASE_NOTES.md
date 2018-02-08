@@ -55,7 +55,8 @@
 
 **Changes** (1)
 - **Commons** - Statistics counters are now of type `AtomicInteger` instead of int to support conccurency. [#242](https://github.com/commercetools/commercetools-sync-java/issues/242)
-
+- **Category Sync** - `categoryKeysWithMissingParents` in the `CategorySyncStatistics` is now of type `ConcurrentHashMap<String, Set<String>` instead of `Map<String, List<String>`. [#242](https://github.com/commercetools/commercetools-sync-java/issues/242)
+- **Category Sync** - `CategorySyncStatistics` now exposes the methods `removeChildCategoryKeyFromMissingParentsMap`, `getMissingParentKey` and `putMissingParentCategoryChildKey` to support manipulating `categoryKeysWithMissingParents` map. [#242](https://github.com/commercetools/commercetools-sync-java/issues/242)
 -->
 
 ### v1.0.0-M9 -  Jan 22, 2018
