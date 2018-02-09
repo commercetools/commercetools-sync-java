@@ -72,7 +72,8 @@ public final class ITUtils {
             .thenApply(sphereRequests -> sphereRequests.stream()
                                                        .map(ctpClient::execute)
                                                        .map(CompletionStage::toCompletableFuture))
-            .thenAccept(ITUtils::joinFutureStream);
+            .thenCompose(ITUtils::toAllOf)
+            .toCompletableFuture().join();
     }
 
     public static <T extends Resource, C extends QueryDsl<T, C>> void queryAndCompose(
@@ -81,7 +82,8 @@ public final class ITUtils {
         @Nonnull final Function<T, CompletionStage> resourceMapper) {
         queryAll(ctpClient, queryRequestSupplier.get(), resourceMapper)
             .thenApply(stage -> stage.stream().map(CompletionStage::toCompletableFuture))
-            .thenAccept(ITUtils::joinFutureStream);
+            .thenCompose(ITUtils::toAllOf)
+            .toCompletableFuture().join();
     }
 
     private static <T> CompletionStage<Void> toAllOf(@Nonnull final Stream<CompletableFuture<T>> futureStream) {
