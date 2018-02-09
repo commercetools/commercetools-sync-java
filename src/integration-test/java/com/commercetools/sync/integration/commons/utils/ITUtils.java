@@ -84,8 +84,7 @@ public final class ITUtils {
             .thenAccept(ITUtils::joinFutureStream);
     }
 
-    private static <T> void joinFutureStream(@Nonnull final Stream<CompletableFuture<T>> futureStream) {
-        CompletableFuture.allOf(futureStream.toArray(CompletableFuture[]::new))
-                         .toCompletableFuture().join();
+    private static <T> CompletionStage<Void> toAllOf(@Nonnull final Stream<CompletableFuture<T>> futureStream) {
+        return CompletableFuture.allOf(futureStream.toArray(CompletableFuture[]::new));
     }
 }
