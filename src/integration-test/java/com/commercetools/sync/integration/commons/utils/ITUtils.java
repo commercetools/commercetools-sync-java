@@ -29,7 +29,7 @@ public final class ITUtils {
      * @param ctpClient defines the CTP project to delete the Types from.
      */
     public static void deleteTypes(@Nonnull final SphereClient ctpClient) {
-        queryAndApply(ctpClient, TypeQuery::of, TypeDeleteCommand::of);
+        queryAndExecute(ctpClient, TypeQuery::of, TypeDeleteCommand::of);
     }
 
     /**
@@ -64,7 +64,7 @@ public final class ITUtils {
      * @param resourceMapper       defines a mapper function that should be applied on each resource in the fetched page
      *                             from the query on the specified CTP project.
      */
-    public static <T extends Resource, C extends QueryDsl<T, C>> void queryAndApply(
+    public static <T extends Resource, C extends QueryDsl<T, C>> void queryAndExecute(
         @Nonnull final SphereClient ctpClient,
         @Nonnull final Supplier<QueryDsl<T, C>> queryRequestSupplier,
         @Nonnull final Function<T, SphereRequest<T>> resourceMapper) {

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndApply;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
@@ -44,7 +44,7 @@ public final class ProductTypeITUtils {
      * @param ctpClient defines the CTP project to delete the categories from.
      */
     public static void deleteProductTypes(@Nonnull final SphereClient ctpClient) {
-        queryAndApply(ctpClient, ProductTypeQuery::of, ProductTypeDeleteCommand::of);
+        queryAndExecute(ctpClient, ProductTypeQuery::of, ProductTypeDeleteCommand::of);
     }
 
     /**

@@ -10,7 +10,7 @@ import io.sphere.sdk.states.commands.StateDeleteCommand;
 
 import javax.annotation.Nonnull;
 
-import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndApply;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.services.impl.StateServiceImpl.buildStateQuery;
@@ -36,7 +36,7 @@ public class StateITUtils {
      */
     public static void deleteStates(@Nonnull final SphereClient ctpClient,
                                     @Nonnull final StateType stateType) {
-        queryAndApply(ctpClient, () -> buildStateQuery(stateType), StateDeleteCommand::of);
+        queryAndExecute(ctpClient, () -> buildStateQuery(stateType), StateDeleteCommand::of);
     }
 
     /**
