@@ -235,6 +235,8 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets the number of hours it took to process.
+     * 
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return number of hours taken to process.
      */
