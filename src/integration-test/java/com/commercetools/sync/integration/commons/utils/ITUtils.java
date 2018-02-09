@@ -76,10 +76,11 @@ public final class ITUtils {
             .toCompletableFuture().join();
     }
 
-    public static <T extends Resource, C extends QueryDsl<T, C>> void queryAndCompose(
+
+    public static <T extends Resource, C extends QueryDsl<T, C>, S> void queryAndCompose(
         @Nonnull final SphereClient ctpClient,
         @Nonnull final Supplier<QueryDsl<T, C>> queryRequestSupplier,
-        @Nonnull final Function<T, CompletionStage> resourceMapper) {
+        @Nonnull final Function<T, CompletionStage<S>> resourceMapper) {
         queryAll(ctpClient, queryRequestSupplier.get(), resourceMapper)
             .thenApply(stage -> stage.stream().map(CompletionStage::toCompletableFuture))
             .thenCompose(ITUtils::toAllOf)
