@@ -15,7 +15,7 @@ the gh-pages branch of the repo.
 4. Using Travis stages, each benchmark is run 5 times, producing 5 results in which the averages of the results is 
 calculated for more accurate results.
 
-3. The data in [benchmarks.json](https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json)
+5. The data in [benchmarks.json](https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json)
 is used to display the results in the form of this [graph](https://commercetools.github.io/commercetools-sync-java/benchmarks/). 
 
 
