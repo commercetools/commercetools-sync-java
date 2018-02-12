@@ -24,7 +24,7 @@ import static java.util.stream.StreamSupport.stream;
 
 public class BenchmarkUtils {
     private static final String BENCHMARK_RESULTS_FILE_NAME = "benchmarks.json";
-    private static final String BENCHMARK_RESULTS_FILE_DIR = ofNullable(System.getenv("TRAVIS_BUILD_DIR"))
+    private static final String BENCHMARK_RESULTS_FILE_DIR = ofNullable(System.getenv("CI_BUILD_DIR"))
         .map(path -> path + "/tmp_git_dir/benchmarks/").orElse("");
     private static final String BENCHMARK_RESULTS_FILE_PATH = BENCHMARK_RESULTS_FILE_DIR + BENCHMARK_RESULTS_FILE_NAME;
     private static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
