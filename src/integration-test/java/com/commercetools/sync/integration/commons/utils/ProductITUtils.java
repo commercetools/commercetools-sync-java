@@ -83,11 +83,11 @@ public final class ProductITUtils {
      * @return a {@link CompletionStage} containing the deleted product.
      */
     @Nonnull
-    private static CompletionStage<Product> unPublishAndDelete(@Nonnull final SphereClient ctpClient,
+    private static CompletionStage<Product> unpublishAndDelete(@Nonnull final SphereClient ctpClient,
                                                                @Nonnull final Product product) {
-        return ctpClient.execute(buildUnPublishRequest(product))
-                        .thenCompose(unPublishedProduct ->
-                            deleteUnPublishedProduct(ctpClient, unPublishedProduct));
+        return ctpClient.execute(buildUnpublishRequest(product))
+                        .thenCompose(unpublishedProduct ->
+                            deleteUnpublishedProduct(ctpClient, unpublishedProduct));
     }
 
     /**
@@ -99,7 +99,7 @@ public final class ProductITUtils {
      *          the method will return a completion stage that completed exceptionally.
      */
     @Nonnull
-    private static CompletionStage<Product> deleteUnPublishedProduct(@Nonnull final SphereClient ctpClient,
+    private static CompletionStage<Product> deleteUnpublishedProduct(@Nonnull final SphereClient ctpClient,
                                                                      @Nonnull final Product product) {
         return ctpClient.execute(ProductDeleteCommand.of(product));
     }
@@ -110,7 +110,8 @@ public final class ProductITUtils {
      * @param product defines the product to build an un publish request for.
      * @return an unpublish request for the supplied product.
      */
-    public static SphereRequest<Product> buildUnPublishRequest(@Nonnull final Product product) {
+    @Nonnull
+    private static SphereRequest<Product> buildUnpublishRequest(@Nonnull final Product product) {
         return ProductUpdateCommand.of(product, Unpublish.of());
     }
 
