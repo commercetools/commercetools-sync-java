@@ -77,6 +77,18 @@ public final class ITUtils {
     }
 
 
+    /**
+     * Applies the {@code resourceToStageMapper} function on each page, fetched from the supplied
+     * {@code queryRequestSupplier} on the supplied {@code ctpClient}, to map each resource to a {@link CompletionStage}
+     * and then executes these stages in parallel within each page.
+     *
+     * @param ctpClient             defines the CTP project to apply the query on.
+     * @param queryRequestSupplier  defines a supplier which, when executed, returns the query that should be made on
+     *                              the CTP project.
+     * @param resourceToStageMapper defines a mapper function that should be applied on each resource, in the fetched
+     *                              page from the query on the specified CTP project, to map it to a
+     *                              {@link CompletionStage}.
+     */
     public static <T extends Resource, C extends QueryDsl<T, C>, S> void queryAndCompose(
         @Nonnull final SphereClient ctpClient,
         @Nonnull final Supplier<QueryDsl<T, C>> queryRequestSupplier,
