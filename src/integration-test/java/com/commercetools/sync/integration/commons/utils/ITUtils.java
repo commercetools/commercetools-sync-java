@@ -1,8 +1,5 @@
 package com.commercetools.sync.integration.commons.utils;
 
-import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.models.Resource;
@@ -39,20 +36,6 @@ public final class ITUtils {
     public static void deleteTypesFromTargetAndSource() {
         deleteTypes(CTP_TARGET_CLIENT);
         deleteTypes(CTP_SOURCE_CLIENT);
-    }
-
-    /**
-     * Builds a JSON String that represents the fields of the supplied instance of {@link BaseSyncStatistics}.
-     * Note: The order of the fields in the built JSON String depends on the order of the instance variables in this
-     * class.
-     *
-     * @param statistics the instance of {@link BaseSyncStatistics} from which to create a JSON String.
-     * @return a JSON String representation of the statistics object.
-     */
-    public static String getStatisticsAsJSONString(@Nonnull final BaseSyncStatistics statistics)
-        throws JsonProcessingException {
-        final ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(statistics);
     }
 
     /**
