@@ -19,11 +19,11 @@ import io.sphere.sdk.states.StateType;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.function.Function;
+import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndApply;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndCompose;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStates;
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
@@ -54,16 +54,62 @@ public final class ProductITUtils {
      * @param ctpClient defines the CTP project to delete the products from.
      */
     public static void deleteAllProducts(@Nonnull final SphereClient ctpClient) {
-        unPublishAllPublishedProducts(ctpClient);
-        queryAndApply(ctpClient, ProductQuery::of, ProductDeleteCommand::of);
+        queryAndCompose(ctpClient, ProductQuery.of(), product -> safeDeleteProduct(ctpClient, product));
     }
 
-    private static void unPublishAllPublishedProducts(@Nonnull final SphereClient ctpClient) {
-        final Function<Product, SphereRequest<Product>> unPublish = product ->
-                ProductUpdateCommand.of(product, Unpublish.of());
-        final ProductQuery publishedProductsQuery = ProductQuery.of()
-                .withPredicates(p -> p.masterData().isPublished().is(true));
-        queryAndApply(ctpClient, () -> publishedProductsQuery, unPublish);
+    /**
+     * If the {@code product} is published, issues an unpublish request followed by a delete. Otherwise,
+     * issues a delete request right away.
+     *
+     * @param ctpClient defines the CTP project to delete the product from.
+     * @param product the product to be deleted.
+     * @return a {@link CompletionStage} containing the deleted product.
+     */
+    @Nonnull
+    private static CompletionStage<Product> safeDeleteProduct(@Nonnull final SphereClient ctpClient,
+                                                              @Nonnull final Product product) {
+        return product.getMasterData().isPublished()
+            ? unpublishAndDeleteProduct(ctpClient, product) : deleteProduct(ctpClient, product);
+    }
+
+    /**
+     * Issues an unpublish request followed by a delete.
+     *
+     * @param ctpClient defines the CTP project to delete the product from.
+     * @param product the product to be unpublished and deleted.
+     * @return a {@link CompletionStage} containing the deleted product.
+     */
+    @Nonnull
+    private static CompletionStage<Product> unpublishAndDeleteProduct(@Nonnull final SphereClient ctpClient,
+                                                                      @Nonnull final Product product) {
+        return ctpClient.execute(buildUnpublishRequest(product))
+                        .thenCompose(unpublishedProduct ->
+                            deleteProduct(ctpClient, unpublishedProduct));
+    }
+
+    /**
+     * Note: This method assumes the product is unpublished.
+     *
+     * @param ctpClient the client defining the CTP project to delete the product from.
+     * @param product   the product to be deleted.
+     * @return a {@link CompletionStage} containing the deleted product. If the product supplied was already unpublished
+     *          the method will return a completion stage that completed exceptionally.
+     */
+    @Nonnull
+    private static CompletionStage<Product> deleteProduct(@Nonnull final SphereClient ctpClient,
+                                                          @Nonnull final Product product) {
+        return ctpClient.execute(ProductDeleteCommand.of(product));
+    }
+
+    /**
+     * Builds an unpublish request for the supplied product.
+     *
+     * @param product defines the product to build an un publish request for.
+     * @return an unpublish request for the supplied product.
+     */
+    @Nonnull
+    private static SphereRequest<Product> buildUnpublishRequest(@Nonnull final Product product) {
+        return ProductUpdateCommand.of(product, Unpublish.of());
     }
 
     /**

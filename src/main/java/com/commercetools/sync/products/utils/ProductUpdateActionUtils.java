@@ -393,10 +393,9 @@ public final class ProductUpdateActionUtils {
         final List<ProductVariantDraft> newAllProductVariants = new ArrayList<>(newProduct.getVariants());
         newAllProductVariants.add(newProduct.getMasterVariant());
 
-        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-
         // 1. Remove missing variants, but keep master variant (MV can't be removed)
-        updateActions.addAll(buildRemoveVariantUpdateActions(oldProductVariantsNoMaster, newAllProductVariants));
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>(
+            buildRemoveVariantUpdateActions(oldProductVariantsNoMaster, newAllProductVariants));
 
         for (ProductVariantDraft newProductVariant : newAllProductVariants) {
             if (newProductVariant == null) {
@@ -470,18 +469,15 @@ public final class ProductUpdateActionUtils {
      */
     @Nonnull
     public static List<RemoveVariant> buildRemoveVariantUpdateActions(
-            @Nonnull final Map<String, ProductVariant> oldProductVariants,
-            @Nonnull final List<ProductVariantDraft> newProductVariants) {
-
+        @Nonnull final Map<String, ProductVariant> oldProductVariants,
+        @Nonnull final List<ProductVariantDraft> newProductVariants) {
         // copy the map and remove from the copy duplicate items
-        Map<String, ProductVariant> productsToRemove = new HashMap<>(oldProductVariants);
-
+        final Map<String, ProductVariant> productsToRemove = new HashMap<>(oldProductVariants);
         for (ProductVariantDraft newVariant : newProductVariants) {
-            if (productsToRemove.containsKey(newVariant.getKey())) {
+            if (newVariant != null && productsToRemove.containsKey(newVariant.getKey())) {
                 productsToRemove.remove(newVariant.getKey());
             }
         } // now productsToRemove contains only items which don't exist in newProductVariants
-
         return productsToRemove.values().stream()
             .map(RemoveVariant::of)
             .collect(toList());
