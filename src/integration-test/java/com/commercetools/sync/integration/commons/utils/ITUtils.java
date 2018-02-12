@@ -11,6 +11,7 @@ import io.sphere.sdk.types.commands.TypeDeleteCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
@@ -69,15 +70,11 @@ public final class ITUtils {
     public static <T extends Resource, C extends QueryDsl<T, C>> void queryAndExecute(
         @Nonnull final SphereClient ctpClient,
         @Nonnull final Supplier<QueryDsl<T, C>> queryRequestSupplier,
-        @Nonnull final Function<T, SphereRequest<T>> resourceMapper) {
-        queryAll(ctpClient, queryRequestSupplier.get(), resourceMapper)
-            .thenApply(sphereRequests -> sphereRequests.stream()
-                                                       .map(ctpClient::execute)
-                                                       .map(CompletionStage::toCompletableFuture))
-            .thenCompose(ITUtils::toAllOf)
-            .toCompletableFuture().join();
-    }
+        @Nonnull final Function<T, SphereRequest<T>> resourceToRequestMapper) {
 
+        queryAndCompose(ctpClient, queryRequestSupplier,
+            resource -> ctpClient.execute(resourceToRequestMapper.apply(resource)));
+    }
 
     /**
      * Applies the {@code resourceToStageMapper} function on each page, fetched from the supplied
@@ -94,8 +91,10 @@ public final class ITUtils {
     public static <T extends Resource, C extends QueryDsl<T, C>, S> void queryAndCompose(
         @Nonnull final SphereClient ctpClient,
         @Nonnull final Supplier<QueryDsl<T, C>> queryRequestSupplier,
-        @Nonnull final Function<T, CompletionStage<S>> resourceMapper) {
+        @Nonnull final Function<T, CompletionStage<S>> resourceToStageMapper) {
+
         queryAll(ctpClient, queryRequestSupplier.get(), resourceToStageMapper)
+            .thenApply(Collection::stream)
             .thenCompose(ITUtils::toAllOf)
             .toCompletableFuture().join();
     }
