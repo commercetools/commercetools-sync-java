@@ -95,13 +95,12 @@ public final class ITUtils {
         @Nonnull final SphereClient ctpClient,
         @Nonnull final Supplier<QueryDsl<T, C>> queryRequestSupplier,
         @Nonnull final Function<T, CompletionStage<S>> resourceMapper) {
-        queryAll(ctpClient, queryRequestSupplier.get(), resourceMapper)
-            .thenApply(stage -> stage.stream().map(CompletionStage::toCompletableFuture))
+        queryAll(ctpClient, queryRequestSupplier.get(), resourceToStageMapper)
             .thenCompose(ITUtils::toAllOf)
             .toCompletableFuture().join();
     }
 
-    private static <T> CompletionStage<Void> toAllOf(@Nonnull final Stream<CompletableFuture<T>> futureStream) {
-        return CompletableFuture.allOf(futureStream.toArray(CompletableFuture[]::new));
+    private static <T> CompletionStage<Void> toAllOf(@Nonnull final Stream<? extends CompletionStage<T>> stageStream) {
+        return CompletableFuture.allOf(stageStream.toArray(CompletableFuture[]::new));
     }
 }
