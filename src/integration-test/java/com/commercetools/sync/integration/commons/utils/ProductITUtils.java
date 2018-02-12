@@ -54,7 +54,7 @@ public final class ProductITUtils {
      * @param ctpClient defines the CTP project to delete the products from.
      */
     public static void deleteAllProducts(@Nonnull final SphereClient ctpClient) {
-        queryAndCompose(ctpClient, ProductQuery.of(), product -> deleteProduct(ctpClient, product));
+        queryAndCompose(ctpClient, ProductQuery.of(), product -> safeDeleteProduct(ctpClient, product));
     }
 
     /**
@@ -66,10 +66,10 @@ public final class ProductITUtils {
      * @return a {@link CompletionStage} containing the deleted product.
      */
     @Nonnull
-    private static CompletionStage<Product> deleteProduct(@Nonnull final SphereClient ctpClient,
-                                                          @Nonnull final Product product) {
+    private static CompletionStage<Product> safeDeleteProduct(@Nonnull final SphereClient ctpClient,
+                                                              @Nonnull final Product product) {
         return product.getMasterData().isPublished()
-            ? unpublishAndDelete(ctpClient, product) : deleteUnpublishedProduct(ctpClient, product);
+            ? unpublishAndDeleteProduct(ctpClient, product) : deleteProduct(ctpClient, product);
     }
 
     /**
@@ -80,11 +80,11 @@ public final class ProductITUtils {
      * @return a {@link CompletionStage} containing the deleted product.
      */
     @Nonnull
-    private static CompletionStage<Product> unpublishAndDelete(@Nonnull final SphereClient ctpClient,
-                                                               @Nonnull final Product product) {
+    private static CompletionStage<Product> unpublishAndDeleteProduct(@Nonnull final SphereClient ctpClient,
+                                                                      @Nonnull final Product product) {
         return ctpClient.execute(buildUnpublishRequest(product))
                         .thenCompose(unpublishedProduct ->
-                            deleteUnpublishedProduct(ctpClient, unpublishedProduct));
+                            deleteProduct(ctpClient, unpublishedProduct));
     }
 
     /**
@@ -96,8 +96,8 @@ public final class ProductITUtils {
      *          the method will return a completion stage that completed exceptionally.
      */
     @Nonnull
-    private static CompletionStage<Product> deleteUnpublishedProduct(@Nonnull final SphereClient ctpClient,
-                                                                     @Nonnull final Product product) {
+    private static CompletionStage<Product> deleteProduct(@Nonnull final SphereClient ctpClient,
+                                                          @Nonnull final Product product) {
         return ctpClient.execute(ProductDeleteCommand.of(product));
     }
 
