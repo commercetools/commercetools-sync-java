@@ -75,7 +75,7 @@ public class InventorySyncBenchmark {
         // Caclulate sync time and assert on threshold
         final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, INVENTORY_SYNC, CREATES_ONLY, totalTime);
         assertThat(diff).withFailMessage(format("Diff of benchmark '%e' is longer than expected"
-                            + " threshold of '%e'.", diff, THRESHOLD))
+                            + " threshold of '%d'.", diff, THRESHOLD))
                         .isLessThanOrEqualTo(THRESHOLD);
 
         // Assert actual state of CTP project (number of updated inventories)
