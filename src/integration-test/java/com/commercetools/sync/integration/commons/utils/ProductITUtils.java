@@ -68,11 +68,8 @@ public final class ProductITUtils {
     @Nonnull
     private static CompletionStage<Product> deleteProduct(@Nonnull final SphereClient ctpClient,
                                                           @Nonnull final Product product) {
-        if (product.getMasterData().isPublished()) {
-            return unPublishAndDelete(ctpClient, product);
-        } else {
-            return deleteUnPublishedProduct(ctpClient, product);
-        }
+        return product.getMasterData().isPublished()
+            ? unpublishAndDelete(ctpClient, product) : deleteUnpublishedProduct(ctpClient, product);
     }
 
     /**
