@@ -38,8 +38,8 @@ public class BenchmarkUtils {
     static final String CREATES_ONLY = "createsOnly";
     static final String UPDATES_ONLY = "updatesOnly";
     static final String CREATES_AND_UPDATES = "mix";
-    static double THRESHOLD = 120000; //120 seconds in milliseconds
-    static int NUMBER_OF_RESOURCE_UNDER_TEST = 10000;
+    static final int THRESHOLD = 120000; //120 seconds in milliseconds
+    static final int NUMBER_OF_RESOURCE_UNDER_TEST = 10000;
 
 
     static void saveNewResult(@Nonnull final String version,
