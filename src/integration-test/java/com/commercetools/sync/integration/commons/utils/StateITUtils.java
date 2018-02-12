@@ -36,7 +36,7 @@ public class StateITUtils {
      */
     public static void deleteStates(@Nonnull final SphereClient ctpClient,
                                     @Nonnull final StateType stateType) {
-        queryAndExecute(ctpClient, () -> buildStateQuery(stateType), StateDeleteCommand::of);
+        queryAndExecute(ctpClient, buildStateQuery(stateType), StateDeleteCommand::of);
     }
 
     /**

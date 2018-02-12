@@ -54,7 +54,7 @@ public final class ProductITUtils {
      * @param ctpClient defines the CTP project to delete the products from.
      */
     public static void deleteAllProducts(@Nonnull final SphereClient ctpClient) {
-        queryAndCompose(ctpClient, ProductQuery::of, product -> deleteProduct(ctpClient, product));
+        queryAndCompose(ctpClient, ProductQuery.of(), product -> deleteProduct(ctpClient, product));
     }
 
     /**

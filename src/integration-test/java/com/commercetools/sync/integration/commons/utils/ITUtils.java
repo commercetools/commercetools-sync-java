@@ -12,7 +12,6 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
@@ -27,7 +26,7 @@ public final class ITUtils {
      * @param ctpClient defines the CTP project to delete the Types from.
      */
     public static void deleteTypes(@Nonnull final SphereClient ctpClient) {
-        queryAndExecute(ctpClient, TypeQuery::of, TypeDeleteCommand::of);
+        queryAndExecute(ctpClient, TypeQuery.of(), TypeDeleteCommand::of);
     }
 
     /**
@@ -39,44 +38,42 @@ public final class ITUtils {
     }
 
     /**
-     * Applies the {@code resourceToRequestMapper} function on each page, fetched from the supplied
-     * {@code queryRequestSupplier} on the supplied {@code ctpClient}, to map each resource to a {@link SphereRequest}
-     * and then executes these requests in parallel within each page.
+     * Applies the {@code resourceToRequestMapper} function on each page, resulting from the {@code query} executed by
+     * the {@code ctpClient}, to map each resource to a {@link SphereRequest} and then executes these requests in
+     * parallel within each page.
      *
      * @param ctpClient               defines the CTP project to apply the query on.
-     * @param queryRequestSupplier    defines a supplier which, when executed, returns the query that should be made on
-     *                                the CTP project.
+     * @param query                   query that should be made on the CTP project.
      * @param resourceToRequestMapper defines a mapper function that should be applied on each resource, in the fetched
      *                                page from the query on the specified CTP project, to map it to a
      *                                {@link SphereRequest}.
      */
     public static <T extends Resource, C extends QueryDsl<T, C>> void queryAndExecute(
         @Nonnull final SphereClient ctpClient,
-        @Nonnull final Supplier<QueryDsl<T, C>> queryRequestSupplier,
+        @Nonnull final QueryDsl<T, C> query,
         @Nonnull final Function<T, SphereRequest<T>> resourceToRequestMapper) {
 
-        queryAndCompose(ctpClient, queryRequestSupplier,
-            resource -> ctpClient.execute(resourceToRequestMapper.apply(resource)));
+        queryAndCompose(ctpClient, query, resource -> ctpClient.execute(resourceToRequestMapper.apply(resource)));
     }
 
     /**
-     * Applies the {@code resourceToStageMapper} function on each page, fetched from the supplied
-     * {@code queryRequestSupplier} on the supplied {@code ctpClient}, to map each resource to a {@link CompletionStage}
-     * and then executes these stages in parallel within each page.
+     * Applies the {@code resourceToRequestMapper} function on each page, resulting from the {@code query} executed by
+     * the {@code ctpClient}, to map each resource to a {@link CompletionStage} and then executes these stages in
+     * parallel within each page.
+     *
      *
      * @param ctpClient             defines the CTP project to apply the query on.
-     * @param queryRequestSupplier  defines a supplier which, when executed, returns the query that should be made on
-     *                              the CTP project.
+     * @param query                 query that should be made on the CTP project.
      * @param resourceToStageMapper defines a mapper function that should be applied on each resource, in the fetched
      *                              page from the query on the specified CTP project, to map it to a
      *                              {@link CompletionStage}.
      */
     public static <T extends Resource, C extends QueryDsl<T, C>, S> void queryAndCompose(
         @Nonnull final SphereClient ctpClient,
-        @Nonnull final Supplier<QueryDsl<T, C>> queryRequestSupplier,
+        @Nonnull final QueryDsl<T, C> query,
         @Nonnull final Function<T, CompletionStage<S>> resourceToStageMapper) {
 
-        queryAll(ctpClient, queryRequestSupplier.get(), resourceToStageMapper)
+        queryAll(ctpClient, query, resourceToStageMapper)
             .thenApply(Collection::stream)
             .thenCompose(ITUtils::toAllOf)
             .toCompletableFuture().join();

@@ -44,7 +44,7 @@ public final class ProductTypeITUtils {
      * @param ctpClient defines the CTP project to delete the categories from.
      */
     public static void deleteProductTypes(@Nonnull final SphereClient ctpClient) {
-        queryAndExecute(ctpClient, ProductTypeQuery::of, ProductTypeDeleteCommand::of);
+        queryAndExecute(ctpClient, ProductTypeQuery.of(), ProductTypeDeleteCommand::of);
     }
 
     /**
