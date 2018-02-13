@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -710,14 +711,14 @@ public class CategorySyncIT {
 
         assertThat(syncStatistics).hasValues(2, 2, 0, 0);
 
-        final Map<String, List<String>> categoryKeysWithMissingParents = syncStatistics
+        final Map<String, Set<String>> categoryKeysWithMissingParents = syncStatistics
             .getCategoryKeysWithMissingParents();
         assertThat(categoryKeysWithMissingParents).hasSize(1);
 
-        final List<String> missingParentsChildren = categoryKeysWithMissingParents.get(nonExistingParentKey);
+        final Set<String> missingParentsChildren = categoryKeysWithMissingParents.get(nonExistingParentKey);
         assertThat(missingParentsChildren).hasSize(1);
 
-        final String childrenKeys = missingParentsChildren.get(0);
-        assertThat(childrenKeys).isEqualTo(categoryDraftWithMissingParent.getKey());
+        final String childKey = missingParentsChildren.iterator().next();
+        assertThat(childKey).isEqualTo(categoryDraftWithMissingParent.getKey());
     }
 }
