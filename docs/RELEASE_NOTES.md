@@ -51,13 +51,15 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M9...v1.0.0-M10) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M10/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M10)
+
+**New Features** (1)
+- **Commons** - Added [benchmarking setup](/docs/BENCHMARKS.md) for the library on every release. [#155](https://github.com/commercetools/commercetools-sync-java/issues/155)
 -->
 
 ### v1.0.0-M9 -  Jan 22, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M8...v1.0.0-M9) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M9/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M9) |
-[Benchmarks](https://github.com/commercetools/commercetools-sync-java/blob/155-benchmark-tests/docs/BENCHMARKS.md#v100-m9)
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M9)
 
 **New Features** (1)
 - **Commons** - Added `getSyncOptions` to the `ProductSync`, `CategorySync` and `InventorySync`. [#230](https://github.com/commercetools/commercetools-sync-java/issues/230)
@@ -76,8 +78,7 @@
 ### v1.0.0-M8 -  Dec 29, 2017
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M7...v1.0.0-M8) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M8/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M8) |
-[Benchmarks](https://github.com/commercetools/commercetools-sync-java/blob/155-benchmark-tests/docs/BENCHMARKS.md#v100-m8)
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M8)
 
 **New Features** (1)
 - **Category Sync** - Exposed new method `CategorySyncStatistics#getNumberOfCategoriesWithMissingParents` which gets the
