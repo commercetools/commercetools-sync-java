@@ -158,7 +158,7 @@ public class BenchmarkUtils {
     private static Optional<String> getLatestVersionName(@Nonnull final JsonNode originalRoot,
                                                          @Nonnull final String currentVersionName) {
         return toStream(originalRoot.fieldNames()).reduce((firstVersion, secondVersion) ->
-            !currentVersionName.equals(secondVersion)? secondVersion: firstVersion);
+            !currentVersionName.equals(secondVersion) ? secondVersion : firstVersion);
     }
 
 
