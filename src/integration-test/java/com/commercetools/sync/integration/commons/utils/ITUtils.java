@@ -12,8 +12,8 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -57,7 +57,7 @@ public final class ITUtils {
     }
 
     /**
-     * Applies the {@code resourceToRequestMapper} function on each page, resulting from the {@code query} executed by
+     * Applies the {@code resourceToStageMapper} function on each page, resulting from the {@code query} executed by
      * the {@code ctpClient}, to map each resource to a {@link CompletionStage} and then executes these stages in
      * parallel within each page.
      *
@@ -66,7 +66,8 @@ public final class ITUtils {
      * @param query                 query that should be made on the CTP project.
      * @param resourceToStageMapper defines a mapper function that should be applied on each resource, in the fetched
      *                              page from the query on the specified CTP project, to map it to a
-     *                              {@link CompletionStage}.
+     *                              {@link CompletionStage} which will be executed (in a blocking fashion) after
+     *                              every page fetch.
      *
      */
     public static <T extends Resource, C extends QueryDsl<T, C>, S> void queryAndCompose(
@@ -75,18 +76,15 @@ public final class ITUtils {
         @Nonnull final Function<T, CompletionStage<S>> resourceToStageMapper) {
 
         // TODO: GITHUB ISSUE #248
-        final Function<List<T>, Stream<CompletableFuture<S>>> pageMapper =
-            pageElements -> pageElements.stream()
-                                        .map(resourceToStageMapper)
-                                        .map(CompletionStage::toCompletableFuture);
+        final Consumer<List<T>> pageConsumer =
+            pageElements -> CompletableFuture.allOf(pageElements.stream()
+                                                            .map(resourceToStageMapper)
+                                                            .map(CompletionStage::toCompletableFuture)
+                                                            .toArray(CompletableFuture[]::new))
+                                             .join();
 
-        CtpQueryUtils.queryAll(ctpClient, query, pageMapper)
-                     .thenApply(results -> results.stream().flatMap(Function.identity()))
-                     .thenCompose(ITUtils::toAllOf)
-                     .toCompletableFuture().join();
-    }
-
-    private static <T> CompletionStage<Void> toAllOf(@Nonnull final Stream<? extends CompletionStage<T>> stageStream) {
-        return CompletableFuture.allOf(stageStream.toArray(CompletableFuture[]::new));
+        CtpQueryUtils.queryAll(ctpClient, query, pageConsumer)
+                     .toCompletableFuture()
+                     .join();
     }
 }
