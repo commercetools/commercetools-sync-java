@@ -78,9 +78,9 @@ public final class ITUtils {
         // TODO: GITHUB ISSUE #248
         final Consumer<List<T>> pageConsumer =
             pageElements -> CompletableFuture.allOf(pageElements.stream()
-                                                            .map(resourceToStageMapper)
-                                                            .map(CompletionStage::toCompletableFuture)
-                                                            .toArray(CompletableFuture[]::new))
+                                                                .map(resourceToStageMapper)
+                                                                .map(CompletionStage::toCompletableFuture)
+                                                                .toArray(CompletableFuture[]::new))
                                              .join();
 
         CtpQueryUtils.queryAll(ctpClient, query, pageConsumer)
