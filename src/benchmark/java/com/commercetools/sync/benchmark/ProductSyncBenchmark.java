@@ -274,6 +274,7 @@ public class ProductSyncBenchmark {
         for (int i = 0; i < numberOfProducts; i++) {
             final ProductVariantDraft masterVariantDraft = ProductVariantDraftBuilder.of()
                                                                                      .key("masterVariantKey_" + i)
+                                                                                     .sku("sku_" + i)
                                                                                      .build();
             final ProductDraft productDraft = ProductDraftBuilder
                 .of(draftsProductType, ofEnglish("name_" + i), ofEnglish("slug_" + i), masterVariantDraft)
