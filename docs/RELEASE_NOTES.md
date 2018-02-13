@@ -51,6 +51,9 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M9...v1.0.0-M10) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M10/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M10)
+
+**New Features** (1)
+- **Commons** - Added [benchmarking setup](/docs/BENCHMARKS.md) for the library on every release. [#155](https://github.com/commercetools/commercetools-sync-java/issues/155)
 -->
 
 ### v1.0.0-M9 -  Jan 22, 2018

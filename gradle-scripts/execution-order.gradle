@@ -45,5 +45,7 @@ check.dependsOn jacocoTestReport
 // Ensure jacocoTestCoverageVerification and jacocoTestReport run after integrationTest
 jacocoTestCoverageVerification.mustRunAfter integrationTest
 jacocoTestReport.mustRunAfter integrationTest
-// Ensure build runs after setReleaseVersion
-build.mustRunAfter setReleaseVersion
+// Ensure build runs after setLibraryVersion
+build.mustRunAfter setLibraryVersion
+// Ensure benchmark results are only committed runs after the benchmarks are run
+benchmarkCommit.mustRunAfter benchmark

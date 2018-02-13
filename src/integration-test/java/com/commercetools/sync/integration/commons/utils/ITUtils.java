@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.commons.utils;
 
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.models.Resource;
@@ -8,15 +9,14 @@ import io.sphere.sdk.types.commands.TypeDeleteCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static io.sphere.sdk.queries.QueryExecutionUtils.queryAll;
 
 public final class ITUtils {
 
@@ -57,7 +57,7 @@ public final class ITUtils {
     }
 
     /**
-     * Applies the {@code resourceToRequestMapper} function on each page, resulting from the {@code query} executed by
+     * Applies the {@code resourceToStageMapper} function on each page, resulting from the {@code query} executed by
      * the {@code ctpClient}, to map each resource to a {@link CompletionStage} and then executes these stages in
      * parallel within each page.
      *
@@ -66,20 +66,25 @@ public final class ITUtils {
      * @param query                 query that should be made on the CTP project.
      * @param resourceToStageMapper defines a mapper function that should be applied on each resource, in the fetched
      *                              page from the query on the specified CTP project, to map it to a
-     *                              {@link CompletionStage}.
+     *                              {@link CompletionStage} which will be executed (in a blocking fashion) after
+     *                              every page fetch.
+     *
      */
     public static <T extends Resource, C extends QueryDsl<T, C>, S> void queryAndCompose(
         @Nonnull final SphereClient ctpClient,
         @Nonnull final QueryDsl<T, C> query,
         @Nonnull final Function<T, CompletionStage<S>> resourceToStageMapper) {
 
-        queryAll(ctpClient, query, resourceToStageMapper)
-            .thenApply(Collection::stream)
-            .thenCompose(ITUtils::toAllOf)
-            .toCompletableFuture().join();
-    }
+        // TODO: GITHUB ISSUE #248
+        final Consumer<List<T>> pageConsumer =
+            pageElements -> CompletableFuture.allOf(pageElements.stream()
+                                                                .map(resourceToStageMapper)
+                                                                .map(CompletionStage::toCompletableFuture)
+                                                                .toArray(CompletableFuture[]::new))
+                                             .join();
 
-    private static <T> CompletionStage<Void> toAllOf(@Nonnull final Stream<? extends CompletionStage<T>> stageStream) {
-        return CompletableFuture.allOf(stageStream.toArray(CompletableFuture[]::new));
+        CtpQueryUtils.queryAll(ctpClient, query, pageConsumer)
+                     .toCompletableFuture()
+                     .join();
     }
 }
