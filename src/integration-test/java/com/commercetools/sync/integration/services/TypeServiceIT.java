@@ -17,9 +17,9 @@ import org.junit.Test;
 import java.util.Locale;
 import java.util.Optional;
 
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TypeServiceIT {

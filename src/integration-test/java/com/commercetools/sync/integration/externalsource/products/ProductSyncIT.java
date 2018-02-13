@@ -367,9 +367,9 @@ public class ProductSyncIT {
 
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
-                executeBlocking(productSync.sync(batch1)
-                                            .thenCompose(result -> productSync.sync(batch2))
-                                            .thenCompose(result -> productSync.sync(batch3)));
+            executeBlocking(productSync.sync(batch1)
+                                       .thenCompose(result -> productSync.sync(batch2))
+                                       .thenCompose(result -> productSync.sync(batch3)));
 
         assertThat(syncStatistics).hasValues(3, 1, 2, 0);
         assertThat(errorCallBackExceptions).isEmpty();

@@ -33,6 +33,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [v1.0.0-M10 -  Feb 13, 2018](#v100-m10----feb-13-2018)
 - [v1.0.0-M9 -  Jan 22, 2018](#v100-m9----jan-22-2018)
 - [v1.0.0-M8 -  Dec 29, 2017](#v100-m8----dec-29-2017)
 - [v1.0.0-M7 -  Dec 15, 2017](#v100-m7----dec-15-2017)
@@ -46,18 +47,18 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-<!--
-### v1.0.0-M10 -  Feb 07, 2018
+### v1.0.0-M10 -  Feb 13, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M9...v1.0.0-M10) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M10/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M10)
 
+**New Features** (1)
+- **Commons** - Added [benchmarking setup](/docs/BENCHMARKS.md) for the library on every release. [#155](https://github.com/commercetools/commercetools-sync-java/issues/155)
 
-**Changes** (1)
+**Changes** (3)
 - **Commons** - Statistics counters are now of type `AtomicInteger` instead of int to support conccurency. [#242](https://github.com/commercetools/commercetools-sync-java/issues/242)
 - **Category Sync** - `categoryKeysWithMissingParents` in the `CategorySyncStatistics` is now of type `ConcurrentHashMap<String, Set<String>` instead of `Map<String, List<String>`. [#242](https://github.com/commercetools/commercetools-sync-java/issues/242)
 - **Category Sync** - `CategorySyncStatistics` now exposes the methods `removeChildCategoryKeyFromMissingParentsMap`, `getMissingParentKey` and `putMissingParentCategoryChildKey` to support manipulating `categoryKeysWithMissingParents` map. [#242](https://github.com/commercetools/commercetools-sync-java/issues/242)
--->
 
 ### v1.0.0-M9 -  Jan 22, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M8...v1.0.0-M9) |

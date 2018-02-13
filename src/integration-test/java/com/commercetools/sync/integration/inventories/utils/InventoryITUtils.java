@@ -39,7 +39,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndApply;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Collections.singletonList;
@@ -70,7 +70,7 @@ public class InventoryITUtils {
      * @param ctpClient represents the CTP project the inventory entries will be deleted from.
      */
     public static void deleteInventoryEntries(@Nonnull final SphereClient ctpClient) {
-        queryAndApply(ctpClient, InventoryEntryQuery::of, InventoryEntryDeleteCommand::of);
+        queryAndExecute(ctpClient, InventoryEntryQuery.of(), InventoryEntryDeleteCommand::of);
     }
 
     /**
@@ -79,7 +79,7 @@ public class InventoryITUtils {
      * @param ctpClient represents the CTP project the channels will be deleted from.
      */
     public static void deleteSupplyChannels(@Nonnull final SphereClient ctpClient) {
-        queryAndApply(ctpClient, ChannelQuery::of, ChannelDeleteCommand::of);
+        queryAndExecute(ctpClient, ChannelQuery.of(), ChannelDeleteCommand::of);
     }
 
     /**

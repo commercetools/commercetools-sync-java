@@ -32,6 +32,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -55,7 +56,6 @@ import static com.commercetools.sync.inventories.utils.InventoryReferenceReplace
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 
 /**
  * Contains integration tests of inventory sync.
@@ -127,7 +127,7 @@ public class InventorySyncIT {
 
         //Sync and ensure that proper statistics were returned.
         final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(singletonList(newInventoryDraft))
-            .toCompletableFuture().join();
+                                                                             .toCompletableFuture().join();
         assertThat(inventorySyncStatistics).hasValues(1, 1, 0, 0);
 
         //Ensure that old entry has correct values after sync.
