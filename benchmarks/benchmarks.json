@@ -1,1 +1,156 @@
-{"v1.0.0-M8":{"productSync":{"createsOnly":{"executionTimes":[136016.0,130661.0,161853.0,148619.0,182988.0],"average":152027.4,"diff":26740.399999999994},"updatesOnly":{"executionTimes":[139748.0,145856.0,138337.0,144798.0,162069.0],"average":146161.6,"diff":146161.6},"mix":{"executionTimes":[142058.0,144698.0,168336.0,154155.0,163316.0],"average":154512.6,"diff":154512.6}},"inventorySync":{"createsOnly":{"executionTimes":[60732.0,53505.0,56896.0,57103.0,83818.0],"average":62410.8,"diff":2660.800000000003},"updatesOnly":{"executionTimes":[],"average":0,"diff":0},"mix":{"executionTimes":[],"average":0,"diff":0}},"categorySync":{"createsOnly":{"executionTimes":[],"average":0,"diff":0},"updatesOnly":{"executionTimes":[],"average":0,"diff":0},"mix":{"executionTimes":[],"average":0,"diff":0}}},"dev-version":{"productSync":{"createsOnly":{"executionTimes":[149548.0,112475.0,116257.0,113290.0,138136.0],"average":125941.2,"diff":-26086.199999999997},"updatesOnly":{"executionTimes":[204899.0,174076.0,192454.0,147896.0,159952.0],"average":175855.4,"diff":29693.79999999999},"mix":{"executionTimes":[170485.0,137325.0,157486.0,130836.0,159202.0],"average":151066.8,"diff":-3445.8000000000175}},"inventorySync":{"createsOnly":{"executionTimes":[88123.0,81150.0,58248.0,59939.0,52430.0],"average":67978.0,"diff":5567.199999999997},"updatesOnly":{"executionTimes":[],"average":0,"diff":0},"mix":{"executionTimes":[],"average":0,"diff":0}},"categorySync":{"createsOnly":{"executionTimes":[],"average":0,"diff":0},"updatesOnly":{"executionTimes":[],"average":0,"diff":0},"mix":{"executionTimes":[],"average":0,"diff":0}}}}
+{
+  "v1.0.0-M8": {
+    "productSync": {
+      "createsOnly": {
+        "executionTimes": [
+          136016.0,
+          130661.0,
+          161853.0,
+          148619.0,
+          182988.0
+        ],
+        "average": 152027.4,
+        "diff": 26740.399999999994
+      },
+      "updatesOnly": {
+        "executionTimes": [
+          139748.0,
+          145856.0,
+          138337.0,
+          144798.0,
+          162069.0
+        ],
+        "average": 146161.6,
+        "diff": 146161.6
+      },
+      "mix": {
+        "executionTimes": [
+          142058.0,
+          144698.0,
+          168336.0,
+          154155.0,
+          163316.0
+        ],
+        "average": 154512.6,
+        "diff": 154512.6
+      }
+    },
+    "inventorySync": {
+      "createsOnly": {
+        "executionTimes": [
+          60732.0,
+          53505.0,
+          56896.0,
+          57103.0,
+          83818.0
+        ],
+        "average": 62410.8,
+        "diff": 2660.800000000003
+      },
+      "updatesOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "mix": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      }
+    },
+    "categorySync": {
+      "createsOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "updatesOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "mix": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      }
+    }
+  },
+  "v1.0.0-M9": {
+    "productSync": {
+      "createsOnly": {
+        "executionTimes": [
+          149548.0,
+          112475.0,
+          116257.0,
+          113290.0,
+          138136.0
+        ],
+        "average": 125941.2,
+        "diff": -26086.199999999997
+      },
+      "updatesOnly": {
+        "executionTimes": [
+          204899.0,
+          174076.0,
+          192454.0,
+          147896.0,
+          159952.0
+        ],
+        "average": 175855.4,
+        "diff": 29693.79999999999
+      },
+      "mix": {
+        "executionTimes": [
+          170485.0,
+          137325.0,
+          157486.0,
+          130836.0,
+          159202.0
+        ],
+        "average": 151066.8,
+        "diff": -3445.8000000000175
+      }
+    },
+    "inventorySync": {
+      "createsOnly": {
+        "executionTimes": [
+          88123.0,
+          81150.0,
+          58248.0,
+          59939.0,
+          52430.0
+        ],
+        "average": 67978.0,
+        "diff": 5567.199999999997
+      },
+      "updatesOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "mix": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      }
+    },
+    "categorySync": {
+      "createsOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "updatesOnly": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      },
+      "mix": {
+        "executionTimes": [],
+        "average": 0,
+        "diff": 0
+      }
+    }
+  }
+}
