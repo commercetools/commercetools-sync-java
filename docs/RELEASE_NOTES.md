@@ -52,6 +52,11 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M10...v1.0.0-M11) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M11/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M11)
+
+
+**Bug Fixes** (1)
+- **Build Tools** - Fixed bug where jar and Codecov were triggered on benchmark stages of the build when they should 
+only be triggered on the full build. [#249](https://github.com/commercetools/commercetools-sync-java/issues/249)
 -->
 
 
