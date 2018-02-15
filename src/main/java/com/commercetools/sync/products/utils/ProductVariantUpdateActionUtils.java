@@ -4,6 +4,8 @@ import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.Asset;
+import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.products.Image;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
@@ -11,8 +13,10 @@ import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
+import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.MoveImageToPosition;
+import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.SetPrices;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
@@ -20,18 +24,24 @@ import io.sphere.sdk.products.commands.updateactions.SetSku;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.products.utils.ProductAssetUpdateActionUtils.buildActions;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 // TODO: TESTS
 public final class ProductVariantUpdateActionUtils {
@@ -128,7 +138,85 @@ public final class ProductVariantUpdateActionUtils {
         final List<PriceDraft> newProductVariantPrices =
             newProductVariant.getPrices() == null ? new ArrayList<>() : newProductVariant.getPrices();
         final SetPrices setPricesUpdateAction = SetPrices.of(oldProductVariant.getId(), newProductVariantPrices);
-        return Collections.singletonList(setPricesUpdateAction);
+        return singletonList(setPricesUpdateAction);
+    }
+
+    /**
+     * Compares the {@link List} of {@link io.sphere.sdk.products.Price}s of a {@link ProductVariantDraft} and a
+     * {@link ProductVariant} and returns a {@link List} of {@link UpdateAction}&lt;{@link Product}&gt;. If both the
+     * {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of prices, then no update action
+     * is needed and hence an empty {@link List} is returned.
+     *
+     * <p>TODO: NOTE: Right now it always builds SetPrices UpdateAction, comparison should be
+     * TODO: calculated GITHUB ISSUE#101.
+     *
+     * @param oldProductVariant the {@link ProductVariant} which should be updated.
+     * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of prices.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
+     *         needed.
+     */
+    @Nonnull
+    public static List<UpdateAction<Product>> buildProductVariantAssetsUpdateActions(
+        @Nonnull final ProductVariant oldProductVariant,
+        @Nonnull final ProductVariantDraft newProductVariant,
+        @Nonnull final ProductSyncOptions syncOptions) {
+
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
+        final Integer oldProductVariantId = oldProductVariant.getId();
+        final List<Asset> oldProductVariantAssets = oldProductVariant.getAssets();
+        final List<AssetDraft> newProductVariantAssetDrafts = newProductVariant.getAssets();
+
+
+        if (newProductVariantAssetDrafts != null) {
+
+
+            // Add new assets. TODO: SHOULD BE COMBINED WITH BELOW STREAMING.
+            final Map<String, Asset> oldAssetsKeyMap = oldProductVariantAssets
+                .stream().collect(toMap(Asset::getKey, asset -> asset));
+
+            updateActions.addAll(
+                newProductVariantAssetDrafts
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .map(newAssetDraft -> {
+                        final String newAssetDraftKey = newAssetDraft.getKey();
+                        final Asset matchingOldAsset = oldAssetsKeyMap.get(newAssetDraftKey);
+
+                        return matchingOldAsset == null
+                            ? AddAsset.ofVariantId(oldProductVariantId, newAssetDraft) : null;
+                    })
+                    .collect(toList()));
+
+            final Map<String, AssetDraft> newAssetDraftsKeyMap = newProductVariantAssetDrafts
+                .stream().collect(toMap(AssetDraft::getKey, assetDraft -> assetDraft));
+
+            // Remove old existing assets which aren't there anymore and compare found matching assets.
+            updateActions.addAll(
+                oldProductVariantAssets
+                    .stream()
+                    // TODO: CHECK IF OLD ASSET IS NOT NULL!
+                    .map(oldAsset -> {
+                        final String oldAssetKey = oldAsset.getKey();
+                        final AssetDraft matchingNewAssetDraft = newAssetDraftsKeyMap.get(oldAssetKey);
+
+                        return matchingNewAssetDraft != null ?
+                            buildActions(oldProductVariantId, oldAsset, matchingNewAssetDraft, syncOptions)
+                            :
+                            singletonList(RemoveAsset.ofVariantIdWithKey(oldProductVariantId, oldAssetKey, true));
+                        })
+                    .flatMap(Collection::stream)
+                    .collect(toList()));
+
+        } else {
+            // Remove all old assets.
+            updateActions.addAll(
+                oldProductVariantAssets.stream()
+                                       .map(oldAssetToBeRemoved -> RemoveAsset.ofVariantIdWithKey(oldProductVariantId,
+                                           oldAssetToBeRemoved.getKey(), true))
+                                       .collect(Collectors.toList()));
+        }
+        return updateActions;
+
     }
 
     /**
