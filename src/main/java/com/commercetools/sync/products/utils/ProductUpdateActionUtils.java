@@ -51,10 +51,12 @@ import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollect
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActions;
 import static com.commercetools.sync.commons.utils.FilterUtils.executeSupplierIfPassesFilter;
+import static com.commercetools.sync.products.ActionGroup.ASSETS;
 import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
 import static com.commercetools.sync.products.ActionGroup.IMAGES;
 import static com.commercetools.sync.products.ActionGroup.PRICES;
 import static com.commercetools.sync.products.ActionGroup.SKU;
+import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
@@ -448,6 +450,10 @@ public final class ProductUpdateActionUtils {
         updateActions.addAll(
             buildActionsIfPassesFilter(syncFilter, PRICES, () ->
                 buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant)));
+
+        updateActions.addAll(
+            buildActionsIfPassesFilter(syncFilter, ASSETS, () ->
+                buildProductVariantAssetsUpdateActions(oldProductVariant, newProductVariant, syncOptions)));
 
         buildActionIfPassesFilter(syncFilter, SKU, () ->
             buildProductVariantSkuUpdateAction(oldProductVariant, newProductVariant))
