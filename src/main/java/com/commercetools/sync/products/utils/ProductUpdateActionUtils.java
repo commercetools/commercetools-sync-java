@@ -393,10 +393,9 @@ public final class ProductUpdateActionUtils {
         final List<ProductVariantDraft> newAllProductVariants = new ArrayList<>(newProduct.getVariants());
         newAllProductVariants.add(newProduct.getMasterVariant());
 
-        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-
         // 1. Remove missing variants, but keep master variant (MV can't be removed)
-        updateActions.addAll(buildRemoveVariantUpdateActions(oldProductVariantsNoMaster, newAllProductVariants));
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>(
+            buildRemoveVariantUpdateActions(oldProductVariantsNoMaster, newAllProductVariants));
 
         for (ProductVariantDraft newProductVariant : newAllProductVariants) {
             if (newProductVariant == null) {
