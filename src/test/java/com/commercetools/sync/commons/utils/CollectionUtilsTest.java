@@ -3,10 +3,14 @@ package com.commercetools.sync.commons.utils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToSet;
@@ -113,22 +117,57 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void emptyIfNull_withListInstances_returnsNonNull() {
-        List<String> nonNullEmptyList = emptyIfNull((List<String>)null);
+    public void emptyIfNull_withNullInstances_returnsNonNullInstances() {
+        Collection<String> nonNullEmptyCollection = emptyIfNull((Collection<String>)null);
+        assertThat(nonNullEmptyCollection).isNotNull();
+        assertThat(nonNullEmptyCollection).isEmpty();
+
+        Set<Exception> nonNullEmptySet = emptyIfNull((Set<Exception>)null);
+        assertThat(nonNullEmptySet).isNotNull();
+        assertThat(nonNullEmptySet).isEmpty();
+
+        List<Integer> nonNullEmptyList = emptyIfNull((List<Integer>)null);
         assertThat(nonNullEmptyList).isNotNull();
         assertThat(nonNullEmptyList).isEmpty();
 
-        List<String> listToTest = asList("a", "b");
-        assertThat(emptyIfNull(listToTest)).isSameAs(listToTest);
-        assertThat(listToTest).containsExactly("a", "b"); // verify list is not mutated
+        Map<Double, CharSequence> nonNullEmptyMap = emptyIfNull((Map<Double, CharSequence>)null);
+        assertThat(nonNullEmptyMap).isNotNull();
+        assertThat(nonNullEmptyMap).isEmpty();
     }
 
     @Test
-    public void emptyIfNull_withMapInstances_returnsNonNull() {
-        Map<String, String> nonNullEmptyMap = emptyIfNull((Map<String, String>)null);
-        assertThat(nonNullEmptyMap).isNotNull();
-        assertThat(nonNullEmptyMap).isEmpty();
+    public void emptyIfNull_withArrayList_returnsSameInstance() {
+        ArrayList<String> arrayListCollection = new ArrayList<>();
+        arrayListCollection.add("a");
+        arrayListCollection.add("b");
 
+        List<String> actualCollection = emptyIfNull(arrayListCollection);
+        assertThat(actualCollection).isSameAs(arrayListCollection);
+        assertThat(actualCollection).containsExactly("a", "b"); // verify ArrayList is not mutated
+    }
+
+    @Test
+    public void emptyIfNull_withHashSet_returnsSameInstance() {
+        HashSet<String> arrayListCollection = new HashSet<>();
+        arrayListCollection.add("woot");
+        arrayListCollection.add("hack");
+
+        Set<String> actualCollection = emptyIfNull(arrayListCollection);
+        assertThat(actualCollection).isSameAs(arrayListCollection);
+        assertThat(actualCollection).containsExactlyInAnyOrder("woot", "hack"); // verify HashSet is not mutated
+    }
+
+    @Test
+    public void emptyIfNull_withListInstances_returnsNonNullList() {
+        List<String> originalListToTest = asList("a", "b");
+
+        List<String> actualListToTest = emptyIfNull(originalListToTest);
+        assertThat(actualListToTest).isSameAs(originalListToTest);
+        assertThat(actualListToTest).containsExactly("a", "b"); // verify list is not mutated
+    }
+
+    @Test
+    public void emptyIfNull_withMapInstances_returnsNonNullMap() {
         Map<String, Integer> mapToTest = new HashMap<>();
         mapToTest.put("X", 10);
         mapToTest.put("Y", 11);

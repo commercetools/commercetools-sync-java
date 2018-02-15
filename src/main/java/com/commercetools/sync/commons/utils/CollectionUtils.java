@@ -3,7 +3,6 @@ package com.commercetools.sync.commons.utils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,6 +12,7 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
@@ -51,8 +51,7 @@ public final class CollectionUtils {
     @Nonnull
     public static <T, K> Set<K> collectionToSet(@Nullable final Collection<T> collection,
                                                 @Nonnull final Function<? super T, ? extends K> keyMapper) {
-        return collection == null ? Collections.emptySet()
-                : collection.stream()
+        return emptyIfNull(collection).stream()
                 .map(keyMapper)
                 .collect(toSet());
     }
@@ -74,9 +73,9 @@ public final class CollectionUtils {
     public static <T, K, V> Map<K, V> collectionToMap(@Nullable final Collection<T> collection,
                                                       @Nonnull final Function<? super T, ? extends K> keyMapper,
                                                       @Nonnull final Function<? super T, ? extends V> valueMapper) {
-        return collection == null ? Collections.emptyMap()
-                : collection.stream()
-                .collect(toMap(keyMapper, valueMapper,  (k1, k2) -> k1)); // ignore duplicates
+        return emptyIfNull(collection)
+                .stream()
+                .collect(toMap(keyMapper, valueMapper, (k1, k2) -> k1)); // ignore duplicates
     }
 
     /**
@@ -95,6 +94,21 @@ public final class CollectionUtils {
         return collectionToMap(collection, keyMapper, value -> value);
     }
 
+    /**
+     * Safe wrapper around nullable collection instances: returns {@code collection} argument itself,
+     * if the {@code collection} is non-null, otherwise returns (immutable) empty collection.
+     *
+     * @param collection {@link Collection} instance to process
+     * @param <T>        collection entities type
+     * @return original {@code collection} instance, if non-null; otherwise immutable empty collection instance.
+     * @see #emptyIfNull(List)
+     * @see #emptyIfNull(Set)
+     * @see #emptyIfNull(Map)
+     */
+    @Nonnull
+    public static <T> Collection<T> emptyIfNull(@Nullable final Collection<T> collection) {
+        return collection == null ? emptyList() : collection;
+    }
 
     /**
      * Safe wrapper around nullable list instances: returns {@code list} argument itself,
@@ -103,10 +117,30 @@ public final class CollectionUtils {
      * @param list {@link List} instance to process
      * @param <T>  list entities type
      * @return original {@code list} instance, if non-null; otherwise immutable empty list instance.
+     * @see #emptyIfNull(Collection)
+     * @see #emptyIfNull(Set)
+     * @see #emptyIfNull(Map)
      */
     @Nonnull
     public static <T> List<T> emptyIfNull(@Nullable final List<T> list) {
         return list == null ? emptyList() : list;
+    }
+
+
+    /**
+     * Safe wrapper around nullable set instances: returns {@code set} argument itself,
+     * if the {@code set} is non-null, otherwise returns (immutable) empty set.
+     *
+     * @param set {@link Set} instance to process
+     * @param <T> set entities type
+     * @return original {@code set} instance, if non-null; otherwise immutable empty set instance.
+     * @see #emptyIfNull(Collection)
+     * @see #emptyIfNull(List)
+     * @see #emptyIfNull(Map)
+     */
+    @Nonnull
+    public static <T> Set<T> emptyIfNull(@Nullable final Set<T> set) {
+        return set == null ? emptySet() : set;
     }
 
     /**
@@ -117,6 +151,9 @@ public final class CollectionUtils {
      * @param <K> map key type
      * @param <V> map value type
      * @return original {@code map} instance, if non-null; otherwise immutable empty map instance.
+     * @see #emptyIfNull(Collection)
+     * @see #emptyIfNull(List)
+     * @see #emptyIfNull(Set)
      */
     @Nonnull
     public static <K, V> Map<K, V> emptyIfNull(@Nullable final Map<K, V> map) {
