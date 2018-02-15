@@ -411,7 +411,7 @@ public final class ProductUpdateActionUtils {
 
             // 2.1 if both old/new variants lists have an item with the same key - create update actions for the variant
             // 2.2 otherwise - add missing variant
-            List<UpdateAction<Product>> updateOrAddVariant =
+            final List<UpdateAction<Product>> updateOrAddVariant =
                 ofNullable(oldProductVariantsWithMaster.get(newProductVariantKey))
                     .map(oldProductVariant -> collectAllVariantUpdateActions(oldProduct, oldProductVariant,
                         newProductVariant, attributesMetaData, syncOptions))
