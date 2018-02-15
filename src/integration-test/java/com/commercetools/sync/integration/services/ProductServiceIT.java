@@ -730,7 +730,6 @@ public class ProductServiceIT {
         assertThat(fetchedProductOptional).isNotEmpty();
 
         final Product fetchedProduct = fetchedProductOptional.get();
-        assertThat(fetchedProduct.getVersion()).isEqualTo(numberOfImages + 1);
         // Test that the fetched product has exactly the 600 images added before.
         final List<Image> currentMasterVariantImages = fetchedProduct.getMasterData().getStaged()
                                                                      .getMasterVariant().getImages();

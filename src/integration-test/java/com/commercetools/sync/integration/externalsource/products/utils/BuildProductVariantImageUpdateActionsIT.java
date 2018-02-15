@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
@@ -320,8 +321,7 @@ public class BuildProductVariantImageUpdateActionsIT {
                                                        @Nonnull final Product productAfterSync) {
         final List<Image> oldImagesAfterSync =
             productAfterSync.getMasterData().getStaged().getMasterVariant().getImages();
-        List<Image> newImages = newProduct.getMasterVariant().getImages();
-        newImages = newImages != null ? newImages : Collections.emptyList();
+        List<Image> newImages = emptyIfNull(newProduct.getMasterVariant().getImages());
         assertThat(newImages).isEqualTo(oldImagesAfterSync);
     }
 }
