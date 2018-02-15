@@ -4,12 +4,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
@@ -90,6 +93,34 @@ public final class CollectionUtils {
     public static <T, K> Map<K, T> collectionToMap(@Nullable final Collection<T> collection,
                                                    @Nonnull final Function<? super T, ? extends K> keyMapper) {
         return collectionToMap(collection, keyMapper, value -> value);
+    }
+
+
+    /**
+     * Safe wrapper around nullable list instances: returns {@code list} argument itself,
+     * if the {@code list} is non-null, otherwise returns (immutable) empty list.
+     *
+     * @param list {@link List} instance to process
+     * @param <T>  list entities type
+     * @return original {@code list} instance, if non-null; otherwise immutable empty list instance.
+     */
+    @Nonnull
+    public static <T> List<T> emptyIfNull(@Nullable final List<T> list) {
+        return list == null ? emptyList() : list;
+    }
+
+    /**
+     * Safe wrapper around nullable map instances: returns {@code map} argument itself, if the {@code map} is non-null,
+     * otherwise returns (immutable) empty map.
+     *
+     * @param map {@link Map} instance to process
+     * @param <K> map key type
+     * @param <V> map value type
+     * @return original {@code map} instance, if non-null; otherwise immutable empty map instance.
+     */
+    @Nonnull
+    public static <K, V> Map<K, V> emptyIfNull(@Nullable final Map<K, V> map) {
+        return map == null ? emptyMap() : map;
     }
 
     private CollectionUtils() {
