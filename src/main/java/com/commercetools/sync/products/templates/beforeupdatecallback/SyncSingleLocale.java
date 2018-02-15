@@ -142,7 +142,7 @@ final class SyncSingleLocale {
                 final String newLocaleValue = newLocalizedField.get(locale);
                 final String oldLocaleValue = oldLocalizedField.get(locale);
                 if (!Objects.equals(newLocaleValue, oldLocaleValue)) {
-                    // if old locale value is set, remove it from old localized field, otherwise use oldLocalizedField
+                    // if old locale value is set, remove it from old localized field
                     final LocalizedString withLocaleChange = ofNullable(oldLocaleValue)
                         .map(value -> LocalizedString.of(
                             oldLocalizedField.stream()
@@ -151,7 +151,8 @@ final class SyncSingleLocale {
                                     LocalizedStringEntry::getValue))))
                         .orElse(oldLocalizedField);
 
-                    // If old locale value is not set, only update if the new locale value is set.
+                    // Only if old locale value is not set and the new locale value is set,
+                    // update the old localized field with the new locale value
                     return ofNullable(newLocaleValue)
                         .map(val -> updateActionMapper.apply(withLocaleChange.plus(locale, val)));
                 }
