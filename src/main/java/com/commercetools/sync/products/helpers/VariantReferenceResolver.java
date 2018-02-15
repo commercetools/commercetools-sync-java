@@ -149,7 +149,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
 
     private static Optional<String> getReferenceTypeIdIfReference(@Nonnull final JsonNode referenceValue) {
         final JsonNode typeId = referenceValue.get(REFERENCE_TYPE_ID_FIELD);
-        return typeId != null ? Optional.ofNullable(typeId.asText()) : Optional.empty();
+        return Optional.ofNullable(typeId).map(JsonNode::asText);
     }
 
     CompletionStage<Optional<String>> getResolvedIdFromKeyInReference(@Nonnull final JsonNode referenceValue) {
