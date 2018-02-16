@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildChangeAssetNameUpdateAction;
+import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildCustomUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildSetAssetDescriptionUpdateAction;
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildSetAssetSourcesUpdateAction;
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildSetAssetTagsUpdateAction;
@@ -21,23 +21,19 @@ import static java.util.Arrays.asList;
 public final class ProductAssetUpdateActionUtils {
 
     @Nonnull
-    public static List<UpdateAction<Product>> buildActions(
-        final int variantId,
-        @Nonnull final Asset oldAsset,
-        @Nonnull final AssetDraft newAsset,
-        @Nonnull final ProductSyncOptions syncOptions) {
+    public static List<UpdateAction<Product>> buildActions(final int variantId,
+                                                           @Nonnull final Asset oldAsset,
+                                                           @Nonnull final AssetDraft newAsset,
+                                                           @Nonnull final ProductSyncOptions syncOptions) {
+
         final List<UpdateAction<Product>> updateActions = buildUpdateActionsFromOptionals(asList(
             buildChangeAssetNameUpdateAction(variantId, oldAsset, newAsset),
             buildSetAssetDescriptionUpdateAction(variantId, oldAsset, newAsset),
             buildSetAssetTagsUpdateAction(variantId, oldAsset, newAsset),
             buildSetAssetSourcesUpdateAction(variantId, oldAsset, newAsset)
-
         ));
 
-        final List<UpdateAction<Asset>> updateActions1 = buildCustomUpdateActions(oldAsset, newAsset, variantId + "",
-            syncOptions);
-
-        updateActions.addAll(assetCustomUpdateActions);
+        updateActions.addAll(buildCustomUpdateActions(variantId, oldAsset, newAsset, syncOptions));
         return updateActions;
     }
 
