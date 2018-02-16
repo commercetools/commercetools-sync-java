@@ -22,11 +22,10 @@ import java.util.Optional;
 import java.util.Spliterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 
@@ -164,37 +163,6 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
         productReferenceJsonNode.put(REFERENCE_ID_FIELD, productId);
         productReferenceJsonNode.put(REFERENCE_TYPE_ID_FIELD, Product.referenceTypeId());
         return productReferenceJsonNode;
-    }
-
-    private static <T> CompletableFuture<List<T>> mapValuesToFutureOfCompletedValues(
-        @Nonnull final List<T> entities,
-        @Nonnull final Function<T, CompletionStage<T>> entityMapper) {
-        return mapValuesToFutureOfCompletedValues(entities.stream(), entityMapper);
-    }
-
-    private static <T> CompletableFuture<List<T>> mapValuesToFutureOfCompletedValues(
-        @Nonnull final Stream<T> entities,
-        @Nonnull final Function<T, CompletionStage<T>> entityMapper) {
-        return getFutureOfCompletedValues(mapValuesToFutures(entities, entityMapper));
-    }
-
-    private static <T> List<CompletableFuture<T>> mapValuesToFutures(
-        @Nonnull final Stream<T> entities,
-        @Nonnull final Function<T, CompletionStage<T>> entityMapper) {
-        return entities
-            .filter(Objects::nonNull)
-            .map(entityMapper)
-            .map(CompletionStage::toCompletableFuture)
-            .collect(Collectors.toList());
-    }
-
-    private static <T> CompletableFuture<List<T>> getFutureOfCompletedValues(
-        @Nonnull final List<CompletableFuture<T>> futures) {
-        return CompletableFuture
-            .allOf(futures.toArray(new CompletableFuture[futures.size()]))
-            .thenApply(result -> futures.stream()
-                                        .map(CompletableFuture::join)
-                                        .collect(Collectors.toList()));
     }
 }
 
