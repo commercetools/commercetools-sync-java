@@ -25,8 +25,8 @@ public class CategoryAssetCustomUpdateActionUtilsTest {
     public void buildTypedSetCustomTypeUpdateAction_WithCategoryAsset_ShouldBuildCategoryUpdateAction() {
         final UpdateAction<Category> updateAction =
             GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction("key",
-                new HashMap<>(), mock(Asset.class), Category.class, 1, Asset::getId, assetResource -> Asset.resourceTypeId(),
-                Asset::getKey, syncOptions).orElse(null);
+                new HashMap<>(), mock(Asset.class), Category.class, 1,
+                Asset::getId, assetResource -> Asset.resourceTypeId(), Asset::getKey, syncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetAssetCustomType.class);
@@ -34,8 +34,8 @@ public class CategoryAssetCustomUpdateActionUtilsTest {
 
     @Test
     public void buildTypedRemoveCustomTypeUpdateAction_WithCategoryAsset_ShouldBuildChannelUpdateAction() {
-        final UpdateAction<Category> updateAction = buildTypedRemoveCustomTypeUpdateAction(mock(Asset.class), Category.class, 1,
-            Asset::getId, assetResource -> Asset.resourceTypeId(),
+        final UpdateAction<Category> updateAction = buildTypedRemoveCustomTypeUpdateAction(mock(Asset.class),
+            Category.class, 1, Asset::getId, assetResource -> Asset.resourceTypeId(),
             Asset::getKey, syncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();

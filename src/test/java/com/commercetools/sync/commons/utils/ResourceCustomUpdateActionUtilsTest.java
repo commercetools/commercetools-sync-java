@@ -480,9 +480,9 @@ public class ResourceCustomUpdateActionUtilsTest {
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> customFieldsActions =
-            buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),  null,null,
-                Category::getId, category -> category.toReference().getTypeId(), category -> null,
-                CATEGORY_SYNC_OPTIONS);
+            buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
+                null,null, Category::getId, category -> category.toReference().getTypeId(),
+                category -> null, CATEGORY_SYNC_OPTIONS);
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isNotEmpty();
@@ -504,8 +504,9 @@ public class ResourceCustomUpdateActionUtilsTest {
         when(cart.toReference()).thenReturn(Cart.referenceOfId("cartId"));
 
         final List<UpdateAction<Cart>> customFieldsActions =
-            buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, cart,  null, null,
-                Cart::getId, cartResource -> cartResource.toReference().getTypeId(), cartResource -> null, CATEGORY_SYNC_OPTIONS);
+            buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, cart,
+                null, null, Cart::getId,
+                cartResource -> cartResource.toReference().getTypeId(), cartResource -> null, CATEGORY_SYNC_OPTIONS);
 
         // Custom fields update actions should not be built
         assertThat(customFieldsActions).isNotNull();
@@ -522,9 +523,9 @@ public class ResourceCustomUpdateActionUtilsTest {
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> customFieldsActions =
-            buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),  null, null,
-                Category::getId, category -> category.toReference().getTypeId(), categoryResource -> null,
-                CATEGORY_SYNC_OPTIONS);
+            buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
+                null, null, Category::getId,
+                category -> category.toReference().getTypeId(), categoryResource -> null, CATEGORY_SYNC_OPTIONS);
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isEmpty();

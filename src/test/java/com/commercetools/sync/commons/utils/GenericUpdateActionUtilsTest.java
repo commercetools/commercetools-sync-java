@@ -40,7 +40,7 @@ public class GenericUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildTypedSetCustomTypeUpdateAction_WithNonHandledResourceAndNullContainer_ShouldCallSyncOptionsCallBack() {
+    public void buildTypedSetCustomTypeAction_WithNonHandledResourceAndNullContainer_ShouldCallSyncOptionsCallBack() {
         // Cart resource is not handled by buildTypedUpdateAction()
         final Cart cart = mock(Cart.class);
         when(cart.getId()).thenReturn("cartId");
@@ -62,8 +62,9 @@ public class GenericUpdateActionUtilsTest {
 
         final UpdateAction<Cart> updateAction =
             GenericUpdateActionUtils.<Cart, Cart>buildTypedSetCustomTypeUpdateAction("key", fieldsJsonMap,
-            cart, null,  null, Cart::getId, cartResource -> cartResource.toReference().getTypeId(),
-            cartResource -> null, syncOptions).orElse(null);
+                cart, null,  null, Cart::getId,
+                cartResource -> cartResource.toReference().getTypeId(), cartResource -> null, syncOptions)
+                .orElse(null);
 
         assertThat(updateAction).isNull();
         assertThat(callBackResponses).hasSize(2);
@@ -83,14 +84,14 @@ public class GenericUpdateActionUtilsTest {
 
         final UpdateAction<Cart> updateAction =
             GenericUpdateActionUtils.<Cart, Cart>buildTypedRemoveCustomTypeUpdateAction(cart,  null, null,
-            Cart::getId, cartResource -> cartResource.toReference().getTypeId(),
-            cartResource -> null, categorySyncOptions).orElse(null);
+                Cart::getId, cartResource -> cartResource.toReference().getTypeId(), cartResource -> null,
+                categorySyncOptions).orElse(null);
 
         assertThat(updateAction).isNull();
     }
 
     @Test
-    public void buildTypedRemoveCustomTypeUpdateAction_WithNonHandledResourceAndNullContainer_ShouldNotBuildUpdateAction() {
+    public void buildTypedRemoveCustomTypeAction_WithNonHandledResourceAndNullContainer_ShouldNotBuildUpdateAction() {
         // Cart resource is not handled by buildTypedUpdateAction()
         final Cart cart = mock(Cart.class);
         when(cart.getId()).thenReturn("cartId");
@@ -134,11 +135,9 @@ public class GenericUpdateActionUtilsTest {
         final String customFieldName = "name";
 
         final UpdateAction<Cart> updateAction = GenericUpdateActionUtils.<Cart, Cart>
-                buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart,  null, null,
-                Cart::getId, cartResource -> cartResource.toReference().getTypeId(),
-                cartResource -> null,
-                mock(BaseSyncOptions.class))
-                .orElse(null);
+            buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart,  null, null,
+            Cart::getId, cartResource -> cartResource.toReference().getTypeId(), cartResource -> null,
+            mock(BaseSyncOptions.class)).orElse(null);
 
         assertThat(updateAction).isNull();
     }
@@ -164,9 +163,8 @@ public class GenericUpdateActionUtilsTest {
 
         final UpdateAction<Cart> updateAction = GenericUpdateActionUtils.<Cart, Cart>
             buildTypedSetCustomFieldUpdateAction(customFieldName, customFieldValue, cart,  null, null,
-                Cart::getId,
-                cartResource -> cartResource.toReference().getTypeId(), cartResource -> null, baseSyncOptions)
-                .orElse(null);
+            Cart::getId, cartResource -> cartResource.toReference().getTypeId(), cartResource -> null, baseSyncOptions)
+            .orElse(null);
 
         assertThat(updateAction).isNull();
         assertThat(callBackResponses).hasSize(2);

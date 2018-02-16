@@ -35,9 +35,9 @@ public class ProductAssetCustomUpdateActionUtilsTest {
 
     @Test
     public void buildTypedRemoveCustomTypeUpdateAction_WithProductAsset_ShouldBuildChannelUpdateAction() {
-        final UpdateAction<Product> updateAction = buildTypedRemoveCustomTypeUpdateAction(mock(Asset.class), Product.class, 1,
-            Asset::getId, assetResource -> Asset.resourceTypeId(),
-            Asset::getKey, syncOptions).orElse(null);
+        final UpdateAction<Product> updateAction = buildTypedRemoveCustomTypeUpdateAction(mock(Asset.class),
+            Product.class, 1, Asset::getId, assetResource -> Asset.resourceTypeId(), Asset::getKey,
+            syncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetAssetCustomType.class);

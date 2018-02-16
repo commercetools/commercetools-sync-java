@@ -35,8 +35,9 @@ public class ProductPriceCustomUpdateActionUtilsTest {
 
     @Test
     public void buildTypedRemoveCustomTypeUpdateAction_WithProductPrice_ShouldBuildChannelUpdateAction() {
-        final UpdateAction<Product> updateAction = buildTypedRemoveCustomTypeUpdateAction(mock(Price.class), Product.class, 1,
-            Price::getId, priceResource -> Price.resourceTypeId(), Price::getId, syncOptions).orElse(null);
+        final UpdateAction<Product> updateAction = buildTypedRemoveCustomTypeUpdateAction(mock(Price.class),
+            Product.class, 1, Price::getId, priceResource -> Price.resourceTypeId(), Price::getId,
+            syncOptions).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetProductPriceCustomType.class);
