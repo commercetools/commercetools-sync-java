@@ -18,6 +18,8 @@ import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateAct
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildSetAssetTagsUpdateAction;
 import static java.util.Arrays.asList;
 
+//TODO: CONSIDER CHANGE NAME.
+// TODO: Add tests.
 public final class ProductAssetUpdateActionUtils {
 
     @Nonnull

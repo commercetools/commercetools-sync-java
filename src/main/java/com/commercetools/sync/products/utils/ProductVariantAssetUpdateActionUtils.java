@@ -17,13 +17,9 @@ import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 
+//TODO: CONSIDER CHANGE NAME.
 // TODO: Add tests.
 public final class ProductVariantAssetUpdateActionUtils {
-    private static final String ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA = "Cannot find the attribute with the name '%s'"
-        + " in the supplied attribute metadata.";
-    private static final String REQUIRED_ATTRIBUTE_VALUE_IS_NULL = "The attribute with the name '%s' is null but it is"
-        + " required to have a value according to the supplied attribute metadata.";
-
     @Nonnull
     public static Optional<UpdateAction<Product>> buildChangeAssetNameUpdateAction(
         final int variantId,
