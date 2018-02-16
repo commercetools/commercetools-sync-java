@@ -3,15 +3,16 @@ package com.commercetools.sync.commons.helpers;
 import io.netty.util.internal.StringUtil;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.String.format;
 
 public abstract class BaseSyncStatistics {
     protected String reportMessage;
-    private int updated;
-    private int created;
-    private int failed;
-    private int processed;
+    private AtomicInteger updated;
+    private AtomicInteger created;
+    private AtomicInteger failed;
+    private AtomicInteger processed;
     private long latestBatchStartTime;
     private long latestBatchProcessingTimeInDays;
     private long latestBatchProcessingTimeInHours;
@@ -21,7 +22,15 @@ public abstract class BaseSyncStatistics {
     private String latestBatchHumanReadableProcessingTime;
 
 
+    /**
+     * Creates a new {@link BaseSyncStatistics} with initial values {@code 0} of created, updated, failed and processed
+     * counters, an empty reportMessage and latestBatchHumanReadableProcessingTime.
+     */
     public BaseSyncStatistics() {
+        updated = new AtomicInteger();
+        created = new AtomicInteger();
+        failed = new AtomicInteger();
+        processed = new AtomicInteger();
         reportMessage = StringUtil.EMPTY_STRING;
         latestBatchHumanReadableProcessingTime = StringUtil.EMPTY_STRING;
     }
@@ -30,6 +39,9 @@ public abstract class BaseSyncStatistics {
      * Stores the current time of instantiation in the {@code latestBatchStartTime} instance variable that will be used
      * later when {@link BaseSyncStatistics#calculateProcessingTime()} is called to calculate the total time of
      * processing.
+     *
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
+     *
      */
     public void startTimer() {
         latestBatchStartTime = System.currentTimeMillis();
@@ -40,7 +52,7 @@ public abstract class BaseSyncStatistics {
      *
      * @return total number of resources that were updated.
      */
-    public int getUpdated() {
+    public AtomicInteger getUpdated() {
         return updated;
     }
 
@@ -48,7 +60,7 @@ public abstract class BaseSyncStatistics {
      * Increments the total number of resource that were updated.
      */
     public void incrementUpdated() {
-        this.updated++;
+        updated.incrementAndGet();
     }
 
     /**
@@ -57,7 +69,7 @@ public abstract class BaseSyncStatistics {
      * @param times the total number of times to increment.
      */
     public void incrementUpdated(final int times) {
-        this.updated += times;
+        updated.addAndGet(times);
     }
 
     /**
@@ -65,7 +77,7 @@ public abstract class BaseSyncStatistics {
      *
      * @return total number of resources that were created.
      */
-    public int getCreated() {
+    public AtomicInteger getCreated() {
         return created;
     }
 
@@ -73,7 +85,7 @@ public abstract class BaseSyncStatistics {
      * Increments the total number of resource that were created.
      */
     public void incrementCreated() {
-        this.created++;
+        created.incrementAndGet();
     }
 
     /**
@@ -82,7 +94,7 @@ public abstract class BaseSyncStatistics {
      * @param times the total number of times to increment.
      */
     public void incrementCreated(final int times) {
-        this.created += times;
+        created.addAndGet(times);
     }
 
     /**
@@ -90,7 +102,7 @@ public abstract class BaseSyncStatistics {
      *
      * @return total number of resources that were processed/synced.
      */
-    public int getProcessed() {
+    public AtomicInteger getProcessed() {
         return processed;
     }
 
@@ -98,7 +110,7 @@ public abstract class BaseSyncStatistics {
      * Increments the total number of resources that were processed/synced.
      */
     public void incrementProcessed() {
-        this.processed++;
+        processed.incrementAndGet();
     }
 
     /**
@@ -107,7 +119,7 @@ public abstract class BaseSyncStatistics {
      * @param times the total number of times to increment.
      */
     public void incrementProcessed(final int times) {
-        this.processed += times;
+        processed.addAndGet(times);
     }
 
     /**
@@ -115,7 +127,7 @@ public abstract class BaseSyncStatistics {
      *
      * @return total number of resources that failed to sync.
      */
-    public int getFailed() {
+    public AtomicInteger getFailed() {
         return failed;
     }
 
@@ -124,7 +136,7 @@ public abstract class BaseSyncStatistics {
      *
      */
     public void incrementFailed() {
-        this.failed++;
+        failed.incrementAndGet();
     }
 
     /**
@@ -133,7 +145,7 @@ public abstract class BaseSyncStatistics {
      * @param times the total number of times to increment.
      */
     public void incrementFailed(final int times) {
-        this.failed += times;
+        failed.addAndGet(times);
     }
 
     /**
@@ -145,6 +157,9 @@ public abstract class BaseSyncStatistics {
      * {@code latestBatchProcessingTimeInMillis}. It also builds a human readable processing time, as string, in the
      * following format @{code "0d, 0h, 0m, 2s, 545ms"} and stores it in the publicly exposed
      * variable {@code latestBatchHumanReadableProcessingTime}.
+     *
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
+     *
      */
     public void calculateProcessingTime() {
         setProcessingTimeInAllUnits();
@@ -157,6 +172,9 @@ public abstract class BaseSyncStatistics {
      * {@code latestBatchProcessingTimeInDays}, {@code latestBatchProcessingTimeInHours},
      * {@code latestBatchProcessingTimeInMinutes},
      * {@code latestBatchProcessingTimeInSeconds} and {@code latestBatchProcessingTimeInMillis}.
+     *
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
+     *
      */
     private void setProcessingTimeInAllUnits() {
         latestBatchProcessingTimeInMillis = System.currentTimeMillis() - this.latestBatchStartTime;
@@ -169,6 +187,9 @@ public abstract class BaseSyncStatistics {
     /**
      * Builds a human readable processing time, as string, in the following format @{code "0d, 0h, 0m, 2s, 545ms"}
      * and stores it in the publicly exposed variable {@code latestBatchHumanReadableProcessingTime}.
+     *
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
+     *
      */
     private void setHumanReadableProcessingTime() {
         final long completeDaysInHours = TimeUnit.DAYS.toHours(latestBatchProcessingTimeInDays);
@@ -193,6 +214,8 @@ public abstract class BaseSyncStatistics {
     /**
      * Gets the human readable processing time in the following format @{code "0d, 0h, 0m, 2s, 545ms"}.
      *
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
+     *
      * @return the human readable processing time in the following format @{code "0d, 0h, 0m, 2s, 545ms"}
      */
     public String getLatestBatchHumanReadableProcessingTime() {
@@ -202,6 +225,8 @@ public abstract class BaseSyncStatistics {
     /**
      * Gets the number of days it took to process.
      *
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
+     *
      * @return number of days taken to process.
      */
     public long getLatestBatchProcessingTimeInDays() {
@@ -210,6 +235,8 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets the number of hours it took to process.
+     * 
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return number of hours taken to process.
      */
@@ -220,6 +247,8 @@ public abstract class BaseSyncStatistics {
     /**
      * Gets the number of minutes it took to process.
      *
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
+     *
      * @return number of minutes taken to process.
      */
     public long getLatestBatchProcessingTimeInMinutes() {
@@ -228,6 +257,8 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets the number of seconds it took to process.
+     *
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return number of seconds taken to process.
      */
@@ -238,6 +269,8 @@ public abstract class BaseSyncStatistics {
     /**
      * Gets the number of milliseconds it took to process.
      *
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
+     *
      * @return number of milliseconds taken to process.
      */
     public long getLatestBatchProcessingTimeInMillis() {
@@ -246,6 +279,8 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets a summary message of the statistics report.
+     *
+     * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return a summary message of the statistics report.
      */

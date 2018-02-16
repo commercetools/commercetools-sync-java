@@ -315,7 +315,7 @@ public class ProductSyncIT {
             sourceProductType.toReference())
             .slug(LocalizedString.ofEnglish("newSlug3"))
             .key("productKey3")
-            .masterVariant(ProductVariantDraftBuilder.of().key("v3").build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("v3").sku("s3").build())
             .taxCategory(null)
             .state(null)
             .categories(Collections.emptySet())
@@ -336,6 +336,7 @@ public class ProductSyncIT {
 
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder.of()
                                                                             .key("v1")
+                                                                            .sku("s1")
                                                                             .attributes(attributeDrafts).build();
 
         // Create existing product with productKey1 in source project that has references to products with keys

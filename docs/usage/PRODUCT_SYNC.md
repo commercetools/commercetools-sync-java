@@ -24,6 +24,9 @@ Utility which provides API for building CTP product update actions and product s
 1. The sync expects a list of non-null `ProductDraft` objects that have their `key` fields set to match the
 products from the source to the target. Also the target project is expected to have the `key` fields set,
 otherwise they won't be matched.
+
+**NOTE: PLEASE MAKE SURE THE `SKU` FIELDS OF ALL PRODUCTS ARE SET AS THE SYNC LIBRARY WILL BE MIGRATED TO MATCH PRODUCTS BY `SKU` INSTEAD OF `KEY` IN THE FUTURE.**
+
 2. Every product may have several references including `product type`, `categories`, `taxCategory`, etc.. Variants
 of the product also have prices, where each prices also has some references including a reference to the `Type` of its 
 custom fields and a reference to a `channel`. All these referenced resources are matched by their `key` Therefore, in 
@@ -97,8 +100,8 @@ streams, would look as follows:
  ```java
  final Logger logger = LoggerFactory.getLogger(MySync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder.of(sphereClient)
-                                                                        .setErrorCallBack(logger::error)
-                                                                        .setWarningCallBack(logger::warn)
+                                                                        .errorCallBack(logger::error)
+                                                                        .warningCallBack(logger::warn)
                                                                         .build();
  ```
 

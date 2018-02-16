@@ -21,6 +21,7 @@ import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
+import io.sphere.sdk.products.commands.updateactions.SetKey;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.QueryPredicate;
@@ -62,9 +63,13 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ProductServiceIT {
@@ -136,57 +141,116 @@ public class ProductServiceIT {
     }
 
     @Test
-    public void cacheKeysToIds_ShouldCacheProductKeysOnlyFirstCall() {
-        Map<String, String> cache = productService.cacheKeysToIds().toCompletableFuture().join();
-        assertThat(cache).hasSize(1);
-
-        // Create new product without caching
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference(),
-            null, null, categoryReferencesWithIds,
-            createRandomCategoryOrderHints(categoryReferencesWithIds));
-
-        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
-
-        cache = productService.cacheKeysToIds().toCompletableFuture().join();
-        assertThat(cache).hasSize(1);
+    public void getIdFromCacheOrFetch_WithNotCachedExistingProduct_ShouldFetchProduct() {
+        final Optional<String> productId = productService.getIdFromCacheOrFetch(product.getKey())
+                                                         .toCompletableFuture()
+                                                         .join();
+        assertThat(productId).isNotEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
     }
 
     @Test
-    public void cacheKeysToIds_WithTargetProductsWithBlankKeys_ShouldGiveAWarningAboutKeyNotSetAndNotCacheKey() {
-        // Create new product without key
-        final ProductDraft productDraftWithNullKey = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-            productType.toReference())
-            .taxCategory(null)
-            .state(null)
-            .key(null)
-            .build();
+    public void getIdFromCacheOrFetch_WithNullProductKey_ShouldReturnEmptyOptional() {
+        final Optional<String> productId = productService.getIdFromCacheOrFetch(null)
+                                                         .toCompletableFuture()
+                                                         .join();
+        assertThat(productId).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
 
-        final ProductDraft productDraftWithEmptyKey = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-            productType.toReference())
-            .key(StringUtils.EMPTY)
-            .taxCategory(null)
-            .state(null)
-            .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
-            .masterVariant(ProductVariantDraftBuilder.of().build())
-            .build();
+    @Test
+    public void getIdFromCacheOrFetch_WithCachedExistingProduct_ShouldFetchFromCache() {
+        final String oldKey = product.getKey();
+        final Optional<String> oldProductId = productService.getIdFromCacheOrFetch(oldKey)
+                                                            .toCompletableFuture()
+                                                            .join();
 
-        final Product productWithNullKey = CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraftWithNullKey))
-                                                          .toCompletableFuture().join();
-        final Product productWithEmptyKey = CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraftWithEmptyKey))
-                                                            .toCompletableFuture().join();
+        // Change product key on ctp
+        final String newKey = "newKey";
+        productService.updateProduct(product, Collections.singletonList(SetKey.of(newKey)))
+                      .toCompletableFuture()
+                      .join();
 
-        final Map<String, String> cache = productService.cacheKeysToIds().toCompletableFuture().join();
+        // Fetch product from cache
+        final Optional<String> cachedProductId = productService.getIdFromCacheOrFetch(oldKey)
+                                                               .toCompletableFuture().join();
+
+        assertThat(cachedProductId).isNotEmpty();
+        assertThat(cachedProductId).isEqualTo(oldProductId);
+
+        // Fetch product from ctp (because of new key not cached)
+        final Optional<String> productId = productService.getIdFromCacheOrFetch(newKey)
+                                                         .toCompletableFuture().join();
+
+        assertThat(productId).isNotEmpty();
+        // Both keys point to the same id.
+        assertThat(productId).isEqualTo(cachedProductId);
+
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void cacheKeysToIds_WithEmptyKeys_ShouldReturnCurrentCache() {
+        Map<String, String> cache = productService.cacheKeysToIds(emptySet()).toCompletableFuture().join();
+        assertThat(cache).hasSize(0); // Since cache is empty
+
+        cache = productService.cacheKeysToIds(singleton(product.getKey())).toCompletableFuture().join();
+        assertThat(cache).hasSize(1);
+
+        cache = productService.cacheKeysToIds(emptySet()).toCompletableFuture().join();
+        assertThat(cache).hasSize(1); // Since cache has been fed with a product key
+
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void cacheKeysToIds_WithAlreadyCachedKeys_ShouldNotMakeRequestsAndReturnCurrentCache() {
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(spyClient)
+                                                                               .errorCallback(
+                                                                                   (errorMessage, exception) -> {
+                                                                                       errorCallBackMessages
+                                                                                           .add(errorMessage);
+                                                                                       errorCallBackExceptions
+                                                                                           .add(exception);
+                                                                                   })
+                                                                               .warningCallback(warningMessage ->
+                                                                                   warningCallBackMessages
+                                                                                       .add(warningMessage))
+                                                                               .build();
+        final ProductService spyProductService = new ProductServiceImpl(productSyncOptions);
+
+
+        Map<String, String> cache = spyProductService.cacheKeysToIds(singleton(product.getKey()))
+                                                     .toCompletableFuture().join();
+        assertThat(cache).hasSize(1);
+
+        // Attempt to cache same (already cached) key.
+        cache = spyProductService.cacheKeysToIds(singleton(product.getKey()))
+                                 .toCompletableFuture().join();
+        assertThat(cache).hasSize(1);
+
+        // verify only 1 request was made to fetch id the first time, but not second time since it's already in cache.
+        verify(spyClient, times(1)).execute(any());
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void cacheKeysToIds_WithSomeEmptyKeys_ShouldReturnCorrectCache() {
+        final Set<String> productKeys = new HashSet<>();
+        productKeys.add(product.getKey());
+        productKeys.add(null);
+        productKeys.add("");
+        Map<String, String> cache = productService.cacheKeysToIds(productKeys)
+                                                  .toCompletableFuture().join();
         assertThat(cache).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
-        assertThat(warningCallBackMessages).hasSize(2);
-        // Since the order of fetch is not ensured, so we assert in whole list of warning messages (as string):
-        assertThat(warningCallBackMessages.toString()).contains(format("Product with id: '%s' has no key set. Keys are"
-            + " required for product matching.", productWithNullKey.getId()));
-        assertThat(warningCallBackMessages.toString()).contains(format("Product with id: '%s' has no key set. Keys are"
-            + " required for product matching.", productWithEmptyKey.getId()));
     }
 
     @Test
@@ -200,10 +264,8 @@ public class ProductServiceIT {
 
     @Test
     public void fetchMatchingProductsByKeys_WithAllExistingSetOfKeys_ShouldReturnSetOfProducts() {
-        final Set<String> keys =  new HashSet<>();
-        keys.add(product.getKey());
-        final Set<Product> fetchedProducts = productService.fetchMatchingProductsByKeys(keys)
-                                                               .toCompletableFuture().join();
+        final Set<Product> fetchedProducts = productService.fetchMatchingProductsByKeys(singleton(product.getKey()))
+                                                           .toCompletableFuture().join();
         assertThat(fetchedProducts).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
@@ -249,6 +311,29 @@ public class ProductServiceIT {
         final Set<Product> fetchedProducts = productService.fetchMatchingProductsByKeys(keys)
                                                            .toCompletableFuture().join();
         assertThat(fetchedProducts).hasSize(1);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void fetchMatchingProductsByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedProductsIds() {
+        final String oldKey = product.getKey();
+        final Set<Product> fetchedProducts = productService.fetchMatchingProductsByKeys(singleton(oldKey))
+                                                           .toCompletableFuture().join();
+        assertThat(fetchedProducts).hasSize(1);
+
+        // Change product oldKey on ctp
+        final String newKey = "newKey";
+        productService.updateProduct(product, Collections.singletonList(SetKey.of(newKey)))
+                      .toCompletableFuture()
+                      .join();
+
+        // Fetch cached id by old key
+        final Optional<String> cachedProductId = productService.getIdFromCacheOrFetch(oldKey)
+                                                               .toCompletableFuture().join();
+
+        assertThat(cachedProductId).isNotEmpty();
+        assertThat(cachedProductId).contains(product.getId());
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
     }
@@ -551,7 +636,7 @@ public class ProductServiceIT {
     public void updateProduct_WithInvalidChanges_ShouldNotUpdateProduct() {
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             productType.toReference())
-            .categories(Collections.emptyList())
+            .categories(emptyList())
             .taxCategory(null)
             .state(null)
             .categoryOrderHints(null)
@@ -645,7 +730,6 @@ public class ProductServiceIT {
         assertThat(fetchedProductOptional).isNotEmpty();
 
         final Product fetchedProduct = fetchedProductOptional.get();
-        assertThat(fetchedProduct.getVersion()).isEqualTo(numberOfImages + 1);
         // Test that the fetched product has exactly the 600 images added before.
         final List<Image> currentMasterVariantImages = fetchedProduct.getMasterData().getStaged()
                                                                      .getMasterVariant().getImages();
@@ -777,8 +861,7 @@ public class ProductServiceIT {
                                                                        .toCompletableFuture()
                                                                        .join();
         assertThat(fetchedProductOptional).isNotEmpty();
-        final Product fetchedProduct = fetchedProductOptional.get();
-        assertThat(fetchedProduct.getId()).isEqualTo(product.getId());
+        assertThat(fetchedProductOptional).contains(product);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
     }
@@ -844,48 +927,5 @@ public class ProductServiceIT {
         assertThat(errorCallBackMessages.get(0))
             .isEqualToIgnoringCase(format("Failed to fetch products with keys: '%s'. Reason: %s", productKey,
                 errorCallBackExceptions.get(0)));
-    }
-
-    @Test
-    public void fetchCachedProductId_WithExistingProduct_ShouldFetchCategoryAndCache() {
-        final Optional<String> productId = productService.fetchCachedProductId(product.getKey())
-                                                           .toCompletableFuture()
-                                                           .join();
-        assertThat(productId).isNotEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    public void fetchCachedProductId_WithNullProductKey_ShouldReturnEmptyOptional() {
-        final Optional<String> productId = productService.fetchCachedProductId(null)
-                                                         .toCompletableFuture()
-                                                         .join();
-        assertThat(productId).isEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    public void fetchCachedProductId_ByDefault_ShouldCacheProductKeysOnlyFirstTime() {
-        // Fetch any product to populate cache
-        productService.fetchCachedProductId("anyKey").toCompletableFuture().join();
-
-        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-            productType.toReference())
-            .taxCategory(null)
-            .state(null)
-            .categories(emptyList())
-            .categoryOrderHints(null)
-            .build();
-
-        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
-
-        final Optional<String> newProductId =
-            productService.fetchCachedProductId(productDraft.getKey()).toCompletableFuture().join();
-
-        assertThat(newProductId).isEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
     }
 }

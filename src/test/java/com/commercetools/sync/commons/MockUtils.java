@@ -1,11 +1,8 @@
 package com.commercetools.sync.commons;
 
-import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.types.CustomFieldsDraft;
@@ -78,19 +75,5 @@ public class MockUtils {
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(completedFuture(Optional.of("typeId")));
         return typeService;
-    }
-
-    /**
-     * Builds a JSON String that represents the fields of the supplied instance of {@link BaseSyncStatistics}.
-     * Note: The order of the fields in the built JSON String depends on the order of the instance variables in this
-     * class.
-     *
-     * @param statistics the instance of {@link BaseSyncStatistics} from which to create a JSON String.
-     * @return a JSON representation of the given {@code statistics} as a String.
-     */
-    public static String getStatisticsAsJsonString(@Nonnull final BaseSyncStatistics statistics)
-        throws JsonProcessingException {
-        final ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(statistics);
     }
 }

@@ -214,7 +214,7 @@ public class VariantReferenceResolverTest { ;
 
     @Test
     public void resolveAttributeReference_WithProductReferenceAttribute_ShouldResolveAttribute() {
-        when(productService.fetchCachedProductId(anyString()))
+        when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
@@ -341,7 +341,7 @@ public class VariantReferenceResolverTest { ;
 
     @Test
     public void resolveAttributeReference_WithNonExistingProductReferenceSetAttribute_ShouldNotResolveReferences() {
-        when(productService.fetchCachedProductId(anyString()))
+        when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final ObjectNode productReference = getProductReferenceWithRandomId();
@@ -364,9 +364,9 @@ public class VariantReferenceResolverTest { ;
     @Test
     public void
         resolveAttributeReference_WithSomeExistingProductReferenceSetAttribute_ShouldResolveExistingReferences() {
-        when(productService.fetchCachedProductId("existingKey"))
+        when(productService.getIdFromCacheOrFetch("existingKey"))
             .thenReturn(CompletableFuture.completedFuture(Optional.of("existingId")));
-        when(productService.fetchCachedProductId("randomKey"))
+        when(productService.getIdFromCacheOrFetch("randomKey"))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final ObjectNode productReference1 = getProductReferenceWithId("existingKey");
@@ -460,7 +460,7 @@ public class VariantReferenceResolverTest { ;
 
     @Test
     public void getResolvedIdFromKeyInReference_WithNonExistingProductReferenceAttribute_ShouldGetEmptyId() {
-        when(productService.fetchCachedProductId(anyString()))
+        when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final ObjectNode attributeValue = getProductReferenceWithRandomId();

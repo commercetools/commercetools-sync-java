@@ -237,14 +237,14 @@ public class ProductSyncMockUtils {
      * Creates a mock {@link ProductService} that returns a completed {@link CompletableFuture} containing an
      * {@link Optional} containing the id of the supplied value whenever the following method is called on the service:
      * <ul>
-     * <li>{@link ProductService#fetchCachedProductId(String)}</li>
+     * <li>{@link ProductService#getIdFromCacheOrFetch(String)}</li>
      * </ul>
      *
      * @return the created mock of the {@link ProductService}.
      */
     public static ProductService getMockProductService(@Nonnull final String id) {
         final ProductService productService = mock(ProductService.class);
-        when(productService.fetchCachedProductId(anyString()))
+        when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
         return productService;
     }

@@ -33,6 +33,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.products.utils.ProductAssetUpdateActionUtils.buildActions;
@@ -248,8 +249,7 @@ public final class ProductVariantUpdateActionUtils {
 
         if (!Objects.equals(oldProductVariantImages, newProductVariantImages)) {
             final List<Image> updatedOldImages = new ArrayList<>(oldProductVariantImages);
-            final List<Image> newImages = newProductVariantImages != null
-                    ? newProductVariantImages : Collections.emptyList();
+            final List<Image> newImages = emptyIfNull(newProductVariantImages);
 
             filterCollection(oldProductVariantImages, oldVariantImage ->
                     !newImages.contains(oldVariantImage))

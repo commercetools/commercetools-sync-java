@@ -65,6 +65,10 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
         return statistics;
     }
 
+    public V getSyncOptions() {
+        return syncOptions;
+    }
+
     /**
      * Given a list of resource (e.g. categories, products, etc..  batches represented by a
      * {@link List}&lt;{@link List}&gt; of resources, this method recursively calls
