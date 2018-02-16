@@ -16,21 +16,26 @@ public class ChannelCustomActionBuilder extends GenericCustomActionBuilder<Chann
 
     @Nonnull
     @Override
-    public UpdateAction<Channel> buildRemoveCustomTypeAction() {
+    public UpdateAction<Channel> buildRemoveCustomTypeAction(@Nullable final Integer variantId,
+                                                             @Nullable final String objectId) {
         return SetCustomType.ofRemoveType();
     }
 
     @Nonnull
     @Override
 
-    public UpdateAction<Channel> buildSetCustomTypeAction(@Nullable final String customTypeId,
+    public UpdateAction<Channel> buildSetCustomTypeAction(@Nullable final Integer variantId,
+                                                          @Nullable final String objectId,
+                                                          @Nullable final String customTypeId,
                                                           @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
         return SetCustomType.ofTypeIdAndJson(customTypeId, customFieldsJsonMap);
     }
 
     @Nonnull
     @Override
-    public UpdateAction<Channel> buildSetCustomFieldAction(@Nullable final String customFieldName,
+    public UpdateAction<Channel> buildSetCustomFieldAction(@Nullable final Integer variantId,
+                                                           @Nullable final String objectId,
+                                                           @Nullable final String customFieldName,
                                                            @Nullable final JsonNode customFieldValue) {
         return SetCustomField.ofJson(customFieldName, customFieldValue);
     }

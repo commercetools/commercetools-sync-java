@@ -15,13 +15,16 @@ public class InventoryCustomActionBuilder extends GenericCustomActionBuilder<Inv
 
     @Nonnull
     @Override
-    public UpdateAction<InventoryEntry> buildRemoveCustomTypeAction() {
+    public UpdateAction<InventoryEntry> buildRemoveCustomTypeAction(@Nullable final Integer variantId,
+                                                                    @Nullable final String objectId) {
         return SetCustomType.ofRemoveType();
     }
 
     @Nonnull
     @Override
-    public UpdateAction<InventoryEntry> buildSetCustomTypeAction(@Nullable final String customTypeId,
+    public UpdateAction<InventoryEntry> buildSetCustomTypeAction(@Nullable final Integer variantId,
+                                                                 @Nullable final String objectId,
+                                                                 @Nullable final String customTypeId,
                                                                  @Nullable final Map<String, JsonNode>
                                                                      customFieldsJsonMap) {
         return SetCustomType.ofTypeIdAndJson(customTypeId, customFieldsJsonMap);
@@ -29,7 +32,9 @@ public class InventoryCustomActionBuilder extends GenericCustomActionBuilder<Inv
 
     @Nonnull
     @Override
-    public UpdateAction<InventoryEntry> buildSetCustomFieldAction(@Nullable final String customFieldName,
+    public UpdateAction<InventoryEntry> buildSetCustomFieldAction(@Nullable final Integer variantId,
+                                                                  @Nullable final String objectId,
+                                                                  @Nullable final String customFieldName,
                                                                   @Nullable final JsonNode customFieldValue) {
         return SetCustomField.ofJson(customFieldName, customFieldValue);
     }
