@@ -93,7 +93,7 @@ public class PriceReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve custom type reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10.00000'. Reason: Found a UUID"
+                + " with country:'DE' and value: 'EUR 10'. Reason: Found a UUID"
                 + " in the id field. Expecting a key without a UUID value. If you want to"
                 + " allow UUID values for reference keys, please use the "
                 + "allowUuidKeys(true) option in the sync options.");
@@ -141,7 +141,7 @@ public class PriceReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve custom type reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10.00000'. Reason: Reference 'id' field"
+                + " with country:'DE' and value: 'EUR 10'. Reason: Reference 'id' field"
                 + " value is blank (null/empty).");
     }
 
@@ -161,7 +161,7 @@ public class PriceReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve custom type reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10.00000'. Reason: Reference 'id' field"
+                + " with country:'DE' and value: 'EUR 10'. Reason: Reference 'id' field"
                 + " value is blank (null/empty).");
     }
 
@@ -222,7 +222,7 @@ public class PriceReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve the channel reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10.00000'. Reason: Found a UUID in the id field. Expecting a key"
+                + " with country:'DE' and value: 'EUR 10'. Reason: Found a UUID in the id field. Expecting a key"
                 + " without a UUID value. If you want to allow UUID values for reference keys, please"
                 + " use the allowUuidKeys(true) option in the sync options.");
     }
