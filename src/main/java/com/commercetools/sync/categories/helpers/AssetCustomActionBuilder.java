@@ -4,38 +4,40 @@ package com.commercetools.sync.categories.helpers;
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.commands.updateactions.SetCustomField;
-import io.sphere.sdk.categories.commands.updateactions.SetCustomType;
+import io.sphere.sdk.categories.commands.updateactions.SetAssetCustomField;
+import io.sphere.sdk.categories.commands.updateactions.SetAssetCustomType;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-public class CategoryCustomActionBuilder extends GenericCustomActionBuilder<Category> {
-    @Nonnull
+import static io.sphere.sdk.types.CustomFieldsDraft.ofTypeIdAndJson;
+
+public class AssetCustomActionBuilder extends GenericCustomActionBuilder<Category> {
+
     @Override
+    @Nonnull
     public UpdateAction<Category> buildRemoveCustomTypeAction(@Nullable final Integer variantId,
-                                                              @Nullable final String objectId) {
-        return SetCustomType.ofRemoveType();
+                                                              @Nullable final String assetKey) {
+        return SetAssetCustomType.ofKey(assetKey, null);
     }
 
-    @Nonnull
     @Override
+    @Nonnull
     public UpdateAction<Category> buildSetCustomTypeAction(@Nullable final Integer variantId,
-                                                           @Nullable final String objectId,
+                                                           @Nullable final String assetKey,
                                                            @Nullable final String customTypeId,
                                                            @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
-        return SetCustomType.ofTypeIdAndJson(customTypeId, customFieldsJsonMap);
-
+        return SetAssetCustomType.ofKey(assetKey, ofTypeIdAndJson(customTypeId, customFieldsJsonMap));
     }
 
-    @Nonnull
     @Override
+    @Nonnull
     public UpdateAction<Category> buildSetCustomFieldAction(@Nullable final Integer variantId,
-                                                            @Nullable final String objectId,
+                                                            @Nullable final String assetKey,
                                                             @Nullable final String customFieldName,
                                                             @Nullable final JsonNode customFieldValue) {
-        return SetCustomField.ofJson(customFieldName, customFieldValue);
+        return SetAssetCustomField.ofJsonValueWithKey(assetKey, customFieldName, customFieldValue);
     }
 }
