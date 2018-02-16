@@ -97,7 +97,7 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
          * instance of the enum.
          *
          * @return the class of the container resource that the update action will be performed on of {@code this}
-         * instance of the enum.
+         *         instance of the enum.
          */
         public Class<? extends Resource> getContainerResourceClass() {
             return containerResourceClass;
@@ -134,8 +134,6 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
      * <li>In any other case the method will throw a {@link BuildUpdateActionException}</li>
      * </ul>
      *
-     * <p>
-     *
      * @param currentResource               the currentResource from which a corresponding concrete custom builder
      *                                      should be created according to it's type.
      * @param currentContainerResourceClass optional field representing the class of the container resource. For
@@ -146,7 +144,8 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
      *         {@code currentContainerResourceClass} provided.
      * @throws BuildUpdateActionException thrown if no concrete implementation of {@link GenericCustomActionBuilder}
      *                                    exists yet for the mapping combination.
-     * @throws IllegalAccessException     if the {@code currentResource} class or its nullary constructor is not accessible.
+     * @throws IllegalAccessException     if the {@code currentResource} class or its nullary constructor is not
+     *                                    accessible.
      * @throws InstantiationException     if {@code currentResource} {@code Class} represents an abstract class,
      *                                    an interface, an array class, a primitive type, or void;
      *                                    or if the {@code currentResource} class has no nullary constructor;
@@ -210,8 +209,8 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
      * <li>In any other case the method will throw a {@link BuildUpdateActionException}</li>
      * </ul>
      *
-     * <p>
-     *
+     * @param <U>                    the type of the resource which has the custom fields.
+     * @param <V>                    the type of the resource to do the update action on.
      * @param resource               the currentResource from which a corresponding concrete custom builder
      *                               should be created according to it's type.
      * @param containerResourceClass optional field representing the class of the container resource. For
@@ -233,8 +232,8 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
     public static <U extends Custom, V extends Resource<V>> GenericCustomActionBuilder of(
         @Nonnull final U resource,
         @Nullable final Class<V> containerResourceClass)
-
         throws BuildUpdateActionException, InstantiationException, IllegalAccessException {
+
         return new GenericCustomActionBuilderFactory().getBuilder(resource, containerResourceClass);
     }
 

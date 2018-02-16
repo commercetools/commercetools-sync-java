@@ -38,8 +38,8 @@ public abstract class GenericCustomActionBuilder<T> {
      * fields is a secondary resource (e.g. Price or asset) and not a primary resource (e.g Category, Product, Channel,
      * etc..), the {@code variantId} and the {@code objectId} will be used to identify the resource.
      *
-     * @param variantId           an optional field which could be used to identify the variant that holds the a resource
-     *                            (e.g. asset) which has the custom fields.
+     * @param variantId           an optional field which could be used to identify the variant that holds the a
+     *                            resource (e.g. asset) which has the custom fields.
      * @param objectId            an optional field which could be used to identify the id of the resource
      *                            (e.g. asset, price, etc..) which has the custom fields.
      * @param customTypeId        the id of the new custom type.

@@ -41,8 +41,8 @@ final class GenericUpdateActionUtils {
      * @param variantId              optional field representing the variant id in case the oldResource is an asset.
      * @param resourceIdGetter       a function used to get the id of the resource being updated.
      * @param resourceTypeIdGetter   a function used to get the Type id of the resource being updated.
-     * @param updateIdGetter         a function used to get the id/key needed for updating the resource that has the custom
-     *                               fields.
+     * @param updateIdGetter         a function used to get the id/key needed for updating the resource that has the
+     *                               custom fields.
      * @param syncOptions            responsible for supplying the sync options to the sync utility method.
      * @return a setCustomType update action of the type of the resource it's requested on.
      */
@@ -81,8 +81,8 @@ final class GenericUpdateActionUtils {
      * @param variantId              optional field representing the variant id in case the oldResource is an asset.
      * @param resourceIdGetter       a function used to get the id of the resource being updated.
      * @param resourceTypeIdGetter   a function used to get the Type id of the resource being updated.
-     * @param updateIdGetter         a function used to get the id/key needed for updating the resource that has the custom
-     *                               fields.
+     * @param updateIdGetter         a function used to get the id/key needed for updating the resource that has the
+     *                               custom fields.
      * @param syncOptions            responsible for supplying the sync options to the sync utility method.
      * @return a setCustomType update action that removes the custom type from the resource it's requested on.
      */
