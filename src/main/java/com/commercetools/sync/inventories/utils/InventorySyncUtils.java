@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
+import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildResourceCustomUpdateActions;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildChangeQuantityAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetExpectedDeliveryAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetRestockableInDaysAction;
@@ -53,7 +53,7 @@ public final class InventorySyncUtils {
                   .filter(Optional::isPresent)
                   .map(Optional::get)
                   .collect(toList());
-        actions.addAll(buildCustomUpdateActions(oldEntry, newEntry, syncOptions));
+        actions.addAll(buildResourceCustomUpdateActions(oldEntry, newEntry, syncOptions));
         return syncOptions.applyBeforeUpdateCallBack(actions, newEntry, oldEntry);
     }
 }
