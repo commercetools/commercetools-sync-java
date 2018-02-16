@@ -1,6 +1,7 @@
 package com.commercetools.sync.products.helpers;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.helpers.AssetReferenceResolver;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.ChannelService;
@@ -9,6 +10,7 @@ import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductVariantDraft;
@@ -31,6 +33,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public final class VariantReferenceResolver extends BaseReferenceResolver<ProductVariantDraft, ProductSyncOptions> {
     private final PriceReferenceResolver priceReferenceResolver;
+    private final AssetReferenceResolver assetReferenceResolver;
     private final ProductService productService;
 
     public static final String REFERENCE_TYPE_ID_FIELD = "typeId";
@@ -39,7 +42,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     /**
      * Takes a {@link ProductSyncOptions} instance, {@link TypeService}, a {@link ChannelService} and a
      * {@link ProductService} to instantiate a {@link VariantReferenceResolver} instance that could be used to resolve
-     * the prices and variants of variant drafts in the CTP project specified in the injected {@link ProductSyncOptions}
+     * the variants of product drafts in the CTP project specified in the injected {@link ProductSyncOptions}
      * instance.
      *
      * @param productSyncOptions the container of all the options of the sync process including the CTP project client
@@ -54,6 +57,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
                                     @Nonnull final ProductService productService) {
         super(productSyncOptions);
         this.priceReferenceResolver = new PriceReferenceResolver(productSyncOptions, typeService, channelService);
+        this.assetReferenceResolver = new AssetReferenceResolver(productSyncOptions, typeService);
         this.productService = productService;
     }
 
@@ -72,8 +76,21 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     public CompletionStage<ProductVariantDraft> resolveReferences(
         @Nonnull final ProductVariantDraft productVariantDraft) {
         return resolvePricesReferences(ProductVariantDraftBuilder.of(productVariantDraft))
+            .thenCompose(this::resolveAssetsReferences)
             .thenCompose(this::resolveAttributesReferences)
             .thenApply(ProductVariantDraftBuilder::build);
+    }
+
+    @Nonnull
+    CompletionStage<ProductVariantDraftBuilder> resolveAssetsReferences(
+        @Nonnull final ProductVariantDraftBuilder productVariantDraftBuilder) {
+        final List<AssetDraft> productVariantDraftAssets = productVariantDraftBuilder.getAssets();
+        if (productVariantDraftAssets == null) {
+            return completedFuture(productVariantDraftBuilder);
+        }
+
+        return mapValuesToFutureOfCompletedValues(productVariantDraftAssets, assetReferenceResolver::resolveReferences)
+            .thenApply(productVariantDraftBuilder::assets);
     }
 
     CompletionStage<ProductVariantDraftBuilder> resolvePricesReferences(
