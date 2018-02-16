@@ -14,11 +14,13 @@ import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedRemoveCustomTypeUpdateAction;
@@ -43,7 +45,7 @@ public final class CustomUpdateActionUtils {
      * method which is responsible for supplying the sync options to the sync utility method. For example, custom error
      * callbacks for errors. The {@link TypeService} is injected also for fetching the key of the old resource type
      * from it's cache (see {@link CustomUpdateActionUtils#buildNonNullCustomFieldsUpdateActions(CustomFields,
-     * CustomFieldsDraft, Custom, BaseSyncOptions)}).
+     * CustomFieldsDraft, Custom, Class, Integer, Function, Function, Function, BaseSyncOptions)}).
      *
      * <p>An update action will be added to the result list in the following cases:-
      * <ol>
@@ -53,7 +55,8 @@ public final class CustomUpdateActionUtils {
      * "setCustomType" update action is added, which removes the type set on the old resource.</li>
      * <li>If both the resources custom types are the same and the custom fields are both set. The custom
      * field values of both resources are then calculated. (see
-     * {@link CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom, BaseSyncOptions)})</li>
+     * {@link CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom, Class, Integer, Function,
+     * Function, Function, BaseSyncOptions)})</li>
      * <li>If the keys of both custom types are different, then a "setCustomType" update action is added, where the
      * old resource's custom type is set to be as the new one's.</li>
      * <li>If both resources custom type keys are identical but the custom fields of the new resource's custom type is
@@ -69,8 +72,9 @@ public final class CustomUpdateActionUtils {
      * <li>Custom field values are identical.</li>
      * </ol>
      *
-     * @param <T> the type of the {@link Resource}
-     * @param <S> the subtype of the {@link CustomDraft}
+     * @param <T> the type of the old {@link Resource} which has the custom fields.
+     * @param <S> the type of the new resource {@link CustomDraft}.
+     *
      * @param oldResource the resource which should be updated.
      * @param newResource the resource draft where we get the new custom fields.
      * @param syncOptions responsible for supplying the sync options to the sync utility method.
@@ -79,6 +83,20 @@ public final class CustomUpdateActionUtils {
      */
     @Nonnull
     public static <T extends Custom & Resource<T>, S extends CustomDraft> List<UpdateAction<T>>
+        buildResourceCustomUpdateActions(
+            @Nonnull final T oldResource,
+            @Nonnull final S newResource,
+            @Nonnull final BaseSyncOptions syncOptions) {
+
+        final Function<T, String> resourceTypeIdGetter = resource -> resource.toReference().getTypeId();
+        final Function<T, String> resourceIdGetter = resource -> resource.getId();
+        final Function<T, String> updateIdGetter = resource -> null; // No update ID needed for primary resources.
+
+        return buildCustomUpdateActions(oldResource, newResource, null,null,
+            resourceIdGetter, resourceTypeIdGetter, updateIdGetter, syncOptions);
+    }
+
+
     /**
      * Compares the {@link CustomFields} of an old resource {@code T} (for example {@link Category},
      * {@link io.sphere.sdk.products.Product}, etc..), to the {@link CustomFieldsDraft}, of a new
