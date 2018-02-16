@@ -64,9 +64,6 @@ public final class ProductSyncUtils {
                                                                    attributesMetaData) {
         final List<UpdateAction<Product>> updateActions =
             buildCoreActions(oldProduct, newProduct, syncOptions, attributesMetaData);
-        final List<UpdateAction<Product>> assetUpdateActions =
-            buildAssetActions(oldProduct, newProduct, syncOptions);
-        updateActions.addAll(assetUpdateActions);
         return syncOptions.applyBeforeUpdateCallBack(updateActions, newProduct, oldProduct);
     }
 
@@ -157,26 +154,6 @@ public final class ProductSyncUtils {
         updateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));
         updateActions.addAll(buildRemoveFromCategoryUpdateActions(oldProduct, newProduct));
         return updateActions;
-    }
-
-    /**
-     * TODO: SEE GITHUB ISSUE#3
-     * Change to {@code public} once implemented.
-     *
-     * @param oldProduct the product which should be updated.
-     * @param newProduct the product draft where we get the new data.
-     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied
-     *                    by the user. For example, custom callbacks to call in case of warnings or errors occurring
-     *                    on the build update action process. And other options (See {@link ProductSyncOptions}
-     *                    for more info.
-     * @return A list of product assets-specific update actions.
-     */
-    @Nonnull
-    private static List<UpdateAction<Product>> buildAssetActions(@Nonnull final Product oldProduct,
-                                                                 @Nonnull final ProductDraft newProduct,
-                                                                 @Nonnull final ProductSyncOptions syncOptions) {
-
-        return new ArrayList<>();
     }
 
     /**
