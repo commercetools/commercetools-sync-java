@@ -34,7 +34,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesListToFutureOfCompletedSameTypes;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesListToFutureOfCompletedValues;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
@@ -123,7 +123,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         @Nonnull final ProductDraftBuilder draftBuilder) {
         final List<ProductVariantDraft> productDraftVariants = draftBuilder.getVariants();
 
-        return mapValuesListToFutureOfCompletedSameTypes(productDraftVariants,
+        return mapValuesListToFutureOfCompletedValues(productDraftVariants,
             variantReferenceResolver::resolveReferences).thenApply(draftBuilder::variants);
     }
 

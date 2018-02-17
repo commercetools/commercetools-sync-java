@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesListToFutureOfCompletedSameTypes;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesListToFutureOfCompletedValues;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
@@ -80,7 +80,7 @@ public final class CategoryReferenceResolver
             return completedFuture(categoryDraftBuilder);
         }
 
-        return mapValuesListToFutureOfCompletedSameTypes(categoryDraftAssets, assetReferenceResolver::resolveReferences)
+        return mapValuesListToFutureOfCompletedValues(categoryDraftAssets, assetReferenceResolver::resolveReferences)
             .thenApply(categoryDraftBuilder::assets);
     }
 

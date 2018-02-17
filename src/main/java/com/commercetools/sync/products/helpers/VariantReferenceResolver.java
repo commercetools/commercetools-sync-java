@@ -27,8 +27,8 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesListToFutureOfCompletedSameTypes;
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedSameTypes;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesListToFutureOfCompletedValues;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 
@@ -90,7 +90,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return completedFuture(productVariantDraftBuilder);
         }
 
-        return mapValuesListToFutureOfCompletedSameTypes(productVariantDraftAssets,
+        return mapValuesListToFutureOfCompletedValues(productVariantDraftAssets,
             assetReferenceResolver::resolveReferences).thenApply(productVariantDraftBuilder::assets);
     }
 
@@ -101,7 +101,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return completedFuture(productVariantDraftBuilder);
         }
 
-        return mapValuesListToFutureOfCompletedSameTypes(productVariantDraftPrices,
+        return mapValuesListToFutureOfCompletedValues(productVariantDraftPrices,
             priceReferenceResolver::resolveReferences).thenApply(productVariantDraftBuilder::prices);
     }
 
@@ -112,7 +112,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return completedFuture(productVariantDraftBuilder);
         }
 
-        return mapValuesListToFutureOfCompletedSameTypes(attributeDrafts, this::resolveAttributeReference)
+        return mapValuesListToFutureOfCompletedValues(attributeDrafts, this::resolveAttributeReference)
                                      .thenApply(productVariantDraftBuilder::attributes);
     }
 
@@ -144,7 +144,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
                                                                        .filter(Objects::nonNull)
                                                                        .filter(reference -> !reference.isNull());
 
-        return mapValuesToFutureOfCompletedSameTypes(attributeReferenceStream, this::resolveAttributeReferenceValue)
+        return mapValuesToFutureOfCompletedValues(attributeReferenceStream, this::resolveAttributeReferenceValue)
             .thenApply(resolved -> AttributeDraft.of(attributeDraft.getName(), resolved));
     }
 
