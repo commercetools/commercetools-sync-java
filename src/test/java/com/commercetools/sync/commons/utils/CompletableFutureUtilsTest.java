@@ -96,7 +96,7 @@ public class CompletableFutureUtilsTest {
     }
 
     @Test
-    public void mapValuesToFutureOfCompletedValues_DifferentTypeMapping_ShouldReturnAFutureWithCompletedMappedListValues() {
+    public void mapValuesToFutureOfCompletedValues_DifferentTypeMapping_ReturnsFutureWithCompletedMappedListValues() {
         final CompletableFuture<List<Integer>> completedMappedValues = mapValuesToFutureOfCompletedValues(
             Stream.of("foo", "bar"), name -> completedFuture(name.length()));
         assertThat(completedMappedValues.join()).containsExactlyInAnyOrder(3, 3);
@@ -237,8 +237,8 @@ public class CompletableFutureUtilsTest {
         assertThat(futureSet).isNotEmpty();
         assertThat(futureSet.stream()
                             .map(CompletableFuture::join)
-                            .filter(resultingSize -> resultingSize.equals("fred durst") ||
-                                resultingSize.equals("james hetfield"))
+                            .filter(resultingSize ->
+                                resultingSize.equals("fred durst") || resultingSize.equals("james hetfield"))
                             .collect(toList())).hasSize(2);
         assertThat(futureSet).hasSize(2);
     }
