@@ -58,7 +58,60 @@ public class CategoryReferenceResolverTest {
         categoryService = mock(CategoryService.class);
         when(categoryService.fetchCachedCategoryId(CACHED_CATEGORY_KEY))
             .thenReturn(CompletableFuture.completedFuture(Optional.of(CACHED_CATEGORY_ID)));
-        syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
+    }
+
+    @Test
+    public void resolveAssetsReferences_WithNullAssets_ShouldNotResolveAssets() {
+        final CategoryDraftBuilder categoryDraftBuilder =
+            getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key", CACHED_CATEGORY_KEY,
+                "customTypeId", new HashMap<>())
+                .assets(null);
+
+        final CategoryDraftBuilder resolvedBuilder = referenceResolver.resolveAssetsReferences(categoryDraftBuilder)
+                                                                      .toCompletableFuture().join();
+
+        final List<AssetDraft> resolvedBuilderAssets = resolvedBuilder.getAssets();
+        assertThat(resolvedBuilderAssets).isNull();
+    }
+
+    @Test
+    public void resolveAssetsReferences_WithANullAsset_ShouldNotResolveAssets() {
+        final CategoryDraftBuilder categoryDraftBuilder =
+            getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key", CACHED_CATEGORY_KEY,
+                "customTypeId", new HashMap<>()).assets(singletonList(null));
+
+        final CategoryDraftBuilder resolvedBuilder = referenceResolver.resolveAssetsReferences(categoryDraftBuilder)
+                                                                      .toCompletableFuture().join();
+
+        final List<AssetDraft> resolvedBuilderAssets = resolvedBuilder.getAssets();
+        assertThat(resolvedBuilderAssets).isEmpty();
+    }
+
+    @Test
+    public void resolveAssetsReferences_WithAssetReferences_ShouldResolveAssets() {
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
+            .ofTypeIdAndJson("customTypeId", new HashMap<>());
+
+        final AssetDraft assetDraft = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
+                                                       .custom(customFieldsDraft)
+                                                       .build();
+
+
+        final CategoryDraftBuilder categoryDraftBuilder =
+            getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key", CACHED_CATEGORY_KEY,
+                "customTypeId", new HashMap<>()).assets(singletonList(assetDraft));
+
+        final CategoryDraftBuilder resolvedBuilder = referenceResolver.resolveAssetsReferences(categoryDraftBuilder)
+                                                                      .toCompletableFuture().join();
+
+        final List<AssetDraft> resolvedBuilderAssets = resolvedBuilder.getAssets();
+        assertThat(resolvedBuilderAssets).isNotEmpty();
+        final AssetDraft resolvedAssetDraft = resolvedBuilderAssets.get(0);
+        assertThat(resolvedAssetDraft).isNotNull();
+        assertThat(resolvedAssetDraft.getCustom()).isNotNull();
+        assertThat(resolvedAssetDraft.getCustom().getType().getId()).isEqualTo("typeId");
     }
 
     @Test
