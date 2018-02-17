@@ -25,7 +25,7 @@ public final class CompletableFutureUtils {
      * @param <T>    The type of the values.
      * @param <S>    The type of the mapped completed values.
      * @return a future containing a list of completed stage results of the values after the mapper function was
-     * applied to each one.
+     *         applied to each one.
      */
     @Nonnull
     public static <T, S> CompletableFuture<List<S>> mapValuesListToFutureOfCompletedValues(
@@ -43,7 +43,7 @@ public final class CompletableFutureUtils {
      * @param <T>    The type of the values.
      * @param <S>    The type of the mapping of the values.
      * @return a future containing a list of completed stage results of the values after the mapper function was
-     * applied to each one.
+     *         applied to each one.
      */
     @Nonnull
     public static <T, S> CompletableFuture<Stream<S>> mapValuesSetToFutureOfCompletedValues(
@@ -62,7 +62,7 @@ public final class CompletableFutureUtils {
      * @param <T>    The type of the values.
      * @param <S>    The type of the mapping of the values.
      * @return a future containing a list of completed stage results of the values after the mapper function was
-     * applied to each one.
+     *         applied to each one.
      */
     @Nonnull
     public static <T, S> CompletableFuture<List<S>> mapValuesToFutureOfCompletedValues(
