@@ -17,6 +17,7 @@ public final class StreamUtils {
      * @param <S>      the resulting type after applying the mapper function on an element.
      * @return a stream of the resulting mapped elements.
      */
+    @Nonnull
     public static <T, S> Stream<S> map(@Nonnull final Stream<T> elements, @Nonnull final Function<T, S> mapper) {
         return elements.filter(Objects::nonNull).map(mapper);
     }
