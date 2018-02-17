@@ -9,6 +9,8 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.AssetDraft;
+import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
@@ -19,6 +21,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,7 +30,9 @@ import java.util.concurrent.CompletableFuture;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraftBuilder;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -37,10 +42,12 @@ public class CategoryReferenceResolverTest {
 
     private TypeService typeService;
     private CategoryService categoryService;
-    private CategorySyncOptions syncOptions;
-    
+
     private static final String CACHED_CATEGORY_ID = UUID.randomUUID().toString();
     private static final String CACHED_CATEGORY_KEY = "someKey";
+
+
+    private CategoryReferenceResolver referenceResolver;
 
     /**
      * Sets up the services and the options needed for reference resolution.
@@ -59,11 +66,9 @@ public class CategoryReferenceResolverTest {
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
             CACHED_CATEGORY_KEY, "customTypeId", new HashMap<>());
 
-        final CategoryReferenceResolver categoryReferenceResolver =
-            new CategoryReferenceResolver(syncOptions, typeService, categoryService);
-        final CategoryDraft draftWithResolvedReferences = categoryReferenceResolver
-            .resolveParentReference(categoryDraft).toCompletableFuture().join()
-            .build();
+        final CategoryDraft draftWithResolvedReferences = referenceResolver.resolveParentReference(categoryDraft)
+                                                                           .toCompletableFuture().join()
+                                                                           .build();
 
         assertThat(draftWithResolvedReferences.getParent()).isNotNull();
         assertThat(draftWithResolvedReferences.getParent().getId()).isEqualTo(CACHED_CATEGORY_ID);
@@ -94,10 +99,7 @@ public class CategoryReferenceResolverTest {
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
             UUID.randomUUID().toString(), "customTypeId", new HashMap<>());
 
-        final CategoryReferenceResolver categoryReferenceResolver =
-            new CategoryReferenceResolver(syncOptions, typeService, categoryService);
-
-        assertThat(categoryReferenceResolver.resolveParentReference(categoryDraft)
+        assertThat(referenceResolver.resolveParentReference(categoryDraft)
             .toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
@@ -138,10 +140,7 @@ public class CategoryReferenceResolverTest {
         futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
         when(typeService.fetchCachedTypeId(anyString())).thenReturn(futureThrowingSphereException);
 
-        final CategoryReferenceResolver categoryReferenceResolver =
-            new CategoryReferenceResolver(syncOptions, typeService, categoryService);
-
-        assertThat(categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
+        assertThat(referenceResolver.resolveCustomTypeReference(categoryDraft)
             .toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
@@ -155,10 +154,7 @@ public class CategoryReferenceResolverTest {
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
             CACHED_CATEGORY_KEY, customTypeUuid, new HashMap<>());
 
-        final CategoryReferenceResolver categoryReferenceResolver =
-            new CategoryReferenceResolver(syncOptions, typeService, categoryService);
-
-        assertThat(categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
+        assertThat(referenceResolver.resolveCustomTypeReference(categoryDraft)
             .toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
@@ -195,10 +191,7 @@ public class CategoryReferenceResolverTest {
         categoryDraft.key("key");
         categoryDraft.parent(Category.referenceOfId(""));
 
-        final CategoryReferenceResolver categoryReferenceResolver =
-            new CategoryReferenceResolver(syncOptions, typeService, categoryService);
-
-        assertThat(categoryReferenceResolver.resolveParentReference(categoryDraft)
+        assertThat(referenceResolver.resolveParentReference(categoryDraft)
             .toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
@@ -214,10 +207,7 @@ public class CategoryReferenceResolverTest {
         categoryDraft.key("key");
         categoryDraft.parent(Category.referenceOfId(null));
 
-        final CategoryReferenceResolver categoryReferenceResolver =
-            new CategoryReferenceResolver(syncOptions, typeService, categoryService);
-
-        assertThat(categoryReferenceResolver.resolveParentReference(categoryDraft)
+        assertThat(referenceResolver.resolveParentReference(categoryDraft)
             .toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
@@ -239,10 +229,7 @@ public class CategoryReferenceResolverTest {
         when(newCategoryCustomFieldsDraft.getType()).thenReturn(newCategoryCustomFieldsDraftTypeReference);
         categoryDraft.custom(newCategoryCustomFieldsDraft);
 
-        final CategoryReferenceResolver categoryReferenceResolver =
-            new CategoryReferenceResolver(syncOptions, typeService, categoryService);
-
-        assertThat(categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
+        assertThat(referenceResolver.resolveCustomTypeReference(categoryDraft)
             .toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
@@ -258,10 +245,7 @@ public class CategoryReferenceResolverTest {
 
         categoryDraft.custom(CustomFieldsDraft.ofTypeIdAndObjects("", emptyMap()));
 
-        final CategoryReferenceResolver categoryReferenceResolver =
-            new CategoryReferenceResolver(syncOptions, typeService, categoryService);
-
-        assertThat(categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
+        assertThat(referenceResolver.resolveCustomTypeReference(categoryDraft)
             .toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
@@ -276,12 +260,8 @@ public class CategoryReferenceResolverTest {
         when(categoryDraft.getName()).thenReturn(LocalizedString.of(Locale.ENGLISH, "myDraft"));
         when(categoryDraft.getKey()).thenReturn("key");
 
-        final CategoryReferenceResolver categoryReferenceResolver =
-            new CategoryReferenceResolver(syncOptions, typeService, categoryService);
-
-        final CategoryDraft referencesResolvedDraft = categoryReferenceResolver
-            .resolveReferences(categoryDraft)
-            .toCompletableFuture().join();
+        final CategoryDraft referencesResolvedDraft = referenceResolver.resolveReferences(categoryDraft)
+                                                                       .toCompletableFuture().join();
 
         assertThat(referencesResolvedDraft.getCustom()).isNull();
         assertThat(referencesResolvedDraft.getParent()).isNull();
