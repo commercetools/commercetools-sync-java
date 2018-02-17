@@ -23,14 +23,15 @@ public final class CompletableFutureUtils {
      * @param values list of values to apply a mapper function that would map each to a {@link CompletionStage}.
      * @param mapper function to map each value to a {@link CompletionStage}
      * @param <T>    The type of the values.
+     * @param <S>    The type of the mapped completed values.
      * @return a future containing a list of completed stage results of the values after the mapper function was
-     *         applied to each one.
+     * applied to each one.
      */
     @Nonnull
-    public static <T> CompletableFuture<List<T>> mapValuesListToFutureOfCompletedSameTypes(
+    public static <T, S> CompletableFuture<List<S>> mapValuesListToFutureOfCompletedValues(
         @Nonnull final List<T> values,
-        @Nonnull final Function<T, CompletionStage<T>> mapper) {
-        return mapValuesToFutureOfCompletedSameTypes(values.stream(), mapper);
+        @Nonnull final Function<T, CompletionStage<S>> mapper) {
+        return mapValuesToFutureOfCompletedValues(values.stream(), mapper);
     }
 
     /**
@@ -42,13 +43,13 @@ public final class CompletableFutureUtils {
      * @param <T>    The type of the values.
      * @param <S>    The type of the mapping of the values.
      * @return a future containing a list of completed stage results of the values after the mapper function was
-     *         applied to each one.
+     * applied to each one.
      */
     @Nonnull
-    public static <T, S> CompletableFuture<Stream<S>> mapValuesSetToFutureOfCompletedDifferentTypes(
+    public static <T, S> CompletableFuture<Stream<S>> mapValuesSetToFutureOfCompletedValues(
         @Nonnull final Set<T> values,
         @Nonnull final Function<T, CompletionStage<S>> mapper) {
-        return setOfFuturesToFutureOfSet(mapValueSetToFuturesOfDifferentType(values, mapper))
+        return setOfFuturesToFutureOfSet(mapValueSetToFutureSet(values, mapper))
             .thenApply(Set::stream);
     }
 
@@ -59,14 +60,15 @@ public final class CompletableFutureUtils {
      * @param values stream of values to apply a mapper function that would map each to a {@link CompletionStage}.
      * @param mapper function to map each value to a {@link CompletionStage}
      * @param <T>    The type of the values.
+     * @param <S>    The type of the mapping of the values.
      * @return a future containing a list of completed stage results of the values after the mapper function was
-     *         applied to each one.
+     * applied to each one.
      */
     @Nonnull
-    public static <T> CompletableFuture<List<T>> mapValuesToFutureOfCompletedSameTypes(
+    public static <T, S> CompletableFuture<List<S>> mapValuesToFutureOfCompletedValues(
         @Nonnull final Stream<T> values,
-        @Nonnull final Function<T, CompletionStage<T>> mapper) {
-        return listOfFuturesToFutureOfList(mapValuesToFuturesOfSameType(values, mapper));
+        @Nonnull final Function<T, CompletionStage<S>> mapper) {
+        return listOfFuturesToFutureOfList(mapValuesToFutureList(values, mapper));
     }
 
     /**
@@ -83,8 +85,8 @@ public final class CompletableFutureUtils {
         @Nonnull final Set<? extends CompletionStage<T>> set) {
 
         final Set<CompletableFuture<T>> futureSet = set.stream()
-                                                        .map(CompletionStage::toCompletableFuture)
-                                                        .collect(toSet());
+                                                       .map(CompletionStage::toCompletableFuture)
+                                                       .collect(toSet());
 
         final CompletableFuture[] futuresAsArray = futureSet.toArray(new CompletableFuture[futureSet.size()]);
         return CompletableFuture.allOf(futuresAsArray)
@@ -93,23 +95,9 @@ public final class CompletableFutureUtils {
                                                                      .collect(Collectors.toSet()));
     }
 
-    /**
-     * Maps a stream of values to futures (containing results of the same type) using the supplied mapper function.
-     *
-     * @param values stream of values to apply a mapper function that would map each to a {@link CompletionStage}.
-     * @param mapper function to map each value to a {@link CompletionStage}
-     * @param <T>    The type of the values.
-     * @return a list of futures resulting from applying the mapper function on each value.
-     */
-    @Nonnull
-    public static <T> List<CompletableFuture<T>> mapValuesToFuturesOfSameType(
-        @Nonnull final Stream<T> values,
-        @Nonnull final Function<T, CompletionStage<T>> mapper) {
-        return toListOfCompletableFutures(map(values, mapper));
-    }
 
     /**
-     * Maps a stream of values to futures (containing results of a different type) using the supplied mapper function.
+     * Maps a stream of values to futures using the supplied mapper function.
      *
      * @param values stream of values to apply a mapper function that would map each to a {@link CompletionStage}.
      * @param mapper function to map each value to a {@link CompletionStage}
@@ -118,14 +106,14 @@ public final class CompletableFutureUtils {
      * @return a list of futures resulting from applying the mapper function on each value.
      */
     @Nonnull
-    public static <T, S> List<CompletableFuture<S>> mapValuesToFuturesOfDifferentType(
+    public static <T, S> List<CompletableFuture<S>> mapValuesToFutureList(
         @Nonnull final Stream<T> values,
         @Nonnull final Function<T, CompletionStage<S>> mapper) {
         return toListOfCompletableFutures(map(values, mapper));
     }
 
     /**
-     * Maps a stream of values to futures (containing results of a different type) using the supplied mapper function.
+     * Maps a stream of values to futures using the supplied mapper function.
      *
      * @param values stream of values to apply a mapper function that would map each to a {@link CompletionStage}.
      * @param mapper function to map each value to a {@link CompletionStage}
@@ -134,7 +122,7 @@ public final class CompletableFutureUtils {
      * @return a list of futures resulting from applying the mapper function on each value.
      */
     @Nonnull
-    public static <T, S> Set<CompletableFuture<S>> mapValueSetToFuturesOfDifferentType(
+    public static <T, S> Set<CompletableFuture<S>> mapValueSetToFutureSet(
         @Nonnull final Set<T> values,
         @Nonnull final Function<T, CompletionStage<S>> mapper) {
         return toSetOfCompletableFutures(map(values.stream(), mapper));
