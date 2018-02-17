@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesSetToFutureOfCompletedDifferentTypes;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -108,17 +109,9 @@ public final class CategoryServiceImpl extends BaseService<Category, CategoryDra
     @Nonnull
     @Override
     public CompletionStage<Set<Category>> createCategories(@Nonnull final Set<CategoryDraft> categoryDrafts) {
-        final List<CompletableFuture<Optional<Category>>> futureCreations = categoryDrafts.stream()
-                                                                        .map(this::createCategory)
-                                                                        .map(CompletionStage::toCompletableFuture)
-                                                                        .collect(Collectors.toList());
-        return CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()]))
-                                .thenApply(result -> futureCreations.stream()
-                                    .map(CompletionStage::toCompletableFuture)
-                                    .map(CompletableFuture::join)
-                                    .filter(Optional::isPresent)
-                                    .map(Optional::get)
-                                    .collect(Collectors.toSet()));
+        return mapValuesSetToFutureOfCompletedDifferentTypes(categoryDrafts, this::createCategory)
+            .thenApply(results -> results.filter(Optional::isPresent).map(Optional::get))
+            .thenApply(createdCategories -> createdCategories.collect(Collectors.toSet()));
     }
 
     @Nonnull

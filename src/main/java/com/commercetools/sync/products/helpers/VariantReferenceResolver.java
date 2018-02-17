@@ -27,7 +27,8 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesListToFutureOfCompletedSameTypes;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedSameTypes;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 
@@ -89,8 +90,8 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return completedFuture(productVariantDraftBuilder);
         }
 
-        return mapValuesToFutureOfCompletedValues(productVariantDraftAssets, assetReferenceResolver::resolveReferences)
-            .thenApply(productVariantDraftBuilder::assets);
+        return mapValuesListToFutureOfCompletedSameTypes(productVariantDraftAssets,
+            assetReferenceResolver::resolveReferences).thenApply(productVariantDraftBuilder::assets);
     }
 
     CompletionStage<ProductVariantDraftBuilder> resolvePricesReferences(
@@ -100,8 +101,8 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return completedFuture(productVariantDraftBuilder);
         }
 
-        return mapValuesToFutureOfCompletedValues(productVariantDraftPrices, priceReferenceResolver::resolveReferences)
-            .thenApply(productVariantDraftBuilder::prices);
+        return mapValuesListToFutureOfCompletedSameTypes(productVariantDraftPrices,
+            priceReferenceResolver::resolveReferences).thenApply(productVariantDraftBuilder::prices);
     }
 
     CompletionStage<ProductVariantDraftBuilder> resolveAttributesReferences(
@@ -111,8 +112,8 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return completedFuture(productVariantDraftBuilder);
         }
 
-        return mapValuesToFutureOfCompletedValues(attributeDrafts, this::resolveAttributeReference)
-            .thenApply(productVariantDraftBuilder::attributes);
+        return mapValuesListToFutureOfCompletedSameTypes(attributeDrafts, this::resolveAttributeReference)
+                                     .thenApply(productVariantDraftBuilder::attributes);
     }
 
     CompletionStage<AttributeDraft> resolveAttributeReference(@Nonnull final AttributeDraft attributeDraft) {
@@ -143,7 +144,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
                                                                        .filter(Objects::nonNull)
                                                                        .filter(reference -> !reference.isNull());
 
-        return mapValuesToFutureOfCompletedValues(attributeReferenceStream, this::resolveAttributeReferenceValue)
+        return mapValuesToFutureOfCompletedSameTypes(attributeReferenceStream, this::resolveAttributeReferenceValue)
             .thenApply(resolved -> AttributeDraft.of(attributeDraft.getName(), resolved));
     }
 

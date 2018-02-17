@@ -27,15 +27,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesListToFutureOfCompletedSameTypes;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
@@ -124,19 +123,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         @Nonnull final ProductDraftBuilder draftBuilder) {
         final List<ProductVariantDraft> productDraftVariants = draftBuilder.getVariants();
 
-        final List<CompletableFuture<ProductVariantDraft>> resolvedVariantFutures =
-            productDraftVariants.stream()
-                                .filter(Objects::nonNull)
-                                .map(variantReferenceResolver::resolveReferences)
-                                .map(CompletionStage::toCompletableFuture)
-                                .collect(Collectors.toList());
-        return
-            CompletableFuture.allOf(
-                resolvedVariantFutures.toArray(new CompletableFuture[resolvedVariantFutures.size()]))
-                .thenApply(result -> resolvedVariantFutures.stream()
-                    .map(CompletableFuture::join)
-                    .collect(Collectors.toList()))
-                .thenApply(draftBuilder::variants);
+        return mapValuesListToFutureOfCompletedSameTypes(productDraftVariants,
+            variantReferenceResolver::resolveReferences).thenApply(draftBuilder::variants);
     }
 
     /**

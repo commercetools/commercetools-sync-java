@@ -26,6 +26,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesSetToFutureOfCompletedDifferentTypes;
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -141,18 +142,9 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
     @Nonnull
     @Override
     public CompletionStage<Set<Product>> createProducts(@Nonnull final Set<ProductDraft> productsDrafts) {
-        final List<CompletableFuture<Optional<Product>>> futureCreations =
-            productsDrafts.stream()
-                          .map(this::createProduct)
-                          .map(CompletionStage::toCompletableFuture)
-                          .collect(Collectors.toList());
-        return CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()]))
-                                .thenApply(result -> futureCreations.stream()
-                                                                    .map(CompletionStage::toCompletableFuture)
-                                                                    .map(CompletableFuture::join)
-                                                                    .filter(Optional::isPresent)
-                                                                    .map(Optional::get)
-                                                                    .collect(Collectors.toSet()));
+        return mapValuesSetToFutureOfCompletedDifferentTypes(productsDrafts, this::createProduct)
+            .thenApply(results -> results.filter(Optional::isPresent).map(Optional::get))
+            .thenApply(createdProducts -> createdProducts.collect(Collectors.toSet()));
     }
 
     @Nonnull
