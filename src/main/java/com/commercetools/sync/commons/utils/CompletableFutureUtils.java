@@ -39,7 +39,7 @@ public final class CompletableFutureUtils {
      * @param values stream of values to apply a mapper function that would map each to a {@link CompletionStage}.
      * @param mapper function to map each value to a {@link CompletionStage}
      * @param <T>    The type of the values.
-     * @param <T>    The type of the mapping of the values.
+     * @param <S>    The type of the mapping of the values.
      * @return a future containing a list of completed stage results of the values after the mapper function was
      *         applied to each one.
      */
@@ -109,6 +109,7 @@ public final class CompletableFutureUtils {
      * @param values stream of values to apply a mapper function that would map each to a {@link CompletionStage}.
      * @param mapper function to map each value to a {@link CompletionStage}
      * @param <T>    The type of the values.
+     * @param <S>    The type of the mapped values.
      * @return a list of futures resulting from applying the mapper function on each value.
      */
     public static <T, S> List<CompletableFuture<S>> mapValuesToFuturesOfDifferentType(
@@ -124,6 +125,7 @@ public final class CompletableFutureUtils {
      * @param values stream of values to apply a mapper function that would map each to a {@link CompletionStage}.
      * @param mapper function to map each value to a {@link CompletionStage}
      * @param <T>    The type of the values.
+     * @param <S>    The type of the mapped values.
      * @return a list of futures resulting from applying the mapper function on each value.
      */
     public static <T, S> Set<CompletableFuture<S>> mapValueSetToFuturesOfDifferentType(
@@ -135,12 +137,12 @@ public final class CompletableFutureUtils {
 
 
     /**
-     * Converts a stream of {@link CompletionStage}&lt;T&gt; into a
-     * {@link List}&lt;{@link CompletableFuture}&lt;T&gt;&gt;.
+     * Converts a stream of {@link CompletionStage} of values of type {@code <T>} into a
+     * {@link List}{@link CompletableFuture} of values of type {@code <T>}.
      *
-     * @param values stream of {@link CompletionStage&lt;T&gt;}
+     * @param values stream of {@link CompletionStage} of values of type {@code <T>}
      * @param <T>    the type of the results of the stages.
-     * @return a {@link List} of {@link CompletableFuture}&lt;T&gt;.
+     * @return a {@link List} of {@link CompletableFuture} elements of type {@code <T>}.
      */
     public static <T> List<CompletableFuture<T>> toListOfCompletableFutures(
         @Nonnull final Stream<CompletionStage<T>> values) {
@@ -152,7 +154,7 @@ public final class CompletableFutureUtils {
      * Converts a stream of {@link CompletionStage}&lt;T&gt; into a
      * {@link Set}&lt;{@link CompletableFuture}&lt;T&gt;&gt;.
      *
-     * @param values stream of {@link CompletionStage&lt;T&gt;}
+     * @param values stream of {@link CompletionStage} of type {@code <T>}
      * @param <T>    the type of the results of the stages.
      * @return a {@link Set} of {@link CompletableFuture}&lt;T&gt;.
      */
