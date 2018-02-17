@@ -2,6 +2,7 @@ package com.commercetools.sync.commons.utils;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -10,12 +11,11 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValueSetToFuturesOfDifferentType;
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesListToFutureOfCompletedSameTypes;
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesSetToFutureOfCompletedDifferentTypes;
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedSameTypes;
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFuturesOfDifferentType;
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFuturesOfSameType;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValueSetToFutureSet;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesListToFutureOfCompletedValues;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesSetToFutureOfCompletedValues;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureList;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.setOfFuturesToFutureOfSet;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.toListOfCompletableFutures;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.toSetOfCompletableFutures;
@@ -31,59 +31,77 @@ import static org.mockito.Mockito.when;
 public class CompletableFutureUtilsTest {
 
     @Test
-    public void mapValuesListToFutureOfCompletedSameTypes_WithEmptyList_ShouldReturnAFutureWithEmptyList() {
-        final CompletableFuture<List<String>> futureList = mapValuesListToFutureOfCompletedSameTypes(
-            emptyList(), CompletableFuture::completedFuture);
+    public void mapValuesListToFutureOfCompletedValues_WithEmptyList_ShouldReturnAFutureWithAnEmptyList() {
+        final CompletableFuture<List<String>> futureList = mapValuesListToFutureOfCompletedValues(
+            new ArrayList<String>(), CompletableFuture::completedFuture);
         assertThat(futureList.join()).isEqualTo(emptyList());
     }
 
     @Test
-    public void mapValuesListToFutureOfCompletedSameTypes_NonEmptyList_ReturnsFutureOfListOfMappedCompletedValues() {
-        final CompletableFuture<List<String>> futureList = mapValuesListToFutureOfCompletedSameTypes(
+    public void mapValuesListToFutureOfCompletedValues_SameTypeMapping_ReturnsFutureOfListOfMappedCompletedValues() {
+        final CompletableFuture<List<String>> futureList = mapValuesListToFutureOfCompletedValues(
             asList("foo", "bar"), element -> completedFuture(element.concat("POSTFIX")));
-        assertThat(futureList.join()).isEqualTo(asList("fooPOSTFIX", "barPOSTFIX"));
+        assertThat(futureList.join()).containsExactly("fooPOSTFIX", "barPOSTFIX");
     }
 
     @Test
-    public void mapValuesSetToFutureOfCompletedDifferentTypes_WithEmptySet_ShouldReturnAFutureWithEmptyStream() {
-        final CompletableFuture<Stream<Integer>> futureStream = mapValuesSetToFutureOfCompletedDifferentTypes(
+    public void mapValuesListToFutureOfCompletedValues_DiffTypeMapping_ReturnsFutureOfListOfMappedCompletedValues() {
+        final CompletableFuture<List<Integer>> futureList = mapValuesListToFutureOfCompletedValues(
+            asList("foo", "bar"), element -> completedFuture(element.length()));
+        assertThat(futureList.join()).containsExactly(3, 3);
+    }
+
+    @Test
+    public void mapValuesSetToFutureOfCompletedValues_WithEmptySet_ShouldReturnAFutureWithEmptyStream() {
+        final CompletableFuture<Stream<Integer>> futureStream = mapValuesSetToFutureOfCompletedValues(
             new HashSet<String>(), element -> completedFuture(element.length()));
         assertThat(futureStream.join().collect(toList())).isEqualTo(emptyList());
     }
 
     @Test
-    public
-        void mapValuesSetToFutureOfCompletedDifferentTypes_NonEmptyStream_ReturnsFutureOfStreamOfMappedCompletedVals() {
+    public void mapValuesSetToFutureOfCompletedValues_DiffTypeMapping_ReturnsFutureOfStreamOfMappedCompletedVals() {
         final HashSet<String> names = new HashSet<>();
         names.add("fred durst");
         names.add("james hetfield");
 
         final CompletableFuture<Stream<Integer>> futureStream =
-            mapValuesSetToFutureOfCompletedDifferentTypes(names, element -> completedFuture(element.length()));
-        assertThat(futureStream.join().collect(toList())).isEqualTo(asList(10, 14));
+            mapValuesSetToFutureOfCompletedValues(names, element -> completedFuture(element.length()));
+        assertThat(futureStream.join().collect(toList())).containsExactlyInAnyOrder(10, 14);
     }
 
     @Test
-    public void mapValuesToFutureOfCompletedDifferentTypes_WithStrings_ReturnsFutureWithCompletedMappedListValues() {
-        final CompletableFuture<List<String>> completedMappedValues = mapValuesToFutureOfCompletedSameTypes(
-            Stream.of("foo", "bar"), name -> completedFuture(name.concat("PostFix")));
-        assertThat(completedMappedValues.join()).isEqualTo(asList("fooPostFix", "barPostFix"));
+    public void mapValuesSetToFutureOfCompletedValues_SameTypeMapping_ReturnsFutureOfStreamOfMappedCompletedVals() {
+        final HashSet<String> names = new HashSet<>();
+        names.add("fred durst");
+        names.add("james hetfield");
+
+        final CompletableFuture<Stream<String>> futureStream =
+            mapValuesSetToFutureOfCompletedValues(names, element -> completedFuture(element.concat("POSTFIX")));
+        assertThat(futureStream.join().collect(toList()))
+            .containsExactlyInAnyOrder("fred durstPOSTFIX", "james hetfieldPOSTFIX");
     }
 
-
     @Test
-    public void mapValuesToFutureOfCompletedSameTypes_WithEmptyStream_ShouldReturnAFutureWithEmptyList() {
-        final CompletableFuture<List<String>> completedMappedValues = mapValuesToFutureOfCompletedSameTypes(
-            Stream.empty(), CompletableFuture::completedFuture);
+    public void mapValuesToFutureOfCompletedValues_WithEmptyStream_ShouldReturnAFutureWithEmptyList() {
+        final CompletableFuture<List<String>> completedMappedValues = mapValuesToFutureOfCompletedValues(
+            new ArrayList<String>().stream(), CompletableFuture::completedFuture);
         assertThat(completedMappedValues.join()).isEqualTo(emptyList());
     }
 
     @Test
-    public void mapValuesToFutureOfCompletedSameTypes_WithStrings_ShouldReturnAFutureWithCompletedMappedListValues() {
-        final CompletableFuture<List<String>> completedMappedValues = mapValuesToFutureOfCompletedSameTypes(
+    public void mapValuesToFutureOfCompletedValues_SameTypeMapping_ShouldReturnAFutureWithCompletedMappedListValues() {
+        final CompletableFuture<List<String>> completedMappedValues = mapValuesToFutureOfCompletedValues(
             Stream.of("foo", "bar"), name -> completedFuture(name.concat("PostFix")));
-        assertThat(completedMappedValues.join()).isEqualTo(asList("fooPostFix", "barPostFix"));
+        assertThat(completedMappedValues.join()).containsExactlyInAnyOrder("fooPostFix", "barPostFix");
     }
+
+    @Test
+    public void mapValuesToFutureOfCompletedValues_DifferentTypeMapping_ShouldReturnAFutureWithCompletedMappedListValues() {
+        final CompletableFuture<List<Integer>> completedMappedValues = mapValuesToFutureOfCompletedValues(
+            Stream.of("foo", "bar"), name -> completedFuture(name.length()));
+        assertThat(completedMappedValues.join()).containsExactlyInAnyOrder(3, 3);
+    }
+
 
     @Test
     public void setOfFuturesToFutureOfSet_WithEmptySet_ShouldReturnAFutureWithEmptySet() {
@@ -107,19 +125,18 @@ public class CompletableFutureUtilsTest {
 
 
     @Test
-    public void mapValuesToFuturesOfSameType_WithEmptyStream_ShouldReturnAnEmptyList() {
-        assertThat(mapValuesToFuturesOfSameType(Stream.empty(), CompletableFuture::completedFuture)).isEmpty();
+    public void mapValuesToFutureList_WithEmptyStream_ShouldReturnAnEmptyList() {
+        assertThat(mapValuesToFutureList(Stream.empty(), CompletableFuture::completedFuture)).isEmpty();
     }
 
     @Test
-    public void mapValuesToFuturesOfSameType_WithNonEmptyStreamWithNoDuplicates_ShouldReturnListOfMappedFutures() {
+    public void mapValuesToFutureList_WithNoDuplicatesAndSameTypeMapping_ShouldReturnListOfMappedFutures() {
         final Stream<String> nameStream = Stream.of("james hetfield", "fred durst");
 
         final Function<String, CompletionStage<String>> removeSpaceFunction =
             name -> completedFuture(name.replaceAll(" ", ""));
 
-        final List<CompletableFuture<String>> futures =
-            mapValuesToFuturesOfSameType(nameStream, removeSpaceFunction);
+        final List<CompletableFuture<String>> futures = mapValuesToFutureList(nameStream, removeSpaceFunction);
 
         assertThat(futures).isNotEmpty();
         assertThat(futures.stream()
@@ -131,14 +148,14 @@ public class CompletableFutureUtilsTest {
     }
 
     @Test
-    public void mapValuesToFuturesOfSameType_WithNonEmptyStreamWithDuplicates_ShouldReturnListOfMappedFutures() {
+    public void mapValuesToFutureList_WithDuplicatesAndSameTypeMapping_ShouldReturnListOfMappedFutures() {
         final Stream<String> nameStream = Stream.of("james hetfield", "fred durst", "fred durst");
 
         final Function<String, CompletionStage<String>> removeSpaceFunction =
             name -> completedFuture(name.replaceAll(" ", ""));
 
         final List<CompletableFuture<String>> futures =
-            mapValuesToFuturesOfSameType(nameStream, removeSpaceFunction);
+            mapValuesToFutureList(nameStream, removeSpaceFunction);
 
         assertThat(futures).isNotEmpty();
         assertThat(futures.stream()
@@ -149,20 +166,16 @@ public class CompletableFutureUtilsTest {
         assertThat(futures).hasSize(3);
     }
 
-    @Test
-    public void mapValuesToFuturesOfDifferentType_WithEmptyStream_ShouldReturnAnEmptyList() {
-        assertThat(mapValuesToFuturesOfDifferentType(Stream.empty(), CompletableFuture::completedFuture)).isEmpty();
-    }
 
     @Test
-    public void mapValuesToFuturesOfDifferentType_WithNonEmptyStreamWithNoDuplicates_ShouldReturnListOfMappedFutures() {
+    public void mapValuesToFutureList_WithNoDuplicatesAndDiffTypeMapping_ShouldReturnListOfMappedFutures() {
         final Stream<String> nameStream = Stream.of("james hetfield", "fred durst");
 
         final Function<String, CompletionStage<Integer>> nameLengthFunction =
             name -> completedFuture(name.length());
 
         final List<CompletableFuture<Integer>> futures =
-            mapValuesToFuturesOfDifferentType(nameStream, nameLengthFunction);
+            mapValuesToFutureList(nameStream, nameLengthFunction);
 
         assertThat(futures).isNotEmpty();
         assertThat(futures.stream()
@@ -173,14 +186,14 @@ public class CompletableFutureUtilsTest {
     }
 
     @Test
-    public void mapValuesToFuturesOfDifferentType_WithNonEmptyStreamWithDuplicates_ShouldReturnListOfMappedFutures() {
+    public void mapValuesToFutureList_WithDuplicatesAndDiffTypeMapping_ShouldReturnListOfMappedFutures() {
         final Stream<String> nameStream = Stream.of("james hetfield", "fred durst", "fred durst");
 
         final Function<String, CompletionStage<Integer>> nameLengthFunction =
             name -> completedFuture(name.length());
 
         final List<CompletableFuture<Integer>> futures =
-            mapValuesToFuturesOfDifferentType(nameStream, nameLengthFunction);
+            mapValuesToFutureList(nameStream, nameLengthFunction);
 
         assertThat(futures).isNotEmpty();
         assertThat(futures.stream()
@@ -191,27 +204,42 @@ public class CompletableFutureUtilsTest {
     }
 
     @Test
-    public void mapValueSetToFuturesOfDifferentType_WithEmptySet_ShouldReturnAnEmptySet() {
-        assertThat(mapValueSetToFuturesOfDifferentType(new HashSet<>(), CompletableFuture::completedFuture)).isEmpty();
+    public void mapValueSetToFutureSet_WithEmptySet_ShouldReturnAnEmptySet() {
+        assertThat(mapValueSetToFutureSet(new HashSet<>(), CompletableFuture::completedFuture)).isEmpty();
     }
 
     @Test
-    public void mapValueSetToFuturesOfDifferentType_WithNonEmptySet_ShouldReturnSetOfMappedFutures() {
+    public void mapValueSetToFutureSet_DifferentTypeMapping_ShouldReturnSetOfMappedFutures() {
         final HashSet<String> names = new HashSet<>();
         names.add("fred durst");
         names.add("james hetfield");
 
-        final Function<String, CompletionStage<Integer>> nameLengthFunction =
-            name -> completedFuture(name.length());
-
-        final Set<CompletableFuture<Integer>> futureSet =
-            mapValueSetToFuturesOfDifferentType(names, nameLengthFunction);
+        final Function<String, CompletionStage<Integer>> nameLengthFunction = name -> completedFuture(name.length());
+        final Set<CompletableFuture<Integer>> futureSet = mapValueSetToFutureSet(names, nameLengthFunction);
 
         assertThat(futureSet).isNotEmpty();
         assertThat(futureSet.stream()
-                          .map(CompletableFuture::join)
-                          .filter(resultingSize -> resultingSize.equals(14) || resultingSize.equals(10))
-                          .collect(toList())).hasSize(2);
+                            .map(CompletableFuture::join)
+                            .filter(resultingSize -> resultingSize.equals(14) || resultingSize.equals(10))
+                            .collect(toList())).hasSize(2);
+        assertThat(futureSet).hasSize(2);
+    }
+
+    @Test
+    public void mapValueSetToFutureSet_SameTypeMapping_ShouldReturnSetOfMappedFutures() {
+        final HashSet<String> names = new HashSet<>();
+        names.add("fred durst");
+        names.add("james hetfield");
+
+        final Set<CompletableFuture<String>> futureSet =
+            mapValueSetToFutureSet(names, CompletableFuture::completedFuture);
+
+        assertThat(futureSet).isNotEmpty();
+        assertThat(futureSet.stream()
+                            .map(CompletableFuture::join)
+                            .filter(resultingSize -> resultingSize.equals("fred durst") ||
+                                resultingSize.equals("james hetfield"))
+                            .collect(toList())).hasSize(2);
         assertThat(futureSet).hasSize(2);
     }
 
