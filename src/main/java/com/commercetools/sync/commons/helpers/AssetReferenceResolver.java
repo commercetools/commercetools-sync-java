@@ -32,8 +32,10 @@ public final class AssetReferenceResolver
     }
 
     @Override
+    @Nonnull
     protected CompletionStage<AssetDraftBuilder> resolveCustomTypeReference(
         @Nonnull final AssetDraftBuilder assetDraftBuilder) {
+
         final CustomFieldsDraft custom = assetDraftBuilder.getCustom();
         if (custom != null) {
             return getCustomTypeId(custom,
@@ -47,6 +49,7 @@ public final class AssetReferenceResolver
     }
 
     @Override
+    @Nonnull
     public CompletionStage<AssetDraft> resolveReferences(@Nonnull final AssetDraft assetDraft) {
         return resolveCustomTypeReference(AssetDraftBuilder.of(assetDraft))
             .thenApply(AssetDraftBuilder::build);
