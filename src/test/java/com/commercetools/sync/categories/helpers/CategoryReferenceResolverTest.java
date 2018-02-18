@@ -172,10 +172,7 @@ public class CategoryReferenceResolverTest {
         when(categoryService.fetchCachedCategoryId(CACHED_CATEGORY_KEY))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        final CategoryReferenceResolver categoryReferenceResolver =
-            new CategoryReferenceResolver(syncOptions, typeService, categoryService);
-
-        categoryReferenceResolver.resolveParentReference(categoryDraft)
+        referenceResolver.resolveParentReference(categoryDraft)
                                  .thenApply(CategoryDraftBuilder::build)
                                  .thenAccept(resolvedDraft -> {
                                      assertThat(resolvedDraft.getParent()).isNotNull();
@@ -226,10 +223,7 @@ public class CategoryReferenceResolverTest {
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        final CategoryReferenceResolver categoryReferenceResolver =
-            new CategoryReferenceResolver(syncOptions, typeService, categoryService);
-
-        categoryReferenceResolver.resolveCustomTypeReference(categoryDraft)
+        referenceResolver.resolveCustomTypeReference(categoryDraft)
                                  .thenApply(CategoryDraftBuilder::build)
                                  .thenAccept(resolvedDraft -> {
                                      assertThat(resolvedDraft.getCustom()).isNotNull();
