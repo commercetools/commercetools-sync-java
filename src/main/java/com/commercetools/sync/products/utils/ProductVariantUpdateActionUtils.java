@@ -194,8 +194,7 @@ public final class ProductVariantUpdateActionUtils {
                     })
                     .collect(toList()));
 
-
-            // Remove old existing assets which aren't there anymore and compare found matching assets.
+            // Remove old existing assets which aren't there anymore and compare matching assets.
             updateActions.addAll(
                 oldProductVariantAssets
                     .stream()
