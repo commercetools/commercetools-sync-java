@@ -170,11 +170,14 @@ public final class ProductVariantUpdateActionUtils {
 
         if (newProductVariantAssetDrafts != null) {
 
-
-            // Add new assets. TODO: SHOULD BE COMBINED WITH BELOW STREAMING.
             final Map<String, Asset> oldAssetsKeyMap = oldProductVariantAssets
                 .stream().collect(toMap(Asset::getKey, asset -> asset));
 
+            final Map<String, AssetDraft> newAssetDraftsKeyMap = newProductVariantAssetDrafts
+                .stream().collect(toMap(AssetDraft::getKey, assetDraft -> assetDraft));
+
+
+            // Add new assets. TODO: (WITH POSITION) SHOULD BE COMBINED WITH BELOW STREAMING.
             updateActions.addAll(
                 newProductVariantAssetDrafts
                     .stream()
@@ -188,8 +191,6 @@ public final class ProductVariantUpdateActionUtils {
                     })
                     .collect(toList()));
 
-            final Map<String, AssetDraft> newAssetDraftsKeyMap = newProductVariantAssetDrafts
-                .stream().collect(toMap(AssetDraft::getKey, assetDraft -> assetDraft));
 
             // Remove old existing assets which aren't there anymore and compare found matching assets.
             updateActions.addAll(
