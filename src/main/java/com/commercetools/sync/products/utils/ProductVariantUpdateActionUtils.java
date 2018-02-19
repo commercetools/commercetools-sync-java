@@ -15,6 +15,7 @@ import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
+import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.products.commands.updateactions.MoveImageToPosition;
 import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
@@ -25,7 +26,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -192,6 +192,7 @@ public final class ProductVariantUpdateActionUtils {
                             return null;
                         }
                     })
+                    .filter(Objects::nonNull) // Remove null update actions.
                     .collect(toList()));
 
             // Remove old existing assets which aren't there anymore and compare matching assets.
