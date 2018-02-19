@@ -64,6 +64,7 @@ public final class CategoryReferenceResolver
      *          references or, in case an error occurs during reference resolution,
      *          a {@link ReferenceResolutionException}.
      */
+    @Nonnull
     public CompletionStage<CategoryDraft> resolveReferences(@Nonnull final CategoryDraft categoryDraft) {
         return resolveCustomTypeReference(CategoryDraftBuilder.of(categoryDraft))
             .thenCompose(this::resolveParentReference)
@@ -157,6 +158,7 @@ public final class CategoryReferenceResolver
      * @return an optional containing the id or an empty optional if there is no parent reference.
      * @throws ReferenceResolutionException thrown if the key is invalid (empty/null/in UUID when the flag is false).
      */
+    @Nonnull
     public static Optional<String> getParentCategoryKey(@Nullable final Reference<Category> parentCategoryReference,
                                                         @Nullable final String categoryKey,
                                                         final boolean shouldAllowUuidKeys)
@@ -174,12 +176,14 @@ public final class CategoryReferenceResolver
         return Optional.empty();
     }
 
+    @Nonnull
     public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraft draft,
                                                         final boolean shouldAllowUuidKeys)
             throws ReferenceResolutionException {
         return getParentCategoryKey(draft.getParent(), draft.getKey(), shouldAllowUuidKeys);
     }
 
+    @Nonnull
     public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraftBuilder draftBuilder,
                                                         final boolean shouldAllowUuidKeys)
             throws ReferenceResolutionException {

@@ -94,6 +94,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             assetReferenceResolver::resolveReferences).thenApply(productVariantDraftBuilder::assets);
     }
 
+    @Nonnull
     CompletionStage<ProductVariantDraftBuilder> resolvePricesReferences(
         @Nonnull final ProductVariantDraftBuilder productVariantDraftBuilder) {
         final List<PriceDraft> productVariantDraftPrices = productVariantDraftBuilder.getPrices();
@@ -105,6 +106,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             priceReferenceResolver::resolveReferences).thenApply(productVariantDraftBuilder::prices);
     }
 
+    @Nonnull
     CompletionStage<ProductVariantDraftBuilder> resolveAttributesReferences(
         @Nonnull final ProductVariantDraftBuilder productVariantDraftBuilder) {
         final List<AttributeDraft> attributeDrafts = productVariantDraftBuilder.getAttributes();
@@ -116,6 +118,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
                                      .thenApply(productVariantDraftBuilder::attributes);
     }
 
+    @Nonnull
     CompletionStage<AttributeDraft> resolveAttributeReference(@Nonnull final AttributeDraft attributeDraft) {
         final JsonNode attributeDraftValue = attributeDraft.getValue();
         if (attributeDraftValue == null) {
@@ -135,6 +138,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
         }
     }
 
+    @Nonnull
     private CompletionStage<AttributeDraft> resolveAttributeSetReferences(
         @Nonnull final AttributeDraft attributeDraft) {
         final JsonNode attributeDraftValue = attributeDraft.getValue();
@@ -148,6 +152,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             .thenApply(resolved -> AttributeDraft.of(attributeDraft.getName(), resolved));
     }
 
+    @Nonnull
     private CompletionStage<JsonNode> resolveAttributeReferenceValue(@Nonnull final JsonNode referenceValue) {
         if (isProductReference(referenceValue)) {
             return getResolvedIdFromKeyInReference(referenceValue)
@@ -164,11 +169,13 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             .orElse(false);
     }
 
+    @Nonnull
     private static Optional<String> getReferenceTypeIdIfReference(@Nonnull final JsonNode referenceValue) {
         final JsonNode typeId = referenceValue.get(REFERENCE_TYPE_ID_FIELD);
         return Optional.ofNullable(typeId).map(JsonNode::asText);
     }
 
+    @Nonnull
     CompletionStage<Optional<String>> getResolvedIdFromKeyInReference(@Nonnull final JsonNode referenceValue) {
         final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
         return idField != null
@@ -176,6 +183,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             : CompletableFuture.completedFuture(Optional.empty());
     }
 
+    @Nonnull
     private JsonNode createProductReferenceJson(@Nonnull final String productId) {
         final ObjectNode productReferenceJsonNode = JsonNodeFactory.instance.objectNode();
         productReferenceJsonNode.put(REFERENCE_ID_FIELD, productId);
