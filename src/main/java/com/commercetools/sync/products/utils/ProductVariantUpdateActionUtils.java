@@ -186,8 +186,11 @@ public final class ProductVariantUpdateActionUtils {
                         final String newAssetDraftKey = newAssetDraft.getKey();
                         final Asset matchingOldAsset = oldAssetsKeyMap.get(newAssetDraftKey);
 
-                        return matchingOldAsset == null
-                            ? AddAsset.ofVariantId(oldProductVariantId, newAssetDraft) : null;
+                        if (matchingOldAsset == null) {
+                            return AddAsset.ofVariantId(oldProductVariantId, newAssetDraft);
+                        } else {
+                            return null;
+                        }
                     })
                     .collect(toList()));
 
@@ -201,11 +204,13 @@ public final class ProductVariantUpdateActionUtils {
                         final String oldAssetKey = oldAsset.getKey();
                         final AssetDraft matchingNewAssetDraft = newAssetDraftsKeyMap.get(oldAssetKey);
 
-                        return matchingNewAssetDraft != null ?
-                            buildActions(oldProductVariantId, oldAsset, matchingNewAssetDraft, syncOptions)
-                            :
-                            singletonList(RemoveAsset.ofVariantIdWithKey(oldProductVariantId, oldAssetKey, true));
-                        })
+                        if (matchingNewAssetDraft != null) {
+                            return buildActions(oldProductVariantId, oldAsset, matchingNewAssetDraft, syncOptions);
+                        } else {
+                            return singletonList(
+                                RemoveAsset.ofVariantIdWithKey(oldProductVariantId, oldAssetKey, true));
+                        }
+                    })
                     .flatMap(Collection::stream)
                     .collect(toList()));
 
