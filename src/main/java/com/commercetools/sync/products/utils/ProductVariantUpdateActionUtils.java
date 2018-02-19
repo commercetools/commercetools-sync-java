@@ -198,7 +198,6 @@ public final class ProductVariantUpdateActionUtils {
             updateActions.addAll(
                 oldProductVariantAssets
                     .stream()
-                    // TODO: CHECK IF OLD ASSET IS NOT NULL!
                     .map(oldAsset -> {
                         final String oldAssetKey = oldAsset.getKey();
                         final AssetDraft matchingNewAssetDraft = newAssetDraftsKeyMap.get(oldAssetKey);
