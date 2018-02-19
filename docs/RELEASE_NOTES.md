@@ -54,6 +54,13 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M11)
 
 
+**Changes** (1)
+- **Commons** - `CustomUpdateActionUtils#buildCustomUpdateActions` is now 
+`CustomUpdateActionUtils#buildResourceCustomUpdateActions`. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Commons** - `CustomUpdateActionUtils#buildCustomUpdateActions` can now be used to build custom update actions
+for secondary resources (e.g. assets and prices). [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+
+
 **Bug Fixes** (1)
 - **Build Tools** - Fixed bug where jar and Codecov were triggered on benchmark stages of the build when they should 
 only be triggered on the full build. [#249](https://github.com/commercetools/commercetools-sync-java/issues/249)
