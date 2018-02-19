@@ -181,7 +181,7 @@ public final class ProductVariantUpdateActionUtils {
             updateActions.addAll(
                 newProductVariantAssetDrafts
                     .stream()
-                    .filter(Objects::nonNull)
+                    .filter(Objects::nonNull) // Remove null asset drafts.
                     .map(newAssetDraft -> {
                         final String newAssetDraftKey = newAssetDraft.getKey();
                         final Asset matchingOldAsset = oldAssetsKeyMap.get(newAssetDraftKey);
