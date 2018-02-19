@@ -214,6 +214,11 @@ public final class ProductVariantUpdateActionUtils {
                     .flatMap(Collection::stream)
                     .collect(toList()));
 
+            buildChangeAssetOrderUpdateAction(oldProductVariantId,
+                oldProductVariantAssets, newProductVariantAssetDrafts)
+                .ifPresent(updateActions::add);
+
+
         } else {
             // Remove all old assets.
             updateActions.addAll(
@@ -224,6 +229,27 @@ public final class ProductVariantUpdateActionUtils {
         }
         return updateActions;
 
+    }
+
+    @Nonnull
+    public static Optional<UpdateAction<Product>> buildChangeAssetOrderUpdateAction(
+        final int variantId,
+        @Nonnull final List<Asset> oldAssets,
+        @Nonnull final List<AssetDraft> newAssetDrafts) {
+
+        final Map<String, String> oldAssetKeyToIdMap = oldAssets.stream().collect(toMap(Asset::getKey, Asset::getId));
+
+        final List<String> newOrder = newAssetDrafts.stream()
+                                                    .map(AssetDraft::getKey)
+                                                    .map(oldAssetKeyToIdMap::get)
+                                                    .collect(toList());
+
+        final List<String> oldOrder = oldAssets.stream()
+                                               .map(Asset::getId)
+                                               .collect(toList());
+
+        return ofNullable(
+            !oldOrder.equals(newOrder) ? ChangeAssetOrder.ofVariantId(variantId, newOrder, true) : null);
     }
 
     /**
