@@ -16,7 +16,7 @@ import java.util.Map;
  *
  * @param <T> the type of the resource to create update actions for.
  */
-public abstract class GenericCustomActionBuilder<T> {
+public abstract class GenericCustomActionBuilder<T extends Resource<T>> {
     /**
      * Creates a CTP "setCustomType" update action on the given resource {@code T} that removes the custom type set on
      * the given resource {@code T}. If the resource that has the custom fields is a secondary resource (e.g. Price or
