@@ -154,8 +154,8 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
      *                                    or if the {@code currentResource} class has no nullary constructor;
      *                                    or if the instantiation fails for some other reason.
      */
-    private S getBuilder(@Nonnull final T currentResource,
-                         @Nullable final Class<U> currentContainerResourceClass) throws BuildUpdateActionException,
+    private S createBuilder(@Nonnull final T currentResource,
+                            @Nullable final Class<U> currentContainerResourceClass) throws BuildUpdateActionException,
         IllegalAccessException, InstantiationException {
         for (ConcreteBuilder concreteBuilder : ConcreteBuilder.values()) {
 
@@ -190,7 +190,8 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
      *
      * <ul>
      * <li>if {@code <T>} is of type {@link Asset} and the {@code currentContainerResourceClass} is of
-     * type {@link Product}, this method will return an instance of {@link com.commercetools.sync.products.helpers.AssetCustomActionBuilder}</li>
+     * type {@link Product}, this method will return an instance of
+     * {@link com.commercetools.sync.products.helpers.AssetCustomActionBuilder}</li>
      *
      * <li>if {@code <T>} is of type {@link Asset} and the {@code currentContainerResourceClass} is of
      * type {@link Category}, this method will return an instance of
@@ -225,9 +226,9 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
      * @throws BuildUpdateActionException exception thrown in case a concrete implementation of the the
      *                                    {@link GenericCustomActionBuilder} for the provided resource type is not
      *                                    implemented yet.
-     * @throws IllegalAccessException     thrown by {@link #getBuilder(Custom, Class)} )} if the {@code resource}
+     * @throws IllegalAccessException     thrown by {@link #createBuilder(Custom, Class)} )} if the {@code resource}
      *                                    class or its nullary constructor is not accessible.
-     * @throws InstantiationException     thrown by {@link #getBuilder(Custom, Class)} )} if {@code resource}
+     * @throws InstantiationException     thrown by {@link #createBuilder(Custom, Class)} )} if {@code resource}
      *                                    {@code Class} represents an abstract class, an interface, an array class,
      *                                    a primitive type, or void; or if the {@code resource} class has no nullary
      *                                    constructor; or if the instantiation fails for some other reason.
@@ -237,7 +238,7 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
         @Nullable final Class<V> containerResourceClass)
         throws BuildUpdateActionException, InstantiationException, IllegalAccessException {
 
-        return new GenericCustomActionBuilderFactory().getBuilder(resource, containerResourceClass);
+        return new GenericCustomActionBuilderFactory().createBuilder(resource, containerResourceClass);
     }
 
 
