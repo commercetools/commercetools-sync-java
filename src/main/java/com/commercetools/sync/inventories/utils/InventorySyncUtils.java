@@ -2,6 +2,7 @@ package com.commercetools.sync.inventories.utils;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.inventories.InventorySyncOptions;
+import com.commercetools.sync.inventories.helpers.InventoryCustomActionBuilder;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -22,6 +23,7 @@ import static java.util.stream.Collectors.toList;
  * This class provides factory methods for assembling update actions of inventory entries.
  */
 public final class InventorySyncUtils {
+    private static final InventoryCustomActionBuilder inventoryCustomActionBuilder = new InventoryCustomActionBuilder();
 
     private InventorySyncUtils() { }
 
@@ -53,7 +55,9 @@ public final class InventorySyncUtils {
                   .filter(Optional::isPresent)
                   .map(Optional::get)
                   .collect(toList());
-        actions.addAll(buildResourceCustomUpdateActions(oldEntry, newEntry, syncOptions));
+
+        actions.addAll(buildResourceCustomUpdateActions(oldEntry, newEntry, inventoryCustomActionBuilder,
+            syncOptions));
         return syncOptions.applyBeforeUpdateCallBack(actions, newEntry, oldEntry);
     }
 }

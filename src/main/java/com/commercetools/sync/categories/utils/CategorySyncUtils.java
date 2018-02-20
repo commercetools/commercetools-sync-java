@@ -1,6 +1,7 @@
 package com.commercetools.sync.categories.utils;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -25,6 +26,8 @@ import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildResourceCustomUpdateActions;
 
 public final class CategorySyncUtils {
+    private static final CategoryCustomActionBuilder categoryCustomActionBuilder =
+        new CategoryCustomActionBuilder();
 
     /**
      * Compares the Name, Slug, Description, Parent, OrderHint, MetaTitle, MetaDescription, MetaKeywords and Custom
@@ -84,8 +87,9 @@ public final class CategorySyncUtils {
             buildSetMetaDescriptionUpdateAction(oldCategory, newCategory),
             buildSetMetaKeywordsUpdateAction(oldCategory, newCategory)
         ));
+
         final List<UpdateAction<Category>> categoryCustomUpdateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategory, syncOptions);
+            buildResourceCustomUpdateActions(oldCategory, newCategory, categoryCustomActionBuilder, syncOptions);
         updateActions.addAll(categoryCustomUpdateActions);
         return updateActions;
     }
