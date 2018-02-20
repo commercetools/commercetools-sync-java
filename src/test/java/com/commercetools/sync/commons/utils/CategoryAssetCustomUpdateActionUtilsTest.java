@@ -30,6 +30,7 @@ public class CategoryAssetCustomUpdateActionUtilsTest {
         assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetAssetCustomType.class);
     }
+
     @Test
     public void buildRemoveCustomTypeAction_WithCategoryAsset_ShouldBuildChannelUpdateAction() {
         final UpdateAction<Category> updateAction =
