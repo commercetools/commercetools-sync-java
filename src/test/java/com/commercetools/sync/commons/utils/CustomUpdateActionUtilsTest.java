@@ -322,13 +322,28 @@ public class CustomUpdateActionUtilsTest {
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
         when(newCustomFieldsMock.getType()).thenReturn(Type.referenceOfId(null));
 
-        final List<UpdateAction<Product>> updateActions = buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
-            newCustomFieldsMock, mock(Price.class), Product.class, 1, Price::getId,
-            priceResource -> Price.resourceTypeId(), Price::getId, ProductSyncOptionsBuilder.of(CTP_CLIENT).build());
+        // Mock custom options error callback
+        final ArrayList<String> errorMessages = new ArrayList<>();
+        final BiConsumer<String, Throwable> updateActionErrorCallBack =
+            (errorMessage, exception) -> errorMessages.add(errorMessage);
 
-        assertThat(updateActions).isNotNull();
-        assertThat(updateActions).hasSize(1);
-        assertThat(updateActions.get(0)).isInstanceOf(SetProductPriceCustomType.class);
+        // Mock sync options
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
+                                                                               .errorCallback(updateActionErrorCallBack)
+                                                                               .build();
+
+        final Price price = mock(Price.class);
+        when(price.getId()).thenReturn(UUID.randomUUID().toString());
+
+        final List<UpdateAction<Product>> updateActions = buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
+            newCustomFieldsMock, price, new PriceCustomActionBuilder(), 1, Price::getId,
+            priceResource -> Price.resourceTypeId(), Price::getId, productSyncOptions);
+
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errorMessages.get(0)).isEqualTo(format("Failed to build 'setCustomType' update action on the "
+                + "%s with id '%s'. Reason: New Custom Type id is blank (null/empty).", Price.resourceTypeId(),
+            price.getId()));
+        assertThat(updateActions).isEmpty();
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.commercetools.sync.commons.utils;
 import com.commercetools.sync.categories.CategorySyncMockUtils;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
+import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -18,6 +19,7 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -280,7 +282,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsUpdateActions_WithNullNewCategoryTypeId_ShouldBuildUpdateActions()
+    public void buildNonNullCustomFieldsUpdateActions_WithNullNewCategoryTypeId_TriggersErrorCallbackAndNoAction()
         throws BuildUpdateActionException {
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
@@ -288,15 +290,26 @@ public class ResourceCustomUpdateActionUtilsTest {
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
-        when(newCustomFieldsMock.getType()).thenReturn(Type.referenceOfId(null));
+        final Reference<Type> value = Type.referenceOfId(null);
+
+
+        when(newCustomFieldsMock.getType()).thenReturn(value);
+
+        final String categoryId = UUID.randomUUID().toString();
+        final Category category = mock(Category.class);
+        when(category.getId()).thenReturn(categoryId);
+        when(category.toReference()).thenReturn(Category.referenceOfId(categoryId));
 
         final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
-            newCustomFieldsMock, mock(Category.class), null, null, Category::getId,
-            category -> category.toReference().getTypeId(), category -> null, CATEGORY_SYNC_OPTIONS);
+            newCustomFieldsMock, category, new CategoryCustomActionBuilder(), null, Category::getId,
+            categoryRes -> category.toReference().getTypeId(), categoryRes -> null, categorySyncOptions);
 
-        assertThat(updateActions).isNotNull();
-        assertThat(updateActions).hasSize(1);
-        assertThat(updateActions.get(0)).isInstanceOf(SetCustomType.class);
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errorMessages.get(0)).isEqualTo(format("Failed to build 'setCustomType' update action on the "
+            + "%s with id '%s'. Reason: New Custom Type id is blank (null/empty).", category.toReference().getTypeId(),
+            categoryId));
+        assertThat(exceptions).hasSize(1);
+        assertThat(updateActions).isEmpty();
     }
 
     @Test
