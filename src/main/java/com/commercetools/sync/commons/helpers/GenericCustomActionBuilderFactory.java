@@ -47,13 +47,15 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
      * which contains implementations of update methods responsible for updating custom fields for categories. For
      * example, product assets will have a mapping that contains the {@link Asset} resource which contains the custom
      * fields, the {@link Product} resource which is the container resource of the asset where the update action will be
-     * issued on and {@link AssetCustomActionBuilder} which contains the implementations of update method methods
-     * responsible for updating custom fields for the asset on the product.
+     * issued on and {@link com.commercetools.sync.products.helpers.AssetCustomActionBuilder}
+     * which contains the implementations of update method methods responsible for updating custom fields for the asset
+     * on the product.
      *
      * <p>Note: To add new concrete custom builders for new CTP resources, a new mapping has to be adding in this enum.
      */
     enum ConcreteBuilder {
-        PRODUCT_ASSET(AssetCustomActionBuilder.class, Asset.class, Product.class),
+        PRODUCT_ASSET(
+            com.commercetools.sync.products.helpers.AssetCustomActionBuilder.class, Asset.class, Product.class),
         CATEGORY_ASSET(
             com.commercetools.sync.categories.helpers.AssetCustomActionBuilder.class, Asset.class, Category.class),
         PRICE(PriceCustomActionBuilder.class, Price.class, Product.class),
@@ -112,7 +114,8 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
      *
      * <ul>
      * <li>if {@code <T>} is of type {@link Asset} and the {@code currentContainerResourceClass} is of
-     * type {@link Product}, this method will return an instance of {@link AssetCustomActionBuilder}</li>
+     * type {@link Product}, this method will return an instance of
+     * {@link com.commercetools.sync.products.helpers.AssetCustomActionBuilder}</li>
      *
      * <li>if {@code <T>} is of type {@link Asset} and the {@code currentContainerResourceClass} is of
      * type {@link Category}, this method will return an instance of
@@ -187,7 +190,7 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
      *
      * <ul>
      * <li>if {@code <T>} is of type {@link Asset} and the {@code currentContainerResourceClass} is of
-     * type {@link Product}, this method will return an instance of {@link AssetCustomActionBuilder}</li>
+     * type {@link Product}, this method will return an instance of {@link com.commercetools.sync.products.helpers.AssetCustomActionBuilder}</li>
      *
      * <li>if {@code <T>} is of type {@link Asset} and the {@code currentContainerResourceClass} is of
      * type {@link Category}, this method will return an instance of
