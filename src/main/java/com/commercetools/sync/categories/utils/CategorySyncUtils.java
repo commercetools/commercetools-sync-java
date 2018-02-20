@@ -132,4 +132,7 @@ public final class CategorySyncUtils {
                                     .map(Optional::get)
                                     .collect(Collectors.toList());
     }
+
+    private CategorySyncUtils() {
+    }
 }

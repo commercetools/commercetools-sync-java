@@ -25,8 +25,6 @@ import static java.util.stream.Collectors.toList;
 public final class InventorySyncUtils {
     private static final InventoryCustomActionBuilder inventoryCustomActionBuilder = new InventoryCustomActionBuilder();
 
-    private InventorySyncUtils() { }
-
     /**
      * Compares the quantityOnStock, the restockableInDays, the expectedDelivery, the supply channel and Custom
      * fields/ type fields of an {@link InventoryEntry} and an {@link InventoryEntryDraft}. It returns a {@link List} of
@@ -60,4 +58,6 @@ public final class InventorySyncUtils {
             syncOptions));
         return syncOptions.applyBeforeUpdateCallBack(actions, newEntry, oldEntry);
     }
+
+    private InventorySyncUtils() { }
 }

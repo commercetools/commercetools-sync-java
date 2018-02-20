@@ -250,4 +250,7 @@ public final class ProductReferenceReplacementUtils {
                            .plusExpansionPaths(expansionModel ->
                                expansionModel.masterData().staged().allVariants().attributes().valueSet());
     }
+
+    private ProductReferenceReplacementUtils() {
+    }
 }

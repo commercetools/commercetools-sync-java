@@ -14,9 +14,6 @@ import static io.sphere.sdk.queries.QueryExecutionUtils.DEFAULT_PAGE_SIZE;
 
 public final class CtpQueryUtils {
 
-    private CtpQueryUtils() {
-    }
-
     /**
      * Queries all elements matching a query by using a limit based pagination with a combination of id sorting and a
      * page size 500. More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset.
@@ -115,5 +112,8 @@ public final class CtpQueryUtils {
                  @Nonnull final Consumer<List<T>> pageConsumer, final int pageSize) {
         final QueryAll<T, C, Void> queryAll = QueryAll.of(client, query, pageSize);
         return queryAll.run(pageConsumer);
+    }
+
+    private CtpQueryUtils() {
     }
 }

@@ -63,4 +63,7 @@ public final class CategoryReferenceReplacementUtils {
                             .withExpansionPaths(ExpansionPath.of("custom.type"))
                             .plusExpansionPaths(CategoryExpansionModel::parent);
     }
+
+    private CategoryReferenceReplacementUtils() {
+    }
 }

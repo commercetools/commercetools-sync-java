@@ -28,7 +28,7 @@ import static com.commercetools.sync.products.helpers.VariantReferenceResolver.R
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-public class VariantReferenceReplacementUtils {
+public final class VariantReferenceReplacementUtils {
     /**
      * Takes a list of Variants that are supposed to have their prices and attributes references expanded in order to be
      * able to fetch the keys and replace the reference ids with the corresponding keys and then return a new list of
@@ -170,5 +170,8 @@ public class VariantReferenceReplacementUtils {
             return typeIdNode != null && Product.referenceTypeId().equals(typeIdNode.asText());
         }
         return false;
+    }
+
+    private VariantReferenceReplacementUtils() {
     }
 }
