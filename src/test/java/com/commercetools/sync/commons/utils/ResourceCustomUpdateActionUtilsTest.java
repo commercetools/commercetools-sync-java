@@ -7,7 +7,6 @@ import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.SetCustomField;
@@ -27,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildNewOrModifiedCustomFieldsUpdateActions;
@@ -511,28 +511,6 @@ public class ResourceCustomUpdateActionUtilsTest {
         assertThat(customFieldsActions.get(0)).isInstanceOf(SetCustomField.class);
     }
 
-    @Test
-    public void
-        buildNewOrModifiedCustomFieldsUpdateActions_WithNewOrModifiedNonHandledResourceFields_ShouldNotBuildActions() {
-        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
-        oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
-
-        final Map<String, JsonNode> newCustomFields = new HashMap<>();
-        newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-
-        // Cart resource is not handled in GenericUpdateActionUtils#buildTypedUpdateAction
-        final Cart cart = mock(Cart.class);
-        when(cart.toReference()).thenReturn(Cart.referenceOfId("cartId"));
-
-        final List<UpdateAction<Cart>> customFieldsActions =
-            buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, cart,
-                null, null, Cart::getId,
-                cartResource -> cartResource.toReference().getTypeId(), cartResource -> null, CATEGORY_SYNC_OPTIONS);
-
-        // Custom fields update actions should not be built
-        assertThat(customFieldsActions).isNotNull();
-        assertThat(customFieldsActions).isEmpty();
-    }
 
     @Test
     public void buildNewOrModifiedCustomFieldsUpdateActions_WithNoNewOrModifiedCustomFields_ShouldNotBuildActions() {
