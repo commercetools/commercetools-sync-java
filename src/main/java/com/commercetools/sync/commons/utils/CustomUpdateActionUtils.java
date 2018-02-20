@@ -382,5 +382,8 @@ public final class CustomUpdateActionUtils {
                                   updateIdGetter.apply(resource), oldCustomFieldsName, null))
                               .collect(Collectors.toList());
     }
+
+    private CustomUpdateActionUtils() {
+    }
 }
 

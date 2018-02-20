@@ -64,4 +64,7 @@ final class GenericUpdateActionUtils {
             return Optional.empty();
         }
     }
+
+    private GenericUpdateActionUtils() {
+    }
 }
