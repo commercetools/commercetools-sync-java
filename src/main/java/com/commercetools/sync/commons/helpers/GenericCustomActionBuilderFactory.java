@@ -25,18 +25,11 @@ import static java.util.Optional.ofNullable;
  * Factory class that has the main objective of creating an instance of a concrete implementation of the
  * {@link GenericCustomActionBuilder}, which is responsible for building custom update actions, according to the type
  * of the {@code currentResource} instance and the {@code currentContainerResourceClass} provided to the
- * {@link GenericCustomActionBuilderFactory#of(Custom, Class)}} function.
+ * {@link GenericCustomActionBuilderFactory#createBuilder(Custom, Class)}} function.
  *
- * @param <T> Represents a resource that has custom fields. It could be a primary resource like Category,
- *            Channel, InventoryEntry, etc.. Or a secondary resource like a Product Price, Category Price, Asset, etc..
- * @param <S> Represents a concrete implementation of the {@link GenericCustomActionBuilder}.
- *            (e.g. {@link AssetCustomActionBuilder})
- * @param <U> Represents a primary resource Category, Product, Channel, InventoryEntry, etc.. This resource represents
- *            the endpoint that the update action will be issued on.
  */
 @SuppressWarnings("unchecked")
-public class GenericCustomActionBuilderFactory<T extends Custom, S extends GenericCustomActionBuilder,
-    U extends Resource<U>> {
+public class GenericCustomActionBuilderFactory {
     private static final String UPDATE_ACTION_NOT_IMPLEMENTED =
         "Update actions for resource: '%s' and container resource: '%s' is not implemented.";
 
@@ -137,6 +130,14 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
      * <li>In any other case the method will throw a {@link BuildUpdateActionException}</li>
      * </ul>
      *
+     * @param <T>                           Represents a resource that has custom fields. It could be a primary resource
+     *                                      like Category, Channel, InventoryEntry, etc.. Or a secondary resource like a
+     *                                      Product Price, Category Price, Asset, etc..
+     * @param <S>                           Represents a concrete implementation of the
+     *                                      {@link GenericCustomActionBuilder} (e.g. {@link AssetCustomActionBuilder}).
+     * @param <U>                           Represents a primary resource Category, Product, Channel, InventoryEntry,
+     *                                      etc.. This resource represents the endpoint that the update action will be
+     *                                      issued on.
      * @param currentResource               the currentResource from which a corresponding concrete custom builder
      *                                      should be created according to it's type.
      * @param currentContainerResourceClass optional field representing the class of the container resource. For
@@ -154,9 +155,12 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
      *                                    or if the {@code currentResource} class has no nullary constructor;
      *                                    or if the instantiation fails for some other reason.
      */
-    private S createBuilder(@Nonnull final T currentResource,
-                            @Nullable final Class<U> currentContainerResourceClass) throws BuildUpdateActionException,
-        IllegalAccessException, InstantiationException {
+    public static <T extends Custom, S extends GenericCustomActionBuilder, U extends Resource<U>>
+        S createBuilder(@Nonnull final T currentResource,
+                        @Nullable final Class<U> currentContainerResourceClass)
+        throws BuildUpdateActionException, IllegalAccessException, InstantiationException {
+
+
         for (ConcreteBuilder concreteBuilder : ConcreteBuilder.values()) {
 
             final Class<? extends GenericCustomActionBuilder> builderClass = concreteBuilder.getBuilderClass();
@@ -181,65 +185,5 @@ public class GenericCustomActionBuilderFactory<T extends Custom, S extends Gener
             currentResource.getClass().getSimpleName(),
             ofNullable(currentContainerResourceClass).map(Class::getSimpleName).orElse(null)));
     }
-
-    /**
-     * Creates an instance of the concrete implementation of the {@link GenericCustomActionBuilder}, which is
-     * responsible for building custom update actions, according to the type of the {@code currentResource} instance
-     * and the {@code currentContainerResourceClass} provided. The method uses the {@link ConcreteBuilder} enum to find
-     * the mapping of the concrete builder. The available mappings for resolution are:
-     *
-     * <ul>
-     * <li>if {@code <T>} is of type {@link Asset} and the {@code currentContainerResourceClass} is of
-     * type {@link Product}, this method will return an instance of
-     * {@link com.commercetools.sync.products.helpers.AssetCustomActionBuilder}</li>
-     *
-     * <li>if {@code <T>} is of type {@link Asset} and the {@code currentContainerResourceClass} is of
-     * type {@link Category}, this method will return an instance of
-     * {@link com.commercetools.sync.categories.helpers.AssetCustomActionBuilder}</li>
-     *
-     * <li>if {@code <T>} is of type {@link Price} and the {@code currentContainerResourceClass} is of type
-     * {@link Product} this method will return an instance of {@link PriceCustomActionBuilder}</li>
-     *
-     * <li>if {@code <T>} is of type {@link Category} and the {@code currentContainerResourceClass} is null or of
-     * type {@link Category} this method will return an instance of {@link CategoryCustomActionBuilder}</li>
-     *
-     * <li>if {@code <T>} is of type {@link Channel} and the {@code currentContainerResourceClass} is null or of
-     * type {@link Channel} this method will return an instance of {@link ChannelCustomActionBuilder}</li>
-     *
-     * <li>if {@code <T>} is of type {@link InventoryEntry} and the {@code currentContainerResourceClass} is null
-     * or of type {@link InventoryEntry} this method will return an instance of
-     * {@link InventoryCustomActionBuilder}</li>
-     *
-     * <li>In any other case the method will throw a {@link BuildUpdateActionException}</li>
-     * </ul>
-     *
-     * @param <U>                    the type of the resource which has the custom fields.
-     * @param <V>                    the type of the resource to do the update action on.
-     * @param resource               the currentResource from which a corresponding concrete custom builder
-     *                               should be created according to it's type.
-     * @param containerResourceClass optional field representing the class of the container resource. For
-     *                               example, if the update action builder should be resolved for a product
-     *                               asset, this field would have the value {@code Product.class}.
-     * @return an instance of the concrete implementation of the {@link GenericCustomActionBuilder} responsible for
-     *         building custom update actions according to the type of the {@code currentResource} instance and the
-     *         {@code currentContainerResourceClass} provided.
-     * @throws BuildUpdateActionException exception thrown in case a concrete implementation of the the
-     *                                    {@link GenericCustomActionBuilder} for the provided resource type is not
-     *                                    implemented yet.
-     * @throws IllegalAccessException     thrown by {@link #createBuilder(Custom, Class)} )} if the {@code resource}
-     *                                    class or its nullary constructor is not accessible.
-     * @throws InstantiationException     thrown by {@link #createBuilder(Custom, Class)} )} if {@code resource}
-     *                                    {@code Class} represents an abstract class, an interface, an array class,
-     *                                    a primitive type, or void; or if the {@code resource} class has no nullary
-     *                                    constructor; or if the instantiation fails for some other reason.
-     */
-    public static <U extends Custom, V extends Resource<V>> GenericCustomActionBuilder of(
-        @Nonnull final U resource,
-        @Nullable final Class<V> containerResourceClass)
-        throws BuildUpdateActionException, InstantiationException, IllegalAccessException {
-
-        return new GenericCustomActionBuilderFactory().createBuilder(resource, containerResourceClass);
-    }
-
 
 }

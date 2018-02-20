@@ -23,76 +23,76 @@ import static org.mockito.Mockito.mock;
 public class GenericCustomActionBuilderFactoryTest {
 
     @Test
-    public void of_WithImplementedResourceAndNullContainer_ShouldCreateConcreteBuilder()
+    public void createBuilder_WithImplementedResourceAndNullContainer_ShouldCreateConcreteBuilder()
         throws BuildUpdateActionException, IllegalAccessException, InstantiationException {
         final GenericCustomActionBuilder categoryCustomActionBuilder = GenericCustomActionBuilderFactory
-            .of(mock(Category.class), null);
+            .createBuilder(mock(Category.class), null);
         assertThat(categoryCustomActionBuilder).isInstanceOf(CategoryCustomActionBuilder.class);
 
         final GenericCustomActionBuilder channelCustomActionBuilder = GenericCustomActionBuilderFactory
-            .of(mock(Channel.class), null);
+            .createBuilder(mock(Channel.class), null);
         assertThat(channelCustomActionBuilder).isInstanceOf(ChannelCustomActionBuilder.class);
 
         final GenericCustomActionBuilder inventoryEntryCustomActionBuilder = GenericCustomActionBuilderFactory
-            .of(mock(InventoryEntry.class), null);
+            .createBuilder(mock(InventoryEntry.class), null);
         assertThat(inventoryEntryCustomActionBuilder).isInstanceOf(InventoryCustomActionBuilder.class);
     }
 
     @Test
-    public void of_WithImplementedResourceAndAllowedContainer_ShouldCreateConcreteBuilder()
+    public void createBuilder_WithImplementedResourceAndAllowedContainer_ShouldCreateConcreteBuilder()
         throws BuildUpdateActionException, IllegalAccessException, InstantiationException {
         final GenericCustomActionBuilder categoryCustomActionBuilder = GenericCustomActionBuilderFactory
-            .of(mock(Category.class), Category.class);
+            .createBuilder(mock(Category.class), Category.class);
         assertThat(categoryCustomActionBuilder).isInstanceOf(CategoryCustomActionBuilder.class);
 
         final GenericCustomActionBuilder channelCustomActionBuilder = GenericCustomActionBuilderFactory
-            .of(mock(Channel.class), Channel.class);
+            .createBuilder(mock(Channel.class), Channel.class);
         assertThat(channelCustomActionBuilder).isInstanceOf(ChannelCustomActionBuilder.class);
 
         final GenericCustomActionBuilder inventoryEntryCustomActionBuilder = GenericCustomActionBuilderFactory
-            .of(mock(InventoryEntry.class), InventoryEntry.class);
+            .createBuilder(mock(InventoryEntry.class), InventoryEntry.class);
         assertThat(inventoryEntryCustomActionBuilder).isInstanceOf(InventoryCustomActionBuilder.class);
     }
 
     @Test
-    public void of_WithImplementedResourceAndNonImplementedContainer_ShouldThrowBuildUpdateActionException() {
+    public void createBuilder_WithImplementedResourceAndNonImplementedContainer_ThrowsBuildUpdateActionException() {
         assertThatThrownBy(() ->
             GenericCustomActionBuilderFactory
-                .of(mock(Category.class), Customer.class)).isInstanceOf(BuildUpdateActionException.class)
+                .createBuilder(mock(Category.class), Customer.class)).isInstanceOf(BuildUpdateActionException.class)
                                                     .hasMessageMatching("Update actions for resource: 'Category.*' and "
                                                         + "container resource: 'Customer' is not implemented.");
     }
 
     @Test
-    public void of_WithImplementedResourceAndImplementedContainer_ShouldCreateConcreteBuilder()
+    public void createBuilder_WithImplementedResourceAndImplementedContainer_ShouldCreateConcreteBuilder()
         throws BuildUpdateActionException, IllegalAccessException, InstantiationException {
         final GenericCustomActionBuilder productPriceCustomActionBuilder = GenericCustomActionBuilderFactory
-            .of(mock(Price.class), Product.class);
+            .createBuilder(mock(Price.class), Product.class);
         assertThat(productPriceCustomActionBuilder).isInstanceOf(PriceCustomActionBuilder.class);
 
         final GenericCustomActionBuilder productAssetCustomActionBuilder = GenericCustomActionBuilderFactory
-            .of(mock(Asset.class), Product.class);
+            .createBuilder(mock(Asset.class), Product.class);
         assertThat(productAssetCustomActionBuilder).isInstanceOf(AssetCustomActionBuilder.class);
 
         final GenericCustomActionBuilder categoryAssetCustomActionBuilder = GenericCustomActionBuilderFactory
-            .of(mock(Asset.class), Category.class);
+            .createBuilder(mock(Asset.class), Category.class);
         assertThat(categoryAssetCustomActionBuilder).isInstanceOf(
             com.commercetools.sync.categories.helpers.AssetCustomActionBuilder.class);
     }
 
     @Test
-    public void of_WithNonImplementedResourceAndNullContainer_ShouldThrowBuildUpdateActionException() {
+    public void createBuilder_WithNonImplementedResourceAndNullContainer_ShouldThrowBuildUpdateActionException() {
         assertThatThrownBy(() ->
-            GenericCustomActionBuilderFactory.of(mock(Cart.class), null))
+            GenericCustomActionBuilderFactory.createBuilder(mock(Cart.class), null))
             .isInstanceOf(BuildUpdateActionException.class)
             .hasMessageMatching("Update actions for resource: 'Cart.*' and container"
                 + " resource: 'null' is not implemented.");
     }
 
     @Test
-    public void of_WithNonImplementedResourceAndImplementedContainer_ShouldThrowBuildUpdateActionException() {
+    public void createBuilder_WithNonImplementedResourceAndImplementedContainer_ThrowsBuildUpdateActionException() {
         assertThatThrownBy(() ->
-            GenericCustomActionBuilderFactory.of(mock(Cart.class), Product.class))
+            GenericCustomActionBuilderFactory.createBuilder(mock(Cart.class), Product.class))
             .isInstanceOf(BuildUpdateActionException.class)
             .hasMessageMatching("Update actions for resource: 'Cart.*' and container"
                 + " resource: 'Product' is not implemented.");

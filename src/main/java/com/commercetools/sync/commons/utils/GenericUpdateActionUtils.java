@@ -59,7 +59,7 @@ final class GenericUpdateActionUtils {
         @Nonnull final BaseSyncOptions syncOptions) {
         try {
             return Optional.of(
-                GenericCustomActionBuilderFactory.of(resource, containerResourceClass)
+                GenericCustomActionBuilderFactory.createBuilder(resource, containerResourceClass)
                                                  .buildSetCustomTypeAction(variantId, updateIdGetter.apply(resource),
                                                      customTypeId, customFieldsJsonMap));
         } catch (BuildUpdateActionException | IllegalAccessException | InstantiationException exception) {
@@ -97,7 +97,7 @@ final class GenericUpdateActionUtils {
         @Nonnull final BaseSyncOptions syncOptions) {
         try {
             return Optional.of(
-                GenericCustomActionBuilderFactory.of(resource, containerResourceClass)
+                GenericCustomActionBuilderFactory.createBuilder(resource, containerResourceClass)
                                                  .buildRemoveCustomTypeAction(variantId,
                                                      updateIdGetter.apply(resource)));
         } catch (BuildUpdateActionException | IllegalAccessException | InstantiationException exception) {
@@ -140,7 +140,7 @@ final class GenericUpdateActionUtils {
         @Nonnull final BaseSyncOptions syncOptions) {
         try {
             return Optional.of(
-                GenericCustomActionBuilderFactory.of(resource, containerResourceClass)
+                GenericCustomActionBuilderFactory.createBuilder(resource, containerResourceClass)
                                                  .buildSetCustomFieldAction(variantId,
                                                      updateIdGetter.apply(resource), customFieldName,
                                                      customFieldValue));
