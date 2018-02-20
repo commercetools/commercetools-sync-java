@@ -88,12 +88,11 @@ public final class CustomUpdateActionUtils {
             @Nonnull final S newResource,
             @Nonnull final BaseSyncOptions syncOptions) {
 
-        final Function<T, String> resourceTypeIdGetter = resource -> resource.toReference().getTypeId();
-        final Function<T, String> resourceIdGetter = resource -> resource.getId();
-        final Function<T, String> updateIdGetter = resource -> null; // No update ID needed for primary resources.
-
-        return buildCustomUpdateActions(oldResource, newResource, null,null,
-            resourceIdGetter, resourceTypeIdGetter, updateIdGetter, syncOptions);
+        return buildCustomUpdateActions(oldResource, newResource, null, null,
+            Resource::getId,
+            resource -> resource.toReference().getTypeId(),
+            resource -> null, // No update ID needed for primary resources.
+            syncOptions);
     }
 
 
