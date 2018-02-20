@@ -42,12 +42,12 @@ import static org.mockito.Mockito.when;
 
 public class ResourceCustomUpdateActionUtilsTest {
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
-    private static ArrayList<String> errorMessages;
-    private static ArrayList<Throwable> exceptions;
-    private static CategorySyncOptions categorySyncOptions;
+    private ArrayList<String> errorMessages;
+    private ArrayList<Throwable> exceptions;
+    private CategorySyncOptions categorySyncOptions;
 
     @Before
-    public void setup(){
+    public void setupTest() {
         errorMessages = new ArrayList<>();
         exceptions = new ArrayList<>();
         final BiConsumer<String, Throwable> updateActionErrorCallBack = (errorMessage, exception) -> {
@@ -122,7 +122,8 @@ public class ResourceCustomUpdateActionUtilsTest {
 
 
         final List<UpdateAction<Category>> updateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(), categorySyncOptions);
+            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
+                categorySyncOptions);
 
         // Should add custom type to old category.
         assertThat(updateActions).isNotNull();
@@ -177,7 +178,8 @@ public class ResourceCustomUpdateActionUtilsTest {
 
 
         final List<UpdateAction<Category>> updateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(), categorySyncOptions);
+            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
+                categorySyncOptions);
 
         assertThat(errorMessages).hasSize(1);
         assertThat(exceptions).hasSize(1);

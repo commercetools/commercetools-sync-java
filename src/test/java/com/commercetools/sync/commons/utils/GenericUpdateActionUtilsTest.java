@@ -1,7 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
-import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.AssetCustomActionBuilder;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.client.SphereClient;
@@ -14,6 +13,7 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
+import static com.commercetools.sync.categories.CategorySyncOptionsBuilder.of;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -27,9 +27,9 @@ public class GenericUpdateActionUtilsTest {
             (errorMessage, exception) -> errorMessages.add(errorMessage);
 
         // Mock sync options
-        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                                  .errorCallback(updateActionErrorCallBack)
-                                                                                  .build();
+        final CategorySyncOptions categorySyncOptions =
+            of(mock(SphereClient.class)).errorCallback(updateActionErrorCallBack)
+                                        .build();
 
 
         final Optional<UpdateAction<Category>> updateAction =

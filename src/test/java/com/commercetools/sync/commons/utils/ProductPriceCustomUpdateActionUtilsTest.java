@@ -18,12 +18,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class ProductPriceCustomUpdateActionUtilsTest {
+
     @Test
     public void buildTypedSetCustomTypeUpdateAction_WithProductPrice_ShouldBuildProductUpdateAction() {
         final UpdateAction<Product> updateAction =
-            buildTypedSetCustomTypeUpdateAction("key", new HashMap<>(), mock(Price.class), new PriceCustomActionBuilder(), 1,
-                Price::getId, priceResource -> Price.resourceTypeId(), Price::getId,
-                ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build()).orElse(null);
+            buildTypedSetCustomTypeUpdateAction("key", new HashMap<>(), mock(Price.class),
+                new PriceCustomActionBuilder(), 1, Price::getId, priceResource -> Price.resourceTypeId(),
+                Price::getId, ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build()).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetProductPriceCustomType.class);
