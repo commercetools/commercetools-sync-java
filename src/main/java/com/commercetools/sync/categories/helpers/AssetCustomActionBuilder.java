@@ -27,7 +27,7 @@ public class AssetCustomActionBuilder extends GenericCustomActionBuilder<Categor
     @Nonnull
     public UpdateAction<Category> buildSetCustomTypeAction(@Nullable final Integer variantId,
                                                            @Nullable final String assetKey,
-                                                           @Nullable final String customTypeId,
+                                                           @Nonnull final String customTypeId,
                                                            @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
         return SetAssetCustomType.ofKey(assetKey, ofTypeIdAndJson(customTypeId, customFieldsJsonMap));
     }

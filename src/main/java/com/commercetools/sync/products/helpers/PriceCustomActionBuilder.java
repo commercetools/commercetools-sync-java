@@ -25,7 +25,7 @@ public class PriceCustomActionBuilder extends GenericCustomActionBuilder<Product
     @Nonnull
     public UpdateAction<Product> buildSetCustomTypeAction(@Nullable final Integer variantId,
                                                           @Nullable final String priceId,
-                                                          @Nullable final String customTypeId,
+                                                          @Nonnull final String customTypeId,
                                                           @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
         return SetProductPriceCustomType.ofTypeIdAndJson(customTypeId, customFieldsJsonMap, priceId, true);
     }

@@ -50,7 +50,7 @@ public abstract class GenericCustomActionBuilder<T extends Resource<T>> {
     @Nonnull
     public abstract UpdateAction<T> buildSetCustomTypeAction(@Nullable final Integer variantId,
                                                              @Nullable final String objectId,
-                                                             @Nullable final String customTypeId,
+                                                             @Nonnull final String customTypeId,
                                                              @Nullable final Map<String, JsonNode> customFieldsJsonMap);
 
     /**
