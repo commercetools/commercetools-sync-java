@@ -2,6 +2,7 @@ package com.commercetools.sync.integration.inventories;
 
 import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
+import com.commercetools.sync.inventories.helpers.InventoryCustomActionBuilder;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
 import io.sphere.sdk.channels.ChannelRole;
@@ -207,7 +208,8 @@ public class InventoryUpdateActionUtilsIT {
         //Build update actions.
         final InventorySyncOptions options = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
         final List<UpdateAction<InventoryEntry>> updateActions =
-            buildResourceCustomUpdateActions(oldInventoryBeforeSync, newInventory, options);
+            buildResourceCustomUpdateActions(oldInventoryBeforeSync, newInventory, new InventoryCustomActionBuilder(),
+                options);
         assertThat(updateActions).isNotEmpty();
 
         //Execute update command and ensure returned entry is properly updated.
