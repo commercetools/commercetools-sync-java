@@ -1,7 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
+import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.commands.updateactions.SetCustomField;
@@ -16,41 +16,32 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class CategoryCustomUpdateActionUtilsTest {
-    private CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
 
     @Test
     public void buildTypedSetCustomTypeUpdateAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
         final UpdateAction<Category> updateAction =
-            GenericUpdateActionUtils.<Category, Category>
-                buildTypedSetCustomTypeUpdateAction("key", new HashMap<>(), mock(Category.class),
-                null, null, Category::getId,
+            GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction("key", new HashMap<>(), mock(Category.class),
+                new CategoryCustomActionBuilder(), null, Category::getId,
                 categoryResource -> categoryResource.toReference().getTypeId(), categoryResource -> null,
-                syncOptions).orElse(null);
+                CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build()).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetCustomType.class);
     }
 
     @Test
-    public void buildTypedRemoveCustomTypeUpdateAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
+    public void buildRemoveCustomTypeAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
         final UpdateAction<Category> updateAction =
-            GenericUpdateActionUtils.<Category, Category>buildTypedRemoveCustomTypeUpdateAction(mock(Category.class),
-                null, null,
-                Category::getId, categoryResource -> categoryResource.toReference().getTypeId(),
-                categoryResource -> null, syncOptions).orElse(null);
+            new CategoryCustomActionBuilder().buildRemoveCustomTypeAction(null, null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetCustomType.class);
     }
 
     @Test
-    public void buildTypedSetCustomFieldUpdateAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
-        final UpdateAction<Category> updateAction =
-            GenericUpdateActionUtils.<Category, Category>buildTypedSetCustomFieldUpdateAction("name",
-                mock(JsonNode.class), mock(Category.class), null, null, Category::getId,
-                categoryResource -> categoryResource.toReference().getTypeId(),
-                categoryResource -> null,
-                syncOptions).orElse(null);
+    public void buildSetCustomFieldAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
+        final UpdateAction<Category> updateAction = new CategoryCustomActionBuilder()
+            .buildSetCustomFieldAction(null, null, "name", mock(JsonNode.class));
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetCustomField.class);

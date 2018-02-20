@@ -1,6 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.inventories.InventorySyncOptions;
+import com.commercetools.sync.channels.helpers.ChannelCustomActionBuilder;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.channels.Channel;
@@ -17,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class ChannelCustomUpdateActionUtilsTest {
-    private InventorySyncOptions syncOptions = InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
 
     @Test
     public void buildTypedSetCustomTypeUpdateAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
@@ -25,39 +24,29 @@ public class ChannelCustomUpdateActionUtilsTest {
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
 
         final UpdateAction<Channel> updateAction =
-            GenericUpdateActionUtils.<Channel, Channel>buildTypedSetCustomTypeUpdateAction("key",
-                fieldsJsonMap, channel, null, null, Channel::getId,
+            GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction("key",
+                fieldsJsonMap, channel, new ChannelCustomActionBuilder(), null, Channel::getId,
                 channelResource -> channelResource.toReference().getTypeId(),
                 channelResource -> null,
-                syncOptions).orElse(null);
+                InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build()).orElse(null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetCustomType.class);
     }
 
     @Test
-    public void buildTypedRemoveCustomTypeUpdateAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
-        final Channel channel = mock(Channel.class);
+    public void buildRemoveCustomTypeAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
         final UpdateAction<Channel> updateAction =
-            GenericUpdateActionUtils.<Channel, Channel>buildTypedRemoveCustomTypeUpdateAction(channel, null, null,
-                Channel::getId, channelResource -> channelResource.toReference().getTypeId(),
-                channelResource -> null, syncOptions).orElse(null);
+            new ChannelCustomActionBuilder().buildRemoveCustomTypeAction(null, null);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetCustomType.class);
     }
 
     @Test
-    public void buildTypedSetCustomFieldUpdateAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
-        final Channel channel = mock(Channel.class);
-        final JsonNode customFieldValue = mock(JsonNode.class);
-        final String customFieldName = "name";
+    public void buildSetCustomFieldAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
         final UpdateAction<Channel> updateAction =
-            GenericUpdateActionUtils.<Channel, Channel>buildTypedSetCustomFieldUpdateAction(customFieldName,
-                customFieldValue, channel, null, null, Channel::getId,
-                channelResource -> channelResource.toReference().getTypeId(),
-                channelResource -> null,
-                syncOptions).orElse(null);
+            new ChannelCustomActionBuilder().buildSetCustomFieldAction(null, null, "name", mock(JsonNode.class));
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetCustomField.class);
