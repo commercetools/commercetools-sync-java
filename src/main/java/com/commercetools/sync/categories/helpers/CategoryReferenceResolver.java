@@ -12,7 +12,6 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
@@ -88,16 +87,12 @@ public final class CategoryReferenceResolver
     @Override
     @Nonnull
     protected CompletionStage<CategoryDraftBuilder> resolveCustomTypeReference(
-            @Nonnull final CategoryDraftBuilder draftBuilder) {
-        final CustomFieldsDraft custom = draftBuilder.getCustom();
-        if (custom != null) {
-            return getCustomTypeId(custom, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getKey()))
-                .thenApply(resolvedTypeIdOptional ->
-                    resolvedTypeIdOptional.map(resolvedTypeId ->
-                            draftBuilder.custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields())))
-                        .orElse(draftBuilder));
-        }
-        return CompletableFuture.completedFuture(draftBuilder);
+        @Nonnull final CategoryDraftBuilder draftBuilder) {
+
+        return resolveCustomTypeReference(draftBuilder,
+            CategoryDraftBuilder::getCustom,
+            CategoryDraftBuilder::custom,
+            format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getKey()));
     }
 
     /**

@@ -4,13 +4,11 @@ import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.AssetDraftBuilder;
-import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public final class AssetReferenceResolver
     extends CustomReferenceResolver<AssetDraft, AssetDraftBuilder, BaseSyncOptions> {
@@ -33,25 +31,22 @@ public final class AssetReferenceResolver
 
     @Override
     @Nonnull
-    protected CompletionStage<AssetDraftBuilder> resolveCustomTypeReference(
-        @Nonnull final AssetDraftBuilder assetDraftBuilder) {
-
-        final CustomFieldsDraft custom = assetDraftBuilder.getCustom();
-        if (custom != null) {
-            return getCustomTypeId(custom,
-                format(FAILED_TO_RESOLVE_CUSTOM_TYPE, assetDraftBuilder.getKey()))
-                .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional
-                    .map(resolvedTypeId -> assetDraftBuilder
-                        .custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields())))
-                    .orElse(assetDraftBuilder));
-        }
-        return completedFuture(assetDraftBuilder);
-    }
-
-    @Override
-    @Nonnull
     public CompletionStage<AssetDraft> resolveReferences(@Nonnull final AssetDraft assetDraft) {
         return resolveCustomTypeReference(AssetDraftBuilder.of(assetDraft))
             .thenApply(AssetDraftBuilder::build);
     }
+
+    @Override
+    @Nonnull
+    protected CompletionStage<AssetDraftBuilder> resolveCustomTypeReference(
+        @Nonnull final AssetDraftBuilder assetDraftBuilder) {
+
+        return resolveCustomTypeReference(
+            assetDraftBuilder,
+            AssetDraftBuilder::getCustom,
+            AssetDraftBuilder::custom,
+            format(FAILED_TO_RESOLVE_CUSTOM_TYPE, assetDraftBuilder.getKey()));
+    }
+
+
 }
