@@ -84,15 +84,15 @@ public final class CompletableFutureUtils {
     public static <T> CompletableFuture<Set<T>> setOfFuturesToFutureOfSet(
         @Nonnull final Set<? extends CompletionStage<T>> set) {
 
-        final Set<CompletableFuture<T>> futureSet = set.stream()
-                                                       .map(CompletionStage::toCompletableFuture)
-                                                       .collect(toSet());
+        final List<CompletableFuture<T>> futureList = set.stream()
+                                                         .map(CompletionStage::toCompletableFuture)
+                                                         .collect(toList());
 
-        final CompletableFuture[] futuresAsArray = futureSet.toArray(new CompletableFuture[futureSet.size()]);
+        final CompletableFuture[] futuresAsArray = futureList.toArray(new CompletableFuture[futureList.size()]);
         return CompletableFuture.allOf(futuresAsArray)
-                                .thenApply(ignoredResult -> futureSet.stream()
-                                                                     .map(CompletableFuture::join)
-                                                                     .collect(Collectors.toSet()));
+                                .thenApply(ignoredResult -> futureList.stream()
+                                                                      .map(CompletableFuture::join)
+                                                                      .collect(Collectors.toSet()));
     }
 
 
