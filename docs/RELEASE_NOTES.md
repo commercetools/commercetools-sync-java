@@ -53,10 +53,10 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M11/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M11)
 
-**Changes** (1)
+**Features** (1)
 - **Commons** - Support for custom update actions calculation for secondary resources (e.g. prices, product assets and category assets). [#3](https://github.com/commercetools/commercetools-sync-java/issues/3) 
 
-**Changes** (1)
+**Changes** (3)
 - **Commons** - `CustomUpdateActionUtils#buildCustomUpdateActions` is now 
 `CustomUpdateActionUtils#buildResourceCustomUpdateActions`. It now takes a new third parameter `customActionBuilder` 
 which represents the concrete builder of custom update actions. For a list of concrete builder options check the 
