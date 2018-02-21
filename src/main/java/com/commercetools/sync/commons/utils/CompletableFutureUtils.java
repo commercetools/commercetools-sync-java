@@ -9,7 +9,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.commons.utils.StreamUtils.map;
+import static com.commercetools.sync.commons.utils.StreamUtils.filterNullAndMap;
 import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -109,7 +109,7 @@ public final class CompletableFutureUtils {
     public static <T, S> List<CompletableFuture<S>> mapValuesToFutureList(
         @Nonnull final Stream<T> values,
         @Nonnull final Function<T, CompletionStage<S>> mapper) {
-        return toListOfCompletableFutures(map(values, mapper));
+        return toListOfCompletableFutures(filterNullAndMap(values, mapper));
     }
 
     /**
@@ -125,7 +125,7 @@ public final class CompletableFutureUtils {
     public static <T, S> Set<CompletableFuture<S>> mapValueSetToFutureSet(
         @Nonnull final Set<T> values,
         @Nonnull final Function<T, CompletionStage<S>> mapper) {
-        return toSetOfCompletableFutures(map(values.stream(), mapper));
+        return toSetOfCompletableFutures(filterNullAndMap(values.stream(), mapper));
     }
 
 

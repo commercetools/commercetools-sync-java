@@ -18,7 +18,7 @@ public final class StreamUtils {
      * @return a stream of the resulting mapped elements.
      */
     @Nonnull
-    public static <T, S> Stream<S> map(@Nonnull final Stream<T> elements, @Nonnull final Function<T, S> mapper) {
+    public static <T, S> Stream<S> filterNullAndMap(@Nonnull final Stream<T> elements, @Nonnull final Function<T, S> mapper) {
         return elements.filter(Objects::nonNull).map(mapper);
     }
 
