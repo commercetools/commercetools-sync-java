@@ -14,7 +14,7 @@ import java.util.Map;
 
 import static io.sphere.sdk.types.CustomFieldsDraft.ofTypeIdAndJson;
 
-public class AssetCustomActionBuilder extends GenericCustomActionBuilder<Category> {
+public class AssetCustomActionBuilder implements GenericCustomActionBuilder<Category> {
 
     @Override
     @Nonnull

@@ -12,7 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-public class CategoryCustomActionBuilder extends GenericCustomActionBuilder<Category> {
+public class CategoryCustomActionBuilder implements GenericCustomActionBuilder<Category> {
     @Nonnull
     @Override
     public UpdateAction<Category> buildRemoveCustomTypeAction(@Nullable final Integer variantId,

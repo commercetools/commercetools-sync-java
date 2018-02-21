@@ -12,7 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-public class PriceCustomActionBuilder extends GenericCustomActionBuilder<Product> {
+public class PriceCustomActionBuilder implements GenericCustomActionBuilder<Product> {
 
     @Override
     @Nonnull

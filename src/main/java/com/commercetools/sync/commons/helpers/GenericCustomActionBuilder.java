@@ -16,7 +16,7 @@ import java.util.Map;
  *
  * @param <T> the type of the resource to create update actions for.
  */
-public abstract class GenericCustomActionBuilder<T extends Resource<T>> {
+public interface GenericCustomActionBuilder<T extends Resource<T>> {
     /**
      * Creates a CTP "setCustomType" update action on the given resource {@code T} that removes the custom type set on
      * the given resource {@code T}. If the resource that has the custom fields is a secondary resource (e.g. price or
@@ -30,8 +30,7 @@ public abstract class GenericCustomActionBuilder<T extends Resource<T>> {
      * @return a setCustomType update action that removes the custom type from the resource it's requested on.
      */
     @Nonnull
-    public abstract UpdateAction<T> buildRemoveCustomTypeAction(@Nullable final Integer variantId,
-                                                                @Nullable final String objectId);
+    UpdateAction<T> buildRemoveCustomTypeAction(@Nullable final Integer variantId, @Nullable final String objectId);
 
     /**
      * Creates a CTP "setCustomType" update action on the given resource {@code T}. If the resource that has the custom
@@ -48,10 +47,10 @@ public abstract class GenericCustomActionBuilder<T extends Resource<T>> {
      * @return a setCustomType update action of the type of the resource it's requested on.
      */
     @Nonnull
-    public abstract UpdateAction<T> buildSetCustomTypeAction(@Nullable final Integer variantId,
-                                                             @Nullable final String objectId,
-                                                             @Nonnull final String customTypeId,
-                                                             @Nullable final Map<String, JsonNode> customFieldsJsonMap);
+    UpdateAction<T> buildSetCustomTypeAction(@Nullable final Integer variantId,
+                                             @Nullable final String objectId,
+                                             @Nonnull final String customTypeId,
+                                             @Nullable final Map<String, JsonNode> customFieldsJsonMap);
 
     /**
      * Creates a CTP "setCustomField" update action on the given resource {@code T} that updates a custom field with
@@ -70,8 +69,8 @@ public abstract class GenericCustomActionBuilder<T extends Resource<T>> {
      *         on the resource it's requested on.
      */
     @Nonnull
-    public abstract UpdateAction<T> buildSetCustomFieldAction(@Nullable final Integer variantId,
-                                                              @Nullable final String objectId,
-                                                              @Nullable final String customFieldName,
-                                                              @Nullable final JsonNode customFieldValue);
+    UpdateAction<T> buildSetCustomFieldAction(@Nullable final Integer variantId,
+                                              @Nullable final String objectId,
+                                              @Nullable final String customFieldName,
+                                              @Nullable final JsonNode customFieldValue);
 }

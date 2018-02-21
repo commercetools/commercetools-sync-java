@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 
-public class ChannelCustomActionBuilder extends GenericCustomActionBuilder<Channel> {
+public class ChannelCustomActionBuilder implements GenericCustomActionBuilder<Channel> {
 
     @Nonnull
     @Override

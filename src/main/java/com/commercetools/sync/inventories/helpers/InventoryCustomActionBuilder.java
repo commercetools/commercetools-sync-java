@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-public class InventoryCustomActionBuilder extends GenericCustomActionBuilder<InventoryEntry> {
+public class InventoryCustomActionBuilder implements GenericCustomActionBuilder<InventoryEntry> {
 
     @Nonnull
     @Override
