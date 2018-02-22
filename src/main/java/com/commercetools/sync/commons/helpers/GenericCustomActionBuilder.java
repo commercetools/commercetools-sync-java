@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
- * A Generic Custom update action builder that creates update actions that are of the same type as the Generic type T
+ * A generic custom update action builder that creates update actions that are of the same type as the Generic type T
  * provided by the subclass of this abstract class. For example, if T is a {@link io.sphere.sdk.categories.Category}
  * then all the methods would build custom update actions of the type {@link io.sphere.sdk.categories.Category}
  *
