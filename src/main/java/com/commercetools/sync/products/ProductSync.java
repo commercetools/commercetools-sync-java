@@ -198,7 +198,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     @Nonnull
     private CompletionStage<List<Optional<Product>>> syncProducts(
         @Nonnull final Map<ProductDraft, Product> productsToSync) {
-        return mapValuesToFutureOfCompletedValues(productsToSync.entrySet().stream(),
+        return mapValuesToFutureOfCompletedValues(productsToSync.entrySet(),
             entry -> fetchProductAttributesMetadataAndUpdate(entry.getValue(), entry.getKey()), toList());
     }
 
