@@ -27,7 +27,6 @@ public class CategoryAssetCustomUpdateActionUtilsTest {
                 CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build())
                                     .orElse(null);
 
-        assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetAssetCustomType.class);
     }
 
@@ -36,7 +35,6 @@ public class CategoryAssetCustomUpdateActionUtilsTest {
         final UpdateAction<Category> updateAction =
             new AssetCustomActionBuilder().buildRemoveCustomTypeAction(1, "assetKey");
 
-        assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetAssetCustomType.class);
     }
 
@@ -45,7 +43,6 @@ public class CategoryAssetCustomUpdateActionUtilsTest {
         final UpdateAction<Category> updateAction = new AssetCustomActionBuilder()
             .buildSetCustomFieldAction(1, "assetKey", "name", mock(JsonNode.class));
 
-        assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetAssetCustomField.class);
     }
 }

@@ -26,14 +26,13 @@ public class ProductPriceCustomUpdateActionUtilsTest {
                 new PriceCustomActionBuilder(), 1, Price::getId, priceResource -> Price.resourceTypeId(),
                 Price::getId, ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build()).orElse(null);
 
-        assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetProductPriceCustomType.class);
     }
 
     @Test
     public void buildRemoveCustomTypeAction_WithProductPrice_ShouldBuildChannelUpdateAction() {
         final UpdateAction<Product> updateAction = new PriceCustomActionBuilder().buildRemoveCustomTypeAction(1, "1");
-        assertThat(updateAction).isNotNull();
+
         assertThat(updateAction).isInstanceOf(SetProductPriceCustomType.class);
     }
 
@@ -41,7 +40,7 @@ public class ProductPriceCustomUpdateActionUtilsTest {
     public void buildSetCustomFieldAction_WithProductPrice_ShouldBuildProductUpdateAction() {
         final UpdateAction<Product> updateAction = new PriceCustomActionBuilder()
             .buildSetCustomFieldAction(1, "1", "name", mock(JsonNode.class));
-        assertThat(updateAction).isNotNull();
+
         assertThat(updateAction).isInstanceOf(SetProductPriceCustomField.class);
     }
 }

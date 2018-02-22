@@ -26,7 +26,6 @@ public class InventoryEntryCustomUpdateActionUtilsTest {
                 inventoryResource -> null, InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build())
                                     .orElse(null);
 
-        assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetCustomType.class);
     }
 
@@ -35,7 +34,6 @@ public class InventoryEntryCustomUpdateActionUtilsTest {
         final UpdateAction<InventoryEntry> updateAction =
             new InventoryCustomActionBuilder().buildRemoveCustomTypeAction(null, null);
 
-        assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetCustomType.class);
     }
 
@@ -44,7 +42,6 @@ public class InventoryEntryCustomUpdateActionUtilsTest {
         final UpdateAction<InventoryEntry> updateAction =
             new InventoryCustomActionBuilder().buildSetCustomFieldAction(null, null, "name", mock(JsonNode.class));
 
-        assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetCustomField.class);
     }
 }

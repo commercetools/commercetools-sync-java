@@ -30,7 +30,6 @@ public class ChannelCustomUpdateActionUtilsTest {
                 channelResource -> null,
                 InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build()).orElse(null);
 
-        assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetCustomType.class);
     }
 
@@ -39,7 +38,6 @@ public class ChannelCustomUpdateActionUtilsTest {
         final UpdateAction<Channel> updateAction =
             new ChannelCustomActionBuilder().buildRemoveCustomTypeAction(null, null);
 
-        assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetCustomType.class);
     }
 
@@ -48,7 +46,6 @@ public class ChannelCustomUpdateActionUtilsTest {
         final UpdateAction<Channel> updateAction =
             new ChannelCustomActionBuilder().buildSetCustomFieldAction(null, null, "name", mock(JsonNode.class));
 
-        assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetCustomField.class);
     }
 }
