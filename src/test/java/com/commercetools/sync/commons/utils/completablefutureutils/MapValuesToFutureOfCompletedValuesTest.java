@@ -21,10 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class MapValuesToFutureOfCompletedValuesTest {
     /**
-     * List to List : empty values
-     * List to Set : empty values
-     * Set to Set : empty values
-     * Set to List : empty values
+     * List to List : empty values.
+     * List to Set : empty values.
+     * Set to Set : empty values.
+     * Set to List : empty values.
      **/
 
     @Test
@@ -57,10 +57,10 @@ public class MapValuesToFutureOfCompletedValuesTest {
 
 
     /**
-     * List to List : single null value
-     * List to Set : single null value
-     * Set to Set : single null value
-     * Set to List : single null value
+     * List to List : single null value.
+     * List to Set : single null value.
+     * Set to Set : single null value.
+     * Set to List : single null value.
      */
 
     @Test
@@ -96,8 +96,8 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     /**
-     * List to List : multiple null value
-     * List to Set : multiple null value
+     * List to List : multiple null value.
+     * List to Set : multiple null value.
      */
 
     @Test
@@ -117,15 +117,15 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     /**
-     * * List to List : Same Type Mapping : Single Value
-     * * List to Set : Same Type Mapping : Single Value
-     * * Set to Set : Same Type Mapping : Single Value
-     * * Set to List : Same Type Mapping : Single Value
+     * * List to List : Same Type Mapping : Single Value.
+     * * List to Set : Same Type Mapping : Single Value.
+     * * Set to Set : Same Type Mapping : Single Value.
+     * * Set to List : Same Type Mapping : Single Value.
      *
-     * * List to List : Diff Type Mapping : Single Value
-     * * List to Set : Diff Type Mapping : Single Value
-     * * Set to Set : Diff Type Mapping : Single Value
-     * * Set to List : Diff Type Mapping : Single Value
+     * <p>List to List : Diff Type Mapping : Single Value.
+     * * List to Set : Diff Type Mapping : Single Value.
+     * * Set to Set : Diff Type Mapping : Single Value.
+     * * Set to List : Diff Type Mapping : Single Value.
      */
 
     @Test
@@ -201,15 +201,15 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     /**
-     * * List to List : Same Type Mapping : Multiple Values : no duplicates
-     * * List to Set : Same Type Mapping : Multiple Values : no duplicates
-     * * Set to Set : Same Type Mapping : Multiple Values : no duplicates
-     * * Set to List : Same Type Mapping : Multiple Values : no duplicates
+     * * List to List : Same Type Mapping : Multiple Values : no duplicates.
+     * * List to Set : Same Type Mapping : Multiple Values : no duplicates.
+     * * Set to Set : Same Type Mapping : Multiple Values : no duplicates.
+     * * Set to List : Same Type Mapping : Multiple Values : no duplicates.
      *
-     * * List to List : Diff Type Mapping : Multiple Values : no duplicates
-     * * List to Set : Diff Type Mapping : Multiple Values : no duplicates
-     * * Set to Set : Diff Type Mapping : Multiple Values : no duplicates
-     * * Set to List : Diff Type Mapping : Multiple Values : no duplicates
+     * <p>List to List : Diff Type Mapping : Multiple Values : no duplicates.
+     * * List to Set : Diff Type Mapping : Multiple Values : no duplicates.
+     * * Set to Set : Diff Type Mapping : Multiple Values : no duplicates.
+     * * Set to List : Diff Type Mapping : Multiple Values : no duplicates.
      */
 
     @Test
@@ -301,15 +301,15 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     /**
-     * * List to List : Same Type Mapping : Multiple Values : duplicates
-     * * List to Set : Same Type Mapping : Multiple Values : duplicates
-     * * Set to Set : Same Type Mapping : Multiple Values : duplicates
-     * * Set to List : Same Type Mapping : Multiple Values : duplicates
-     *
-     * * List to List : Diff Type Mapping : Multiple Values : duplicates
-     * * List to Set : Diff Type Mapping : Multiple Values : duplicates
-     * * Set to Set : Diff Type Mapping : Multiple Values : duplicates
-     * * Set to List : Diff Type Mapping : Multiple Values : duplicates
+     * * List to List : Same Type Mapping : Multiple Values : duplicates.
+     * * List to Set : Same Type Mapping : Multiple Values : duplicates.
+     * * Set to Set : Same Type Mapping : Multiple Values : duplicates.
+     * * Set to List : Same Type Mapping : Multiple Values : duplicates.
+     * 
+     * <p>List to List : Diff Type Mapping : Multiple Values : duplicates.
+     * * List to Set : Diff Type Mapping : Multiple Values : duplicates.
+     * * Set to Set : Diff Type Mapping : Multiple Values : duplicates.
+     * * Set to List : Diff Type Mapping : Multiple Values : duplicates.
      */
 
     @Test

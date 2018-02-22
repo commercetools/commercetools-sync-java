@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class MapStreamValuesToFutureOfCompletedValuesTest {
     /**
-     * Stream to List : empty values
-     * Stream to Set : empty values
+     * Stream to List : empty values.
+     * Stream to Set : empty values.
      **/
 
     @Test
@@ -39,8 +39,8 @@ public class MapStreamValuesToFutureOfCompletedValuesTest {
 
 
     /**
-     * Stream to List : single null value
-     * Stream to Set : single null value
+     * Stream to List : single null value.
+     * Stream to Set : single null value.
      */
 
     @Test
@@ -60,8 +60,8 @@ public class MapStreamValuesToFutureOfCompletedValuesTest {
     }
 
     /**
-     * Stream to List : multiple null value
-     * Stream to Set : multiple null value
+     * Stream to List : multiple null value.
+     * Stream to Set : multiple null value.
      */
 
     @Test
@@ -81,10 +81,10 @@ public class MapStreamValuesToFutureOfCompletedValuesTest {
     }
 
     /**
-     * * Stream to List : Same Type Mapping : Single Value
-     * * Stream to Set : Same Type Mapping : Single Value
-     * * Stream to List : Diff Type Mapping : Single Value
-     * * Stream to Set : Diff Type Mapping : Single Value
+     * * Stream to List : Same Type Mapping : Single Value.
+     * * Stream to Set : Same Type Mapping : Single Value.
+     * * Stream to List : Diff Type Mapping : Single Value.
+     * * Stream to Set : Diff Type Mapping : Single Value.
      */
 
     @Test
@@ -124,10 +124,10 @@ public class MapStreamValuesToFutureOfCompletedValuesTest {
     }
 
     /**
-     * * Stream to List : Same Type Mapping : Multiple Values : no duplicates
-     * * Stream to Set : Same Type Mapping : Multiple Values : no duplicates
-     * * Stream to List : Diff Type Mapping : Multiple Values : no duplicates
-     * * Stream to Set : Diff Type Mapping : Multiple Values : no duplicates
+     * * Stream to List : Same Type Mapping : Multiple Values : no duplicates.
+     * * Stream to Set : Same Type Mapping : Multiple Values : no duplicates.
+     * * Stream to List : Diff Type Mapping : Multiple Values : no duplicates.
+     * * Stream to Set : Diff Type Mapping : Multiple Values : no duplicates.
      */
 
     @Test
@@ -167,10 +167,10 @@ public class MapStreamValuesToFutureOfCompletedValuesTest {
     }
 
     /**
-     * * Stream to List : Same Type Mapping : Multiple Values : duplicates
-     * * Stream to Set : Same Type Mapping : Multiple Values : duplicates
-     * * Stream to List : Diff Type Mapping : Multiple Values : duplicates
-     * * Stream to Set : Diff Type Mapping : Multiple Values : duplicates
+     * * Stream to List : Same Type Mapping : Multiple Values : duplicates.
+     * * Stream to Set : Same Type Mapping : Multiple Values : duplicates.
+     * * Stream to List : Diff Type Mapping : Multiple Values : duplicates.
+     * * Stream to Set : Diff Type Mapping : Multiple Values : duplicates.
      */
 
     @Test

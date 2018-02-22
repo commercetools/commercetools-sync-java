@@ -20,8 +20,8 @@ import static org.mockito.Mockito.when;
 
 public class ToCompletableFuturesTest {
     /**
-     * Stream to List : empty values
-     * Stream to Set : empty values
+     * Stream to List : empty values.
+     * Stream to Set : empty values.
      **/
 
     @Test
@@ -40,8 +40,8 @@ public class ToCompletableFuturesTest {
 
 
     /**
-     * Stream to List : single null value
-     * Stream to Set : single null value
+     * Stream to List : single null value.
+     * Stream to Set : single null value.
      */
 
     @Test
@@ -59,8 +59,8 @@ public class ToCompletableFuturesTest {
     }
 
     /**
-     * Stream to List : multiple null value
-     * Stream to Set : multiple null value
+     * Stream to List : multiple null value.
+     * Stream to Set : multiple null value.
      */
     @Test
     public void multipleNull_StreamToList_ReturnsEmptyList() {
@@ -77,8 +77,8 @@ public class ToCompletableFuturesTest {
     }
 
     /**
-     * * Stream to List : Single Value
-     * * Stream to Set :  Single Value
+     * * Stream to List : Single Value.
+     * * Stream to Set :  Single Value.
      */
 
     @Test
@@ -110,8 +110,8 @@ public class ToCompletableFuturesTest {
     }
 
     /**
-     * * Stream to List : Multiple Values : no duplicates
-     * * Stream to Set :  Multiple Values : no duplicates
+     * * Stream to List : Multiple Values : no duplicates.
+     * * Stream to Set :  Multiple Values : no duplicates.
      */
 
     @Test
@@ -152,8 +152,8 @@ public class ToCompletableFuturesTest {
     }
 
     /**
-     * * Stream to List : Multiple Values : duplicates
-     * * Stream to Set : Multiple Values : duplicates
+     * * Stream to List : Multiple Values : duplicates.
+     * * Stream to Set : Multiple Values : duplicates.
      */
 
     @Test

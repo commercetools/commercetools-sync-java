@@ -20,11 +20,12 @@ import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CollectionOfFuturesToFutureOfCollectionTest {
+
     /**
-     * List to List : empty values
-     * List to Set : empty values
-     * Set to Set : empty values
-     * Set to List : empty values
+     * List to List : empty values.
+     * List to Set : empty values.
+     * Set to Set : empty values.
+     * Set to List : empty values.
      **/
 
     @Test
@@ -56,10 +57,10 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
 
 
     /**
-     * List to List : single null value
-     * List to Set : single null value
-     * Set to Set : single null value
-     * Set to List : single null value
+     * List to List : single null value.
+     * List to Set : single null value.
+     * Set to Set : single null value.
+     * Set to List : single null value.
      */
 
     @Test
@@ -95,8 +96,8 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     /**
-     * List to List : multiple null value
-     * List to Set : multiple null value
+     * List to List : multiple null value.
+     * List to Set : multiple null value.
      */
 
     @Test
@@ -116,10 +117,10 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     /**
-     * * List to List : Single Value
-     * * List to Set : Single Value
-     * * Set to Set : Single Value
-     * * Set to List : Single Value
+     * * List to List : Single Value.
+     * * List to Set : Single Value.
+     * * Set to Set : Single Value.
+     * * Set to List : Single Value.
      */
 
     @Test
@@ -155,10 +156,10 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     /**
-     * * List to List : Multiple Values : no duplicates
-     * * List to Set : Multiple Values : no duplicates
-     * * Set to Set : Multiple Values : no duplicates
-     * * Set to List : Multiple Values : no duplicates
+     * * List to List : Multiple Values : no duplicates.
+     * * List to Set : Multiple Values : no duplicates.
+     * * Set to Set : Multiple Values : no duplicates.
+     * * Set to List : Multiple Values : no duplicates.
      */
 
     @Test
@@ -204,10 +205,10 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     /**
-     * * List to List : Multiple Values : duplicates
-     * * List to Set : Multiple Values : duplicates
-     * * Set to Set : Multiple Values : duplicates
-     * * Set to List : Multiple Values : duplicates
+     * * List to List : Multiple Values : duplicates.
+     * * List to Set : Multiple Values : duplicates.
+     * * Set to Set : Multiple Values : duplicates.
+     * * Set to List : Multiple Values : duplicates.
      */
 
     @Test

@@ -21,11 +21,13 @@ public final class CompletableFutureUtils {
      * the supplied collection and completed it. The type of the returned collection is decided by the supplied
      * collector.
      *
-     * @param values collection of values to apply a mapper function that would map each to a {@link CompletionStage}.
-     * @param mapper function to map each value to a {@link CompletionStage}
-     * @param <T>    The type of the values.
-     * @param <S>    The type of the mapped completed values.
-     * @param <U>    The type of the collection returned in the future.
+     * @param values    collection of values to apply a mapper function that would map each to a
+     *                  {@link CompletionStage}.
+     * @param mapper    function to map each value to a {@link CompletionStage}
+     * @param collector the collector to define the type of the collection returned.
+     * @param <T>       The type of the values.
+     * @param <S>       The type of the mapped completed values.
+     * @param <U>       The type of the collection returned in the future.
      * @return a future containing a collection of completed stage results of the values after the mapper function was
      *         applied to each value in the supplied collection.
      */
@@ -62,10 +64,12 @@ public final class CompletableFutureUtils {
      * Creates a Future containing a collection of value results after the mapper function is applied to each value in
      * the supplied stream and completed it. The type of the returned collection is decided by the supplied collector.
      *
-     * @param values stream of values to apply a mapper function that would map each to a {@link CompletionStage}.
-     * @param mapper function to map each value to a {@link CompletionStage}
-     * @param <T>    The type of the values.
-     * @param <S>    The type of the mapping of the values.
+     * @param values    stream of values to apply a mapper function that would map each to a {@link CompletionStage}.
+     * @param mapper    function to map each value to a {@link CompletionStage}
+     * @param collector the collector to define the type of the collection returned.
+     * @param <T>       The type of the values.
+     * @param <S>       The type of the mapping of the values.
+     * @param <U>       The type of the collection returned in the future.
      * @return a future containing a list of completed stage results of the values after the mapper function was
      *         applied to each one.
      */
@@ -85,11 +89,12 @@ public final class CompletableFutureUtils {
      * In case multiple stages end exceptionally only one error is kept. The type of the returned collection is decided
      * by the supplied collector.
      *
-     * * <p>Note: Null futures in the collection are filtered out.
+     * <p>Note: Null futures in the collection are filtered out.
      *
-     * @param futures collection of {@code CompletionStage}
-     * @param <T> the element obtained from the set of {@code CompletionStage}
-     * @param <S>    The type of the collection returned in the future.
+     * @param futures   collection of {@code CompletionStage}
+     * @param collector the collector to define the type of the collection returned.
+     * @param <T>       the element obtained from the set of {@code CompletionStage}
+     * @param <S>       The type of the collection returned in the future.
      * @return the {@code CompletableFuture} of a collection of elements
      */
     @Nonnull
@@ -114,11 +119,12 @@ public final class CompletableFutureUtils {
      * Maps a stream of values to a future collection using the supplied mapper function. The type of the returned
      * collection is decided by the supplied collector.
      *
-     * @param values stream of values to apply a mapper function that would map each to a {@link CompletionStage}.
-     * @param mapper function to map each value to a {@link CompletionStage}
-     * @param <T>    The type of the values.
-     * @param <S>    The type of the mapped values.
-     * @param <U>    The type of the collection returned.
+     * @param values    stream of values to apply a mapper function that would map each to a {@link CompletionStage}.
+     * @param mapper    function to map each value to a {@link CompletionStage}
+     * @param collector the collector to define the type of the collection returned.
+     * @param <T>       The type of the values.
+     * @param <S>       The type of the mapped values.
+     * @param <U>       The type of the collection returned.
      * @return a collection of futures resulting from applying the mapper function on each value.
      */
     @Nonnull
