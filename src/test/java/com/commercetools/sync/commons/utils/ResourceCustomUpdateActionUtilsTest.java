@@ -489,7 +489,6 @@ public class ResourceCustomUpdateActionUtilsTest {
     @Test
     public void buildSetCustomFieldsUpdateActions_WithEmptyCustomFields_ShouldNotBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
-
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
