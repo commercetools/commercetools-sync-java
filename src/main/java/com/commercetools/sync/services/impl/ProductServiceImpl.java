@@ -26,6 +26,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.emptyOptionalCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -42,7 +43,7 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
     @Override
     public CompletionStage<Optional<String>> getIdFromCacheOrFetch(@Nullable final String key) {
         if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
+            return emptyOptionalCompletedFuture();
         }
         if (keyToIdCache.containsKey(key)) {
             return CompletableFuture.completedFuture(Optional.of(keyToIdCache.get(key)));
@@ -120,7 +121,7 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
     @Override
     public CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key) {
         if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
+            return emptyOptionalCompletedFuture();
         }
         final QueryPredicate<Product> queryPredicate = buildProductKeysQueryPredicate(singleton(key));
         return syncOptions.getCtpClient().execute(ProductQuery.of().withPredicates(queryPredicate))

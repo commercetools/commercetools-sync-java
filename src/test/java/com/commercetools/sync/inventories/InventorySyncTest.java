@@ -27,6 +27,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.emptyOptionalCompletedFuture;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
@@ -445,7 +446,7 @@ public class InventorySyncTest {
 
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
         when(channelService.fetchCachedChannelId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(emptyOptionalCompletedFuture());
 
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraft
             .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_3));
@@ -469,7 +470,7 @@ public class InventorySyncTest {
 
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
         when(channelService.fetchCachedChannelId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(emptyOptionalCompletedFuture());
         when(channelService.createAndCacheChannel(anyString())).thenReturn(failed(new SphereException()));
 
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraft

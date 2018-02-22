@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.emptyOptionalCompletedFuture;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -93,7 +94,7 @@ public final class CategoryServiceImpl extends BaseService<Category, CategoryDra
     @Override
     public CompletionStage<Optional<Category>> fetchCategory(@Nullable final String key) {
         if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
+            return emptyOptionalCompletedFuture();
         }
 
         return syncOptions.getCtpClient()

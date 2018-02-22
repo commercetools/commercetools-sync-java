@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.emptyOptionalCompletedFuture;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithProductTypeRef;
@@ -111,7 +112,7 @@ public class ProductTypeReferenceResolverTest {
             .key("dummyKey");
 
         when(productTypeService.fetchCachedProductTypeId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(emptyOptionalCompletedFuture());
 
         assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
             .hasNotFailed()
