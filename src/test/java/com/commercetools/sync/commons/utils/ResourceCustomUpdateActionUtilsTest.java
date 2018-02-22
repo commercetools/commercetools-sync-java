@@ -6,7 +6,9 @@ import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.SetCustomField;
@@ -431,13 +433,16 @@ public class ResourceCustomUpdateActionUtilsTest {
 
     @Test
     public void buildSetCustomFieldsUpdateActions_WithSameCustomFieldValues_ShouldNotBuildUpdateActions() {
+        final BooleanNode oldBooleanFieldValue = JsonNodeFactory.instance.booleanNode(true);
+        final ObjectNode oldLocalizedFieldValue = JsonNodeFactory.instance.objectNode().put("de", "rot");
+
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
-        oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-        oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
+        oldCustomFields.put("invisibleInShop", oldBooleanFieldValue);
+        oldCustomFields.put("backgroundColor", oldLocalizedFieldValue);
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
-        newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-        newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
+        newCustomFields.put("invisibleInShop", oldBooleanFieldValue);
+        newCustomFields.put("backgroundColor", oldLocalizedFieldValue);
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
             buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
