@@ -26,7 +26,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesSetToFutureOfCompletedValues;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -142,7 +142,7 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
     @Nonnull
     @Override
     public CompletionStage<Set<Product>> createProducts(@Nonnull final Set<ProductDraft> productsDrafts) {
-        return mapValuesSetToFutureOfCompletedValues(productsDrafts, this::createProduct)
+        return mapValuesToFutureOfCompletedValues(productsDrafts, this::createProduct)
             .thenApply(results -> results.filter(Optional::isPresent).map(Optional::get))
             .thenApply(createdProducts -> createdProducts.collect(Collectors.toSet()));
     }

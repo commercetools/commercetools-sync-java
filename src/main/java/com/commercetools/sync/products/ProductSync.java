@@ -44,6 +44,7 @@ import static com.commercetools.sync.products.utils.ProductSyncUtils.buildAction
 import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
@@ -198,7 +199,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private CompletionStage<List<Optional<Product>>> syncProducts(
         @Nonnull final Map<ProductDraft, Product> productsToSync) {
         return mapValuesToFutureOfCompletedValues(productsToSync.entrySet().stream(),
-            entry -> fetchProductAttributesMetadataAndUpdate(entry.getValue(), entry.getKey()));
+            entry -> fetchProductAttributesMetadataAndUpdate(entry.getValue(), entry.getKey()), toList());
     }
 
     @Nonnull

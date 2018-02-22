@@ -21,9 +21,10 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesListToFutureOfCompletedValues;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.stream.Collectors.toList;
 
 public final class CategoryReferenceResolver
         extends CustomReferenceResolver<CategoryDraft, CategoryDraftBuilder, CategorySyncOptions> {
@@ -80,7 +81,8 @@ public final class CategoryReferenceResolver
             return completedFuture(categoryDraftBuilder);
         }
 
-        return mapValuesListToFutureOfCompletedValues(categoryDraftAssets, assetReferenceResolver::resolveReferences)
+        return mapValuesToFutureOfCompletedValues(categoryDraftAssets,
+            assetReferenceResolver::resolveReferences, toList())
             .thenApply(categoryDraftBuilder::assets);
     }
 

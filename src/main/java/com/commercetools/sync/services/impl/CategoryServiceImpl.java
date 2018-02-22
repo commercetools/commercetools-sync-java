@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesSetToFutureOfCompletedValues;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -109,7 +109,7 @@ public final class CategoryServiceImpl extends BaseService<Category, CategoryDra
     @Nonnull
     @Override
     public CompletionStage<Set<Category>> createCategories(@Nonnull final Set<CategoryDraft> categoryDrafts) {
-        return mapValuesSetToFutureOfCompletedValues(categoryDrafts, this::createCategory)
+        return mapValuesToFutureOfCompletedValues(categoryDrafts, this::createCategory)
             .thenApply(results -> results.filter(Optional::isPresent).map(Optional::get))
             .thenApply(createdCategories -> createdCategories.collect(Collectors.toSet()));
     }

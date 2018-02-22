@@ -27,9 +27,9 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesListToFutureOfCompletedValues;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.stream.Collectors.toList;
 
 
 public final class VariantReferenceResolver extends BaseReferenceResolver<ProductVariantDraft, ProductSyncOptions> {
@@ -90,8 +90,8 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return completedFuture(productVariantDraftBuilder);
         }
 
-        return mapValuesListToFutureOfCompletedValues(productVariantDraftAssets,
-            assetReferenceResolver::resolveReferences).thenApply(productVariantDraftBuilder::assets);
+        return mapValuesToFutureOfCompletedValues(productVariantDraftAssets,
+            assetReferenceResolver::resolveReferences, toList()).thenApply(productVariantDraftBuilder::assets);
     }
 
     @Nonnull
@@ -102,8 +102,9 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return completedFuture(productVariantDraftBuilder);
         }
 
-        return mapValuesListToFutureOfCompletedValues(productVariantDraftPrices,
-            priceReferenceResolver::resolveReferences).thenApply(productVariantDraftBuilder::prices);
+        return mapValuesToFutureOfCompletedValues(productVariantDraftPrices,
+            priceReferenceResolver::resolveReferences, toList())
+            .thenApply(productVariantDraftBuilder::prices);
     }
 
     @Nonnull
@@ -114,7 +115,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return completedFuture(productVariantDraftBuilder);
         }
 
-        return mapValuesListToFutureOfCompletedValues(attributeDrafts, this::resolveAttributeReference)
+        return mapValuesToFutureOfCompletedValues(attributeDrafts, this::resolveAttributeReference, toList())
                                      .thenApply(productVariantDraftBuilder::attributes);
     }
 
@@ -148,7 +149,10 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
                                                                        .filter(Objects::nonNull)
                                                                        .filter(reference -> !reference.isNull());
 
-        return mapValuesToFutureOfCompletedValues(attributeReferenceStream, this::resolveAttributeReferenceValue)
+
+
+        return mapValuesToFutureOfCompletedValues(attributeReferenceStream,
+            this::resolveAttributeReferenceValue, toList())
             .thenApply(resolved -> AttributeDraft.of(attributeDraft.getName(), resolved));
     }
 
