@@ -8,6 +8,8 @@ public final class CompletableFutureUtils {
 
     private static final CompletableFuture<Optional<?>> EMPTY = CompletableFuture.completedFuture(Optional.empty());
 
+    private CompletableFutureUtils() { }
+
     /**
      * Returns a {@link CompletableFuture} of an empty {@link Optional}. There is no guarantee
      * that it is a singleton.
