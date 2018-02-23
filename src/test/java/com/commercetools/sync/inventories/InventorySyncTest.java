@@ -162,7 +162,7 @@ public class InventorySyncTest {
             mock(InventoryEntry.class), mock(InventoryEntry.class));
         final ChannelService channelService = mock(ChannelService.class);
         when(channelService.fetchCachedChannelId(anyString()))
-            .thenReturn(completedFuture(Optional.empty()));
+            .thenReturn(emptyOptionalCompletedFuture());
 
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
             mock(TypeService.class));
@@ -192,7 +192,7 @@ public class InventorySyncTest {
             mock(InventoryEntry.class), mock(InventoryEntry.class));
         final ChannelService channelService = mock(ChannelService.class);
         when(channelService.fetchCachedChannelId(anyString()))
-            .thenReturn(completedFuture(Optional.empty()));
+            .thenReturn(emptyOptionalCompletedFuture());
 
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
             mock(TypeService.class));
