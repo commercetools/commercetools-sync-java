@@ -4,7 +4,7 @@ import javax.annotation.Nonnull;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public class CompletableFutureUtils {
+public final class CompletableFutureUtils {
 
     private static final CompletableFuture<Optional<?>> EMPTY = CompletableFuture.completedFuture(Optional.empty());
 
