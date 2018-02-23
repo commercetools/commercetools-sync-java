@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.emptyOptionalCompletedFuture;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
@@ -215,7 +216,7 @@ public class VariantReferenceResolverTest { ;
     @Test
     public void resolveAttributeReference_WithProductReferenceAttribute_ShouldResolveAttribute() {
         when(productService.getIdFromCacheOrFetch(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(emptyOptionalCompletedFuture());
 
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put("typeId", "product");
@@ -342,7 +343,7 @@ public class VariantReferenceResolverTest { ;
     @Test
     public void resolveAttributeReference_WithNonExistingProductReferenceSetAttribute_ShouldNotResolveReferences() {
         when(productService.getIdFromCacheOrFetch(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(emptyOptionalCompletedFuture());
 
         final ObjectNode productReference = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceAttribute =
@@ -367,7 +368,7 @@ public class VariantReferenceResolverTest { ;
         when(productService.getIdFromCacheOrFetch("existingKey"))
             .thenReturn(CompletableFuture.completedFuture(Optional.of("existingId")));
         when(productService.getIdFromCacheOrFetch("randomKey"))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(emptyOptionalCompletedFuture());
 
         final ObjectNode productReference1 = getProductReferenceWithId("existingKey");
         final ObjectNode productReference2 = getProductReferenceWithId("randomKey");
@@ -461,7 +462,7 @@ public class VariantReferenceResolverTest { ;
     @Test
     public void getResolvedIdFromKeyInReference_WithNonExistingProductReferenceAttribute_ShouldGetEmptyId() {
         when(productService.getIdFromCacheOrFetch(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(emptyOptionalCompletedFuture());
 
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft attributeDraft = AttributeDraft.of("attributeName", attributeValue);

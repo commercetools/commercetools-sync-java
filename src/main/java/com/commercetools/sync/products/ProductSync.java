@@ -38,6 +38,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.emptyOptionalCompletedFuture;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
 import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
@@ -242,7 +243,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                              final String productKey = oldProduct.getKey();
                                              handleError(format(UPDATE_FAILED, productKey, sphereException),
                                                  sphereException);
-                                             return CompletableFuture.completedFuture(Optional.empty());
+                                             return emptyOptionalCompletedFuture();
                                          });
                                  } else {
                                      statistics.incrementUpdated();

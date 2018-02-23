@@ -1,6 +1,7 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.commands.UpdateCommand;
@@ -17,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.emptyOptionalCompletedFuture;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -56,7 +58,7 @@ class BaseService<U extends Resource<U>, V> {
         @Nonnull final Function<V, DraftBasedCreateCommand<U, V>> createCommandFunction) {
         if (isBlank(draftKey)) {
             syncOptions.applyErrorCallback(format(CREATE_FAILED, draftKey, "Draft key is blank!"));
-            return CompletableFuture.completedFuture(Optional.empty());
+            return emptyOptionalCompletedFuture();
         } else {
             final BiFunction<U, Throwable, Optional<U>> responseHandler =
                 (createdResource, sphereException) ->
@@ -67,7 +69,7 @@ class BaseService<U extends Resource<U>, V> {
                                              .execute(createCommandFunction.apply(mappedDraft))
                                              .handle(responseHandler)
                               )
-                              .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty()));
+                              .orElseGet(CompletableFutureUtils::emptyOptionalCompletedFuture);
         }
     }
 

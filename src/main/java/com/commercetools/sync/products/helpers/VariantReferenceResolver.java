@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.emptyOptionalCompletedFuture;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 
@@ -156,7 +157,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
         final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
         return idField != null
             ? productService.getIdFromCacheOrFetch(idField.asText())
-            : CompletableFuture.completedFuture(Optional.empty());
+            : emptyOptionalCompletedFuture();
     }
 
     private JsonNode createProductReferenceJson(@Nonnull final String productId) {

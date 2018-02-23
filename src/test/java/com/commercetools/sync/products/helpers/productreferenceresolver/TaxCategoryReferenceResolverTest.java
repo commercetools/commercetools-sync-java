@@ -20,6 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.emptyOptionalCompletedFuture;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductTypeUuid;
@@ -122,7 +123,7 @@ public class TaxCategoryReferenceResolverTest {
             .key("dummyKey");
 
         when(taxCategoryService.fetchCachedTaxCategoryId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(emptyOptionalCompletedFuture());
 
         assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder).toCompletableFuture())
             .hasNotFailed()

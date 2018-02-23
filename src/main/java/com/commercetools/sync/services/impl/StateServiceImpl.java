@@ -18,6 +18,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.emptyOptionalCompletedFuture;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -36,7 +37,7 @@ public class StateServiceImpl implements StateService {
     @Override
     public CompletionStage<Optional<String>> fetchCachedStateId(@Nullable final String key) {
         if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
+            return emptyOptionalCompletedFuture();
         }
         if (keyToIdCache.isEmpty()) {
             return cacheAndFetch(key);
