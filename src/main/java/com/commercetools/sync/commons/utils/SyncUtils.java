@@ -81,4 +81,7 @@ public final class SyncUtils {
         }
         return reference;
     }
+
+    private SyncUtils() {
+    }
 }

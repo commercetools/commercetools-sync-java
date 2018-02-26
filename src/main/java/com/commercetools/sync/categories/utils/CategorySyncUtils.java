@@ -1,6 +1,7 @@
 package com.commercetools.sync.categories.utils;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -22,9 +23,11 @@ import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaDescriptionUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction;
-import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
+import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 
 public final class CategorySyncUtils {
+    private static final CategoryCustomActionBuilder categoryCustomActionBuilder =
+        new CategoryCustomActionBuilder();
 
     /**
      * Compares the Name, Slug, Description, Parent, OrderHint, MetaTitle, MetaDescription, MetaKeywords and Custom
@@ -84,8 +87,9 @@ public final class CategorySyncUtils {
             buildSetMetaDescriptionUpdateAction(oldCategory, newCategory),
             buildSetMetaKeywordsUpdateAction(oldCategory, newCategory)
         ));
+
         final List<UpdateAction<Category>> categoryCustomUpdateActions =
-            buildCustomUpdateActions(oldCategory, newCategory, syncOptions);
+            buildPrimaryResourceCustomUpdateActions(oldCategory, newCategory, categoryCustomActionBuilder, syncOptions);
         updateActions.addAll(categoryCustomUpdateActions);
         return updateActions;
     }
@@ -127,5 +131,8 @@ public final class CategorySyncUtils {
                                     .filter(Optional::isPresent)
                                     .map(Optional::get)
                                     .collect(Collectors.toList());
+    }
+
+    private CategorySyncUtils() {
     }
 }

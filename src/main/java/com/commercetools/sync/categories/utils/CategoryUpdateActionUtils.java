@@ -213,4 +213,7 @@ public final class CategoryUpdateActionUtils {
         return buildUpdateAction(oldCategory.getExternalId(),
             newCategory.getExternalId(), () -> SetExternalId.of(newCategory.getExternalId()));
     }
+
+    private CategoryUpdateActionUtils() {
+    }
 }

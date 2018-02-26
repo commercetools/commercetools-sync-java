@@ -28,7 +28,7 @@ import static io.sphere.sdk.http.HttpStatusCode.BAD_GATEWAY_502;
 import static io.sphere.sdk.http.HttpStatusCode.GATEWAY_TIMEOUT_504;
 import static io.sphere.sdk.http.HttpStatusCode.SERVICE_UNAVAILABLE_503;
 
-public class ClientConfigurationUtils {
+public final class ClientConfigurationUtils {
     private static HttpClient httpClient;
     private static final long DEFAULT_TIMEOUT = 30000;
     private static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.MILLISECONDS;
@@ -115,5 +115,8 @@ public class ClientConfigurationUtils {
     private static SphereClient withLimitedParallelRequests(final SphereClient delegate) {
         final int maxParallelRequests = 20;
         return QueueSphereClientDecorator.of(delegate, maxParallelRequests);
+    }
+
+    private ClientConfigurationUtils() {
     }
 }
