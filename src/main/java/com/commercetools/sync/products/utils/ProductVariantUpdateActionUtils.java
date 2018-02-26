@@ -247,8 +247,8 @@ public final class ProductVariantUpdateActionUtils {
                                                .map(Asset::getId)
                                                .collect(toList());
 
-        return ofNullable(
-            !oldOrder.equals(newOrder) ? ChangeAssetOrder.ofVariantId(variantId, newOrder, true) : null);
+        return buildUpdateAction(oldOrder, newOrder,
+            () -> ChangeAssetOrder.ofVariantId(variantId, newOrder, true));
     }
 
     /**
