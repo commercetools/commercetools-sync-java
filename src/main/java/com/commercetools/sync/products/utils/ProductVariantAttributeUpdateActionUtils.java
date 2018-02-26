@@ -83,4 +83,7 @@ public final class ProductVariantAttributeUpdateActionUtils {
         }
 
     }
+
+    private ProductVariantAttributeUpdateActionUtils() {
+    }
 }

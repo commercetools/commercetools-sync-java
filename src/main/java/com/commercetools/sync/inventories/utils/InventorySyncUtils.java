@@ -2,6 +2,7 @@ package com.commercetools.sync.inventories.utils;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.inventories.InventorySyncOptions;
+import com.commercetools.sync.inventories.helpers.InventoryCustomActionBuilder;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
+import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildChangeQuantityAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetExpectedDeliveryAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetRestockableInDaysAction;
@@ -22,8 +23,7 @@ import static java.util.stream.Collectors.toList;
  * This class provides factory methods for assembling update actions of inventory entries.
  */
 public final class InventorySyncUtils {
-
-    private InventorySyncUtils() { }
+    private static final InventoryCustomActionBuilder inventoryCustomActionBuilder = new InventoryCustomActionBuilder();
 
     /**
      * Compares the quantityOnStock, the restockableInDays, the expectedDelivery, the supply channel and Custom
@@ -53,7 +53,11 @@ public final class InventorySyncUtils {
                   .filter(Optional::isPresent)
                   .map(Optional::get)
                   .collect(toList());
-        actions.addAll(buildCustomUpdateActions(oldEntry, newEntry, syncOptions));
+
+        actions.addAll(buildPrimaryResourceCustomUpdateActions(oldEntry, newEntry, inventoryCustomActionBuilder,
+            syncOptions));
         return syncOptions.applyBeforeUpdateCallBack(actions, newEntry, oldEntry);
     }
+
+    private InventorySyncUtils() { }
 }

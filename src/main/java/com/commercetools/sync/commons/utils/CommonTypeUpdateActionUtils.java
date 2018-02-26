@@ -61,4 +61,7 @@ public final class CommonTypeUpdateActionUtils {
                 ? updateActionSupplier.get()
                 : emptyList();
     }
+
+    private CommonTypeUpdateActionUtils() {
+    }
 }
