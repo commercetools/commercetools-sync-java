@@ -9,7 +9,6 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
@@ -57,17 +56,12 @@ public final class InventoryReferenceResolver
     @Override
     @Nonnull
     protected CompletionStage<InventoryEntryDraftBuilder> resolveCustomTypeReference(
-            @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
+        @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
 
-        final CustomFieldsDraft custom = draftBuilder.getCustom();
-        if (custom != null) {
-            return getCustomTypeId(custom, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getSku()))
-                .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional
-                    .map(resolvedTypeId -> draftBuilder
-                        .custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields())))
-                    .orElse(draftBuilder));
-        }
-        return completedFuture(draftBuilder);
+        return resolveCustomTypeReference(draftBuilder,
+            InventoryEntryDraftBuilder::getCustom,
+            InventoryEntryDraftBuilder::custom,
+            format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getSku()));
     }
 
     /**

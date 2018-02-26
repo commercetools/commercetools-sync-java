@@ -27,19 +27,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.stream.Collectors.toList;
 
 public final class ProductReferenceResolver extends BaseReferenceResolver<ProductDraft, ProductSyncOptions> {
     private final ProductTypeService productTypeService;
@@ -124,19 +123,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         @Nonnull final ProductDraftBuilder draftBuilder) {
         final List<ProductVariantDraft> productDraftVariants = draftBuilder.getVariants();
 
-        final List<CompletableFuture<ProductVariantDraft>> resolvedVariantFutures =
-            productDraftVariants.stream()
-                                .filter(Objects::nonNull)
-                                .map(variantReferenceResolver::resolveReferences)
-                                .map(CompletionStage::toCompletableFuture)
-                                .collect(Collectors.toList());
-        return
-            CompletableFuture.allOf(
-                resolvedVariantFutures.toArray(new CompletableFuture[resolvedVariantFutures.size()]))
-                .thenApply(result -> resolvedVariantFutures.stream()
-                    .map(CompletableFuture::join)
-                    .collect(Collectors.toList()))
-                .thenApply(draftBuilder::variants);
+        return mapValuesToFutureOfCompletedValues(productDraftVariants,
+            variantReferenceResolver::resolveReferences, toList()).thenApply(draftBuilder::variants);
     }
 
     /**
@@ -223,7 +211,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                             .ifPresent(orderHintValue -> categoryOrderHintsMap.put(category.getId(), orderHintValue));
                     }
                     return categoryReference;
-                }).collect(Collectors.toList()))
+                }).collect(toList()))
             .thenApply(categoryReferences -> draftBuilder
                 .categories(categoryReferences)
                 .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintsMap)));
