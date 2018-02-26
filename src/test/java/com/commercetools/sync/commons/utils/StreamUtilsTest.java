@@ -38,8 +38,7 @@ public class StreamUtilsTest {
         final Stream<Integer> mappedStream = filterNullAndMap(Stream.of("foo"), String::length);
         final List<Integer> mappedList = mappedStream.collect(toList());
         assertThat(mappedList).isNotEmpty();
-        assertThat(mappedList).hasSize(1);
-        assertThat(mappedList).containsOnly(3);
+        assertThat(mappedList).containsExactly(3);
     }
 
     @Test
@@ -47,7 +46,6 @@ public class StreamUtilsTest {
         final Stream<Integer> mappedStream = filterNullAndMap(Stream.of("james", "hetfield"), String::length);
         final List<Integer> mappedList = mappedStream.collect(toList());
         assertThat(mappedList).isNotEmpty();
-        assertThat(mappedList).hasSize(2);
         assertThat(mappedList).containsExactly(5, 8);
     }
 
@@ -56,7 +54,6 @@ public class StreamUtilsTest {
         final Stream<Integer> mappedStream = filterNullAndMap(Stream.of("james", "hetfield", null), String::length);
         final List<Integer> mappedList = mappedStream.collect(toList());
         assertThat(mappedList).isNotEmpty();
-        assertThat(mappedList).hasSize(2);
         assertThat(mappedList).containsExactly(5, 8);
     }
 }
