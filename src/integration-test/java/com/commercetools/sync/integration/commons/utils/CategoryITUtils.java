@@ -44,6 +44,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
+import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
@@ -208,12 +209,8 @@ public final class CategoryITUtils {
             futures.add(categoryCompletableFuture);
 
         }
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
-                         .toCompletableFuture().join();
-        return futures.stream()
-                      .map(CompletableFuture::toCompletableFuture)
-                      .map(CompletableFuture::join)
-                      .collect(Collectors.toList());
+
+        return listOfFuturesToFutureOfList(futures).join();
     }
 
     /**

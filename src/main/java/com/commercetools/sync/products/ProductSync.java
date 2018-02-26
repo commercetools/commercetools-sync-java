@@ -38,11 +38,13 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
 import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
@@ -122,8 +124,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                  final Set<String> productDraftKeys = getProductDraftKeys(existingDrafts);
                                  return productService.fetchMatchingProductsByKeys(productDraftKeys)
                                                       .thenAccept(this::processFetchedProducts)
-                                                      .thenCompose(result -> createOrUpdateProducts())
-                                                      .thenApply(result -> {
+                                                      .thenCompose(ignoredResult -> createOrUpdateProducts())
+                                                      .thenApply(ignoredResult -> {
                                                           statistics.incrementProcessed(batch.size());
                                                           return statistics;
                                                       });
@@ -179,7 +181,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     @Nonnull
-    private CompletionStage<Void> createOrUpdateProducts() {
+    private CompletionStage<List<Optional<Product>>> createOrUpdateProducts() {
         return productService.createProducts(draftsToCreate)
                              .thenAccept(createdProducts ->
                                  updateStatistics(createdProducts, draftsToCreate.size()))
@@ -194,13 +196,10 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     @Nonnull
-    private CompletionStage<Void> syncProducts(@Nonnull final Map<ProductDraft, Product> productsToSync) {
-        final List<CompletableFuture<Optional<Product>>> futureUpdates =
-            productsToSync.entrySet().stream()
-                          .map(entry -> fetchProductAttributesMetadataAndUpdate(entry.getValue(), entry.getKey()))
-                          .map(CompletionStage::toCompletableFuture)
-                          .collect(Collectors.toList());
-        return CompletableFuture.allOf(futureUpdates.toArray(new CompletableFuture[futureUpdates.size()]));
+    private CompletionStage<List<Optional<Product>>> syncProducts(
+        @Nonnull final Map<ProductDraft, Product> productsToSync) {
+        return mapValuesToFutureOfCompletedValues(productsToSync.entrySet(),
+            entry -> fetchProductAttributesMetadataAndUpdate(entry.getValue(), entry.getKey()), toList());
     }
 
     @Nonnull

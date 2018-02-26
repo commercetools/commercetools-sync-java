@@ -22,8 +22,6 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
  */
 public final class InventoryUpdateActionUtils {
 
-    private InventoryUpdateActionUtils() { }
-
     /**
      * Compares the {@code quantityOnStock} values of an {@link InventoryEntry} and an {@link InventoryEntryDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "changeQuantity"}
@@ -108,4 +106,6 @@ public final class InventoryUpdateActionUtils {
         final Reference<Channel> newSupplyChannel = newEntry.getSupplyChannel();
         return buildUpdateAction(oldSupplyChannel, newSupplyChannel, () -> SetSupplyChannel.of(newSupplyChannel));
     }
+
+    private InventoryUpdateActionUtils() { }
 }

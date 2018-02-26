@@ -174,4 +174,7 @@ public final class ProductSyncUtils {
                                     .map(Optional::get)
                                     .collect(Collectors.toList());
     }
+
+    private ProductSyncUtils() {
+    }
 }

@@ -3,37 +3,53 @@ package com.commercetools.sync.categories.helpers;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.helpers.AssetReferenceResolver;
 import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
+import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.stream.Collectors.toList;
 
 public final class CategoryReferenceResolver
         extends CustomReferenceResolver<CategoryDraft, CategoryDraftBuilder, CategorySyncOptions> {
-
+    private final AssetReferenceResolver assetReferenceResolver;
     private CategoryService categoryService;
     private static final String FAILED_TO_RESOLVE_PARENT = "Failed to resolve parent reference on "
         + "CategoryDraft with key:'%s'. Reason: %s";
     private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
         + "CategoryDraft with key:'%s'.";
 
+    /**
+     * Takes a {@link CategorySyncOptions} instance, a {@link CategoryService} and {@link TypeService} to instantiate a
+     * {@link CategoryReferenceResolver} instance that could be used to resolve the category drafts in the
+     * CTP project specified in the injected {@link CategorySyncOptions} instance.
+     *
+     * @param options         the container of all the options of the sync process including the CTP project client
+     *                        and/or configuration and other sync-specific options.
+     * @param typeService     the service to fetch the custom types for reference resolution.
+     * @param categoryService the service to fetch the categories for reference resolution.
+     */
     public CategoryReferenceResolver(@Nonnull final CategorySyncOptions options,
                                      @Nonnull final TypeService typeService,
                                      @Nonnull final CategoryService categoryService) {
         super(options, typeService);
+        this.assetReferenceResolver = new AssetReferenceResolver(options, typeService);
         this.categoryService = categoryService;
     }
 
@@ -48,25 +64,37 @@ public final class CategoryReferenceResolver
      *          references or, in case an error occurs during reference resolution,
      *          a {@link ReferenceResolutionException}.
      */
+    @Nonnull
     public CompletionStage<CategoryDraft> resolveReferences(@Nonnull final CategoryDraft categoryDraft) {
         return resolveCustomTypeReference(CategoryDraftBuilder.of(categoryDraft))
             .thenCompose(this::resolveParentReference)
+            .thenCompose(this::resolveAssetsReferences)
             .thenApply(CategoryDraftBuilder::build);
+    }
+
+    @Nonnull
+    CompletionStage<CategoryDraftBuilder> resolveAssetsReferences(
+        @Nonnull final CategoryDraftBuilder categoryDraftBuilder) {
+
+        final List<AssetDraft> categoryDraftAssets = categoryDraftBuilder.getAssets();
+        if (categoryDraftAssets == null) {
+            return completedFuture(categoryDraftBuilder);
+        }
+
+        return mapValuesToFutureOfCompletedValues(categoryDraftAssets,
+            assetReferenceResolver::resolveReferences, toList())
+            .thenApply(categoryDraftBuilder::assets);
     }
 
     @Override
     @Nonnull
     protected CompletionStage<CategoryDraftBuilder> resolveCustomTypeReference(
-            @Nonnull final CategoryDraftBuilder draftBuilder) {
-        final CustomFieldsDraft custom = draftBuilder.getCustom();
-        if (custom != null) {
-            return getCustomTypeId(custom, format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getKey()))
-                .thenApply(resolvedTypeIdOptional ->
-                    resolvedTypeIdOptional.map(resolvedTypeId ->
-                            draftBuilder.custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields())))
-                        .orElse(draftBuilder));
-        }
-        return CompletableFuture.completedFuture(draftBuilder);
+        @Nonnull final CategoryDraftBuilder draftBuilder) {
+
+        return resolveCustomTypeReference(draftBuilder,
+            CategoryDraftBuilder::getCustom,
+            CategoryDraftBuilder::custom,
+            format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getKey()));
     }
 
     /**
@@ -127,6 +155,7 @@ public final class CategoryReferenceResolver
      * @return an optional containing the id or an empty optional if there is no parent reference.
      * @throws ReferenceResolutionException thrown if the key is invalid (empty/null/in UUID when the flag is false).
      */
+    @Nonnull
     public static Optional<String> getParentCategoryKey(@Nullable final Reference<Category> parentCategoryReference,
                                                         @Nullable final String categoryKey,
                                                         final boolean shouldAllowUuidKeys)
@@ -144,12 +173,14 @@ public final class CategoryReferenceResolver
         return Optional.empty();
     }
 
+    @Nonnull
     public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraft draft,
                                                         final boolean shouldAllowUuidKeys)
             throws ReferenceResolutionException {
         return getParentCategoryKey(draft.getParent(), draft.getKey(), shouldAllowUuidKeys);
     }
 
+    @Nonnull
     public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraftBuilder draftBuilder,
                                                         final boolean shouldAllowUuidKeys)
             throws ReferenceResolutionException {

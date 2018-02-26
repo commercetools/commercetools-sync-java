@@ -2,6 +2,7 @@ package com.commercetools.sync.integration.inventories;
 
 import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
+import com.commercetools.sync.inventories.helpers.InventoryCustomActionBuilder;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
 import io.sphere.sdk.channels.ChannelRole;
@@ -20,7 +21,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildResourceCustomUpdateActions;
+import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.CUSTOM_FIELD_NAME;
@@ -207,7 +208,8 @@ public class InventoryUpdateActionUtilsIT {
         //Build update actions.
         final InventorySyncOptions options = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
         final List<UpdateAction<InventoryEntry>> updateActions =
-            buildResourceCustomUpdateActions(oldInventoryBeforeSync, newInventory, options);
+            buildPrimaryResourceCustomUpdateActions(oldInventoryBeforeSync, newInventory,
+                new InventoryCustomActionBuilder(), options);
         assertThat(updateActions).isNotEmpty();
 
         //Execute update command and ensure returned entry is properly updated.

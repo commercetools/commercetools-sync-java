@@ -3,10 +3,12 @@ package com.commercetools.sync.commons.utils;
 import com.commercetools.sync.categories.CategorySyncMockUtils;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
+import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.carts.Cart;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.SetCustomField;
@@ -18,6 +20,7 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -25,12 +28,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildNewOrModifiedCustomFieldsUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildNonNullCustomFieldsUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildRemovedCustomFieldsUpdateActions;
-import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildResourceCustomUpdateActions;
+import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,7 +44,24 @@ import static org.mockito.Mockito.when;
 
 public class ResourceCustomUpdateActionUtilsTest {
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
-    private static final CategorySyncOptions CATEGORY_SYNC_OPTIONS = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
+    private ArrayList<String> errorMessages;
+    private ArrayList<Throwable> exceptions;
+    private CategorySyncOptions categorySyncOptions;
+
+    @Before
+    public void setupTest() {
+        errorMessages = new ArrayList<>();
+        exceptions = new ArrayList<>();
+        final BiConsumer<String, Throwable> updateActionErrorCallBack = (errorMessage, exception) -> {
+            errorMessages.add(errorMessage);
+            exceptions.add(exception);
+        };
+
+        // Mock sync options
+        categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                        .errorCallback(updateActionErrorCallBack)
+                                                        .build();
+    }
 
     @Test
     public void buildResourceCustomUpdateActions_WithNonNullCustomFieldsWithDifferentTypes_ShouldBuildUpdateActions() {
@@ -58,9 +79,12 @@ public class ResourceCustomUpdateActionUtilsTest {
         when(newCategoryDraft.getCustom()).thenReturn(newCategoryCustomFieldsDraft);
 
         final List<UpdateAction<Category>> updateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, CATEGORY_SYNC_OPTIONS);
+            buildPrimaryResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
+                categorySyncOptions);
 
         // Should set custom type of old category.
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
         assertThat(updateActions.get(0)).isInstanceOf(SetCustomType.class);
@@ -74,9 +98,12 @@ public class ResourceCustomUpdateActionUtilsTest {
         final CategoryDraft newCategoryDraft = CategorySyncMockUtils.getMockCategoryDraft(Locale.ENGLISH, "name",
             "key", "parentId", "customTypeId", new HashMap<>());
         final List<UpdateAction<Category>> updateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, CATEGORY_SYNC_OPTIONS);
+            buildPrimaryResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
+                categorySyncOptions);
 
         // Should add custom type to old category.
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
         assertThat(updateActions.get(0)).isInstanceOf(SetCustomType.class);
@@ -95,28 +122,17 @@ public class ResourceCustomUpdateActionUtilsTest {
         final CustomFieldsDraft mockCustomFieldsDraft = CustomFieldsDraft.ofTypeKeyAndJson("key", new HashMap<>());
         when(newCategoryDraft.getCustom()).thenReturn(mockCustomFieldsDraft);
 
-        // Mock custom options error callback
-        final ArrayList<Object> callBackResponses = new ArrayList<>();
-        final BiConsumer<String, Throwable> updateActionErrorCallBack = (errorMessage, exception) -> {
-            callBackResponses.add(errorMessage);
-            callBackResponses.add(exception);
-        };
-
-        // Mock sync options
-        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .errorCallback(
-                                                                                      updateActionErrorCallBack)
-                                                                                  .build();
 
         final List<UpdateAction<Category>> updateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, categorySyncOptions);
+            buildPrimaryResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
+                categorySyncOptions);
 
         // Should add custom type to old category.
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(0);
-        assertThat(callBackResponses.get(0)).isEqualTo(format("Failed to build custom fields update actions on the "
+        assertThat(errorMessages.get(0)).isEqualTo(format("Failed to build custom fields update actions on the "
             + "category with id '%s'. Reason: New resource's custom type id is blank (empty/null).", oldCategoryId));
-        assertThat(callBackResponses.get(1)).isNull();
+        assertThat(exceptions.get(0)).isNull();
     }
 
     @Test
@@ -129,9 +145,12 @@ public class ResourceCustomUpdateActionUtilsTest {
         when(newCategoryDraft.getCustom()).thenReturn(null);
 
         final List<UpdateAction<Category>> updateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, CATEGORY_SYNC_OPTIONS);
+            buildPrimaryResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
+                categorySyncOptions);
 
         // Should remove custom type from old category.
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
         assertThat(updateActions.get(0)).isInstanceOf(SetCustomType.class);
@@ -159,26 +178,16 @@ public class ResourceCustomUpdateActionUtilsTest {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getCustom()).thenReturn(newCustomFieldsMock);
 
-        // Mock custom options error callback
-        final ArrayList<Object> callBackResponses = new ArrayList<>();
-        final BiConsumer<String, Throwable> updateActionErrorCallBack = (errorMessage, exception) -> {
-            callBackResponses.add(errorMessage);
-            callBackResponses.add(exception);
-        };
-
-        // Mock sync options
-        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .errorCallback(
-                                                                                      updateActionErrorCallBack)
-                                                                                  .build();
 
         final List<UpdateAction<Category>> updateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, categorySyncOptions);
+            buildPrimaryResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
+                categorySyncOptions);
 
-        assertThat(callBackResponses).hasSize(2);
-        assertThat(callBackResponses.get(0)).isEqualTo("Failed to build custom fields update actions on the category"
+        assertThat(errorMessages).hasSize(1);
+        assertThat(exceptions).hasSize(1);
+        assertThat(errorMessages.get(0)).isEqualTo("Failed to build custom fields update actions on the category"
             + " with id 'oldCategoryId'. Reason: Custom type ids are not set for both the old and new category.");
-        assertThat((Exception) callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
+        assertThat(exceptions.get(0)).isInstanceOf(BuildUpdateActionException.class);
         assertThat(updateActions).isEmpty();
     }
 
@@ -191,8 +200,11 @@ public class ResourceCustomUpdateActionUtilsTest {
         when(newCategoryDraft.getCustom()).thenReturn(null);
 
         final List<UpdateAction<Category>> updateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, CATEGORY_SYNC_OPTIONS);
+            buildPrimaryResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
+                categorySyncOptions);
 
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).isEmpty();
     }
@@ -218,10 +230,12 @@ public class ResourceCustomUpdateActionUtilsTest {
 
         final List<UpdateAction<Category>> updateActions =
             buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
-                newCustomFieldsMock, mock(Category.class), null, null, Category::getId,
+                newCustomFieldsMock, mock(Category.class), new CategoryCustomActionBuilder(), null, Category::getId,
                 category -> category.toReference().getTypeId(), category -> null,
-                CATEGORY_SYNC_OPTIONS);
+                categorySyncOptions);
 
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
         assertThat(updateActions.get(0)).isInstanceOf(SetCustomField.class);
@@ -239,9 +253,11 @@ public class ResourceCustomUpdateActionUtilsTest {
         when(newCustomFieldsMock.getType()).thenReturn(ResourceIdentifier.ofId("newCategoryCustomTypeId"));
 
         final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
-            newCustomFieldsMock, mock(Category.class), null, null, Category::getId,
-            category -> category.toReference().getTypeId(), category -> null, CATEGORY_SYNC_OPTIONS);
+            newCustomFieldsMock, mock(Category.class), new CategoryCustomActionBuilder(), null, Category::getId,
+            category -> category.toReference().getTypeId(), category -> null, categorySyncOptions);
 
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
         assertThat(updateActions.get(0)).isInstanceOf(SetCustomType.class);
@@ -259,16 +275,18 @@ public class ResourceCustomUpdateActionUtilsTest {
         when(newCustomFieldsMock.getType()).thenReturn(Type.referenceOfId("categoryCustomTypeId"));
 
         final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
-            newCustomFieldsMock, mock(Category.class), null, null, Category::getId,
-            category -> category.toReference().getTypeId(), category -> null, CATEGORY_SYNC_OPTIONS);
+            newCustomFieldsMock, mock(Category.class), new CategoryCustomActionBuilder(), null, Category::getId,
+            category -> category.toReference().getTypeId(), category -> null, categorySyncOptions);
 
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
         assertThat(updateActions.get(0)).isInstanceOf(SetCustomType.class);
     }
 
     @Test
-    public void buildNonNullCustomFieldsUpdateActions_WithNullNewCategoryTypeId_ShouldBuildUpdateActions()
+    public void buildNonNullCustomFieldsUpdateActions_WithNullNewCategoryTypeId_TriggersErrorCallbackAndNoAction()
         throws BuildUpdateActionException {
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
@@ -276,15 +294,26 @@ public class ResourceCustomUpdateActionUtilsTest {
 
         // Mock new CustomFieldsDraft
         final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
-        when(newCustomFieldsMock.getType()).thenReturn(Type.referenceOfId(null));
+        final Reference<Type> value = Type.referenceOfId(null);
+
+
+        when(newCustomFieldsMock.getType()).thenReturn(value);
+
+        final String categoryId = UUID.randomUUID().toString();
+        final Category category = mock(Category.class);
+        when(category.getId()).thenReturn(categoryId);
+        when(category.toReference()).thenReturn(Category.referenceOfId(categoryId));
 
         final List<UpdateAction<Category>> updateActions = buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
-            newCustomFieldsMock, mock(Category.class), null, null, Category::getId,
-            category -> category.toReference().getTypeId(), category -> null, CATEGORY_SYNC_OPTIONS);
+            newCustomFieldsMock, category, new CategoryCustomActionBuilder(), null, Category::getId,
+            categoryRes -> category.toReference().getTypeId(), categoryRes -> null, categorySyncOptions);
 
-        assertThat(updateActions).isNotNull();
-        assertThat(updateActions).hasSize(1);
-        assertThat(updateActions.get(0)).isInstanceOf(SetCustomType.class);
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errorMessages.get(0)).isEqualTo(format("Failed to build 'setCustomType' update action on the "
+            + "%s with id '%s'. Reason: New Custom Type id is blank (null/empty).", category.toReference().getTypeId(),
+            categoryId));
+        assertThat(exceptions).hasSize(1);
+        assertThat(updateActions).isEmpty();
     }
 
     @Test
@@ -306,9 +335,11 @@ public class ResourceCustomUpdateActionUtilsTest {
 
         final List<UpdateAction<Category>> updateActions =
             buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
-                newCustomFieldsMock, mock(Category.class), null, null, Category::getId,
-                category -> category.toReference().getTypeId(), category -> null, CATEGORY_SYNC_OPTIONS);
+                newCustomFieldsMock, mock(Category.class), new CategoryCustomActionBuilder(), null, Category::getId,
+                category -> category.toReference().getTypeId(), category -> null, categorySyncOptions);
 
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(1);
         assertThat(updateActions.get(0)).isInstanceOf(SetCustomType.class);
@@ -332,10 +363,12 @@ public class ResourceCustomUpdateActionUtilsTest {
 
         assertThatThrownBy(() ->
             buildNonNullCustomFieldsUpdateActions(oldCustomFieldsMock,
-                newCustomFieldsMock, oldCategory, null, null, Category::getId,
-                category -> category.toReference().getTypeId(), category -> null, CATEGORY_SYNC_OPTIONS))
+                newCustomFieldsMock, oldCategory, new CategoryCustomActionBuilder(), null, Category::getId,
+                category -> category.toReference().getTypeId(), category -> null, categorySyncOptions))
             .isInstanceOf(BuildUpdateActionException.class)
             .hasMessageMatching("Custom type ids are not set for both the old and new category.");
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
     }
 
     @Test
@@ -349,9 +382,8 @@ public class ResourceCustomUpdateActionUtilsTest {
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-            buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),  null,null,
-                Category::getId, category -> category.toReference().getTypeId(), category -> null,
-                CATEGORY_SYNC_OPTIONS);
+            buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
+                new CategoryCustomActionBuilder(),null, category -> null);
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isNotEmpty();
@@ -372,9 +404,8 @@ public class ResourceCustomUpdateActionUtilsTest {
         newCustomFields.put("size", JsonNodeFactory.instance.objectNode().put("cm", 34));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-            buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),  null,null,
-                Category::getId,
-                category -> category.toReference().getTypeId(), category -> null, CATEGORY_SYNC_OPTIONS);
+            buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
+                new CategoryCustomActionBuilder(),null, category -> null);
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isNotEmpty();
@@ -391,9 +422,8 @@ public class ResourceCustomUpdateActionUtilsTest {
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-            buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),  null,null,
-                Category::getId, category -> category.toReference().getTypeId(), category -> null,
-                CATEGORY_SYNC_OPTIONS);
+            buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
+                new CategoryCustomActionBuilder(),null, category -> null);
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isNotEmpty();
@@ -403,18 +433,20 @@ public class ResourceCustomUpdateActionUtilsTest {
 
     @Test
     public void buildSetCustomFieldsUpdateActions_WithSameCustomFieldValues_ShouldNotBuildUpdateActions() {
+        final BooleanNode oldBooleanFieldValue = JsonNodeFactory.instance.booleanNode(true);
+        final ObjectNode oldLocalizedFieldValue = JsonNodeFactory.instance.objectNode().put("de", "rot");
+
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
-        oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-        oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
+        oldCustomFields.put("invisibleInShop", oldBooleanFieldValue);
+        oldCustomFields.put("backgroundColor", oldLocalizedFieldValue);
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
-        newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-        newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
+        newCustomFields.put("invisibleInShop", oldBooleanFieldValue);
+        newCustomFields.put("backgroundColor", oldLocalizedFieldValue);
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-            buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),  null,null,
-                Category::getId, category -> category.toReference().getTypeId(), category -> null,
-                CATEGORY_SYNC_OPTIONS);
+            buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
+                new CategoryCustomActionBuilder(),null, category -> null);
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -431,9 +463,8 @@ public class ResourceCustomUpdateActionUtilsTest {
             JsonNodeFactory.instance.objectNode().put("es", "rojo").put("de", "rot"));
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-            buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),  null,null,
-                Category::getId, category -> category.toReference().getTypeId(), category -> null,
-                CATEGORY_SYNC_OPTIONS);
+            buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
+                new CategoryCustomActionBuilder(),null, category -> null);
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -448,9 +479,8 @@ public class ResourceCustomUpdateActionUtilsTest {
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode());
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-            buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),  null,null,
-                Category::getId, category -> category.toReference().getTypeId(), category -> null,
-                CATEGORY_SYNC_OPTIONS);
+            buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
+                new CategoryCustomActionBuilder(),null, category -> null);
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -459,13 +489,11 @@ public class ResourceCustomUpdateActionUtilsTest {
     @Test
     public void buildSetCustomFieldsUpdateActions_WithEmptyCustomFields_ShouldNotBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
-
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
 
         final List<UpdateAction<Category>> setCustomFieldsUpdateActions =
-            buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),  null,null,
-                Category::getId, category -> category.toReference().getTypeId(), category -> null,
-                CATEGORY_SYNC_OPTIONS);
+            buildSetCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
+                new CategoryCustomActionBuilder(),null, category -> null);
 
         assertThat(setCustomFieldsUpdateActions).isNotNull();
         assertThat(setCustomFieldsUpdateActions).isEmpty();
@@ -481,8 +509,7 @@ public class ResourceCustomUpdateActionUtilsTest {
 
         final List<UpdateAction<Category>> customFieldsActions =
             buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
-                null,null, Category::getId, category -> category.toReference().getTypeId(),
-                category -> null, CATEGORY_SYNC_OPTIONS);
+                new CategoryCustomActionBuilder(),null, category -> null);
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isNotEmpty();
@@ -490,28 +517,6 @@ public class ResourceCustomUpdateActionUtilsTest {
         assertThat(customFieldsActions.get(0)).isInstanceOf(SetCustomField.class);
     }
 
-    @Test
-    public void
-        buildNewOrModifiedCustomFieldsUpdateActions_WithNewOrModifiedNonHandledResourceFields_ShouldNotBuildActions() {
-        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
-        oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
-
-        final Map<String, JsonNode> newCustomFields = new HashMap<>();
-        newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-
-        // Cart resource is not handled in GenericUpdateActionUtils#buildTypedUpdateAction
-        final Cart cart = mock(Cart.class);
-        when(cart.toReference()).thenReturn(Cart.referenceOfId("cartId"));
-
-        final List<UpdateAction<Cart>> customFieldsActions =
-            buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, cart,
-                null, null, Cart::getId,
-                cartResource -> cartResource.toReference().getTypeId(), cartResource -> null, CATEGORY_SYNC_OPTIONS);
-
-        // Custom fields update actions should not be built
-        assertThat(customFieldsActions).isNotNull();
-        assertThat(customFieldsActions).isEmpty();
-    }
 
     @Test
     public void buildNewOrModifiedCustomFieldsUpdateActions_WithNoNewOrModifiedCustomFields_ShouldNotBuildActions() {
@@ -524,8 +529,7 @@ public class ResourceCustomUpdateActionUtilsTest {
 
         final List<UpdateAction<Category>> customFieldsActions =
             buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
-                null, null, Category::getId,
-                category -> category.toReference().getTypeId(), categoryResource -> null, CATEGORY_SYNC_OPTIONS);
+                new CategoryCustomActionBuilder(), null, categoryResource -> null);
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isEmpty();
@@ -541,9 +545,8 @@ public class ResourceCustomUpdateActionUtilsTest {
         newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
         final List<UpdateAction<Category>> customFieldsActions =
-            buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),  null, null,
-                Category::getId, category -> category.toReference().getTypeId(), category -> null,
-                CATEGORY_SYNC_OPTIONS);
+            buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
+                new CategoryCustomActionBuilder(), null, category -> null);
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isNotEmpty();
@@ -561,9 +564,8 @@ public class ResourceCustomUpdateActionUtilsTest {
         newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
 
         final List<UpdateAction<Category>> customFieldsActions =
-            buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),  null, null,
-                Category::getId, category -> category.toReference().getTypeId(), category -> null,
-                CATEGORY_SYNC_OPTIONS);
+            buildRemovedCustomFieldsUpdateActions(oldCustomFields, newCustomFields, mock(Category.class),
+                new CategoryCustomActionBuilder(), null, category -> null);
 
         assertThat(customFieldsActions).isNotNull();
         assertThat(customFieldsActions).isEmpty();

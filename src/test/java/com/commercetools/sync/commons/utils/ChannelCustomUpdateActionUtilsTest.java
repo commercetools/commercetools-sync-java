@@ -1,8 +1,9 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.inventories.InventorySyncOptions;
+import com.commercetools.sync.channels.helpers.ChannelCustomActionBuilder;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.commands.updateactions.SetCustomField;
 import io.sphere.sdk.channels.commands.updateactions.SetCustomType;
@@ -13,53 +14,50 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
+
+import static io.sphere.sdk.models.ResourceIdentifier.ofId;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class ChannelCustomUpdateActionUtilsTest {
-    private InventorySyncOptions syncOptions = InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
 
     @Test
     public void buildTypedSetCustomTypeUpdateAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
         final Channel channel = mock(Channel.class);
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
+        final String customTypeId = "key";
 
         final UpdateAction<Channel> updateAction =
-            GenericUpdateActionUtils.<Channel, Channel>buildTypedSetCustomTypeUpdateAction("key",
-                fieldsJsonMap, channel, null, null, Channel::getId,
+            GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction(customTypeId,
+                fieldsJsonMap, channel, new ChannelCustomActionBuilder(), null, Channel::getId,
                 channelResource -> channelResource.toReference().getTypeId(),
                 channelResource -> null,
-                syncOptions).orElse(null);
+                InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build()).orElse(null);
 
-        assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetCustomType.class);
+        assertThat((SetCustomType) updateAction).hasValues("setCustomType", emptyMap(), ofId(customTypeId));
     }
 
     @Test
-    public void buildTypedRemoveCustomTypeUpdateAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
-        final Channel channel = mock(Channel.class);
+    public void buildRemoveCustomTypeAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
         final UpdateAction<Channel> updateAction =
-            GenericUpdateActionUtils.<Channel, Channel>buildTypedRemoveCustomTypeUpdateAction(channel, null, null,
-                Channel::getId, channelResource -> channelResource.toReference().getTypeId(),
-                channelResource -> null, syncOptions).orElse(null);
+            new ChannelCustomActionBuilder().buildRemoveCustomTypeAction(null, null);
 
-        assertThat(updateAction).isNotNull();
         assertThat(updateAction).isInstanceOf(SetCustomType.class);
+        assertThat((SetCustomType) updateAction).hasValues("setCustomType", null, ofId(null));
     }
 
     @Test
-    public void buildTypedSetCustomFieldUpdateAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
-        final Channel channel = mock(Channel.class);
-        final JsonNode customFieldValue = mock(JsonNode.class);
+    public void buildSetCustomFieldAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
         final String customFieldName = "name";
-        final UpdateAction<Channel> updateAction =
-            GenericUpdateActionUtils.<Channel, Channel>buildTypedSetCustomFieldUpdateAction(customFieldName,
-                customFieldValue, channel, null, null, Channel::getId,
-                channelResource -> channelResource.toReference().getTypeId(),
-                channelResource -> null,
-                syncOptions).orElse(null);
+        final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
 
-        assertThat(updateAction).isNotNull();
+        final UpdateAction<Channel> updateAction =
+            new ChannelCustomActionBuilder().buildSetCustomFieldAction(null, null, customFieldName, customFieldValue);
+
         assertThat(updateAction).isInstanceOf(SetCustomField.class);
+        assertThat((SetCustomField) updateAction).hasValues("setCustomField", customFieldName, customFieldValue);
     }
 }

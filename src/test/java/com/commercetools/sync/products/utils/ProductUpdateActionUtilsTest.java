@@ -69,12 +69,13 @@ public class ProductUpdateActionUtilsTest {
     private static final String NEW_PROD_DRAFT_WITHOUT_MV_SKU = RES_ROOT + "productDraftNew_noMasterVariantSku.json";
 
     @Test
-    public void buildVariantsUpdateActions_updatesVariants() throws Exception {
+    public void buildVariantsUpdateActions_updatesVariants() {
         final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
         final ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
 
-        final ProductSyncOptions productSyncOptions = mock(ProductSyncOptions.class);
-        when(productSyncOptions.getSyncFilter()).thenReturn(SyncFilter.of());
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .syncFilter(SyncFilter.of())
+                                                                               .build();
 
         final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
         final AttributeMetaData priceInfo = mock(AttributeMetaData.class);
@@ -124,12 +125,13 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildVariantsUpdateActions_doesNotRemoveMaster() throws Exception {
+    public void buildVariantsUpdateActions_doesNotRemoveMaster() {
         final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
         final ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER);
 
-        final ProductSyncOptions productSyncOptions = mock(ProductSyncOptions.class);
-        when(productSyncOptions.getSyncFilter()).thenReturn(SyncFilter.of());
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .syncFilter(SyncFilter.of())
+                                                                               .build();
 
         final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
         final AttributeMetaData priceInfo = mock(AttributeMetaData.class);
@@ -244,12 +246,13 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeMasterVariantUpdateAction_changesMasterVariant() throws Exception {
-        Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
-        ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
+    public void buildChangeMasterVariantUpdateAction_changesMasterVariant() {
+        final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+        final ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
 
-        List<UpdateAction<Product>> changeMasterVariant =
-                buildChangeMasterVariantUpdateAction(productOld, productDraftNew, mock(ProductSyncOptions.class));
+        final List<UpdateAction<Product>> changeMasterVariant =
+            buildChangeMasterVariantUpdateAction(productOld, productDraftNew,
+                ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build());
         assertThat(changeMasterVariant).hasSize(2);
         assertThat(changeMasterVariant.get(0))
                 .isEqualTo(ChangeMasterVariant.ofSku(productDraftNew.getMasterVariant().getSku(), true));
@@ -258,12 +261,12 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildVariantsUpdateActions_withEmptyKey_ShouldNotBuildActionAndTriggerCallback() throws Exception {
+    public void buildVariantsUpdateActions_withEmptyKey_ShouldNotBuildActionAndTriggerCallback() {
         assertChangeMasterVariantEmptyErrorCatcher(NEW_PROD_DRAFT_WITHOUT_MV_KEY, BLANK_NEW_MASTER_VARIANT_KEY);
     }
 
     @Test
-    public void buildVariantsUpdateActions_withEmptySku_ShouldNotBuildActionAndTriggerCallback() throws Exception {
+    public void buildVariantsUpdateActions_withEmptySku_ShouldNotBuildActionAndTriggerCallback() {
         assertChangeMasterVariantEmptyErrorCatcher(NEW_PROD_DRAFT_WITHOUT_MV_SKU, BLANK_NEW_MASTER_VARIANT_SKU);
     }
 

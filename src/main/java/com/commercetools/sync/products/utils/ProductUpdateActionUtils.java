@@ -717,4 +717,7 @@ public final class ProductUpdateActionUtils {
                 + "Reason: %s",
             product.getKey(), reason));
     }
+
+    private ProductUpdateActionUtils() {
+    }
 }
