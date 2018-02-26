@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
@@ -167,35 +168,22 @@ public final class ProductVariantUpdateActionUtils {
         final List<Asset> oldProductVariantAssets = oldProductVariant.getAssets();
         final List<AssetDraft> newProductVariantAssetDrafts = newProductVariant.getAssets();
 
+        final List<Asset> intermediateOldAssets = new ArrayList<>(oldProductVariant.getAssets());
+
 
         if (newProductVariantAssetDrafts != null) {
-
             final Map<String, Asset> oldAssetsKeyMap = oldProductVariantAssets
                 .stream().collect(toMap(Asset::getKey, asset -> asset));
 
             final Map<String, AssetDraft> newAssetDraftsKeyMap = newProductVariantAssetDrafts
                 .stream().collect(toMap(AssetDraft::getKey, assetDraft -> assetDraft));
 
+            // Action order prio: removeAsset → changeAssetOrder → addAsset
 
-            // Add new assets. TODO: (WITH POSITION) SHOULD BE COMBINED WITH BELOW STREAMING.
-            updateActions.addAll(
-                newProductVariantAssetDrafts
-                    .stream()
-                    .filter(Objects::nonNull) // Remove null asset drafts.
-                    .map(newAssetDraft -> {
-                        final String newAssetDraftKey = newAssetDraft.getKey();
-                        final Asset matchingOldAsset = oldAssetsKeyMap.get(newAssetDraftKey);
-
-                        if (matchingOldAsset == null) {
-                            return AddAsset.ofVariantId(oldProductVariantId, newAssetDraft);
-                        } else {
-                            return null;
-                        }
-                    })
-                    .filter(Objects::nonNull) // Remove null update actions.
-                    .collect(toList()));
-
-            // Remove old existing assets which aren't there anymore and compare matching assets.
+            // For every old asset, If it doesn't exist anymore in the new asset drafts,
+            // then add a RemoveAsset action to the list of update actions. If the asset still exists in the new draft,
+            // then compare the asset fields (name, desc, etc..), and add the computed actions to the list of update
+            // actions.
             updateActions.addAll(
                 oldProductVariantAssets
                     .stream()
@@ -206,6 +194,8 @@ public final class ProductVariantUpdateActionUtils {
                         if (matchingNewAssetDraft != null) {
                             return buildActions(oldProductVariantId, oldAsset, matchingNewAssetDraft, syncOptions);
                         } else {
+                            // Also remove from old asset list
+                            intermediateOldAssets.remove(oldAssetsKeyMap.get(oldAssetKey));
                             return singletonList(
                                 RemoveAsset.ofVariantIdWithKey(oldProductVariantId, oldAssetKey, true));
                         }
@@ -213,9 +203,33 @@ public final class ProductVariantUpdateActionUtils {
                     .flatMap(Collection::stream)
                     .collect(toList()));
 
-            buildChangeAssetOrderUpdateAction(oldProductVariantId,
-                oldProductVariantAssets, newProductVariantAssetDrafts)
+
+            // Compare ordering of assets and add a ChangeAssetOrder action if needed.
+            buildChangeAssetOrderUpdateAction(oldProductVariantId, intermediateOldAssets, newProductVariantAssetDrafts)
                 .ifPresent(updateActions::add);
+
+            // For every new asset draft, If it doesn't exist the old assets, then add an AddAsset action to the list of
+            // update actions.
+            updateActions.addAll(
+                IntStream.range(0, newProductVariantAssetDrafts.size())
+                         .mapToObj(assetDraftIndex -> {
+                             final AssetDraft newAssetDraft = newProductVariantAssetDrafts.get(assetDraftIndex);
+                             if (newAssetDraft != null) {
+
+                                 final String newAssetDraftKey = newAssetDraft.getKey();
+                                 final Asset matchingOldAsset = oldAssetsKeyMap.get(newAssetDraftKey);
+
+                                 if (matchingOldAsset == null) {
+                                     return AddAsset.ofVariantId(oldProductVariantId, newAssetDraft)
+                                                    .withPosition(assetDraftIndex);
+                                 } else {
+                                     return null;
+                                 }
+                             } else {
+                                 return null;
+                             }
+                         }).filter(Objects::nonNull)
+                         .collect(toList()));
 
 
         } else {
@@ -231,7 +245,7 @@ public final class ProductVariantUpdateActionUtils {
     }
 
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildChangeAssetOrderUpdateAction(
+    private static Optional<UpdateAction<Product>> buildChangeAssetOrderUpdateAction(
         final int variantId,
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final List<AssetDraft> newAssetDrafts) {
@@ -241,6 +255,7 @@ public final class ProductVariantUpdateActionUtils {
         final List<String> newOrder = newAssetDrafts.stream()
                                                     .map(AssetDraft::getKey)
                                                     .map(oldAssetKeyToIdMap::get)
+                                                    .filter(Objects::nonNull)
                                                     .collect(toList());
 
         final List<String> oldOrder = oldAssets.stream()
