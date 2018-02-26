@@ -42,7 +42,7 @@ public class AbstractSetCustomTypeAssert<T extends AbstractSetCustomTypeAssert<T
         return ofNullable(type)
             .map(customType -> hasTypeValues(customType.getId(), customType.getKey(), customType.getTypeId()))
             .orElseGet(() -> {
-                assertThat(this.actual.getType()).isNull();
+                assertThat(actual.getType()).isNull();
                 return myself;
             });
     }
