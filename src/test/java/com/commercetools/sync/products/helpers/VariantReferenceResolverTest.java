@@ -71,6 +71,19 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
+    public void resolveAssetsReferences_WithEmptyAssets_ShouldNotResolveAssets() {
+        final ProductVariantDraftBuilder productVariantDraftBuilder = ProductVariantDraftBuilder.of()
+                                                                                                .assets(emptyList());
+
+        final ProductVariantDraftBuilder resolvedBuilder = referenceResolver
+            .resolveAssetsReferences(productVariantDraftBuilder)
+            .toCompletableFuture().join();
+
+        final List<AssetDraft> resolvedBuilderAssets = resolvedBuilder.getAssets();
+        assertThat(resolvedBuilderAssets).isEmpty();
+    }
+
+    @Test
     public void resolveAssetsReferences_WithNullAssets_ShouldNotResolveAssets() {
         final ProductVariantDraftBuilder productVariantDraftBuilder = ProductVariantDraftBuilder.of();
 

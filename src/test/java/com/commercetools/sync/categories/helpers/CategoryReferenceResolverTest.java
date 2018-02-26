@@ -63,6 +63,20 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
+    public void resolveAssetsReferences_WithEmptyAssets_ShouldNotResolveAssets() {
+        final CategoryDraftBuilder categoryDraftBuilder =
+            getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key", CACHED_CATEGORY_KEY,
+                "customTypeId", new HashMap<>())
+                .assets(emptyList());
+
+        final CategoryDraftBuilder resolvedBuilder = referenceResolver.resolveAssetsReferences(categoryDraftBuilder)
+                                                                      .toCompletableFuture().join();
+
+        final List<AssetDraft> resolvedBuilderAssets = resolvedBuilder.getAssets();
+        assertThat(resolvedBuilderAssets).isEmpty();
+    }
+
+    @Test
     public void resolveAssetsReferences_WithNullAssets_ShouldNotResolveAssets() {
         final CategoryDraftBuilder categoryDraftBuilder =
             getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key", CACHED_CATEGORY_KEY,
