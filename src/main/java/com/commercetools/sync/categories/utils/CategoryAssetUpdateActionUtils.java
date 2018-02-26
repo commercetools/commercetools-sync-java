@@ -1,6 +1,7 @@
 package com.commercetools.sync.categories.utils;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.helpers.AssetCustomActionBuilder;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.commands.updateactions.ChangeAssetName;
@@ -59,6 +60,7 @@ public final class CategoryAssetUpdateActionUtils {
         @Nonnull final AssetDraft newAsset,
         @Nonnull final CategorySyncOptions syncOptions) {
         return CustomUpdateActionUtils.buildCustomUpdateActions(oldAsset, newAsset,
-            Category.class, -1, Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey, syncOptions);
+            new AssetCustomActionBuilder(), -1, Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey,
+            syncOptions);
     }
 }

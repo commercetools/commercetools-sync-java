@@ -2,6 +2,7 @@ package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.helpers.AssetCustomActionBuilder;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
@@ -67,7 +68,8 @@ public final class ProductVariantAssetUpdateActionUtils {
         @Nonnull final AssetDraft newProductVariantAsset,
         @Nonnull final ProductSyncOptions syncOptions) {
         return CustomUpdateActionUtils.buildCustomUpdateActions(oldProductVariantAsset, newProductVariantAsset,
-            Product.class, variantId, Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey, syncOptions);
+            new AssetCustomActionBuilder(), variantId, Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey,
+            syncOptions);
     }
 
     /*
