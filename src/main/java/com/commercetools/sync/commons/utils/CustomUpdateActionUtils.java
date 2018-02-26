@@ -37,8 +37,9 @@ public final class CustomUpdateActionUtils {
 
     /**
      * This method is a syntactic sugar for the method {@link #buildCustomUpdateActions(Custom, CustomDraft,
-     * GenericCustomActionBuilder, Integer, Function, Function, Function, BaseSyncOptions)}. For
-     * more details of the inner logic and different scenarios, check the Javadoc of the other method.
+     * GenericCustomActionBuilder, Integer, Function, Function, Function, BaseSyncOptions)}, but this one is only for
+     * primary resources (i.e resources which have their own endpoints for example channels, categories, inventory
+     * entries. For more details of the inner logic and different scenarios, check the Javadoc of the other method.
      *
      * @param <T>                 the type of the old {@link Resource} which has the custom fields.
      * @param <S>                 the type of the new resource {@link CustomDraft}.
@@ -53,7 +54,7 @@ public final class CustomUpdateActionUtils {
      */
     @Nonnull
     public static <T extends Custom & Resource<T>, S extends CustomDraft> List<UpdateAction<T>>
-        buildResourceCustomUpdateActions(
+        buildPrimaryResourceCustomUpdateActions(
         @Nonnull final T oldResource,
         @Nonnull final S newResource,
         @Nonnull final GenericCustomActionBuilder<T> customActionBuilder,

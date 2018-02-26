@@ -58,7 +58,7 @@
 
 **Changes** (3)
 - **Commons** - `CustomUpdateActionUtils#buildCustomUpdateActions` is now 
-`CustomUpdateActionUtils#buildResourceCustomUpdateActions`. It now takes a new third parameter `customActionBuilder` 
+`CustomUpdateActionUtils#buildPrimaryResourceCustomUpdateActions`. It now takes a new third parameter `customActionBuilder` 
 which represents the concrete builder of custom update actions. For a list of concrete builder options check the 
 implementors of the `GenericCustomActionBuilder` interface. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - `CustomUpdateActionUtils#buildCustomUpdateActions` can now be used to build custom update actions

@@ -23,7 +23,7 @@ import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaDescriptionUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction;
-import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildResourceCustomUpdateActions;
+import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 
 public final class CategorySyncUtils {
     private static final CategoryCustomActionBuilder categoryCustomActionBuilder =
@@ -89,7 +89,7 @@ public final class CategorySyncUtils {
         ));
 
         final List<UpdateAction<Category>> categoryCustomUpdateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategory, categoryCustomActionBuilder, syncOptions);
+            buildPrimaryResourceCustomUpdateActions(oldCategory, newCategory, categoryCustomActionBuilder, syncOptions);
         updateActions.addAll(categoryCustomUpdateActions);
         return updateActions;
     }

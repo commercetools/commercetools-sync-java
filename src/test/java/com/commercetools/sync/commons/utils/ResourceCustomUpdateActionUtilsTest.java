@@ -34,7 +34,7 @@ import java.util.function.BiConsumer;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildNewOrModifiedCustomFieldsUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildNonNullCustomFieldsUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildRemovedCustomFieldsUpdateActions;
-import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildResourceCustomUpdateActions;
+import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,7 +79,7 @@ public class ResourceCustomUpdateActionUtilsTest {
         when(newCategoryDraft.getCustom()).thenReturn(newCategoryCustomFieldsDraft);
 
         final List<UpdateAction<Category>> updateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
+            buildPrimaryResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
                 categorySyncOptions);
 
         // Should set custom type of old category.
@@ -98,7 +98,7 @@ public class ResourceCustomUpdateActionUtilsTest {
         final CategoryDraft newCategoryDraft = CategorySyncMockUtils.getMockCategoryDraft(Locale.ENGLISH, "name",
             "key", "parentId", "customTypeId", new HashMap<>());
         final List<UpdateAction<Category>> updateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
+            buildPrimaryResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
                 categorySyncOptions);
 
         // Should add custom type to old category.
@@ -124,7 +124,7 @@ public class ResourceCustomUpdateActionUtilsTest {
 
 
         final List<UpdateAction<Category>> updateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
+            buildPrimaryResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
                 categorySyncOptions);
 
         // Should add custom type to old category.
@@ -145,7 +145,7 @@ public class ResourceCustomUpdateActionUtilsTest {
         when(newCategoryDraft.getCustom()).thenReturn(null);
 
         final List<UpdateAction<Category>> updateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
+            buildPrimaryResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
                 categorySyncOptions);
 
         // Should remove custom type from old category.
@@ -180,7 +180,7 @@ public class ResourceCustomUpdateActionUtilsTest {
 
 
         final List<UpdateAction<Category>> updateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
+            buildPrimaryResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
                 categorySyncOptions);
 
         assertThat(errorMessages).hasSize(1);
@@ -200,7 +200,7 @@ public class ResourceCustomUpdateActionUtilsTest {
         when(newCategoryDraft.getCustom()).thenReturn(null);
 
         final List<UpdateAction<Category>> updateActions =
-            buildResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
+            buildPrimaryResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
                 categorySyncOptions);
 
         assertThat(errorMessages).isEmpty();
