@@ -84,7 +84,6 @@ public class MapValuesToFutureOfCompletedValuesStreamTest {
             singletonList("foo"), element -> completedFuture(element.concat("POSTFIX")));
         final Stream<String> result = future.join();
         assertThat(result).containsExactly("fooPOSTFIX");
-        assertThat(result).isInstanceOf(Stream.class);
     }
 
     @Test
@@ -93,7 +92,6 @@ public class MapValuesToFutureOfCompletedValuesStreamTest {
             singleton("foo"), element -> completedFuture(element.concat("POSTFIX")));
         final Stream<String> result = future.join();
         assertThat(result).containsExactly("fooPOSTFIX");
-        assertThat(result).isInstanceOf(Stream.class);
     }
 
     @Test
@@ -102,7 +100,6 @@ public class MapValuesToFutureOfCompletedValuesStreamTest {
             singletonList("foo"), element -> completedFuture(element.length()));
         final Stream<Integer> result = future.join();
         assertThat(result).containsExactly(3);
-        assertThat(result).isInstanceOf(Stream.class);
     }
 
     @Test
@@ -111,7 +108,6 @@ public class MapValuesToFutureOfCompletedValuesStreamTest {
             singleton("foo"), element -> completedFuture(element.length()));
         final Stream<Integer> result = future.join();
         assertThat(result).containsExactly(3);
-        assertThat(result).isInstanceOf(Stream.class);
     }
 
 
@@ -128,7 +124,6 @@ public class MapValuesToFutureOfCompletedValuesStreamTest {
             asList("foo", "bar"), element -> completedFuture(element.concat("POSTFIX")));
         final Stream<String> result = future.join();
         assertThat(result).containsExactly("fooPOSTFIX", "barPOSTFIX");
-        assertThat(result).isInstanceOf(Stream.class);
     }
 
     @Test
@@ -141,7 +136,6 @@ public class MapValuesToFutureOfCompletedValuesStreamTest {
             element -> completedFuture(element.concat("POSTFIX")));
         final Stream<String> result = future.join();
         assertThat(result).containsExactlyInAnyOrder("fooPOSTFIX", "barPOSTFIX");
-        assertThat(result).isInstanceOf(Stream.class);
     }
 
     @Test
@@ -150,7 +144,6 @@ public class MapValuesToFutureOfCompletedValuesStreamTest {
             asList("john", "smith"), element -> completedFuture(element.length()));
         final Stream<Integer> result = future.join();
         assertThat(result).containsExactly(4, 5);
-        assertThat(result).isInstanceOf(Stream.class);
     }
 
     @Test
@@ -163,7 +156,6 @@ public class MapValuesToFutureOfCompletedValuesStreamTest {
             element -> completedFuture(element.length()));
         final Stream<Integer> result = future.join();
         assertThat(result).containsExactlyInAnyOrder(4, 5);
-        assertThat(result).isInstanceOf(Stream.class);
     }
 
     /**
@@ -179,7 +171,6 @@ public class MapValuesToFutureOfCompletedValuesStreamTest {
             asList("foo", "foo"), element -> completedFuture(element.concat("POSTFIX")));
         final Stream<String> result = future.join();
         assertThat(result).containsExactly("fooPOSTFIX", "fooPOSTFIX");
-        assertThat(result).isInstanceOf(Stream.class);
     }
 
     @Test
@@ -192,7 +183,6 @@ public class MapValuesToFutureOfCompletedValuesStreamTest {
             element -> completedFuture("constantResult"));
         final Stream<String> result = future.join();
         assertThat(result).containsExactly("constantResult", "constantResult");
-        assertThat(result).isInstanceOf(Stream.class);
     }
 
     @Test
@@ -201,7 +191,6 @@ public class MapValuesToFutureOfCompletedValuesStreamTest {
             asList("john", "john"), element -> completedFuture(element.length()));
         final Stream<Integer> result = future.join();
         assertThat(result).containsExactly(4, 4);
-        assertThat(result).isInstanceOf(Stream.class);
     }
 
     @Test
@@ -214,6 +203,5 @@ public class MapValuesToFutureOfCompletedValuesStreamTest {
             element -> completedFuture(element.length()));
         final Stream<Integer> result = future.join();
         assertThat(result).containsExactly(3, 3);
-        assertThat(result).isInstanceOf(Stream.class);
     }
 }
