@@ -66,6 +66,7 @@ implementors of the `GenericCustomActionBuilder` interface. [#3](https://github.
 - **Commons** - `CustomUpdateActionUtils#buildCustomUpdateActions` can now be used to build custom update actions
 for secondary resources (e.g. assets and prices). [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - New Custom Type Id is now validated against being empty/null. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Product Sync** - ProductSyncUtils#buildCoreActions is now removed. ProductSyncUtils#buildActions should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 
 **Bug Fixes** (1)
 - **Build Tools** - Fixed bug where jar and Codecov were triggered on benchmark stages of the build when they should 
