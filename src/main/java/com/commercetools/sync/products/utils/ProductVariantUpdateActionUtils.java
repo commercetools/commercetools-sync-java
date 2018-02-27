@@ -39,7 +39,7 @@ import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 
-// TODO: TESTS
+
 public final class ProductVariantUpdateActionUtils {
     private static final String FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION = "Failed to build a "
         + "setAttribute/setAttributeInAllVariants update action for the attribute with the name '%s' in the "
@@ -52,6 +52,7 @@ public final class ProductVariantUpdateActionUtils {
      * {@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants} update actions.
      * If both the {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of attributes, then
      * no update action is needed and hence an empty {@link List} is returned.
+     * // TODO: UNIT TESTS
      *
      * @param productKey         the key of the product that the variants belong to. It is used only in the error
      *                           messages if any.
@@ -120,6 +121,7 @@ public final class ProductVariantUpdateActionUtils {
      *
      * <p>TODO: NOTE: Right now it always builds SetPrices UpdateAction, comparison should be
      * TODO: calculated GITHUB ISSUE#101.
+     * <p>TODO: UNIT TESTS
      *
      * @param oldProductVariant the {@link ProductVariant} which should be updated.
      * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of prices.
