@@ -74,6 +74,7 @@ public final class ProductVariantAssetUpdateActionUtils {
         return updateActions;
     }
 
+     * TODO: THIS WILL BE REMOVED AS SOON AS GITHUB ISSUE#255 is resolved.
     @Nonnull
     private static List<UpdateAction<Product>> buildRemoveAssetOrAssetUpdateActions(
         @Nonnull final ProductVariant oldProductVariant,

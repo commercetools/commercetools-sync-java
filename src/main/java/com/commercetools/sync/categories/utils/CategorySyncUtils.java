@@ -74,6 +74,7 @@ public final class CategorySyncUtils {
     }
 
     /**
+     * TODO: THIS WILL BE REMOVED AS SOON AS GITHUB ISSUE#255 is resolved.
      * Given a list of category {@link UpdateAction} elements, where each is wrapped in an {@link Optional}; this method
      * filters out the optionals which are only present and returns a new list of category {@link UpdateAction}
      * elements.
