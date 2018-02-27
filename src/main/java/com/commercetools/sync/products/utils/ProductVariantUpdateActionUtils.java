@@ -145,9 +145,9 @@ public final class ProductVariantUpdateActionUtils {
      * is needed and hence an empty {@link List} is returned.
      *
      * @param oldProductVariant the {@link ProductVariant} which should be updated.
-     * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of prices.
+     * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of assets.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
-     * needed.
+     *         needed.
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantAssetsUpdateActions(
