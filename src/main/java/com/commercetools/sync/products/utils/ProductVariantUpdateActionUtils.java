@@ -121,6 +121,7 @@ public final class ProductVariantUpdateActionUtils {
      *
      * <p>TODO: NOTE: Right now it always builds SetPrices UpdateAction, comparison should be
      * TODO: calculated GITHUB ISSUE#101.
+     *
      * <p>TODO: UNIT TESTS
      *
      * @param oldProductVariant the {@link ProductVariant} which should be updated.
@@ -146,6 +147,8 @@ public final class ProductVariantUpdateActionUtils {
      *
      * @param oldProductVariant the {@link ProductVariant} which should be updated.
      * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of assets.
+     * @param syncOptions       responsible for supplying the sync options to the sync utility method. It is used for
+     *                          triggering the error callback within the utility, in case of errors.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
      *         needed.
      */

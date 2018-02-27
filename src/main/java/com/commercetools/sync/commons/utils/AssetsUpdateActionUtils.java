@@ -179,8 +179,8 @@ public final class AssetsUpdateActionUtils {
                             ofNullable(newProductVariantAssetDrafts.get(assetDraftIndex))
                                 .map(assetDraft -> {
                                     final String assetDraftKey = assetDraft.getKey();
-                                    return oldAssetsKeyMap.get(assetDraftKey) == null ?
-                                        addAssetActionBuilder.apply(assetDraft, assetDraftIndex) : null;
+                                    return oldAssetsKeyMap.get(assetDraftKey) == null
+                                        ? addAssetActionBuilder.apply(assetDraft, assetDraftIndex) : null;
                                 }))
                         .filter(Optional::isPresent)
                         .map(Optional::get)

@@ -149,7 +149,7 @@ public class BuildVariantAssetsUpdateActionsTest {
                     AssetSourceBuilder.ofUri(null).key("new source").build()), true),
             SetAssetSources.ofVariantIdAndAssetKey(oldMasterVariant.getId(), "c",
                 singletonList(AssetSourceBuilder.ofUri("uri").key("newKey").build()), true)
-            );
+        );
     }
 
     @Test

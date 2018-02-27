@@ -28,6 +28,7 @@ public final class ProductVariantAssetUpdateActionUtils {
      * {@link UpdateAction}&lt;{@link Product}&gt; as a result. If both the {@link Asset} and the {@link AssetDraft}
      * have identical fields, then no update action is needed and hence an empty {@link List} is returned.
      *
+     * @param variantId   the variantId needed for building the update action.
      * @param oldAsset    the asset which should be updated.
      * @param newAsset    the asset draft where we get the new fields.
      * @param syncOptions responsible for supplying the sync options to the sync utility method. It is used for
@@ -161,7 +162,7 @@ public final class ProductVariantAssetUpdateActionUtils {
      * have identical custom fields and types, then no update action is needed and hence an empty {@link List} is
      * returned.
      *
-     * @param variantId the variantId needed for building the update action.
+     * @param variantId   the variantId needed for building the update action.
      * @param oldAsset    the asset which should be updated.
      * @param newAsset    the asset draft where we get the new custom fields and types.
      * @param syncOptions responsible for supplying the sync options to the sync utility method. It is used for
