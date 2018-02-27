@@ -5,7 +5,6 @@ import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Image;
-import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
@@ -126,9 +125,8 @@ public final class ProductVariantUpdateActionUtils {
         @Nonnull final ProductVariant oldProductVariant,
         @Nonnull final ProductVariantDraft newProductVariant) {
         //TODO: Right now it always builds SetPrices UpdateAction, comparison should be calculated GITHUB ISSUE#101.
-        final List<PriceDraft> newProductVariantPrices =
-            newProductVariant.getPrices() == null ? new ArrayList<>() : newProductVariant.getPrices();
-        final SetPrices setPricesUpdateAction = SetPrices.of(oldProductVariant.getId(), newProductVariantPrices);
+        final SetPrices setPricesUpdateAction = SetPrices.of(oldProductVariant.getId(),
+            emptyIfNull(newProductVariant.getPrices()));
         return singletonList(setPricesUpdateAction);
     }
 
