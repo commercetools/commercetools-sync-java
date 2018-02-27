@@ -1,4 +1,4 @@
-package com.commercetools.sync.products.utils;
+package com.commercetools.sync.products.utils.productupdateactionutils;
 
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;

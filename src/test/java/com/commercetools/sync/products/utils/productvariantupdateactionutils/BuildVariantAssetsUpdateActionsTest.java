@@ -1,4 +1,4 @@
-package com.commercetools.sync.products.utils;
+package com.commercetools.sync.products.utils.productvariantupdateactionutils;
 
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class BuildVariantAssetsUpdateActionsTest {
+
     private static final String RES_ROOT =
         "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/assets/";
     private static final String PRODUCT_WITH_ASSETS_ABC = RES_ROOT + "product-with-assets-abc.json";
@@ -37,7 +38,7 @@ public class BuildVariantAssetsUpdateActionsTest {
                                                                                     .build();
 
     @Test
-    public void testCase1() {
+    public void buildProductVariantAssetsUpdateActions_WithIdenticalAssets_ShouldNotBuildUpdateActions() {
         final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
         final ProductDraft newProductDraft = readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABC, ProductDraft.class);
 
@@ -205,5 +206,4 @@ public class BuildVariantAssetsUpdateActionsTest {
         assertThat(updateActions.get(2)).isExactlyInstanceOf(AddAsset.class);
         assertThat(((AddAsset)updateActions.get(2)).getPosition()).isEqualTo(2);
     }
-
 }
