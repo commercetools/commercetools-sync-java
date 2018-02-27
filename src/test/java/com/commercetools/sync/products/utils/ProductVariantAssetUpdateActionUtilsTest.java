@@ -14,6 +14,7 @@ import io.sphere.sdk.models.AssetSourceBuilder;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
+import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetAssetDescription;
 import io.sphere.sdk.products.commands.updateactions.SetAssetSources;
 import io.sphere.sdk.products.commands.updateactions.SetAssetTags;
@@ -22,6 +23,7 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,19 +32,110 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildActions;
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildChangeAssetNameUpdateAction;
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildCustomUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildSetAssetDescriptionUpdateAction;
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildSetAssetSourcesUpdateAction;
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildSetAssetTagsUpdateAction;
 import static io.sphere.sdk.models.LocalizedString.empty;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ProductVariantAssetsUpdateActionUtilsTest {
+public class ProductVariantAssetUpdateActionUtilsTest {
+    private static final ProductSyncOptions SYNC_OPTIONS = ProductSyncOptionsBuilder
+        .of(mock(SphereClient.class)).build();
+
+    @Test
+    public void buildActions_WithDifferentValues_ShouldBuildUpdateAction() {
+        final LocalizedString oldName = LocalizedString.of(Locale.GERMAN, "oldName");
+        final LocalizedString newName = LocalizedString.of(Locale.GERMAN, "newName");
+
+        final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+        oldCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        oldCustomFieldsMap.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
+
+        final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+        newCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
+        newCustomFieldsMap.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo"));
+
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        when(oldCustomFields.getType()).thenReturn(Type.referenceOfId("1"));
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+
+        final CustomFieldsDraft newCustomFieldsDraft =
+            CustomFieldsDraft.ofTypeIdAndJson("1", newCustomFieldsMap);
+
+        final Set<String> oldTags = new HashSet<>();
+        oldTags.add("oldTag");
+        final Set<String> newTags = new HashSet<>();
+        oldTags.add("newTag");
+
+        final List<AssetSource> oldAssetSources = singletonList(AssetSourceBuilder.ofUri("oldUri").build());
+        final List<AssetSource> newAssetSources = singletonList(AssetSourceBuilder.ofUri("newUri").build());
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getName()).thenReturn(oldName);
+        when(oldAsset.getSources()).thenReturn(oldAssetSources);
+        when(oldAsset.getTags()).thenReturn(oldTags);
+        when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+
+        final AssetDraft newAssetDraft = AssetDraftBuilder.of(newAssetSources, newName)
+                                                          .tags(newTags)
+                                                          .custom(newCustomFieldsDraft)
+                                                          .build();
+
+
+        final List<UpdateAction<Product>> updateActions = buildActions(1, oldAsset, newAssetDraft, SYNC_OPTIONS);
+
+        assertThat(updateActions).hasSize(5);
+        assertThat(updateActions).containsExactlyInAnyOrder(
+            ChangeAssetName.ofAssetKeyAndVariantId(1, null, newName, true),
+            SetAssetTags.ofVariantIdAndAssetKey(1, null, newTags, true),
+            SetAssetSources.ofVariantIdAndAssetKey(1, null, newAssetSources, true),
+            SetAssetCustomField
+                .ofVariantIdUsingJsonAndAssetKey(1, null,
+                    "invisibleInShop", newCustomFieldsMap.get("invisibleInShop"), true),
+            SetAssetCustomField
+                .ofVariantIdUsingJsonAndAssetKey(1, null, "backgroundColor",
+                    newCustomFieldsMap.get("backgroundColor"), true)
+        );
+    }
+
+    @Test
+    public void buildActions_WithIdenticalValues_ShouldBuildUpdateAction() {
+        final LocalizedString oldName = LocalizedString.of(Locale.GERMAN, "oldName");
+
+        final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+        oldCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        oldCustomFieldsMap.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
+
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        when(oldCustomFields.getType()).thenReturn(Type.referenceOfId("1"));
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+
+        final Set<String> oldTags = new HashSet<>();
+        oldTags.add("oldTag");
+
+        final List<AssetSource> oldAssetSources = singletonList(AssetSourceBuilder.ofUri("oldUri").build());
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getName()).thenReturn(oldName);
+        when(oldAsset.getSources()).thenReturn(oldAssetSources);
+        when(oldAsset.getTags()).thenReturn(oldTags);
+        when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+
+        final AssetDraft newAssetDraft = AssetDraftBuilder.of(oldAsset).build();
+
+
+        final List<UpdateAction<Product>> updateActions = buildActions(1, oldAsset, newAssetDraft, SYNC_OPTIONS);
+
+        assertThat(updateActions).isEmpty();
+    }
 
     @Test
     public void buildChangeAssetNameUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
@@ -186,8 +279,6 @@ public class ProductVariantAssetsUpdateActionUtilsTest {
         assertThat(productUpdateAction).isEmpty();
     }
 
-    //TODO: ADD CUSTOM FIELD TESTS
-
     @Test
     public void buildCustomUpdateActions_WithSameStagedValues_ShouldNotBuildUpdateAction() {
         final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
@@ -209,11 +300,8 @@ public class ProductVariantAssetsUpdateActionUtilsTest {
                                                           .custom(newCustomFieldsDraft)
                                                           .build();
 
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
-
-
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(1, oldAsset, newAssetDraft, syncOptions);
+            buildCustomUpdateActions(1, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).isEmpty();
     }
@@ -243,12 +331,51 @@ public class ProductVariantAssetsUpdateActionUtilsTest {
                                                           .custom(newCustomFieldsDraft)
                                                           .build();
 
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        final List<UpdateAction<Product>> updateActions =
+            buildCustomUpdateActions(1, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
+        assertThat(updateActions).hasSize(2);
+    }
+
+    @Test
+    public void buildCustomUpdateActions_WithBadCustomFieldData_ShouldNotBuildUpdateActionAndTriggerErrorCallback() {
+        final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+        oldCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        oldCustomFieldsMap.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
+
+        final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+        newCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
+        newCustomFieldsMap.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo"));
+
+
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        when(oldCustomFields.getType()).thenReturn(Type.referenceOfId(""));
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+
+        final CustomFieldsDraft newCustomFieldsDraft =
+            CustomFieldsDraft.ofTypeIdAndJson("", newCustomFieldsMap);
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+
+        final AssetDraft newAssetDraft = AssetDraftBuilder.of(emptyList(), empty())
+                                                          .custom(newCustomFieldsDraft)
+                                                          .build();
+
+        final List<String> errors = new ArrayList<>();
+
+        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                          .errorCallback((errorMessage, throwable) ->
+                                                                              errors.add(errorMessage))
+                                                                          .build();
 
         final List<UpdateAction<Product>> updateActions =
             buildCustomUpdateActions(1, oldAsset, newAssetDraft, syncOptions);
 
-        assertThat(updateActions).hasSize(2);
+        assertThat(updateActions).isEmpty();
+        assertThat(errors).hasSize(1);
+        assertThat(errors.get(0))
+            .isEqualTo(format("Failed to build custom fields update actions on the asset with id '%s'."
+                + " Reason: Custom type ids are not set for both the old and new asset.", oldAsset.getId()));
     }
 }
