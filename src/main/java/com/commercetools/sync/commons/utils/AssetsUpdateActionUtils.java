@@ -5,6 +5,7 @@ import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
@@ -22,6 +24,30 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 public final class AssetsUpdateActionUtils {
+
+    @Nonnull
+    public static <T> List<UpdateAction<T>> buildAssetsUpdateActions(
+        @Nonnull final List<Asset> oldAssets,
+        @Nullable final List<AssetDraft> newAssetDrafts,
+        @Nonnull final BiFunction<Asset, AssetDraft, List<UpdateAction<T>>> assetActionsBuilder,
+        @Nonnull final Function<String, UpdateAction<T>> removeAssetActionBuilder,
+        @Nonnull final Function<List<String>, UpdateAction<T>> changeAssetOrderActionBuilder,
+        @Nonnull final BiFunction<AssetDraft, Integer, UpdateAction<T>> addAssetActionBuilder) {
+
+        return ofNullable(newAssetDrafts)
+            .map(assetDrafts ->
+                buildAssetsUpdateActionsWithNewAssetDrafts(
+                    oldAssets,
+                    assetDrafts,
+                    assetActionsBuilder,
+                    removeAssetActionBuilder,
+                    changeAssetOrderActionBuilder,
+                    addAssetActionBuilder))
+            .orElseGet(() -> oldAssets.stream()
+                                      .map(oldAsset -> removeAssetActionBuilder.apply(oldAsset.getKey()))
+                                      .collect(Collectors.toList()));
+    }
+
 
     /**
      *
@@ -35,7 +61,7 @@ public final class AssetsUpdateActionUtils {
      * @return
      */
     @Nonnull
-    public static <T> List<UpdateAction<T>> buildAssetsUpdateActions(
+    private static <T> List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final List<AssetDraft> newAssetDrafts,
         @Nonnull final BiFunction<Asset, AssetDraft, List<UpdateAction<T>>> assetActionsBuilder,
@@ -85,7 +111,7 @@ public final class AssetsUpdateActionUtils {
      * @return
      */
     @Nonnull
-    public static <T> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
+    private static <T> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final List<Asset> intermediateOldAssets,
         @Nonnull final Map<String, Asset> oldAssetsKeyMap,
@@ -123,7 +149,7 @@ public final class AssetsUpdateActionUtils {
      * @return
      */
     @Nonnull
-    public static <T> Optional<UpdateAction<T>> buildChangeAssetOrderUpdateAction(
+    private static <T> Optional<UpdateAction<T>> buildChangeAssetOrderUpdateAction(
         @Nonnull final List<Asset> intermediateOldAssets,
         @Nonnull final List<AssetDraft> newAssetDrafts,
         @Nonnull final Function<List<String>, UpdateAction<T>> changeAssetOrderActionBuilder) {
@@ -155,7 +181,7 @@ public final class AssetsUpdateActionUtils {
      * @return
      */
     @Nonnull
-    public static <T> List<UpdateAction<T>> buildAddAssetUpdateActions(
+    private static <T> List<UpdateAction<T>> buildAddAssetUpdateActions(
         @Nonnull final List<AssetDraft> newProductVariantAssetDrafts,
         @Nonnull final Map<String, Asset> oldAssetsKeyMap,
         @Nonnull final BiFunction<AssetDraft, Integer, UpdateAction<T>> addAssetActionBuilder) {

@@ -18,19 +18,16 @@ import io.sphere.sdk.categories.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.utils.CategoryAssetUpdateActionUtils.buildActions;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.lang.String.format;
-import static java.util.Optional.ofNullable;
 
 public final class CategoryUpdateActionUtils {
     private static final String CATEGORY_CHANGE_PARENT_EMPTY_PARENT = "Cannot unset 'parent' field of category with id"
@@ -239,20 +236,13 @@ public final class CategoryUpdateActionUtils {
         @Nonnull final CategoryDraft newCategory,
         @Nonnull final CategorySyncOptions syncOptions) {
 
-        final List<Asset> oldCategoryAssets = oldCategory.getAssets();
-
-        return ofNullable(newCategory.getAssets())
-            .map(newAssetDrafts ->
-                AssetsUpdateActionUtils.buildAssetsUpdateActions(
-                    oldCategoryAssets,
-                    newAssetDrafts,
-                    (oldAsset, newAssetDraft) -> buildActions(oldAsset, newAssetDraft, syncOptions),
-                    RemoveAsset::ofKey,
-                    ChangeAssetOrder::of,
-                    AddAsset::of))
-            .orElseGet(() -> oldCategoryAssets.stream()
-                                              .map(oldAsset -> RemoveAsset.ofKey(oldAsset.getKey()))
-                                              .collect(Collectors.toList()));
+        return AssetsUpdateActionUtils.buildAssetsUpdateActions(
+            oldCategory.getAssets(),
+            newCategory.getAssets(),
+            (oldAsset, newAssetDraft) -> buildActions(oldAsset, newAssetDraft, syncOptions),
+            RemoveAsset::ofKey,
+            ChangeAssetOrder::of,
+            AddAsset::of);
     }
 
     private CategoryUpdateActionUtils() {

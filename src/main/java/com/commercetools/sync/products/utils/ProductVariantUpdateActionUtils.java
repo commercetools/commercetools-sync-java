@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.AssetsUpdateActionUtils.buildAssetsUpdateActions;
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
@@ -154,26 +153,19 @@ public final class ProductVariantUpdateActionUtils {
         @Nonnull final ProductVariantDraft newProductVariant,
         @Nonnull final ProductSyncOptions syncOptions) {
 
-        return ofNullable(newProductVariant.getAssets())
-            .map(newAssetDrafts ->
-                buildAssetsUpdateActions(
-                    oldProductVariant.getAssets(),
-                    newAssetDrafts,
-                    (oldAsset, newAssetDraft) ->
-                        buildActions(oldProductVariant.getId(), oldAsset, newAssetDraft, syncOptions),
-                    key ->
-                        RemoveAsset.ofVariantIdWithKey(oldProductVariant.getId(), key, true),
-                    (newAssetOrder) ->
-                        ChangeAssetOrder.ofVariantId(oldProductVariant.getId(), newAssetOrder, true),
-                    (assetDraft, index) ->
-                        AddAsset.ofVariantId(oldProductVariant.getId(), assetDraft)
-                                .withPosition(index)
-                                .withStaged(true)))
-            .orElseGet(() ->
-                oldProductVariant.getAssets().stream()
-                                 .map(oldAsset ->
-                                     RemoveAsset.ofVariantIdWithKey(oldProductVariant.getId(), oldAsset.getKey(), true))
-                                 .collect(Collectors.toList()));
+        return buildAssetsUpdateActions(
+            oldProductVariant.getAssets(),
+            newProductVariant.getAssets(),
+            (oldAsset, newAssetDraft) ->
+                buildActions(oldProductVariant.getId(), oldAsset, newAssetDraft, syncOptions),
+            key ->
+                RemoveAsset.ofVariantIdWithKey(oldProductVariant.getId(), key, true),
+            (newAssetOrder) ->
+                ChangeAssetOrder.ofVariantId(oldProductVariant.getId(), newAssetOrder, true),
+            (assetDraft, index) ->
+                AddAsset.ofVariantId(oldProductVariant.getId(), assetDraft)
+                        .withPosition(index)
+                        .withStaged(true));
     }
 
     /**
