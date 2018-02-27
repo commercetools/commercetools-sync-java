@@ -58,7 +58,7 @@
 - **Commons** - `VariantReferenceResolver` and `CategoryReferenceResolver` now also resolve all the containing AssetDrafts references. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - Support for custom update actions calculation for secondary resources (e.g. prices, product assets and category assets). [#3](https://github.com/commercetools/commercetools-sync-java/issues/3) 
 
-**Changes** (3)
+**Changes** (5)
 - **Commons** - `CustomUpdateActionUtils#buildCustomUpdateActions` is now 
 `CustomUpdateActionUtils#buildPrimaryResourceCustomUpdateActions`. It now takes a new third parameter `customActionBuilder` 
 which represents the concrete builder of custom update actions. For a list of concrete builder options check the 
@@ -67,6 +67,7 @@ implementors of the `GenericCustomActionBuilder` interface. [#3](https://github.
 for secondary resources (e.g. assets and prices). [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - New Custom Type Id is now validated against being empty/null. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Product Sync** - ProductSyncUtils#buildCoreActions is now removed. ProductSyncUtils#buildActions should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Category Sync** - CategorySyncUtils#buildCoreActions is now removed. CategorySyncUtils#buildActions should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 
 **Bug Fixes** (1)
 - **Build Tools** - Fixed bug where jar and Codecov were triggered on benchmark stages of the build when they should 
