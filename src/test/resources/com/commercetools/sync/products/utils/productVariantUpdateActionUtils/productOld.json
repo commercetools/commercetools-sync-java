@@ -37,7 +37,8 @@
             "name": "size",
             "value": "ca. 1 x 1000 g"
           }
-        ]
+        ],
+        "assets": []
       },
       "variants": [
         {
@@ -60,7 +61,8 @@
               "name": "size",
               "value": "ca. 1 x 1000 g"
             }
-          ]
+          ],
+          "assets": []
         },
         {
           "id": 3,
@@ -82,7 +84,8 @@
               "name": "size",
               "value": "ca. 1 x 1000 g"
             }
-          ]
+          ],
+          "assets": []
         },
         {
           "id": 4,
@@ -104,9 +107,11 @@
               "name": "size",
               "value": "ca. 1 x 1000 g"
             }
-          ]
+          ],
+          "assets": []
         }
-      ]
+      ],
+      "assets": []
     },
     "published": true
   }
