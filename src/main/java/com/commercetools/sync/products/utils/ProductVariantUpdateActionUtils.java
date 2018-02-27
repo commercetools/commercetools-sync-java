@@ -152,7 +152,7 @@ public final class ProductVariantUpdateActionUtils {
 
         return ofNullable(newProductVariant.getAssets())
             .map(newAssetDrafts ->
-                ProductVariantAssetUpdateActionUtils.buildProductVariantAssetsUpdateActions(
+                ProductVariantAssetsUpdateActionUtils.buildProductVariantAssetsUpdateActions(
                     oldProductVariant, newAssetDrafts, syncOptions))
             .orElseGet(() ->
                 oldProductVariant.getAssets().stream()
