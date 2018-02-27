@@ -30,11 +30,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.commercetools.sync.products.utils.ProductVariantAssetsUpdateActionUtils.buildChangeAssetNameUpdateAction;
-import static com.commercetools.sync.products.utils.ProductVariantAssetsUpdateActionUtils.buildCustomUpdateActions;
-import static com.commercetools.sync.products.utils.ProductVariantAssetsUpdateActionUtils.buildSetAssetDescriptionUpdateAction;
-import static com.commercetools.sync.products.utils.ProductVariantAssetsUpdateActionUtils.buildSetAssetSourcesUpdateAction;
-import static com.commercetools.sync.products.utils.ProductVariantAssetsUpdateActionUtils.buildSetAssetTagsUpdateAction;
+import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildChangeAssetNameUpdateAction;
+import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildCustomUpdateActions;
+import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildSetAssetDescriptionUpdateAction;
+import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildSetAssetSourcesUpdateAction;
+import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildSetAssetTagsUpdateAction;
 import static io.sphere.sdk.models.LocalizedString.empty;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;

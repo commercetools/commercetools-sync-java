@@ -11,7 +11,9 @@ import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
+import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
+import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.products.commands.updateactions.MoveImageToPosition;
 import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
@@ -28,9 +30,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.AssetsUpdateActionUtils.buildAssetsUpdateActions;
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildActions;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -152,8 +156,19 @@ public final class ProductVariantUpdateActionUtils {
 
         return ofNullable(newProductVariant.getAssets())
             .map(newAssetDrafts ->
-                ProductVariantAssetsUpdateActionUtils.buildProductVariantAssetsUpdateActions(
-                    oldProductVariant, newAssetDrafts, syncOptions))
+                buildAssetsUpdateActions(
+                    oldProductVariant.getAssets(),
+                    newAssetDrafts,
+                    (oldAsset, newAssetDraft) ->
+                        buildActions(oldProductVariant.getId(), oldAsset, newAssetDraft, syncOptions),
+                    key ->
+                        RemoveAsset.ofVariantIdWithKey(oldProductVariant.getId(), key, true),
+                    (newAssetOrder) ->
+                        ChangeAssetOrder.ofVariantId(oldProductVariant.getId(), newAssetOrder, true),
+                    (assetDraft, index) ->
+                        AddAsset.ofVariantId(oldProductVariant.getId(), assetDraft)
+                                .withPosition(index)
+                                .withStaged(true)))
             .orElseGet(() ->
                 oldProductVariant.getAssets().stream()
                                  .map(oldAsset ->

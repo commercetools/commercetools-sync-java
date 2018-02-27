@@ -2,8 +2,11 @@ package com.commercetools.sync.categories.utils;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.commons.utils.AssetsUpdateActionUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.categories.commands.updateactions.AddAsset;
+import io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.categories.commands.updateactions.ChangeOrderHint;
 import io.sphere.sdk.categories.commands.updateactions.ChangeParent;
@@ -24,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.categories.utils.CategoryAssetUpdateActionUtils.buildActions;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
@@ -238,10 +242,14 @@ public final class CategoryUpdateActionUtils {
         final List<Asset> oldCategoryAssets = oldCategory.getAssets();
 
         return ofNullable(newCategory.getAssets())
-
-            .map(newAssetDrafts -> CategoryAssetsUpdateActionUtils.buildAssetsUpdateActions(oldCategoryAssets,
-                newAssetDrafts, syncOptions))
-
+            .map(newAssetDrafts ->
+                AssetsUpdateActionUtils.buildAssetsUpdateActions(
+                    oldCategoryAssets,
+                    newAssetDrafts,
+                    (oldAsset, newAssetDraft) -> buildActions(oldAsset, newAssetDraft, syncOptions),
+                    RemoveAsset::ofKey,
+                    ChangeAssetOrder::of,
+                    AddAsset::of))
             .orElseGet(() -> oldCategoryAssets.stream()
                                               .map(oldAsset -> RemoveAsset.ofKey(oldAsset.getKey()))
                                               .collect(Collectors.toList()));
