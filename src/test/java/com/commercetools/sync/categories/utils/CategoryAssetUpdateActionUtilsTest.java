@@ -23,6 +23,7 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +39,7 @@ import static com.commercetools.sync.categories.utils.CategoryAssetUpdateActionU
 import static com.commercetools.sync.categories.utils.CategoryAssetUpdateActionUtils.buildSetAssetSourcesUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryAssetUpdateActionUtils.buildSetAssetTagsUpdateAction;
 import static io.sphere.sdk.models.LocalizedString.empty;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -296,11 +298,8 @@ public class CategoryAssetUpdateActionUtilsTest {
                                                           .custom(newCustomFieldsDraft)
                                                           .build();
 
-        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
-
-
         final List<UpdateAction<Category>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, syncOptions);
+            buildCustomUpdateActions(oldAsset, newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).isEmpty();
     }
@@ -330,12 +329,52 @@ public class CategoryAssetUpdateActionUtilsTest {
                                                           .custom(newCustomFieldsDraft)
                                                           .build();
 
-        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        final List<UpdateAction<Category>> updateActions =
+            buildCustomUpdateActions(oldAsset, newAssetDraft, SYNC_OPTIONS);
+
+        assertThat(updateActions).hasSize(2);
+    }
+
+    @Test
+    public void buildCustomUpdateActions_WithBadCustomFieldData_ShouldNotBuildUpdateActionAndTriggerErrorCallback() {
+        final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+        oldCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        oldCustomFieldsMap.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
+
+        final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+        newCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
+        newCustomFieldsMap.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo"));
+
+
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        when(oldCustomFields.getType()).thenReturn(Type.referenceOfId(""));
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+
+        final CustomFieldsDraft newCustomFieldsDraft =
+            CustomFieldsDraft.ofTypeIdAndJson("", newCustomFieldsMap);
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+
+        final AssetDraft newAssetDraft = AssetDraftBuilder.of(emptyList(), empty())
+                                                          .custom(newCustomFieldsDraft)
+                                                          .build();
+
+        final List<String> errors = new ArrayList<>();
+
+        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                          .errorCallback((errorMessage, throwable) ->
+                                                                              errors.add(errorMessage))
+                                                                          .build();
 
 
         final List<UpdateAction<Category>> updateActions =
             buildCustomUpdateActions(oldAsset, newAssetDraft, syncOptions);
 
-        assertThat(updateActions).hasSize(2);
+        assertThat(updateActions).isEmpty();
+        assertThat(errors).hasSize(1);
+        assertThat(errors.get(0))
+            .isEqualTo(format("Failed to build custom fields update actions on the asset with id '%s'."
+            + " Reason: Custom type ids are not set for both the old and new asset.", oldAsset.getId()));
     }
 }
