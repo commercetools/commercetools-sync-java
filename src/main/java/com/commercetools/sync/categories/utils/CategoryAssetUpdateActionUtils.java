@@ -160,8 +160,15 @@ public final class CategoryAssetUpdateActionUtils {
         @Nonnull final Asset oldAsset,
         @Nonnull final AssetDraft newAsset,
         @Nonnull final CategorySyncOptions syncOptions) {
-        return CustomUpdateActionUtils.buildCustomUpdateActions(oldAsset, newAsset,
-            new AssetCustomActionBuilder(), -1, Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey,
+
+        return CustomUpdateActionUtils.buildCustomUpdateActions(
+            oldAsset,
+            newAsset,
+            new AssetCustomActionBuilder(),
+            -1,
+            Asset::getId,
+            asset -> Asset.resourceTypeId(),
+            Asset::getKey,
             syncOptions);
     }
 
