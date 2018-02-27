@@ -8,20 +8,25 @@ import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.categories.commands.updateactions.ChangeOrderHint;
 import io.sphere.sdk.categories.commands.updateactions.ChangeParent;
 import io.sphere.sdk.categories.commands.updateactions.ChangeSlug;
+import io.sphere.sdk.categories.commands.updateactions.RemoveAsset;
 import io.sphere.sdk.categories.commands.updateactions.SetDescription;
 import io.sphere.sdk.categories.commands.updateactions.SetExternalId;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
 
 public final class CategoryUpdateActionUtils {
     private static final String CATEGORY_CHANGE_PARENT_EMPTY_PARENT = "Cannot unset 'parent' field of category with id"
@@ -212,6 +217,34 @@ public final class CategoryUpdateActionUtils {
         @Nonnull final CategoryDraft newCategory) {
         return buildUpdateAction(oldCategory.getExternalId(),
             newCategory.getExternalId(), () -> SetExternalId.of(newCategory.getExternalId()));
+    }
+
+    /**
+     * Compares the externalId values of a {@link Category} and a {@link CategoryDraft} and returns an
+     * {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the {@link Category} and
+     * the {@link CategoryDraft} have the same externalId, then no update action is needed and hence an empty
+     * {@link Optional} is returned.
+     *
+     * @param oldCategory the category which should be updated.
+     * @param newCategory the category draft where we get the new externalId.
+     * @return A filled optional with the update action or an empty optional if the externalId values are identical.
+     */
+    @Nonnull
+    public static List<UpdateAction<Category>> buildAssetsUpdateActions(
+        @Nonnull final Category oldCategory,
+        @Nonnull final CategoryDraft newCategory,
+        @Nonnull final CategorySyncOptions syncOptions) {
+
+        final List<Asset> oldCategoryAssets = oldCategory.getAssets();
+
+        return ofNullable(newCategory.getAssets())
+
+            .map(newAssetDrafts -> CategoryAssetsUpdateActionUtils.buildAssetsUpdateActions(oldCategoryAssets,
+                newAssetDrafts, syncOptions))
+
+            .orElseGet(() -> oldCategoryAssets.stream()
+                                              .map(oldAsset -> RemoveAsset.ofKey(oldAsset.getKey()))
+                                              .collect(Collectors.toList()));
     }
 
     private CategoryUpdateActionUtils() {
