@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.commands.updateactions.ChangeAssetName;
 import io.sphere.sdk.categories.commands.updateactions.SetAssetCustomField;
+import io.sphere.sdk.categories.commands.updateactions.SetAssetCustomType;
 import io.sphere.sdk.categories.commands.updateactions.SetAssetDescription;
 import io.sphere.sdk.categories.commands.updateactions.SetAssetSources;
 import io.sphere.sdk.categories.commands.updateactions.SetAssetTags;
@@ -204,11 +205,29 @@ public class CategoryAssetUpdateActionUtilsTest {
     }
 
     @Test
+    public void buildSetAssetDescriptionUpdateAction_WithNullOldValue_ShouldBuildUpdateAction() {
+        final LocalizedString newDesc = LocalizedString.of(Locale.GERMAN, "newDesc");
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getDescription()).thenReturn(null);
+
+        final AssetDraft newAssetDraft = AssetDraftBuilder.of(emptyList(), empty())
+                                                          .description(newDesc).build();
+
+        final UpdateAction<Category> setAssetDescription =
+            buildSetAssetDescriptionUpdateAction(oldAsset, newAssetDraft).orElse(null);
+
+        assertThat(setAssetDescription).isNotNull();
+        assertThat(setAssetDescription).isInstanceOf(SetAssetDescription.class);
+        assertThat(((SetAssetDescription) setAssetDescription).getDescription()).isEqualTo(newDesc);
+    }
+
+    @Test
     public void buildSetAssetTagsUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final Set<String> oldTags = new HashSet<>();
         oldTags.add("oldTag");
         final Set<String> newTags = new HashSet<>();
-        oldTags.add("newTag");
+        newTags.add("newTag");
 
         final Asset oldAsset = mock(Asset.class);
         when(oldAsset.getTags()).thenReturn(oldTags);
@@ -240,6 +259,25 @@ public class CategoryAssetUpdateActionUtilsTest {
             buildSetAssetTagsUpdateAction(oldAsset, newAssetDraft);
 
         assertThat(productUpdateAction).isEmpty();
+    }
+
+    @Test
+    public void buildSetAssetTagsUpdateAction_WithNullOldValues_ShouldBuildUpdateAction() {
+        final Set<String> newTags = new HashSet<>();
+        newTags.add("newTag");
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getTags()).thenReturn(null);
+
+        final AssetDraft newAssetDraft = AssetDraftBuilder.of(emptyList(), empty())
+                                                          .tags(newTags).build();
+
+        final UpdateAction<Category> productUpdateAction =
+            buildSetAssetTagsUpdateAction(oldAsset, newAssetDraft).orElse(null);
+
+        assertThat(productUpdateAction).isNotNull();
+        assertThat(productUpdateAction).isInstanceOf(SetAssetTags.class);
+        assertThat(((SetAssetTags) productUpdateAction).getTags()).isEqualTo(newTags);
     }
 
     @Test
@@ -333,6 +371,31 @@ public class CategoryAssetUpdateActionUtilsTest {
             buildCustomUpdateActions(oldAsset, newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).hasSize(2);
+    }
+
+    @Test
+    public void buildCustomUpdateActions_WithNullOldValues_ShouldBuildUpdateAction() {
+
+        final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+        newCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
+        newCustomFieldsMap.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo"));
+
+        final CustomFieldsDraft newCustomFieldsDraft =
+            CustomFieldsDraft.ofTypeIdAndJson("1", newCustomFieldsMap);
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getCustom()).thenReturn(null);
+
+        final AssetDraft newAssetDraft = AssetDraftBuilder.of(emptyList(), empty())
+                                                          .custom(newCustomFieldsDraft)
+                                                          .build();
+
+        final List<UpdateAction<Category>> updateActions =
+            buildCustomUpdateActions(oldAsset, newAssetDraft, SYNC_OPTIONS);
+
+        assertThat(updateActions).containsExactly(
+            SetAssetCustomType.ofKey(newAssetDraft.getKey(), newCustomFieldsDraft)
+        );
     }
 
     @Test
