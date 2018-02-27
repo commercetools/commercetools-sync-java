@@ -221,14 +221,16 @@ public final class CategoryUpdateActionUtils {
     }
 
     /**
-     * Compares the externalId values of a {@link Category} and a {@link CategoryDraft} and returns an
-     * {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the {@link Category} and
-     * the {@link CategoryDraft} have the same externalId, then no update action is needed and hence an empty
-     * {@link Optional} is returned.
+     * Compares the assets of a {@link Category} and a {@link CategoryDraft} and returns a list of
+     * {@link UpdateAction}&lt;{@link Category}&gt; as a result. If both the {@link Category} and
+     * the {@link CategoryDraft} have the identical assets, then no update action is needed and hence an empty
+     * {@link List} is returned.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new externalId.
-     * @return A filled optional with the update action or an empty optional if the externalId values are identical.
+     * @param syncOptions the sync options with which a custom callback function is called in case errors exists
+     *                    while building assets custom field/type actions.
+     * @return A list with the update actions or an empty list if the assets are identical.
      */
     @Nonnull
     public static List<UpdateAction<Category>> buildAssetsUpdateActions(
