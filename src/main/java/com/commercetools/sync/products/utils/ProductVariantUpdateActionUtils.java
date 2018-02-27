@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.products.Image;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductVariant;
@@ -12,6 +13,7 @@ import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.MoveImageToPosition;
+import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.SetPrices;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
@@ -128,6 +131,34 @@ public final class ProductVariantUpdateActionUtils {
         final SetPrices setPricesUpdateAction = SetPrices.of(oldProductVariant.getId(),
             emptyIfNull(newProductVariant.getPrices()));
         return singletonList(setPricesUpdateAction);
+    }
+
+    /**
+     * Compares the {@link List} of {@link AssetDraft}s of a {@link ProductVariantDraft} and a
+     * {@link ProductVariant} and returns a {@link List} of {@link UpdateAction}&lt;{@link Product}&gt;. If both the
+     * {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of assets, then no update action
+     * is needed and hence an empty {@link List} is returned.
+     *
+     * @param oldProductVariant the {@link ProductVariant} which should be updated.
+     * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of prices.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
+     * needed.
+     */
+    @Nonnull
+    public static List<UpdateAction<Product>> buildProductVariantAssetsUpdateActions(
+        @Nonnull final ProductVariant oldProductVariant,
+        @Nonnull final ProductVariantDraft newProductVariant,
+        @Nonnull final ProductSyncOptions syncOptions) {
+
+        return ofNullable(newProductVariant.getAssets())
+            .map(newAssetDrafts ->
+                ProductVariantAssetUpdateActionUtils.buildProductVariantAssetsUpdateActions(
+                    oldProductVariant, newAssetDrafts, syncOptions))
+            .orElseGet(() ->
+                oldProductVariant.getAssets().stream()
+                                 .map(oldAsset ->
+                                     RemoveAsset.ofVariantIdWithKey(oldProductVariant.getId(), oldAsset.getKey(), true))
+                                 .collect(Collectors.toList()));
     }
 
     /**

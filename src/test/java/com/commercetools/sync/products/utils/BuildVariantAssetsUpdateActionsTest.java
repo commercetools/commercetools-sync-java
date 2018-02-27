@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildProductVariantAssetsUpdateActions;
+import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
