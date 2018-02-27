@@ -25,6 +25,30 @@ import static java.util.stream.Collectors.toMap;
 
 public final class AssetsUpdateActionUtils {
 
+    /**
+     * Compares a list of {@link Asset}s with a list of {@link AssetDraft}s. The method serves as a generic
+     * implementation for assets syncing. The method takes in functions for building the required update actions (
+     * AddAsset, RemoveAsset, ChangeAssetOrder and 1-1 update actions on assets (e.g. changeAssetName,
+     * setAssetDescription, etc..) for the required resource.
+     *
+     * <p>If the list of new {@link AssetDraft}s is {@code null}, then remove actions are built for every existing asset
+     * in the {@code oldAssets} list.
+     *
+     *
+     * @param oldAssets                     the old list of assets.
+     * @param newAssetDrafts                the new list of asset drafts.
+     * @param assetActionsBuilder           function that takes a matching old asset and a new asset and computes the
+     *                                      update actions needed to sync them.
+     * @param removeAssetActionBuilder      function that takes an asset key to build a RemoveAsset action of the
+     *                                      type T.
+     * @param changeAssetOrderActionBuilder function that takes a list of asset ids to build a ChangeAssetOrder action
+     *                                      of the type T.
+     * @param addAssetActionBuilder         function that takes an asset draft and an asset position to build an
+     *                                      AddAsset action of the type T.
+     * @param <T>                           the type of the resource the asset update actions are built for.
+     * @return a list of asset update actions on the resource of type T if the list of assets is not identical.
+     *         Otherwise, if the assets are identical, an empty list is returned.
+     */
     @Nonnull
     public static <T> List<UpdateAction<T>> buildAssetsUpdateActions(
         @Nonnull final List<Asset> oldAssets,
@@ -48,18 +72,6 @@ public final class AssetsUpdateActionUtils {
                                       .collect(Collectors.toList()));
     }
 
-
-    /**
-     *
-     * @param oldAssets
-     * @param newAssetDrafts
-     * @param assetActionsBuilder
-     * @param removeAssetActionBuilder
-     * @param changeAssetOrderActionBuilder
-     * @param addAssetActionBuilder
-     * @param <T>
-     * @return
-     */
     @Nonnull
     private static <T> List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
         @Nonnull final List<Asset> oldAssets,
@@ -76,7 +88,11 @@ public final class AssetsUpdateActionUtils {
         final Map<String, AssetDraft> newAssetDraftsKeyMap = newAssetDrafts
             .stream().collect(toMap(AssetDraft::getKey, assetDraft -> assetDraft));
 
-        // Action order prio: removeAsset → changeAssetOrder → addAsset
+
+        // It is important to have a changeAssetOrder action before an addAsset action, since changeAssetOrder requires
+        // asset ids for sorting them, and new assets don't have ids yet since they are generated
+        // by CTP after an asset is created. Therefore, the order of update actions must be:
+        // removeAsset → changeAssetOrder → addAsset
 
         //1. Remove or compare if matching.
         final List<UpdateAction<T>> updateActions = buildRemoveAssetOrAssetUpdateActions(
@@ -98,18 +114,6 @@ public final class AssetsUpdateActionUtils {
         return updateActions;
     }
 
-
-    /**
-     * TODO: Document that is shouldn't be used alone!
-     * @param oldAssets
-     * @param intermediateOldAssets
-     * @param oldAssetsKeyMap
-     * @param newAssetDraftsKeyMap
-     * @param buildAssetActionsBuilder
-     * @param removeAssetActionBuilder
-     * @param <T>
-     * @return
-     */
     @Nonnull
     private static <T> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
         @Nonnull final List<Asset> oldAssets,
@@ -140,14 +144,6 @@ public final class AssetsUpdateActionUtils {
     }
 
 
-    /**
-     * * TODO: Document that is shouldn't be used alone!
-     * @param intermediateOldAssets
-     * @param newAssetDrafts
-     * @param changeAssetOrderActionBuilder
-     * @param <T>
-     * @return
-     */
     @Nonnull
     private static <T> Optional<UpdateAction<T>> buildChangeAssetOrderUpdateAction(
         @Nonnull final List<Asset> intermediateOldAssets,
@@ -171,15 +167,6 @@ public final class AssetsUpdateActionUtils {
         return buildUpdateAction(oldOrder, newOrder, () -> changeAssetOrderActionBuilder.apply(newOrder));
     }
 
-
-    /**
-     * TODO: Document that is shouldn't be used alone!
-     * @param newProductVariantAssetDrafts
-     * @param oldAssetsKeyMap
-     * @param addAssetActionBuilder
-     * @param <T>
-     * @return
-     */
     @Nonnull
     private static <T> List<UpdateAction<T>> buildAddAssetUpdateActions(
         @Nonnull final List<AssetDraft> newProductVariantAssetDrafts,
