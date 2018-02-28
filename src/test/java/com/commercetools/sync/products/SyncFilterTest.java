@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.util.EnumSet;
 
+import static com.commercetools.sync.products.ActionGroup.ASSETS;
 import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
 import static com.commercetools.sync.products.ActionGroup.CATEGORIES;
 import static com.commercetools.sync.products.ActionGroup.DESCRIPTION;
@@ -34,15 +35,17 @@ public class SyncFilterTest {
         assertThat(syncFilter.filterActionGroup(DESCRIPTION)).isFalse();
         assertThat(syncFilter.filterActionGroup(METADESCRIPTION)).isFalse();
         assertThat(syncFilter.filterActionGroup(NAME)).isFalse();
+        assertThat(syncFilter.filterActionGroup(ASSETS)).isFalse();
     }
 
     @Test
     public void filterActionGroup_WithWhiteListingMultipleGroups_ShouldFilterInOnlyTheseGroups() {
-        final SyncFilter syncFilter = ofWhiteList(IMAGES, ATTRIBUTES, CATEGORIES);
+        final SyncFilter syncFilter = ofWhiteList(IMAGES, ATTRIBUTES, CATEGORIES, ASSETS);
 
         assertThat(syncFilter.filterActionGroup(IMAGES)).isTrue();
         assertThat(syncFilter.filterActionGroup(ATTRIBUTES)).isTrue();
         assertThat(syncFilter.filterActionGroup(CATEGORIES)).isTrue();
+        assertThat(syncFilter.filterActionGroup(ASSETS)).isTrue();
         assertThat(syncFilter.filterActionGroup(DESCRIPTION)).isFalse();
         assertThat(syncFilter.filterActionGroup(METADESCRIPTION)).isFalse();
         assertThat(syncFilter.filterActionGroup(NAME)).isFalse();
@@ -71,10 +74,11 @@ public class SyncFilterTest {
         assertThat(syncFilter.filterActionGroup(CATEGORIES)).isTrue();
         assertThat(syncFilter.filterActionGroup(DESCRIPTION)).isTrue();
         assertThat(syncFilter.filterActionGroup(METADESCRIPTION)).isTrue();
+        assertThat(syncFilter.filterActionGroup(ASSETS)).isTrue();
     }
 
     @Test
-    public void filterActionGroup_WithBlackListingMultipleGroups_ShouldFilterInAllActionGroups() {
+    public void filterActionGroup_WithDefaulSyncFilterShouldFilterInAllActionGroups() {
         final SyncFilter syncFilter = SyncFilter.of();
         EnumSet.allOf(ActionGroup.class)
                .forEach(actionGroup -> assertThat(syncFilter.filterActionGroup(actionGroup)).isTrue());
