@@ -78,7 +78,7 @@ public class SyncFilterTest {
     }
 
     @Test
-    public void filterActionGroup_WithDefaulSyncFilterShouldFilterInAllActionGroups() {
+    public void filterActionGroup_WithDefaultSyncFilterShouldFilterInAllActionGroups() {
         final SyncFilter syncFilter = SyncFilter.of();
         EnumSet.allOf(ActionGroup.class)
                .forEach(actionGroup -> assertThat(syncFilter.filterActionGroup(actionGroup)).isTrue());
