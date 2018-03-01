@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
@@ -25,7 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.SyncUtils.replaceCustomTypeIdWithKeys;
+import static com.commercetools.sync.commons.utils.SyncUtils.replaceAssetsReferencesIdsWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static java.util.stream.Collectors.toList;
@@ -53,7 +52,8 @@ public final class VariantReferenceReplacementUtils {
                 final List<PriceDraft> priceDraftsWithKeys = replacePricesReferencesIdsWithKeys(productVariant);
                 final List<AttributeDraft> attributeDraftsWithKeys =
                     replaceAttributesReferencesIdsWithKeys(productVariant);
-                final List<AssetDraft> assetDraftsWithKeys = replaceAssetsReferencesIdsWithKeys(productVariant);
+                final List<AssetDraft> assetDraftsWithKeys =
+                    replaceAssetsReferencesIdsWithKeys(productVariant.getAssets());
 
                 return ProductVariantDraftBuilder.of(productVariant)
                                                  .prices(priceDraftsWithKeys)
@@ -81,25 +81,6 @@ public final class VariantReferenceReplacementUtils {
             final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
             return PriceDraftBuilder.of(price).channel(channelReferenceWithKey).build();
         }).collect(toList());
-    }
-
-    /**
-     * Takes a product variant that is supposed to have all its assets' custom references expanded in order to be able
-     * to fetch the keys and replace the reference ids with the corresponding keys for the custom references. This
-     * method returns as a result a {@link List} of {@link AssetDraft} that has all custom references with keys
-     * replacing the ids.
-     *
-     * <p>Any custom reference that is not expanded will have it's id in place and not replaced by the key.
-     *
-     * @param productVariant the product variant to replace its assets' custom ids with keys.
-     * @return  a {@link List} of {@link AssetDraft} that has all channel references with keys replacing the ids.
-     */
-    @Nonnull
-    static List<AssetDraft> replaceAssetsReferencesIdsWithKeys(@Nonnull final ProductVariant productVariant) {
-        return productVariant.getAssets().stream().map(asset ->
-            AssetDraftBuilder.of(asset)
-                             .custom(replaceCustomTypeIdWithKeys(asset)).build())
-                             .collect(toList());
     }
 
     /**

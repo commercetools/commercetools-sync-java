@@ -3,7 +3,6 @@ package com.commercetools.sync.products.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Price;
@@ -46,7 +45,6 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVar
 import static com.commercetools.sync.products.ProductSyncMockUtils.getTypeMock;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.isProductReference;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.isProductReferenceSet;
-import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceAssetsReferencesIdsWithKeys;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceAttributeReferenceIdWithKey;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceAttributeReferenceSetIdsWithKeys;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceAttributesReferencesIdsWithKeys;
@@ -263,71 +261,6 @@ public class VariantReferenceReplacementUtilsTest {
         final Reference<Channel> channelReference2AfterReplacement = priceDrafts.get(1).getChannel();
         assertThat(channelReference2AfterReplacement).isNotNull();
         assertThat(channelReference2AfterReplacement.getId()).isEqualTo(channelReference2.getId());
-    }
-
-    @Test
-    public void replaceAssetsReferencesIdsWithKeys_WithAllExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
-        final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
-
-        final Asset asset =
-            getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType));
-
-        // Mock ProductVariant
-        final ProductVariant productVariant = mock(ProductVariant.class);
-        when(productVariant.getAssets()).thenReturn(singletonList(asset));
-
-        final List<AssetDraft> referenceReplacedDrafts = replaceAssetsReferencesIdsWithKeys(productVariant);
-
-        referenceReplacedDrafts
-            .forEach(referenceReplacedDraft -> {
-                assertThat(referenceReplacedDraft.getCustom()).isNotNull();
-                assertThat(referenceReplacedDraft.getCustom().getType().getId()).isEqualTo(customType.getKey());
-            });
-    }
-
-    @Test
-    public void replaceAssetsReferencesIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceOnlyExpandedRefs() {
-        final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
-
-        final Asset asset1 =
-            getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType));
-        final Asset asset2 =
-            getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndId(Type.referenceTypeId(),
-                UUID.randomUUID().toString()));
-
-        // Mock ProductVariant
-        final ProductVariant productVariant = mock(ProductVariant.class);
-        when(productVariant.getAssets()).thenReturn(asList(asset1, asset2));
-
-        final List<AssetDraft> referenceReplacedDrafts = replaceAssetsReferencesIdsWithKeys(productVariant);
-
-        assertThat(referenceReplacedDrafts).hasSize(2);
-        assertThat(referenceReplacedDrafts.get(0).getCustom()).isNotNull();
-        assertThat(referenceReplacedDrafts.get(0).getCustom().getType().getId()).isEqualTo(customType.getKey());
-        assertThat(referenceReplacedDrafts.get(1).getCustom()).isNotNull();
-        assertThat(referenceReplacedDrafts.get(1).getCustom().getType().getId())
-            .isEqualTo(asset2.getCustom().getType().getId());
-    }
-
-    @Test
-    public void replaceAssetsReferencesIdsWithKeys_WithNonExpandedRefs_ShouldReturnReferencesWithoutReplacedKeys() {
-        // Mock Type
-        final String customTypeId = UUID.randomUUID().toString();
-
-        final Asset asset = getAssetMockWithCustomFields(
-            Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), customTypeId));
-
-        // Mock ProductVariant
-        final ProductVariant productVariant = mock(ProductVariant.class);
-        when(productVariant.getAssets()).thenReturn(singletonList(asset));
-
-        final List<AssetDraft> referenceReplacedDrafts = replaceAssetsReferencesIdsWithKeys(productVariant);
-
-        referenceReplacedDrafts
-            .forEach(referenceReplacedDraft -> {
-                    assertThat(referenceReplacedDraft.getCustom()).isNotNull();
-                    assertThat(referenceReplacedDraft.getCustom().getType().getId()).isEqualTo(customTypeId);
-                });
     }
 
     @Test
