@@ -5,9 +5,14 @@ import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.models.Asset;
+import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -75,5 +80,36 @@ public class MockUtils {
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(completedFuture(Optional.of("typeId")));
         return typeService;
+    }
+
+    /**
+     * Creates a mock {@link Type} with the supplied {@code id} and {@code key}.
+     * @param id the id of the type mock.
+     * @param key the key of the type mock.
+     * @return a mock product variant with the supplied prices and assets.
+     */
+    @Nonnull
+    public static Type getTypeMock(@Nonnull final String id, @Nonnull final String key) {
+        final Type mockCustomType = mock(Type.class);
+        when(mockCustomType.getId()).thenReturn(id);
+        when(mockCustomType.getKey()).thenReturn(key);
+        return mockCustomType;
+    }
+
+    /**
+     * Creates a mock {@link Asset} with the supplied {@link Type} reference for it's custom field.
+     * @param typeReference the type reference to attach to the custom field of the created asset.
+     * @return a mock asset with the supplied type reference on it's custom field.
+     */
+    @Nonnull
+    public static Asset getAssetMockWithCustomFields(@Nullable final Reference<Type> typeReference) {
+        // Mock Custom with expanded type reference
+        final CustomFields mockCustomFields = mock(CustomFields.class);
+        when(mockCustomFields.getType()).thenReturn(typeReference);
+
+        // Mock asset with custom fields
+        final Asset asset = mock(Asset.class);
+        when(asset.getCustom()).thenReturn(mockCustomFields);
+        return asset;
     }
 }

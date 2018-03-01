@@ -22,12 +22,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
+import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFields;
+import static com.commercetools.sync.commons.MockUtils.getTypeMock;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceAssetsReferencesIdsWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceCustomTypeIdWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getAssetMockWithCustomFields;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getTypeMock;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;

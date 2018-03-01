@@ -25,8 +25,6 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -264,37 +262,6 @@ public class ProductSyncMockUtils {
         final Price price = mock(Price.class);
         when(price.getChannel()).thenReturn(channelReference);
         return price;
-    }
-
-    /**
-     * Creates a mock {@link Asset} with the supplied {@link Type} reference for it's custom field.
-     * @param typeReference the type reference to attach to the custom field of the created asset.
-     * @return a mock asset with the supplied type reference on it's custom field.
-     */
-    @Nonnull
-    public static Asset getAssetMockWithCustomFields(@Nullable final Reference<Type> typeReference) {
-        // Mock Custom with expanded type reference
-        final CustomFields mockCustomFields = mock(CustomFields.class);
-        when(mockCustomFields.getType()).thenReturn(typeReference);
-
-        // Mock asset with custom fields
-        final Asset asset = mock(Asset.class);
-        when(asset.getCustom()).thenReturn(mockCustomFields);
-        return asset;
-    }
-
-    /**
-     * Creates a mock {@link Type} with the supplied {@code id} and {@code key}.
-     * @param id the id of the type mock.
-     * @param key the key of the type mock.
-     * @return a mock product variant with the supplied prices and assets.
-     */
-    @Nonnull
-    public static Type getTypeMock(@Nonnull final String id, @Nonnull final String key) {
-        final Type mockCustomType = mock(Type.class);
-        when(mockCustomType.getId()).thenReturn(id);
-        when(mockCustomType.getKey()).thenReturn(key);
-        return mockCustomType;
     }
 
     /**

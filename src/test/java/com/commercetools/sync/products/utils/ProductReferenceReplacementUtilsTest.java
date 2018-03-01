@@ -33,11 +33,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.products.ProductSyncMockUtils.getAssetMockWithCustomFields;
+import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFields;
+import static com.commercetools.sync.commons.MockUtils.getTypeMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithChannelReference;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMock;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getTypeMock;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;

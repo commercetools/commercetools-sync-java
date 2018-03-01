@@ -23,6 +23,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFields;
+import static com.commercetools.sync.commons.MockUtils.getTypeMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.BOOLEAN_ATTRIBUTE;
 import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_REFERENCE_ATTRIBUTE;
 import static com.commercetools.sync.products.ProductSyncMockUtils.DATE_ATTRIBUTE;
@@ -38,11 +40,9 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_REFER
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_REFERENCE_SET_ATTRIBUTE;
 import static com.commercetools.sync.products.ProductSyncMockUtils.TEXT_ATTRIBUTE;
 import static com.commercetools.sync.products.ProductSyncMockUtils.TIME_ATTRIBUTE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getAssetMockWithCustomFields;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithChannelReference;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMock;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getTypeMock;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.isProductReference;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.isProductReferenceSet;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceAttributeReferenceIdWithKey;
