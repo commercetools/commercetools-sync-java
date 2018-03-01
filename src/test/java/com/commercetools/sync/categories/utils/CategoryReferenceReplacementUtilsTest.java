@@ -104,8 +104,11 @@ public class CategoryReferenceReplacementUtilsTest {
     @Test
     public void buildCategoryQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final CategoryQuery categoryQuery = CategoryReferenceReplacementUtils.buildCategoryQuery();
-        assertThat(categoryQuery.expansionPaths()).hasSize(2);
+        assertThat(categoryQuery.expansionPaths()).hasSize(3);
         assertThat(categoryQuery.expansionPaths())
-                       .containsExactly(ExpansionPath.of("custom.type"), ExpansionPath.of("parent"));
+            .containsExactly(
+                ExpansionPath.of("custom.type"),
+                ExpansionPath.of("assets[*].custom.type"),
+                ExpansionPath.of("parent"));
     }
 }
