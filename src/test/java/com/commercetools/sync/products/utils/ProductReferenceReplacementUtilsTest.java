@@ -317,16 +317,17 @@ public class ProductReferenceReplacementUtilsTest {
     @Test
     public void buildProductQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final ProductQuery productQuery = ProductReferenceReplacementUtils.buildProductQuery();
-        assertThat(productQuery.expansionPaths()).hasSize(10);
         assertThat(productQuery.expansionPaths())
-            .containsOnlyElementsOf(asList(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
+            .containsExactlyElementsOf(asList(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
                 ExpansionPath.of("state"), ExpansionPath.of("masterData.staged.categories[*]"),
                 ExpansionPath.of("masterData.staged.masterVariant.prices[*].channel"),
                 ExpansionPath.of("masterData.staged.variants[*].prices[*].channel"),
                 ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value"),
                 ExpansionPath.of("masterData.staged.variants[*].attributes[*].value"),
                 ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value[*]"),
-                ExpansionPath.of("masterData.staged.variants[*].attributes[*].value[*]")));
+                ExpansionPath.of("masterData.staged.variants[*].attributes[*].value[*]"),
+                ExpansionPath.of("masterData.staged.masterVariant.assets[*].custom.type"),
+                ExpansionPath.of("masterData.staged.variants[*].assets[*].custom.type")));
     }
 
     @Test
