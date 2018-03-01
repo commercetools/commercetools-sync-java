@@ -6,6 +6,7 @@ import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.expansion.ExpansionPath;
+import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.CustomFieldsDraft;
@@ -14,6 +15,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.replaceAssetsReferencesIdsWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceCustomTypeIdWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
 
@@ -38,9 +40,14 @@ public final class CategoryReferenceReplacementUtils {
                 @SuppressWarnings("ConstantConditions") // NPE checked in replaceReferenceIdWithKey
                 final Reference<Category> parentWithKeyInReference = replaceReferenceIdWithKey(category.getParent(),
                     () -> Category.referenceOfId(category.getParent().getObj().getKey()));
+
+                final List<AssetDraft> assetDraftsWithKeyInReference =
+                    replaceAssetsReferencesIdsWithKeys(category.getAssets());
+
                 return CategoryDraftBuilder.of(category)
                                            .custom(customTypeWithKeysInReference)
                                            .parent(parentWithKeyInReference)
+                                           .assets(assetDraftsWithKeyInReference)
                                            .build();
             })
             .collect(Collectors.toList());
