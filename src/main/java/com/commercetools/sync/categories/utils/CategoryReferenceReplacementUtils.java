@@ -51,6 +51,7 @@ public final class CategoryReferenceReplacementUtils {
      * expanded for the sync:
      * <ul>
      *     <li>Custom Type</li>
+     *     <li>Assets Custom Types</li>
      *     <li>Parent Category</li>
      * </ul>
      *
@@ -61,6 +62,7 @@ public final class CategoryReferenceReplacementUtils {
         return CategoryQuery.of()
                             .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
                             .withExpansionPaths(ExpansionPath.of("custom.type"))
+                            .plusExpansionPaths(ExpansionPath.of("assets[*].custom.type"))
                             .plusExpansionPaths(CategoryExpansionModel::parent);
     }
 
