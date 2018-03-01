@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.utils.productvariantupdateactionutils;
 
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
@@ -19,6 +20,7 @@ import io.sphere.sdk.products.commands.updateactions.SetAssetSources;
 import io.sphere.sdk.products.commands.updateactions.SetAssetTags;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -39,6 +41,7 @@ public class BuildVariantAssetsUpdateActionsTest {
         "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/assets/";
     private static final String PRODUCT_WITH_ASSETS_ABC = RES_ROOT + "product-with-assets-abc.json";
     private static final String PRODUCT_DRAFT_WITH_ASSETS_ABC = RES_ROOT + "product-draft-with-assets-abc.json";
+    private static final String PRODUCT_DRAFT_WITH_ASSETS_ABB = RES_ROOT + "product-draft-with-assets-abb.json";
     private static final String PRODUCT_DRAFT_WITH_ASSETS_ABC_WITH_CHANGES =
         RES_ROOT + "product-draft-with-assets-abc-with-changes.json";
     private static final String PRODUCT_DRAFT_WITH_ASSETS_AB = RES_ROOT + "product-draft-with-assets-ab.json";
@@ -119,6 +122,40 @@ public class BuildVariantAssetsUpdateActionsTest {
             buildProductVariantAssetsUpdateActions(oldMasterVariant, newMasterVariant, SYNC_OPTIONS);
 
         assertThat(updateActions).isEmpty();
+    }
+
+    @Test
+    public void buildProductVariantAssetsUpdateActions_WithDuplicateAssetKeys_ShouldNotBuildActionsAndTriggerErrorCb() {
+        final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+        final ProductDraft newProductDraft = readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABB, ProductDraft.class);
+
+
+        final ProductVariant oldMasterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
+        final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                  .errorCallback((errorMessage, exception) -> {
+                                                                      errorMessages.add(errorMessage);
+                                                                      exceptions.add(exception);
+                                                                  })
+                                                                  .build();
+
+        final List<UpdateAction<Product>> updateActions =
+            buildProductVariantAssetsUpdateActions(oldMasterVariant, newMasterVariant, syncOptions);
+
+        assertThat(updateActions).isEmpty();
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errorMessages.get(0)).matches("Failed to build update actions for the assets of the product "
+            + "variant with the sku 'mv-sku'. Reason: .*BuildUpdateActionException: Supplied asset drafts have "
+            + "duplicate keys. Asset keys are expected to be unique inside their container \\(a product variant or a "
+            + "category\\).");
+        assertThat(exceptions).hasSize(1);
+        assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
+        assertThat(exceptions.get(0).getMessage()).contains("Supplied asset drafts have duplicate "
+            + "keys. Asset keys are expected to be unique inside their container (a product variant or a category).");
+        assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(IllegalStateException.class);
     }
 
     @Test

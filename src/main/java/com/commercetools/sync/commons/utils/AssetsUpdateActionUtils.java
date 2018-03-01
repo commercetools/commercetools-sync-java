@@ -1,5 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
@@ -34,7 +35,6 @@ public final class AssetsUpdateActionUtils {
      * <p>If the list of new {@link AssetDraft}s is {@code null}, then remove actions are built for every existing asset
      * in the {@code oldAssets} list.
      *
-     *
      * @param oldAssets                     the old list of assets.
      * @param newAssetDrafts                the new list of asset drafts.
      * @param assetActionsBuilder           function that takes a matching old asset and a new asset and computes the
@@ -48,6 +48,7 @@ public final class AssetsUpdateActionUtils {
      * @param <T>                           the type of the resource the asset update actions are built for.
      * @return a list of asset update actions on the resource of type T if the list of assets is not identical.
      *         Otherwise, if the assets are identical, an empty list is returned.
+     * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
      */
     @Nonnull
     public static <T> List<UpdateAction<T>> buildAssetsUpdateActions(
@@ -56,20 +57,22 @@ public final class AssetsUpdateActionUtils {
         @Nonnull final BiFunction<Asset, AssetDraft, List<UpdateAction<T>>> assetActionsBuilder,
         @Nonnull final Function<String, UpdateAction<T>> removeAssetActionBuilder,
         @Nonnull final Function<List<String>, UpdateAction<T>> changeAssetOrderActionBuilder,
-        @Nonnull final BiFunction<AssetDraft, Integer, UpdateAction<T>> addAssetActionBuilder) {
+        @Nonnull final BiFunction<AssetDraft, Integer, UpdateAction<T>> addAssetActionBuilder)
+        throws BuildUpdateActionException {
 
-        return ofNullable(newAssetDrafts)
-            .map(assetDrafts ->
-                buildAssetsUpdateActionsWithNewAssetDrafts(
-                    oldAssets,
-                    assetDrafts,
-                    assetActionsBuilder,
-                    removeAssetActionBuilder,
-                    changeAssetOrderActionBuilder,
-                    addAssetActionBuilder))
-            .orElseGet(() -> oldAssets.stream()
-                                      .map(oldAsset -> removeAssetActionBuilder.apply(oldAsset.getKey()))
-                                      .collect(Collectors.toList()));
+        if (newAssetDrafts != null) {
+            return buildAssetsUpdateActionsWithNewAssetDrafts(
+                oldAssets,
+                newAssetDrafts,
+                assetActionsBuilder,
+                removeAssetActionBuilder,
+                changeAssetOrderActionBuilder,
+                addAssetActionBuilder);
+        } else {
+            return oldAssets.stream()
+                            .map(oldAsset -> removeAssetActionBuilder.apply(oldAsset.getKey()))
+                            .collect(Collectors.toList());
+        }
     }
 
     @Nonnull
@@ -79,14 +82,22 @@ public final class AssetsUpdateActionUtils {
         @Nonnull final BiFunction<Asset, AssetDraft, List<UpdateAction<T>>> assetActionsBuilder,
         @Nonnull final Function<String, UpdateAction<T>> removeAssetActionBuilder,
         @Nonnull final Function<List<String>, UpdateAction<T>> changeAssetOrderActionBuilder,
-        @Nonnull final BiFunction<AssetDraft, Integer, UpdateAction<T>> addAssetActionBuilder) {
+        @Nonnull final BiFunction<AssetDraft, Integer, UpdateAction<T>> addAssetActionBuilder)
+        throws BuildUpdateActionException {
 
         // Asset list that represents the state of the old variant assets after each applied update action.
         final List<Asset> intermediateOldAssets = new ArrayList<>(oldAssets);
 
         final Map<String, Asset> oldAssetsKeyMap = oldAssets.stream().collect(toMap(Asset::getKey, asset -> asset));
-        final Map<String, AssetDraft> newAssetDraftsKeyMap = newAssetDrafts
-            .stream().collect(toMap(AssetDraft::getKey, assetDraft -> assetDraft));
+
+        Map<String, AssetDraft> newAssetDraftsKeyMap;
+        try {
+            newAssetDraftsKeyMap = newAssetDrafts
+                .stream().collect(toMap(AssetDraft::getKey, assetDraft -> assetDraft));
+        } catch (final IllegalStateException exception) {
+            throw new BuildUpdateActionException("Supplied asset drafts have duplicate keys. Asset keys are expected to"
+                + " be unique inside their container (a product variant or a category).", exception);
+        }
 
 
         // It is important to have a changeAssetOrder action before an addAsset action, since changeAssetOrder requires

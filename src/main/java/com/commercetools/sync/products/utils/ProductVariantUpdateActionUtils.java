@@ -36,6 +36,7 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildActions;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 
@@ -143,7 +144,8 @@ public final class ProductVariantUpdateActionUtils {
      * Compares the {@link List} of {@link AssetDraft}s of a {@link ProductVariantDraft} and a
      * {@link ProductVariant} and returns a {@link List} of {@link UpdateAction}&lt;{@link Product}&gt;. If both the
      * {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of assets, then no update action
-     * is needed and hence an empty {@link List} is returned.
+     * is needed and hence an empty {@link List} is returned. In case, the new product variant draft has a list of
+     * assets in which a duplicate key exists, the error callback is triggered and an empty list is returned.
      *
      * @param oldProductVariant the {@link ProductVariant} which should be updated.
      * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of assets.
@@ -158,19 +160,26 @@ public final class ProductVariantUpdateActionUtils {
         @Nonnull final ProductVariantDraft newProductVariant,
         @Nonnull final ProductSyncOptions syncOptions) {
 
-        return buildAssetsUpdateActions(
-            oldProductVariant.getAssets(),
-            newProductVariant.getAssets(),
-            (oldAsset, newAssetDraft) ->
-                buildActions(oldProductVariant.getId(), oldAsset, newAssetDraft, syncOptions),
-            key ->
-                RemoveAsset.ofVariantIdWithKey(oldProductVariant.getId(), key, true),
-            (newAssetOrder) ->
-                ChangeAssetOrder.ofVariantId(oldProductVariant.getId(), newAssetOrder, true),
-            (assetDraft, index) ->
-                AddAsset.ofVariantId(oldProductVariant.getId(), assetDraft)
-                        .withPosition(index)
-                        .withStaged(true));
+        try {
+            return buildAssetsUpdateActions(
+                oldProductVariant.getAssets(),
+                newProductVariant.getAssets(),
+                (oldAsset, newAssetDraft) ->
+                    buildActions(oldProductVariant.getId(), oldAsset, newAssetDraft, syncOptions),
+                key ->
+                    RemoveAsset.ofVariantIdWithKey(oldProductVariant.getId(), key, true),
+                (newAssetOrder) ->
+                    ChangeAssetOrder.ofVariantId(oldProductVariant.getId(), newAssetOrder, true),
+                (assetDraft, index) ->
+                    AddAsset.ofVariantId(oldProductVariant.getId(), assetDraft)
+                            .withPosition(index)
+                            .withStaged(true));
+        } catch (final BuildUpdateActionException exception) {
+            syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
+                + "of the product variant with the sku '%s'. Reason: %s", oldProductVariant.getSku(), exception),
+                exception);
+            return emptyList();
+        }
     }
 
     /**

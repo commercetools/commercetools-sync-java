@@ -2,6 +2,7 @@ package com.commercetools.sync.categories.utils.categoryupdateactionutils;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -17,6 +18,7 @@ import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.AssetSourceBuilder;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -35,6 +37,7 @@ public class BuildAssetsUpdateActionsTest {
     private static final String RES_ROOT =
         "com/commercetools/sync/categories/utils/categoryupdateactionutils/assets/";
     private static final String CATEGORY_DRAFT_WITH_ASSETS_ABC = RES_ROOT + "category-draft-with-assets-abc.json";
+    private static final String CATEGORY_DRAFT_WITH_ASSETS_ABB = RES_ROOT + "category-draft-with-assets-abb.json";
     private static final String CATEGORY_DRAFT_WITH_ASSETS_ABC_WITH_CHANGES =
         RES_ROOT + "category-draft-with-assets-abc-with-changes.json";
     private static final String CATEGORY_DRAFT_WITH_ASSETS_AB = RES_ROOT + "category-draft-with-assets-ab.json";
@@ -111,6 +114,36 @@ public class BuildAssetsUpdateActionsTest {
             buildAssetsUpdateActions(oldCategory, newCategoryDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).isEmpty();
+    }
+
+    @Test
+    public void buildAssetsUpdateActions_WithDuplicateAssetKeys_ShouldNotBuildActionsAndTriggerErrorCb() {
+        final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
+        final CategoryDraft newCategoryDraft =
+            readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABB, CategoryDraft.class);
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                          .errorCallback((errorMessage, exception) -> {
+                                                                              errorMessages.add(errorMessage);
+                                                                              exceptions.add(exception);
+                                                                          })
+                                                                          .build();
+
+        final List<UpdateAction<Category>> updateActions =
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
+
+        assertThat(updateActions).isEmpty();
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errorMessages.get(0)).matches("Failed to build update actions for the assets of the category with "
+            + "the key 'null'. Reason: .*BuildUpdateActionException: Supplied asset drafts have duplicate keys. Asset "
+            + "keys are expected to be unique inside their container \\(a product variant or a category\\).");
+        assertThat(exceptions).hasSize(1);
+        assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
+        assertThat(exceptions.get(0).getMessage()).contains("Supplied asset drafts have duplicate "
+            + "keys. Asset keys are expected to be unique inside their container (a product variant or a category).");
+        assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(IllegalStateException.class);
     }
 
     @Test

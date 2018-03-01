@@ -2,6 +2,7 @@ package com.commercetools.sync.categories.utils;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.utils.AssetsUpdateActionUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -28,6 +29,7 @@ import java.util.Optional;
 import static com.commercetools.sync.categories.utils.CategoryAssetUpdateActionUtils.buildActions;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 
 public final class CategoryUpdateActionUtils {
     private static final String CATEGORY_CHANGE_PARENT_EMPTY_PARENT = "Cannot unset 'parent' field of category with id"
@@ -224,7 +226,8 @@ public final class CategoryUpdateActionUtils {
      * Compares the assets of a {@link Category} and a {@link CategoryDraft} and returns a list of
      * {@link UpdateAction}&lt;{@link Category}&gt; as a result. If both the {@link Category} and
      * the {@link CategoryDraft} have the identical assets, then no update action is needed and hence an empty
-     * {@link List} is returned.
+     * {@link List} is returned. In case, the new category draft has a list of assets in which a duplicate key exists,
+     * the error callback is triggered and an empty list is returned.
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new externalId.
@@ -238,13 +241,19 @@ public final class CategoryUpdateActionUtils {
         @Nonnull final CategoryDraft newCategory,
         @Nonnull final CategorySyncOptions syncOptions) {
 
-        return AssetsUpdateActionUtils.buildAssetsUpdateActions(
-            oldCategory.getAssets(),
-            newCategory.getAssets(),
-            (oldAsset, newAssetDraft) -> buildActions(oldAsset, newAssetDraft, syncOptions),
-            RemoveAsset::ofKey,
-            ChangeAssetOrder::of,
-            AddAsset::of);
+        try {
+            return AssetsUpdateActionUtils.buildAssetsUpdateActions(
+                oldCategory.getAssets(),
+                newCategory.getAssets(),
+                (oldAsset, newAssetDraft) -> buildActions(oldAsset, newAssetDraft, syncOptions),
+                RemoveAsset::ofKey,
+                ChangeAssetOrder::of,
+                AddAsset::of);
+        } catch (final BuildUpdateActionException exception) {
+            syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
+                + "of the category with the key '%s'. Reason: %s", oldCategory.getKey(), exception), exception);
+            return emptyList();
+        }
     }
 
     private CategoryUpdateActionUtils() {
