@@ -35,7 +35,7 @@ import static java.util.stream.Collectors.toList;
 public final class ProductReferenceReplacementUtils {
 
     /**
-     * Takes a list of Products that are supposed to have their product type, tax category, state and  category
+     * Takes a list of Products that are supposed to have their product type, tax category, state, variants and category
      * references expanded in order to be able to fetch the keys and replace the reference ids with the corresponding
      * keys and then return a new list of product drafts with their references containing keys instead of the ids.
      *
@@ -225,6 +225,8 @@ public final class ProductReferenceReplacementUtils {
      *     <li>Product Type</li>
      *     <li>Tax Category</li>
      *     <li>Product State</li>
+     *     <li>master variant asset custom types</li>
+     *     <li>all variant asset custom types</li>
      *     <li>Staged Product Categories</li>
      *     <li>Staged Price Channels</li>
      *     <li>Reference Attributes</li>
@@ -248,7 +250,11 @@ public final class ProductReferenceReplacementUtils {
                            .plusExpansionPaths(expansionModel ->
                                expansionModel.masterData().staged().allVariants().attributes().value())
                            .plusExpansionPaths(expansionModel ->
-                               expansionModel.masterData().staged().allVariants().attributes().valueSet());
+                               expansionModel.masterData().staged().allVariants().attributes().valueSet())
+                           .plusExpansionPaths(
+                               ExpansionPath.of("masterData.staged.variants[*].assets[*].custom.type"))
+                           .plusExpansionPaths(
+                               ExpansionPath.of("masterData.staged.masterVariant.assets[*].custom.type"));
     }
 
     private ProductReferenceReplacementUtils() {
