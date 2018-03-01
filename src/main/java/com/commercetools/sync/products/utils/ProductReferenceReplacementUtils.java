@@ -252,9 +252,9 @@ public final class ProductReferenceReplacementUtils {
                            .plusExpansionPaths(expansionModel ->
                                expansionModel.masterData().staged().allVariants().attributes().valueSet())
                            .plusExpansionPaths(
-                               ExpansionPath.of("masterData.staged.variants[*].assets[*].custom.type"))
+                               ExpansionPath.of("masterData.staged.masterVariant.assets[*].custom.type"))
                            .plusExpansionPaths(
-                               ExpansionPath.of("masterData.staged.masterVariant.assets[*].custom.type"));
+                               ExpansionPath.of("masterData.staged.variants[*].assets[*].custom.type"));
     }
 
     private ProductReferenceReplacementUtils() {
