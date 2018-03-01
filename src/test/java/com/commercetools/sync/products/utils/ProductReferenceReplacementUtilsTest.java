@@ -4,6 +4,8 @@ import com.commercetools.sync.commons.helpers.CategoryReferencePair;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.expansion.ExpansionPath;
+import io.sphere.sdk.models.Asset;
+import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
@@ -17,6 +19,7 @@ import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
+import io.sphere.sdk.types.Type;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -30,9 +33,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.products.ProductSyncMockUtils.getAssetMockWithCustomFields;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithChannelReference;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMockWithPrices;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMock;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getTypeMock;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -65,7 +70,15 @@ public class ProductReferenceReplacementUtilsTest {
         final Reference<Channel> channelReference = Reference
             .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
         final Price price = getPriceMockWithChannelReference(channelReference);
-        final ProductVariant productVariant = getProductVariantMockWithPrices(singletonList(price));
+
+        final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
+        final Asset asset1 =
+            getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType));
+        final Asset asset2 =
+            getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndId(Type.referenceTypeId(),
+                UUID.randomUUID().toString()));
+
+        final ProductVariant productVariant = getProductVariantMock(singletonList(price), asList(asset1, asset2));
 
         final Product productWithNonExpandedProductType = getProductMock(singletonList(productVariant));
 
@@ -109,6 +122,24 @@ public class ProductReferenceReplacementUtilsTest {
         assertThat(productDraftsWithKeysOnReferences.get(2).getTaxCategory().getId()).isEqualTo(taxCategory.getKey());
         assertThat(productDraftsWithKeysOnReferences.get(2).getState().getId()).isEqualTo(state.getId());
 
+        final List<AssetDraft> product1Assets = productDraftsWithKeysOnReferences.get(0).getMasterVariant()
+                                                                         .getAssets();
+        assertThat(product1Assets).hasSize(2);
+        assertThat(product1Assets.get(0).getCustom().getType().getId()).isEqualTo(customType.getKey());
+        assertThat(product1Assets.get(1).getCustom().getType().getId()).isEqualTo(asset2.getCustom().getType().getId());
+
+        final List<AssetDraft> product2Assets = productDraftsWithKeysOnReferences.get(1).getMasterVariant()
+                                                                                 .getAssets();
+        assertThat(product2Assets).hasSize(2);
+        assertThat(product2Assets.get(0).getCustom().getType().getId()).isEqualTo(customType.getKey());
+        assertThat(product2Assets.get(1).getCustom().getType().getId()).isEqualTo(asset2.getCustom().getType().getId());
+
+        final List<AssetDraft> product3Assets = productDraftsWithKeysOnReferences.get(2).getMasterVariant()
+                                                                                 .getAssets();
+        assertThat(product3Assets).hasSize(2);
+        assertThat(product3Assets.get(0).getCustom().getType().getId()).isEqualTo(customType.getKey());
+        assertThat(product3Assets.get(1).getCustom().getType().getId()).isEqualTo(asset2.getCustom().getType().getId());
+
     }
 
     @Test
@@ -133,7 +164,7 @@ public class ProductReferenceReplacementUtilsTest {
         final Reference<Channel> channelReference = Reference
             .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
         final Price price = getPriceMockWithChannelReference(channelReference);
-        final ProductVariant productVariant = getProductVariantMockWithPrices(singletonList(price));
+        final ProductVariant productVariant = getProductVariantMock(singletonList(price));
 
         final Category category = getCategoryMock(resourceKey);
         final Reference<Category> categoryReference =

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.CategoryOrderHints;
@@ -24,6 +25,8 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
+import io.sphere.sdk.types.CustomFields;
+import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,6 +51,8 @@ public class ProductSyncMockUtils {
     public static final String PRODUCT_KEY_1_RESOURCE_PATH = "product-key-1.json";
     public static final String PRODUCT_KEY_1_CHANGED_RESOURCE_PATH = "product-key-1-changed.json";
     public static final String PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH = "product-key-1-with-prices.json";
+    public static final String PRODUCT_KEY_1_WITH_ASSETS_ABC_RESOURCE_PATH = "product-key-1-with-assets-abc.json";
+    public static final String PRODUCT_KEY_1_WITH_ASSETS_CBD_RESOURCE_PATH = "product-key-1-with-assets-cbd.json";
     public static final String PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH =
         "product-key-1-changed-with-prices.json";
     public static final String PRODUCT_KEY_2_RESOURCE_PATH = "product-key-2.json";
@@ -262,14 +267,60 @@ public class ProductSyncMockUtils {
     }
 
     /**
+     * Creates a mock {@link Asset} with the supplied {@link Type} reference for it's custom field.
+     * @param typeReference the type reference to attach to the custom field of the created asset.
+     * @return a mock asset with the supplied type reference on it's custom field.
+     */
+    @Nonnull
+    public static Asset getAssetMockWithCustomFields(@Nullable final Reference<Type> typeReference) {
+        // Mock Custom with expanded type reference
+        final CustomFields mockCustomFields = mock(CustomFields.class);
+        when(mockCustomFields.getType()).thenReturn(typeReference);
+
+        // Mock asset with custom fields
+        final Asset asset = mock(Asset.class);
+        when(asset.getCustom()).thenReturn(mockCustomFields);
+        return asset;
+    }
+
+    /**
+     * Creates a mock {@link Type} with the supplied {@code id} and {@code key}.
+     * @param id the id of the type mock.
+     * @param key the key of the type mock.
+     * @return a mock product variant with the supplied prices and assets.
+     */
+    @Nonnull
+    public static Type getTypeMock(@Nonnull final String id, @Nonnull final String key) {
+        final Type mockCustomType = mock(Type.class);
+        when(mockCustomType.getId()).thenReturn(id);
+        when(mockCustomType.getKey()).thenReturn(key);
+        return mockCustomType;
+    }
+
+    /**
      * Creates a mock {@link ProductVariant} with the supplied {@link Price} {@link List}.
      * @param prices the prices to attach on the mock {@link ProductVariant}.
      * @return a mock product variant with the supplied prices.
      */
     @Nonnull
-    public static ProductVariant getProductVariantMockWithPrices(@Nonnull final List<Price> prices) {
+    public static ProductVariant getProductVariantMock(@Nonnull final List<Price> prices) {
         final ProductVariant productVariant = mock(ProductVariant.class);
         when(productVariant.getPrices()).thenReturn(prices);
+        return productVariant;
+    }
+
+    /**
+     * Creates a mock {@link ProductVariant} with the supplied {@link Price} and {@link Asset} {@link List}.
+     * @param prices the prices to attach on the mock {@link ProductVariant}.
+     * @param assets the assets to attach on the mock {@link ProductVariant}.
+     * @return a mock product variant with the supplied prices and assets.
+     */
+    @Nonnull
+    public static ProductVariant getProductVariantMock(@Nonnull final List<Price> prices,
+                                                       @Nonnull final List<Asset> assets) {
+        final ProductVariant productVariant = mock(ProductVariant.class);
+        when(productVariant.getPrices()).thenReturn(prices);
+        when(productVariant.getAssets()).thenReturn(assets);
         return productVariant;
     }
 
