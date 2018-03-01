@@ -69,7 +69,7 @@ _ **Product Sync** - Introduced the new ActionGroup: ASSETS which can be used in
 - **Commons** - Support for custom update actions calculation for secondary resources (e.g. prices, product assets and category assets). [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Product Sync** - ProductReferenceReplacementUtils#replaceProductsReferenceIdsWithKeys and VariantReferenceReplacementUtils#replaceVariantsReferenceIdsWithKeys now support replacing asset custom reference ids with keys. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Category Sync** - CategoryReferenceReplacementUtils#replaceCategoriesReferenceIdsWithKeys now support replacing asset custom reference ids with keys. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Commons** - Introduced new SyncUtils#replaceAssetsReferenceIdsWithKeys which is a util that replaces the custom type ids with keys in a list of assets.. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Commons** - Introduced new SyncUtils#replaceAssetsReferenceIdsWithKeys which is a util that replaces the custom type ids with keys in a list of assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Product Sync** - ProductReferenceReplacementUtils#buildProductQuery now expands custom types on assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Category Sync** - CategoryReferenceReplacementUtils#buildCategoryQuery now expands custom types on assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
  
