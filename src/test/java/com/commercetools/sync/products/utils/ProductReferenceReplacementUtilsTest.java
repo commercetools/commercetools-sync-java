@@ -41,7 +41,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVar
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -349,7 +349,7 @@ public class ProductReferenceReplacementUtilsTest {
     public void buildProductQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final ProductQuery productQuery = ProductReferenceReplacementUtils.buildProductQuery();
         assertThat(productQuery.expansionPaths())
-            .containsExactlyElementsOf(asList(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
+            .containsExactly(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
                 ExpansionPath.of("state"), ExpansionPath.of("masterData.staged.categories[*]"),
                 ExpansionPath.of("masterData.staged.masterVariant.prices[*].channel"),
                 ExpansionPath.of("masterData.staged.variants[*].prices[*].channel"),
@@ -358,7 +358,7 @@ public class ProductReferenceReplacementUtilsTest {
                 ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value[*]"),
                 ExpansionPath.of("masterData.staged.variants[*].attributes[*].value[*]"),
                 ExpansionPath.of("masterData.staged.masterVariant.assets[*].custom.type"),
-                ExpansionPath.of("masterData.staged.variants[*].assets[*].custom.type")));
+                ExpansionPath.of("masterData.staged.variants[*].assets[*].custom.type"));
     }
 
     @Test
