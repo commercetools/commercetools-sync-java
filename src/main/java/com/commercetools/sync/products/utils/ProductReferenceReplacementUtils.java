@@ -225,8 +225,7 @@ public final class ProductReferenceReplacementUtils {
      *     <li>Product Type</li>
      *     <li>Tax Category</li>
      *     <li>Product State</li>
-     *     <li>master variant asset custom types</li>
-     *     <li>all variant asset custom types</li>
+     *     <li>Asset Custom Types</li>
      *     <li>Staged Product Categories</li>
      *     <li>Staged Price Channels</li>
      *     <li>Reference Attributes</li>
