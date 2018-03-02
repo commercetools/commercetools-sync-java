@@ -95,8 +95,7 @@ public class ProductSyncWithAssetsIT {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         deleteAllProducts(CTP_SOURCE_CLIENT);
-        final ProductSyncOptions syncOptions = buildSyncOptions();
-        productSync = new ProductSync(syncOptions);
+        productSync = new ProductSync(buildSyncOptions());
     }
 
     private void clearSyncTestCollections() {

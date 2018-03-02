@@ -64,8 +64,8 @@ public class ProductSyncWithAssetsIT {
 
     private static ProductType productType;
     private static Type assetsCustomType;
-    private ProductSyncOptions syncOptions;
     private Product product;
+    private ProductSync productSync;
     private List<AssetDraft> assetDraftsToCreateOnExistingProduct;
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
@@ -93,7 +93,7 @@ public class ProductSyncWithAssetsIT {
     public void setupTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
-        syncOptions = buildSyncOptions();
+        productSync = new ProductSync(buildSyncOptions());
 
 
         assetDraftsToCreateOnExistingProduct = asList(
@@ -153,7 +153,6 @@ public class ProductSyncWithAssetsIT {
             .key("draftKey")
             .build();
 
-        final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
@@ -184,7 +183,6 @@ public class ProductSyncWithAssetsIT {
             .key("draftKey")
             .build();
 
-        final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
@@ -229,7 +227,6 @@ public class ProductSyncWithAssetsIT {
             .key(product.getKey())
             .build();
 
-        final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
@@ -278,7 +275,6 @@ public class ProductSyncWithAssetsIT {
             .key(product.getKey())
             .build();
 
-        final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
