@@ -32,9 +32,9 @@ import static java.util.stream.Collectors.toSet;
 
 public final class VariantReferenceReplacementUtils {
     /**
-     * Takes a list of Variants that are supposed to have their prices and attributes references expanded in order to be
-     * able to fetch the keys and replace the reference ids with the corresponding keys and then return a new list of
-     * product variant drafts with their references containing keys instead of the ids.
+     * Takes a list of Variants that are supposed to have their prices', assets' and attributes' references expanded in
+     * order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return a
+     * new list of product variant drafts with their references containing keys instead of the ids.
      *
      * <p><b>Note:</b>If the references are not expanded for a product variant, the reference ids will not be replaced
      * with keys and will still have their ids in place.
