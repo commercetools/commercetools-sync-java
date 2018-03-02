@@ -17,9 +17,6 @@ import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.TypeDraft;
-import io.sphere.sdk.types.TypeDraftBuilder;
-import io.sphere.sdk.types.commands.TypeCreateCommand;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,9 +33,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomTypeFieldDefinitions;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.typeExists;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
 
@@ -191,26 +187,18 @@ public final class CategoryITUtils {
     /**
      * This method blocks to create a category custom Type on the CTP project defined by the supplied
      * {@code ctpClient}, with the supplied data.
-     *
-     * @param typeKey   the type key
+     *  @param typeKey   the type key
      * @param locale    the locale to be used for specifying the type name and field definitions names.
      * @param name      the name of the custom type.
      * @param ctpClient defines the CTP project to create the type on.
      */
-    public static void createCategoriesCustomType(@Nonnull final String typeKey,
+    public static Type createCategoriesCustomType(@Nonnull final String typeKey,
                                                   @Nonnull final Locale locale,
                                                   @Nonnull final String name,
                                                   @Nonnull final SphereClient ctpClient) {
-        if (!typeExists(typeKey, ctpClient)) {
-            final TypeDraft typeDraft = TypeDraftBuilder
-                .of(typeKey, LocalizedString.of(locale, name), ResourceTypeIdsSetBuilder.of().addCategories())
-                .fieldDefinitions(buildCategoryCustomTypeFieldDefinitions(locale))
-                .build();
-            ctpClient.execute(TypeCreateCommand.of(typeDraft)).toCompletableFuture().join();
-        }
-    }
 
-
+        return createTypeIfNotAlreadyExisting(typeKey, locale, name, ResourceTypeIdsSetBuilder.of().addCategories(),
+            ctpClient);
     }
 
 

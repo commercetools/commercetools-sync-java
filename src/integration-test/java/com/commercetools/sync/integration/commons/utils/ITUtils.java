@@ -1,32 +1,114 @@
 package com.commercetools.sync.integration.commons.utils;
 
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
+import io.sphere.sdk.models.Asset;
+import io.sphere.sdk.models.AssetDraft;
+import io.sphere.sdk.models.AssetDraftBuilder;
+import io.sphere.sdk.models.AssetSourceBuilder;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Resource;
+import io.sphere.sdk.products.ProductVariantDraft;
+import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.queries.QueryDsl;
+import io.sphere.sdk.queries.QueryPredicate;
+import io.sphere.sdk.types.BooleanFieldType;
+import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.FieldDefinition;
+import io.sphere.sdk.types.LocalizedStringFieldType;
+import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
+import io.sphere.sdk.types.Type;
+import io.sphere.sdk.types.TypeDraft;
+import io.sphere.sdk.types.TypeDraftBuilder;
+import io.sphere.sdk.types.commands.TypeCreateCommand;
 import io.sphere.sdk.types.commands.TypeDeleteCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
+import io.sphere.sdk.types.queries.TypeQueryBuilder;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * This class is meant only meant for internal use of the library's integration tests.
+ */
 public final class ITUtils {
     public static final String LOCALISED_STRING_CUSTOM_FIELD_NAME = "backgroundColor";
     public static final String BOOLEAN_CUSTOM_FIELD_NAME = "invisibleInShop";
-    static Optional<Type> typeExists(@Nonnull final String typeKey, @Nonnull final SphereClient ctpClient) {
+
+
+    /**
+     * This method blocks to create an asset custom Type on the CTP project defined by the supplied
+     * {@code ctpClient}, with the supplied data.
+     * @param typeKey   the type key
+     * @param locale    the locale to be used for specifying the type name and field definitions names.
+     * @param name      the name of the custom type.
+     * @param ctpClient defines the CTP project to create the type on.
+     */
+    public static Type createAssetsCustomType(
+        @Nonnull final String typeKey,
+        @Nonnull final Locale locale,
+        @Nonnull final String name,
+        @Nonnull final SphereClient ctpClient) {
+
+        return createTypeIfNotAlreadyExisting(
+            typeKey, locale, name, ResourceTypeIdsSetBuilder.of().addAssets(), ctpClient);
+    }
+
+    /**
+     * This method blocks to create a custom Type on the CTP project defined by the supplied
+     * {@code ctpClient}, with the supplied data.
+     *
+     * @param typeKey                   the type key
+     * @param locale                    the locale to be used for specifying the type name and field definitions names.
+     * @param name                      the name of the custom type.
+     * @param resourceTypeIdsSetBuilder builds the resource type ids for the created type.
+     * @param ctpClient                 defines the CTP project to create the type on.
+     */
+    public static Type createTypeIfNotAlreadyExisting(
+        @Nonnull final String typeKey,
+        @Nonnull final Locale locale,
+        @Nonnull final String name,
+        @Nonnull final ResourceTypeIdsSetBuilder resourceTypeIdsSetBuilder,
+        @Nonnull final SphereClient ctpClient) {
+
+        return typeExists(typeKey, ctpClient)
+            .orElseGet(() -> {
+                final TypeDraft typeDraft = TypeDraftBuilder
+                    .of(typeKey, LocalizedString.of(locale, name), resourceTypeIdsSetBuilder)
+                    .fieldDefinitions(createCustomTypeFieldDefinitions(locale))
+                    .build();
+                return ctpClient.execute(TypeCreateCommand.of(typeDraft)).toCompletableFuture().join();
+            });
+    }
+
+    private static Optional<Type> typeExists(@Nonnull final String typeKey, @Nonnull final SphereClient ctpClient) {
         return ctpClient
             .execute(TypeQueryBuilder.of().predicates(QueryPredicate.of(format("key=\"%s\"", typeKey))).build())
             .toCompletableFuture()
             .join().head();
     }
+
 
     /**
      * Builds a list of two field definitions; one for a {@link LocalizedStringFieldType} and one for a
@@ -60,7 +142,7 @@ public final class ITUtils {
      * @param locale defines the locale for which the field definition names are going to be bound to.
      * @return the list of field definitions.
      */
-    static List<FieldDefinition> createCustomTypeFieldDefinitions(@Nonnull final Locale locale) {
+    private static List<FieldDefinition> createCustomTypeFieldDefinitions(@Nonnull final Locale locale) {
         return asList(
             FieldDefinition
                 .of(LocalizedStringFieldType.of(), LOCALISED_STRING_CUSTOM_FIELD_NAME,
