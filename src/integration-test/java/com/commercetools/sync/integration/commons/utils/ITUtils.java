@@ -19,6 +19,48 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 
 public final class ITUtils {
+    /**
+     * Builds a list of two field definitions; one for a {@link LocalizedStringFieldType} and one for a
+     * {@link BooleanFieldType}. The JSON of the created field definition list looks as follows:
+     *
+     * <p>"fieldDefinitions": [
+     * {
+     * "name": "backgroundColor",
+     * "label": {
+     * "en": "backgroundColor"
+     * },
+     * "required": false,
+     * "type": {
+     * "name": "LocalizedString"
+     * },
+     * "inputHint": "SingleLine"
+     * },
+     * {
+     * "name": "invisibleInShop",
+     * "label": {
+     * "en": "invisibleInShop"
+     * },
+     * "required": false,
+     * "type": {
+     * "name": "Boolean"
+     * },
+     * "inputHint": "SingleLine"
+     * }
+     * ]
+     *
+     * @param locale defines the locale for which the field definition names are going to be bound to.
+     * @return the list of field definitions.
+     */
+    static List<FieldDefinition> createCustomTypeFieldDefinitions(@Nonnull final Locale locale) {
+        return asList(
+            FieldDefinition
+                .of(LocalizedStringFieldType.of(), LOCALISED_STRING_CUSTOM_FIELD_NAME,
+                    LocalizedString.of(locale, LOCALISED_STRING_CUSTOM_FIELD_NAME), false),
+            FieldDefinition
+                .of(BooleanFieldType.of(), BOOLEAN_CUSTOM_FIELD_NAME,
+                    LocalizedString.of(locale, BOOLEAN_CUSTOM_FIELD_NAME), false));
+
+    }
 
     /**
      * Deletes all Types from CTP projects defined by the {@code sphereClient}

@@ -169,24 +169,7 @@ public final class CategoryITUtils {
      * @return a dummy instance of {@link CustomFieldsDraft} with some hardcoded custom fields and key.
      */
     public static CustomFieldsDraft getCustomFieldsDraft() {
-        return CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons());
-    }
-
-    /**
-     * Builds a {@link Map} for the custom fields to their {@link JsonNode} values that looks as follows in JSON
-     * format:
-     *
-     * <p>"fields": {"invisibleInShop": false, "backgroundColor": { "en": "red", "de": "rot"}}
-     *
-     * @return a Map of the custom fields to their JSON values with dummy data.
-     */
-    public static Map<String, JsonNode> getCustomFieldsJsons() {
-        final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
-        customFieldsJsons.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false));
-        customFieldsJsons
-            .put(LOCALISED_STRING_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.objectNode()
-                                                                             .put("de", "rot").put("en", "red"));
-        return customFieldsJsons;
+        return CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap());
     }
 
     /**
