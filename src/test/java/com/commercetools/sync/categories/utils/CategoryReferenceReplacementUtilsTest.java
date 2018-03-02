@@ -30,6 +30,7 @@ public class CategoryReferenceReplacementUtilsTest {
         final String parentId = UUID.randomUUID().toString();
         final Type mockCustomType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
 
+        // Mock asset with expanded custom type reference
         final Type assetCustomType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
         final Asset asset = getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(),
             assetCustomType));
@@ -38,7 +39,7 @@ public class CategoryReferenceReplacementUtilsTest {
         for (int i = 0; i < 10; i++) {
             final Category mockCategory = mock(Category.class);
 
-            // Simulate reference expansion
+            //Mock categories parent fields with expanded category references.
             final Category mockParent = mock(Category.class);
             when(mockParent.getId()).thenReturn(parentId);
             when(mockParent.getKey()).thenReturn("parentKey" + i);
@@ -46,13 +47,14 @@ public class CategoryReferenceReplacementUtilsTest {
                 mockParent);
             when(mockCategory.getParent()).thenReturn(parentReference);
 
+            //Mock categories custom fields with expanded type references.
             final CustomFields mockCustomFields = mock(CustomFields.class);
             final Reference<Type> typeReference = Reference.ofResourceTypeIdAndObj("resourceTypeId",
                 mockCustomType);
             when(mockCustomFields.getType()).thenReturn(typeReference);
             when(mockCategory.getCustom()).thenReturn(mockCustomFields);
 
-
+            //Mock categories assets with expanded custom type references.
             when(mockCategory.getAssets()).thenReturn(singletonList(asset));
 
             mockCategories.add(mockCategory);
@@ -83,6 +85,7 @@ public class CategoryReferenceReplacementUtilsTest {
         final String parentId = UUID.randomUUID().toString();
         final String customTypeId = UUID.randomUUID().toString();
 
+        // Mock asset with non-expanded custom type reference
         final Asset asset = getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndId(Type.referenceTypeId(),
             UUID.randomUUID().toString()));
 
@@ -90,17 +93,19 @@ public class CategoryReferenceReplacementUtilsTest {
         for (int i = 0; i < 10; i++) {
             final Category mockCategory = mock(Category.class);
 
-            // Simulate no reference expansion
+            //Mock categories parent fields with non-expanded category references.
             final Reference<Category> parentReference = Reference.ofResourceTypeIdAndId(UUID.randomUUID().toString(),
                 parentId);
             when(mockCategory.getParent()).thenReturn(parentReference);
 
-
+            //Mock categories custom fields with non-expanded type references.
             final CustomFields mockCustomFields = mock(CustomFields.class);
             final Reference<Type> typeReference = Reference.ofResourceTypeIdAndId("resourceTypeId",
                 customTypeId);
             when(mockCustomFields.getType()).thenReturn(typeReference);
             when(mockCategory.getCustom()).thenReturn(mockCustomFields);
+
+            //Mock categories assets with non-expanded custom type references.
             when(mockCategory.getAssets()).thenReturn(singletonList(asset));
 
             mockCategories.add(mockCategory);
