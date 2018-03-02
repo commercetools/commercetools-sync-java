@@ -126,9 +126,9 @@ public class ProductSyncWithAssetsIT {
 
         final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
             actionsCallBack = (updateActions, newDraft, oldProduct) -> {
-            updateActionsFromSync.addAll(updateActions);
-            return updateActions;
-        };
+                updateActionsFromSync.addAll(updateActions);
+                return updateActions;
+            };
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                         .errorCallback(errorCallBack)

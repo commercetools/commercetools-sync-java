@@ -114,8 +114,8 @@ public class ProductReferenceReplacementUtilsIT {
             .build();
 
         // Create Parent Product.
-        final Product parentProduct = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(parentProductDraft)));
-
+        final Product parentProduct =
+            executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(parentProductDraft)));
 
         final String attribute1Name = "product-reference";
         final AttributeDraft productRefAttr = AttributeDraft.of(attribute1Name,

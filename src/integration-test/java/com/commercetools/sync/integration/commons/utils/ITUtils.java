@@ -250,27 +250,8 @@ public final class ITUtils {
     }
 
     /**
-     * Creates an {@link AssetDraftBuilder} with the with the given key and name. The builder created will contain one
-     * tag with the same value as the key and will contain one {@link io.sphere.sdk.models.AssetSource}
-     * with the uri {@code sourceUri}.
-     *
-     * @param assetKey  asset draft key.
-     * @param assetName asset draft name.
-     * @return an {@link AssetDraftBuilder} with the with the given key and name. The builder created will contain one
-     *         tag with the same value as the key and will contain one {@link io.sphere.sdk.models.AssetSource} with the
-     *         uri {@code sourceUri}.
-     */
-    private static AssetDraftBuilder createAssetDraftBuilder(@Nonnull final String assetKey,
-                                                             @Nonnull final LocalizedString assetName) {
-        return AssetDraftBuilder.of(emptyList(), assetName)
-                                .key(assetKey)
-                                .tags(singleton(assetKey))
-                                .sources(singletonList(AssetSourceBuilder.ofUri("sourceUri").build()));
-    }
-
-    /**
-     * Creates an {@link AssetDraft} with the with the given key and name. The asset draft created will have custom field
-     * with the type id supplied ({@code assetCustomTypeId} and the fields built from the method
+     * Creates an {@link AssetDraft} with the with the given key and name. The asset draft created will have custom
+     * field with the type id supplied ({@code assetCustomTypeId} and the fields built from the method
      * {@link ITUtils#createCustomFieldsJsonMap()}.
      *
      * @param assetKey          asset draft key.
@@ -287,16 +268,16 @@ public final class ITUtils {
     }
 
     /**
-     * Creates an {@link AssetDraft} with the with the given key and name. The asset draft created will have custom field
-     * with the type id supplied ({@code assetCustomTypeId} and the custom fields will be defined by the
+     * Creates an {@link AssetDraft} with the with the given key and name. The asset draft created will have custom
+     * field with the type id supplied ({@code assetCustomTypeId} and the custom fields will be defined by the
      * {@code customFieldsJsonMap} supplied.
      *
      * @param assetKey          asset draft key.
      * @param assetName         asset draft name.
      * @param assetCustomTypeId the asset custom type id.
      * @param customFieldsJsonMap the custom fields of the asset custom type.
-     * @return an {@link AssetDraft} with the with the given key and name. The asset draft created will have custom field
-     *         with the type id supplied ({@code assetCustomTypeId} and the custom fields will be defined by the
+     * @return an {@link AssetDraft} with the with the given key and name. The asset draft created will have custom
+     *         field with the type id supplied ({@code assetCustomTypeId} and the custom fields will be defined by the
      *         {@code customFieldsJsonMap} supplied.
      */
     public static AssetDraft createAssetDraft(@Nonnull final String assetKey,
@@ -306,6 +287,25 @@ public final class ITUtils {
         return createAssetDraftBuilder(assetKey, assetName)
             .custom(CustomFieldsDraft.ofTypeIdAndJson(assetCustomTypeId, customFieldsJsonMap))
             .build();
+    }
+
+    /**
+     * Creates an {@link AssetDraftBuilder} with the with the given key and name. The builder created will contain one
+     * tag with the same value as the key and will contain one {@link io.sphere.sdk.models.AssetSource}
+     * with the uri {@code sourceUri}.
+     *
+     * @param assetKey  asset draft key.
+     * @param assetName asset draft name.
+     * @return an {@link AssetDraftBuilder} with the with the given key and name. The builder created will contain one
+     *         tag with the same value as the key and will contain one {@link io.sphere.sdk.models.AssetSource} with the
+     *         uri {@code sourceUri}.
+     */
+    private static AssetDraftBuilder createAssetDraftBuilder(@Nonnull final String assetKey,
+                                                             @Nonnull final LocalizedString assetName) {
+        return AssetDraftBuilder.of(emptyList(), assetName)
+                                .key(assetKey)
+                                .tags(singleton(assetKey))
+                                .sources(singletonList(AssetSourceBuilder.ofUri("sourceUri").build()));
     }
 
     /**
@@ -332,7 +332,7 @@ public final class ITUtils {
      * are matched by key). It asserts that the matching assets have the same name, description, custom fields, tags,
      * and asset sources.
      *
-     * TODO: This should be refactored into Asset asserts helpers. GITHUB ISSUE#261
+     * <p>TODO: This should be refactored into Asset asserts helpers. GITHUB ISSUE#261
      *
      * @param assets      the list of assets to compare to the list of asset drafts.
      * @param assetDrafts the list of asset drafts to compare to the list of assets.
