@@ -19,6 +19,15 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 
 public final class ITUtils {
+    public static final String LOCALISED_STRING_CUSTOM_FIELD_NAME = "backgroundColor";
+    public static final String BOOLEAN_CUSTOM_FIELD_NAME = "invisibleInShop";
+    static Optional<Type> typeExists(@Nonnull final String typeKey, @Nonnull final SphereClient ctpClient) {
+        return ctpClient
+            .execute(TypeQueryBuilder.of().predicates(QueryPredicate.of(format("key=\"%s\"", typeKey))).build())
+            .toCompletableFuture()
+            .join().head();
+    }
+
     /**
      * Builds a list of two field definitions; one for a {@link LocalizedStringFieldType} and one for a
      * {@link BooleanFieldType}. The JSON of the created field definition list looks as follows:
@@ -60,6 +69,22 @@ public final class ITUtils {
                 .of(BooleanFieldType.of(), BOOLEAN_CUSTOM_FIELD_NAME,
                     LocalizedString.of(locale, BOOLEAN_CUSTOM_FIELD_NAME), false));
 
+    }
+
+    /**
+     * Builds a {@link Map} for the custom fields to their {@link JsonNode} values that looks as follows in JSON
+     * format:
+     *
+     * <p>"fields": {"invisibleInShop": false, "backgroundColor": { "en": "red", "de": "rot"}}
+     *
+     * @return a Map of the custom fields to their JSON values with dummy data.
+     */
+    public static Map<String, JsonNode> createCustomFieldsJsonMap() {
+        final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
+        customFieldsJsons.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false));
+        customFieldsJsons.put(LOCALISED_STRING_CUSTOM_FIELD_NAME,
+            JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+        return customFieldsJsons;
     }
 
     /**
