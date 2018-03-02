@@ -161,24 +161,24 @@ public class ProductReferenceReplacementUtilsIT {
         // Assert Product is fetched with all the references expanded.
         assertThat(products).hasSize(1);
         final Product createdProduct = products.get(0);
-        // Asset product type references are expanded
+        // Assert product type references are expanded
         assertThat(createdProduct.getProductType().getObj()).isNotNull();
-        // Asset tax category references are expanded
+        // Assert tax category references are expanded
         assertThat(createdProduct.getTaxCategory()).isNotNull();
         assertThat(createdProduct.getTaxCategory().getObj()).isNotNull();
-        // Asset state references are expanded
+        // Assert state references are expanded
         assertThat(createdProduct.getState()).isNotNull();
         assertThat(createdProduct.getState().getObj()).isNotNull();
 
         final ProductData stagedProjection = createdProduct.getMasterData().getStaged();
 
-        // Asset category references are expanded
+        // Assert category references are expanded
         assertThat(stagedProjection.getCategories()).hasSize(1);
         final Reference<Category> category = stagedProjection.getCategories().iterator().next();
         assertThat(category).isNotNull();
         assertThat(category.getObj()).isNotNull();
 
-        // Asset variants' assets custom types references are expanded
+        // Assert variants' assets custom types references are expanded
         final ProductVariant variant = stagedProjection.getVariant(2);
         assertThat(variant).isNotNull();
         assertThat(variant.getAssets()).hasSize(1);
@@ -188,20 +188,20 @@ public class ProductReferenceReplacementUtilsIT {
 
         final ProductVariant stagedProjectionMasterVariant = stagedProjection.getMasterVariant();
 
-        // Asset variants' price channel references are expanded.
+        // Assert variants' price channel references are expanded.
         assertThat(stagedProjectionMasterVariant.getPrices()).hasSize(1);
         final Price price = stagedProjectionMasterVariant.getPrices().get(0);
         assertThat(price.getChannel()).isNotNull();
         assertThat(price.getChannel().getObj()).isNotNull();
 
-        // Asset master variant assets custom type references are expanded.
+        // Assert master variant assets custom type references are expanded.
         assertThat(stagedProjectionMasterVariant.getAssets()).hasSize(1);
         final Asset masterVariantAsset = stagedProjectionMasterVariant.getAssets().get(0);
         assertThat(masterVariantAsset.getCustom()).isNotNull();
         assertThat(masterVariantAsset.getCustom().getType().getObj()).isNotNull();
 
 
-        // Asset variants attribute references are expanded.
+        // Assert variants attribute references are expanded.
         final Attribute attribute1 = stagedProjectionMasterVariant.getAttribute(attribute1Name);
         assertThat(attribute1).isNotNull();
         final JsonNode attribute1ValueAsJsonNode = attribute1.getValueAsJsonNode();
