@@ -87,4 +87,122 @@ public final class ITUtils {
                      .toCompletableFuture()
                      .join();
     }
+
+    /**
+     * Creates an {@link AssetDraft} with the with the given key and name.
+     *
+     * @param assetKey  asset draft key.
+     * @param assetName asset draft name.
+     * @return an {@link AssetDraft} with the with the given key and name.
+     */
+    public static AssetDraft createAssetDraft(@Nonnull final String assetKey,
+                                              @Nonnull final LocalizedString assetName) {
+        return createAssetDraftBuilder(assetKey, assetName).build();
+    }
+
+    /**
+     * Creates an {@link AssetDraftBuilder} with the with the given key and name. The builder created will contain one
+     * tag with the same value as the key and will contain one {@link io.sphere.sdk.models.AssetSource}
+     * with the uri {@code sourceUri}.
+     *
+     * @param assetKey  asset draft key.
+     * @param assetName asset draft name.
+     * @return an {@link AssetDraftBuilder} with the with the given key and name. The builder created will contain one
+     *         tag with the same value as the key and will contain one {@link io.sphere.sdk.models.AssetSource} with the
+     *         uri {@code sourceUri}.
+     */
+    private static AssetDraftBuilder createAssetDraftBuilder(@Nonnull final String assetKey,
+                                                             @Nonnull final LocalizedString assetName) {
+        return AssetDraftBuilder.of(emptyList(), assetName)
+                                .key(assetKey)
+                                .tags(singleton(assetKey))
+                                .sources(singletonList(AssetSourceBuilder.ofUri("sourceUri").build()));
+    }
+
+    /**
+     * Creates an {@link AssetDraft} with the with the given key and name. The asset draft created will have custom field
+     * with the type id supplied ({@code assetCustomTypeId} and the fields built from the method
+     * {@link ITUtils#createCustomFieldsJsonMap()}.
+     *
+     * @param assetKey          asset draft key.
+     * @param assetName         asset draft name.
+     * @param assetCustomTypeId the asset custom type id.
+     * @return an {@link AssetDraft} with the with the given key and name. The asset draft created will have custom
+     *         field with the type id supplied ({@code assetCustomTypeId} and the fields built from the method
+     *         {@link ITUtils#createCustomFieldsJsonMap()}.
+     */
+    public static AssetDraft createAssetDraft(@Nonnull final String assetKey,
+                                              @Nonnull final LocalizedString assetName,
+                                              @Nonnull final String assetCustomTypeId) {
+        return createAssetDraft(assetKey, assetName, assetCustomTypeId, createCustomFieldsJsonMap());
+    }
+
+    /**
+     * Creates an {@link AssetDraft} with the with the given key and name. The asset draft created will have custom field
+     * with the type id supplied ({@code assetCustomTypeId} and the custom fields will be defined by the
+     * {@code customFieldsJsonMap} supplied.
+     *
+     * @param assetKey          asset draft key.
+     * @param assetName         asset draft name.
+     * @param assetCustomTypeId the asset custom type id.
+     * @param customFieldsJsonMap the custom fields of the asset custom type.
+     * @return an {@link AssetDraft} with the with the given key and name. The asset draft created will have custom field
+     *         with the type id supplied ({@code assetCustomTypeId} and the custom fields will be defined by the
+     *         {@code customFieldsJsonMap} supplied.
+     */
+    public static AssetDraft createAssetDraft(@Nonnull final String assetKey,
+                                              @Nonnull final LocalizedString assetName,
+                                              @Nonnull final String assetCustomTypeId,
+                                              @Nonnull final Map<String, JsonNode> customFieldsJsonMap) {
+        return createAssetDraftBuilder(assetKey, assetName)
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(assetCustomTypeId, customFieldsJsonMap))
+            .build();
+    }
+
+    /**
+     * Creates a {@link ProductVariantDraft} draft key and sku of the value supplied {@code variantKeyAndSku} and with
+     * the supplied {@code assetDrafts}.
+     *
+     * @param variantKeyAndSku the value of the key and sku of the created draft.
+     * @param assetDrafts the assets to assign to the created draft.
+     * @return a {@link ProductVariantDraft} draft key and sku of the value supplied {@code variantKeyAndSku} and with
+     *         the supplied {@code assetDrafts}.
+     */
+    public static ProductVariantDraft createVariantDraft(@Nonnull final String variantKeyAndSku,
+                                                         @Nonnull final List<AssetDraft> assetDrafts) {
+
+        return ProductVariantDraftBuilder.of()
+                                         .key(variantKeyAndSku)
+                                         .sku(variantKeyAndSku)
+                                         .assets(assetDrafts)
+                                         .build();
+    }
+
+    /**
+     * Asserts that a list of {@link Asset} and a list of {@link AssetDraft} have the same ordering of assets (assets
+     * are matched by key). It asserts that the matching assets have the same name, description, custom fields, tags,
+     * and asset sources.
+     *
+     * TODO: This should be refactored into Asset asserts helpers. GITHUB ISSUE#261
+     *
+     * @param assets      the list of assets to compare to the list of asset drafts.
+     * @param assetDrafts the list of asset drafts to compare to the list of assets.
+     */
+    public static void assertAssetsAreEqual(@Nonnull final List<Asset> assets,
+                                            @Nonnull final List<AssetDraft> assetDrafts) {
+        IntStream.range(0, assetDrafts.size())
+                 .forEach(index -> {
+                     final Asset createdAsset = assets.get(index);
+                     final AssetDraft assetDraft = assetDrafts.get(index);
+
+                     assertThat(createdAsset.getName()).isEqualTo(assetDraft.getName());
+                     assertThat(createdAsset.getDescription()).isEqualTo(assetDraft.getDescription());
+                     assertThat(createdAsset.getKey()).isEqualTo(assetDraft.getKey());
+                     assertThat(createdAsset.getCustom()).isNotNull();
+                     assertThat(createdAsset.getCustom().getFieldsJsonMap())
+                         .isEqualTo(assetDraft.getCustom().getFields());
+                     assertThat(createdAsset.getTags()).isEqualTo(assetDraft.getTags());
+                     assertThat(createdAsset.getSources()).isEqualTo(assetDraft.getSources());
+                 });
+    }
 }
