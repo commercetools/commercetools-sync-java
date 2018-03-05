@@ -218,11 +218,9 @@ public final class AssetsUpdateActionUtils {
         return IntStream.range(0, newAssetDrafts.size())
                         .mapToObj(assetDraftIndex ->
                             ofNullable(newAssetDrafts.get(assetDraftIndex))
-                                .map(assetDraft -> {
-                                    final String assetDraftKey = assetDraft.getKey();
-                                    return oldAssetsKeyMap.get(assetDraftKey) == null
-                                        ? assetActionFactory.buildAddAssetAction(assetDraft, assetDraftIndex) : null;
-                                }))
+                                .filter(assetDraft -> !oldAssetsKeyMap.containsKey(assetDraft.getKey()))
+                                .map(assetDraft -> assetActionFactory.buildAddAssetAction(assetDraft, assetDraftIndex))
+                        )
                         .filter(Optional::isPresent)
                         .map(Optional::get)
                         .collect(toCollection(ArrayList::new));
