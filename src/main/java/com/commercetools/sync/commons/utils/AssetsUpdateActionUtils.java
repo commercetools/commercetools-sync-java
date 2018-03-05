@@ -146,7 +146,13 @@ public final class AssetsUpdateActionUtils {
                     .map(assetDraft -> // If asset exists, compare the two assets.
                         buildAssetActionsBuilder.apply(oldAsset, assetDraft))
                     .orElseGet(() -> { // If asset doesn't exists, remove asset.
-                        intermediateOldAssets.remove(oldAssetsKeyMap.get(oldAssetKey)); //TODO: EXPENSIVE
+                        // This implementation is quite straight forward and might be slow on large arrays, this is
+                        // due to it's quadratic nature on assets' removal.
+                        // Unfortunately, currently there is no easy solution to remove asset keys from the
+                        // intermediateOldAssets, while preserving the order.
+                        // This solution should be re-optimized in the next releases to avoid O(N^2) for large lists.
+                        // related: TODO: GITHUB ISSUE#133
+                        intermediateOldAssets.remove(oldAssetsKeyMap.get(oldAssetKey));
                         return singletonList(removeAssetActionBuilder.apply(oldAssetKey));
                     });
             })
