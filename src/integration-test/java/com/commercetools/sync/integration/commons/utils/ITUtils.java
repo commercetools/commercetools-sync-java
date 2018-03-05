@@ -13,6 +13,7 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.queries.PagedResult;
 import io.sphere.sdk.queries.QueryDsl;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.types.BooleanFieldType;
@@ -93,20 +94,23 @@ public final class ITUtils {
         @Nonnull final SphereClient ctpClient) {
 
         return typeExists(typeKey, ctpClient)
-            .orElseGet(() -> {
-                final TypeDraft typeDraft = TypeDraftBuilder
-                    .of(typeKey, LocalizedString.of(locale, name), resourceTypeIdsSetBuilder)
-                    .fieldDefinitions(createCustomTypeFieldDefinitions(locale))
-                    .build();
-                return ctpClient.execute(TypeCreateCommand.of(typeDraft)).toCompletableFuture().join();
-            });
+            .thenCompose(type ->
+                type.map(CompletableFuture::completedFuture)
+                    .orElseGet(() -> {
+                        final TypeDraft typeDraft = TypeDraftBuilder
+                            .of(typeKey, LocalizedString.of(locale, name), resourceTypeIdsSetBuilder)
+                            .fieldDefinitions(createCustomTypeFieldDefinitions(locale))
+                            .build();
+                        return ctpClient.execute(TypeCreateCommand.of(typeDraft)).toCompletableFuture();
+                    }))
+            .toCompletableFuture().join();
     }
 
-    private static Optional<Type> typeExists(@Nonnull final String typeKey, @Nonnull final SphereClient ctpClient) {
+    private static CompletionStage<Optional<Type>> typeExists(@Nonnull final String typeKey,
+                                                              @Nonnull final SphereClient ctpClient) {
         return ctpClient
             .execute(TypeQueryBuilder.of().predicates(QueryPredicate.of(format("key=\"%s\"", typeKey))).build())
-            .toCompletableFuture()
-            .join().head();
+            .thenApply(PagedResult::head);
     }
 
 
