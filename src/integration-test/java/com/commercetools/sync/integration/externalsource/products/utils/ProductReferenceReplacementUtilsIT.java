@@ -133,12 +133,17 @@ public class ProductReferenceReplacementUtilsIT {
                                                                             .attributes(attributeDrafts)
                                                                             .build();
 
+        final ProductVariantDraft variant2 = ProductVariantDraftBuilder.of().sku("v2")
+                                                                       .assets(assetDrafts)
+                                                                       .prices(priceDraft)
+                                                                       .attributes(attributeDrafts)
+                                                                       .build();
 
         // Create Product Draft with all kind of references that are needed to be checked for expansion.
         final ProductDraft productDraft = ProductDraftBuilder
             .of(productType.toReference(), ofEnglish("draftName"), ofEnglish("existingSlug"),
                 masterVariant)
-            .plusVariants(ProductVariantDraftBuilder.of().sku("v2").assets(assetDrafts).build())
+            .plusVariants(variant2)
             .key("existingProduct")
             .taxCategory(taxCategory)
             .state(state)
