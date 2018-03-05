@@ -129,7 +129,7 @@ public final class AssetsUpdateActionUtils {
      * @param assetActionFactory   factory responsible for building asset update actions.
      * @param <T>                  the type of the resource the asset update action is built for.
      * @return a list of asset update actions on the resource of type T if there are new assets that should be added.
-     * Otherwise, if the assets order is identical, an empty optional is returned.
+     *         Otherwise, if the assets order is identical, an empty optional is returned.
      */
     @Nonnull
     private static <T> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
