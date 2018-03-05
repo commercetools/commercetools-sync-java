@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.helpers.AssetActionFactory;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
@@ -13,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -37,14 +36,7 @@ public final class AssetsUpdateActionUtils {
      *
      * @param oldAssets                     the old list of assets.
      * @param newAssetDrafts                the new list of asset drafts.
-     * @param assetActionsBuilder           function that takes a matching old asset and a new asset and computes the
-     *                                      update actions needed to sync them.
-     * @param removeAssetActionBuilder      function that takes an asset key to build a RemoveAsset action of the
-     *                                      type T.
-     * @param changeAssetOrderActionBuilder function that takes a list of asset ids to build a ChangeAssetOrder action
-     *                                      of the type T.
-     * @param addAssetActionBuilder         function that takes an asset draft and an asset position to build an
-     *                                      AddAsset action of the type T.
+     * @param assetActionFactory            factory responsible for building asset update actions.
      * @param <T>                           the type of the resource the asset update actions are built for.
      * @return a list of asset update actions on the resource of type T if the list of assets is not identical.
      *         Otherwise, if the assets are identical, an empty list is returned.
@@ -54,23 +46,15 @@ public final class AssetsUpdateActionUtils {
     public static <T> List<UpdateAction<T>> buildAssetsUpdateActions(
         @Nonnull final List<Asset> oldAssets,
         @Nullable final List<AssetDraft> newAssetDrafts,
-        @Nonnull final BiFunction<Asset, AssetDraft, List<UpdateAction<T>>> assetActionsBuilder,
-        @Nonnull final Function<String, UpdateAction<T>> removeAssetActionBuilder,
-        @Nonnull final Function<List<String>, UpdateAction<T>> changeAssetOrderActionBuilder,
-        @Nonnull final BiFunction<AssetDraft, Integer, UpdateAction<T>> addAssetActionBuilder)
+        @Nonnull final AssetActionFactory<T> assetActionFactory)
         throws BuildUpdateActionException {
 
         if (newAssetDrafts != null) {
-            return buildAssetsUpdateActionsWithNewAssetDrafts(
-                oldAssets,
-                newAssetDrafts,
-                assetActionsBuilder,
-                removeAssetActionBuilder,
-                changeAssetOrderActionBuilder,
-                addAssetActionBuilder);
+            return buildAssetsUpdateActionsWithNewAssetDrafts(oldAssets, newAssetDrafts, assetActionFactory);
         } else {
             return oldAssets.stream()
-                            .map(oldAsset -> removeAssetActionBuilder.apply(oldAsset.getKey()))
+                            .map(Asset::getKey)
+                            .map(assetActionFactory::buildRemoveAssetAction)
                             .collect(Collectors.toList());
         }
     }
@@ -79,10 +63,7 @@ public final class AssetsUpdateActionUtils {
     private static <T> List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final List<AssetDraft> newAssetDrafts,
-        @Nonnull final BiFunction<Asset, AssetDraft, List<UpdateAction<T>>> assetActionsBuilder,
-        @Nonnull final Function<String, UpdateAction<T>> removeAssetActionBuilder,
-        @Nonnull final Function<List<String>, UpdateAction<T>> changeAssetOrderActionBuilder,
-        @Nonnull final BiFunction<AssetDraft, Integer, UpdateAction<T>> addAssetActionBuilder)
+        @Nonnull final AssetActionFactory<T> assetActionFactory)
         throws BuildUpdateActionException {
 
         // Asset list that represents the state of the old variant assets after each applied update action.
@@ -111,16 +92,15 @@ public final class AssetsUpdateActionUtils {
             intermediateOldAssets,
             oldAssetsKeyMap,
             newAssetDraftsKeyMap,
-            assetActionsBuilder,
-            removeAssetActionBuilder);
+            assetActionFactory);
 
         //2. Compare ordering of assets and add a ChangeAssetOrder action if needed.
-        buildChangeAssetOrderUpdateAction(intermediateOldAssets, newAssetDrafts, changeAssetOrderActionBuilder)
+        buildChangeAssetOrderUpdateAction(intermediateOldAssets, newAssetDrafts, assetActionFactory)
             .ifPresent(updateActions::add);
 
         // For every new asset draft, If it doesn't exist in the old assets, then add an AddAsset action to the list
         // of update actions.
-        updateActions.addAll(buildAddAssetUpdateActions(newAssetDrafts, oldAssetsKeyMap, addAssetActionBuilder));
+        updateActions.addAll(buildAddAssetUpdateActions(newAssetDrafts, oldAssetsKeyMap, assetActionFactory));
 
         return updateActions;
     }
@@ -131,8 +111,7 @@ public final class AssetsUpdateActionUtils {
         @Nonnull final List<Asset> intermediateOldAssets,
         @Nonnull final Map<String, Asset> oldAssetsKeyMap,
         @Nonnull final Map<String, AssetDraft> newAssetDraftsKeyMap,
-        @Nonnull final BiFunction<Asset, AssetDraft, List<UpdateAction<T>>> buildAssetActionsBuilder,
-        @Nonnull final Function<String, UpdateAction<T>> removeAssetActionBuilder) {
+        @Nonnull final AssetActionFactory<T> assetActionFactory) {
         // For every old asset, If it doesn't exist anymore in the new asset drafts,
         // then add a RemoveAsset action to the list of update actions. If the asset still exists in the new draft,
         // then compare the asset fields (name, desc, etc..), and add the computed actions to the list of update
@@ -144,7 +123,7 @@ public final class AssetsUpdateActionUtils {
                 final AssetDraft matchingNewAssetDraft = newAssetDraftsKeyMap.get(oldAssetKey);
                 return ofNullable(matchingNewAssetDraft)
                     .map(assetDraft -> // If asset exists, compare the two assets.
-                        buildAssetActionsBuilder.apply(oldAsset, assetDraft))
+                        assetActionFactory.buildAssetActions(oldAsset, assetDraft))
                     .orElseGet(() -> { // If asset doesn't exists, remove asset.
                         // This implementation is quite straight forward and might be slow on large arrays, this is
                         // due to it's quadratic nature on assets' removal.
@@ -153,7 +132,7 @@ public final class AssetsUpdateActionUtils {
                         // This solution should be re-optimized in the next releases to avoid O(N^2) for large lists.
                         // related: TODO: GITHUB ISSUE#133
                         intermediateOldAssets.remove(oldAssetsKeyMap.get(oldAssetKey));
-                        return singletonList(removeAssetActionBuilder.apply(oldAssetKey));
+                        return singletonList(assetActionFactory.buildRemoveAssetAction(oldAssetKey));
                     });
             })
             .flatMap(Collection::stream)
@@ -165,7 +144,7 @@ public final class AssetsUpdateActionUtils {
     private static <T> Optional<UpdateAction<T>> buildChangeAssetOrderUpdateAction(
         @Nonnull final List<Asset> intermediateOldAssets,
         @Nonnull final List<AssetDraft> newAssetDrafts,
-        @Nonnull final Function<List<String>, UpdateAction<T>> changeAssetOrderActionBuilder) {
+        @Nonnull final AssetActionFactory<T> assetActionFactory) {
 
         final Map<String, String> oldAssetKeyToIdMap = intermediateOldAssets.stream()
                                                                             .collect(
@@ -181,14 +160,15 @@ public final class AssetsUpdateActionUtils {
                                                            .map(Asset::getId)
                                                            .collect(toList());
 
-        return buildUpdateAction(oldOrder, newOrder, () -> changeAssetOrderActionBuilder.apply(newOrder));
+        return buildUpdateAction(oldOrder, newOrder,
+            () -> assetActionFactory.buildChangeAssetOrderAction(newOrder));
     }
 
     @Nonnull
     private static <T> List<UpdateAction<T>> buildAddAssetUpdateActions(
         @Nonnull final List<AssetDraft> newProductVariantAssetDrafts,
         @Nonnull final Map<String, Asset> oldAssetsKeyMap,
-        @Nonnull final BiFunction<AssetDraft, Integer, UpdateAction<T>> addAssetActionBuilder) {
+        @Nonnull final AssetActionFactory<T> assetActionFactory) {
 
 
         return IntStream.range(0, newProductVariantAssetDrafts.size())
@@ -197,7 +177,7 @@ public final class AssetsUpdateActionUtils {
                                 .map(assetDraft -> {
                                     final String assetDraftKey = assetDraft.getKey();
                                     return oldAssetsKeyMap.get(assetDraftKey) == null
-                                        ? addAssetActionBuilder.apply(assetDraft, assetDraftIndex) : null;
+                                        ? assetActionFactory.buildAddAssetAction(assetDraft, assetDraftIndex) : null;
                                 }))
                         .filter(Optional::isPresent)
                         .map(Optional::get)
