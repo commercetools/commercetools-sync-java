@@ -90,7 +90,7 @@ public final class AssetsUpdateActionUtils {
 
         final Map<String, Asset> oldAssetsKeyMap = oldAssets.stream().collect(toMap(Asset::getKey, asset -> asset));
 
-        Map<String, AssetDraft> newAssetDraftsKeyMap;
+        final Map<String, AssetDraft> newAssetDraftsKeyMap;
         try {
             newAssetDraftsKeyMap = newAssetDrafts
                 .stream().collect(toMap(AssetDraft::getKey, assetDraft -> assetDraft));
