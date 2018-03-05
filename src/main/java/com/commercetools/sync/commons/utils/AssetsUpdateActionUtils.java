@@ -14,12 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -55,7 +55,7 @@ public final class AssetsUpdateActionUtils {
             return oldAssets.stream()
                             .map(Asset::getKey)
                             .map(assetActionFactory::buildRemoveAssetAction)
-                            .collect(Collectors.toList());
+                            .collect(toCollection(ArrayList::new));
         }
     }
 
@@ -136,7 +136,7 @@ public final class AssetsUpdateActionUtils {
                     });
             })
             .flatMap(Collection::stream)
-            .collect(toList());
+            .collect(toCollection(ArrayList::new));
     }
 
 
@@ -181,7 +181,7 @@ public final class AssetsUpdateActionUtils {
                                 }))
                         .filter(Optional::isPresent)
                         .map(Optional::get)
-                        .collect(toList());
+                        .collect(toCollection(ArrayList::new));
     }
 
 
