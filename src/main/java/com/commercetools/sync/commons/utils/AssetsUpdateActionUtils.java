@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.helpers.AssetActionFactory;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
@@ -91,11 +92,15 @@ public final class AssetsUpdateActionUtils {
 
         final Map<String, AssetDraft> newAssetDraftsKeyMap;
         try {
-            newAssetDraftsKeyMap = newAssetDrafts
-                .stream().collect(toMap(AssetDraft::getKey, assetDraft -> assetDraft));
-        } catch (final IllegalStateException exception) {
-            throw new BuildUpdateActionException("Supplied asset drafts have duplicate keys. Asset keys are expected to"
-                + " be unique inside their container (a product variant or a category).", exception);
+            newAssetDraftsKeyMap =
+                newAssetDrafts.stream().collect(
+                    toMap(AssetDraft::getKey, assetDraft -> assetDraft, (assetDraftA, assetDraftB) -> {
+                            throw new DuplicateKeyException("Supplied asset drafts have duplicate keys. Asset keys are"
+                                + " expected to be unique inside their container (a product variant or a category).");
+                        }
+                    ));
+        } catch (final DuplicateKeyException exception) {
+            throw new BuildUpdateActionException(exception);
         }
 
         // It is important to have a changeAssetOrder action before an addAsset action, since changeAssetOrder requires

@@ -1,6 +1,7 @@
 package com.commercetools.sync.products.utils.productvariantupdateactionutils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
@@ -148,14 +149,14 @@ public class BuildVariantAssetsUpdateActionsTest {
         assertThat(updateActions).isEmpty();
         assertThat(errorMessages).hasSize(1);
         assertThat(errorMessages.get(0)).matches("Failed to build update actions for the assets of the product "
-            + "variant with the sku 'mv-sku'. Reason: .*BuildUpdateActionException: Supplied asset drafts have "
+            + "variant with the sku 'mv-sku'. Reason: .*DuplicateKeyException: Supplied asset drafts have "
             + "duplicate keys. Asset keys are expected to be unique inside their container \\(a product variant or a "
             + "category\\).");
         assertThat(exceptions).hasSize(1);
         assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
         assertThat(exceptions.get(0).getMessage()).contains("Supplied asset drafts have duplicate "
             + "keys. Asset keys are expected to be unique inside their container (a product variant or a category).");
-        assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(IllegalStateException.class);
+        assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(DuplicateKeyException.class);
     }
 
     @Test
