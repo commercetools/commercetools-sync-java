@@ -343,10 +343,11 @@ public class ProductReferenceReplacementUtilsTest {
 
         assertThat(categoryReferencePair).isNotNull();
 
-        final List<Reference<Category>> categoryReferencesWithKeys = categoryReferencePair.getCategoryReferences();
+        final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+            categoryReferencePair.getCategoryResourceIdentifiers();
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
         assertThat(categoryReferencesWithKeys).hasSize(1);
-        assertThat(categoryReferencesWithKeys.get(0).getId()).isEqualTo(categoryId);
+        assertThat(categoryReferencesWithKeys.iterator().next().getId()).isEqualTo(categoryId);
         assertThat(categoryOrderHintsWithKeys).isEqualTo(product.getMasterData().getStaged().getCategoryOrderHints());
     }
 
@@ -362,10 +363,11 @@ public class ProductReferenceReplacementUtilsTest {
 
         assertThat(categoryReferencePair).isNotNull();
 
-        final List<Reference<Category>> categoryReferencesWithKeys = categoryReferencePair.getCategoryReferences();
+        final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+            categoryReferencePair.getCategoryResourceIdentifiers();
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
         assertThat(categoryReferencesWithKeys).hasSize(1);
-        assertThat(categoryReferencesWithKeys.get(0).getId()).isEqualTo(categoryId);
+        assertThat(categoryReferencesWithKeys.iterator().next().getId()).isEqualTo(categoryId);
         assertThat(categoryOrderHintsWithKeys).isEqualTo(product.getMasterData().getStaged().getCategoryOrderHints());
     }
 
@@ -386,10 +388,11 @@ public class ProductReferenceReplacementUtilsTest {
 
         assertThat(categoryReferencePair).isNotNull();
 
-        final List<Reference<Category>> categoryReferencesWithKeys = categoryReferencePair.getCategoryReferences();
+        final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+            categoryReferencePair.getCategoryResourceIdentifiers();
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
         assertThat(categoryReferencesWithKeys).hasSize(1);
-        assertThat(categoryReferencesWithKeys.get(0).getId()).isEqualTo(categoryKey);
+        assertThat(categoryReferencesWithKeys.iterator().next().getId()).isEqualTo(categoryKey);
         assertThat(categoryOrderHintsWithKeys).isNotNull();
         assertThat(categoryOrderHintsWithKeys.getAsMap()).hasSize(1);
         assertThat(categoryOrderHintsWithKeys.get(categoryKey))
@@ -409,10 +412,11 @@ public class ProductReferenceReplacementUtilsTest {
 
         assertThat(categoryReferencePair).isNotNull();
 
-        final List<Reference<Category>> categoryReferencesWithKeys = categoryReferencePair.getCategoryReferences();
+        final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+            categoryReferencePair.getCategoryResourceIdentifiers();
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
         assertThat(categoryReferencesWithKeys).hasSize(1);
-        assertThat(categoryReferencesWithKeys.get(0).getId()).isEqualTo(categoryKey);
+        assertThat(categoryReferencesWithKeys.iterator().next().getId()).isEqualTo(categoryKey);
         assertThat(categoryOrderHintsWithKeys).isNull();
     }
 
@@ -443,11 +447,12 @@ public class ProductReferenceReplacementUtilsTest {
 
         assertThat(categoryReferencePair).isNotNull();
 
-        final List<Reference<Category>> categoryReferencesWithKeys = categoryReferencePair.getCategoryReferences();
+        final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+            categoryReferencePair.getCategoryResourceIdentifiers();
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
         assertThat(categoryReferencesWithKeys).hasSize(2);
 
-        final List<String> referenceIds = categoryReferencesWithKeys.stream().map(Reference::getId)
+        final List<String> referenceIds = categoryReferencesWithKeys.stream().map(ResourceIdentifier::getId)
                                                                     .collect(Collectors.toList());
 
         assertThat(referenceIds).contains(categoryKey1);
@@ -468,7 +473,8 @@ public class ProductReferenceReplacementUtilsTest {
 
         assertThat(categoryReferencePair).isNotNull();
 
-        final List<Reference<Category>> categoryReferencesWithKeys = categoryReferencePair.getCategoryReferences();
+        final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+            categoryReferencePair.getCategoryResourceIdentifiers();
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
         assertThat(categoryReferencesWithKeys).isEmpty();
         assertThat(categoryOrderHintsWithKeys).isNull();
