@@ -142,8 +142,8 @@ public class StateReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve reference 'state' on ProductDraft with "
-                + "key:'" + productBuilder.getKey() + "'. Reason: Reference 'id' field"
-                + " value is blank (null/empty).");
+                + "key:'" + productBuilder.getKey() + "'. Reason: The value of 'id' field of the Resource Identifier"
+                + " is blank (null/empty).");
     }
 
     @Test
@@ -157,8 +157,8 @@ public class StateReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve reference 'state' on ProductDraft with "
-                + "key:'" + productBuilder.getKey() + "'. Reason: Reference 'id' field"
-                + " value is blank (null/empty).");
+                + "key:'" + productBuilder.getKey() + "'. Reason: The value of 'id' field of the Resource Identifier is"
+                + " blank (null/empty).");
     }
 
     @Test

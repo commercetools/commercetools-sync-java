@@ -257,8 +257,7 @@ public class CategoryReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve parent reference on CategoryDraft"
-                + " with key:'key'. Reason: Key is blank (null/empty) on both expanded"
-                + " reference object and reference id field.");
+                + " with key:'key'. Reason: The value of 'id' field of the Resource Identifier is blank (null/empty).");
     }
 
     @Test
@@ -273,8 +272,7 @@ public class CategoryReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve parent reference on CategoryDraft"
-                + " with key:'key'. Reason: Key is blank (null/empty) on both expanded"
-                + " reference object and reference id field.");
+                + " with key:'key'. Reason: The value of 'id' field of the Resource Identifier is blank (null/empty).");
     }
 
     @Test
@@ -295,7 +293,7 @@ public class CategoryReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve custom type reference on CategoryDraft"
-                + " with key:'key'. Reason: Reference 'id' field value is blank (null/empty).");
+                + " with key:'key'. Reason: The value of 'id' field of the Resource Identifier is blank (null/empty).");
     }
 
     @Test
@@ -311,7 +309,7 @@ public class CategoryReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve custom type reference on CategoryDraft"
-                + " with key:'key'. Reason: Reference 'id' field value is blank (null/empty).");
+                + " with key:'key'. Reason: The value of 'id' field of the Resource Identifier is blank (null/empty).");
     }
 
     @Test
