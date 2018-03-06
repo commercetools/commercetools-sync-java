@@ -17,7 +17,8 @@ public final class ResourceIdentifierUtils {
      * @param resource represents the resource to return as a {@link ResourceIdentifier} if not {@code null}.
      * @param <T>      type of the resource supplied.
      * @param <S>      represents the type of the {@link ResourceIdentifier} returned.
-     * @return the supplied resource in the as a {@link ResourceIdentifier} if not {@code null}.
+     * @return the supplied resource in the as a {@link ResourceIdentifier} if not {@code null}. If it is {@code null},
+     *         this method returns {@code null}.
      */
     @Nullable
     public static <T extends Referenceable<S>, S> ResourceIdentifier<S> toResourceIdentifierIfNotNull(
