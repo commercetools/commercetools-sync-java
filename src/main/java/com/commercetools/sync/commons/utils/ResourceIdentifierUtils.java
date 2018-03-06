@@ -10,8 +10,8 @@ import static java.util.Optional.ofNullable;
 public final class ResourceIdentifierUtils {
 
     /**
-     * Given a {@link Referenceable} {@code resource} of the type {@code T}, if it is not null, this method returns
-     * applies the {@link Referenceable#toResourceIdentifier()} method to return it as a {@link ResourceIdentifier} of
+     * Given a {@link Referenceable} {@code resource} of the type {@code T}, if it is not null, this method applies the
+     * {@link Referenceable#toResourceIdentifier()} method to return it as a {@link ResourceIdentifier} of
      * the type {@code T}. If it is {@code null}, this method returns {@code null}.
      *
      * @param resource represents the resource to return as a {@link ResourceIdentifier} if not {@code null}.
