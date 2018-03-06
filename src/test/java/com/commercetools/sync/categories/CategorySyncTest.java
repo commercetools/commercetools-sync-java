@@ -334,7 +334,7 @@ public class CategorySyncTest {
 
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
-            .parent(Category.referenceOfId("differentParent"))
+            .parent(Category.referenceOfId("differentParent").toResourceIdentifier())
             .build();
         final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
         assertThat(doesRequire).isTrue();
@@ -348,7 +348,7 @@ public class CategorySyncTest {
 
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
-            .parent(Category.referenceOfId(parentId))
+            .parent(Category.referenceOfId(parentId).toResourceIdentifier())
             .build();
         final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
         assertThat(doesRequire).isFalse();

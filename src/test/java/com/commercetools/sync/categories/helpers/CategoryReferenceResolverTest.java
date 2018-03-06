@@ -250,7 +250,7 @@ public class CategoryReferenceResolverTest {
     public void resolveParentReference_WithEmptyIdOnParentReference_ShouldNotResolveParentReference() {
         final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder.of(ofEnglish("foo"), ofEnglish("bar"));
         categoryDraft.key("key");
-        categoryDraft.parent(Category.referenceOfId(""));
+        categoryDraft.parent(Category.referenceOfId("").toResourceIdentifier());
 
         assertThat(referenceResolver.resolveParentReference(categoryDraft)
             .toCompletableFuture())
@@ -266,7 +266,7 @@ public class CategoryReferenceResolverTest {
     public void resolveParentReference_WithNullIdOnParentReference_ShouldNotResolveParentReference() {
         final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder.of(ofEnglish("foo"), ofEnglish("bar"));
         categoryDraft.key("key");
-        categoryDraft.parent(Category.referenceOfId(null));
+        categoryDraft.parent(Category.referenceOfId(null).toResourceIdentifier());
 
         assertThat(referenceResolver.resolveParentReference(categoryDraft)
             .toCompletableFuture())

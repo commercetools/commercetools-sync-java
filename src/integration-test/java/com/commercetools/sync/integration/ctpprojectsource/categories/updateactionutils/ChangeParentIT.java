@@ -54,7 +54,7 @@ public class ChangeParentIT {
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture"))
-            .parent(oldCategoryParent)
+            .parent(oldCategoryParent.toResourceIdentifier())
             .build();
 
         oldCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
@@ -96,7 +96,7 @@ public class ChangeParentIT {
 
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
-            .parent(parentCategory)
+            .parent(parentCategory.toResourceIdentifier())
             .build();
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
                                                       .toCompletableFuture()
@@ -128,7 +128,7 @@ public class ChangeParentIT {
         // Prepare new category draft with a same parent. The parent is substituted with the target project's
         // parnet id, because the utils assume reference resolution has already been done at this point.
         final CategoryDraft draftFromCategory = CategoryDraftBuilder.of(newCategory)
-                                                                    .parent(oldCategoryParent)
+                                                                    .parent(oldCategoryParent.toResourceIdentifier())
                                                                     .build();
 
         // Build change parent update action
