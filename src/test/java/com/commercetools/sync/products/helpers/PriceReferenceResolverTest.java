@@ -141,8 +141,8 @@ public class PriceReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve custom type reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10'. Reason: Reference 'id' field"
-                + " value is blank (null/empty).");
+                + " with country:'DE' and value: 'EUR 10'. Reason: The value of 'id' field of the Resource Identifier"
+                + " is blank (null/empty).");
     }
 
     @Test
@@ -161,8 +161,8 @@ public class PriceReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve custom type reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10'. Reason: Reference 'id' field"
-                + " value is blank (null/empty).");
+                + " with country:'DE' and value: 'EUR 10'. Reason: The value of 'id' field of the Resource Identifier"
+                + " is blank (null/empty).");
     }
 
     @Test

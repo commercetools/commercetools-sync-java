@@ -147,7 +147,8 @@ public class AssetReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve custom type reference on AssetDraft"
-                + " with key:'assetKey'. Reason: Reference 'id' field value is blank (null/empty).");
+                + " with key:'assetKey'. Reason: The value of 'id' field of the Resource Identifier is blank "
+                + "(null/empty).");
     }
 
     @Test
@@ -164,7 +165,8 @@ public class AssetReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve custom type reference on AssetDraft"
-                + " with key:'assetKey'. Reason: Reference 'id' field value is blank (null/empty).");
+                + " with key:'assetKey'. Reason: The value of 'id' field of the Resource Identifier is blank"
+                + " (null/empty).");
     }
 
     @Test

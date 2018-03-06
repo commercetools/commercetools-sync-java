@@ -287,8 +287,8 @@ public class InventoryReferenceResolverTest {
                                  .isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getCause().getMessage())
                                  .isEqualTo("Failed to resolve custom type reference on InventoryEntryDraft"
-                                         + " with SKU:'1000'. Reason: Reference 'id' field value is blank"
-                                         + " (null/empty).");
+                                     + " with SKU:'1000'. Reason: The value of 'id' field of the Resource Identifier is"
+                                     + " blank (null/empty).");
                              return null;
                          }).toCompletableFuture().join();
     }

@@ -167,8 +167,8 @@ public class ProductReferenceResolverIT {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on ProductDraft with"
-            + " key:'%s'. Reason: %s: Failed to resolve product type reference on ProductDraft with key:'%s'."
-                + " Reason: Reference 'id' field value is blank (null/empty).",
+                + " key:'%s'. Reason: %s: Failed to resolve product type reference on ProductDraft with key:'%s'."
+                + " Reason: The value of 'id' field of the Resource Identifier is blank (null/empty).",
             productDraft.getKey(), ReferenceResolutionException.class.getCanonicalName(), productDraft.getKey()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);

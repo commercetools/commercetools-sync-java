@@ -131,8 +131,8 @@ public class ProductTypeReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve product type reference on ProductDraft"
-                + " with key:'" + productBuilder.getKey() + "'. Reason: Reference 'id' field"
-                + " value is blank (null/empty).");
+                + " with key:'" + productBuilder.getKey() + "'. Reason: The value of 'id' field of the Resource"
+                + " Identifier is blank (null/empty).");
     }
 
     @Test
@@ -145,8 +145,8 @@ public class ProductTypeReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve product type reference on ProductDraft"
-                + " with key:'" + productBuilder.getKey() + "'. Reason: Reference 'id' field"
-                + " value is blank (null/empty).");
+                + " with key:'" + productBuilder.getKey() + "'. Reason: The value of 'id' field of the Resource"
+                + " Identifier is blank (null/empty).");
     }
 
     @Test
