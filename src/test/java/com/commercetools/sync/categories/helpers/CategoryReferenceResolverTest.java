@@ -191,7 +191,6 @@ public class CategoryReferenceResolverTest {
                                  .thenAccept(resolvedDraft -> {
                                      assertThat(resolvedDraft.getParent()).isNotNull();
                                      assertThat(resolvedDraft.getParent().getId()).isEqualTo(CACHED_CATEGORY_ID);
-                                     assertThat(resolvedDraft.getParent().getObj()).isNull();
                                  }).toCompletableFuture().join();
     }
 
