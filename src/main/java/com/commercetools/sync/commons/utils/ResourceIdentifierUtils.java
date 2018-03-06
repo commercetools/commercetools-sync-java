@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 
 import static java.util.Optional.ofNullable;
 
-final public class ResourceIdentifierUtils {
+public final class ResourceIdentifierUtils {
 
     /**
      * Given a {@link Referenceable} {@code resource} of the type {@code T}, if it is not null, this method returns
