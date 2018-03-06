@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithProductTypeRef;
@@ -28,6 +29,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProduc
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockTaxCategoryService;
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -130,9 +132,8 @@ public class ProductTypeReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve product type reference on ProductDraft"
-                + " with key:'" + productBuilder.getKey() + "'. Reason: The value of 'id' field of the Resource"
-                + " Identifier is blank (null/empty).");
+            .hasMessage(format("Failed to resolve product type reference on ProductDraft"
+                + " with key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
@@ -144,9 +145,8 @@ public class ProductTypeReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve product type reference on ProductDraft"
-                + " with key:'" + productBuilder.getKey() + "'. Reason: The value of 'id' field of the Resource"
-                + " Identifier is blank (null/empty).");
+            .hasMessage(format("Failed to resolve product type reference on ProductDraft"
+                + " with key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test

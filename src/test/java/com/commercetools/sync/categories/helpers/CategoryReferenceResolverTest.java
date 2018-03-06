@@ -29,7 +29,9 @@ import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraftBuilder;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -256,8 +258,8 @@ public class CategoryReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve parent reference on CategoryDraft"
-                + " with key:'key'. Reason: The value of 'id' field of the Resource Identifier is blank (null/empty).");
+            .hasMessage(format("Failed to resolve parent reference on CategoryDraft with key:'key'. Reason: %s",
+                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
@@ -271,8 +273,8 @@ public class CategoryReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve parent reference on CategoryDraft"
-                + " with key:'key'. Reason: The value of 'id' field of the Resource Identifier is blank (null/empty).");
+            .hasMessage(format("Failed to resolve parent reference on CategoryDraft with key:'key'. Reason: %s",
+                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
@@ -292,8 +294,8 @@ public class CategoryReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve custom type reference on CategoryDraft"
-                + " with key:'key'. Reason: The value of 'id' field of the Resource Identifier is blank (null/empty).");
+            .hasMessage(format("Failed to resolve custom type reference on CategoryDraft with key:'key'. Reason: %s",
+                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
@@ -308,8 +310,8 @@ public class CategoryReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve custom type reference on CategoryDraft"
-                + " with key:'key'. Reason: The value of 'id' field of the Resource Identifier is blank (null/empty).");
+            .hasMessage(format("Failed to resolve custom type reference on CategoryDraft with key:'key'. Reason: %s",
+                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test

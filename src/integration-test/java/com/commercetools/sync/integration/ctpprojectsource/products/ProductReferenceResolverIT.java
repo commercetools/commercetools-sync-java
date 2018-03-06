@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
@@ -168,8 +169,9 @@ public class ProductReferenceResolverIT {
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on ProductDraft with"
                 + " key:'%s'. Reason: %s: Failed to resolve product type reference on ProductDraft with key:'%s'."
-                + " Reason: The value of 'id' field of the Resource Identifier is blank (null/empty).",
-            productDraft.getKey(), ReferenceResolutionException.class.getCanonicalName(), productDraft.getKey()));
+                + " Reason: %s",
+            productDraft.getKey(), ReferenceResolutionException.class.getCanonicalName(), productDraft.getKey(),
+            BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
         assertThat(warningCallBackMessages).isEmpty();
