@@ -207,8 +207,8 @@ public class CategorySyncMockUtils {
                                                                    @Nonnull final String customTypeId,
                                                                    @Nonnull final Map<String, JsonNode> customFields) {
         return CategoryDraftBuilder.of(LocalizedString.of(locale, name), LocalizedString.of(locale, "testSlug"))
-            .key(key)
-            .parent(Category.referenceOfId(parentId))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(customTypeId, customFields));
+                                   .key(key)
+                                   .parent(Category.referenceOfId(parentId).toResourceIdentifier())
+                                   .custom(CustomFieldsDraft.ofTypeIdAndJson(customTypeId, customFields));
     }
 }

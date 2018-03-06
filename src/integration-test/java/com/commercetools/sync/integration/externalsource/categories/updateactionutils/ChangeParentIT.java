@@ -51,7 +51,7 @@ public class ChangeParentIT {
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture1"))
             .key("oldCategory")
-            .parent(oldCategoryParent)
+            .parent(oldCategoryParent.toResourceIdentifier())
             .build();
         oldCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
                                        .toCompletableFuture()
@@ -84,7 +84,7 @@ public class ChangeParentIT {
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture"))
-            .parent(oldCategory)
+            .parent(oldCategory.toResourceIdentifier())
             .build();
 
         // Build change parent update action between parent and new category.
@@ -106,7 +106,7 @@ public class ChangeParentIT {
         final CategoryDraft newCategory = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture"))
-            .parent(oldCategory.getParent())
+            .parent(oldCategory.getParent().toResourceIdentifier())
             .build();
 
         // Build change parent update action

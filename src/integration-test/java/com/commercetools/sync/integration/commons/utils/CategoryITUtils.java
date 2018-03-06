@@ -44,6 +44,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
 import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -73,7 +74,8 @@ public final class CategoryITUtils {
             final String key = format("key%s", i + 1);
             final String orderHint = format("0.%s", i + 1);
             final CategoryDraft categoryDraft = CategoryDraftBuilder.of(name, slug)
-                                                                    .parent(parentCategory)
+                                                                    .parent(
+                                                                        toResourceIdentifierIfNotNull(parentCategory))
                                                                     .description(description)
                                                                     .key(key)
                                                                     .orderHint(orderHint)
@@ -142,7 +144,7 @@ public final class CategoryITUtils {
                 .of(LocalizedString.of(Locale.ENGLISH, categoryName),
                     LocalizedString.of(Locale.ENGLISH, categoryName))
                 .key(categoryName)
-                .parent(parent)
+                .parent(toResourceIdentifierIfNotNull(parent))
                 .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
                 .orderHint("sameOrderHint")
                 .build();

@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.helpers.CategoryReferencePair;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
@@ -23,6 +24,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -59,8 +61,8 @@ public final class ProductReferenceReplacementUtils {
                 final Reference<State> stateReferenceWithKey = replaceProductStateReferenceIdWithKey(product);
 
                 final CategoryReferencePair categoryReferencePair = replaceCategoryReferencesIdsWithKeys(product);
-                final List<Reference<Category>> categoryReferencesWithKeys =
-                    categoryReferencePair.getCategoryReferences();
+                final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
+                    categoryReferencePair.getCategoryResourceIdentifiers();
                 final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
 
                 final List<ProductVariant> allVariants = product.getMasterData().getStaged().getAllVariants();
@@ -72,7 +74,7 @@ public final class ProductReferenceReplacementUtils {
                                           .masterVariant(masterVariantDraftWithKeys)
                                           .variants(variantDraftsWithKeys)
                                           .productType(productTypeReferenceWithKey)
-                                          .categories(categoryReferencesWithKeys)
+                                          .categories(categoryResourceIdentifiers)
                                           .categoryOrderHints(categoryOrderHintsWithKeys)
                                           .taxCategory(taxCategoryReferenceWithKey)
                                           .state(stateReferenceWithKey)
@@ -191,13 +193,13 @@ public final class ProductReferenceReplacementUtils {
     @Nonnull
     static CategoryReferencePair replaceCategoryReferencesIdsWithKeys(@Nonnull final Product product) {
         final Set<Reference<Category>> categoryReferences = product.getMasterData().getStaged().getCategories();
-        final List<Reference<Category>> categoryReferencesWithKeys = new ArrayList<>();
+        final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = new HashSet<>();
 
         final CategoryOrderHints categoryOrderHints = product.getMasterData().getStaged().getCategoryOrderHints();
         final Map<String, String> categoryOrderHintsMapWithKeys = new HashMap<>();
 
         categoryReferences.forEach(categoryReference ->
-            categoryReferencesWithKeys.add(
+            categoryResourceIdentifiers.add(
                 replaceReferenceIdWithKey(categoryReference, () -> {
                     final String categoryId = categoryReference.getId();
                     @SuppressWarnings("ConstantConditions") // NPE is checked in replaceReferenceIdWithKey.
@@ -215,7 +217,7 @@ public final class ProductReferenceReplacementUtils {
 
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryOrderHintsMapWithKeys.isEmpty()
             ? categoryOrderHints : CategoryOrderHints.of(categoryOrderHintsMapWithKeys);
-        return CategoryReferencePair.of(categoryReferencesWithKeys, categoryOrderHintsWithKeys);
+        return CategoryReferencePair.of(categoryResourceIdentifiers, categoryOrderHintsWithKeys);
     }
 
     /**

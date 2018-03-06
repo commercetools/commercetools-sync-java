@@ -6,6 +6,7 @@ import io.sphere.sdk.products.CategoryOrderHints;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -18,10 +19,11 @@ public class CategoryReferencePairTest {
             Arrays.asList(Category.referenceOfId("cat1"), Category.referenceOfId("cat2"));
         final CategoryOrderHints categoryOrderHints = CategoryOrderHints.of("cat1", "0.12");
         final CategoryReferencePair categoryReferencePair =
-            CategoryReferencePair.of(categoryReferences, categoryOrderHints);
+            CategoryReferencePair.of(new HashSet<>(categoryReferences), categoryOrderHints);
 
         assertThat(categoryReferencePair).isNotNull();
-        assertThat(categoryReferencePair.getCategoryReferences()).isEqualTo(categoryReferences);
+        assertThat(categoryReferencePair.getCategoryResourceIdentifiers())
+            .containsExactlyInAnyOrderElementsOf(categoryReferences);
         assertThat(categoryReferencePair.getCategoryOrderHints()).isEqualTo(categoryOrderHints);
     }
 
@@ -30,10 +32,11 @@ public class CategoryReferencePairTest {
         final List<Reference<Category>> categoryReferences =
             Arrays.asList(Category.referenceOfId("cat1"), Category.referenceOfId("cat2"));
         final CategoryReferencePair categoryReferencePair =
-            CategoryReferencePair.of(categoryReferences, null);
+            CategoryReferencePair.of(new HashSet<>(categoryReferences), null);
 
         assertThat(categoryReferencePair).isNotNull();
-        assertThat(categoryReferencePair.getCategoryReferences()).isEqualTo(categoryReferences);
+        assertThat(categoryReferencePair.getCategoryResourceIdentifiers())
+            .containsExactlyInAnyOrderElementsOf(categoryReferences);
         assertThat(categoryReferencePair.getCategoryOrderHints()).isNull();
     }
 }

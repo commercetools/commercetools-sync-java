@@ -16,6 +16,7 @@ import io.sphere.sdk.categories.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
@@ -104,12 +105,19 @@ public final class CategoryUpdateActionUtils {
         @Nonnull final Category oldCategory,
         @Nonnull final CategoryDraft newCategory,
         @Nonnull final CategorySyncOptions syncOptions) {
-        if (newCategory.getParent() == null && oldCategory.getParent() != null) {
+
+        final Reference<Category> oldParent = oldCategory.getParent();
+        final ResourceIdentifier<Category> newParent = newCategory.getParent();
+        if (newParent == null && oldParent != null) {
             syncOptions.applyWarningCallback(format(CATEGORY_CHANGE_PARENT_EMPTY_PARENT, oldCategory.getId()));
             return Optional.empty();
+        } else {
+            // The newParent.getId() call below can not cause an NPE in this case, since if both newParent and oldParent
+            // are null, then the supplier will not be called at all. The remaining cases all involve the newParent
+            // being not null.
+            return buildUpdateAction(oldParent,
+                newParent, () -> ChangeParent.of(Category.referenceOfId(newParent.getId())));
         }
-        return buildUpdateAction(oldCategory.getParent(),
-            newCategory.getParent(), () -> ChangeParent.of(newCategory.getParent()));
     }
 
     /**
