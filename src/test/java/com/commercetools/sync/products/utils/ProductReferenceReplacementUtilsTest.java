@@ -99,11 +99,13 @@ public class ProductReferenceReplacementUtilsTest {
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getProductType)
                                                      .extracting(ResourceIdentifier::getId)
-                                                     .containsExactly(productType.getId(), productType.getKey(), productType.getKey());
+                                                     .containsExactly(productType.getId(), productType.getKey(),
+                                                         productType.getKey());
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getTaxCategory)
                                                      .extracting(ResourceIdentifier::getId)
-                                                     .containsExactly(taxCategory.getKey(), taxCategory.getId(), taxCategory.getKey());
+                                                     .containsExactly(taxCategory.getKey(), taxCategory.getId(),
+                                                         taxCategory.getKey());
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getState)
                                                      .extracting(ResourceIdentifier::getId)
