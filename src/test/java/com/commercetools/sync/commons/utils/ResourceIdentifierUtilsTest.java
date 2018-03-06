@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import org.junit.Test;
 
@@ -29,6 +30,18 @@ public class ResourceIdentifierUtilsTest {
 
         assertThat(categoryResourceIdentifier).isNotNull();
         assertThat(categoryResourceIdentifier.getId()).isEqualTo(category.getId());
+        assertThat(categoryResourceIdentifier.getTypeId()).isEqualTo(Category.resourceTypeId());
+    }
+
+    @Test
+    public void toResourceIdentifierIfNotNull_WithNonNullReference_ShouldReturnCorrectResourceIdentifier() {
+        final Reference<Category> categoryReference = Category.referenceOfId("foo");
+
+        final ResourceIdentifier<Category> categoryResourceIdentifier = toResourceIdentifierIfNotNull(
+            categoryReference);
+
+        assertThat(categoryResourceIdentifier).isNotNull();
+        assertThat(categoryResourceIdentifier.getId()).isEqualTo("foo");
         assertThat(categoryResourceIdentifier.getTypeId()).isEqualTo(Category.resourceTypeId());
     }
 

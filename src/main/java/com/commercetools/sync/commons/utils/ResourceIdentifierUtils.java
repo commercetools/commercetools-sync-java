@@ -15,10 +15,12 @@ final public class ResourceIdentifierUtils {
      * the type {@code T}. If it is {@code null}, this method returns {@code null}.
      *
      * @param resource represents the resource to return as a {@link ResourceIdentifier} if not {@code null}.
+     * @param <T>      type of the resource supplied.
+     * @param <S>      represents the type of the {@link ResourceIdentifier} returned.
      * @return the supplied resource in the as a {@link ResourceIdentifier} if not {@code null}.
      */
     @Nullable
-    public static <T extends Referenceable<T>> ResourceIdentifier<T> toResourceIdentifierIfNotNull(
+    public static <T extends Referenceable<S>, S> ResourceIdentifier<S> toResourceIdentifierIfNotNull(
         @Nullable final T resource) {
         return ofNullable(resource)
             .map(Referenceable::toResourceIdentifier)
