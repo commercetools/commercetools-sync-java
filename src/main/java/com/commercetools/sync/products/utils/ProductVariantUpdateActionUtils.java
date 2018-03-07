@@ -3,6 +3,7 @@ package com.commercetools.sync.products.utils;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.helpers.ProductAssetActionFactory;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.products.Image;
@@ -11,11 +12,8 @@ import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
-import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.products.commands.updateactions.MoveImageToPosition;
-import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.SetPrices;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
@@ -33,7 +31,6 @@ import static com.commercetools.sync.commons.utils.AssetsUpdateActionUtils.build
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildActions;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
@@ -164,16 +161,8 @@ public final class ProductVariantUpdateActionUtils {
             return buildAssetsUpdateActions(
                 oldProductVariant.getAssets(),
                 newProductVariant.getAssets(),
-                (oldAsset, newAssetDraft) ->
-                    buildActions(oldProductVariant.getId(), oldAsset, newAssetDraft, syncOptions),
-                key ->
-                    RemoveAsset.ofVariantIdWithKey(oldProductVariant.getId(), key, true),
-                (newAssetOrder) ->
-                    ChangeAssetOrder.ofVariantId(oldProductVariant.getId(), newAssetOrder, true),
-                (assetDraft, index) ->
-                    AddAsset.ofVariantId(oldProductVariant.getId(), assetDraft)
-                            .withPosition(index)
-                            .withStaged(true));
+                new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions));
+
         } catch (final BuildUpdateActionException exception) {
             syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
                 + "of the product variant with the sku '%s'. Reason: %s", oldProductVariant.getSku(), exception),

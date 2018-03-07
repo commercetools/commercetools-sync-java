@@ -10,7 +10,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,6 +18,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static io.sphere.sdk.queries.QueryExecutionUtils.DEFAULT_PAGE_SIZE;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -40,8 +40,9 @@ public class QueryAllTest {
         when(mockCategory.getKey()).thenReturn(CATEGORY_KEY);
         when(mockCategory.getId()).thenReturn(CATEGORY_ID);
 
-        final PagedQueryResult<Category> pagedQueryResult =
-            PagedQueryResult.of(Arrays.asList(mockCategory, mockCategory, mockCategory, mockCategory));
+        final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+        when(pagedQueryResult.getResults()).thenReturn(asList(mockCategory, mockCategory, mockCategory, mockCategory));
+
         when(sphereClient.execute(any())).thenReturn(CompletableFuture.completedFuture(pagedQueryResult));
     }
 
