@@ -7,6 +7,10 @@ public class ReferenceResolutionException extends Exception {
         super(message);
     }
 
+    public ReferenceResolutionException(@Nonnull final Throwable cause) {
+        super(cause);
+    }
+
     public ReferenceResolutionException(@Nonnull final String message, @Nonnull final Throwable cause) {
         super(message, cause);
     }

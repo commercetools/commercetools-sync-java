@@ -7,6 +7,10 @@ public class DuplicateKeyException extends RuntimeException {
         super(message);
     }
 
+    public DuplicateKeyException(@Nonnull final Throwable cause) {
+        super(cause);
+    }
+
     public DuplicateKeyException(@Nonnull final String message, @Nonnull final Throwable cause) {
         super(message, cause);
     }
