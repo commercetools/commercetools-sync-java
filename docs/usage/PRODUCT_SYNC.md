@@ -61,14 +61,12 @@ order for the sync to resolve the actual ids of those references, those `key`s h
 final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(sphereClient).build();
 ````
 
-The options can be used to provide additional optional configuration for the sync as well:
+Additional optional configuration for the sync can be configured on the `ProductSyncOptionsBuilder` instance, according to your need:
 - `errorCallBack`
-a callback that is called whenever an event occurs during the sync process that represents an error. Currently, these 
-events.
+a callback that is called whenever an event occurs during the sync process that represents an error.
 
 - `warningCallBack` 
-a callback that is called whenever an event occurs during the sync process that represents a warning. Currently, these 
-events.
+a callback that is called whenever an event occurs during the sync process that represents a warning.
 
 - `syncFilter`
  represents either a blacklist or a whitelist for filtering certain update action groups. 
@@ -134,7 +132,6 @@ More examples of how to use the sync
 2. From an external source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java). 
 3. Syncing with blacklisting/whitelisting [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java).
 
-
 ### Build all update actions
 
 A utility method provided by the library to compare a Product with a new ProductDraft and results in a list of product
@@ -145,7 +142,6 @@ List<UpdateAction<Product>> updateActions = ProductSyncUtils.buildActions(produc
 
 Examples of its usage can be found in the tests 
 [here](/src/test/java/com/commercetools/sync/products/utils/ProductSyncUtilsTest.java).
-
 
 ### Build particular update action(s)
 

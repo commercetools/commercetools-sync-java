@@ -58,18 +58,16 @@ matched.
 final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(sphereClient).build();
 ````
 
-The options can be used to provide additional optional configuration for the sync as well:
+Additional optional configuration for the sync can be configured on the `CategorySyncOptionsBuilder` instance, according to your need:
 - `errorCallBack`
-a callback that is called whenever an event occurs during the sync process that represents an error. Currently, these 
-events.
+a callback that is called whenever an event occurs during the sync process that represents an error.
 
 - `warningCallBack` 
-a callback that is called whenever an event occurs during the sync process that represents a warning. Currently, these 
-events.
+a callback that is called whenever an event occurs during the sync process that represents a warning.
 
 - `beforeUpdateCallback`
 a filter function which can be applied on a generated list of update actions. It allows the user to intercept category 
-update and modify (add/remove) update actions just before they are send to CTP API.
+update and modify (add/remove) update actions just before they are sent to CTP API.
 
 - `beforeCreateCallback`
 a filter function which can be applied on a category draft before a request to create it on CTP is issued. It allows the 

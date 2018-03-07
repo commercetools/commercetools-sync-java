@@ -85,7 +85,7 @@ __Note__ The statistics object contains the processing time of the last batch on
  1. The sync processing time should not take into account the time between supplying batches to the sync. 
  2. It is not not known by the sync which batch is going to be the last one supplied.
 
-Additional optional configuration for the sync can be configured on the `InventorySyncOptions` instance, according to your need:
+Additional optional configuration for the sync can be configured on the `InventorySyncOptionsBuilder` instance, according to your need:
 
 - `ensureChannels`
 a flag which represents a strategy to handle syncing inventory entries with missing supply channels.
