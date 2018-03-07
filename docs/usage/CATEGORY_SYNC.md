@@ -80,10 +80,7 @@ a flag, if set to `true`, enables the user to use keys with UUID format for refe
 a number that could be used to set the batch size with which categories are fetched and processed with,
 as categories are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
 `batchSize` categories from the input list, then fetches the corresponding categories from the target CTP project
-in a single request. Playing with this option can slightly improve or reduce processing speed. 
-An example of use can be found 
-[here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L318). 
-(The default values is `50`).
+in a single request. Playing with this option can slightly improve or reduce processing speed. (The default values is `50`).
 
 Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
 streams, would look as follows:
