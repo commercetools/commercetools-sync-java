@@ -97,23 +97,12 @@ Having an inventory entry, with a missing supply channel reference, could be pro
       An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L284).
     - If not provided, it is set to `false` by default.
 
-- `batchSize`
-a number that could be used to set the batch size with which inventory entries are fetched and processed with,
-as inventory entries are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
-`batchSize` inventory entries from the input list, then fetches the corresponding inventory entries from the target CTP project
-in a single request, and then performs the update actions needed. Playing with this option can slightly improve or reduce processing speed.
-An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L318).
-    - If not provided, it is set to `30` by default.
-
 - `errorCallBack`
 a callback that is called whenever an event occurs during the sync process that represents an error.
 An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L391).
 
 - `warningCallBack`
 a callback that is called whenever an event occurs during the sync process that represents a warning.
-
-- `allowUuid`
-a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
 - `beforeUpdateCallback`
 a filter function which can be applied on a generated list of update actions. It allows the user to intercept inventory 
@@ -122,6 +111,18 @@ entry update and modify (add/remove) update actions just before they are send to
 - `beforeCreateCallback`
 a filter function which can be applied on a inventoryEntry draft before a request to create it on CTP is issued. It allows the 
 user to intercept inventoryEntry create requests modify the draft before the create request is sent to CTP API.
+
+- `allowUuid`
+a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
+
+- `batchSize`
+a number that could be used to set the batch size with which inventory entries are fetched and processed with,
+as inventory entries are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
+`batchSize` inventory entries from the input list, then fetches the corresponding inventory entries from the target CTP project
+in a single request. Playing with this option can slightly improve or reduce processing speed. 
+An example of use can be found 
+[here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L318). 
+(The default values is `150`).
 
 <!-- TODO Update above options with links to tests. Tests should be written when inventory sync could actually use them (when custom update actions would use them).  -->
 
