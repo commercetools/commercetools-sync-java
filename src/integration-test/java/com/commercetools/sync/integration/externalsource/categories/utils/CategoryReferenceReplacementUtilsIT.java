@@ -64,7 +64,7 @@ public class CategoryReferenceReplacementUtilsIT {
             createAssetDraft("1", ofEnglish("1"), assetsCustomType.getId()));
 
         final CategoryDraft categoryDraft = CategoryDraftBuilder.of(ofEnglish("name"), ofEnglish("slug"))
-                                                                .parent(parentCategory)
+                                                                .parent(parentCategory.toResourceIdentifier())
                                                                 .custom(getCustomFieldsDraft())
                                                                 .assets(assetDrafts)
                                                                 .build();
