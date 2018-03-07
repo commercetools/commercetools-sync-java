@@ -14,6 +14,7 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.ResourceIdentifier;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -303,7 +305,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 if (isMissingCategory(parentCategoryKey, keyToIdCache)) {
                     statistics.putMissingParentCategoryChildKey(parentCategoryKey, categoryDraft.getKey());
                     return CategoryDraftBuilder.of(categoryDraft)
-                                               .parent(null)
+                                               .parent((ResourceIdentifier<Category>) null)
                                                .build();
                 }
                 return categoryDraft;
@@ -366,9 +368,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                         childCategoryKey);
                     if (createdChild.isPresent()) {
                         final Category category = createdChild.get();
-                        final CategoryDraft categoryDraft = CategoryDraftBuilder.of(category)
-                                                                                .parent(createdCategory)
-                                                                                .build();
+                        final CategoryDraft categoryDraft =
+                            CategoryDraftBuilder.of(category)
+                                                .parent(createdCategory.toResourceIdentifier())
+                                                .build();
                         categoryDraftsToUpdate.put(categoryDraft, category);
                     } else {
                         categoryKeysToFetch.add(childCategoryKey);
@@ -412,7 +415,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 draftByKeyIfExists.map(categoryDraft -> {
                     if (categoryDraft.getParent() == null) {
                         return CategoryDraftBuilder.of(categoryDraft)
-                                                   .parent(fetchedCategory.getParent());
+                                                   .parent(toResourceIdentifierIfNotNull(fetchedCategory.getParent()));
                     }
                     return CategoryDraftBuilder.of(categoryDraft);
                 })
@@ -421,7 +424,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 statistics.getMissingParentKey(fetchedCategoryKey)
                           .ifPresent(missingParentKey -> {
                               final String parentId = keyToIdCache.get(missingParentKey);
-                              categoryDraftBuilder.parent(Category.referenceOfId(parentId));
+                              categoryDraftBuilder
+                                  .parent(Category.referenceOfId(parentId).toResourceIdentifier());
                           });
             }
             categoryDraftsToUpdate.put(categoryDraftBuilder.build(), fetchedCategory);

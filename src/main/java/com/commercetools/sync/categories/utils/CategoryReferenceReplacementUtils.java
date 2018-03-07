@@ -6,7 +6,7 @@ import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.expansion.ExpansionPath;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
@@ -36,8 +36,9 @@ public final class CategoryReferenceReplacementUtils {
             .map(category -> {
                 final CustomFieldsDraft customTypeWithKeysInReference = replaceCustomTypeIdWithKeys(category);
                 @SuppressWarnings("ConstantConditions") // NPE checked in replaceReferenceIdWithKey
-                final Reference<Category> parentWithKeyInReference = replaceReferenceIdWithKey(category.getParent(),
-                    () -> Category.referenceOfId(category.getParent().getObj().getKey()));
+                final ResourceIdentifier<Category> parentWithKeyInReference = replaceReferenceIdWithKey(
+                    category.getParent(), () -> Category.referenceOfId(category.getParent().getObj().getKey()));
+
                 return CategoryDraftBuilder.of(category)
                                            .custom(customTypeWithKeysInReference)
                                            .parent(parentWithKeyInReference)

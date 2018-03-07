@@ -73,9 +73,10 @@ public final class SyncUtils {
      *         Otherwise, it returns the supplied reference as is.
      */
     @Nullable
-    public static <T> Reference<T> replaceReferenceIdWithKey(@Nullable final Reference<T> reference,
-                                                             @Nonnull final Supplier<Reference<T>>
-                                                                 keyInReferenceSupplier) {
+    public static <T> Reference<T> replaceReferenceIdWithKey(
+        @Nullable final Reference<T> reference,
+        @Nonnull final Supplier<Reference<T>> keyInReferenceSupplier) {
+
         if (reference != null && reference.getObj() != null) {
             return keyInReferenceSupplier.get();
         }

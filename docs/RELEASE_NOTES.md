@@ -53,13 +53,13 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M11/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M11)
 
-**New Features** (13)
+**New Features** (14)
 - **Category Sync** - Support of categories' asset syncing. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Product Sync** - Support of product variants' asset syncing. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Category Sync** - CategorySyncUtils#buildActions now also calculates all asset update actions needed. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Product Sync** - ProductSyncUtils#buildActions now also calculates variants' all asset update actions needed. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Product Sync** - ProductUpdateActionUtils#buildVariantsUpdateActions now also calculates variants' all asset update actions needed. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-_ **Product Sync** - Introduced the new ActionGroup: ASSETS which can be used in blacklisting/whitelisting assets syncing during the product sync. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Product Sync** - Introduced the new ActionGroup: ASSETS which can be used in blacklisting/whitelisting assets syncing during the product sync. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Category Sync** - Introduced new update action build utility for building all neeeded update actions between two categories' asstes ProductVariantUpdateActionUtils#buildProductVariantAssetsUpdateActions. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Product Sync** - Introduced new update action build utility for building all neeeded update actions between two variants' asstes ProductVariantUpdateActionUtils#buildProductVariantAssetsUpdateActions. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Category Sync** - Introduced new update action granular build utils for category asset fields in CategoryAssetUpdateActionUtils. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
@@ -67,7 +67,7 @@ _ **Product Sync** - Introduced the new ActionGroup: ASSETS which can be used in
 - **Commons** - Introduced `AssetReferenceResolver` which is a helper that can resolve all the references of an AssetDraft. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - `VariantReferenceResolver` and `CategoryReferenceResolver` now also resolve all the containing AssetDrafts references. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - Support for custom update actions calculation for secondary resources (e.g. prices, product assets and category assets). [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
- 
+- **Commons** - Introduced new ResourceIdentifierUtils#toResourceIdentifierIfNotNull. [#262](https://github.com/commercetools/commercetools-sync-java/issues/262) 
 
 **Changes** (5)
 - **Commons** - `CustomUpdateActionUtils#buildCustomUpdateActions` is now 
@@ -79,6 +79,9 @@ for secondary resources (e.g. assets and prices). [#3](https://github.com/commer
 - **Commons** - New Custom Type Id is now validated against being empty/null. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Product Sync** - ProductSyncUtils#buildCoreActions is now removed. ProductSyncUtils#buildActions should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Category Sync** - CategorySyncUtils#buildCoreActions is now removed. CategorySyncUtils#buildActions should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+
+**Enhancements** (1)
+- **Build Tools** - Bumped commercetools-jvm-sdk to version [1.29.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_29_0). [#262](https://github.com/commercetools/commercetools-sync-java/issues/262)
 
 **Bug Fixes** (1)
 - **Build Tools** - Fixed bug where jar and Codecov were triggered on benchmark stages of the build when they should 
