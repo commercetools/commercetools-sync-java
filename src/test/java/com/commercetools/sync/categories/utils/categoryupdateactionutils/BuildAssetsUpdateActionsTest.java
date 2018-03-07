@@ -3,6 +3,7 @@ package com.commercetools.sync.categories.utils.categoryupdateactionutils;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -137,13 +138,13 @@ public class BuildAssetsUpdateActionsTest {
         assertThat(updateActions).isEmpty();
         assertThat(errorMessages).hasSize(1);
         assertThat(errorMessages.get(0)).matches("Failed to build update actions for the assets of the category with "
-            + "the key 'null'. Reason: .*BuildUpdateActionException: Supplied asset drafts have duplicate keys. Asset "
+            + "the key 'null'. Reason: .*DuplicateKeyException: Supplied asset drafts have duplicate keys. Asset "
             + "keys are expected to be unique inside their container \\(a product variant or a category\\).");
         assertThat(exceptions).hasSize(1);
         assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
         assertThat(exceptions.get(0).getMessage()).contains("Supplied asset drafts have duplicate "
             + "keys. Asset keys are expected to be unique inside their container (a product variant or a category).");
-        assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(IllegalStateException.class);
+        assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(DuplicateKeyException.class);
     }
 
     @Test

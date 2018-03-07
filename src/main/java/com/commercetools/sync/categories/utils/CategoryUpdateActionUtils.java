@@ -2,17 +2,15 @@ package com.commercetools.sync.categories.utils;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.helpers.CategoryAssetActionFactory;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.utils.AssetsUpdateActionUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.categories.commands.updateactions.AddAsset;
-import io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.categories.commands.updateactions.ChangeOrderHint;
 import io.sphere.sdk.categories.commands.updateactions.ChangeParent;
 import io.sphere.sdk.categories.commands.updateactions.ChangeSlug;
-import io.sphere.sdk.categories.commands.updateactions.RemoveAsset;
 import io.sphere.sdk.categories.commands.updateactions.SetDescription;
 import io.sphere.sdk.categories.commands.updateactions.SetExternalId;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaDescription;
@@ -21,12 +19,12 @@ import io.sphere.sdk.categories.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
 
-import static com.commercetools.sync.categories.utils.CategoryAssetUpdateActionUtils.buildActions;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
@@ -112,12 +110,19 @@ public final class CategoryUpdateActionUtils {
         @Nonnull final Category oldCategory,
         @Nonnull final CategoryDraft newCategory,
         @Nonnull final CategorySyncOptions syncOptions) {
-        if (newCategory.getParent() == null && oldCategory.getParent() != null) {
+
+        final Reference<Category> oldParent = oldCategory.getParent();
+        final ResourceIdentifier<Category> newParent = newCategory.getParent();
+        if (newParent == null && oldParent != null) {
             syncOptions.applyWarningCallback(format(CATEGORY_CHANGE_PARENT_EMPTY_PARENT, oldCategory.getId()));
             return Optional.empty();
+        } else {
+            // The newParent.getId() call below can not cause an NPE in this case, since if both newParent and oldParent
+            // are null, then the supplier will not be called at all. The remaining cases all involve the newParent
+            // being not null.
+            return buildUpdateAction(oldParent,
+                newParent, () -> ChangeParent.of(Category.referenceOfId(newParent.getId())));
         }
-        return buildUpdateAction(oldCategory.getParent(),
-            newCategory.getParent(), () -> ChangeParent.of(newCategory.getParent()));
     }
 
     /**
@@ -245,10 +250,7 @@ public final class CategoryUpdateActionUtils {
             return AssetsUpdateActionUtils.buildAssetsUpdateActions(
                 oldCategory.getAssets(),
                 newCategory.getAssets(),
-                (oldAsset, newAssetDraft) -> buildActions(oldAsset, newAssetDraft, syncOptions),
-                RemoveAsset::ofKey,
-                ChangeAssetOrder::of,
-                AddAsset::of);
+                new CategoryAssetActionFactory(syncOptions));
         } catch (final BuildUpdateActionException exception) {
             syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
                 + "of the category with the key '%s'. Reason: %s", oldCategory.getKey(), exception), exception);

@@ -342,7 +342,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "child"),
                 LocalizedString.of(Locale.ENGLISH, "child"))
             .key("child")
-            .parent(parentCreated)
+            .parent(parentCreated.toResourceIdentifier())
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(childDraft)).toCompletableFuture().join();
@@ -362,7 +362,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "child-new-name"),
                 LocalizedString.of(Locale.ENGLISH, "child"))
             .key("child")
-            .parent(sourceParentCreated)
+            .parent(sourceParentCreated.toResourceIdentifier())
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
         CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(sourceChildDraft)).toCompletableFuture().join();

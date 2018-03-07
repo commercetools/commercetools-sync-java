@@ -48,12 +48,12 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <!--
-### v1.0.0-M11 -  Mar 01, 2018
+### v1.0.0-M11 -  Mar 08, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M10...v1.0.0-M11) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M11/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M11)
 
-**New Features** (18)
+**New Features** (19)
 - **Category Sync** - Support of categories' asset syncing. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Product Sync** - Support of product variants' asset syncing. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Category Sync** - CategorySyncUtils#buildActions now also calculates all asset update actions needed. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
@@ -72,7 +72,7 @@
 - **Commons** - Introduced new SyncUtils#replaceAssetsReferenceIdsWithKeys which is a util that replaces the custom type ids with keys in a list of assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Product Sync** - ProductReferenceReplacementUtils#buildProductQuery now expands custom types on assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Category Sync** - CategoryReferenceReplacementUtils#buildCategoryQuery now expands custom types on assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
- 
+- **Commons** - Introduced new ResourceIdentifierUtils#toResourceIdentifierIfNotNull. [#262](https://github.com/commercetools/commercetools-sync-java/issues/262) 
 
 **Changes** (5)
 - **Commons** - `CustomUpdateActionUtils#buildCustomUpdateActions` is now 
@@ -84,6 +84,9 @@ for secondary resources (e.g. assets and prices). [#3](https://github.com/commer
 - **Commons** - New Custom Type Id is now validated against being empty/null. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Product Sync** - ProductSyncUtils#buildCoreActions is now removed. ProductSyncUtils#buildActions should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Category Sync** - CategorySyncUtils#buildCoreActions is now removed. CategorySyncUtils#buildActions should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+
+**Enhancements** (1)
+- **Build Tools** - Bumped commercetools-jvm-sdk to version [1.29.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_29_0). [#262](https://github.com/commercetools/commercetools-sync-java/issues/262)
 
 **Bug Fixes** (1)
 - **Build Tools** - Fixed bug where jar and Codecov were triggered on benchmark stages of the build when they should 

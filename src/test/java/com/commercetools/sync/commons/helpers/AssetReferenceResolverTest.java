@@ -21,7 +21,9 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -146,8 +148,8 @@ public class AssetReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve custom type reference on AssetDraft"
-                + " with key:'assetKey'. Reason: Reference 'id' field value is blank (null/empty).");
+            .hasMessage(format("Failed to resolve custom type reference on AssetDraft with key:'assetKey'. Reason: %s",
+                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
@@ -163,8 +165,8 @@ public class AssetReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve custom type reference on AssetDraft"
-                + " with key:'assetKey'. Reason: Reference 'id' field value is blank (null/empty).");
+            .hasMessage(format("Failed to resolve custom type reference on AssetDraft with key:'assetKey'. Reason: %s",
+                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
