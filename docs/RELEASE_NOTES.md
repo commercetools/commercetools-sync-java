@@ -68,8 +68,9 @@ implementors of the `GenericCustomActionBuilder` interface. [#3](https://github.
 for secondary resources (e.g. assets and prices). [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - New Custom Type Id is now validated against being empty/null. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 
-**Enhancements** (1)
+**Enhancements** (2)
 - **Build Tools** - Bumped commercetools-jvm-sdk to version [1.29.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_29_0). [#262](https://github.com/commercetools/commercetools-sync-java/issues/262)
+- **Product Sync** - Products create and update requests are now issued in parallel. This should lead to a performance improvement. [#238](https://github.com/commercetools/commercetools-sync-java/issues/238)
 
 **Bug Fixes** (1)
 - **Build Tools** - Fixed bug where jar and Codecov were triggered on benchmark stages of the build when they should 
