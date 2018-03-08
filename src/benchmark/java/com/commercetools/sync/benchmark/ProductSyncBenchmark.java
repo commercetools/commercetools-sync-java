@@ -116,17 +116,6 @@ public class ProductSyncBenchmark {
                 diff, THRESHOLD))
             .isLessThanOrEqualTo(THRESHOLD);
 
-        // Assert actual state of CTP project (number of updated products)
-        final CompletableFuture<Integer> totalNumberOfUpdatedProducts =
-            CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged()
-                                                            .withPredicates(QueryPredicate.of("version = \"2\"")))
-                             .thenApply(PagedQueryResult::getTotal)
-                             .thenApply(Long::intValue)
-                             .toCompletableFuture();
-
-        executeBlocking(totalNumberOfUpdatedProducts);
-        assertThat(totalNumberOfUpdatedProducts).isCompletedWithValue(0);
-
         // Assert actual state of CTP project (total number of existing products)
         final CompletableFuture<Integer> totalNumberOfProducts =
             CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged())

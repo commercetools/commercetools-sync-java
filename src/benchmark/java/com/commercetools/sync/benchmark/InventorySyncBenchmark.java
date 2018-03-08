@@ -9,7 +9,6 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.queries.QueryPredicate;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -77,16 +76,6 @@ public class InventorySyncBenchmark {
         assertThat(diff).withFailMessage(format("Diff of benchmark '%e' is longer than expected"
                             + " threshold of '%d'.", diff, THRESHOLD))
                         .isLessThanOrEqualTo(THRESHOLD);
-
-        // Assert actual state of CTP project (number of updated inventories)
-        final CompletableFuture<Integer> totalUpdatedInventoriesFuture =
-            CTP_TARGET_CLIENT.execute(InventoryEntryQuery.of().withPredicates(QueryPredicate.of("version = \"2\"")))
-                             .thenApply(PagedQueryResult::getTotal)
-                             .thenApply(Long::intValue)
-                             .toCompletableFuture();
-
-        executeBlocking(totalUpdatedInventoriesFuture);
-        assertThat(totalUpdatedInventoriesFuture).isCompletedWithValue(0);
 
         // Assert actual state of CTP project (total number of existing inventories)
         final CompletableFuture<Integer> totalNumberOfInventories =
