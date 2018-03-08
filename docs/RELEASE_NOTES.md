@@ -33,6 +33,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [v1.0.0-M11 -  Mar 08, 2018](#v100-m11----mar-08-2018)
 - [v1.0.0-M10 -  Feb 13, 2018](#v100-m10----feb-13-2018)
 - [v1.0.0-M9 -  Jan 22, 2018](#v100-m9----jan-22-2018)
 - [v1.0.0-M8 -  Dec 29, 2017](#v100-m8----dec-29-2017)
@@ -48,6 +49,12 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <!--
+### v1.0.0-M12 -  Mar 30, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M11...v1.0.0-M12) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M12/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M12)
+-->
+
 ### v1.0.0-M11 -  Mar 08, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M10...v1.0.0-M11) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M11/) | 
@@ -86,12 +93,11 @@ for secondary resources (e.g. assets and prices). [#3](https://github.com/commer
 - **Category Sync** - CategorySyncUtils#buildCoreActions is now removed. CategorySyncUtils#buildActions should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 
 **Enhancements** (1)
-- **Build Tools** - Bumped commercetools-jvm-sdk to version [1.29.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_29_0). [#262](https://github.com/commercetools/commercetools-sync-java/issues/262)
+- **Build Tools** - Bumped commercetools-jvm-sdk to version [1.30.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_30_0). [#262](https://github.com/commercetools/commercetools-sync-java/issues/262)
 
 **Bug Fixes** (1)
 - **Build Tools** - Fixed bug where jar and Codecov were triggered on benchmark stages of the build when they should 
 only be triggered on the full build. [#249](https://github.com/commercetools/commercetools-sync-java/issues/249)
--->
 
 
 ### v1.0.0-M10 -  Feb 13, 2018
