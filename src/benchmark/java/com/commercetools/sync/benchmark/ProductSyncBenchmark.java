@@ -13,9 +13,9 @@ import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.queries.ProductProjectionQuery;
+import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.queries.QueryPredicate;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -137,11 +137,11 @@ public class ProductSyncBenchmark {
     @Test
     public void sync_ExistingProducts_ShouldUpdateProducts() throws IOException {
         final List<ProductDraft> productDrafts = buildProductDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
-        // Create drafts to target project with different slugs
+        // Create drafts to target project with different descriptions
         CompletableFuture.allOf(productDrafts.stream()
                                              .map(ProductDraftBuilder::of)
-                                             .map(builder -> builder.slug(
-                                                 ofEnglish(builder.getSlug().get(ENGLISH) + "_old")))
+                                             .map(builder -> builder.description(
+                                                 ofEnglish("oldDescription")))
                                              .map(builder -> builder.productType(productType.toReference()))
                                              .map(ProductDraftBuilder::build)
                                              .map(draft -> CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(draft)))
@@ -166,8 +166,10 @@ public class ProductSyncBenchmark {
 
         // Assert actual state of CTP project (number of updated products)
         final CompletableFuture<Integer> totalNumberOfUpdatedProducts =
-            CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged()
-                                                            .withPredicates(QueryPredicate.of("version = \"2\"")))
+            CTP_TARGET_CLIENT.execute(ProductQuery.of()
+                                                  .withPredicates(p -> p.masterData().staged()
+                                                                        .description().locale(ENGLISH)
+                                                                        .is("newDescription")))
                              .thenApply(PagedQueryResult::getTotal)
                              .thenApply(Long::intValue)
                              .toCompletableFuture();
@@ -199,11 +201,11 @@ public class ProductSyncBenchmark {
         final int halfNumberOfDrafts = productDrafts.size() / 2;
         final List<ProductDraft> firstHalf = productDrafts.subList(0, halfNumberOfDrafts);
 
-        // Create first half of drafts to target project with different slugs
+        // Create first half of drafts to target project with different description
         CompletableFuture.allOf(firstHalf.stream()
                                          .map(ProductDraftBuilder::of)
-                                         .map(builder -> builder.slug(
-                                             ofEnglish(builder.getSlug().get(ENGLISH) + "_old")))
+                                         .map(builder -> builder.description(
+                                             ofEnglish("oldDescription")))
                                          .map(builder -> builder.productType(productType.toReference()))
                                          .map(ProductDraftBuilder::build)
                                          .map(draft -> CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(draft)))
@@ -228,18 +230,20 @@ public class ProductSyncBenchmark {
 
         // Assert actual state of CTP project (number of updated products)
         final CompletableFuture<Integer> totalNumberOfUpdatedProducts =
-            CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged()
-                                                            .withPredicates(QueryPredicate.of("version = \"2\"")))
+            CTP_TARGET_CLIENT.execute(ProductQuery.of()
+                                                  .withPredicates(p -> p.masterData().staged()
+                                                                        .description().locale(ENGLISH)
+                                                                        .is("oldDescription")))
                              .thenApply(PagedQueryResult::getTotal)
                              .thenApply(Long::intValue)
                              .toCompletableFuture();
 
         executeBlocking(totalNumberOfUpdatedProducts);
-        assertThat(totalNumberOfUpdatedProducts).isCompletedWithValue(halfNumberOfDrafts);
+        assertThat(totalNumberOfUpdatedProducts).isCompletedWithValue(0);
 
         // Assert actual state of CTP project (total number of existing products)
         final CompletableFuture<Integer> totalNumberOfProducts =
-            CTP_TARGET_CLIENT.execute(ProductProjectionQuery.ofStaged())
+            CTP_TARGET_CLIENT.execute(ProductQuery.of())
                              .thenApply(PagedQueryResult::getTotal)
                              .thenApply(Long::intValue)
                              .toCompletableFuture();
@@ -267,6 +271,7 @@ public class ProductSyncBenchmark {
                                                                                      .build();
             final ProductDraft productDraft = ProductDraftBuilder
                 .of(draftsProductType, ofEnglish("name_" + i), ofEnglish("slug_" + i), masterVariantDraft)
+                .description(ofEnglish("newDescription"))
                 .key("productKey_" + i)
                 .build();
             productDrafts.add(productDraft);
