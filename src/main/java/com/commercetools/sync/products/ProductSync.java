@@ -181,11 +181,16 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     @Nonnull
-    private CompletionStage<List<Optional<Product>>> createOrUpdateProducts() {
-        return productService.createProducts(draftsToCreate)
-                             .thenAccept(createdProducts ->
-                                 updateStatistics(createdProducts, draftsToCreate.size()))
-                             .thenCompose(ignoredResult -> syncProducts(productsToSync));
+    private CompletionStage<Void> createOrUpdateProducts() {
+        final CompletableFuture<Void> futureCreates =
+            productService.createProducts(draftsToCreate)
+                          .thenAccept(createdProducts -> updateStatistics(createdProducts, draftsToCreate.size()))
+                          .toCompletableFuture();
+
+        final CompletableFuture<List<Optional<Product>>> futureUpdates =
+            syncProducts(productsToSync).toCompletableFuture();
+
+        return CompletableFuture.allOf(futureCreates, futureUpdates);
     }
 
     private void updateStatistics(@Nonnull final Set<Product> createdProducts,
