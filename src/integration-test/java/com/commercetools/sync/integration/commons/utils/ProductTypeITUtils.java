@@ -2,8 +2,8 @@ package com.commercetools.sync.integration.commons.utils;
 
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.products.attributes.AttributeDefinition;
-import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
+import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
+import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.BooleanAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedStringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
@@ -62,7 +62,7 @@ public final class ProductTypeITUtils {
                                          @Nonnull final SphereClient ctpClient) {
         if (!productTypeExists(productTypeKey, ctpClient)) {
             final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
-                .of(productTypeKey, name, "description", buildAttributeDefinitions(locale))
+                .of(productTypeKey, name, "description", buildAttributeDefinitionDrafts(locale))
                 .build();
             ctpClient.execute(ProductTypeCreateCommand.of(productTypeDraft)).toCompletableFuture().join();
         }
@@ -114,14 +114,12 @@ public final class ProductTypeITUtils {
      * @param locale defines the locale for which the field definition names are going to be bound to.
      * @return the list of field definitions.
      */
-    private static List<AttributeDefinition> buildAttributeDefinitions(@Nonnull final Locale locale) {
+    private static List<AttributeDefinitionDraft> buildAttributeDefinitionDrafts(@Nonnull final Locale locale) {
         return asList(
-            AttributeDefinitionBuilder.of(LOCALISED_STRING_ATTRIBUTE_NAME,
-                LocalizedString.of(locale, LOCALISED_STRING_ATTRIBUTE_NAME), LocalizedStringAttributeType.of())
-                                      .build(),
-            AttributeDefinitionBuilder.of(BOOLEAN_ATTRIBUTE_NAME,
-                LocalizedString.of(locale, BOOLEAN_ATTRIBUTE_NAME), BooleanAttributeType.of())
-                                      .build()
+            AttributeDefinitionDraftBuilder.of(LocalizedStringAttributeType.of(), LOCALISED_STRING_ATTRIBUTE_NAME,
+                LocalizedString.of(locale, LOCALISED_STRING_ATTRIBUTE_NAME), false).build(),
+            AttributeDefinitionDraftBuilder.of(BooleanAttributeType.of(), BOOLEAN_ATTRIBUTE_NAME,
+                LocalizedString.of(locale, BOOLEAN_ATTRIBUTE_NAME), false).build()
         );
 
     }
