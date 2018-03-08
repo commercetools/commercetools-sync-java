@@ -48,6 +48,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -351,9 +352,14 @@ public final class ITUtils {
                      assertThat(createdAsset.getName()).isEqualTo(assetDraft.getName());
                      assertThat(createdAsset.getDescription()).isEqualTo(assetDraft.getDescription());
                      assertThat(createdAsset.getKey()).isEqualTo(assetDraft.getKey());
-                     assertThat(createdAsset.getCustom()).isNotNull();
-                     assertThat(createdAsset.getCustom().getFieldsJsonMap())
-                         .isEqualTo(assetDraft.getCustom().getFields());
+
+                     ofNullable(assetDraft.getCustom())
+                         .ifPresent(customFields -> {
+                             assertThat(createdAsset.getCustom()).isNotNull();
+                             assertThat(createdAsset.getCustom().getFieldsJsonMap())
+                                 .isEqualTo(assetDraft.getCustom().getFields());
+                         });
+
                      assertThat(createdAsset.getTags()).isEqualTo(assetDraft.getTags());
                      assertThat(createdAsset.getSources()).isEqualTo(assetDraft.getSources());
                  });

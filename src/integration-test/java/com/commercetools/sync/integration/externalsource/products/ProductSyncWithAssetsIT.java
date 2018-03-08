@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.externalsource.products;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.utils.TriFunction;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -22,6 +23,8 @@ import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
+import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
+import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
 import io.sphere.sdk.products.commands.updateactions.SetPrices;
 import io.sphere.sdk.products.queries.ProductProjectionByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
@@ -41,6 +44,7 @@ import java.util.function.Consumer;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.assertAssetsAreEqual;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createAssetDraft;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createAssetsCustomType;
@@ -246,7 +250,12 @@ public class ProductSyncWithAssetsIT {
         assertThat(updateActionsFromSync).containsExactly(
             SetPrices.of(1, emptyList()),
             RemoveAsset.ofVariantIdWithKey(1, "1", true),
-            ChangeAssetName.ofAssetKeyAndVariantId(1, "3", ofEnglish("newName"), true),
+            ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("new name"), true),
+            SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),
+            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
+                customFieldsJsonMap.get(BOOLEAN_CUSTOM_FIELD_NAME), true),
+            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
+                null, true),
             ChangeAssetOrder.ofVariantId(1, asList(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")), true),
             AddAsset.ofVariantId(1, createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
                     .withStaged(true).withPosition(0)
@@ -283,14 +292,14 @@ public class ProductSyncWithAssetsIT {
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).matches("Failed to build update actions for the assets of the product "
-            + "variant with the sku 'v1'. Reason: .*BuildUpdateActionException: Supplied asset drafts "
+            + "variant with the sku 'v1'. Reason: .*DuplicateKeyException: Supplied asset drafts "
             + "have duplicate keys. Asset keys are expected to be unique inside their container \\(a product variant "
             + "or a category\\).");
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
         assertThat(errorCallBackExceptions.get(0).getMessage()).contains("Supplied asset drafts have duplicate "
             + "keys. Asset keys are expected to be unique inside their container (a product variant or a category).");
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(IllegalStateException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(DuplicateKeyException.class);
         assertThat(updateActionsFromSync).containsExactly(SetPrices.of(1, emptyList()));
 
 

@@ -4,6 +4,8 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
@@ -18,6 +20,8 @@ import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
+import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
+import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
 import io.sphere.sdk.products.commands.updateactions.SetPrices;
 import io.sphere.sdk.products.queries.ProductProjectionByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
@@ -30,11 +34,14 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.assertAssetsAreEqual;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createAssetDraft;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createAssetsCustomType;
@@ -177,6 +184,9 @@ public class ProductSyncWithAssetsIT {
 
     @Test
     public void sync_withMatchingProductWithAssetChanges_shouldUpdateProduct() {
+        final Map<String, JsonNode> customFieldsJsonMap = new HashMap<>();
+        customFieldsJsonMap.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(true));
+
         final List<AssetDraft> assetDraftsToCreateOnExistingProductOnTargetProject = asList(
             createAssetDraft("1", ofEnglish("1"), targetAssetCustomType.getId()),
             createAssetDraft("2", ofEnglish("2"), targetAssetCustomType.getId()),
@@ -184,8 +194,8 @@ public class ProductSyncWithAssetsIT {
 
         final List<AssetDraft> assetDraftsToCreateOnExistingProductOnSourceProject = asList(
             createAssetDraft("4", ofEnglish("4"), sourceAssetCustomType.getId()),
-            createAssetDraft("3", ofEnglish("3"), sourceAssetCustomType.getId()),
-            createAssetDraft("2", ofEnglish("new name"), sourceAssetCustomType.getId()));
+            createAssetDraft("3", ofEnglish("3"), sourceAssetCustomType.getId(), customFieldsJsonMap),
+            createAssetDraft("2", ofEnglish("newName")));
 
         final String productKey = "same-product";
         final ProductDraft draftToCreateOnTargetProject = ProductDraftBuilder
@@ -196,8 +206,9 @@ public class ProductSyncWithAssetsIT {
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(draftToCreateOnTargetProject)).toCompletableFuture().join();
 
         final ProductDraft draftToCreateOnSourceProject = ProductDraftBuilder
-            .of(sourceProductType.toReference(), ofEnglish("draftName"), ofEnglish("existingProductInSource"),
-                createVariantDraft("masterVariant", assetDraftsToCreateOnExistingProductOnSourceProject))
+            .of(sourceProductType.toReference(), draftToCreateOnTargetProject.getName(),
+                draftToCreateOnTargetProject.getSlug(), createVariantDraft("masterVariant",
+                    assetDraftsToCreateOnExistingProductOnSourceProject))
             .key(productKey)
             .build();
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(draftToCreateOnSourceProject)).toCompletableFuture().join();
@@ -215,22 +226,6 @@ public class ProductSyncWithAssetsIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
 
-        final Map<String, String> assetsKeyToIdMap = products.get(0).getMasterData()
-                                                             .getStaged()
-                                                             .getMasterVariant()
-                                                             .getAssets()
-                                                             .stream().collect(toMap(Asset::getKey, Asset::getId));
-
-        assertThat(updateActions).containsExactly(
-            SetPrices.of(1, emptyList()),
-            RemoveAsset.ofVariantIdWithKey(1, "1", true),
-            ChangeAssetName.ofAssetKeyAndVariantId(1, "3", ofEnglish("newName"), true),
-            ChangeAssetOrder.ofVariantId(1, asList(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")), true),
-            AddAsset.ofVariantId(1, createAssetDraft("4", ofEnglish("4"),
-                targetAssetCustomType.getId()))
-                    .withStaged(true).withPosition(0)
-        );
-
         // Assert that assets got updated correctly
         final ProductProjection productProjection = CTP_TARGET_CLIENT
             .execute(ProductProjectionByKeyGet.of(productKey, ProductProjectionType.STAGED))
@@ -238,6 +233,24 @@ public class ProductSyncWithAssetsIT {
 
         assertThat(productProjection).isNotNull();
         final List<Asset> createdAssets = productProjection.getMasterVariant().getAssets();
-        assertAssetsAreEqual(createdAssets, assetDraftsToCreateOnExistingProductOnTargetProject);
+        assertAssetsAreEqual(createdAssets, assetDraftsToCreateOnExistingProductOnSourceProject);
+
+        // Assert update actions
+        final Map<String, String> assetsKeyToIdMap = createdAssets.stream().collect(toMap(Asset::getKey, Asset::getId));
+
+        assertThat(updateActions).containsExactly(
+            SetPrices.of(1, emptyList()),
+            RemoveAsset.ofVariantIdWithKey(1, "1", true),
+            ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("newName"), true),
+            SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),
+            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
+                customFieldsJsonMap.get(BOOLEAN_CUSTOM_FIELD_NAME), true),
+            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
+                null, true),
+            ChangeAssetOrder.ofVariantId(1, asList(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")), true),
+            AddAsset.ofVariantId(1, createAssetDraft("4", ofEnglish("4"),
+                targetAssetCustomType.getId()))
+                    .withStaged(true).withPosition(0)
+        );
     }
 }
