@@ -4,7 +4,7 @@ ext{
     jUnitVersion = '4.12'
     assertjVersion = '3.9.1'
     checkstyleVersion = '7.7'
-    pmdVersion = '5.6.1'
+    pmdVersion = '5.8.1'
     jacocoVersion = '0.8.0'
     findbugsVersion = '3.0.1'
 }
