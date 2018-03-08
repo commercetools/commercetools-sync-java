@@ -124,7 +124,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                  final Set<String> productDraftKeys = getProductDraftKeys(existingDrafts);
                                  return productService.fetchMatchingProductsByKeys(productDraftKeys)
                                                       .thenAccept(this::processFetchedProducts)
-                                                      .thenCompose(ignoredResult -> createOrUpdateProducts())
+                                                      .thenCompose(ignoredResult -> createAndUpdateProducts())
                                                       .thenApply(ignoredResult -> {
                                                           statistics.incrementProcessed(batch.size());
                                                           return statistics;
@@ -181,7 +181,6 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     @Nonnull
-    private CompletionStage<Void> createOrUpdateProducts() {
         final CompletableFuture<Void> futureCreates =
             productService.createProducts(draftsToCreate)
                           .thenAccept(createdProducts -> updateStatistics(createdProducts, draftsToCreate.size()))
@@ -191,6 +190,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             syncProducts(productsToSync).toCompletableFuture();
 
         return CompletableFuture.allOf(futureCreates, futureUpdates);
+    private CompletionStage<Void> createAndUpdateProducts() {
     }
 
     private void updateStatistics(@Nonnull final Set<Product> createdProducts,
