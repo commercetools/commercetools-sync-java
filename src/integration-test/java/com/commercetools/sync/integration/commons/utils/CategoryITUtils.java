@@ -2,8 +2,6 @@ package com.commercetools.sync.integration.commons.utils;
 
 import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -16,17 +14,9 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.queries.QueryExecutionUtils;
-import io.sphere.sdk.queries.QueryPredicate;
-import io.sphere.sdk.types.BooleanFieldType;
 import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.FieldDefinition;
-import io.sphere.sdk.types.LocalizedStringFieldType;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.TypeDraft;
-import io.sphere.sdk.types.TypeDraftBuilder;
-import io.sphere.sdk.types.commands.TypeCreateCommand;
-import io.sphere.sdk.types.queries.TypeQueryBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,22 +28,21 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
+
 import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 
 public final class CategoryITUtils {
     public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
     public static final String OLD_CATEGORY_CUSTOM_TYPE_NAME = "old_type_name";
-    public static final String LOCALISED_STRING_CUSTOM_FIELD_NAME = "backgroundColor";
-    public static final String BOOLEAN_CUSTOM_FIELD_NAME = "invisibleInShop";
 
     /**
      * Builds a list of the supplied number ({@code numberOfCategories}) of CategoryDraft objects that can be used for
@@ -145,7 +134,7 @@ public final class CategoryITUtils {
                     LocalizedString.of(Locale.ENGLISH, categoryName))
                 .key(categoryName)
                 .parent(toResourceIdentifierIfNotNull(parent))
-                .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+                .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
                 .orderHint("sameOrderHint")
                 .build();
             final CompletableFuture<Category> future = ctpClient
@@ -171,24 +160,7 @@ public final class CategoryITUtils {
      * @return a dummy instance of {@link CustomFieldsDraft} with some hardcoded custom fields and key.
      */
     public static CustomFieldsDraft getCustomFieldsDraft() {
-        return CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons());
-    }
-
-    /**
-     * Builds a {@link Map} for the custom fields to their {@link JsonNode} values that looks as follows in JSON
-     * format:
-     *
-     * <p>"fields": {"invisibleInShop": false, "backgroundColor": { "en": "red", "de": "rot"}}
-     *
-     * @return a Map of the custom fields to their JSON values with dummy data.
-     */
-    public static Map<String, JsonNode> getCustomFieldsJsons() {
-        final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
-        customFieldsJsons.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false));
-        customFieldsJsons
-            .put(LOCALISED_STRING_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.objectNode()
-                                                                             .put("de", "rot").put("en", "red"));
-        return customFieldsJsons;
+        return CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap());
     }
 
     /**
@@ -218,74 +190,18 @@ public final class CategoryITUtils {
     /**
      * This method blocks to create a category custom Type on the CTP project defined by the supplied
      * {@code ctpClient}, with the supplied data.
-     *
-     * @param typeKey   the type key
+     *  @param typeKey   the type key
      * @param locale    the locale to be used for specifying the type name and field definitions names.
      * @param name      the name of the custom type.
      * @param ctpClient defines the CTP project to create the type on.
      */
-    public static void createCategoriesCustomType(@Nonnull final String typeKey,
+    public static Type createCategoriesCustomType(@Nonnull final String typeKey,
                                                   @Nonnull final Locale locale,
                                                   @Nonnull final String name,
                                                   @Nonnull final SphereClient ctpClient) {
-        if (!typeExists(typeKey, ctpClient)) {
-            final TypeDraft typeDraft = TypeDraftBuilder
-                .of(typeKey, LocalizedString.of(locale, name), ResourceTypeIdsSetBuilder.of().addCategories())
-                .fieldDefinitions(buildCategoryCustomTypeFieldDefinitions(locale))
-                .build();
-            ctpClient.execute(TypeCreateCommand.of(typeDraft)).toCompletableFuture().join();
-        }
-    }
 
-    private static boolean typeExists(@Nonnull final String typeKey, @Nonnull final SphereClient ctpClient) {
-        final Optional<Type> typeOptional = ctpClient
-            .execute(TypeQueryBuilder.of().predicates(QueryPredicate.of(format("key=\"%s\"", typeKey))).build())
-            .toCompletableFuture()
-            .join().head();
-        return typeOptional.isPresent();
-    }
-
-    /**
-     * Builds a list of two field definitions; one for a {@link LocalizedStringFieldType} and one for a
-     * {@link BooleanFieldType}. The JSON of the created field definition list looks as follows:
-     *
-     * <p>"fieldDefinitions": [
-     * {
-     * "name": "backgroundColor",
-     * "label": {
-     * "en": "backgroundColor"
-     * },
-     * "required": false,
-     * "type": {
-     * "name": "LocalizedString"
-     * },
-     * "inputHint": "SingleLine"
-     * },
-     * {
-     * "name": "invisibleInShop",
-     * "label": {
-     * "en": "invisibleInShop"
-     * },
-     * "required": false,
-     * "type": {
-     * "name": "Boolean"
-     * },
-     * "inputHint": "SingleLine"
-     * }
-     * ]
-     *
-     * @param locale defines the locale for which the field definition names are going to be bound to.
-     * @return the list of field definitions.
-     */
-    private static List<FieldDefinition> buildCategoryCustomTypeFieldDefinitions(@Nonnull final Locale locale) {
-        return asList(
-            FieldDefinition
-                .of(LocalizedStringFieldType.of(), LOCALISED_STRING_CUSTOM_FIELD_NAME,
-                    LocalizedString.of(locale, LOCALISED_STRING_CUSTOM_FIELD_NAME), false),
-            FieldDefinition
-                .of(BooleanFieldType.of(), BOOLEAN_CUSTOM_FIELD_NAME,
-                    LocalizedString.of(locale, BOOLEAN_CUSTOM_FIELD_NAME), false));
-
+        return createTypeIfNotAlreadyExisting(typeKey, locale, name, ResourceTypeIdsSetBuilder.of().addCategories(),
+            ctpClient);
     }
 
 
