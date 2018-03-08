@@ -53,7 +53,7 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M11/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M11)
 
-**New Features** (14)
+**New Features** (19)
 - **Category Sync** - Support of categories' asset syncing. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Product Sync** - Support of product variants' asset syncing. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Category Sync** - CategorySyncUtils#buildActions now also calculates all asset update actions needed. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
@@ -67,6 +67,11 @@
 - **Commons** - Introduced `AssetReferenceResolver` which is a helper that can resolve all the references of an AssetDraft. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - `VariantReferenceResolver` and `CategoryReferenceResolver` now also resolve all the containing AssetDrafts references. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - Support for custom update actions calculation for secondary resources (e.g. prices, product assets and category assets). [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Product Sync** - ProductReferenceReplacementUtils#replaceProductsReferenceIdsWithKeys and VariantReferenceReplacementUtils#replaceVariantsReferenceIdsWithKeys now support replacing asset custom reference ids with keys. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Category Sync** - CategoryReferenceReplacementUtils#replaceCategoriesReferenceIdsWithKeys now supports replacing asset custom reference ids with keys. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Commons** - Introduced new SyncUtils#replaceAssetsReferenceIdsWithKeys which is a util that replaces the custom type ids with keys in a list of assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Product Sync** - ProductReferenceReplacementUtils#buildProductQuery now expands custom types on assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Category Sync** - CategoryReferenceReplacementUtils#buildCategoryQuery now expands custom types on assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - Introduced new ResourceIdentifierUtils#toResourceIdentifierIfNotNull. [#262](https://github.com/commercetools/commercetools-sync-java/issues/262) 
 
 **Changes** (5)
