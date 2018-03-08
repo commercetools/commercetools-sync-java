@@ -159,7 +159,6 @@ More examples of those utils for different fields can be found [here](/src/integ
 
 ## Caveats
 1. Products are either created or updated. Currently the tool does not support product deletion.
-2. The library doesn't sync product variant assets yet [#3](https://github.com/commercetools/commercetools-sync-java/issues/3), but it will not delete them.
-3. The library will not sync attribute field types with `ReferenceType` and `SetType` field definitions, except 
+2. The library will not sync attribute field types with `ReferenceType` and `SetType` field definitions, except 
 for Product references. (See more: [#87](https://github.com/commercetools/commercetools-sync-java/issues/87) [#160](https://github.com/commercetools/commercetools-sync-java/issues/87))
 

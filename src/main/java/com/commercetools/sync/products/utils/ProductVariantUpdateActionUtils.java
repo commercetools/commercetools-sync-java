@@ -3,9 +3,10 @@ package com.commercetools.sync.products.utils;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.helpers.ProductAssetActionFactory;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.products.Image;
-import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
@@ -20,21 +21,23 @@ import io.sphere.sdk.products.commands.updateactions.SetSku;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.commercetools.sync.commons.utils.AssetsUpdateActionUtils.buildAssetsUpdateActions;
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 
-// TODO: TESTS
+
 public final class ProductVariantUpdateActionUtils {
     private static final String FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION = "Failed to build a "
         + "setAttribute/setAttributeInAllVariants update action for the attribute with the name '%s' in the "
@@ -47,6 +50,7 @@ public final class ProductVariantUpdateActionUtils {
      * {@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants} update actions.
      * If both the {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of attributes, then
      * no update action is needed and hence an empty {@link List} is returned.
+     * // TODO: UNIT TESTS
      *
      * @param productKey         the key of the product that the variants belong to. It is used only in the error
      *                           messages if any.
@@ -116,6 +120,8 @@ public final class ProductVariantUpdateActionUtils {
      * <p>TODO: NOTE: Right now it always builds SetPrices UpdateAction, comparison should be
      * TODO: calculated GITHUB ISSUE#101.
      *
+     * <p>TODO: UNIT TESTS
+     *
      * @param oldProductVariant the {@link ProductVariant} which should be updated.
      * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of prices.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
@@ -126,10 +132,43 @@ public final class ProductVariantUpdateActionUtils {
         @Nonnull final ProductVariant oldProductVariant,
         @Nonnull final ProductVariantDraft newProductVariant) {
         //TODO: Right now it always builds SetPrices UpdateAction, comparison should be calculated GITHUB ISSUE#101.
-        final List<PriceDraft> newProductVariantPrices =
-            newProductVariant.getPrices() == null ? new ArrayList<>() : newProductVariant.getPrices();
-        final SetPrices setPricesUpdateAction = SetPrices.of(oldProductVariant.getId(), newProductVariantPrices);
-        return Collections.singletonList(setPricesUpdateAction);
+        final SetPrices setPricesUpdateAction = SetPrices.of(oldProductVariant.getId(),
+            emptyIfNull(newProductVariant.getPrices()));
+        return singletonList(setPricesUpdateAction);
+    }
+
+    /**
+     * Compares the {@link List} of {@link AssetDraft}s of a {@link ProductVariantDraft} and a
+     * {@link ProductVariant} and returns a {@link List} of {@link UpdateAction}&lt;{@link Product}&gt;. If both the
+     * {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of assets, then no update action
+     * is needed and hence an empty {@link List} is returned. In case, the new product variant draft has a list of
+     * assets in which a duplicate key exists, the error callback is triggered and an empty list is returned.
+     *
+     * @param oldProductVariant the {@link ProductVariant} which should be updated.
+     * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of assets.
+     * @param syncOptions       responsible for supplying the sync options to the sync utility method. It is used for
+     *                          triggering the error callback within the utility, in case of errors.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
+     *         needed.
+     */
+    @Nonnull
+    public static List<UpdateAction<Product>> buildProductVariantAssetsUpdateActions(
+        @Nonnull final ProductVariant oldProductVariant,
+        @Nonnull final ProductVariantDraft newProductVariant,
+        @Nonnull final ProductSyncOptions syncOptions) {
+
+        try {
+            return buildAssetsUpdateActions(
+                oldProductVariant.getAssets(),
+                newProductVariant.getAssets(),
+                new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions));
+
+        } catch (final BuildUpdateActionException exception) {
+            syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
+                + "of the product variant with the sku '%s'. Reason: %s", oldProductVariant.getSku(), exception),
+                exception);
+            return emptyList();
+        }
     }
 
     /**

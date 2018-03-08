@@ -1,4 +1,4 @@
-package com.commercetools.sync.products.utils;
+package com.commercetools.sync.products.utils.productvariantupdateactionutils;
 
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;

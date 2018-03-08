@@ -3,6 +3,7 @@ package com.commercetools.sync.products.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
@@ -23,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.replaceAssetsReferencesIdsWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static java.util.stream.Collectors.toList;
@@ -30,9 +32,9 @@ import static java.util.stream.Collectors.toSet;
 
 public final class VariantReferenceReplacementUtils {
     /**
-     * Takes a list of Variants that are supposed to have their prices and attributes references expanded in order to be
-     * able to fetch the keys and replace the reference ids with the corresponding keys and then return a new list of
-     * product variant drafts with their references containing keys instead of the ids.
+     * Takes a list of Variants that are supposed to have their prices', assets' and attributes' references expanded in
+     * order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return a
+     * new list of product variant drafts with their references containing keys instead of the ids.
      *
      * <p><b>Note:</b>If the references are not expanded for a product variant, the reference ids will not be replaced
      * with keys and will still have their ids in place.
@@ -50,10 +52,13 @@ public final class VariantReferenceReplacementUtils {
                 final List<PriceDraft> priceDraftsWithKeys = replacePricesReferencesIdsWithKeys(productVariant);
                 final List<AttributeDraft> attributeDraftsWithKeys =
                     replaceAttributesReferencesIdsWithKeys(productVariant);
+                final List<AssetDraft> assetDraftsWithKeys =
+                    replaceAssetsReferencesIdsWithKeys(productVariant.getAssets());
 
                 return ProductVariantDraftBuilder.of(productVariant)
                                                  .prices(priceDraftsWithKeys)
                                                  .attributes(attributeDraftsWithKeys)
+                                                 .assets(assetDraftsWithKeys)
                                                  .build();
             })
             .collect(Collectors.toList());
@@ -67,7 +72,7 @@ public final class VariantReferenceReplacementUtils {
      *
      * <p>Any channel reference that is not expanded will have it's id in place and not replaced by the key.
      *
-     * @param productVariant the product variant to replace its prices' channel' ids with keys.
+     * @param productVariant the product variant to replace its prices' channel ids with keys.
      * @return  a {@link List} of {@link PriceDraft} that has all channel references with keys replacing the ids.
      */
     @Nonnull

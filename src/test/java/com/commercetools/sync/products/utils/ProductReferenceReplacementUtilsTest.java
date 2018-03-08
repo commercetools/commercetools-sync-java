@@ -4,6 +4,8 @@ import com.commercetools.sync.commons.helpers.CategoryReferencePair;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.expansion.ExpansionPath;
+import io.sphere.sdk.models.Asset;
+import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
@@ -19,6 +21,8 @@ import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
+import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.Type;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -31,13 +35,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFields;
+import static com.commercetools.sync.commons.MockUtils.getTypeMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithChannelReference;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMockWithPrices;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMock;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -67,7 +73,15 @@ public class ProductReferenceReplacementUtilsTest {
         final Reference<Channel> channelReference = Reference
             .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
         final Price price = getPriceMockWithChannelReference(channelReference);
-        final ProductVariant productVariant = getProductVariantMockWithPrices(singletonList(price));
+
+        final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
+        final Asset asset1 =
+            getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType));
+        final Asset asset2 =
+            getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndId(Type.referenceTypeId(),
+                UUID.randomUUID().toString()));
+
+        final ProductVariant productVariant = getProductVariantMock(singletonList(price), asList(asset1, asset2));
 
         final Product productWithNonExpandedProductType = getProductMock(singletonList(productVariant));
 
@@ -110,6 +124,18 @@ public class ProductReferenceReplacementUtilsTest {
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getState)
                                                      .extracting(ResourceIdentifier::getId)
                                                      .containsExactly(state.getKey(), state.getKey(), state.getId());
+
+        final String asset2CustomTypeId = asset2.getCustom().getType().getId();
+        final String assetCustomTypeKey = customType.getKey();
+
+        assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getMasterVariant)
+                                                     .flatExtracting(ProductVariantDraft::getAssets)
+                                                     .extracting(AssetDraft::getCustom)
+                                                     .extracting(CustomFieldsDraft::getType)
+                                                     .extracting(ResourceIdentifier::getId)
+                                                     .containsExactly(assetCustomTypeKey, asset2CustomTypeId,
+                                                         assetCustomTypeKey, asset2CustomTypeId, assetCustomTypeKey,
+                                                         asset2CustomTypeId);
     }
 
     @Test
@@ -134,7 +160,7 @@ public class ProductReferenceReplacementUtilsTest {
         final Reference<Channel> channelReference = Reference
             .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
         final Price price = getPriceMockWithChannelReference(channelReference);
-        final ProductVariant productVariant = getProductVariantMockWithPrices(singletonList(price));
+        final ProductVariant productVariant = getProductVariantMock(singletonList(price));
 
         final Category category = getCategoryMock(resourceKey);
         final Reference<Category> categoryReference =
@@ -318,16 +344,17 @@ public class ProductReferenceReplacementUtilsTest {
     @Test
     public void buildProductQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final ProductQuery productQuery = ProductReferenceReplacementUtils.buildProductQuery();
-        assertThat(productQuery.expansionPaths()).hasSize(10);
         assertThat(productQuery.expansionPaths())
-            .containsOnlyElementsOf(asList(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
+            .containsExactly(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
                 ExpansionPath.of("state"), ExpansionPath.of("masterData.staged.categories[*]"),
                 ExpansionPath.of("masterData.staged.masterVariant.prices[*].channel"),
                 ExpansionPath.of("masterData.staged.variants[*].prices[*].channel"),
                 ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value"),
                 ExpansionPath.of("masterData.staged.variants[*].attributes[*].value"),
                 ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value[*]"),
-                ExpansionPath.of("masterData.staged.variants[*].attributes[*].value[*]")));
+                ExpansionPath.of("masterData.staged.variants[*].attributes[*].value[*]"),
+                ExpansionPath.of("masterData.staged.masterVariant.assets[*].custom.type"),
+                ExpansionPath.of("masterData.staged.variants[*].assets[*].custom.type"));
     }
 
     @Test

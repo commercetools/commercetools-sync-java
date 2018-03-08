@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.CategoryOrderHints;
@@ -267,9 +268,24 @@ public class ProductSyncMockUtils {
      * @return a mock product variant with the supplied prices.
      */
     @Nonnull
-    public static ProductVariant getProductVariantMockWithPrices(@Nonnull final List<Price> prices) {
+    public static ProductVariant getProductVariantMock(@Nonnull final List<Price> prices) {
         final ProductVariant productVariant = mock(ProductVariant.class);
         when(productVariant.getPrices()).thenReturn(prices);
+        return productVariant;
+    }
+
+    /**
+     * Creates a mock {@link ProductVariant} with the supplied {@link Price} and {@link Asset} {@link List}.
+     * @param prices the prices to attach on the mock {@link ProductVariant}.
+     * @param assets the assets to attach on the mock {@link ProductVariant}.
+     * @return a mock product variant with the supplied prices and assets.
+     */
+    @Nonnull
+    public static ProductVariant getProductVariantMock(@Nonnull final List<Price> prices,
+                                                       @Nonnull final List<Asset> assets) {
+        final ProductVariant productVariant = mock(ProductVariant.class);
+        when(productVariant.getPrices()).thenReturn(prices);
+        when(productVariant.getAssets()).thenReturn(assets);
         return productVariant;
     }
 
