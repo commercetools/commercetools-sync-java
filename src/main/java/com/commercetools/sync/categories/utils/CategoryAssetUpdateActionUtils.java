@@ -3,6 +3,7 @@ package com.commercetools.sync.categories.utils;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.helpers.AssetCustomActionBuilder;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
+import com.commercetools.sync.commons.utils.StreamUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.commands.updateactions.ChangeAssetName;
 import io.sphere.sdk.categories.commands.updateactions.SetAssetDescription;
@@ -16,12 +17,14 @@ import io.sphere.sdk.models.LocalizedString;
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.util.Arrays.asList;
 
 public final class CategoryAssetUpdateActionUtils {
+
+    private CategoryAssetUpdateActionUtils() {
+    }
 
     /**
      * Compares all the fields of an {@link Asset} and an {@link AssetDraft} and returns a list of
@@ -40,10 +43,10 @@ public final class CategoryAssetUpdateActionUtils {
                                                             @Nonnull final CategorySyncOptions syncOptions) {
 
         final List<UpdateAction<Category>> updateActions = buildUpdateActionsFromOptionals(asList(
-            buildChangeAssetNameUpdateAction(oldAsset, newAsset),
-            buildSetAssetDescriptionUpdateAction(oldAsset, newAsset),
-            buildSetAssetTagsUpdateAction(oldAsset, newAsset),
-            buildSetAssetSourcesUpdateAction(oldAsset, newAsset)
+                buildChangeAssetNameUpdateAction(oldAsset, newAsset),
+                buildSetAssetDescriptionUpdateAction(oldAsset, newAsset),
+                buildSetAssetTagsUpdateAction(oldAsset, newAsset),
+                buildSetAssetSourcesUpdateAction(oldAsset, newAsset)
         ));
 
         updateActions.addAll(buildCustomUpdateActions(oldAsset, newAsset, syncOptions));
@@ -59,15 +62,12 @@ public final class CategoryAssetUpdateActionUtils {
      * @param optionalUpdateActions list of category {@link UpdateAction} elements,
      *                              where each is wrapped in an {@link Optional}.
      * @return a List of category update actions from the optionals that were present in the
-     *         {@code optionalUpdateActions} list parameter.
+     * {@code optionalUpdateActions} list parameter.
      */
     @Nonnull
     private static List<UpdateAction<Category>> buildUpdateActionsFromOptionals(
-        @Nonnull final List<Optional<UpdateAction<Category>>> optionalUpdateActions) {
-        return optionalUpdateActions.stream()
-                                    .filter(Optional::isPresent)
-                                    .map(Optional::get)
-                                    .collect(Collectors.toList());
+            @Nonnull final List<Optional<UpdateAction<Category>>> optionalUpdateActions) {
+        return StreamUtils.asList(optionalUpdateActions.stream());
     }
 
     /**
@@ -82,10 +82,10 @@ public final class CategoryAssetUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildChangeAssetNameUpdateAction(
-        @Nonnull final Asset oldAsset,
-        @Nonnull final AssetDraft newAsset) {
+            @Nonnull final Asset oldAsset,
+            @Nonnull final AssetDraft newAsset) {
         return buildUpdateAction(oldAsset.getName(), newAsset.getName(),
-            () -> ChangeAssetName.ofKey(oldAsset.getKey(), newAsset.getName()));
+                () -> ChangeAssetName.ofKey(oldAsset.getKey(), newAsset.getName()));
     }
 
     /**
@@ -100,10 +100,10 @@ public final class CategoryAssetUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildSetAssetDescriptionUpdateAction(
-        @Nonnull final Asset oldAsset,
-        @Nonnull final AssetDraft newAsset) {
+            @Nonnull final Asset oldAsset,
+            @Nonnull final AssetDraft newAsset) {
         return buildUpdateAction(oldAsset.getDescription(), newAsset.getDescription(),
-            () -> SetAssetDescription.ofKey(oldAsset.getKey(), newAsset.getDescription()));
+                () -> SetAssetDescription.ofKey(oldAsset.getKey(), newAsset.getDescription()));
     }
 
     /**
@@ -118,10 +118,10 @@ public final class CategoryAssetUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildSetAssetTagsUpdateAction(
-        @Nonnull final Asset oldAsset,
-        @Nonnull final AssetDraft newAsset) {
+            @Nonnull final Asset oldAsset,
+            @Nonnull final AssetDraft newAsset) {
         return buildUpdateAction(oldAsset.getTags(), newAsset.getTags(),
-            () -> SetAssetTags.ofKey(oldAsset.getKey(), newAsset.getTags()));
+                () -> SetAssetTags.ofKey(oldAsset.getKey(), newAsset.getTags()));
     }
 
     /**
@@ -136,10 +136,10 @@ public final class CategoryAssetUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildSetAssetSourcesUpdateAction(
-        @Nonnull final Asset oldAsset,
-        @Nonnull final AssetDraft newAsset) {
+            @Nonnull final Asset oldAsset,
+            @Nonnull final AssetDraft newAsset) {
         return buildUpdateAction(oldAsset.getSources(), newAsset.getSources(),
-            () -> SetAssetSources.ofKey(oldAsset.getKey(), newAsset.getSources()));
+                () -> SetAssetSources.ofKey(oldAsset.getKey(), newAsset.getSources()));
     }
 
     /**
@@ -153,25 +153,22 @@ public final class CategoryAssetUpdateActionUtils {
      * @param syncOptions responsible for supplying the sync options to the sync utility method. It is used for
      *                    triggering the error callback within the utility, in case of errors.
      * @return A list with the custom field/type update actions or an empty list if the custom fields/types are
-     *         identical.
+     * identical.
      */
     @Nonnull
     public static List<UpdateAction<Category>> buildCustomUpdateActions(
-        @Nonnull final Asset oldAsset,
-        @Nonnull final AssetDraft newAsset,
-        @Nonnull final CategorySyncOptions syncOptions) {
+            @Nonnull final Asset oldAsset,
+            @Nonnull final AssetDraft newAsset,
+            @Nonnull final CategorySyncOptions syncOptions) {
 
         return CustomUpdateActionUtils.buildCustomUpdateActions(
-            oldAsset,
-            newAsset,
-            new AssetCustomActionBuilder(),
-            -1,
-            Asset::getId,
-            asset -> Asset.resourceTypeId(),
-            Asset::getKey,
-            syncOptions);
-    }
-
-    private CategoryAssetUpdateActionUtils() {
+                oldAsset,
+                newAsset,
+                new AssetCustomActionBuilder(),
+                -1,
+                Asset::getId,
+                asset -> Asset.resourceTypeId(),
+                Asset::getKey,
+                syncOptions);
     }
 }
