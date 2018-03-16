@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.commons.utils.StreamUtils.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toCollection;
@@ -215,22 +216,18 @@ public final class AssetsUpdateActionUtils {
      */
     @Nonnull
     private static <T> List<UpdateAction<T>> buildAddAssetUpdateActions(
-        @Nonnull final List<AssetDraft> newAssetDrafts,
-        @Nonnull final Map<String, Asset> oldAssetsKeyMap,
-        @Nonnull final AssetActionFactory<T> assetActionFactory) {
+            @Nonnull final List<AssetDraft> newAssetDrafts,
+            @Nonnull final Map<String, Asset> oldAssetsKeyMap,
+            @Nonnull final AssetActionFactory<T> assetActionFactory) {
 
-
-        return IntStream.range(0, newAssetDrafts.size())
-                        .mapToObj(assetDraftIndex ->
-                            ofNullable(newAssetDrafts.get(assetDraftIndex))
+        return asList(IntStream.range(0, newAssetDrafts.size())
+                .mapToObj(assetDraftIndex ->
+                        ofNullable(newAssetDrafts.get(assetDraftIndex))
                                 .filter(assetDraft -> !oldAssetsKeyMap.containsKey(assetDraft.getKey()))
                                 .map(assetDraft -> assetActionFactory.buildAddAssetAction(assetDraft, assetDraftIndex))
-                        )
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .collect(toCollection(ArrayList::new));
+                )
+        );
     }
-
 
     private AssetsUpdateActionUtils() {
     }
