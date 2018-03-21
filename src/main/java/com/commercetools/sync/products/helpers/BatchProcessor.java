@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.helpers;
 
+import com.commercetools.sync.commons.utils.StreamUtils;
 import com.commercetools.sync.products.ProductSync;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.products.ProductDraft;
@@ -147,12 +148,10 @@ public class BatchProcessor {
      */
     @Nonnull
     static Set<String> getReferencedProductKeysFromSet(@Nonnull final JsonNode referenceSet) {
-        return StreamSupport.stream(referenceSet.spliterator(), false)
+        return StreamUtils.asSet(StreamSupport.stream(referenceSet.spliterator(), false)
                             .filter(Objects::nonNull)
                             .map(BatchProcessor::getProductKeyFromReference)
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .collect(Collectors.toSet());
+                            );
     }
 
     /**

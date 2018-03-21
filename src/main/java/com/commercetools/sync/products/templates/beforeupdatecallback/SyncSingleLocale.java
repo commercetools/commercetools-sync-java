@@ -6,12 +6,7 @@ import io.sphere.sdk.models.LocalizedStringEntry;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.commands.updateactions.ChangeName;
-import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
-import io.sphere.sdk.products.commands.updateactions.SetDescription;
-import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
-import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
-import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
+import io.sphere.sdk.products.commands.updateactions.*;
 import io.sphere.sdk.producttypes.ProductType;
 
 import javax.annotation.Nonnull;
@@ -21,8 +16,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static com.commercetools.sync.commons.utils.StreamUtils.asList;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 final class SyncSingleLocale {
@@ -31,23 +26,20 @@ final class SyncSingleLocale {
      * {@code oldProduct} and maps the update actions so that only localizations with value {@link Locale#FRENCH}
      * are synced and all the other locales are left untouched.
      *
-     * @param updateActions the update actions built from comparing {@code newProductDraft} and {@code oldProduct}.
-     * @param newProductDraft      the new {@link ProductDraft} being synced.
-     * @param oldProduct    the old existing {@link Product}.
+     * @param updateActions   the update actions built from comparing {@code newProductDraft} and {@code oldProduct}.
+     * @param newProductDraft the new {@link ProductDraft} being synced.
+     * @param oldProduct      the old existing {@link Product}.
      * @return a new list of update actions that corresponds to changes on French localizations only.
      */
     private static List<UpdateAction<Product>> syncFrenchDataOnly(
-        @Nonnull final List<UpdateAction<Product>> updateActions,
-        @Nonnull final ProductDraft newProductDraft,
-        @Nonnull final Product oldProduct,
-        @Nonnull final ProductType productType) {
-        return updateActions.stream()
-                            .map(action ->
-                                filterSingleLocalization(action, newProductDraft, oldProduct, productType,
-                                    Locale.FRENCH))
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .collect(toList());
+            @Nonnull final List<UpdateAction<Product>> updateActions,
+            @Nonnull final ProductDraft newProductDraft,
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductType productType) {
+        return asList(updateActions.stream()
+                .map(action ->
+                        filterSingleLocalization(action, newProductDraft, oldProduct, productType, Locale.FRENCH))
+        );
     }
 
     /**
@@ -68,42 +60,42 @@ final class SyncSingleLocale {
      * other hand, if the change was in the supplied locale value then the update action is modified so that it only
      * corresponds to the change in that locale value.
      *
-     * @param updateAction the update action built from comparing {@code newProductDraft} and {@code oldProduct}.
-     * @param newProductDraft     the new {@link ProductDraft} being synced.
-     * @param oldProduct   the old existing {@link Product}.
-     * @param locale       the locale value to only compare and map the update action to accordingly.
+     * @param updateAction    the update action built from comparing {@code newProductDraft} and {@code oldProduct}.
+     * @param newProductDraft the new {@link ProductDraft} being synced.
+     * @param oldProduct      the old existing {@link Product}.
+     * @param locale          the locale value to only compare and map the update action to accordingly.
      * @return an optional containing the mapped update action or empty value if an update action is not needed.
      */
     private static Optional<UpdateAction<Product>> filterSingleLocalization(
-        @Nonnull final UpdateAction<Product> updateAction,
-        @Nonnull final ProductDraft newProductDraft,
-        @Nonnull final Product oldProduct,
-        @Nonnull final ProductType productType,
-        //TODO: RIGHT NOW NOT USED BUT WILL BE EXTENDED LATER WITH USAGE AND TESTS. GITHUB ISSUE #189
-        @Nonnull final Locale locale) {
+            @Nonnull final UpdateAction<Product> updateAction,
+            @Nonnull final ProductDraft newProductDraft,
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductType productType,
+            //TODO: RIGHT NOW NOT USED BUT WILL BE EXTENDED LATER WITH USAGE AND TESTS. GITHUB ISSUE #189
+            @Nonnull final Locale locale) {
         if (updateAction instanceof ChangeName) {
             return filterLocalizedField(newProductDraft, oldProduct, locale, ProductDraft::getName,
-                ProductData::getName, ChangeName::of);
+                    ProductData::getName, ChangeName::of);
         }
         if (updateAction instanceof SetDescription) {
             return filterLocalizedField(newProductDraft, oldProduct, locale, ProductDraft::getDescription,
-                ProductData::getDescription, SetDescription::of);
+                    ProductData::getDescription, SetDescription::of);
         }
         if (updateAction instanceof ChangeSlug) {
             return filterLocalizedField(newProductDraft, oldProduct, locale, ProductDraft::getSlug,
-                ProductData::getSlug, ChangeSlug::of);
+                    ProductData::getSlug, ChangeSlug::of);
         }
         if (updateAction instanceof SetMetaTitle) {
             return filterLocalizedField(newProductDraft, oldProduct, locale, ProductDraft::getMetaTitle,
-                ProductData::getMetaTitle, SetMetaTitle::of);
+                    ProductData::getMetaTitle, SetMetaTitle::of);
         }
         if (updateAction instanceof SetMetaDescription) {
             return filterLocalizedField(newProductDraft, oldProduct, locale, ProductDraft::getMetaDescription,
-                ProductData::getMetaDescription, SetMetaDescription::of);
+                    ProductData::getMetaDescription, SetMetaDescription::of);
         }
         if (updateAction instanceof SetMetaKeywords) {
             return filterLocalizedField(newProductDraft, oldProduct, locale, ProductDraft::getMetaKeywords,
-                ProductData::getMetaKeywords, SetMetaKeywords::of);
+                    ProductData::getMetaKeywords, SetMetaKeywords::of);
         }
         return Optional.of(updateAction);
     }
@@ -121,17 +113,20 @@ final class SyncSingleLocale {
      * @param updateActionMapper      mapper function to build the update action to sync the localized field of the
      *                                product.
      * @return an optional containing an update action if the localized field with the specific locale has changed or
-     *         empty otherwise.
+     * empty otherwise.
      */
     private static Optional<UpdateAction<Product>> filterLocalizedField(@Nonnull final ProductDraft newDraft,
                                                                         @Nonnull final Product oldProduct,
                                                                         @Nonnull final Locale locale,
                                                                         @Nonnull final Function<ProductDraft,
-                                                                            LocalizedString> newLocalizedFieldMapper,
+                                                                                LocalizedString>
+                                                                                newLocalizedFieldMapper,
                                                                         @Nonnull final Function<ProductData,
-                                                                            LocalizedString> oldLocalizedFieldMapper,
+                                                                                LocalizedString>
+                                                                                oldLocalizedFieldMapper,
                                                                         @Nonnull final Function<LocalizedString,
-                                                                            UpdateAction<Product>> updateActionMapper) {
+                                                                                UpdateAction<Product>>
+                                                                                updateActionMapper) {
         final LocalizedString newLocalizedField = newLocalizedFieldMapper.apply(newDraft);
         final LocalizedString oldLocalizedField = oldLocalizedFieldMapper.apply(oldProduct.getMasterData().getStaged());
         if (oldLocalizedField == null && newLocalizedField == null) {
@@ -144,17 +139,17 @@ final class SyncSingleLocale {
                 if (!Objects.equals(newLocaleValue, oldLocaleValue)) {
                     // if old locale value is set, remove it from old localized field
                     final LocalizedString withLocaleChange = ofNullable(oldLocaleValue)
-                        .map(value -> LocalizedString.of(
-                            oldLocalizedField.stream()
-                                .filter(localization -> !localization.getLocale().equals(locale))
-                                .collect(toMap(LocalizedStringEntry::getLocale,
-                                    LocalizedStringEntry::getValue))))
-                        .orElse(oldLocalizedField);
+                            .map(value -> LocalizedString.of(
+                                    oldLocalizedField.stream()
+                                            .filter(localization -> !localization.getLocale().equals(locale))
+                                            .collect(toMap(LocalizedStringEntry::getLocale,
+                                                    LocalizedStringEntry::getValue))))
+                            .orElse(oldLocalizedField);
 
                     // Only if old locale value is not set and the new locale value is set,
                     // update the old localized field with the new locale value
                     return ofNullable(newLocaleValue)
-                        .map(val -> updateActionMapper.apply(withLocaleChange.plus(locale, val)));
+                            .map(val -> updateActionMapper.apply(withLocaleChange.plus(locale, val)));
                 }
                 return Optional.empty();
             } else {
@@ -162,12 +157,12 @@ final class SyncSingleLocale {
                     // If old localized field is set but the new one is unset, only update if the locale value is set in
                     // the old field.
                     return ofNullable(oldLocalizedField.get(locale))
-                        .map(localValue -> updateActionMapper.apply(LocalizedString.empty()));
+                            .map(localValue -> updateActionMapper.apply(LocalizedString.empty()));
                 } else {
                     // If old localized field is unset but the new one is set, only update if the locale value is set in
                     // the new field.
                     return ofNullable(newLocalizedField.get(locale))
-                        .map(newLocalValue -> updateActionMapper.apply(LocalizedString.of(locale, newLocalValue)));
+                            .map(newLocalValue -> updateActionMapper.apply(LocalizedString.of(locale, newLocalValue)));
                 }
             }
         }
