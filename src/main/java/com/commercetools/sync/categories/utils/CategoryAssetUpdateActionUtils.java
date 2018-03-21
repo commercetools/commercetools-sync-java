@@ -3,6 +3,7 @@ package com.commercetools.sync.categories.utils;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.helpers.AssetCustomActionBuilder;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
+import com.commercetools.sync.commons.utils.StreamUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.commands.updateactions.ChangeAssetName;
 import io.sphere.sdk.categories.commands.updateactions.SetAssetDescription;
@@ -64,10 +65,7 @@ public final class CategoryAssetUpdateActionUtils {
     @Nonnull
     private static List<UpdateAction<Category>> buildUpdateActionsFromOptionals(
         @Nonnull final List<Optional<UpdateAction<Category>>> optionalUpdateActions) {
-        return optionalUpdateActions.stream()
-                                    .filter(Optional::isPresent)
-                                    .map(Optional::get)
-                                    .collect(Collectors.toList());
+        return StreamUtils.asList(optionalUpdateActions.stream());
     }
 
     /**
