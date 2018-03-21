@@ -9,41 +9,35 @@ import io.sphere.sdk.models.AssetDraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.StreamUtils.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 
 public final class AssetsUpdateActionUtils {
+
+    private AssetsUpdateActionUtils() {
+    }
 
     /**
      * Compares a list of {@link Asset}s with a list of {@link AssetDraft}s. The method serves as a generic
      * implementation for assets syncing. The method takes in functions for building the required update actions (
      * AddAsset, RemoveAsset, ChangeAssetOrder and 1-1 update actions on assets (e.g. changeAssetName,
      * setAssetDescription, etc..) for the required resource.
-     *
+     * <p>
      * <p>If the list of new {@link AssetDraft}s is {@code null}, then remove actions are built for every existing asset
      * in the {@code oldAssets} list.
      *
-     * @param oldAssets                     the old list of assets.
-     * @param newAssetDrafts                the new list of asset drafts.
-     * @param assetActionFactory            factory responsible for building asset update actions.
-     * @param <T>                           the type of the resource the asset update actions are built for.
+     * @param oldAssets          the old list of assets.
+     * @param newAssetDrafts     the new list of asset drafts.
+     * @param assetActionFactory factory responsible for building asset update actions.
+     * @param <T>                the type of the resource the asset update actions are built for.
      * @return a list of asset update actions on the resource of type T if the list of assets is not identical.
-     *         Otherwise, if the assets are identical, an empty list is returned.
+     * Otherwise, if the assets are identical, an empty list is returned.
      * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
      */
     @Nonnull
@@ -57,9 +51,9 @@ public final class AssetsUpdateActionUtils {
             return buildAssetsUpdateActionsWithNewAssetDrafts(oldAssets, newAssetDrafts, assetActionFactory);
         } else {
             return oldAssets.stream()
-                            .map(Asset::getKey)
-                            .map(assetActionFactory::buildRemoveAssetAction)
-                            .collect(toCollection(ArrayList::new));
+                .map(Asset::getKey)
+                .map(assetActionFactory::buildRemoveAssetAction)
+                .collect(toCollection(ArrayList::new));
         }
     }
 
@@ -69,12 +63,12 @@ public final class AssetsUpdateActionUtils {
      * AddAsset, RemoveAsset, ChangeAssetOrder and 1-1 update actions on assets (e.g. changeAssetName,
      * setAssetDescription, etc..) for the required resource.
      *
-     * @param oldAssets                     the old list of assets.
-     * @param newAssetDrafts                the new list of asset drafts.
-     * @param assetActionFactory            factory responsible for building asset update actions.
-     * @param <T>                           the type of the resource the asset update actions are built for.
+     * @param oldAssets          the old list of assets.
+     * @param newAssetDrafts     the new list of asset drafts.
+     * @param assetActionFactory factory responsible for building asset update actions.
+     * @param <T>                the type of the resource the asset update actions are built for.
      * @return a list of asset update actions on the resource of type T if the list of assets is not identical.
-     *         Otherwise, if the assets are identical, an empty list is returned.
+     * Otherwise, if the assets are identical, an empty list is returned.
      * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
      */
     @Nonnull
@@ -135,7 +129,7 @@ public final class AssetsUpdateActionUtils {
      * @param assetActionFactory   factory responsible for building asset update actions.
      * @param <T>                  the type of the resource the asset update action is built for.
      * @return a list of asset update actions on the resource of type T if there are new assets that should be added.
-     *         Otherwise, if the assets order is identical, an empty optional is returned.
+     * Otherwise, if the assets order is identical, an empty optional is returned.
      */
     @Nonnull
     private static <T> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
@@ -176,7 +170,7 @@ public final class AssetsUpdateActionUtils {
      * @param assetActionFactory factory responsible for building asset update actions.
      * @param <T>                the type of the resource the asset update action is built for.
      * @return a list of asset update actions on the resource of type T if the list of the order of assets is not
-     *         identical. Otherwise, if the assets order is identical, an empty optional is returned.
+     * identical. Otherwise, if the assets order is identical, an empty optional is returned.
      */
     @Nonnull
     private static <T> Optional<UpdateAction<T>> buildChangeAssetOrderUpdateAction(
@@ -186,18 +180,18 @@ public final class AssetsUpdateActionUtils {
         @Nonnull final AssetActionFactory<T> assetActionFactory) {
 
         final Map<String, String> oldAssetKeyToIdMap = oldAssets.stream()
-                                                                .collect(toMap(Asset::getKey, Asset::getId));
+            .collect(toMap(Asset::getKey, Asset::getId));
 
         final List<String> newOrder = newAssetDrafts.stream()
-                                                    .map(AssetDraft::getKey)
-                                                    .map(oldAssetKeyToIdMap::get)
-                                                    .filter(Objects::nonNull)
-                                                    .collect(toList());
+            .map(AssetDraft::getKey)
+            .map(oldAssetKeyToIdMap::get)
+            .filter(Objects::nonNull)
+            .collect(toList());
 
         final List<String> oldOrder = oldAssets.stream()
-                                               .filter(asset -> !removedAssetKeys.contains(asset.getKey()))
-                                               .map(Asset::getId)
-                                               .collect(toList());
+            .filter(asset -> !removedAssetKeys.contains(asset.getKey()))
+            .map(Asset::getId)
+            .collect(toList());
 
         return buildUpdateAction(oldOrder, newOrder, () -> assetActionFactory.buildChangeAssetOrderAction(newOrder));
     }
@@ -212,23 +206,20 @@ public final class AssetsUpdateActionUtils {
      * @param assetActionFactory factory responsible for building asset update actions.
      * @param <T>                the type of the resource the asset update action is built for.
      * @return a list of asset update actions on the resource of type T if there are new assets that should be added.
-     *         Otherwise, if the assets order is identical, an empty optional is returned.
+     * Otherwise, if the assets order is identical, an empty optional is returned.
      */
     @Nonnull
     private static <T> List<UpdateAction<T>> buildAddAssetUpdateActions(
-            @Nonnull final List<AssetDraft> newAssetDrafts,
-            @Nonnull final Map<String, Asset> oldAssetsKeyMap,
-            @Nonnull final AssetActionFactory<T> assetActionFactory) {
+        @Nonnull final List<AssetDraft> newAssetDrafts,
+        @Nonnull final Map<String, Asset> oldAssetsKeyMap,
+        @Nonnull final AssetActionFactory<T> assetActionFactory) {
 
         return asList(IntStream.range(0, newAssetDrafts.size())
-                .mapToObj(assetDraftIndex ->
-                        ofNullable(newAssetDrafts.get(assetDraftIndex))
-                                .filter(assetDraft -> !oldAssetsKeyMap.containsKey(assetDraft.getKey()))
-                                .map(assetDraft -> assetActionFactory.buildAddAssetAction(assetDraft, assetDraftIndex))
-                )
+            .mapToObj(assetDraftIndex ->
+                ofNullable(newAssetDrafts.get(assetDraftIndex))
+                    .filter(assetDraft -> !oldAssetsKeyMap.containsKey(assetDraft.getKey()))
+                    .map(assetDraft -> assetActionFactory.buildAddAssetAction(assetDraft, assetDraftIndex))
+            )
         );
-    }
-
-    private AssetsUpdateActionUtils() {
     }
 }
