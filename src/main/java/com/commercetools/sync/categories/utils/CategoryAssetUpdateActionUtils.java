@@ -43,10 +43,10 @@ public final class CategoryAssetUpdateActionUtils {
                                                             @Nonnull final CategorySyncOptions syncOptions) {
 
         final List<UpdateAction<Category>> updateActions = buildUpdateActionsFromOptionals(asList(
-                buildChangeAssetNameUpdateAction(oldAsset, newAsset),
-                buildSetAssetDescriptionUpdateAction(oldAsset, newAsset),
-                buildSetAssetTagsUpdateAction(oldAsset, newAsset),
-                buildSetAssetSourcesUpdateAction(oldAsset, newAsset)
+            buildChangeAssetNameUpdateAction(oldAsset, newAsset),
+            buildSetAssetDescriptionUpdateAction(oldAsset, newAsset),
+            buildSetAssetTagsUpdateAction(oldAsset, newAsset),
+            buildSetAssetSourcesUpdateAction(oldAsset, newAsset)
         ));
 
         updateActions.addAll(buildCustomUpdateActions(oldAsset, newAsset, syncOptions));
@@ -66,7 +66,7 @@ public final class CategoryAssetUpdateActionUtils {
      */
     @Nonnull
     private static List<UpdateAction<Category>> buildUpdateActionsFromOptionals(
-            @Nonnull final List<Optional<UpdateAction<Category>>> optionalUpdateActions) {
+        @Nonnull final List<Optional<UpdateAction<Category>>> optionalUpdateActions) {
         return StreamUtils.asList(optionalUpdateActions.stream());
     }
 
@@ -82,10 +82,10 @@ public final class CategoryAssetUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildChangeAssetNameUpdateAction(
-            @Nonnull final Asset oldAsset,
-            @Nonnull final AssetDraft newAsset) {
+        @Nonnull final Asset oldAsset,
+        @Nonnull final AssetDraft newAsset) {
         return buildUpdateAction(oldAsset.getName(), newAsset.getName(),
-                () -> ChangeAssetName.ofKey(oldAsset.getKey(), newAsset.getName()));
+            () -> ChangeAssetName.ofKey(oldAsset.getKey(), newAsset.getName()));
     }
 
     /**
@@ -100,10 +100,10 @@ public final class CategoryAssetUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildSetAssetDescriptionUpdateAction(
-            @Nonnull final Asset oldAsset,
-            @Nonnull final AssetDraft newAsset) {
+        @Nonnull final Asset oldAsset,
+        @Nonnull final AssetDraft newAsset) {
         return buildUpdateAction(oldAsset.getDescription(), newAsset.getDescription(),
-                () -> SetAssetDescription.ofKey(oldAsset.getKey(), newAsset.getDescription()));
+            () -> SetAssetDescription.ofKey(oldAsset.getKey(), newAsset.getDescription()));
     }
 
     /**
@@ -118,10 +118,10 @@ public final class CategoryAssetUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildSetAssetTagsUpdateAction(
-            @Nonnull final Asset oldAsset,
-            @Nonnull final AssetDraft newAsset) {
+        @Nonnull final Asset oldAsset,
+        @Nonnull final AssetDraft newAsset) {
         return buildUpdateAction(oldAsset.getTags(), newAsset.getTags(),
-                () -> SetAssetTags.ofKey(oldAsset.getKey(), newAsset.getTags()));
+            () -> SetAssetTags.ofKey(oldAsset.getKey(), newAsset.getTags()));
     }
 
     /**
@@ -136,10 +136,10 @@ public final class CategoryAssetUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<Category>> buildSetAssetSourcesUpdateAction(
-            @Nonnull final Asset oldAsset,
-            @Nonnull final AssetDraft newAsset) {
+        @Nonnull final Asset oldAsset,
+        @Nonnull final AssetDraft newAsset) {
         return buildUpdateAction(oldAsset.getSources(), newAsset.getSources(),
-                () -> SetAssetSources.ofKey(oldAsset.getKey(), newAsset.getSources()));
+            () -> SetAssetSources.ofKey(oldAsset.getKey(), newAsset.getSources()));
     }
 
     /**
@@ -157,18 +157,18 @@ public final class CategoryAssetUpdateActionUtils {
      */
     @Nonnull
     public static List<UpdateAction<Category>> buildCustomUpdateActions(
-            @Nonnull final Asset oldAsset,
-            @Nonnull final AssetDraft newAsset,
-            @Nonnull final CategorySyncOptions syncOptions) {
+        @Nonnull final Asset oldAsset,
+        @Nonnull final AssetDraft newAsset,
+        @Nonnull final CategorySyncOptions syncOptions) {
 
         return CustomUpdateActionUtils.buildCustomUpdateActions(
-                oldAsset,
-                newAsset,
-                new AssetCustomActionBuilder(),
-                -1,
-                Asset::getId,
-                asset -> Asset.resourceTypeId(),
-                Asset::getKey,
-                syncOptions);
+            oldAsset,
+            newAsset,
+            new AssetCustomActionBuilder(),
+            -1,
+            Asset::getId,
+            asset -> Asset.resourceTypeId(),
+            Asset::getKey,
+            syncOptions);
     }
 }
