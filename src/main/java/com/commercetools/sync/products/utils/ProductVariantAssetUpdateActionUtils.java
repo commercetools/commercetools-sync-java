@@ -1,6 +1,7 @@
 package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
+import com.commercetools.sync.commons.utils.StreamUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.helpers.AssetCustomActionBuilder;
 import io.sphere.sdk.commands.UpdateAction;
@@ -66,10 +67,7 @@ public final class ProductVariantAssetUpdateActionUtils {
     @Nonnull
     private static List<UpdateAction<Product>> buildUpdateActionsFromOptionals(
         @Nonnull final List<Optional<UpdateAction<Product>>> optionalUpdateActions) {
-        return optionalUpdateActions.stream()
-                                    .filter(Optional::isPresent)
-                                    .map(Optional::get)
-                                    .collect(Collectors.toList());
+        return StreamUtils.asList(optionalUpdateActions.stream());
     }
 
     /**
