@@ -45,7 +45,7 @@ public final class StreamUtils {
      *
      * @param <T> type of optional value
      * @return function which returns a stream of one element from the supplied {@code optional} if not empty,
-     * otherwise - an empty stream.
+     *     otherwise - an empty stream.
      */
     @Nonnull
     public static <T> Function<Optional<? extends T>, Stream<? extends T>> getFilterEmptyOptionals() {
