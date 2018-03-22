@@ -26,8 +26,30 @@ public final class StreamUtils {
         return elements.filter(Objects::nonNull).map(mapper);
     }
 
-    public static <T> Stream<T> filterEmptyOptionals(@Nonnull Optional<T> optional) {
+    /**
+     * Similar to Java 9
+     * <a href="https://docs.oracle.com/javase/9/docs/api/java/util/Optional.html#stream--">Optional#stream()</a>:
+     * converts Optional to a stream of one element if not empty. Otherwise - return an empty stream.
+     *
+     * @param optional Optional to convert
+     * @param <T>      type of optional value
+     * @return Stream of one element from the supplied {@code optional} if not empty, otherwise - an empty stream.
+     */
+    @Nonnull
+    public static <T> Stream<T> filterEmptyOptionals(final @Nonnull Optional<T> optional) {
         return optional.map(Stream::of).orElseGet(Stream::empty);
+    }
+
+    /**
+     * Similar to {@link #filterEmptyOptionals(Optional)}, but returns a lambda with the same behavior.
+     *
+     * @param <T> type of optional value
+     * @return function which returns a stream of one element from the supplied {@code optional} if not empty,
+     * otherwise - an empty stream.
+     */
+    @Nonnull
+    public static <T> Function<Optional<? extends T>, Stream<? extends T>> getFilterEmptyOptionals() {
+        return optional -> optional.map(Stream::of).orElseGet(Stream::empty);
     }
 
     private StreamUtils() {

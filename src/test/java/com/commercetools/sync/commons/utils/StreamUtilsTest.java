@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.StreamUtils.filterNullAndMap;
+import static com.commercetools.sync.commons.utils.StreamUtils.getFilterEmptyOptionals;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -92,7 +93,7 @@ public class StreamUtilsTest {
     @Test
     public void asList_emptyStreamIsGiven_ShouldReturnEmptyList() {
         final List<?> result = Stream.<Optional<?>>of()
-            .flatMap(StreamUtils::filterEmptyOptionals)
+            .flatMap(getFilterEmptyOptionals())
             .collect(toList());
         assertThat(result.isEmpty()).isTrue();
     }
@@ -100,7 +101,7 @@ public class StreamUtilsTest {
     @Test
     public void asSet_streamOfNonEmptyOptionalsIsGiven_ShouldReturnNonEmptySet() {
         final Set<String> result = Stream.of(Optional.of(element1), Optional.of(element2))
-            .flatMap(StreamUtils::filterEmptyOptionals)
+            .flatMap(getFilterEmptyOptionals())
             .collect(toSet());
         assertThat(result.size()).isEqualTo(2);
         assertThat(result).containsExactlyInAnyOrder(element1, element2);
