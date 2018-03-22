@@ -17,10 +17,10 @@ import io.sphere.sdk.products.commands.updateactions.SetAssetTags;
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 
 public final class ProductVariantAssetUpdateActionUtils {
 
@@ -67,7 +67,10 @@ public final class ProductVariantAssetUpdateActionUtils {
     @Nonnull
     private static List<UpdateAction<Product>> buildUpdateActionsFromOptionals(
         @Nonnull final List<Optional<UpdateAction<Product>>> optionalUpdateActions) {
-        return StreamUtils.asList(optionalUpdateActions.stream());
+        return optionalUpdateActions.stream()
+            .flatMap(StreamUtils::filterEmptyOptionals)
+            .collect(toList());
+
     }
 
     /**

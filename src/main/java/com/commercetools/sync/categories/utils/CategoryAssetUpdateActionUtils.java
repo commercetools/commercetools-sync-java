@@ -17,10 +17,10 @@ import io.sphere.sdk.models.LocalizedString;
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 
 public final class CategoryAssetUpdateActionUtils {
 
@@ -65,7 +65,9 @@ public final class CategoryAssetUpdateActionUtils {
     @Nonnull
     private static List<UpdateAction<Category>> buildUpdateActionsFromOptionals(
         @Nonnull final List<Optional<UpdateAction<Category>>> optionalUpdateActions) {
-        return StreamUtils.asList(optionalUpdateActions.stream());
+        return optionalUpdateActions.stream()
+            .flatMap(StreamUtils::filterEmptyOptionals)
+            .collect(toList());
     }
 
     /**

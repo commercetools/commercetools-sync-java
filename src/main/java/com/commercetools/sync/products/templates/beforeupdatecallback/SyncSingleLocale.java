@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.templates.beforeupdatecallback;
 
+import com.commercetools.sync.commons.utils.StreamUtils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.LocalizedStringEntry;
@@ -24,7 +25,6 @@ import java.util.function.Function;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static com.commercetools.sync.commons.utils.StreamUtils.asList;
 
 final class SyncSingleLocale {
     /**
@@ -42,9 +42,11 @@ final class SyncSingleLocale {
         @Nonnull final ProductDraft newProductDraft,
         @Nonnull final Product oldProduct,
         @Nonnull final ProductType productType) {
-        return asList(updateActions.stream().map(action ->
-                filterSingleLocalization(action, newProductDraft, oldProduct, productType, Locale.FRENCH))
-        );
+        return updateActions.stream()
+                .map(action ->
+                        filterSingleLocalization(action, newProductDraft, oldProduct, productType, Locale.FRENCH))
+                .flatMap(StreamUtils::filterEmptyOptionals)
+                .collect(toList());
     }
 
     /**

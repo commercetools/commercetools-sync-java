@@ -3,6 +3,7 @@ package com.commercetools.sync.categories.utils;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.utils.StreamUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -11,7 +12,6 @@ import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildAssetsUpdateActions;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeNameUpdateAction;
@@ -25,7 +25,7 @@ import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 
-import static com.commercetools.sync.commons.utils.StreamUtils.asList;
+import static java.util.stream.Collectors.toList;
 
 public final class CategorySyncUtils {
     private static final CategoryCustomActionBuilder categoryCustomActionBuilder =
@@ -89,7 +89,9 @@ public final class CategorySyncUtils {
     @Nonnull
     private static List<UpdateAction<Category>> buildUpdateActionsFromOptionals(
         @Nonnull final List<Optional<UpdateAction<Category>>> optionalUpdateActions) {
-        return asList(optionalUpdateActions.stream());
+        return optionalUpdateActions.stream()
+            .flatMap(StreamUtils::filterEmptyOptionals)
+            .collect(toList());
     }
 
     private CategorySyncUtils() {

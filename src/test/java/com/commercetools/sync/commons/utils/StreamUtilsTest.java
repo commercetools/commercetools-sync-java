@@ -7,10 +7,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.commons.utils.StreamUtils.asList;
-import static com.commercetools.sync.commons.utils.StreamUtils.asSet;
 import static com.commercetools.sync.commons.utils.StreamUtils.filterNullAndMap;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class StreamUtilsTest {
@@ -66,65 +65,70 @@ public class StreamUtilsTest {
 
     @Test
     public void asList_streamOfNonEmptyOptionalsIsGiven_ShouldReturnNonEmptyList() {
-        final List<String> result = asList(Stream.of(Optional.of(element1), Optional.of(element2)));
+        final List<String> result = Stream.of(Optional.of(element1), Optional.of(element2))
+            .flatMap(StreamUtils::filterEmptyOptionals)
+            .collect(toList());
         assertThat(result.size()).isEqualTo(2);
         assertThat(result).containsExactly(element1, element2);
     }
 
     @Test
     public void asList_streamOfOptionalsIsGiven_ShouldReturnNonEmptyList() {
-        final List<String> result = asList(Stream.of(Optional.of(element1), Optional.empty()));
+        final List<String> result = Stream.<Optional<String>>of(Optional.of(element1), Optional.empty())
+            .flatMap(StreamUtils::filterEmptyOptionals)
+            .collect(toList());
         assertThat(result.size()).isEqualTo(1);
         assertThat(result).containsExactly(element1);
     }
 
     @Test
     public void asList_streamOfEmptyOptionalsIsGiven_ShouldReturnEmptyList() {
-        final List<String> result = asList(Stream.of(Optional.empty(), Optional.empty()));
+        final List<?> result = Stream.of(Optional.empty(), Optional.empty())
+            .flatMap(StreamUtils::filterEmptyOptionals)
+            .collect(toList());
         assertThat(result.isEmpty()).isTrue();
     }
 
     @Test
     public void asList_emptyStreamIsGiven_ShouldReturnEmptyList() {
-        final List<String> result = asList(Stream.of());
+        final List<?> result = Stream.<Optional<?>>of()
+            .flatMap(StreamUtils::filterEmptyOptionals)
+            .collect(toList());
         assertThat(result.isEmpty()).isTrue();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void asList_nullIsPass_ShouldThrowException() {
-        final List<String> result = asList(null);
-
     }
 
     @Test
     public void asSet_streamOfNonEmptyOptionalsIsGiven_ShouldReturnNonEmptySet() {
-        final Set<String> result = asSet(Stream.of(Optional.of(element1), Optional.of(element2)));
+        final Set<String> result = Stream.of(Optional.of(element1), Optional.of(element2))
+            .flatMap(StreamUtils::filterEmptyOptionals)
+            .collect(toSet());
         assertThat(result.size()).isEqualTo(2);
-        assertThat(result).containsExactly(element1, element2);
+        assertThat(result).containsExactlyInAnyOrder(element1, element2);
     }
 
     @Test
     public void asSet_streamOfOptionalsIsGiven_ShouldReturnNonEmptySet() {
-        final Set<String> result = asSet(Stream.of(Optional.of(element1), Optional.empty()));
+        final Set<String> result = Stream.<Optional<String>>of(Optional.of(element1), Optional.empty())
+            .flatMap(StreamUtils::filterEmptyOptionals)
+            .collect(toSet());
         assertThat(result.size()).isEqualTo(1);
         assertThat(result).containsExactly(element1);
     }
 
     @Test
     public void asSet_streamOfEmptyOptionalsIsGiven_ShouldReturnEmptySet() {
-        final Set<String> result = asSet(Stream.of(Optional.empty(), Optional.empty()));
+        final Set<?> result = Stream.of(Optional.empty(), Optional.empty())
+            .flatMap(StreamUtils::filterEmptyOptionals)
+            .collect(toSet());
         assertThat(result.isEmpty()).isTrue();
     }
 
     @Test
     public void asSet_emptyStreamIsGiven_ShouldReturnEmptySet() {
-        final Set<String> result = asSet(Stream.of());
+        final Set<?> result = Stream.<Optional<?>>of()
+            .flatMap(StreamUtils::filterEmptyOptionals)
+            .collect(toSet());
         assertThat(result.isEmpty()).isTrue();
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void asSet_nullIsPass_ShouldThrowException() {
-        final Set<String> result = asSet(null);
-
-    }
 }
