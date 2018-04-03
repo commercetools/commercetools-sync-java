@@ -39,10 +39,9 @@ public class OptionalUtilsTest {
 
     @Test
     public void getToStream_withEmpty_returnsEmptyStream() {
-        // "count()).isEqualTo(0)" because ".isEmpty()" shows warning on empty generics
-        assertThat(getFilterEmptyOptionals().apply(Optional.empty()).count()).isEqualTo(0);
+        assertThat(getFilterEmptyOptionals().apply(Optional.empty())).isEmpty();
         TestPerson testPerson = null;
-        assertThat(getFilterEmptyOptionals().apply(Optional.ofNullable(testPerson)).count()).isEqualTo(0);
+        assertThat(getFilterEmptyOptionals().apply(Optional.ofNullable(testPerson))).isEmpty();
     }
 
     @Test
@@ -73,7 +72,7 @@ public class OptionalUtilsTest {
 
     @Test
     public void getFilterEmptyOptionals_withEmptyStream_whenCollectedToList_ShouldReturnEmptyList() {
-        final List<?> result = Stream.<Optional<?>>of()
+        final List<TestPerson> result = Stream.<Optional<TestPerson>>of()
             .flatMap(getFilterEmptyOptionals())
             .collect(toList());
         assertThat(result.isEmpty()).isTrue();

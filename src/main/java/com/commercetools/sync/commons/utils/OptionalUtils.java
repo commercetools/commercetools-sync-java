@@ -29,7 +29,7 @@ public final class OptionalUtils {
      * otherwise - an empty stream.
      */
     @Nonnull
-    public static <T> Function<Optional<? extends T>, Stream<? extends T>> getFilterEmptyOptionals() {
+    public static <T> Function<Optional<T>, Stream<T>> getFilterEmptyOptionals() {
         return optional -> optional.map(Stream::of).orElseGet(Stream::empty);
     }
 
