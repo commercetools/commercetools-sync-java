@@ -225,7 +225,7 @@ public final class AssetsUpdateActionUtils {
                     .filter(assetDraft -> !oldAssetsKeyMap.containsKey(assetDraft.getKey()))
                     .map(assetDraft -> assetActionFactory.buildAddAssetAction(assetDraft, assetDraftIndex))
             )
-            .flatMap(StreamUtils::filterEmptyOptionals)
+            .flatMap(OptionalUtils::filterEmptyOptionals)
             .collect(toList());
 
     }

@@ -1,6 +1,6 @@
 package com.commercetools.sync.products.utils;
 
-import com.commercetools.sync.commons.utils.StreamUtils;
+import com.commercetools.sync.commons.utils.OptionalUtils;
 import com.commercetools.sync.products.ActionGroup;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -139,7 +139,7 @@ public final class ProductSyncUtils {
     private static List<UpdateAction<Product>> buildUpdateActionsFromOptionals(
         @Nonnull final List<Optional<? extends UpdateAction<Product>>> optionalUpdateActions) {
         return optionalUpdateActions.stream()
-            .flatMap(StreamUtils::filterEmptyOptionals)
+            .flatMap(OptionalUtils::filterEmptyOptionals)
             .collect(toList());
     }
 

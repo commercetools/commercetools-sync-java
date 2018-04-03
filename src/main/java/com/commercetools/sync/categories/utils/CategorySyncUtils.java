@@ -3,7 +3,7 @@ package com.commercetools.sync.categories.utils;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.commons.utils.StreamUtils;
+import com.commercetools.sync.commons.utils.OptionalUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -90,7 +90,7 @@ public final class CategorySyncUtils {
     private static List<UpdateAction<Category>> buildUpdateActionsFromOptionals(
         @Nonnull final List<Optional<UpdateAction<Category>>> optionalUpdateActions) {
         return optionalUpdateActions.stream()
-            .flatMap(StreamUtils::filterEmptyOptionals)
+            .flatMap(OptionalUtils::filterEmptyOptionals)
             .collect(toList());
     }
 
