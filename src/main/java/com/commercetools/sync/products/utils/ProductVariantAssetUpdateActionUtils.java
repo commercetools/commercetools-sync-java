@@ -68,8 +68,8 @@ public final class ProductVariantAssetUpdateActionUtils {
     private static List<UpdateAction<Product>> buildUpdateActionsFromOptionals(
         @Nonnull final List<Optional<UpdateAction<Product>>> optionalUpdateActions) {
         return optionalUpdateActions.stream()
-            .flatMap(OptionalUtils::filterEmptyOptionals)
-            .collect(toList());
+                                    .flatMap(OptionalUtils::filterEmptyOptionals)
+                                    .collect(toList());
 
     }
 

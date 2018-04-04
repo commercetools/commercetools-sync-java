@@ -139,8 +139,8 @@ public final class ProductSyncUtils {
     private static List<UpdateAction<Product>> buildUpdateActionsFromOptionals(
         @Nonnull final List<Optional<? extends UpdateAction<Product>>> optionalUpdateActions) {
         return optionalUpdateActions.stream()
-            .flatMap(OptionalUtils::filterEmptyOptionals)
-            .collect(toList());
+                                    .flatMap(OptionalUtils::filterEmptyOptionals)
+                                    .collect(toList());
     }
 
     private ProductSyncUtils() {

@@ -42,11 +42,11 @@ final class SyncSingleLocale {
         @Nonnull final ProductDraft newProductDraft,
         @Nonnull final Product oldProduct,
         @Nonnull final ProductType productType) {
-        return updateActions.stream()
-                .map(action ->
-                        filterSingleLocalization(action, newProductDraft, oldProduct, productType, Locale.FRENCH))
-                .flatMap(OptionalUtils::filterEmptyOptionals)
-                .collect(toList());
+        return updateActions
+            .stream()
+            .map(action -> filterSingleLocalization(action, newProductDraft, oldProduct, productType, Locale.FRENCH))
+            .flatMap(OptionalUtils::filterEmptyOptionals)
+            .collect(toList());
     }
 
     /**

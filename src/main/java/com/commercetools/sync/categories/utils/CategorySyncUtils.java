@@ -24,7 +24,6 @@ import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
-
 import static java.util.stream.Collectors.toList;
 
 public final class CategorySyncUtils {
@@ -90,8 +89,8 @@ public final class CategorySyncUtils {
     private static List<UpdateAction<Category>> buildUpdateActionsFromOptionals(
         @Nonnull final List<Optional<UpdateAction<Category>>> optionalUpdateActions) {
         return optionalUpdateActions.stream()
-            .flatMap(OptionalUtils::filterEmptyOptionals)
-            .collect(toList());
+                                    .flatMap(OptionalUtils::filterEmptyOptionals)
+                                    .collect(toList());
     }
 
     private CategorySyncUtils() {

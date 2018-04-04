@@ -151,8 +151,8 @@ public class BatchProcessor {
         return StreamSupport.stream(referenceSet.spliterator(), false)
                             .filter(Objects::nonNull)
                             .map(BatchProcessor::getProductKeyFromReference)
-            .flatMap(OptionalUtils::filterEmptyOptionals)
-            .collect(toSet());
+                            .flatMap(OptionalUtils::filterEmptyOptionals)
+                            .collect(toSet());
 
     }
 

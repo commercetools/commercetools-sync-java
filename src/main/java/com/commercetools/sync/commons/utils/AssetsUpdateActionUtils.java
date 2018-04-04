@@ -220,13 +220,13 @@ public final class AssetsUpdateActionUtils {
         @Nonnull final AssetActionFactory<T> assetActionFactory) {
 
         return IntStream.range(0, newAssetDrafts.size())
-            .mapToObj(assetDraftIndex ->
-                ofNullable(newAssetDrafts.get(assetDraftIndex))
-                    .filter(assetDraft -> !oldAssetsKeyMap.containsKey(assetDraft.getKey()))
-                    .map(assetDraft -> assetActionFactory.buildAddAssetAction(assetDraft, assetDraftIndex))
-            )
-            .flatMap(OptionalUtils::filterEmptyOptionals)
-            .collect(toList());
+                        .mapToObj(assetDraftIndex ->
+                            ofNullable(newAssetDrafts.get(assetDraftIndex))
+                                .filter(assetDraft -> !oldAssetsKeyMap.containsKey(assetDraft.getKey()))
+                                .map(assetDraft -> assetActionFactory.buildAddAssetAction(assetDraft, assetDraftIndex))
+                        )
+                        .flatMap(OptionalUtils::filterEmptyOptionals)
+                        .collect(toList());
 
     }
 

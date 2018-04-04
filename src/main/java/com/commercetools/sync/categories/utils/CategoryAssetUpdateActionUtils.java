@@ -66,8 +66,8 @@ public final class CategoryAssetUpdateActionUtils {
     private static List<UpdateAction<Category>> buildUpdateActionsFromOptionals(
         @Nonnull final List<Optional<UpdateAction<Category>>> optionalUpdateActions) {
         return optionalUpdateActions.stream()
-            .flatMap(OptionalUtils::filterEmptyOptionals)
-            .collect(toList());
+                                    .flatMap(OptionalUtils::filterEmptyOptionals)
+                                    .collect(toList());
     }
 
     /**
