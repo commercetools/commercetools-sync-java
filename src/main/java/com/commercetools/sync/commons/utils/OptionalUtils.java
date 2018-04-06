@@ -2,7 +2,6 @@ package com.commercetools.sync.commons.utils;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 public final class OptionalUtils {
@@ -21,17 +20,6 @@ public final class OptionalUtils {
         return optional.map(Stream::of).orElseGet(Stream::empty);
     }
 
-    /**
-     * Similar to {@link OptionalUtils#filterEmptyOptionals(Optional)}, but returns a lambda with the same behavior.
-     *
-     * @param <T> type of optional value
-     * @return function which returns a stream of one element from the supplied {@code optional} if not empty,
-     * otherwise - an empty stream.
-     */
-    @Nonnull
-    public static <T> Function<Optional<T>, Stream<T>> getFilterEmptyOptionals() {
-        return optional -> optional.map(Stream::of).orElseGet(Stream::empty);
-    }
 
     private OptionalUtils() {
     }

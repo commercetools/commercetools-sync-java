@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
-import static com.commercetools.sync.commons.utils.OptionalUtils.getFilterEmptyOptionals;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,19 +28,6 @@ public class OptionalUtilsTest {
         assertThat(filterEmptyOptionals(Optional.empty())).isEmpty();
         TestPerson testPerson = null;
         assertThat(filterEmptyOptionals(Optional.ofNullable(testPerson))).isEmpty();
-    }
-
-    @Test
-    public void getToStream_withPresent_returnsStreamOfOneElement() {
-        TestPerson testPerson = new TestPerson();
-        assertThat(getFilterEmptyOptionals().apply(Optional.of(testPerson))).containsExactly(testPerson);
-    }
-
-    @Test
-    public void getToStream_withEmpty_returnsEmptyStream() {
-        assertThat(getFilterEmptyOptionals().apply(Optional.empty())).isEmpty();
-        TestPerson testPerson = null;
-        assertThat(getFilterEmptyOptionals().apply(Optional.ofNullable(testPerson))).isEmpty();
     }
 
     @Test
@@ -68,23 +54,6 @@ public class OptionalUtilsTest {
             .flatMap(OptionalUtils::filterEmptyOptionals)
             .collect(toList());
         assertThat(result.isEmpty()).isTrue();
-    }
-
-    @Test
-    public void getFilterEmptyOptionals_withEmptyStream_whenCollectedToList_ShouldReturnEmptyList() {
-        final List<TestPerson> result = Stream.<Optional<TestPerson>>of()
-            .flatMap(getFilterEmptyOptionals())
-            .collect(toList());
-        assertThat(result.isEmpty()).isTrue();
-    }
-
-    @Test
-    public void getFilterEmptyOptionals_withPresentElements_whenCollectedToSet_ShouldReturnSetContainingThoseElements() {
-        final Set<String> result = Stream.of(Optional.of(element1), Optional.of(element2))
-            .flatMap(getFilterEmptyOptionals())
-            .collect(toSet());
-        assertThat(result.size()).isEqualTo(2);
-        assertThat(result).containsExactlyInAnyOrder(element1, element2);
     }
 
     @Test
