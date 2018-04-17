@@ -1,0 +1,33 @@
+sourceSets {
+    benchmark {
+        java {
+            compileClasspath += main.output + test.output + integrationTest.output
+            runtimeClasspath += main.output + test.output + integrationTest.output
+            srcDir 'src/benchmark/java'
+        }
+        resources.srcDir 'src/benchmark/resources'
+    }
+}
+
+configurations {
+    benchmarkImplementation.extendsFrom implementation, testImplementation
+}
+
+task benchmark(type: Test) {
+    doFirst{
+        grgit.clone(dir: 'tmp_git_dir/', uri: scmProjectUrl, checkout: true, refToCheckout: 'gh-pages')
+    }
+    testClassesDirs = sourceSets.benchmark.output.classesDirs
+    classpath = sourceSets.benchmark.runtimeClasspath
+    outputs.upToDateWhen { false }
+}
+
+task benchmarkCommit() {
+    doLast{
+        def git = grgit.open(dir: System.getenv('CI_BUILD_DIR') + '/tmp_git_dir')
+        git.add(patterns: ['benchmarks/benchmarks.json'])
+        git.commit(message: '#155: Add new benchmark result.')
+        git.push()
+        git.close()
+    }
+}

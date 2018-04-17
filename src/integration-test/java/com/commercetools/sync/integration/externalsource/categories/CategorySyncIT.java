@@ -31,18 +31,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsJsons;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
@@ -114,14 +116,13 @@ public class CategorySyncIT {
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture"))
             .key("newCategoryKey")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
                                                         .toCompletableFuture().join();
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 1, 1, 0, 0, 0));
+
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
     }
 
     @Test
@@ -130,14 +131,13 @@ public class CategorySyncIT {
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture"))
             .key("newCategoryKey")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
                                                         .toCompletableFuture().join();
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 1, 0, 0, 1, 0));
+
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
@@ -147,14 +147,13 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"),
                 LocalizedString.of(Locale.ENGLISH, "furniture"))
             .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
                                                         .toCompletableFuture().join();
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 1, 0, 0, 0, 0));
+        
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0, 0);
     }
 
     @Test
@@ -164,14 +163,13 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
                                                                   .toCompletableFuture().join();
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
+
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
     }
 
     @Test
@@ -181,7 +179,7 @@ public class CategorySyncIT {
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(newCategoryName, LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategorySyncOptions categorySyncOptions =
@@ -230,7 +228,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final List<String> errorMessages = new ArrayList<>();
@@ -299,15 +297,14 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key("newCategory")
-            .parent(Category.referenceOfId(oldCategoryKey))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .parent(Category.referenceOfId(oldCategoryKey).toResourceIdentifier())
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
                                                                   .toCompletableFuture().join();
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 1, 1, 0, 0, 0));
+
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
     }
 
     @Test
@@ -320,9 +317,8 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
                                                                   .toCompletableFuture().join();
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
+
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
     }
 
     @Test
@@ -362,8 +358,8 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "oldCategoryKey"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .parent(Category.referenceOfId("cat7"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .parent(Category.referenceOfId("cat7").toResourceIdentifier())
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final List<CategoryDraft> batch1 = new ArrayList<>();
@@ -373,7 +369,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat7"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture1"))
             .key("cat7")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final List<CategoryDraft> batch2 = new ArrayList<>();
@@ -383,8 +379,8 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat6"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
             .key("cat6")
-            .parent(Category.referenceOfId("cat5"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .parent(Category.referenceOfId("cat5").toResourceIdentifier())
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final List<CategoryDraft> batch3 = new ArrayList<>();
@@ -394,7 +390,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat5"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
             .key("cat5")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final List<CategoryDraft> batch4 = new ArrayList<>();
@@ -407,9 +403,7 @@ public class CategorySyncIT {
                                                         .toCompletableFuture()
                                                         .join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 4, 3, 1, 0, 0));
+        assertThat(syncStatistics).hasValues(4, 3, 1, 0, 0);
     }
 
     @Test
@@ -419,7 +413,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "new name"),
                 LocalizedString.of(Locale.ENGLISH, "new-slug"))
             .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final List<CategoryDraft> batch1 = new ArrayList<>();
@@ -439,9 +433,7 @@ public class CategorySyncIT {
                                                                   .toCompletableFuture()
                                                                   .join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
 
         final Optional<Category> optionalResult = CTP_TARGET_CLIENT.execute(CategoryQuery.of().bySlug(Locale.ENGLISH,
             categoryDraft1.getSlug().get(Locale.ENGLISH))).toCompletableFuture().join().head();
@@ -458,7 +450,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
 
@@ -466,38 +458,38 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat1"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture1"))
             .key("cat1")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategoryDraft categoryDraft3 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat2"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
             .key("cat2")
-            .parent(Category.referenceOfId("cat1"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .parent(Category.referenceOfId("cat1").toResourceIdentifier())
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategoryDraft categoryDraft4 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat3"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
             .key("cat3")
-            .parent(Category.referenceOfId("cat1"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .parent(Category.referenceOfId("cat1").toResourceIdentifier())
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategoryDraft categoryDraft5 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat4"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture4"))
             .key("cat4")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategoryDraft categoryDraft6 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat5"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture5"))
             .key("cat5")
-            .parent(Category.referenceOfId("cat4"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .parent(Category.referenceOfId("cat4").toResourceIdentifier())
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         newCategoryDrafts.add(categoryDraft1);
@@ -509,9 +501,7 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 6, 5, 1, 0, 0));
+        assertThat(syncStatistics).hasValues(6, 5, 1, 0, 0);
     }
 
     @Test
@@ -523,7 +513,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         // Same slug draft
@@ -531,38 +521,38 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat1"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key("cat1")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategoryDraft categoryDraft3 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat2"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
             .key("cat2")
-            .parent(Category.referenceOfId("cat1"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .parent(Category.referenceOfId("cat1").toResourceIdentifier())
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategoryDraft categoryDraft4 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat3"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
             .key("cat3")
-            .parent(Category.referenceOfId("cat1"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .parent(Category.referenceOfId("cat1").toResourceIdentifier())
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategoryDraft categoryDraft5 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat4"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture4"))
             .key("cat4")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategoryDraft categoryDraft6 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat5"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture5"))
             .key("cat5")
-            .parent(Category.referenceOfId("cat4"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .parent(Category.referenceOfId("cat4").toResourceIdentifier())
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         newCategoryDrafts.add(categoryDraft1);
@@ -574,9 +564,7 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 6, 5, 0, 1, 0));
+        assertThat(syncStatistics).hasValues(6, 5, 0, 1, 0);
     }
 
     @Test
@@ -588,14 +576,14 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategoryDraft categoryDraft2 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat1"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture1"))
             .key("cat1")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         // With invalid parent key
@@ -603,31 +591,31 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat2"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
             .key("cat2")
-            .parent(Category.referenceOfId(UUID.randomUUID().toString()))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .parent(Category.referenceOfId(UUID.randomUUID().toString()).toResourceIdentifier())
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategoryDraft categoryDraft4 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat3"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
             .key("cat3")
-            .parent(Category.referenceOfId("cat1"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .parent(Category.referenceOfId("cat1").toResourceIdentifier())
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategoryDraft categoryDraft5 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat4"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture4"))
             .key("cat4")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final CategoryDraft categoryDraft6 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat5"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture5"))
             .key("cat5")
-            .parent(Category.referenceOfId("cat4"))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .parent(Category.referenceOfId("cat4").toResourceIdentifier())
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         newCategoryDrafts.add(categoryDraft1);
@@ -639,9 +627,7 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 6, 4, 1, 1, 0));
+        assertThat(syncStatistics).hasValues(6, 4, 1, 1, 0);
     }
 
     @Test
@@ -654,14 +640,14 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson("nonExistingKey", getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson("nonExistingKey", createCustomFieldsJsonMap()))
             .build();
 
         final CategoryDraft categoryDraft2 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture-2"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture-2"))
             .key("newCategoryKey")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(newCustomTypeKey, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(newCustomTypeKey, createCustomFieldsJsonMap()))
             .build();
 
         newCategoryDrafts.add(categoryDraft1);
@@ -669,9 +655,7 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 2, 1, 0, 1, 0));
+        assertThat(syncStatistics).hasValues(2, 1, 0, 1, 0);
     }
 
     @Test
@@ -697,9 +681,7 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
 
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 1, 0, 1, 0, 0));
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
     }
 
     @Test
@@ -708,15 +690,15 @@ public class CategorySyncIT {
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture"))
             .key("newCategoryKey")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final String nonExistingParentKey = "nonExistingParent";
         final CategoryDraft categoryDraftWithMissingParent = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture1"))
             .key("cat1")
-            .parent(Category.referenceOfId(nonExistingParentKey))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .parent(Category.referenceOfId(nonExistingParentKey).toResourceIdentifier())
+            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
         final List<CategoryDraft> categoryDrafts = new ArrayList<>();
@@ -726,17 +708,17 @@ public class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts)
                                                                   .toCompletableFuture().join();
-        assertThat(syncStatistics.getReportMessage())
-            .isEqualTo(format("Summary: %d categories were processed in total (%d created, %d updated, %d failed to"
-                + " sync and %d categories with a missing parent).", 2, 2, 0, 0, 1));
 
-        assertThat(syncStatistics.getCategoryKeysWithMissingParents()).hasSize(1);
-        final ArrayList<String> missingParentsChildren = syncStatistics.getCategoryKeysWithMissingParents()
-                                                                       .get(nonExistingParentKey);
+        assertThat(syncStatistics).hasValues(2, 2, 0, 0);
+
+        final Map<String, Set<String>> categoryKeysWithMissingParents = syncStatistics
+            .getCategoryKeysWithMissingParents();
+        assertThat(categoryKeysWithMissingParents).hasSize(1);
+
+        final Set<String> missingParentsChildren = categoryKeysWithMissingParents.get(nonExistingParentKey);
         assertThat(missingParentsChildren).hasSize(1);
-        final String childrenKeys = missingParentsChildren.get(0);
-        assertThat(childrenKeys).isEqualTo(categoryDraftWithMissingParent.getKey());
 
-
+        final String childKey = missingParentsChildren.iterator().next();
+        assertThat(childKey).isEqualTo(categoryDraftWithMissingParent.getKey());
     }
 }

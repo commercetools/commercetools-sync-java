@@ -36,4 +36,7 @@ public final class InventoryReferenceReplacementUtils {
             })
             .collect(Collectors.toList());
     }
+
+    private InventoryReferenceReplacementUtils() {
+    }
 }

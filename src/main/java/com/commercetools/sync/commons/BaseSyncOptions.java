@@ -12,7 +12,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static java.util.Collections.emptyList;
+import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
+import static java.util.Optional.ofNullable;
 
 public class BaseSyncOptions<U, V> {
     private final SphereClient ctpClient;
@@ -186,13 +187,9 @@ public class BaseSyncOptions<U, V> {
     public List<UpdateAction<U>> applyBeforeUpdateCallBack(@Nonnull final List<UpdateAction<U>> updateActions,
                                                            @Nonnull final V newResourceDraft,
                                                            @Nonnull final U oldResource) {
-        if (beforeUpdateCallback == null) {
-            return updateActions;
-        } else {
-            final List<UpdateAction<U>> callbackResult =
-                    beforeUpdateCallback.apply(updateActions, newResourceDraft, oldResource);
-            return callbackResult != null ? callbackResult : emptyList();
-        }
+        return ofNullable(beforeUpdateCallback)
+            .map(callBack -> emptyIfNull(callBack.apply(updateActions, newResourceDraft, oldResource)))
+            .orElse(updateActions);
     }
 
     /**
@@ -212,7 +209,7 @@ public class BaseSyncOptions<U, V> {
      */
     @Nonnull
     public Optional<V> applyBeforeCreateCallBack(@Nonnull final V newResourceDraft) {
-        return Optional.ofNullable(
+        return ofNullable(
                 beforeCreateCallback != null ? beforeCreateCallback.apply(newResourceDraft) : newResourceDraft);
     }
 }

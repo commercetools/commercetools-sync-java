@@ -28,6 +28,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductUpdateActionUtilsIT {
@@ -87,10 +88,7 @@ public class ProductUpdateActionUtilsIT {
         assertThat(errors).isEmpty();
         assertThat(warnings).isEmpty();
 
-        assertThat(sync.getCreated()).isEqualTo(0);
-        assertThat(sync.getUpdated()).isEqualTo(1);
-        assertThat(sync.getProcessed()).isEqualTo(1);
-        assertThat(sync.getFailed()).isEqualTo(0);
+        assertThat(sync).hasValues(1, 0, 1, 0);
 
         final Product synced = executeBlocking(CTP_TARGET_CLIENT.execute(ProductByKeyGet.of("productToSyncKey")));
         final ProductVariant syncedMasterVariant = synced.getMasterData().getStaged().getMasterVariant();

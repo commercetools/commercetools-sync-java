@@ -4,24 +4,29 @@ import com.commercetools.sync.commons.helpers.CategoryReferencePair;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.expansion.ExpansionPath;
+import io.sphere.sdk.models.Asset;
+import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Price;
+import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductCatalogData;
 import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariant;
+import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
+import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.Type;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,12 +34,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFields;
+import static com.commercetools.sync.commons.MockUtils.getTypeMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithChannelReference;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMockWithPrices;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMock;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -63,52 +73,69 @@ public class ProductReferenceReplacementUtilsTest {
         final Reference<Channel> channelReference = Reference
             .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
         final Price price = getPriceMockWithChannelReference(channelReference);
-        final ProductVariant productVariant = getProductVariantMockWithPrices(Collections.singletonList(price));
 
-        final Product productWithNonExpandedProductType = getProductMock(Collections.singletonList(productVariant));
+        final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
+        final Asset asset1 =
+            getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType));
+        final Asset asset2 =
+            getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndId(Type.referenceTypeId(),
+                UUID.randomUUID().toString()));
+
+        final ProductVariant productVariant = getProductVariantMock(singletonList(price), asList(asset1, asset2));
+
+        final Product productWithNonExpandedProductType = getProductMock(singletonList(productVariant));
 
         when(productWithNonExpandedProductType.getProductType())
             .thenReturn(nonExpandedProductTypeReference);
         when(productWithNonExpandedProductType.getTaxCategory()).thenReturn(taxCategoryReference);
         when(productWithNonExpandedProductType.getState()).thenReturn(stateReference);
 
-        final Product productWithNonExpandedTaxCategory =
-            getProductMock(Collections.singletonList(productVariant));
+        final Product productWithNonExpandedTaxCategory = getProductMock(singletonList(productVariant));
 
         when(productWithNonExpandedTaxCategory.getProductType()).thenReturn(productTypeReference);
         when(productWithNonExpandedTaxCategory.getTaxCategory())
             .thenReturn(nonExpandedTaxCategoryReference);
         when(productWithNonExpandedTaxCategory.getState()).thenReturn(stateReference);
 
-        final Product productWithNonExpandedSate =
-            getProductMock(Collections.singletonList(productVariant));
+        final Product productWithNonExpandedSate = getProductMock(singletonList(productVariant));
 
         when(productWithNonExpandedSate.getProductType()).thenReturn(productTypeReference);
         when(productWithNonExpandedSate.getTaxCategory()).thenReturn(taxCategoryReference);
         when(productWithNonExpandedSate.getState()).thenReturn(nonExpandedStateReference);
 
 
-        final List<Product> products = Arrays
-            .asList(productWithNonExpandedProductType, productWithNonExpandedTaxCategory, productWithNonExpandedSate);
+        final List<Product> products =
+            asList(productWithNonExpandedProductType, productWithNonExpandedTaxCategory, productWithNonExpandedSate);
 
 
         final List<ProductDraft> productDraftsWithKeysOnReferences = ProductReferenceReplacementUtils
             .replaceProductsReferenceIdsWithKeys(products);
 
-        assertThat(productDraftsWithKeysOnReferences).hasSize(3);
+        assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getProductType)
+                                                     .extracting(ResourceIdentifier::getId)
+                                                     .containsExactly(productType.getId(), productType.getKey(),
+                                                         productType.getKey());
 
-        assertThat(productDraftsWithKeysOnReferences.get(0).getProductType().getId()).isEqualTo(productType.getId());
-        assertThat(productDraftsWithKeysOnReferences.get(0).getTaxCategory().getId()).isEqualTo(taxCategory.getKey());
-        assertThat(productDraftsWithKeysOnReferences.get(0).getState().getId()).isEqualTo(state.getKey());
+        assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getTaxCategory)
+                                                     .extracting(ResourceIdentifier::getId)
+                                                     .containsExactly(taxCategory.getKey(), taxCategory.getId(),
+                                                         taxCategory.getKey());
 
-        assertThat(productDraftsWithKeysOnReferences.get(1).getProductType().getId()).isEqualTo(productType.getKey());
-        assertThat(productDraftsWithKeysOnReferences.get(1).getTaxCategory().getId()).isEqualTo(taxCategory.getId());
-        assertThat(productDraftsWithKeysOnReferences.get(1).getState().getId()).isEqualTo(state.getKey());
+        assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getState)
+                                                     .extracting(ResourceIdentifier::getId)
+                                                     .containsExactly(state.getKey(), state.getKey(), state.getId());
 
-        assertThat(productDraftsWithKeysOnReferences.get(2).getProductType().getId()).isEqualTo(productType.getKey());
-        assertThat(productDraftsWithKeysOnReferences.get(2).getTaxCategory().getId()).isEqualTo(taxCategory.getKey());
-        assertThat(productDraftsWithKeysOnReferences.get(2).getState().getId()).isEqualTo(state.getId());
+        final String asset2CustomTypeId = asset2.getCustom().getType().getId();
+        final String assetCustomTypeKey = customType.getKey();
 
+        assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getMasterVariant)
+                                                     .flatExtracting(ProductVariantDraft::getAssets)
+                                                     .extracting(AssetDraft::getCustom)
+                                                     .extracting(CustomFieldsDraft::getType)
+                                                     .extracting(ResourceIdentifier::getId)
+                                                     .containsExactly(assetCustomTypeKey, asset2CustomTypeId,
+                                                         assetCustomTypeKey, asset2CustomTypeId, assetCustomTypeKey,
+                                                         asset2CustomTypeId);
     }
 
     @Test
@@ -133,55 +160,55 @@ public class ProductReferenceReplacementUtilsTest {
         final Reference<Channel> channelReference = Reference
             .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
         final Price price = getPriceMockWithChannelReference(channelReference);
-        final ProductVariant productVariant = getProductVariantMockWithPrices(Collections.singletonList(price));
+        final ProductVariant productVariant = getProductVariantMock(singletonList(price));
 
         final Category category = getCategoryMock(resourceKey);
         final Reference<Category> categoryReference =
             Reference.ofResourceTypeIdAndIdAndObj(Category.referenceTypeId(), category.getId(), category);
 
         final Product productWithNonExpandedProductType =
-            getProductMock(Collections.singleton(categoryReference), null,
-                Collections.singletonList(productVariant));
+            getProductMock(singleton(categoryReference), null, singletonList(productVariant));
 
         when(productWithNonExpandedProductType.getProductType())
             .thenReturn(nonExpandedProductTypeReference);
         when(productWithNonExpandedProductType.getTaxCategory()).thenReturn(taxCategoryReference);
         when(productWithNonExpandedProductType.getState()).thenReturn(stateReference);
 
-        final Product productWithNonExpandedTaxCategory =
-            getProductMock(Collections.singletonList(productVariant));
+        final Product productWithNonExpandedTaxCategory = getProductMock(singletonList(productVariant));
 
         when(productWithNonExpandedTaxCategory.getProductType()).thenReturn(productTypeReference);
         when(productWithNonExpandedTaxCategory.getTaxCategory())
             .thenReturn(nonExpandedTaxCategoryReference);
         when(productWithNonExpandedTaxCategory.getState()).thenReturn(stateReference);
 
-        final List<Product> products = Arrays
-            .asList(productWithNonExpandedProductType, productWithNonExpandedTaxCategory, null);
+        final List<Product> products =
+            asList(productWithNonExpandedProductType, productWithNonExpandedTaxCategory, null);
 
 
         final List<ProductDraft> productDraftsWithKeysOnReferences = ProductReferenceReplacementUtils
             .replaceProductsReferenceIdsWithKeys(products);
 
-        assertThat(productDraftsWithKeysOnReferences).hasSize(2);
+        assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getProductType)
+                                                     .extracting(ResourceIdentifier::getId)
+                                                     .containsExactly(productType.getId(), productType.getKey());
 
-        assertThat(productDraftsWithKeysOnReferences.get(0).getProductType().getId()).isEqualTo(productType.getId());
-        assertThat(productDraftsWithKeysOnReferences.get(0).getTaxCategory().getId()).isEqualTo(taxCategory.getKey());
-        assertThat(productDraftsWithKeysOnReferences.get(0).getState().getId()).isEqualTo(state.getKey());
-        assertThat(productDraftsWithKeysOnReferences.get(0).getMasterVariant().getPrices().get(0).getChannel().getId())
-            .isEqualTo(channel.getKey());
+        assertThat(productDraftsWithKeysOnReferences).flatExtracting(ProductDraft::getCategories)
+                                                     .extracting(ResourceIdentifier::getId)
+                                                     .containsExactly(category.getKey());
 
-        final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
-            productDraftsWithKeysOnReferences.get(0).getCategories();
+        assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getTaxCategory)
+                                                     .extracting(ResourceIdentifier::getId)
+                                                     .containsExactly(taxCategory.getKey(), taxCategory.getId());
 
-        assertThat(categoryResourceIdentifiers).hasSize(1);
-        assertThat(categoryResourceIdentifiers).containsExactly(Category.referenceOfId(category.getKey()));
+        assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getState)
+                                                     .extracting(ResourceIdentifier::getId)
+                                                     .containsExactly(state.getKey(), state.getKey());
 
-        assertThat(productDraftsWithKeysOnReferences.get(1).getProductType().getId()).isEqualTo(productType.getKey());
-        assertThat(productDraftsWithKeysOnReferences.get(1).getTaxCategory().getId()).isEqualTo(taxCategory.getId());
-        assertThat(productDraftsWithKeysOnReferences.get(1).getState().getId()).isEqualTo(state.getKey());
-        assertThat(productDraftsWithKeysOnReferences.get(1).getMasterVariant().getPrices().get(0).getChannel().getId())
-            .isEqualTo(channel.getKey());
+        assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getMasterVariant)
+                                                     .flatExtracting(ProductVariantDraft::getPrices)
+                                                     .extracting(PriceDraft::getChannel)
+                                                     .extracting(Reference::getId)
+                                                     .containsExactly(channel.getKey(), channel.getKey());
     }
 
     @Test
@@ -317,7 +344,6 @@ public class ProductReferenceReplacementUtilsTest {
     @Test
     public void buildProductQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final ProductQuery productQuery = ProductReferenceReplacementUtils.buildProductQuery();
-        assertThat(productQuery.expansionPaths()).hasSize(10);
         assertThat(productQuery.expansionPaths())
             .containsExactly(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
                 ExpansionPath.of("state"), ExpansionPath.of("masterData.staged.categories[*]"),
@@ -326,14 +352,16 @@ public class ProductReferenceReplacementUtilsTest {
                 ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value"),
                 ExpansionPath.of("masterData.staged.variants[*].attributes[*].value"),
                 ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value[*]"),
-                ExpansionPath.of("masterData.staged.variants[*].attributes[*].value[*]"));
+                ExpansionPath.of("masterData.staged.variants[*].attributes[*].value[*]"),
+                ExpansionPath.of("masterData.staged.masterVariant.assets[*].custom.type"),
+                ExpansionPath.of("masterData.staged.variants[*].assets[*].custom.type"));
     }
 
     @Test
     public void
         replaceCategoryReferencesIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
         final String categoryId = UUID.randomUUID().toString();
-        final Set<Reference<Category>> categoryReferences = Collections.singleton(Category.referenceOfId(categoryId));
+        final Set<Reference<Category>> categoryReferences = singleton(Category.referenceOfId(categoryId));
         final CategoryOrderHints categoryOrderHints = getCategoryOrderHintsMock(categoryReferences);
 
         final Product product = getProductMock(categoryReferences, categoryOrderHints);
@@ -343,10 +371,12 @@ public class ProductReferenceReplacementUtilsTest {
 
         assertThat(categoryReferencePair).isNotNull();
 
-        final List<Reference<Category>> categoryReferencesWithKeys = categoryReferencePair.getCategoryReferences();
+        final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+            categoryReferencePair.getCategoryResourceIdentifiers();
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
-        assertThat(categoryReferencesWithKeys).hasSize(1);
-        assertThat(categoryReferencesWithKeys.get(0).getId()).isEqualTo(categoryId);
+
+        assertThat(categoryReferencesWithKeys).extracting(ResourceIdentifier::getId)
+                                              .containsExactlyInAnyOrder(categoryId);
         assertThat(categoryOrderHintsWithKeys).isEqualTo(product.getMasterData().getStaged().getCategoryOrderHints());
     }
 
@@ -354,7 +384,7 @@ public class ProductReferenceReplacementUtilsTest {
     public void
         replaceCategoryReferencesIdsWithKeys_WithNonExpandedReferencesAndNoCategoryOrderHints_ShouldNotReplaceIds() {
         final String categoryId = UUID.randomUUID().toString();
-        final Set<Reference<Category>> categoryReferences = Collections.singleton(Category.referenceOfId(categoryId));
+        final Set<Reference<Category>> categoryReferences = singleton(Category.referenceOfId(categoryId));
         final Product product = getProductMock(categoryReferences, null);
 
         final CategoryReferencePair categoryReferencePair =
@@ -362,10 +392,12 @@ public class ProductReferenceReplacementUtilsTest {
 
         assertThat(categoryReferencePair).isNotNull();
 
-        final List<Reference<Category>> categoryReferencesWithKeys = categoryReferencePair.getCategoryReferences();
+        final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+            categoryReferencePair.getCategoryResourceIdentifiers();
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
-        assertThat(categoryReferencesWithKeys).hasSize(1);
-        assertThat(categoryReferencesWithKeys.get(0).getId()).isEqualTo(categoryId);
+
+        assertThat(categoryReferencesWithKeys).extracting(ResourceIdentifier::getId)
+                                              .containsExactlyInAnyOrder(categoryId);
         assertThat(categoryOrderHintsWithKeys).isEqualTo(product.getMasterData().getStaged().getCategoryOrderHints());
     }
 
@@ -376,7 +408,7 @@ public class ProductReferenceReplacementUtilsTest {
         final Reference<Category> categoryReference =
             Reference.ofResourceTypeIdAndIdAndObj(Category.referenceTypeId(), category.getId(), category);
 
-        final Set<Reference<Category>> categoryReferences = Collections.singleton(categoryReference);
+        final Set<Reference<Category>> categoryReferences = singleton(categoryReference);
         final CategoryOrderHints categoryOrderHints = getCategoryOrderHintsMock(categoryReferences);
 
         final Product product = getProductMock(categoryReferences, categoryOrderHints);
@@ -386,14 +418,16 @@ public class ProductReferenceReplacementUtilsTest {
 
         assertThat(categoryReferencePair).isNotNull();
 
-        final List<Reference<Category>> categoryReferencesWithKeys = categoryReferencePair.getCategoryReferences();
+        final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+            categoryReferencePair.getCategoryResourceIdentifiers();
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
-        assertThat(categoryReferencesWithKeys).hasSize(1);
-        assertThat(categoryReferencesWithKeys.get(0).getId()).isEqualTo(categoryKey);
+
+        assertThat(categoryReferencesWithKeys).containsExactlyInAnyOrderElementsOf(
+            singleton(Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), categoryKey)));
+
         assertThat(categoryOrderHintsWithKeys).isNotNull();
-        assertThat(categoryOrderHintsWithKeys.getAsMap()).hasSize(1);
-        assertThat(categoryOrderHintsWithKeys.get(categoryKey))
-            .isEqualTo(product.getMasterData().getStaged().getCategoryOrderHints().getAsMap().get(category.getId()));
+        assertThat(categoryOrderHintsWithKeys.getAsMap()).containsOnly(entry(categoryKey,
+            product.getMasterData().getStaged().getCategoryOrderHints().getAsMap().get(category.getId())));
     }
 
     @Test
@@ -402,17 +436,19 @@ public class ProductReferenceReplacementUtilsTest {
         final Category category = getCategoryMock(categoryKey);
         final Reference<Category> categoryReference =
             Reference.ofResourceTypeIdAndIdAndObj(Category.referenceTypeId(), category.getId(), category);
-        final Product product = getProductMock(Collections.singleton(categoryReference), null);
+        final Product product = getProductMock(singleton(categoryReference), null);
 
         final CategoryReferencePair categoryReferencePair =
             ProductReferenceReplacementUtils.replaceCategoryReferencesIdsWithKeys(product);
 
         assertThat(categoryReferencePair).isNotNull();
 
-        final List<Reference<Category>> categoryReferencesWithKeys = categoryReferencePair.getCategoryReferences();
+        final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+            categoryReferencePair.getCategoryResourceIdentifiers();
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
-        assertThat(categoryReferencesWithKeys).hasSize(1);
-        assertThat(categoryReferencesWithKeys.get(0).getId()).isEqualTo(categoryKey);
+
+        assertThat(categoryReferencesWithKeys).extracting(ResourceIdentifier::getId)
+                                              .containsExactlyInAnyOrder(categoryKey);
         assertThat(categoryOrderHintsWithKeys).isNull();
     }
 
@@ -434,8 +470,7 @@ public class ProductReferenceReplacementUtilsTest {
         categoryReferences.add(categoryReference1);
         categoryReferences.add(categoryReference2);
 
-        final CategoryOrderHints categoryOrderHints =
-            getCategoryOrderHintsMock(Collections.singleton(categoryReference1));
+        final CategoryOrderHints categoryOrderHints = getCategoryOrderHintsMock(singleton(categoryReference1));
 
         final Product product = getProductMock(categoryReferences, categoryOrderHints);
 
@@ -444,20 +479,17 @@ public class ProductReferenceReplacementUtilsTest {
 
         assertThat(categoryReferencePair).isNotNull();
 
-        final List<Reference<Category>> categoryReferencesWithKeys = categoryReferencePair.getCategoryReferences();
+        final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+            categoryReferencePair.getCategoryResourceIdentifiers();
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
-        assertThat(categoryReferencesWithKeys).hasSize(2);
 
-        final List<String> referenceIds = categoryReferencesWithKeys.stream().map(Reference::getId)
-                                                                    .collect(Collectors.toList());
 
-        assertThat(referenceIds).contains(categoryKey1);
-        assertThat(referenceIds).contains(categoryKey2);
+        assertThat(categoryReferencesWithKeys).extracting(ResourceIdentifier::getId)
+                                              .containsExactlyInAnyOrder(categoryKey1, categoryKey2);
 
         assertThat(categoryOrderHintsWithKeys).isNotNull();
-        assertThat(categoryOrderHintsWithKeys.getAsMap()).hasSize(1);
-        assertThat(categoryOrderHintsWithKeys.get(categoryKey1))
-            .isEqualTo(product.getMasterData().getStaged().getCategoryOrderHints().getAsMap().get(category1.getId()));
+        assertThat(categoryOrderHintsWithKeys.getAsMap()).containsOnly(entry(categoryKey1,
+            product.getMasterData().getStaged().getCategoryOrderHints().getAsMap().get(category1.getId())));
     }
 
     @Test
@@ -469,7 +501,8 @@ public class ProductReferenceReplacementUtilsTest {
 
         assertThat(categoryReferencePair).isNotNull();
 
-        final List<Reference<Category>> categoryReferencesWithKeys = categoryReferencePair.getCategoryReferences();
+        final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+            categoryReferencePair.getCategoryResourceIdentifiers();
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
         assertThat(categoryReferencesWithKeys).isEmpty();
         assertThat(categoryOrderHintsWithKeys).isNull();

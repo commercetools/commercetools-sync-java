@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.AssetDraft;
+import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.DefaultCurrencyUnits;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
@@ -40,6 +42,9 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProduc
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceSetAttributeDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithRandomId;
+import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -63,6 +68,67 @@ public class VariantReferenceResolverTest { ;
         productService = getMockProductService(PRODUCT_ID);
         ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
         referenceResolver = new VariantReferenceResolver(syncOptions, typeService, channelService, productService);
+    }
+
+    @Test
+    public void resolveAssetsReferences_WithEmptyAssets_ShouldNotResolveAssets() {
+        final ProductVariantDraftBuilder productVariantDraftBuilder = ProductVariantDraftBuilder.of()
+                                                                                                .assets(emptyList());
+
+        final ProductVariantDraftBuilder resolvedBuilder = referenceResolver
+            .resolveAssetsReferences(productVariantDraftBuilder)
+            .toCompletableFuture().join();
+
+        final List<AssetDraft> resolvedBuilderAssets = resolvedBuilder.getAssets();
+        assertThat(resolvedBuilderAssets).isEmpty();
+    }
+
+    @Test
+    public void resolveAssetsReferences_WithNullAssets_ShouldNotResolveAssets() {
+        final ProductVariantDraftBuilder productVariantDraftBuilder = ProductVariantDraftBuilder.of();
+
+        final ProductVariantDraftBuilder resolvedBuilder = referenceResolver
+            .resolveAssetsReferences(productVariantDraftBuilder)
+            .toCompletableFuture().join();
+
+        final List<AssetDraft> resolvedBuilderAssets = resolvedBuilder.getAssets();
+        assertThat(resolvedBuilderAssets).isNull();
+    }
+
+    @Test
+    public void resolveAssetsReferences_WithANullAsset_ShouldNotResolveAssets() {
+        final ProductVariantDraftBuilder productVariantDraftBuilder =
+            ProductVariantDraftBuilder.of().assets(singletonList(null));
+
+        final ProductVariantDraftBuilder resolvedBuilder = referenceResolver
+            .resolveAssetsReferences(productVariantDraftBuilder)
+            .toCompletableFuture().join();
+
+        final List<AssetDraft> resolvedBuilderAssets = resolvedBuilder.getAssets();
+        assertThat(resolvedBuilderAssets).isEmpty();
+    }
+
+    @Test
+    public void resolveAssetsReferences_WithAssetReferences_ShouldResolveAssets() {
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
+            .ofTypeIdAndJson("customTypeId", new HashMap<>());
+
+        final AssetDraft assetDraft = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
+                                                       .custom(customFieldsDraft)
+                                                       .build();
+
+        final ProductVariantDraftBuilder productVariantDraftBuilder =
+            ProductVariantDraftBuilder.of().assets(singletonList(assetDraft));
+
+        final ProductVariantDraftBuilder resolvedBuilder = referenceResolver
+            .resolveAssetsReferences(productVariantDraftBuilder).toCompletableFuture().join();
+
+        final List<AssetDraft> resolvedBuilderAssets = resolvedBuilder.getAssets();
+        assertThat(resolvedBuilderAssets).isNotEmpty();
+        final AssetDraft resolvedAssetDraft = resolvedBuilderAssets.get(0);
+        assertThat(resolvedAssetDraft).isNotNull();
+        assertThat(resolvedAssetDraft.getCustom()).isNotNull();
+        assertThat(resolvedAssetDraft.getCustom().getType().getId()).isEqualTo("typeId");
     }
 
     @Test
@@ -214,7 +280,7 @@ public class VariantReferenceResolverTest { ;
 
     @Test
     public void resolveAttributeReference_WithProductReferenceAttribute_ShouldResolveAttribute() {
-        when(productService.fetchCachedProductId(anyString()))
+        when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
@@ -341,7 +407,7 @@ public class VariantReferenceResolverTest { ;
 
     @Test
     public void resolveAttributeReference_WithNonExistingProductReferenceSetAttribute_ShouldNotResolveReferences() {
-        when(productService.fetchCachedProductId(anyString()))
+        when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final ObjectNode productReference = getProductReferenceWithRandomId();
@@ -364,9 +430,9 @@ public class VariantReferenceResolverTest { ;
     @Test
     public void
         resolveAttributeReference_WithSomeExistingProductReferenceSetAttribute_ShouldResolveExistingReferences() {
-        when(productService.fetchCachedProductId("existingKey"))
+        when(productService.getIdFromCacheOrFetch("existingKey"))
             .thenReturn(CompletableFuture.completedFuture(Optional.of("existingId")));
-        when(productService.fetchCachedProductId("randomKey"))
+        when(productService.getIdFromCacheOrFetch("randomKey"))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final ObjectNode productReference1 = getProductReferenceWithId("existingKey");
@@ -460,7 +526,7 @@ public class VariantReferenceResolverTest { ;
 
     @Test
     public void getResolvedIdFromKeyInReference_WithNonExistingProductReferenceAttribute_ShouldGetEmptyId() {
-        when(productService.fetchCachedProductId(anyString()))
+        when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final ObjectNode attributeValue = getProductReferenceWithRandomId();

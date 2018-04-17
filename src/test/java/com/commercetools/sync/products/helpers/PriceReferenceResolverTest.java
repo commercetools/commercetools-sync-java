@@ -27,8 +27,10 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -93,7 +95,7 @@ public class PriceReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve custom type reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10.00000'. Reason: Found a UUID"
+                + " with country:'DE' and value: 'EUR 10'. Reason: Found a UUID"
                 + " in the id field. Expecting a key without a UUID value. If you want to"
                 + " allow UUID values for reference keys, please use the "
                 + "allowUuidKeys(true) option in the sync options.");
@@ -140,9 +142,8 @@ public class PriceReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve custom type reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10.00000'. Reason: Reference 'id' field"
-                + " value is blank (null/empty).");
+            .hasMessage(format("Failed to resolve custom type reference on PriceDraft"
+                + " with country:'DE' and value: 'EUR 10'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
@@ -160,9 +161,8 @@ public class PriceReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve custom type reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10.00000'. Reason: Reference 'id' field"
-                + " value is blank (null/empty).");
+            .hasMessage(format("Failed to resolve custom type reference on PriceDraft"
+                + " with country:'DE' and value: 'EUR 10'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
@@ -222,7 +222,7 @@ public class PriceReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage("Failed to resolve the channel reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10.00000'. Reason: Found a UUID in the id field. Expecting a key"
+                + " with country:'DE' and value: 'EUR 10'. Reason: Found a UUID in the id field. Expecting a key"
                 + " without a UUID value. If you want to allow UUID values for reference keys, please"
                 + " use the allowUuidKeys(true) option in the sync options.");
     }

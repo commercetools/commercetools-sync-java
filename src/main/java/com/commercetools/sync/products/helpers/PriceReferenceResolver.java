@@ -9,7 +9,6 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
-import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
@@ -56,18 +55,14 @@ public final class PriceReferenceResolver
     }
 
     @Override
+    @Nonnull
     protected CompletionStage<PriceDraftBuilder> resolveCustomTypeReference(
-            @Nonnull final PriceDraftBuilder draftBuilder) {
-        final CustomFieldsDraft custom = draftBuilder.getCustom();
-        if (custom != null) {
-            return getCustomTypeId(custom,
-                    format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getCountry(), draftBuilder.getValue()))
-                .thenApply(resolvedTypeIdOptional -> resolvedTypeIdOptional
-                    .map(resolvedTypeId -> draftBuilder
-                        .custom(CustomFieldsDraft.ofTypeIdAndJson(resolvedTypeId, custom.getFields())))
-                    .orElse(draftBuilder));
-        }
-        return completedFuture(draftBuilder);
+        @Nonnull final PriceDraftBuilder draftBuilder) {
+
+        return resolveCustomTypeReference(draftBuilder,
+            PriceDraftBuilder::getCustom,
+            PriceDraftBuilder::custom,
+            format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getCountry(), draftBuilder.getValue()));
     }
 
     /**

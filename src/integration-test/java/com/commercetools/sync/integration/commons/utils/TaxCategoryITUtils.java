@@ -13,7 +13,7 @@ import io.sphere.sdk.taxcategories.queries.TaxCategoryQuery;
 
 import javax.annotation.Nonnull;
 
-import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndApply;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
@@ -41,7 +41,7 @@ public class TaxCategoryITUtils {
      * @param ctpClient defines the CTP project to delete the tax categories from.
      */
     public static void deleteTaxCategories(@Nonnull final SphereClient ctpClient) {
-        queryAndApply(ctpClient, TaxCategoryQuery::of, TaxCategoryDeleteCommand::of);
+        queryAndExecute(ctpClient, TaxCategoryQuery.of(), TaxCategoryDeleteCommand::of);
     }
 
     /**

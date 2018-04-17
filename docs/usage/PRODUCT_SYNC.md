@@ -24,6 +24,9 @@ Utility which provides API for building CTP product update actions and product s
 1. The sync expects a list of non-null `ProductDraft` objects that have their `key` fields set to match the
 products from the source to the target. Also the target project is expected to have the `key` fields set,
 otherwise they won't be matched.
+
+**NOTE: PLEASE MAKE SURE THE `SKU` FIELDS OF ALL PRODUCTS ARE SET AS THE SYNC LIBRARY WILL BE MIGRATED TO MATCH PRODUCTS BY `SKU` INSTEAD OF `KEY` IN THE FUTURE.**
+
 2. Every product may have several references including `product type`, `categories`, `taxCategory`, etc.. Variants
 of the product also have prices, where each prices also has some references including a reference to the `Type` of its 
 custom fields and a reference to a `channel`. All these referenced resources are matched by their `key` Therefore, in 
@@ -97,8 +100,8 @@ streams, would look as follows:
  ```java
  final Logger logger = LoggerFactory.getLogger(MySync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder.of(sphereClient)
-                                                                        .setErrorCallBack(logger::error)
-                                                                        .setWarningCallBack(logger::warn)
+                                                                        .errorCallBack(logger::error)
+                                                                        .warningCallBack(logger::warn)
                                                                         .build();
  ```
 
@@ -118,7 +121,7 @@ human readable format.
 ````java
 final ProductSyncStatistics stats = syncStatisticsStage.toCompletebleFuture().join();
 stats.getReportMessage(); 
-/*"Summary: 2000 products were processed in total (1000 created, 995 updated and 5 products failed to sync)."*/
+/*"Summary: 2000 products were processed in total (1000 created, 995 updated and 5 failed to sync)."*/
 ````
 
 __Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
@@ -156,7 +159,6 @@ More examples of those utils for different fields can be found [here](/src/integ
 
 ## Caveats
 1. Products are either created or updated. Currently the tool does not support product deletion.
-2. The library doesn't sync product variant assets yet [#3](https://github.com/commercetools/commercetools-sync-java/issues/3), but it will not delete them.
-3. The library will not sync attribute field types with `ReferenceType` and `SetType` field definitions, except 
+2. The library will not sync attribute field types with `ReferenceType` and `SetType` field definitions, except 
 for Product references. (See more: [#87](https://github.com/commercetools/commercetools-sync-java/issues/87) [#160](https://github.com/commercetools/commercetools-sync-java/issues/87))
 

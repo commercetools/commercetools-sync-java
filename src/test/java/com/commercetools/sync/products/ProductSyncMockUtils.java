@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.models.Asset;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Price;
@@ -236,14 +238,14 @@ public class ProductSyncMockUtils {
      * Creates a mock {@link ProductService} that returns a completed {@link CompletableFuture} containing an
      * {@link Optional} containing the id of the supplied value whenever the following method is called on the service:
      * <ul>
-     * <li>{@link ProductService#fetchCachedProductId(String)}</li>
+     * <li>{@link ProductService#getIdFromCacheOrFetch(String)}</li>
      * </ul>
      *
      * @return the created mock of the {@link ProductService}.
      */
     public static ProductService getMockProductService(@Nonnull final String id) {
         final ProductService productService = mock(ProductService.class);
-        when(productService.fetchCachedProductId(anyString()))
+        when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
         return productService;
     }
@@ -266,9 +268,24 @@ public class ProductSyncMockUtils {
      * @return a mock product variant with the supplied prices.
      */
     @Nonnull
-    public static ProductVariant getProductVariantMockWithPrices(@Nonnull final List<Price> prices) {
+    public static ProductVariant getProductVariantMock(@Nonnull final List<Price> prices) {
         final ProductVariant productVariant = mock(ProductVariant.class);
         when(productVariant.getPrices()).thenReturn(prices);
+        return productVariant;
+    }
+
+    /**
+     * Creates a mock {@link ProductVariant} with the supplied {@link Price} and {@link Asset} {@link List}.
+     * @param prices the prices to attach on the mock {@link ProductVariant}.
+     * @param assets the assets to attach on the mock {@link ProductVariant}.
+     * @return a mock product variant with the supplied prices and assets.
+     */
+    @Nonnull
+    public static ProductVariant getProductVariantMock(@Nonnull final List<Price> prices,
+                                                       @Nonnull final List<Asset> assets) {
+        final ProductVariant productVariant = mock(ProductVariant.class);
+        when(productVariant.getPrices()).thenReturn(prices);
+        when(productVariant.getAssets()).thenReturn(assets);
         return productVariant;
     }
 
@@ -321,5 +338,27 @@ public class ProductSyncMockUtils {
         productReference.put("typeId", "product");
         productReference.put("id", id);
         return productReference;
+    }
+
+    @Nonnull
+    public static ProductDraftBuilder getBuilderWithProductTypeRefId(@Nonnull final String refId) {
+        return ProductDraftBuilder.of(ProductType.referenceOfId(refId),
+            LocalizedString.ofEnglish("testName"),
+            LocalizedString.ofEnglish("testSlug"),
+            (ProductVariantDraft)null);
+    }
+
+    @Nonnull
+    public static ProductDraftBuilder getBuilderWithRandomProductTypeUuid() {
+        return getBuilderWithProductTypeRefId(UUID.randomUUID().toString());
+    }
+
+    @Nonnull
+    public static ProductDraftBuilder getBuilderWithProductTypeRef(
+        @Nonnull final Reference<ProductType> reference) {
+        return ProductDraftBuilder.of(reference,
+            LocalizedString.ofEnglish("testName"),
+            LocalizedString.ofEnglish("testSlug"),
+            (ProductVariantDraft)null);
     }
 }

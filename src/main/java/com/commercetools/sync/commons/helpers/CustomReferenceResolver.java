@@ -11,8 +11,12 @@ import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
+import static io.sphere.sdk.types.CustomFieldsDraft.ofTypeIdAndJson;
 import static java.lang.String.format;
 
 /**
@@ -48,10 +52,46 @@ public abstract class CustomReferenceResolver
      *
      * @param draftBuilder the draft builder to resolve it's references.
      * @return a {@link CompletionStage} that contains as a result a new draft instance with resolved custom
-     *      type references or, in case an error occurs during reference resolution,
-     *      a {@link ReferenceResolutionException}.
+     *         type references or, in case an error occurs during reference resolution,
+     *         a {@link ReferenceResolutionException}.
      */
     protected abstract CompletionStage<B> resolveCustomTypeReference(@Nonnull B draftBuilder);
+
+    /**
+     * Given a draft of {@code D} (e.g. {@link CategoryDraft}) this method attempts to resolve it's custom type
+     * reference to return {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * custom type reference. The key of the custom type is taken from the from the id field of the reference.
+     *
+     * <p>The method then tries to fetch the key of the custom type, optimistically from a
+     * cache. If the key is is not found, the resultant draft would remain exactly the same as the passed
+     * draft (without a custom type reference resolution).
+     *
+     * @param draftBuilder the draft builder to resolve it's references.
+     * @param customGetter a function to return the CustomFieldsDraft instance of the draft builder.
+     * @param customSetter a function to set the CustomFieldsDraft instance of the builder and return this builder.
+     * @param errorMessage the error message to inject in the {@link ReferenceResolutionException} if it occurs.
+     * @return a {@link CompletionStage} that contains as a result a new draft instance with resolved custom
+     *         type references or, in case an error occurs during reference resolution,
+     *         a {@link ReferenceResolutionException}.
+     */
+    @Nonnull
+    protected CompletionStage<B> resolveCustomTypeReference(
+        @Nonnull final B draftBuilder,
+        @Nonnull final Function<B, CustomFieldsDraft> customGetter,
+        @Nonnull final BiFunction<B, CustomFieldsDraft, B> customSetter,
+        @Nonnull final String errorMessage) {
+
+        final CustomFieldsDraft custom = customGetter.apply(draftBuilder);
+        if (custom != null) {
+            return getCustomTypeId(custom, errorMessage)
+                .thenApply(resolvedTypeIdOptional ->
+                    resolvedTypeIdOptional.map(resolvedTypeId ->
+                        customSetter.apply(draftBuilder, ofTypeIdAndJson(resolvedTypeId, custom.getFields())))
+                                          .orElse(draftBuilder));
+        }
+        return CompletableFuture.completedFuture(draftBuilder);
+    }
+
 
     /**
      * Given a custom fields object this method fetches the custom type reference id.
@@ -62,8 +102,8 @@ public abstract class CustomReferenceResolver
      * @return a {@link CompletionStage} that contains as a result an optional which either contains the custom type id
      *      if it exists or empty if it doesn't.
      */
-    protected CompletionStage<Optional<String>> getCustomTypeId(@Nonnull final CustomFieldsDraft custom,
-                                                                @Nonnull final String referenceResolutionErrorMessage) {
+    private CompletionStage<Optional<String>> getCustomTypeId(@Nonnull final CustomFieldsDraft custom,
+                                                              @Nonnull final String referenceResolutionErrorMessage) {
         try {
             final String customTypeKey = getKeyFromResourceIdentifier(custom.getType(), options.shouldAllowUuidKeys());
             return typeService.fetchCachedTypeId(customTypeKey);

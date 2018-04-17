@@ -2,6 +2,7 @@ package com.commercetools.sync.products;
 
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.products.helpers.BatchProcessor;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
@@ -21,7 +22,6 @@ import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
@@ -38,15 +38,15 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
 import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
-    private static final String PRODUCT_DRAFT_KEY_NOT_SET = "ProductDraft with name: %s doesn't have a key.";
-    private static final String PRODUCT_DRAFT_IS_NULL = "ProductDraft is null.";
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
     private static final String UNEXPECTED_DELETE = "Product with key: '%s' was deleted unexpectedly.";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
@@ -59,6 +59,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private final ProductReferenceResolver productReferenceResolver;
 
     private Map<ProductDraft, Product> productsToSync = new HashMap<>();
+    private Set<ProductDraft> existingDrafts = new HashSet<>();
     private Set<ProductDraft> draftsToCreate = new HashSet<>();
 
     /**
@@ -111,71 +112,64 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     protected CompletionStage<ProductSyncStatistics> processBatch(@Nonnull final List<ProductDraft> batch) {
         productsToSync = new HashMap<>();
         draftsToCreate = new HashSet<>();
-        return productService.cacheKeysToIds()
+        existingDrafts = new HashSet<>();
+
+
+        final BatchProcessor batchProcessor = new BatchProcessor(batch, this);
+        batchProcessor.validateBatch();
+
+        return productService.cacheKeysToIds(batchProcessor.getKeysToCache())
                              .thenCompose(keyToIdCache -> {
-                                 final Set<String> productDraftKeys = getProductDraftKeys(batch);
+                                 prepareDraftsForProcessing(batchProcessor.getValidDrafts(), keyToIdCache);
+                                 final Set<String> productDraftKeys = getProductDraftKeys(existingDrafts);
                                  return productService.fetchMatchingProductsByKeys(productDraftKeys)
-                                                      .thenAccept(matchingProducts ->
-                                                          processFetchedProducts(matchingProducts, batch))
-                                                      .thenCompose(result -> createOrUpdateProducts())
-                                                      .thenApply(result -> {
+                                                      .thenAccept(this::processFetchedProducts)
+                                                      .thenCompose(ignoredResult -> createOrUpdateProducts())
+                                                      .thenApply(ignoredResult -> {
                                                           statistics.incrementProcessed(batch.size());
                                                           return statistics;
                                                       });
                              });
     }
 
+
+    private void prepareDraftsForProcessing(@Nonnull final Set<ProductDraft> productDrafts,
+                                            @Nonnull final Map<String, String> keyToIdCache) {
+        productDrafts
+            .forEach(productDraft ->
+                productReferenceResolver.resolveReferences(productDraft)
+                                        .thenAccept(referencesResolvedDraft -> {
+                                            if (keyToIdCache.containsKey(productDraft.getKey())) {
+                                                existingDrafts.add(referencesResolvedDraft);
+                                            } else {
+                                                draftsToCreate.add(referencesResolvedDraft);
+                                            }
+                                        })
+                                        .exceptionally(referenceResolutionException -> {
+                                            Throwable actualException = referenceResolutionException;
+                                            if (referenceResolutionException instanceof CompletionException) {
+                                                actualException = referenceResolutionException.getCause();
+                                            }
+                                            final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
+                                                productDraft.getKey(), actualException);
+                                            handleError(errorMessage, actualException);
+                                            return null;
+                                        }).toCompletableFuture().join());
+    }
+
+
     @Nonnull
-    private Set<String> getProductDraftKeys(@Nonnull final List<ProductDraft> productDrafts) {
+    private Set<String> getProductDraftKeys(@Nonnull final Set<ProductDraft> productDrafts) {
         return productDrafts.stream()
-                            .filter(Objects::nonNull)
                             .map(ProductDraft::getKey)
-                            .filter(StringUtils::isNotBlank)
                             .collect(Collectors.toSet());
     }
 
-    private void processFetchedProducts(@Nonnull final Set<Product> matchingProducts,
-                                        @Nonnull final List<ProductDraft> productDrafts) {
-        for (ProductDraft productDraft : productDrafts) {
-            if (productDraft != null) {
-                final String productKey = productDraft.getKey();
-                if (isNotBlank(productKey)) {
-                    productReferenceResolver.resolveReferences(productDraft)
-                                            .thenAccept(referencesResolvedDraft -> {
-                                                final Optional<Product> existingProduct =
-                                                    getProductByKeyIfExists(matchingProducts, productKey);
-                                                if (existingProduct.isPresent()) {
-                                                    productsToSync.put(referencesResolvedDraft, existingProduct.get());
-                                                } else {
-                                                    draftsToCreate.add(referencesResolvedDraft);
-                                                }
-                                            })
-                                            .exceptionally(referenceResolutionException -> {
-                                                Throwable actualException = referenceResolutionException;
-                                                if (referenceResolutionException instanceof CompletionException) {
-                                                    actualException = referenceResolutionException.getCause();
-                                                }
-                                                final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
-                                                    productDraft.getKey(), actualException);
-                                                handleError(errorMessage, referenceResolutionException);
-                                                return null;
-                                            }).toCompletableFuture().join();
-                } else {
-                    final String errorMessage = format(PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName());
-                    handleError(errorMessage, null);
-                }
-            } else {
-                handleError(PRODUCT_DRAFT_IS_NULL, null);
-            }
-        }
-    }
 
-    @Nonnull
-    private CompletionStage<Void> createOrUpdateProducts() {
-        return productService.createProducts(draftsToCreate)
-                             .thenAccept(createdProducts ->
-                                 processCreatedProducts(createdProducts, draftsToCreate.size()))
-                             .thenCompose(result -> syncProducts(productsToSync));
+    private void processFetchedProducts(@Nonnull final Set<Product> fetchedProducts) {
+        existingDrafts.forEach(existingDraft ->
+            getProductByKeyIfExists(fetchedProducts, requireNonNull(existingDraft.getKey()))
+                .ifPresent(product -> productsToSync.put(existingDraft, product)));
     }
 
     @Nonnull
@@ -186,21 +180,26 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                        .findFirst();
     }
 
-    private void processCreatedProducts(@Nonnull final Set<Product> createdProducts,
-                                        final int totalNumberOfDraftsToCreate) {
+    @Nonnull
+    private CompletionStage<List<Optional<Product>>> createOrUpdateProducts() {
+        return productService.createProducts(draftsToCreate)
+                             .thenAccept(createdProducts ->
+                                 updateStatistics(createdProducts, draftsToCreate.size()))
+                             .thenCompose(ignoredResult -> syncProducts(productsToSync));
+    }
+
+    private void updateStatistics(@Nonnull final Set<Product> createdProducts,
+                                  final int totalNumberOfDraftsToCreate) {
         final int numberOfFailedCreations = totalNumberOfDraftsToCreate - createdProducts.size();
         statistics.incrementFailed(numberOfFailedCreations);
         statistics.incrementCreated(createdProducts.size());
     }
 
     @Nonnull
-    private CompletionStage<Void> syncProducts(@Nonnull final Map<ProductDraft, Product> productsToSync) {
-        final List<CompletableFuture<Optional<Product>>> futureUpdates =
-            productsToSync.entrySet().stream()
-                          .map(entry -> fetchProductAttributesMetadataAndUpdate(entry.getValue(), entry.getKey()))
-                          .map(CompletionStage::toCompletableFuture)
-                          .collect(Collectors.toList());
-        return CompletableFuture.allOf(futureUpdates.toArray(new CompletableFuture[futureUpdates.size()]));
+    private CompletionStage<List<Optional<Product>>> syncProducts(
+        @Nonnull final Map<ProductDraft, Product> productsToSync) {
+        return mapValuesToFutureOfCompletedValues(productsToSync.entrySet(),
+            entry -> fetchProductAttributesMetadataAndUpdate(entry.getValue(), entry.getKey()), toList());
     }
 
     @Nonnull
@@ -220,7 +219,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                         }).orElseGet(() -> {
                             final String errorMessage = format(UPDATE_FAILED, oldProduct.getKey(),
                                     FAILED_TO_FETCH_PRODUCT_TYPE);
-                            handleError(errorMessage, null);
+                            handleError(errorMessage);
                             return CompletableFuture.completedFuture(Optional.of(oldProduct));
                         })
                 );
@@ -269,10 +268,21 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 .thenCompose(productOptional -> productOptional
                         .map(fetchedProduct -> fetchProductAttributesMetadataAndUpdate(fetchedProduct, newProduct))
                         .orElseGet(() -> {
-                            handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE), null);
+                            handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE));
                             return CompletableFuture.completedFuture(productOptional);
                         })
                 );
+    }
+
+    /**
+     * Given a {@link String} {@code errorMessage}, this method calls the optional error callback specified in the
+     * {@code syncOptions} and updates the {@code statistics} instance by incrementing the total number of failed
+     * products to sync.
+     *
+     * @param errorMessage The error message describing the reason(s) of failure.
+     */
+    private void handleError(@Nonnull final String errorMessage) {
+        handleError(errorMessage, null);
     }
 
     /**

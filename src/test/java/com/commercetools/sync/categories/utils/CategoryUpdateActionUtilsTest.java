@@ -487,7 +487,7 @@ public class CategoryUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetExternalIdUpdateAction_WithSameValues_ShouldBuildUpdateAction() {
+    public void buildSetExternalIdUpdateAction_WithSameValues_ShouldNotBuildUpdateActions() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getExternalId()).thenReturn(MOCK_OLD_CATEGORY_EXTERNAL_ID);
 

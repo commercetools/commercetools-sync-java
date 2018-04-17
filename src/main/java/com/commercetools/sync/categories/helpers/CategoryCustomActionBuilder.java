@@ -12,16 +12,19 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-public class CategoryCustomActionBuilder extends GenericCustomActionBuilder<Category> {
+public class CategoryCustomActionBuilder implements GenericCustomActionBuilder<Category> {
     @Nonnull
     @Override
-    public UpdateAction<Category> buildRemoveCustomTypeAction() {
+    public UpdateAction<Category> buildRemoveCustomTypeAction(@Nullable final Integer variantId,
+                                                              @Nullable final String objectId) {
         return SetCustomType.ofRemoveType();
     }
 
     @Nonnull
     @Override
-    public UpdateAction<Category> buildSetCustomTypeAction(@Nullable final String customTypeId,
+    public UpdateAction<Category> buildSetCustomTypeAction(@Nullable final Integer variantId,
+                                                           @Nullable final String objectId,
+                                                           @Nonnull final String customTypeId,
                                                            @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
         return SetCustomType.ofTypeIdAndJson(customTypeId, customFieldsJsonMap);
 
@@ -29,7 +32,9 @@ public class CategoryCustomActionBuilder extends GenericCustomActionBuilder<Cate
 
     @Nonnull
     @Override
-    public UpdateAction<Category> buildSetCustomFieldAction(@Nullable final String customFieldName,
+    public UpdateAction<Category> buildSetCustomFieldAction(@Nullable final Integer variantId,
+                                                            @Nullable final String objectId,
+                                                            @Nullable final String customFieldName,
                                                             @Nullable final JsonNode customFieldValue) {
         return SetCustomField.ofJson(customFieldName, customFieldValue);
     }

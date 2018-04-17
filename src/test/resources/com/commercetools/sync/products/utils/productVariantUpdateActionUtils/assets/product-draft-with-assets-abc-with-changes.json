@@ -1,0 +1,62 @@
+{
+  "key": "product-with-assets-cba",
+  "name": {
+    "en": "english name"
+  },
+  "categories": [
+  ],
+  "slug": {
+    "en": "english-slug"
+  },
+  "masterVariant": {
+    "id": 1,
+    "key": "mv-key",
+    "sku": "mv-sku",
+    "assets": [
+      {
+        "id": "1",
+        "sources": [
+          {
+            "uri": "new uri"
+          },
+          {
+            "key": "new source"
+          }
+        ],
+        "name": {
+          "en": "asset new name"
+        },
+        "key": "a",
+        "tags": ["new tag"]
+      },
+      {
+        "id": "2",
+        "sources": [
+          {
+            "uri": "uri"
+          }
+        ],
+        "name": {
+          "en": "asset new name 2"
+        },
+        "key": "b",
+        "tags": []
+      },
+      {
+        "id": "3",
+        "sources": [
+          {
+            "uri": "uri",
+            "key": "newKey"
+          }
+        ],
+        "name": {
+          "en": "asset new name 3"
+        },
+        "key": "c",
+        "tags": []
+      }
+    ]
+  }
+}
+

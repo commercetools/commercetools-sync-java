@@ -51,10 +51,12 @@ import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollect
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActions;
 import static com.commercetools.sync.commons.utils.FilterUtils.executeSupplierIfPassesFilter;
+import static com.commercetools.sync.products.ActionGroup.ASSETS;
 import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
 import static com.commercetools.sync.products.ActionGroup.IMAGES;
 import static com.commercetools.sync.products.ActionGroup.PRICES;
 import static com.commercetools.sync.products.ActionGroup.SKU;
+import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
@@ -393,10 +395,9 @@ public final class ProductUpdateActionUtils {
         final List<ProductVariantDraft> newAllProductVariants = new ArrayList<>(newProduct.getVariants());
         newAllProductVariants.add(newProduct.getMasterVariant());
 
-        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-
         // 1. Remove missing variants, but keep master variant (MV can't be removed)
-        updateActions.addAll(buildRemoveVariantUpdateActions(oldProductVariantsNoMaster, newAllProductVariants));
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>(
+            buildRemoveVariantUpdateActions(oldProductVariantsNoMaster, newAllProductVariants));
 
         for (ProductVariantDraft newProductVariant : newAllProductVariants) {
             if (newProductVariant == null) {
@@ -412,7 +413,7 @@ public final class ProductUpdateActionUtils {
 
             // 2.1 if both old/new variants lists have an item with the same key - create update actions for the variant
             // 2.2 otherwise - add missing variant
-            List<UpdateAction<Product>> updateOrAddVariant =
+            final List<UpdateAction<Product>> updateOrAddVariant =
                 ofNullable(oldProductVariantsWithMaster.get(newProductVariantKey))
                     .map(oldProductVariant -> collectAllVariantUpdateActions(oldProduct, oldProductVariant,
                         newProductVariant, attributesMetaData, syncOptions))
@@ -450,6 +451,10 @@ public final class ProductUpdateActionUtils {
             buildActionsIfPassesFilter(syncFilter, PRICES, () ->
                 buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant)));
 
+        updateActions.addAll(
+            buildActionsIfPassesFilter(syncFilter, ASSETS, () ->
+                buildProductVariantAssetsUpdateActions(oldProductVariant, newProductVariant, syncOptions)));
+
         buildActionIfPassesFilter(syncFilter, SKU, () ->
             buildProductVariantSkuUpdateAction(oldProductVariant, newProductVariant))
             .ifPresent(updateActions::add);
@@ -470,18 +475,15 @@ public final class ProductUpdateActionUtils {
      */
     @Nonnull
     public static List<RemoveVariant> buildRemoveVariantUpdateActions(
-            @Nonnull final Map<String, ProductVariant> oldProductVariants,
-            @Nonnull final List<ProductVariantDraft> newProductVariants) {
-
+        @Nonnull final Map<String, ProductVariant> oldProductVariants,
+        @Nonnull final List<ProductVariantDraft> newProductVariants) {
         // copy the map and remove from the copy duplicate items
-        Map<String, ProductVariant> productsToRemove = new HashMap<>(oldProductVariants);
-
+        final Map<String, ProductVariant> productsToRemove = new HashMap<>(oldProductVariants);
         for (ProductVariantDraft newVariant : newProductVariants) {
-            if (productsToRemove.containsKey(newVariant.getKey())) {
+            if (newVariant != null && productsToRemove.containsKey(newVariant.getKey())) {
                 productsToRemove.remove(newVariant.getKey());
             }
         } // now productsToRemove contains only items which don't exist in newProductVariants
-
         return productsToRemove.values().stream()
             .map(RemoveVariant::of)
             .collect(toList());
@@ -714,5 +716,8 @@ public final class ProductUpdateActionUtils {
         syncOptions.applyErrorCallback(format("Failed to build variants update actions on the product with key '%s'. "
                 + "Reason: %s",
             product.getKey(), reason));
+    }
+
+    private ProductUpdateActionUtils() {
     }
 }
