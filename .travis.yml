@@ -25,7 +25,7 @@ jobs:
       script: ./gradlew clean setLibraryVersion build
       after_success:
       - bash <(curl -s https://codecov.io/bash)
-      - ./gradlew sonarqube -Dsonar.organization=commercetools -Dsonar.host.url=https://sonarcloud.io
+      - ./gradlew sonarqube -Dsonar.organization=commercetools -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=08ef3f942fb8cb02488020cb1cbd0ff0d1ee1c6c
       - ./travis-publish.sh || travis_terminate 1
 # The before_cache and the cache steps cache the gradle installation on travis.
 before_cache:
