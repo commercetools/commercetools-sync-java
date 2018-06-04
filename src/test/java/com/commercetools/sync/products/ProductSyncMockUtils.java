@@ -265,7 +265,8 @@ public class ProductSyncMockUtils {
     }
 
     @Nonnull
-    public static Price getPriceMockWithReferences(@Nullable final Reference<Channel> channelReference, @Nullable final Reference<Type> typeReference) {
+    public static Price getPriceMockWithReferences(@Nullable final Reference<Channel> channelReference,
+                                                   @Nullable final Reference<Type> typeReference) {
         // Mock Custom with expanded type reference
         final CustomFields mockCustomFields = mock(CustomFields.class);
         when(mockCustomFields.getType()).thenReturn(typeReference);

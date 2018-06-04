@@ -217,7 +217,8 @@ public class VariantReferenceReplacementUtilsTest {
 
         final Price price1 = getPriceMockWithChannelReference(channelReference1);
         final Price price2 = getPriceMockWithChannelReference(channelReference2);
-        final Price price3 = getPriceMockWithReferences(channelReference1, Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType));
+        final Price price3 = getPriceMockWithReferences(channelReference1,
+                Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType));
 
         final ProductVariant productVariant = getProductVariantMock(asList(price1, price2, price3));
 
