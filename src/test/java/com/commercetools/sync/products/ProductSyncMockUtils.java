@@ -25,6 +25,8 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
+import io.sphere.sdk.types.CustomFields;
+import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -259,6 +261,19 @@ public class ProductSyncMockUtils {
     public static Price getPriceMockWithChannelReference(@Nullable final Reference<Channel> channelReference) {
         final Price price = mock(Price.class);
         when(price.getChannel()).thenReturn(channelReference);
+        return price;
+    }
+
+    @Nonnull
+    public static Price getPriceMockWithReferences(@Nullable final Reference<Channel> channelReference,
+                                                   @Nullable final Reference<Type> typeReference) {
+        // Mock Custom with expanded type reference
+        final CustomFields mockCustomFields = mock(CustomFields.class);
+        when(mockCustomFields.getType()).thenReturn(typeReference);
+
+        final Price price = mock(Price.class);
+        when(price.getChannel()).thenReturn(channelReference);
+        when(price.getCustom()).thenReturn(mockCustomFields);
         return price;
     }
 

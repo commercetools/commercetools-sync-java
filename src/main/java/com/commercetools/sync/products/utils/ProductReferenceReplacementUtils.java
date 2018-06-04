@@ -248,6 +248,10 @@ public final class ProductReferenceReplacementUtils {
                                expansionModel.masterData().staged().categories())
                            .plusExpansionPaths(expansionModel ->
                                expansionModel.masterData().staged().allVariants().prices().channel())
+                           .plusExpansionPaths(
+                               ExpansionPath.of("masterData.staged.masterVariant.prices[*].custom.type"))
+                            .plusExpansionPaths(
+                               ExpansionPath.of("masterData.staged.variants[*].prices[*].custom.type"))
                            .plusExpansionPaths(expansionModel ->
                                expansionModel.masterData().staged().allVariants().attributes().value())
                            .plusExpansionPaths(expansionModel ->

@@ -15,6 +15,7 @@ import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeAccess;
 import io.sphere.sdk.products.attributes.AttributeDraft;
+import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceAssetsReferencesIdsWithKeys;
+import static com.commercetools.sync.commons.utils.SyncUtils.replaceCustomTypeIdWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static java.util.stream.Collectors.toList;
@@ -79,7 +81,12 @@ public final class VariantReferenceReplacementUtils {
     static List<PriceDraft> replacePricesReferencesIdsWithKeys(@Nonnull final ProductVariant productVariant) {
         return productVariant.getPrices().stream().map(price -> {
             final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
-            return PriceDraftBuilder.of(price).channel(channelReferenceWithKey).build();
+            final CustomFieldsDraft customFieldsDraftWithKey = replaceCustomTypeIdWithKeys(price);
+
+            return PriceDraftBuilder.of(price)
+                                    .custom(customFieldsDraftWithKey)
+                                    .channel(channelReferenceWithKey)
+                                    .build();
         }).collect(toList());
     }
 
