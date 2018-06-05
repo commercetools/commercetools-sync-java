@@ -77,9 +77,9 @@ public final class ClientConfigurationUtils {
         if (httpClient == null) {
             final AsyncHttpClient asyncHttpClient =
                 new DefaultAsyncHttpClient(
-                    new DefaultAsyncHttpClientConfig.Builder().setAcceptAnyCertificate(true)
-                                                              .setHandshakeTimeout((int) DEFAULT_TIMEOUT)
-                                                              .build());
+                    new DefaultAsyncHttpClientConfig.Builder()
+                                                    .setHandshakeTimeout((int) DEFAULT_TIMEOUT)
+                                                    .build());
             httpClient = AsyncHttpClientAdapter.of(asyncHttpClient);
         }
         return httpClient;
