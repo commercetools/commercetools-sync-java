@@ -122,6 +122,8 @@ public final class ProductITUtils {
     /**
      * Gets the supplied {@link ProductDraft} with the price reference attached on all its variants' prices.
      *
+     * <p>TODO: GITHUB ISSUE#152
+     *
      * @param productDraft     the product draft to attach the channel reference on its variants' prices.
      * @param channelReference the channel reference to attach on the product draft's variants' prices.
      * @return the product draft with the supplied references attached on the product draft's variants' prices.
@@ -131,35 +133,58 @@ public final class ProductITUtils {
                                                            @Nullable final CustomFieldsDraft customFieldsDraft) {
         final List<ProductVariantDraft> allVariants = productDraft
             .getVariants().stream().map(productVariant -> {
-                final List<PriceDraft> priceDraftsWithChannelReferences = productVariant
-                    .getPrices()
-                    .stream()
-                    .map(PriceDraftBuilder::of)
-                    .map(priceDraftBuilder -> ofNullable(channelReference).map(priceDraftBuilder::channel)
-                                                                          .orElse(priceDraftBuilder))
-                    .map(priceDraftBuilder -> ofNullable(customFieldsDraft).map(priceDraftBuilder::custom)
-                                                                           .orElse(priceDraftBuilder))
-                    .map(PriceDraftBuilder::build)
-                    .collect(toList());
+                final List<PriceDraft> priceDraftsWithChannelReferences = getPriceDraftsWithReferences(productVariant,
+                    channelReference, customFieldsDraft);
                 return ProductVariantDraftBuilder.of(productVariant)
                                                  .prices(priceDraftsWithChannelReferences)
                                                  .build();
             })
             .collect(toList());
-        final List<PriceDraft> masterVariantPriceDrafts = productDraft
-            .getMasterVariant().getPrices().stream()
-            .map(PriceDraftBuilder::of)
-            .map(priceDraftBuilder -> ofNullable(channelReference).map(priceDraftBuilder::channel)
-                                                                  .orElse(priceDraftBuilder))
-            .map(priceDraftBuilder -> ofNullable(customFieldsDraft).map(priceDraftBuilder::custom)
-                                                                   .orElse(priceDraftBuilder))
-            .map(PriceDraftBuilder::build)
-            .collect(toList());
-        return ProductDraftBuilder.of(productDraft)
-                                  .masterVariant(ProductVariantDraftBuilder.of(productDraft.getMasterVariant())
-                                                                           .prices(masterVariantPriceDrafts).build())
-                                  .variants(allVariants)
-                                  .build();
+
+        return ofNullable(productDraft.getMasterVariant())
+            .map(masterVariant -> {
+                final List<PriceDraft> priceDraftsWithReferences = getPriceDraftsWithReferences(masterVariant,
+                    channelReference, customFieldsDraft);
+                final ProductVariantDraft masterVariantWithPriceDrafts =
+                    ProductVariantDraftBuilder.of(masterVariant)
+                                              .prices(priceDraftsWithReferences)
+                                              .build();
+
+                return ProductDraftBuilder.of(productDraft)
+                                          .masterVariant(masterVariantWithPriceDrafts)
+                                          .variants(allVariants)
+                                          .build();
+            })
+            .orElse(ProductDraftBuilder.of(productDraft).variants(allVariants).build());
+    }
+
+    /**
+     * Builds a list of {@link PriceDraft} elements which are identical to the supplied {@link ProductVariantDraft}'s
+     * list of prices and sets the channel and custom type references on the prices if they are not null.
+     *
+     * <p>TODO: GITHUB ISSUE#152
+     *
+     * @param productVariant the product variant to create an identical price list from.
+     * @param channelReference the channel reference to set on the resulting price drafts.
+     * @param customFieldsDraft the custom fields to set on the resulting price drafts.
+     * @return a list of {@link PriceDraft} elements which are identical to the supplied {@link ProductVariantDraft}'s
+     *         list of prices and sets the channel and custom type references on the prices if they are not null.
+     */
+    @Nonnull
+    private static List<PriceDraft> getPriceDraftsWithReferences(
+        @Nonnull final ProductVariantDraft productVariant,
+        @Nullable final Reference<Channel> channelReference,
+        @Nullable final CustomFieldsDraft customFieldsDraft) {
+
+        return productVariant.getPrices()
+                             .stream()
+                             .map(PriceDraftBuilder::of)
+                             .map(priceDraftBuilder -> ofNullable(channelReference).map(priceDraftBuilder::channel)
+                                                                                   .orElse(priceDraftBuilder))
+                             .map(priceDraftBuilder -> ofNullable(customFieldsDraft).map(priceDraftBuilder::custom)
+                                                                                    .orElse(priceDraftBuilder))
+                             .map(PriceDraftBuilder::build)
+                             .collect(toList());
     }
 
     /**
