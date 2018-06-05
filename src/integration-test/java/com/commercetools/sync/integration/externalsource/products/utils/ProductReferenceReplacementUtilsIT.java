@@ -154,12 +154,9 @@ public class ProductReferenceReplacementUtilsIT {
             .categories(categoryReferences)
             .build();
 
-        final ProductDraft draftWithPriceChannelReferences = getDraftWithPriceChannelReferences(productDraft,
-            priceChannel.toReference());
-
 
         // Create Product.
-        executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(draftWithPriceChannelReferences)));
+        executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)));
 
 
         // Fetch Products with reference expansions.
