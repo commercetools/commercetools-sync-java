@@ -45,8 +45,8 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.g
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createAssetDraft;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createAssetsCustomType;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createVariantDraft;
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createPricesCustomType;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.getDraftWithPriceChannelReferences;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.createState;
@@ -89,6 +89,10 @@ public class ProductReferenceReplacementUtilsIT {
 
         final Type assetsCustomType = createAssetsCustomType("assetsCustomTypeKey", ENGLISH,
             "assetsCustomTypeName", CTP_TARGET_CLIENT);
+
+        final Type pricesCustomType = createPricesCustomType("pricesCustomTypeKey", ENGLISH, "pricesCustomTypeName",
+            CTP_TARGET_CLIENT);
+
         final List<AssetDraft> assetDrafts = singletonList(
             createAssetDraft("1", ofEnglish("1"), assetsCustomType.getId()));
 

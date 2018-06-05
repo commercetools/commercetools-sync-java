@@ -46,6 +46,7 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.c
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithIds;
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createPricesCustomType;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.getDraftWithPriceReferences;
@@ -70,6 +71,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getProductRef
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
 import static java.util.Collections.emptyMap;
+import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductSyncIT {
@@ -84,6 +86,9 @@ public class ProductSyncIT {
 
     private static Channel sourcePriceChannel;
     private static Channel targetPriceChannel;
+
+    private static Type sourcePriceCustomType;
+    private static Type targetPriceCustomType;
 
     private static List<Reference<Category>> sourceCategoryReferencesWithIds;
     private static List<Reference<Category>> targetCategoryReferencesWithIds;
@@ -107,6 +112,11 @@ public class ProductSyncIT {
             .execute(ChannelCreateCommand.of(channelDraft1)).toCompletableFuture().join();
         sourcePriceChannel = CTP_SOURCE_CLIENT
             .execute(ChannelCreateCommand.of(channelDraft1)).toCompletableFuture().join();
+
+        targetPriceCustomType = createPricesCustomType("pricesCustomTypeKey", ENGLISH, "pricesCustomTypeName",
+            CTP_TARGET_CLIENT);
+        sourcePriceCustomType = createPricesCustomType("pricesCustomTypeKey", ENGLISH, "pricesCustomTypeName",
+            CTP_SOURCE_CLIENT);
 
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);

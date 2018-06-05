@@ -17,14 +17,17 @@ import io.sphere.sdk.products.commands.updateactions.Unpublish;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndCompose;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
@@ -157,5 +160,23 @@ public final class ProductITUtils {
                                                                            .prices(masterVariantPriceDrafts).build())
                                   .variants(allVariants)
                                   .build();
+    }
+
+    /**
+     * This method blocks to create a price custom Type on the CTP project defined by the supplied
+     * {@code ctpClient}, with the supplied data.
+     * @param typeKey   the type key
+     * @param locale    the locale to be used for specifying the type name and field definitions names.
+     * @param name      the name of the custom type.
+     * @param ctpClient defines the CTP project to create the type on.
+     */
+    public static Type createPricesCustomType(
+        @Nonnull final String typeKey,
+        @Nonnull final Locale locale,
+        @Nonnull final String name,
+        @Nonnull final SphereClient ctpClient) {
+
+        return createTypeIfNotAlreadyExisting(
+            typeKey, locale, name, ResourceTypeIdsSetBuilder.of().addPrices(), ctpClient);
     }
 }
