@@ -73,7 +73,7 @@ public final class VariantReferenceReplacementUtils {
      * type references with keys replacing the ids.
      *
      * <p>Any reference, whether {@link Channel} or custom {@link io.sphere.sdk.types.Type}, that is not expanded will
-     * have it's id in place and not replaced by the key.
+     * have its id in place and not replaced by the key.
      *
      * @param productVariant the product variant to replace its prices' reference ids with keys.
      * @return  a {@link List} of {@link PriceDraft} that has all references with keys replacing the ids.
