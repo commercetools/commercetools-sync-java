@@ -67,15 +67,16 @@ public final class VariantReferenceReplacementUtils {
     }
 
     /**
-     * Takes a product variant that is supposed to have all its prices' channels expanded in order to be able to fetch
-     * the keys and replace the reference ids with the corresponding keys for the channel references. This method
-     * returns as a result a {@link List} of {@link PriceDraft} that has all channel references with keys replacing the
-     * ids.
+     * Takes a product variant that is supposed to have all its prices' references (channel and custom type reference)
+     * expanded in order to be able to fetch the keys and replace the reference ids with the corresponding keys for the
+     * references. This method returns as a result a {@link List} of {@link PriceDraft} that has all channel and custom
+     * type references with keys replacing the ids.
      *
-     * <p>Any channel reference that is not expanded will have it's id in place and not replaced by the key.
+     * <p>Any reference, whether {@link Channel} or custom {@link io.sphere.sdk.types.Type}, that is not expanded will
+     * have it's id in place and not replaced by the key.
      *
-     * @param productVariant the product variant to replace its prices' channel ids with keys.
-     * @return  a {@link List} of {@link PriceDraft} that has all channel references with keys replacing the ids.
+     * @param productVariant the product variant to replace its prices' reference ids with keys.
+     * @return  a {@link List} of {@link PriceDraft} that has all references with keys replacing the ids.
      */
     @Nonnull
     static List<PriceDraft> replacePricesReferencesIdsWithKeys(@Nonnull final ProductVariant productVariant) {
