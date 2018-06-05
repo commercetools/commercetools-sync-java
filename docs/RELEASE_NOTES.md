@@ -48,12 +48,22 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+
 <!--
-### v1.0.0-M12 -  Mar 30, 2018
+### v1.0.0-M13 -  Mar 30, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M12...v1.0.0-M13) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M13/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M13)
+-->
+
+### v1.0.0-M12 -  Jun 05, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M11...v1.0.0-M12) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M12/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M12)
--->
+- **Product Sync** - `VariantReferenceResolver` now resolves prices' custom type references on all variants. [#277](https://github.com/commercetools/commercetools-sync-java/issues/277)
+- **Product Sync** - `ProductReferenceReplacementUtils#buildProductQuery` now expands custom types on prices. [#277](https://github.com/commercetools/commercetools-sync-java/issues/277)
+- **Product Sync** - `VariantReferenceReplacementUtils#replacePricesReferencesIdsWithKeys` now supports replacing price custom reference ids with keys. [#277](https://github.com/commercetools/commercetools-sync-java/issues/277)
+
 
 ### v1.0.0-M11 -  Mar 08, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M10...v1.0.0-M11) |
@@ -63,23 +73,23 @@
 **New Features** (19)
 - **Category Sync** - Support of categories' asset syncing. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Product Sync** - Support of product variants' asset syncing. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Category Sync** - CategorySyncUtils#buildActions now also calculates all asset update actions needed. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Product Sync** - ProductSyncUtils#buildActions now also calculates variants' all asset update actions needed. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Product Sync** - ProductUpdateActionUtils#buildVariantsUpdateActions now also calculates variants' all asset update actions needed. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Product Sync** - Introduced the new ActionGroup: ASSETS which can be used in blacklisting/whitelisting assets syncing during the product sync. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Category Sync** - Introduced new update action build utility for building all neeeded update actions between two categories' asstes ProductVariantUpdateActionUtils#buildProductVariantAssetsUpdateActions. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Product Sync** - Introduced new update action build utility for building all neeeded update actions between two variants' asstes ProductVariantUpdateActionUtils#buildProductVariantAssetsUpdateActions. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Category Sync** - Introduced new update action granular build utils for category asset fields in CategoryAssetUpdateActionUtils. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Product Sync** - Introduced new update action granular build utils for product variant assets fields in ProductVariantAssetUpdateActionUtils. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Category Sync** - `CategorySyncUtils#buildActions` now also calculates all asset update actions needed. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Product Sync** - `ProductSyncUtils#buildActions` now also calculates variants' all asset update actions needed. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Product Sync** - `ProductUpdateActionUtils#buildVariantsUpdateActions` now also calculates variants' all asset update actions needed. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Product Sync** - Introduced the new ActionGroup: `ASSETS` which can be used in blacklisting/whitelisting assets syncing during the product sync. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Category Sync** - Introduced new update action build utility for building all needed update actions between two categories' assets `ProductVariantUpdateActionUtils#buildProductVariantAssetsUpdateActions`. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Product Sync** - Introduced new update action build utility for building all needed update actions between two variants' assets `ProductVariantUpdateActionUtils#buildProductVariantAssetsUpdateActions`. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Category Sync** - Introduced new update action granular build utils for category asset fields in `CategoryAssetUpdateActionUtils`. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Product Sync** - Introduced new update action granular build utils for product variant assets fields in `ProductVariantAssetUpdateActionUtils`. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - Introduced `AssetReferenceResolver` which is a helper that can resolve all the references of an AssetDraft. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - `VariantReferenceResolver` and `CategoryReferenceResolver` now also resolve all the containing AssetDrafts references. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - Support for custom update actions calculation for secondary resources (e.g. prices, product assets and category assets). [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Product Sync** - ProductReferenceReplacementUtils#replaceProductsReferenceIdsWithKeys and VariantReferenceReplacementUtils#replaceVariantsReferenceIdsWithKeys now support replacing asset custom reference ids with keys. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Category Sync** - CategoryReferenceReplacementUtils#replaceCategoriesReferenceIdsWithKeys now supports replacing asset custom reference ids with keys. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Commons** - Introduced new SyncUtils#replaceAssetsReferenceIdsWithKeys which is a util that replaces the custom type ids with keys in a list of assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Product Sync** - ProductReferenceReplacementUtils#buildProductQuery now expands custom types on assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Category Sync** - CategoryReferenceReplacementUtils#buildCategoryQuery now expands custom types on assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Commons** - Introduced new ResourceIdentifierUtils#toResourceIdentifierIfNotNull. [#262](https://github.com/commercetools/commercetools-sync-java/issues/262) 
+- **Product Sync** - `ProductReferenceReplacementUtils#replaceProductsReferenceIdsWithKeys` and `VariantReferenceReplacementUtils#replaceVariantsReferenceIdsWithKeys` now support replacing asset custom reference ids with keys. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Category Sync** - `CategoryReferenceReplacementUtils#replaceCategoriesReferenceIdsWithKeys` now supports replacing asset custom reference ids with keys. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Commons** - Introduced new `SyncUtils#replaceAssetsReferenceIdsWithKeys` which is a util that replaces the custom type ids with keys in a list of assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Product Sync** - `ProductReferenceReplacementUtils#buildProductQuery` now expands custom types on assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Category Sync** - `CategoryReferenceReplacementUtils#buildCategoryQuery` now expands custom types on assets. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Commons** - Introduced new `ResourceIdentifierUtils#toResourceIdentifierIfNotNull`. [#262](https://github.com/commercetools/commercetools-sync-java/issues/262) 
 
 **Changes** (5)
 - **Commons** - `CustomUpdateActionUtils#buildCustomUpdateActions` is now 
@@ -89,8 +99,8 @@ implementors of the `GenericCustomActionBuilder` interface. [#3](https://github.
 - **Commons** - `CustomUpdateActionUtils#buildCustomUpdateActions` can now be used to build custom update actions
 for secondary resources (e.g. assets and prices). [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - New Custom Type Id is now validated against being empty/null. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Product Sync** - ProductSyncUtils#buildCoreActions is now removed. ProductSyncUtils#buildActions should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
-- **Category Sync** - CategorySyncUtils#buildCoreActions is now removed. CategorySyncUtils#buildActions should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Product Sync** - `ProductSyncUtils#buildCoreActions` is now removed. `ProductSyncUtils#buildActions` should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Category Sync** - `CategorySyncUtils#buildCoreActions` is now removed. `CategorySyncUtils#buildActions` should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 
 **Enhancements** (1)
 - **Build Tools** - Bumped commercetools-jvm-sdk to version [1.30.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_30_0). [#262](https://github.com/commercetools/commercetools-sync-java/issues/262)
