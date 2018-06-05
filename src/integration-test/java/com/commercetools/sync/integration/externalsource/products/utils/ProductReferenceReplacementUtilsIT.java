@@ -26,6 +26,7 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.taxcategories.TaxCategory;
+import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.AfterClass;
@@ -60,6 +61,7 @@ import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -107,6 +109,8 @@ public class ProductReferenceReplacementUtilsIT {
             executeBlocking(CTP_TARGET_CLIENT.execute(ChannelCreateCommand.of(ChannelDraft.of(SUPPLY_CHANNEL_KEY_1))));
         final PriceDraft priceDraft = PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
                                                        .channel(priceChannel)
+                                                       .custom(CustomFieldsDraft
+                                                           .ofTypeKeyAndJson(pricesCustomType.getKey(), emptyMap()))
                                                        .build();
 
 
@@ -194,11 +198,27 @@ public class ProductReferenceReplacementUtilsIT {
 
         final ProductVariant stagedProjectionMasterVariant = stagedProjection.getMasterVariant();
 
-        // Assert variants' price channel references are expanded.
+        // Assert master variant's price channel references are expanded.
         assertThat(stagedProjectionMasterVariant.getPrices()).hasSize(1);
-        final Price price = stagedProjectionMasterVariant.getPrices().get(0);
-        assertThat(price.getChannel()).isNotNull();
-        assertThat(price.getChannel().getObj()).isNotNull();
+        final Price masterVariantPrice = stagedProjectionMasterVariant.getPrices().get(0);
+        assertThat(masterVariantPrice.getChannel()).isNotNull();
+        assertThat(masterVariantPrice.getChannel().getObj()).isNotNull();
+
+        // Assert master variant's price custom type references are expanded.
+        assertThat(masterVariantPrice.getCustom()).isNotNull();
+        assertThat(masterVariantPrice.getCustom().getType()).isNotNull();
+        assertThat(masterVariantPrice.getCustom().getType().getObj()).isNotNull();
+
+        // Assert variants' price channel references are expanded.
+        assertThat(variant.getPrices()).hasSize(1);
+        final Price variantPrice = variant.getPrices().get(0);
+        assertThat(variantPrice.getChannel()).isNotNull();
+        assertThat(variantPrice.getChannel().getObj()).isNotNull();
+
+        // Assert variants' price custom type references are expanded.
+        assertThat(variantPrice.getCustom()).isNotNull();
+        assertThat(variantPrice.getCustom().getType()).isNotNull();
+        assertThat(variantPrice.getCustom().getType().getObj()).isNotNull();
 
         // Assert master variant assets custom type references are expanded.
         assertThat(stagedProjectionMasterVariant.getAssets()).hasSize(1);
@@ -206,8 +226,13 @@ public class ProductReferenceReplacementUtilsIT {
         assertThat(masterVariantAsset.getCustom()).isNotNull();
         assertThat(masterVariantAsset.getCustom().getType().getObj()).isNotNull();
 
+        // Assert variant assets custom type references are expanded.
+        assertThat(variant.getAssets()).hasSize(1);
+        final Asset variantAsset = variant.getAssets().get(0);
+        assertThat(variantAsset.getCustom()).isNotNull();
+        assertThat(variantAsset.getCustom().getType().getObj()).isNotNull();
 
-        // Assert variants attribute references are expanded.
+        // Assert master variant's attribute references are expanded.
         final Attribute attribute1 = stagedProjectionMasterVariant.getAttribute(attribute1Name);
         assertThat(attribute1).isNotNull();
         final JsonNode attribute1ValueAsJsonNode = attribute1.getValueAsJsonNode();
@@ -224,5 +249,23 @@ public class ProductReferenceReplacementUtilsIT {
         final JsonNode firstReferenceInSet = attribute2ValueAsJsonNode.get(0);
         assertThat(firstReferenceInSet).isNotNull();
         assertThat(firstReferenceInSet.get("obj")).isNotNull();
+
+        // Assert variants' attribute references are expanded.
+        final Attribute variantAttribute1 = variant.getAttribute(attribute1Name);
+        assertThat(variantAttribute1).isNotNull();
+        final JsonNode variantAttribute1ValueAsJsonNode = variantAttribute1.getValueAsJsonNode();
+        assertThat(variantAttribute1ValueAsJsonNode).isNotNull();
+        assertThat(variantAttribute1ValueAsJsonNode.get("obj")).isNotNull();
+
+        final Attribute variantAttribute2 = variant.getAttribute(attribute2Name);
+        assertThat(variantAttribute2).isNotNull();
+        final JsonNode variantAttribute2ValueAsJsonNode = variantAttribute2.getValueAsJsonNode();
+        assertThat(variantAttribute2ValueAsJsonNode).isNotNull();
+        assertThat(variantAttribute2ValueAsJsonNode.isArray()).isTrue();
+        assertThat(variantAttribute2ValueAsJsonNode).hasSize(1);
+
+        final JsonNode firstReferenceInSetOfVariantAttribute2 = variantAttribute2ValueAsJsonNode.get(0);
+        assertThat(firstReferenceInSetOfVariantAttribute2).isNotNull();
+        assertThat(firstReferenceInSetOfVariantAttribute2.get("obj")).isNotNull();
     }
 }
