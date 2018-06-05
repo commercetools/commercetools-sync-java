@@ -16,8 +16,11 @@ import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.states.StateType;
+import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 
@@ -28,6 +31,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStates;
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteSupplyChannels;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 public final class ProductITUtils {
@@ -113,29 +117,41 @@ public final class ProductITUtils {
     }
 
     /**
-     * Gets the supplied {@link ProductDraft} with the price channel reference attached on its variants' prices.
+     * Gets the supplied {@link ProductDraft} with the price reference attached on all its variants' prices.
      *
      * @param productDraft     the product draft to attach the channel reference on its variants' prices.
      * @param channelReference the channel reference to attach on the product draft's variants' prices.
-     * @return the product draft with the supplied channel reference attached on the product draft's variants' prices.
+     * @return the product draft with the supplied references attached on the product draft's variants' prices.
      */
-    public static ProductDraft getDraftWithPriceChannelReferences(@Nonnull final ProductDraft productDraft,
-                                                                  @Nonnull final Reference<Channel> channelReference) {
+    public static ProductDraft getDraftWithPriceReferences(@Nonnull final ProductDraft productDraft,
+                                                           @Nullable final Reference<Channel> channelReference,
+                                                           @Nullable final CustomFieldsDraft customFieldsDraft) {
         final List<ProductVariantDraft> allVariants = productDraft
             .getVariants().stream().map(productVariant -> {
-                final List<PriceDraft> priceDraftsWithChannelReferences =
-                    productVariant.getPrices().stream()
-                                  .map(price -> PriceDraftBuilder.of(price).channel(channelReference).build())
-                                  .collect(toList());
+                final List<PriceDraft> priceDraftsWithChannelReferences = productVariant
+                    .getPrices()
+                    .stream()
+                    .map(PriceDraftBuilder::of)
+                    .map(priceDraftBuilder -> ofNullable(channelReference).map(priceDraftBuilder::channel)
+                                                                          .orElse(priceDraftBuilder))
+                    .map(priceDraftBuilder -> ofNullable(customFieldsDraft).map(priceDraftBuilder::custom)
+                                                                           .orElse(priceDraftBuilder))
+                    .map(PriceDraftBuilder::build)
+                    .collect(toList());
                 return ProductVariantDraftBuilder.of(productVariant)
                                                  .prices(priceDraftsWithChannelReferences)
                                                  .build();
             })
             .collect(toList());
         final List<PriceDraft> masterVariantPriceDrafts = productDraft
-            .getMasterVariant().getPrices().stream().map(price -> PriceDraftBuilder.of(price)
-                                                                                   .channel(channelReference)
-                                                                                   .build()).collect(toList());
+            .getMasterVariant().getPrices().stream()
+            .map(PriceDraftBuilder::of)
+            .map(priceDraftBuilder -> ofNullable(channelReference).map(priceDraftBuilder::channel)
+                                                                  .orElse(priceDraftBuilder))
+            .map(priceDraftBuilder -> ofNullable(customFieldsDraft).map(priceDraftBuilder::custom)
+                                                                   .orElse(priceDraftBuilder))
+            .map(PriceDraftBuilder::build)
+            .collect(toList());
         return ProductDraftBuilder.of(productDraft)
                                   .masterVariant(ProductVariantDraftBuilder.of(productDraft.getMasterVariant())
                                                                            .prices(masterVariantPriceDrafts).build())

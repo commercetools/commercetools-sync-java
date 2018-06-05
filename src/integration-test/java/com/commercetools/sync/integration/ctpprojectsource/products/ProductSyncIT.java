@@ -24,6 +24,8 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.taxcategories.TaxCategory;
+import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.Type;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -46,7 +48,7 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.g
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithIds;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.getDraftWithPriceChannelReferences;
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.getDraftWithPriceReferences;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -67,6 +69,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getProductRef
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductSyncIT {
@@ -229,15 +232,16 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withPriceChannels_ShouldUpdateProducts() {
+    public void sync_withPriceReferences_ShouldUpdateProducts() {
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
             targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
             targetCategoryReferencesWithIds, createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
 
-        final ProductDraft existingDraftWithPriceChannelReferences =
-            getDraftWithPriceChannelReferences(existingProductDraft, targetPriceChannel.toReference());
+        final ProductDraft existingDraftWithPriceReferences =
+            getDraftWithPriceReferences(existingProductDraft, targetPriceChannel.toReference(),
+                CustomFieldsDraft.ofTypeKeyAndJson(targetPriceCustomType.getKey(), emptyMap()));
 
-        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingDraftWithPriceChannelReferences))
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingDraftWithPriceReferences))
                          .toCompletableFuture().join();
 
         final ProductDraft newProductDraft = createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH,
@@ -248,10 +252,11 @@ public class ProductSyncIT {
             .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
             .publish(false).build();
 
-        final ProductDraft newDraftWithPriceChannelReferences =
-            getDraftWithPriceChannelReferences(newProductDraft, sourcePriceChannel.toReference());
+        final ProductDraft newDraftWithPriceReferences =
+            getDraftWithPriceReferences(newProductDraft, sourcePriceChannel.toReference(),
+                CustomFieldsDraft.ofTypeKeyAndJson(sourcePriceCustomType.getKey(), emptyMap()));
 
-        CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newDraftWithPriceChannelReferences))
+        CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newDraftWithPriceReferences))
                          .toCompletableFuture().join();
 
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
