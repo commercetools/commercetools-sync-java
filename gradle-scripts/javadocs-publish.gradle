@@ -5,7 +5,8 @@ gitPublish {
     //    https://github.com/ajoberstar/grgit#usage
     // 2) to use GH token `repoUri` must have an https (not git or ssh) protocol
 
-    repoUri = scmHttpsUrl
+    // The .toString() is temporarily used for this issue: https://github.com/ajoberstar/gradle-git-publish/issues/50
+    repoUri = scmHttpsUrl.toString()
     branch = 'gh-pages'
 
     // what to publish, this is a standard CopySpec
@@ -24,7 +25,8 @@ gitPublish {
     }
 
     // message used when committing changes
-    commitMessage = "Publishing a new java doc for $rootProject.version version."
+    // The .toString() is temporarily used for this issue: https://github.com/ajoberstar/gradle-git-publish/issues/50
+    commitMessage = "Publishing a new java doc for $rootProject.version version.".toString()
 }
 
 gitPublishReset {

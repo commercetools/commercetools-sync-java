@@ -33,6 +33,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [v1.0.0-M12 -  Jun 05, 2018](#v100-m12----jun-05-2018)
 - [v1.0.0-M11 -  Mar 08, 2018](#v100-m11----mar-08-2018)
 - [v1.0.0-M10 -  Feb 13, 2018](#v100-m10----feb-13-2018)
 - [v1.0.0-M9 -  Jan 22, 2018](#v100-m9----jan-22-2018)
@@ -63,6 +64,15 @@
 - **Product Sync** - `VariantReferenceResolver` now resolves prices' custom type references on all variants. [#277](https://github.com/commercetools/commercetools-sync-java/issues/277)
 - **Product Sync** - `ProductReferenceReplacementUtils#buildProductQuery` now expands custom types on prices. [#277](https://github.com/commercetools/commercetools-sync-java/issues/277)
 - **Product Sync** - `VariantReferenceReplacementUtils#replacePricesReferencesIdsWithKeys` now supports replacing price custom reference ids with keys. [#277](https://github.com/commercetools/commercetools-sync-java/issues/277)
+- **Commons** - Bumped commercetools-jvm-sdk to version [1.32.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_32_0).
+- **Commons** - Bumped gradle to version [gradle-4.8](https://docs.gradle.org/4.8/release-notes.html).
+- **Commons** - Bumped `com.jfrog.bintray` to 1.8.0.
+- **Commons** - Bumped `org.ajoberstar.git-publish` to 1.0.0.
+- **Commons** - Bumped `com.adarshr.test-logger` to 1.2.0.
+- **Commons** - Bumped `org.ajoberstar.grgit` to 2.2.1.
+- **Commons** - Bumped gradle checkstyle plugin to 8.10.1.
+- **Commons** - Bumped mockito dependency to 2.18.3.
+- **Commons** - Bumped JaCoCo dependency to 0.8.1.
 
 
 ### v1.0.0-M11 -  Mar 08, 2018
