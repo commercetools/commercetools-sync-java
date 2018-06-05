@@ -172,11 +172,12 @@ public class VariantReferenceReplacementUtilsTest {
     @Test
     public void replaceVariantsReferenceIdsWithKeys_WithNoExpandedReferences_ShouldNotReplaceIds() {
         final Reference<Channel> channelReference = Channel.referenceOfId(UUID.randomUUID().toString());
+        final Reference<Type> customTypeReference = Type.referenceOfId(UUID.randomUUID().toString());
 
         final Asset asset2 = getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndId(Type.referenceTypeId(),
             UUID.randomUUID().toString()));
 
-        final Price price = getPriceMockWithChannelReference(channelReference);
+        final Price price = getPriceMockWithReferences(channelReference, customTypeReference);
         final ProductVariant productVariant = getProductVariantMock(singletonList(price), singletonList(asset2));
 
         final List<ProductVariantDraft> variantDrafts =
@@ -301,7 +302,7 @@ public class VariantReferenceReplacementUtilsTest {
     public void replaceChannelReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferenceWithoutReplacedKeys() {
         final String channelId = UUID.randomUUID().toString();
         final Reference<Channel> channelReference = Channel.referenceOfId(channelId);
-        final Price price = getPriceMockWithChannelReference(channelReference);
+        final Price price = getPriceMockWithReferences(channelReference, null);
 
         final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
 
@@ -316,7 +317,7 @@ public class VariantReferenceReplacementUtilsTest {
 
         final Reference<Channel> channelReference = Reference
             .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
-        final Price price = getPriceMockWithChannelReference(channelReference);
+        final Price price = getPriceMockWithReferences(channelReference, null);
 
 
         final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
@@ -326,8 +327,8 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceChannelReferenceIdWithKey_WithNullReference_ShouldReturnNull() {
-        final Price price = getPriceMockWithChannelReference(null);
+    public void replaceChannelReferenceIdWithKey_WithNullChannelReference_ShouldReturnNull() {
+        final Price price = getPriceMockWithReferences(null, null);
 
         final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
 
