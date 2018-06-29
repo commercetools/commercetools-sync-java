@@ -22,7 +22,7 @@ jobs:
       if: tag IS present
       script: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
     - stage: full build
-      script: ./gradlew clean setLibraryVersion build --debug --stacktrace
+      script: ./gradlew clean setLibraryVersion build
       after_success:
       - bash <(curl -s https://codecov.io/bash)
       - ./travis-publish.sh || travis_terminate 1

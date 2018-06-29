@@ -6,7 +6,6 @@ gitPublish {
     // 2) to use GH token `repoUri` must have an https (not git or ssh) protocol
 
     branch = 'gh-pages'
-
     // Copies the output of the 'javadoc' task into the path value passed to the 'into' method.
     // More about it:
     // https://docs.gradle.org/current/javadoc/org/gradle/api/file/CopySpec.html#from-java.lang.Object-groovy.lang.Closure-
@@ -36,6 +35,7 @@ gitPublishReset {
              3) $GH_TOKEN
          interrupt the task if neither of them is set.
         */
+
         final authProperty = 'org.ajoberstar.grgit.auth.username'
         if (!System.getProperty(authProperty)?.trim()) {
             def githubToken =
