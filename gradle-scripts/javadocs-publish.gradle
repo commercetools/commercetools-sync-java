@@ -5,22 +5,21 @@ gitPublish {
     //    https://github.com/ajoberstar/grgit#usage
     // 2) to use GH token `repoUri` must have an https (not git or ssh) protocol
 
-    // The .toString() is temporarily used for this issue: https://github.com/ajoberstar/gradle-git-publish/issues/50
-    repoUri = scmHttpsUrl.toString()
     branch = 'gh-pages'
 
-    // what to publish, this is a standard CopySpec
+    // Copies the output of the 'javadoc' task into the path value passed to the 'into' method.
+    // More about it:
+    // https://docs.gradle.org/current/javadoc/org/gradle/api/file/CopySpec.html#from-java.lang.Object-groovy.lang.Closure-
+    // https://docs.gradle.org/current/javadoc/org/gradle/api/Project.html#files-java.lang.Object...-
     contents {
-        from 'src/pages'
-        from(javadoc) {
+        from (javadoc) {
             into "v/$rootProject.version"
         }
     }
 
     // what to keep in the existing branch (include=keep)
     preserve {
-        include 'v/**'
-        include 'benchmarks/**'
+        include 'v/**', 'benchmarks/**'
         exclude 'v/test**' // always remove documentation of test releases
     }
 
