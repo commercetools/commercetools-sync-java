@@ -41,6 +41,10 @@ gitPublishReset {
              3) $GH_TOKEN
          interrupt the task if neither of them is set.
         */
+
+        println("######################GITPUBLISHRESET: IS TESTING THE GRGIT###########1")
+        grgit.remote.list().each { println it }
+
         final authProperty = 'org.ajoberstar.grgit.auth.username'
         if (!System.getProperty(authProperty)?.trim()) {
             def githubToken =
@@ -59,13 +63,11 @@ gitPublishReset {
             }
 
             System.setProperty(authProperty, githubToken)
+
+            println("######################GITPUBLISHRESET: IS TESTING THE GRGIT###########2")
+            grgit.remote.list().each { println it }
         }
 
         validateVersion('Documentation publishing could be performed only with a valid release version')
-    }
-
-    doLast {
-        println("######################GITPUBLISHRESET: IS TESTING THE GRGIT###########")
-        grgit.remote.list().each { println it }
     }
 }
