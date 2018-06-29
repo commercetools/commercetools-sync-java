@@ -7,10 +7,12 @@ gitPublish {
 
     branch = 'gh-pages'
 
-    // what to publish, this is a standard CopySpec
+    // Copies the output of the 'javadoc' task into the path value passed to the 'into' method.
+    // More about it:
+    // https://docs.gradle.org/current/javadoc/org/gradle/api/file/CopySpec.html#from-java.lang.Object-groovy.lang.Closure-
+    // https://docs.gradle.org/current/javadoc/org/gradle/api/Project.html#files-java.lang.Object...-
     contents {
-        from 'src/pages'
-        from(javadoc) {
+        from (javadoc) {
             into "v/$rootProject.version"
         }
     }
