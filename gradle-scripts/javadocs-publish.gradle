@@ -9,9 +9,6 @@ gitPublish {
     repoUri = scmHttpsUrl.toString()
     branch = 'gh-pages'
 
-    println("###########GITPUBLISH:  IS TESTING THE GRGIT###########")
-    grgit.remote.list().each { println it }
-
     // Copies the output of the 'javadoc' task into the path value passed to the 'into' method.
     // More about it:
     // https://docs.gradle.org/current/javadoc/org/gradle/api/file/CopySpec.html#from-java.lang.Object-groovy.lang.Closure-
@@ -42,9 +39,6 @@ gitPublishReset {
          interrupt the task if neither of them is set.
         */
 
-        println("######################GITPUBLISHRESET: IS TESTING THE GRGIT###########1")
-        grgit.remote.list().each { println it }
-
         final authProperty = 'org.ajoberstar.grgit.auth.username'
         if (!System.getProperty(authProperty)?.trim()) {
             def githubToken =
@@ -63,9 +57,6 @@ gitPublishReset {
             }
 
             System.setProperty(authProperty, githubToken)
-
-            println("######################GITPUBLISHRESET: IS TESTING THE GRGIT###########2")
-            grgit.remote.list().each { println it }
         }
 
         validateVersion('Documentation publishing could be performed only with a valid release version')
