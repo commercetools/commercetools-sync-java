@@ -1,11 +1,11 @@
 ext{
-    commercetoolsJvmSdkVersion = '1.30.0'
-    mockitoVersion = '2.15.0'
+    commercetoolsJvmSdkVersion = '1.32.0'
+    mockitoVersion = '2.18.3'
     jUnitVersion = '4.12'
     assertjVersion = '3.9.1'
-    checkstyleVersion = '7.7'
+    checkstyleVersion = '8.10.1'
     pmdVersion = '5.8.1'
-    jacocoVersion = '0.8.0'
+    jacocoVersion = '0.8.1'
     findbugsVersion = '3.0.1'
 }
 

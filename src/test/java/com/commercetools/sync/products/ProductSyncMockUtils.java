@@ -25,6 +25,8 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
+import io.sphere.sdk.types.CustomFields;
+import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -40,6 +42,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -251,15 +254,31 @@ public class ProductSyncMockUtils {
     }
 
     /**
-     * Creates a mock {@link Price} with the supplied {@link Channel} {@link Reference}.
+     * Creates a mock {@link Price} with the supplied {@link Channel} {@link Reference} and custom {@link Type}
+     * {@link Reference}.
+     *
+     * <p>If the supplied {@code customTypeReference} is {@code null}, no custom fields are stubbed on the
+     * resulting price mock.
+     *
      * @param channelReference the channel reference to attach on the mock {@link Price}.
-     * @return a mock price with the supplied channel reference.
+     * @param customTypeReference the custom type reference to attach on the mock {@link Price}.
+     * @return a mock price with the supplied references.
      */
     @Nonnull
-    public static Price getPriceMockWithChannelReference(@Nullable final Reference<Channel> channelReference) {
+    public static Price getPriceMockWithReferences(@Nullable final Reference<Channel> channelReference,
+                                                   @Nullable final Reference<Type> customTypeReference) {
         final Price price = mock(Price.class);
         when(price.getChannel()).thenReturn(channelReference);
-        return price;
+
+        return ofNullable(customTypeReference)
+            .map(typeReference -> {
+                // If type reference is supplied, mock Custom with expanded type reference.
+                final CustomFields mockCustomFields = mock(CustomFields.class);
+                when(mockCustomFields.getType()).thenReturn(customTypeReference);
+                when(price.getCustom()).thenReturn(mockCustomFields);
+                return price;
+            })
+            .orElse(price);
     }
 
     /**

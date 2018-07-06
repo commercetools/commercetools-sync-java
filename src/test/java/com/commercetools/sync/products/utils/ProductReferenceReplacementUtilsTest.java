@@ -38,7 +38,7 @@ import java.util.UUID;
 import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFields;
 import static com.commercetools.sync.commons.MockUtils.getTypeMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithChannelReference;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithReferences;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMock;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
@@ -72,7 +72,7 @@ public class ProductReferenceReplacementUtilsTest {
 
         final Reference<Channel> channelReference = Reference
             .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
-        final Price price = getPriceMockWithChannelReference(channelReference);
+        final Price price = getPriceMockWithReferences(channelReference, null);
 
         final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
         final Asset asset1 =
@@ -159,7 +159,7 @@ public class ProductReferenceReplacementUtilsTest {
 
         final Reference<Channel> channelReference = Reference
             .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
-        final Price price = getPriceMockWithChannelReference(channelReference);
+        final Price price = getPriceMockWithReferences(channelReference, null);
         final ProductVariant productVariant = getProductVariantMock(singletonList(price));
 
         final Category category = getCategoryMock(resourceKey);
@@ -349,6 +349,8 @@ public class ProductReferenceReplacementUtilsTest {
                 ExpansionPath.of("state"), ExpansionPath.of("masterData.staged.categories[*]"),
                 ExpansionPath.of("masterData.staged.masterVariant.prices[*].channel"),
                 ExpansionPath.of("masterData.staged.variants[*].prices[*].channel"),
+                ExpansionPath.of("masterData.staged.masterVariant.prices[*].custom.type"),
+                ExpansionPath.of("masterData.staged.variants[*].prices[*].custom.type"),
                 ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value"),
                 ExpansionPath.of("masterData.staged.variants[*].attributes[*].value"),
                 ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value[*]"),
