@@ -45,7 +45,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 class CategoryUpdateActionUtilsTest {
-    @ParameterizedTest(name = "Comparing names of old category:[{0}] to categoryDraft:[{1}] Should result in update action:[{2}]")
+    @ParameterizedTest(name = "Comparing names of old category:[{0}] to categoryDraft:[{1}]"
+            + " Should result in update action:[{2}]")
     @MethodSource("buildChangeNameTestCases")
     void buildChangeNameUpdateActionTest(@Nonnull final Category oldCategory,
                                          @Nonnull final CategoryDraft newCategoryDraft,
@@ -78,7 +79,8 @@ class CategoryUpdateActionUtilsTest {
         return buildTestCasesForLocalizedStringsDiff(Category::getSlug, CategoryDraft::getSlug, ChangeSlug::of);
     }
 
-    @ParameterizedTest(name = "comparing old description:[{0}] to new description:[{1}] Should result in update action:[{2}]")
+    @ParameterizedTest(name = "comparing old description:[{0}] to new description:[{1}]"
+            + " Should result in update action:[{2}]")
     @MethodSource("buildSetDescriptionTestCases")
     void buildSetDescriptionUpdateActionTest(@Nonnull final Category oldCategory,
                                              @Nonnull final CategoryDraft newCategoryDraft,
@@ -91,10 +93,12 @@ class CategoryUpdateActionUtilsTest {
     }
 
     private static Stream buildSetDescriptionTestCases() {
-        return buildTestCasesForLocalizedStringsDiff(Category::getDescription, CategoryDraft::getDescription, SetDescription::of);
+        return buildTestCasesForLocalizedStringsDiff(Category::getDescription, CategoryDraft::getDescription,
+                SetDescription::of);
     }
 
-    @ParameterizedTest(name = "comparing old parent:[{0}] to new parent:[{1}] Should result in update action:[{2}] and warnings {3}")
+    @ParameterizedTest(name = "comparing old parent:[{0}] to new parent:[{1}]"
+            + " Should result in update action:[{2}] and warnings {3}")
     @MethodSource("buildChangeParentTestCases")
     void buildChangeParentUpdateActionTest(
             @Nonnull final Category oldCategory,
@@ -121,7 +125,8 @@ class CategoryUpdateActionUtilsTest {
         return ArgumentUtils.buildChangeParentTestCases();
     }
 
-    @ParameterizedTest(name = "comparing old orderHint:[{0}] to new orderHint:[{1}] Should result in update action:[{2}] and warnings: {3}")
+    @ParameterizedTest(name = "comparing old orderHint:[{0}] to new orderHint:[{1}]"
+            + " Should result in update action:[{2}] and warnings: {3}")
     @MethodSource("buildChangeOrderHintTestCases")
     void buildChangeOrderHintUpdateActionTest(
             @Nonnull final Category oldCategory,
@@ -146,11 +151,12 @@ class CategoryUpdateActionUtilsTest {
 
     private static Stream buildChangeOrderHintTestCases() {
         return buildTestCasesForStringsDiff(Category::getOrderHint, CategoryDraft::getOrderHint, ChangeOrderHint::of,
-                false,
-                category -> format("Cannot unset 'orderHint' field of category with id '%s'.", category.getId()));
+                false, category ->
+                        format("Cannot unset 'orderHint' field of category with id '%s'.", category.getId()));
     }
 
-    @ParameterizedTest(name = "comparing old meta title:[{0}] to new meta title:[{1}] Should result in update action:[{2}]")
+    @ParameterizedTest(name = "comparing old meta title:[{0}] to new meta title:[{1}]"
+            + " Should result in update action:[{2}]")
     @MethodSource("buildSetMetaTitleTestCases")
     void buildSetMetaTitleUpdateActionTest(
             @Nonnull final Category oldCategory,
@@ -164,10 +170,12 @@ class CategoryUpdateActionUtilsTest {
     }
 
     private static Stream buildSetMetaTitleTestCases() {
-        return buildTestCasesForLocalizedStringsDiff(Category::getMetaTitle, CategoryDraft::getMetaTitle, SetMetaTitle::of);
+        return buildTestCasesForLocalizedStringsDiff(Category::getMetaTitle, CategoryDraft::getMetaTitle,
+                SetMetaTitle::of);
     }
 
-    @ParameterizedTest(name = "comparing old meta keywords:[{0}] to new meta keywords:[{1}] Should result in update action:[{2}]")
+    @ParameterizedTest(name = "comparing old meta keywords:[{0}] to new meta keywords:[{1}]"
+            + " Should result in update action:[{2}]")
     @MethodSource("buildSetMetaKeywordsTestCases")
     void buildSetMetaKeywordsUpdateActionTest(
             @Nonnull final Category oldCategory,
@@ -184,7 +192,8 @@ class CategoryUpdateActionUtilsTest {
                 SetMetaKeywords::of);
     }
 
-    @ParameterizedTest(name = "comparing old meta description:[{0}] to new meta description:[{1}] Should result in update action:[{2}]")
+    @ParameterizedTest(name = "comparing old meta description:[{0}] to new meta description:[{1}]"
+            + " Should result in update action:[{2}]")
     @MethodSource("buildSetMetaDescriptionTestCases")
     void buildSetMetaDescriptionUpdateActionTest(
             @Nonnull final Category oldCategory,
@@ -202,7 +211,8 @@ class CategoryUpdateActionUtilsTest {
                 SetMetaDescription::of);
     }
 
-    @ParameterizedTest(name = "comparing old external id:[{0}] to new external id:[{1}] Should result in update action:[{2}]")
+    @ParameterizedTest(name = "comparing old external id:[{0}] to new external id:[{1}]"
+            + " Should result in update action:[{2}]")
     @MethodSource("buildSetExternalIdTestCases")
     void buildSetExternalIdUpdateActionTest2(
             @Nonnull final Category oldCategory,

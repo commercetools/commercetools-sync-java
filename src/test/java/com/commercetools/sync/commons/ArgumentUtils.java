@@ -36,10 +36,8 @@ public final class ArgumentUtils {
                         ChangeParent.of(Category.referenceOfId("bar"))),
 
                 buildCategoryFieldTestCaseArgs(Category::getParent, CategoryDraft::getParent,
-                        Category.referenceOfId("foo"),
-                        null,
-                        null,
-                        category -> format("Cannot unset 'parent' field of category with id '%s'.", category.getId())),
+                        Category.referenceOfId("foo"), null, null, category ->
+                                format("Cannot unset 'parent' field of category with id '%s'.", category.getId())),
 
                 buildCategoryFieldTestCaseArgs(Category::getParent, CategoryDraft::getParent,
                         Category.referenceOfId("foo"),
