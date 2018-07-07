@@ -11,7 +11,7 @@ sourceSets {
 
 configurations {
     integrationTestImplementation.extendsFrom implementation, testImplementation
-    integrationTestRuntime.extendsFrom testRuntime
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 task integrationTest(type: Test) {
