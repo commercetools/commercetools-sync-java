@@ -14,7 +14,9 @@ configurations {
 }
 
 task integrationTest(type: Test) {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        includeEngines 'junit-jupiter', 'junit-vintage'
+    }
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
     outputs.upToDateWhen { false }

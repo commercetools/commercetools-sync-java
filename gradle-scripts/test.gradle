@@ -1,7 +1,5 @@
-// Example JUnit 5 and fail-fast test configuration
 test {
     useJUnitPlatform {
-        excludeTags 'slow'
         includeEngines 'junit-jupiter', 'junit-vintage'
     }
 
