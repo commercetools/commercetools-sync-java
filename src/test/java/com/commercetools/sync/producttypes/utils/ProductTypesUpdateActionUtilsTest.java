@@ -9,9 +9,8 @@ import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 
-import static com.commercetools.sync.producttypes.utils.ProductTypesUpdateActionUtils.buildChangeDescriptionAction;
-import static com.commercetools.sync.producttypes.utils.ProductTypesUpdateActionUtils.buildSetKeyAction;
-import static com.commercetools.sync.producttypes.utils.ProductTypesUpdateActionUtils.buildChangeNameAction;
+import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeDescriptionAction;
+import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeNameAction;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -20,20 +19,17 @@ import static org.mockito.Mockito.when;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeDescription;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
-import io.sphere.sdk.producttypes.commands.updateactions.SetKey;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.function.BiFunction;
 
 public class ProductTypesUpdateActionUtilsTest {
     private static ProductType old;
     private static ProductTypeDraft newSame;
     private static ProductTypeDraft newDifferent;
-    private static ProductTypeDraft newWithNullValues;
 
     /**
      * Initialises test data.
@@ -69,61 +65,35 @@ public class ProductTypesUpdateActionUtilsTest {
                 "description 2",
                 sameAttributeDefinitionDrafts
         );
-
-        newWithNullValues = ProductTypeDraft.ofAttributeDefinitionDrafts(
-                null,
-                "name3",
-                "description 3",
-                sameAttributeDefinitionDrafts
-        );
-    }
-
-    @Test
-    public void buildSetKeyAction_WithDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result = buildSetKeyAction(old, newDifferent);
-        assertThat(result).isNotNull();
-        assertThat(result.isPresent()).isTrue();
-        assertThat(result.get()).isExactlyInstanceOf(SetKey.class);
-        assertThat(((SetKey) result.get()).getKey()).isEqualTo(newDifferent.getKey());
-    }
-
-    @Test
-    public void buildSetKeyAction_WithSameValues_ShouldReturnEmptyOptional() {
-        assertNoUpdatesForSameValues(ProductTypesUpdateActionUtils::buildSetKeyAction);
     }
 
     @Test
     public void buildChangeNameAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<ProductType>> result = buildChangeNameAction(old, newDifferent);
-        assertThat(result).isNotNull();
-        assertThat(result.isPresent()).isTrue();
-        assertThat(result.get()).isExactlyInstanceOf(ChangeName.class);
-        assertThat(((ChangeName) result.get()).getName()).isEqualTo(newDifferent.getName());
+
+        assertThat(result).containsInstanceOf(ChangeName.class);
+        assertThat(result).contains(ChangeName.of(newDifferent.getName()));
     }
 
     @Test
     public void buildChangeNameAction_WithSameValues_ShouldReturnEmptyOptional() {
-        assertNoUpdatesForSameValues(ProductTypesUpdateActionUtils::buildChangeNameAction);
+        final Optional<UpdateAction<ProductType>> result = buildChangeNameAction(old, newSame);
+
+        assertThat(result).isEmpty();
     }
 
     @Test
     public void buildChangeDescriptionAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<ProductType>> result = buildChangeDescriptionAction(old, newDifferent);
-        assertThat(result).isNotNull();
-        assertThat(result.isPresent()).isTrue();
-        assertThat(result.get()).isExactlyInstanceOf(ChangeDescription.class);
-        assertThat(((ChangeDescription) result.get()).getDescription()).isEqualTo(newDifferent.getDescription());
+
+        assertThat(result).containsInstanceOf(ChangeDescription.class);
+        assertThat(result).contains(ChangeDescription.of(newDifferent.getDescription()));
     }
 
     @Test
     public void buildChangeDescriptionAction_WithSameValues_ShouldReturnEmptyOptional() {
-        assertNoUpdatesForSameValues(ProductTypesUpdateActionUtils::buildChangeDescriptionAction);
-    }
+        final Optional<UpdateAction<ProductType>> result = buildChangeDescriptionAction(old, newSame);
 
-    private void assertNoUpdatesForSameValues(final BiFunction<ProductType, ProductTypeDraft,
-            Optional<UpdateAction<ProductType>>> buildFunction) {
-        final Optional<UpdateAction<ProductType>> result = buildFunction.apply(old, newSame);
-        assertThat(result).isNotNull();
-        assertThat(result.isPresent()).isFalse();
+        assertThat(result).isEmpty();
     }
 }
