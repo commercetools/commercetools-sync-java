@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-public class ProductTypesUpdateActionUtilsTest {
+public class ProductTypeUpdateActionUtilsTest {
     private static ProductType old;
     private static ProductTypeDraft newSame;
     private static ProductTypeDraft newDifferent;
@@ -65,6 +65,8 @@ public class ProductTypesUpdateActionUtilsTest {
                 "description 2",
                 sameAttributeDefinitionDrafts
         );
+
+        // TODO For all product types the attribute definitions will change in future commits
     }
 
     @Test

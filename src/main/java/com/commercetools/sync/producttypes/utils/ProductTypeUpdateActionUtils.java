@@ -49,4 +49,6 @@ public final class ProductTypeUpdateActionUtils {
         return buildUpdateAction(oldProductType.getDescription(), newProductType.getDescription(),
             () -> ChangeDescription.of(newProductType.getDescription()));
     }
+
+    private ProductTypeUpdateActionUtils() { }
 }
