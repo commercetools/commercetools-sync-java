@@ -1,6 +1,9 @@
 package com.commercetools.sync.producttypes.utils;
 
 
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
+import com.commercetools.sync.producttypes.helpers.ProductTypeAttributeActionFactory;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
@@ -8,9 +11,12 @@ import io.sphere.sdk.producttypes.commands.updateactions.ChangeDescription;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 
 public final class ProductTypeUpdateActionUtils {
 
@@ -48,6 +54,38 @@ public final class ProductTypeUpdateActionUtils {
         @Nonnull final ProductTypeDraft newProductType) {
         return buildUpdateAction(oldProductType.getDescription(), newProductType.getDescription(),
             () -> ChangeDescription.of(newProductType.getDescription()));
+    }
+
+    /**
+     * Compares the attributes of a {@link ProductType} and a {@link ProductTypeDraft} and returns a list of
+     * {@link UpdateAction}&lt;{@link ProductType}&gt; as a result. If both the {@link ProductType} and
+     * the {@link ProductTypeDraft} have the identical attributes, then no update action is needed and hence an empty
+     * {@link List} is returned. In case, the new product draft has a list of attributes in which a duplicate name
+     * exists, the error callback is triggered and an empty list is returned.
+     *
+     * @param oldProductType the product type which should be updated.
+     * @param newProductType the product type draft where we get the new key.
+     * @param syncOptions the sync options with which a custom callback function is called in case errors exists
+     *                    while building attributes update actions.
+     * @return A list with the update actions or an empty list if the attributes are identical.
+     */
+    @Nonnull
+    public static List<UpdateAction<ProductType>> buildAttributesUpdateActions(
+        @Nonnull final ProductType oldProductType,
+        @Nonnull final ProductTypeDraft newProductType,
+        @Nonnull final ProductTypeSyncOptions syncOptions) {
+
+        try {
+            return ProductTypeUpdateAttributeDefinitionActionUtils.buildAttributeDefinitionsUpdateActions(
+                    oldProductType.getAttributes(),
+                    newProductType.getAttributes(),
+                    new ProductTypeAttributeActionFactory(syncOptions));
+        } catch (final BuildUpdateActionException exception) {
+            syncOptions.applyErrorCallback(format("Failed to build update actions for the attributes definitions "
+                    + "of the product type with the key '%s'. Reason: %s", oldProductType.getKey(), exception),
+                exception);
+            return emptyList();
+        }
     }
 
     private ProductTypeUpdateActionUtils() { }
