@@ -1,6 +1,8 @@
 package com.commercetools.sync.producttypes.utils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.DifferentTypeException;
+import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
 import com.commercetools.sync.producttypes.helpers.AttributeDefinitionCustomBuilder;
 import io.sphere.sdk.commands.UpdateAction;
@@ -96,6 +98,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
                 .collect(toMap(AttributeDefinition::getName, attributeDefinition -> attributeDefinition));
 
         final Map<String, AttributeDefinitionDraft> newAttributesDefinitionsDraftsNameMap;
+
         try {
             newAttributesDefinitionsDraftsNameMap = newAttributeDefinitionsDrafts.stream().collect(
                 toMap(AttributeDefinitionDraft::getName, attributeDefinitionDraft -> attributeDefinitionDraft,
@@ -106,35 +109,36 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
                             attributeDefinitionDraftA.getName()));
                     }
                 ));
-        } catch (final DuplicateNameException exception) {
-            throw new BuildUpdateActionException(exception);
-        }
 
-        // Remove or compare if matching
-        final List<UpdateAction<ProductType>> updateActions =
-            buildRemoveAttributeDefinitionOrAttributeDefinitionUpdateActions(
-                oldAttributeDefinitions,
-                removedAttributesDefinitionsNames,
-                newAttributesDefinitionsDraftsNameMap
+            final List<UpdateAction<ProductType>> updateActions =
+                buildRemoveAttributeDefinitionOrAttributeDefinitionUpdateActions(
+                    oldAttributeDefinitions,
+                    removedAttributesDefinitionsNames,
+                    newAttributesDefinitionsDraftsNameMap
+                );
+
+            updateActions.addAll(
+                buildAddAttributeDefinitionUpdateActions(
+                    newAttributeDefinitionsDrafts,
+                    oldAttributesDefinitionsNameMap
+                )
             );
 
-        // Add before changing the order because commercetools API doesn't allow to add an attribute definition
-        // in a particular position. They are added at the end of the attribute definition list.
-        updateActions.addAll(
-            buildAddAttributeDefinitionUpdateActions(
-                newAttributeDefinitionsDrafts,
-                oldAttributesDefinitionsNameMap
+            buildChangeAttributeDefinitionOrderUpdateAction(
+                oldAttributeDefinitions,
+                newAttributeDefinitionsDrafts
             )
-        );
-
-        // Change the order of attribute definition list
-        buildChangeAttributeDefinitionOrderUpdateAction(
-            oldAttributeDefinitions,
-            newAttributeDefinitionsDrafts
-        )
                 .ifPresent(updateActions::add);
 
-        return updateActions;
+            return updateActions;
+
+        } catch (final DuplicateNameException dne) {
+            throw new BuildUpdateActionException(dne);
+        } catch (final DuplicateKeyException dke) {
+            throw new BuildUpdateActionException(dke);
+        } catch (final DifferentTypeException dte) {
+            throw new BuildUpdateActionException(dte);
+        }
     }
 
     /**
@@ -158,7 +162,8 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
     private static List<UpdateAction<ProductType>> buildRemoveAttributeDefinitionOrAttributeDefinitionUpdateActions(
         @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
         @Nonnull final Set<String> removedAttributeDefinitionNames,
-        @Nonnull final Map<String, AttributeDefinitionDraft> newAttributeDefinitionDraftsNameMap) {
+        @Nonnull final Map<String, AttributeDefinitionDraft> newAttributeDefinitionDraftsNameMap)
+        throws DuplicateKeyException {
 
         return oldAttributeDefinitions
             .stream()

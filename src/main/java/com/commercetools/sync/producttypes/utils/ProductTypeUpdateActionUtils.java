@@ -95,8 +95,11 @@ public final class ProductTypeUpdateActionUtils {
      * {@link List} is returned. In case, the new product type draft has a list of attributes in which a duplicate name
      * exists, the error callback is triggered and an empty list is returned.
      *
-     * @param oldProductType the product type which should be updated.
-     * @param newProductType the product type draft where we get the key.
+     * @param oldProductType    the product type which should be updated.
+     * @param newProductType    the product type draft where we get the key.
+     * @param syncOptions       responsible for supplying the sync options to the sync utility method.
+     *                          It is used for triggering the error callback within the utility, in case of
+     *                          errors.
      * @return A list with the update actions or an empty list if the attributes are identical.
      */
     @Nonnull
@@ -107,8 +110,9 @@ public final class ProductTypeUpdateActionUtils {
 
         try {
             return buildAttributeDefinitionsUpdateActions(
-                    oldProductType.getAttributes(),
-                    newProductType.getAttributes());
+                oldProductType.getAttributes(),
+                newProductType.getAttributes()
+            );
         } catch (final BuildUpdateActionException exception) {
             syncOptions.applyErrorCallback(format("Failed to build update actions for the attributes definitions "
                     + "of the product type with the key '%s'. Reason: %s", oldProductType.getKey(), exception),
