@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toCollection;
@@ -108,9 +109,10 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
             newAttributesDefinitionsDraftsNameMap = newAttributeDefinitionsDrafts.stream().collect(
                 toMap(AttributeDefinitionDraft::getName, attributeDefinitionDraft -> attributeDefinitionDraft,
                     (attributeDefinitionDraftA, attributeDefinitionDraftB) -> {
-                        throw new DuplicateNameException("Attribute definitions drafts have duplicated names. "
-                            + "Duplicated attribute definition name: '" + attributeDefinitionDraftA.getName() + "'. "
-                            + "Attribute definitions names are expected to be unique inside their product type.");
+                        throw new DuplicateNameException(format("Attribute definitions drafts have duplicated names. "
+                            + "Duplicated attribute definition name: '%s'. "
+                            + "Attribute definitions names are expected to be unique inside their product type.",
+                            attributeDefinitionDraftA.getName()));
                     }
                 ));
         } catch (final DuplicateNameException exception) {
@@ -190,7 +192,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
                     });
             })
             .flatMap(Collection::stream)
-            .collect(toCollection(ArrayList::new));
+            .collect(Collectors.toList());
     }
 
     /**
