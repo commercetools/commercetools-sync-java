@@ -17,7 +17,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 import java.util.Optional;
@@ -28,7 +27,6 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
