@@ -18,7 +18,7 @@ public final class ProductTypeSyncOptionsBuilder extends BaseSyncOptionsBuilder<
 
     /**
      * Creates a new instance of {@link ProductTypeSyncOptionsBuilder} given a {@link SphereClient} responsible for
-     * interaction with the target CTP project, with the dafult batch size ({@code BATCH_SIZE_DEFAULT} = 50).
+     * interaction with the target CTP project, with the default batch size ({@code BATCH_SIZE_DEFAULT} = 50).
      *
      * @param ctpClient instance of the {@link SphereClient} responsible for interaction with the target CTP project.
      * @return new instance of {@link ProductTypeSyncOptionsBuilder}
@@ -40,6 +40,7 @@ public final class ProductTypeSyncOptionsBuilder extends BaseSyncOptionsBuilder<
             errorCallback,
             warningCallback,
             batchSize,
+            allowUuid,
             beforeUpdateCallback,
             beforeCreateCallback
         );

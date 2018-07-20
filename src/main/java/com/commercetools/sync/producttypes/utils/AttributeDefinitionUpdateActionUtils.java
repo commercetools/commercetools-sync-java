@@ -20,9 +20,11 @@ public final class AttributeDefinitionUpdateActionUtils {
      *
      * @param oldAttributeDefinition        the attribute definition which should be updated.
      * @param newAttributeDefinitionDraft   the attribute definition draft where we get the new fields.
-     * @param syncOptions responsible for supplying the sync options to the sync utility method. It is used for
-     *                    triggering the error callback within the utility, in case of errors.
+     * @param syncOptions                   responsible for supplying the sync options to the sync utility method.
+     *                                      It is used for triggering the error callback within the utility, in case of
+     *                                      errors.
      * @return A list with the update actions or an empty list if the attribute definition fields are identical.
+     *
      */
     @Nonnull
     public static List<UpdateAction<ProductType>> buildActions(

@@ -124,7 +124,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
 
         // Bug in the commercetools JVM SDK. AddAttributeDefinition should expect an AttributeDefinitionDraft rather
         // than AttributeDefinition.
-        // It will be fixed in https://github.com/commercetools/commercetools-jvm-sdk/issues/1786
+        // TODO It will be fixed in https://github.com/commercetools/commercetools-jvm-sdk/issues/1786
         assertThat(updateActions).containsExactly(
             AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_A),
             AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_B),
@@ -178,12 +178,13 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         assertThat(errorMessages).hasSize(1);
         assertThat(errorMessages.get(0)).matches("Failed to build update actions for the attributes definitions of the "
             + "product type with the key 'key'. Reason: .*DuplicateNameException: Attribute definitions drafts "
-            + "have duplicated names. Attribute definitions names are expected to be unique inside their product "
-            + "type.");
+            + "have duplicated names. Duplicated attribute definition name: 'b'. Attribute definitions names are "
+            + "expected to be unique inside their product type.");
         assertThat(exceptions).hasSize(1);
         assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
         assertThat(exceptions.get(0).getMessage()).contains("Attribute definitions drafts have duplicated names. "
-                + "Attribute definitions names are expected to be unique inside their product type.");
+                + "Duplicated attribute definition name: 'b'. Attribute definitions names are expected to be unique "
+                + "inside their product type.");
         assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(DuplicateNameException.class);
     }
 

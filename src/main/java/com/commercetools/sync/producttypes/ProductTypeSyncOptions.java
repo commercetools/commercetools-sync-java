@@ -14,12 +14,13 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class ProductTypeSyncOptions extends BaseSyncOptions<ProductType, ProductTypeDraft> {
+public final class ProductTypeSyncOptions extends BaseSyncOptions<ProductType, ProductTypeDraft> {
     ProductTypeSyncOptions(
         @Nonnull final SphereClient ctpClient,
         @Nullable final BiConsumer<String, Throwable> updateActionErrorCallBack,
         @Nullable final Consumer<String> updateActionWarningCallBack,
         final int batchSize,
+        final boolean allowUuid,
         @Nullable final TriFunction<List<UpdateAction<ProductType>>, ProductTypeDraft, ProductType,
                 List<UpdateAction<ProductType>>> beforeUpdateCallback,
         @Nullable final Function<ProductTypeDraft, ProductTypeDraft> beforeCreateCallback
@@ -30,7 +31,7 @@ public class ProductTypeSyncOptions extends BaseSyncOptions<ProductType, Product
             updateActionErrorCallBack,
             updateActionWarningCallBack,
             batchSize,
-            false, // allowUuid
+            allowUuid,
             beforeUpdateCallback,
             beforeCreateCallback
         );
