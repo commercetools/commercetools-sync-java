@@ -121,7 +121,7 @@ class PriceCompositeIdTest {
         );
     }
 
-    @ParameterizedTest(name = "{0}")
+    @ParameterizedTest(name = "[#ofPrice]: {0}")
     @MethodSource("ofPriceTestCases")
     void ofPrice_ShouldCreateCompositeId(@Nonnull final String testCaseName,
                                          @Nonnull final Price price,
@@ -199,7 +199,7 @@ class PriceCompositeIdTest {
         assertEquals(validUntil, priceCompositeId.getValidUntil());
     }
 
-    @ParameterizedTest(name = "{0}")
+    @ParameterizedTest(name = "[#ofPriceDraft]: {0}")
     @MethodSource("equalsTestCases")
     void equals(@Nonnull final String testCaseName,
                 @Nonnull final PriceCompositeId thisPriceCompositeId,

@@ -106,7 +106,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
                                                                                 .build();
 
 
-    @ParameterizedTest(name = "{0}")
+    @ParameterizedTest(name = "[#buildActions]: {0}")
     @MethodSource("buildActionsTestCases")
     void buildActionsTest(@Nonnull final String testCaseName,
                           @Nonnull final Price oldPrice,
@@ -119,20 +119,14 @@ class ProductVariantPriceUpdateActionUtilsTest {
     }
 
     private static Stream<Arguments> buildActionsTestCases() {
-        final String case1 = "[identical values and null tiers] => no actions";
-        final String case2 = "[identical values and empty tiers] => no actions";
-        final String case3 = "[identical values and identical tiers] => no actions";
-        final String case4 = "[different values and identical tiers] => build 'changePrice' action";
-        final String case5 =
-            "[identical values and different tiers [different in value]] => build 'changePrice' action";
-        final String case6 =
-            "[identical values and different tiers [different in minimumQuantity]] => build 'changePrice' action";
-        final String case7 =
-            "[identical values and different tiers [different in number of tiers]] => build 'changePrice' action";
-        final String case8 =
-            "[different values and different custom fields] => build 'changePrice' "
-                + "and 'setProductPriceCustomFieldAction'";
-
+        final String case1 = "identical values and null tiers";
+        final String case2 = "identical values and empty tiers";
+        final String case3 = "identical values and identical tiers";
+        final String case4 = "different values and identical tiers";
+        final String case5 = "identical values and different tiers [different in value]";
+        final String case6 = "identical values and different tiers [different in minimumQuantity]";
+        final String case7 = "identical values and different tiers [different in number of tiers]";
+        final String case8 = "different values and different custom fields";
 
         return Stream.of(
             Arguments.of(case1, PRICE_EUR_10_NULL_TIERS, DRAFT_EUR_10_NULL_TIERS, emptyList()),
@@ -156,7 +150,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
         );
     }
 
-    @ParameterizedTest(name = "{0}")
+    @ParameterizedTest(name = "[#buildChangePrice]: {0}")
     @MethodSource("buildChangePriceTestCases")
     void buildChangePriceUpdateActionTest(@Nonnull final String testCaseName,
                                           @Nonnull final Price oldPrice,
@@ -169,16 +163,13 @@ class ProductVariantPriceUpdateActionUtilsTest {
     }
 
     private static Stream<Arguments> buildChangePriceTestCases() {
-        final String case1 = "[identical values and null tiers] => no actions";
-        final String case2 = "[identical values and empty tiers] => no actions";
-        final String case3 = "[identical values and identical tiers] => no actions";
-        final String case4 = "[different values and identical tiers] => build 'changePrice' action";
-        final String case5 =
-            "[identical values and different tiers [different in value]] => build 'changePrice' action";
-        final String case6 =
-            "[identical values and different tiers [different in minimumQuantity]] => build 'changePrice' action";
-        final String case7 =
-            "[identical values and different tiers [different in number of tiers]] => build 'changePrice' action";
+        final String case1 = "identical values and null tiers";
+        final String case2 = "identical values and empty tiers";
+        final String case3 = "identical values and identical tiers";
+        final String case4 = "different values and identical tiers";
+        final String case5 = "identical values and different tiers [different in value]";
+        final String case6 = "identical values and different tiers [different in minimumQuantity]";
+        final String case7 = "identical values and different tiers [different in number of tiers]";
 
 
         return Stream.of(
