@@ -80,7 +80,8 @@ public class ProductSyncUtilsTest {
     public void buildActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
         final LocalizedString newName = LocalizedString.of(Locale.ENGLISH, "newName");
         final ProductDraft newProductDraft =
-            createProductDraftBuilder(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, ProductType.referenceOfId("anyProductType"))
+            createProductDraftBuilder(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
+                ProductType.referenceOfId("anyProductType"))
                 .name(newName)
                 .build();
 
@@ -144,10 +145,10 @@ public class ProductSyncUtilsTest {
             AddExternalImage.ofVariantId(1,
                 Image.of("https://53346cfbf3c7e017ed3d-6de74c3efa80f1c837c6a988b57abe66.ssl.cf3.rackcdn.com/"
                     + "new-image-2.png", ImageDimensions.of(0, 0), null), true),
-            RemovePrice.of(Price.of(MoneyImpl.ofCents(108, EUR)).withId("4dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"),
-                true),
-            RemovePrice.of(Price.of(MoneyImpl.ofCents(10, createCurrencyByCode("EGP"))).withId("4dfc8bea-84f2-45bc-b3c2-r9e7wv99vfb"),
-                true),
+            RemovePrice.of(Price.of(MoneyImpl.ofCents(108, EUR))
+                                .withId("4dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"), true),
+            RemovePrice.of(Price.of(MoneyImpl.ofCents(10, createCurrencyByCode("EGP")))
+                                .withId("4dfc8bea-84f2-45bc-b3c2-r9e7wv99vfb"), true),
             AddPrice.ofVariantId(1,
                 PriceDraft.of(MoneyImpl.ofCents(118, EUR))
                           .withChannel(Channel.referenceOfId("channel-key_1")), true),
@@ -193,24 +194,24 @@ public class ProductSyncUtilsTest {
         );
 
         assertThat(updateActions).containsSubsequence(
-            RemovePrice.of(Price.of(MoneyImpl.ofCents(108, EUR)).withId("4dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"),
-                true),
+            RemovePrice.of(Price.of(MoneyImpl.ofCents(108, EUR))
+                                .withId("4dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"), true),
             AddPrice.ofVariantId(1,
                 PriceDraft.of(MoneyImpl.ofCents(118, EUR))
                           .withChannel(Channel.referenceOfId("channel-key_1")), true)
         );
 
         assertThat(updateActions).containsSubsequence(
-            RemovePrice.of(Price.of(MoneyImpl.ofCents(10, createCurrencyByCode("EGP"))).withId("4dfc8bea-84f2-45bc-b3c2-r9e7wv99vfb"),
-                true),
+            RemovePrice.of(Price.of(MoneyImpl.ofCents(10, createCurrencyByCode("EGP")))
+                                .withId("4dfc8bea-84f2-45bc-b3c2-r9e7wv99vfb"), true),
             AddPrice.ofVariantId(1,
                 PriceDraft.of(MoneyImpl.ofCents(100, createCurrencyByCode("EGP")))
                           .withChannel(Channel.referenceOfId("channel-key_1")), true)
         );
 
         assertThat(updateActions).containsSubsequence(
-            RemovePrice.of(Price.of(MoneyImpl.ofCents(10, createCurrencyByCode("EGP"))).withId("4dfc8bea-84f2-45bc-b3c2-r9e7wv99vfb"),
-                true),
+            RemovePrice.of(Price.of(MoneyImpl.ofCents(10, createCurrencyByCode("EGP")))
+                                .withId("4dfc8bea-84f2-45bc-b3c2-r9e7wv99vfb"), true),
             AddPrice.ofVariantId(1,
                 PriceDraft.of(MoneyImpl.ofCents(118, EUR))
                           .withChannel(Channel.referenceOfId("channel-key_1")), true)
@@ -261,8 +262,8 @@ public class ProductSyncUtilsTest {
     @Test
     public void buildActions_FromDraftsWithSameNameValues_ShouldNotBuildUpdateActions() {
         final ProductDraft newProductDraft =
-            createProductDraftBuilder(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, ProductType.referenceOfId("anyProductType"))
-                .build();
+            createProductDraftBuilder(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
+                ProductType.referenceOfId("anyProductType")).build();
 
         final List<UpdateAction<Product>> updateActions =
             ProductSyncUtils.buildActions(oldProduct, newProductDraft, productSyncOptions, new HashMap<>());

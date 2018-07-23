@@ -54,7 +54,7 @@ public final class ProductVariantPriceUpdateActionUtils {
      *     <li>{@link Price#getTiers()} and {@link PriceDraft#getTiers()}</li>
      * </ul>
      *
-     * If any of the aforementioned fields are different a {@link ChangePrice} update action will be returned in an
+     * <p>If any of the aforementioned fields are different a {@link ChangePrice} update action will be returned in an
      * {@link Optional}, otherwise if both are identical in the {@link Price} and the {@link PriceDraft}, then no update
      * action is needed and hence an empty {@link Optional} is returned.
      *

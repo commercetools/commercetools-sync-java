@@ -107,7 +107,7 @@ public final class PriceCompositeId {
     }
 
     @Override
-    public boolean equals(@Nullable final Object otherObject) {
+    public boolean equals(final Object otherObject) {
         if (this == otherObject) {
             return true;
         }

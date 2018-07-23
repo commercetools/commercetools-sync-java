@@ -54,7 +54,8 @@ class PriceCompositeIdTest {
     private static final String CASE_29 = "with currency, customerGroup, validFrom and validUntil";
     private static final String CASE_30 = "with currency, countryCode, customerGroup, validFrom and validUntil";
     private static final String CASE_31 = "with currency, channel, customerGroup, validFrom and validUntil";
-    private static final String CASE_32 = "with currency, countryCode, channel, customerGroup, validFrom and validUntil";
+    private static final String CASE_32 =
+        "with currency, countryCode, channel, customerGroup, validFrom and validUntil";
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("ofPriceDraftTestCases")

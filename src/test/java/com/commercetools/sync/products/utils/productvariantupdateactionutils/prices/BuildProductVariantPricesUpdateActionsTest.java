@@ -78,10 +78,10 @@ import static org.mockito.Mockito.when;
 
 public class BuildProductVariantPricesUpdateActionsTest {
 
-    private static final ProductVariant oldProductVariant = mock(ProductVariant.class);
-    private static final ProductVariantDraft newProductVariant = mock(ProductVariantDraft.class);
-    private static List<String> errorMessages;
-    private static final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+    private final ProductVariant oldProductVariant = mock(ProductVariant.class);
+    private final ProductVariantDraft newProductVariant = mock(ProductVariantDraft.class);
+    private List<String> errorMessages;
+    private final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                    .errorCallback((msg, throwable) ->
                                                                                        errorMessages.add(msg))
                                                                                    .build();

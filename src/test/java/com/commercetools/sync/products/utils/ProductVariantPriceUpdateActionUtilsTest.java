@@ -119,31 +119,34 @@ class ProductVariantPriceUpdateActionUtilsTest {
     }
 
     private static Stream<Arguments> buildActionsTestCases() {
-        final String CASE_1 = "[identical values and null tiers] => no actions";
-        final String CASE_2 = "[identical values and empty tiers] => no actions";
-        final String CASE_3 = "[identical values and identical tiers] => no actions";
-        final String CASE_4 = "[different values and identical tiers] => build 'changePrice' action";
-        final String CASE_5 = "[identical values and different tiers [different in value]] => build 'changePrice' action";
-        final String CASE_6 =
+        final String case1 = "[identical values and null tiers] => no actions";
+        final String case2 = "[identical values and empty tiers] => no actions";
+        final String case3 = "[identical values and identical tiers] => no actions";
+        final String case4 = "[different values and identical tiers] => build 'changePrice' action";
+        final String case5 =
+            "[identical values and different tiers [different in value]] => build 'changePrice' action";
+        final String case6 =
             "[identical values and different tiers [different in minimumQuantity]] => build 'changePrice' action";
-        final String CASE_7 =
+        final String case7 =
             "[identical values and different tiers [different in number of tiers]] => build 'changePrice' action";
-        final String CASE_8 = "[different values and different custom fields] => build 'changePrice' and 'setProductPriceCustomFieldAction'";
+        final String case8 =
+            "[different values and different custom fields] => build 'changePrice' "
+                + "and 'setProductPriceCustomFieldAction'";
 
 
         return Stream.of(
-            Arguments.of(CASE_1, PRICE_EUR_10_NULL_TIERS, DRAFT_EUR_10_NULL_TIERS, emptyList()),
-            Arguments.of(CASE_2, PRICE_EUR_10_EMPTY_TIERS, DRAFT_EUR_10_EMPTY_TIERS, emptyList()),
-            Arguments.of(CASE_3, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_10, emptyList()),
-            Arguments.of(CASE_4, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_20_TIER_1_EUR_10,
+            Arguments.of(case1, PRICE_EUR_10_NULL_TIERS, DRAFT_EUR_10_NULL_TIERS, emptyList()),
+            Arguments.of(case2, PRICE_EUR_10_EMPTY_TIERS, DRAFT_EUR_10_EMPTY_TIERS, emptyList()),
+            Arguments.of(case3, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_10, emptyList()),
+            Arguments.of(case4, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_20_TIER_1_EUR_10,
                 singletonList(ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_20_TIER_1_EUR_10, true))),
-            Arguments.of(CASE_5, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_20,
+            Arguments.of(case5, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_20,
                 singletonList(ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_20, true))),
-            Arguments.of(CASE_6, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_2_EUR_10,
+            Arguments.of(case6, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_2_EUR_10,
                 singletonList(ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_2_EUR_10, true))),
-            Arguments.of(CASE_7, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_MULTIPLE_TIERS,
+            Arguments.of(case7, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_MULTIPLE_TIERS,
                 singletonList(ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_MULTIPLE_TIERS, true))),
-            Arguments.of(CASE_8, DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY,
+            Arguments.of(case8, DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY,
                 DRAFT_DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX,
                 asList(ChangePrice.of(DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY,
                     DRAFT_DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX, true),
@@ -166,28 +169,29 @@ class ProductVariantPriceUpdateActionUtilsTest {
     }
 
     private static Stream<Arguments> buildChangePriceTestCases() {
-        final String CASE_1 = "[identical values and null tiers] => no actions";
-        final String CASE_2 = "[identical values and empty tiers] => no actions";
-        final String CASE_3 = "[identical values and identical tiers] => no actions";
-        final String CASE_4 = "[different values and identical tiers] => build 'changePrice' action";
-        final String CASE_5 = "[identical values and different tiers [different in value]] => build 'changePrice' action";
-        final String CASE_6 =
+        final String case1 = "[identical values and null tiers] => no actions";
+        final String case2 = "[identical values and empty tiers] => no actions";
+        final String case3 = "[identical values and identical tiers] => no actions";
+        final String case4 = "[different values and identical tiers] => build 'changePrice' action";
+        final String case5 =
+            "[identical values and different tiers [different in value]] => build 'changePrice' action";
+        final String case6 =
             "[identical values and different tiers [different in minimumQuantity]] => build 'changePrice' action";
-        final String CASE_7 =
+        final String case7 =
             "[identical values and different tiers [different in number of tiers]] => build 'changePrice' action";
 
 
         return Stream.of(
-            Arguments.of(CASE_1, PRICE_EUR_10_NULL_TIERS, DRAFT_EUR_10_NULL_TIERS, null),
-            Arguments.of(CASE_2, PRICE_EUR_10_EMPTY_TIERS, DRAFT_EUR_10_EMPTY_TIERS, null),
-            Arguments.of(CASE_3, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_10, null),
-            Arguments.of(CASE_4, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_20_TIER_1_EUR_10,
+            Arguments.of(case1, PRICE_EUR_10_NULL_TIERS, DRAFT_EUR_10_NULL_TIERS, null),
+            Arguments.of(case2, PRICE_EUR_10_EMPTY_TIERS, DRAFT_EUR_10_EMPTY_TIERS, null),
+            Arguments.of(case3, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_10, null),
+            Arguments.of(case4, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_20_TIER_1_EUR_10,
                 ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_20_TIER_1_EUR_10, true)),
-            Arguments.of(CASE_5, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_20,
+            Arguments.of(case5, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_20,
                 ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_20, true)),
-            Arguments.of(CASE_6, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_2_EUR_10,
+            Arguments.of(case6, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_2_EUR_10,
                 ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_2_EUR_10, true)),
-            Arguments.of(CASE_7, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_MULTIPLE_TIERS,
+            Arguments.of(case7, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_MULTIPLE_TIERS,
                 ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_MULTIPLE_TIERS, true))
         );
     }
