@@ -30,7 +30,6 @@ import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -238,7 +237,6 @@ public class ProductSyncIT {
     }
 
     @Test
-    @Ignore("TODO: Right now there is always a 'setPrice' update action GITHUB ISSUE: #101")
     public void sync_withEqualProduct_shouldNotUpdateProduct() {
         final ProductDraft productDraft =
             createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH, ProductType.referenceOfId(productType.getKey()),
