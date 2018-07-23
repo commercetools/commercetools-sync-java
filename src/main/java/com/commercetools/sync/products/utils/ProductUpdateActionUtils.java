@@ -52,7 +52,6 @@ import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollect
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActions;
 import static com.commercetools.sync.commons.utils.FilterUtils.executeSupplierIfPassesFilter;
-import static com.commercetools.sync.commons.utils.UnorderedCollectionSyncUtils.buildOneToOneOrAddActions;
 import static com.commercetools.sync.commons.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
 import static com.commercetools.sync.products.ActionGroup.ASSETS;
 import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
@@ -67,6 +66,7 @@ import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUt
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -410,14 +410,11 @@ public final class ProductUpdateActionUtils {
                 if (isBlank(newProductVariantKey)) {
                     handleBuildVariantsUpdateActionsError(oldProduct, BLANK_VARIANT_KEY, syncOptions);
                 } else {
-                    // 2.1 if both old/new variants lists have an item with the same key - create update actions for the variant
-                    // 2.2 otherwise - add missing variant
-                    final List<UpdateAction<Product>> updateOrAddVariant =
-                        buildOneToOneOrAddActions(oldProductVariantsWithMaster, newProductVariantKey,
-                            oldVariant -> collectAllVariantUpdateActions(oldProduct, oldVariant,
-                                newProductVariant, attributesMetaData, syncOptions),
-                            () -> buildAddVariantUpdateActionFromDraft(newProductVariant));
-
+                    final ProductVariant matchingOldVariant = oldProductVariantsWithMaster.get(newProductVariantKey);
+                    final List<UpdateAction<Product>> updateOrAddVariant = ofNullable(matchingOldVariant)
+                        .map(oldVariant -> collectAllVariantUpdateActions(oldProduct, oldVariant, newProductVariant,
+                            attributesMetaData, syncOptions))
+                        .orElseGet(() -> singletonList(buildAddVariantUpdateActionFromDraft(newProductVariant)));
                     updateActions.addAll(updateOrAddVariant);
                 }
             }
