@@ -12,7 +12,7 @@ import java.util.Objects;
 
 import static java.util.Optional.ofNullable;
 
-public class PriceCompositeId {
+public final class PriceCompositeId {
 
     private final CountryCode countryCode;
     private final String currencyCode;
@@ -36,6 +36,21 @@ public class PriceCompositeId {
     }
 
 
+    /**
+     * Given a {@link PriceDraft}, creates a {@link PriceCompositeId} using the following fields from the
+     * supplied {@link PriceDraft}:
+     * <ol>
+     * <li>{@link PriceCompositeId#currencyCode}: CurrencyCode of {@link PriceDraft#getValue()}</li>
+     * <li>{@link PriceCompositeId#countryCode}: {@link PriceDraft#getCountry()} </li>
+     * <li>{@link PriceCompositeId#channelId}: id of {@link PriceDraft#getChannel()} </li>
+     * <li>{@link PriceCompositeId#customerGroupId}: id of {@link PriceDraft#getCustomerGroup()}</li>
+     * <li>{@link PriceCompositeId#validFrom}: {@link PriceDraft#getValidFrom()} </li>
+     * <li>{@link PriceCompositeId#validUntil}: {@link PriceDraft#getValidUntil()} </li>
+     * </ol>
+     *
+     * @param priceDraft a composite id is built using its fields.
+     * @return a composite id comprised of the fields of the supplied {@link PriceDraft}.
+     */
     @Nonnull
     public static PriceCompositeId of(@Nonnull final PriceDraft priceDraft) {
         return new PriceCompositeId(priceDraft.getValue().getCurrency().getCurrencyCode(),
@@ -44,6 +59,21 @@ public class PriceCompositeId {
             priceDraft.getValidFrom(), priceDraft.getValidUntil());
     }
 
+    /**
+     * Given a {@link Price}, creates a {@link PriceCompositeId} using the following fields from the
+     * supplied {@link Price}:
+     * <ol>
+     * <li>{@link PriceCompositeId#currencyCode}: CurrencyCode of {@link Price#getValue()}</li>
+     * <li>{@link PriceCompositeId#countryCode}: {@link Price#getCountry()} </li>
+     * <li>{@link PriceCompositeId#channelId}: id of {@link Price#getChannel()} </li>
+     * <li>{@link PriceCompositeId#customerGroupId}: id of {@link Price#getCustomerGroup()}</li>
+     * <li>{@link PriceCompositeId#validFrom}: {@link Price#getValidFrom()} </li>
+     * <li>{@link PriceCompositeId#validUntil}: {@link Price#getValidUntil()} </li>
+     * </ol>
+     *
+     * @param price a composite id is built using its fields.
+     * @return a composite id comprised of the fields of the supplied {@link Price}.
+     */
     @Nonnull
     public static PriceCompositeId of(@Nonnull final Price price) {
         return new PriceCompositeId(price.getValue().getCurrency().getCurrencyCode(),
@@ -84,7 +114,7 @@ public class PriceCompositeId {
         if (!(otherObject instanceof PriceCompositeId)) {
             return false;
         }
-        PriceCompositeId that = (PriceCompositeId) otherObject;
+        final PriceCompositeId that = (PriceCompositeId) otherObject;
         return countryCode == that.countryCode
             && Objects.equals(currencyCode, that.currencyCode)
             && Objects.equals(channelId, that.channelId)
