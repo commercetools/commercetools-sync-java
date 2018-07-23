@@ -88,7 +88,7 @@ public class ProductUpdateActionUtilsTest {
 
         // check remove variants are the first in the list, but not the master variant
         assertThat(updateActions.subList(0, 2))
-            .containsExactlyInAnyOrder(RemoveVariant.of(2), RemoveVariant.of(3));
+            .containsExactlyInAnyOrder(RemoveVariant.ofVariantId(2, true), RemoveVariant.ofVariantId(3, true));
 
         // check add actions
         ProductVariantDraft draftMaster = productDraftNew.getMasterVariant();
@@ -144,7 +144,8 @@ public class ProductUpdateActionUtilsTest {
 
         // check remove variants are the first in the list, but not the master variant
         assertThat(updateActions.subList(0, 3))
-            .containsExactlyInAnyOrder(RemoveVariant.of(2), RemoveVariant.of(3), RemoveVariant.of(4));
+            .containsExactlyInAnyOrder(RemoveVariant.ofVariantId(2, true),
+                RemoveVariant.ofVariantId(3, true), RemoveVariant.ofVariantId(4, true));
 
         // change master variant must be always after variants are added/updated,
         // because it is set by SKU and we should be sure the master variant is already added and SKUs are actual.
