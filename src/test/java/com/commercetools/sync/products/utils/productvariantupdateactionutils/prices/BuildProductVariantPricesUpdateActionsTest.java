@@ -467,6 +467,32 @@ public class BuildProductVariantPricesUpdateActionsTest {
                 DRAFT_UK_666_GBP_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX, true));
     }
 
+    @Test
+    public void withDifferentPriceActions_ShouldBuildActionsInCorrectOrder() {
+        // Preparation
+        final List<PriceDraft> newPrices = asList(
+            DRAFT_DE_111_EUR_01_02,
+            DRAFT_NE_777_EUR_01_04);
+        when(newProductVariant.getPrices()).thenReturn(newPrices);
+
+        final List<Price> oldPrices = asList(
+            DE_111_EUR,
+            NE_123_EUR_01_04
+        );
+        when(oldProductVariant.getPrices()).thenReturn(oldPrices);
+
+        // Test
+        final List<UpdateAction<Product>> updateActions =
+            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+
+
+        // Assertion
+        assertThat(updateActions).containsExactly(
+            RemovePrice.of(DE_111_EUR.getId(), true),
+            ChangePrice.of(NE_123_EUR_01_04, DRAFT_NE_777_EUR_01_04, true),
+            AddPrice.ofVariantId(oldProductVariant.getId(), DRAFT_DE_111_EUR_01_02, true));
+    }
+
     /**
      * Case#11
      */
