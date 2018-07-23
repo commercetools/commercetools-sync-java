@@ -57,7 +57,7 @@ class PriceCompositeIdTest {
     private static final String CASE_32 =
         "with currency, countryCode, channel, customerGroup, validFrom and validUntil";
 
-    @ParameterizedTest(name = "{0}")
+    @ParameterizedTest(name = "[#ofPriceDraft]: {0}")
     @MethodSource("ofPriceDraftTestCases")
     void ofPriceDraft_ShouldCreateCompositeId(@Nonnull final String testCaseName,
                                               @Nonnull final PriceDraft priceDraft,
@@ -199,7 +199,7 @@ class PriceCompositeIdTest {
         assertEquals(validUntil, priceCompositeId.getValidUntil());
     }
 
-    @ParameterizedTest(name = "[#ofPriceDraft]: {0}")
+    @ParameterizedTest(name = "[#equals]: {0}")
     @MethodSource("equalsTestCases")
     void equals(@Nonnull final String testCaseName,
                 @Nonnull final PriceCompositeId thisPriceCompositeId,
