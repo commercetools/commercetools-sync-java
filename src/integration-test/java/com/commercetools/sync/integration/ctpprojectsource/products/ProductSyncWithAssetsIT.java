@@ -22,7 +22,6 @@ import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
-import io.sphere.sdk.products.commands.updateactions.SetPrices;
 import io.sphere.sdk.products.queries.ProductProjectionByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.Type;
@@ -56,7 +55,6 @@ import static com.commercetools.sync.products.utils.ProductReferenceReplacementU
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -239,7 +237,6 @@ public class ProductSyncWithAssetsIT {
         final Map<String, String> assetsKeyToIdMap = createdAssets.stream().collect(toMap(Asset::getKey, Asset::getId));
 
         assertThat(updateActions).containsExactly(
-            SetPrices.of(1, emptyList()),
             RemoveAsset.ofVariantIdWithKey(1, "1", true),
             ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("newName"), true),
             SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),
