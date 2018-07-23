@@ -14,9 +14,10 @@ import io.sphere.sdk.products.commands.updateactions.ChangePrice;
 import io.sphere.sdk.products.commands.updateactions.RemovePrice;
 import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomType;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
@@ -67,6 +68,7 @@ import static com.commercetools.sync.products.utils.productvariantupdateactionut
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceFixtures.UK_333_GBP_02_05;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceFixtures.US_111_USD;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceFixtures.US_555_USD_CUST2_01_02;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -78,11 +80,15 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
     private static final ProductVariant oldProductVariant = mock(ProductVariant.class);
     private static final ProductVariantDraft newProductVariant = mock(ProductVariantDraft.class);
-    private static final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+    private static List<String> errorMessages;
+    private static final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                                   .errorCallback((msg, throwable) ->
+                                                                                       errorMessages.add(msg))
+                                                                                   .build();
 
-    @BeforeClass
-    public static void setup() {
-        when(oldProductVariant.getId()).thenReturn(101);
+    @Before
+    public void setupMethod() {
+        errorMessages = new ArrayList<>();
     }
 
     /**
@@ -100,6 +106,36 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Assertion
         assertThat(updateActions).isEmpty();
+    }
+
+    /**
+     * Case#1
+     */
+    @Test
+    public void withSomeNullNewPricesAndExistingPrices_ShouldBuildActionsAndTriggerErrorCallback() {
+        // Preparation
+        final List<PriceDraft> newPrices = asList(
+            DRAFT_US_111_USD,
+            null,
+            DRAFT_DE_111_EUR_01_02,
+            DRAFT_DE_111_USD);
+        when(newProductVariant.getPrices()).thenReturn(newPrices);
+        final List<Price> oldPrices = asList(
+            US_111_USD,
+            DE_111_EUR,
+            DE_111_EUR_01_02,
+            DE_111_USD);
+        when(oldProductVariant.getPrices()).thenReturn(oldPrices);
+
+        // Test
+        final List<UpdateAction<Product>> updateActions =
+            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+
+        // Assertion
+        assertThat(updateActions).containsExactly(RemovePrice.of(DE_111_EUR, true));
+        assertThat(errorMessages).containsExactly(format("Failed to build prices update actions for one price on the "
+            + "variant with id '%d' and key '%s'. Reason: %s", oldProductVariant.getId(), newProductVariant.getKey(),
+            "New price is null."));
     }
 
     /**
@@ -133,10 +169,10 @@ public class BuildProductVariantPricesUpdateActionsTest {
         when(newProductVariant.getPrices()).thenReturn(newPrices);
 
         final List<Price> oldPrices = asList(
-            DE_111_USD,
+            US_111_USD,
             DE_111_EUR,
             DE_111_EUR_01_02,
-            US_111_USD);
+            DE_111_USD);
         when(oldProductVariant.getPrices()).thenReturn(oldPrices);
 
         // Test
@@ -168,7 +204,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
             buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
 
         // Assertion
-        assertThat(updateActions).containsExactly(
+        assertThat(updateActions).containsExactlyInAnyOrder(
             AddPrice.ofVariantId(oldProductVariant.getId(), DRAFT_US_111_USD, true),
             AddPrice.ofVariantId(oldProductVariant.getId(), DRAFT_DE_111_EUR, true),
             AddPrice.ofVariantId(oldProductVariant.getId(), DRAFT_DE_111_EUR_01_02, true),
@@ -202,7 +238,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
             buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
 
         // Assertion
-        assertThat(updateActions).containsExactly(
+        assertThat(updateActions).containsExactlyInAnyOrder(
             AddPrice.ofVariantId(oldProductVariant.getId(), DRAFT_DE_111_EUR_02_03, true),
             AddPrice.ofVariantId(oldProductVariant.getId(), DRAFT_DE_111_USD, true),
             AddPrice.ofVariantId(oldProductVariant.getId(), DRAFT_UK_111_GBP, true));
@@ -405,7 +441,6 @@ public class BuildProductVariantPricesUpdateActionsTest {
             ChangePrice.of(NE_123_EUR_01_04, DRAFT_NE_777_EUR_01_04, true)
         );
     }
-
 
     /**
      * Case#10
