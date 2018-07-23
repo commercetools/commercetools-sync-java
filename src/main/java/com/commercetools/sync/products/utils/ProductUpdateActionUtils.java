@@ -459,35 +459,6 @@ public final class ProductUpdateActionUtils {
     }
 
     /**
-     * <b>Note:</b> if you do both add/remove product variants - <b>first always remove the variants</b>,
-     * and then - add.
-     * If you add first, the update action could fail due to having a duplicate {@code key} or {@code sku} with variants
-     * which were expected to be removed anyways. So issuing remove update action first will fix such issue.
-     *
-     * @param oldProductVariants [variantKey-variant] map of old variants. Master variant must be included.
-     * @param newProductVariants list of new product variants list <b>with resolved references prices references</b>.
-     *                            Master variant must be included.
-     * @return list of update actions to remove missing variants.
-     */
-    @Nonnull
-    public static List<RemoveVariant> buildRemoveVariantUpdateActions(
-        @Nonnull final Map<String, ProductVariant> oldProductVariants,
-        @Nonnull final List<ProductVariantDraft> newProductVariants) {
-
-        final Map<String, ProductVariant> productsToRemove = new HashMap<>(oldProductVariants);
-
-        newProductVariants.stream()
-                          .filter(Objects::nonNull)
-                          .map(ProductVariantDraft::getKey)
-                          .forEach(productsToRemove::remove);
-
-        return productsToRemove.values()
-                               .stream()
-                               .map(RemoveVariant::of)
-                               .collect(toList());
-    }
-
-    /**
      * Compares the 'published' field of a {@link ProductDraft} and a {@link Product} and accordingly returns
      * a {@link Publish} or {@link Unpublish} update action as a result in an {@link Optional}. If the new product's
      * 'published' field is null, then the default false value is assumed.
