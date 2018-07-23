@@ -1,6 +1,6 @@
 ext{
     commercetoolsJvmSdkVersion = '1.33.0'
-    mockitoVersion = '2.19.0'
+    mockitoVersion = '2.19.1'
     jupiterApiVersion = '5.2.0'
     assertjVersion = '3.10.0'
     checkstyleVersion = '8.10.1'
