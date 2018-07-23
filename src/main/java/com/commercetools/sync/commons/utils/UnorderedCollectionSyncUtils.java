@@ -55,27 +55,6 @@ public final class UnorderedCollectionSyncUtils {
                                 .collect(toList());
     }
 
-    /**
-     *
-     * @param oldResourcesMap
-     * @param oneToOneActionsMapper
-     * @param addActionMapper
-     * @param <T> type of the resulting update actions.
-     * @param <S> type of the new resource key.
-     * @param <U> type of the old resource.
-     * @return
-     */
-    public static <T, S, U> List<UpdateAction<T>> buildOneToOneOrAddActions(
-        @Nonnull final Map<S, U> oldResourcesMap,
-        @Nonnull final S newResourceKey,
-        @Nonnull final Function<U, List<UpdateAction<T>>> oneToOneActionsMapper,
-        @Nonnull final Supplier<UpdateAction<T>> addActionMapper) {
-
-        return ofNullable(oldResourcesMap.get(newResourceKey))
-            .map(oneToOneActionsMapper)
-            .orElseGet(() -> singletonList(addActionMapper.get()));
-    }
-
     private UnorderedCollectionSyncUtils() {
     }
 }
