@@ -17,9 +17,12 @@ import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.AddPrice;
+import io.sphere.sdk.products.commands.updateactions.ChangePrice;
 import io.sphere.sdk.products.commands.updateactions.MoveImageToPosition;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemovePrice;
+import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomField;
+import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomType;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
 
 import javax.annotation.Nonnull;
@@ -37,12 +40,12 @@ import static com.commercetools.sync.commons.utils.AssetsUpdateActionUtils.build
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static com.commercetools.sync.commons.utils.UnorderedCollectionSyncUtils.buildOneToOneOrAddActions;
 import static com.commercetools.sync.commons.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
 import static com.commercetools.sync.products.utils.ProductVariantPriceUpdateActionUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 
 
@@ -151,19 +154,52 @@ public final class ProductVariantUpdateActionUtils {
 
         emptyIfNull(newPrices).forEach(newPrice -> {
             if (newPrice == null) {
-                syncOptions.applyErrorCallback(format("Failed to build prices update actions on the variant with "
-                    + "id '%d' and key '%s'. Reason: %s", variantId, oldProductVariant.getKey(),
+                syncOptions.applyErrorCallback(format("Failed to build prices update actions for one price on the "
+                        + "variant with id '%d' and key '%s'. Reason: %s", variantId, oldProductVariant.getKey(),
                     NULL_PRODUCT_VARIANT_PRICE));
             } else {
-                final List<UpdateAction<Product>> updateOrAddPrice =
-                    buildOneToOneOrAddActions(oldPricesMap, PriceCompositeId.of(newPrice),
-                        oldPrice -> buildActions(variantId, oldPrice, newPrice, syncOptions),
-                        () -> AddPrice.ofVariantId(variantId, newPrice, true));
+                final PriceCompositeId newPriceCompositeId = PriceCompositeId.of(newPrice);
+                final Price matchingOldPrice = oldPricesMap.get(newPriceCompositeId);
+                final List<UpdateAction<Product>> updateOrAddPrice = ofNullable(matchingOldPrice)
+                    .map(oldPrice -> buildActions(variantId, oldPrice, newPrice, syncOptions))
+                    .orElseGet(() -> singletonList(AddPrice.ofVariantId(variantId, newPrice, true)));
                 updateActions.addAll(updateOrAddPrice);
             }
         });
 
-        return updateActions;
+        return sortPriceActions(updateActions);
+    }
+
+    /**
+     * Given a list of update actions, this method returns a copy of the supplied list but sorted with the following
+     * precedence:
+     * <ol>
+     * <li>{@link RemovePrice}</li>
+     * <li>{@link ChangePrice} or {@link SetProductPriceCustomType} or {@link SetProductPriceCustomField}</li>
+     * <li>{@link AddPrice}</li>
+     * </ol>
+     *
+     * This is to ensure that there are no conflicts when adding a new price that might have a duplicate value for
+     * a unique field, which could already be changed or removed.
+     *
+     * @param updateActions list of update actions to sort.
+     * @return a new sorted list of update actions (remove, change, add).
+     */
+    @Nonnull
+    private static List<UpdateAction<Product>> sortPriceActions(
+        @Nonnull final List<UpdateAction<Product>> updateActions) {
+
+        final List<UpdateAction<Product>> actionsCopy = new ArrayList<>(updateActions);
+        actionsCopy.sort((action1, action2) -> {
+            if (action1 instanceof RemovePrice) {
+                return 1;
+            }
+            if (action2 instanceof AddPrice) {
+                return -1;
+            }
+            return 0;
+        });
+        return actionsCopy;
     }
 
     /**
