@@ -598,9 +598,9 @@ public final class ProductUpdateActionUtils {
      */
     @Nonnull
     static AddVariant buildAddVariantUpdateActionFromDraft(@Nonnull final ProductVariantDraft draft) {
-        return AddVariant.of(draft.getAttributes(), draft.getPrices(), draft.getSku())
-            .withKey(draft.getKey())
-            .withImages(draft.getImages());
+        return AddVariant.of(draft.getAttributes(), draft.getPrices(), draft.getSku(), true)
+                         .withKey(draft.getKey())
+                         .withImages(draft.getImages());
     }
 
     /**
