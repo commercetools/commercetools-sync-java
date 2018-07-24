@@ -218,7 +218,12 @@ class PriceCompositeIdTest {
             Arguments.of("Not instance of priceCompositeId", priceCompositeId, "foo", false),
             Arguments.of("Exact same instances", priceCompositeId, priceCompositeId, true),
             Arguments.of("Equal but different instances", priceCompositeId, PriceCompositeId.of(USD_111), true),
-            Arguments.of("Not Equal", priceCompositeId, PriceCompositeId.of(EUR_345_CHANNEL1), false)
+            Arguments.of("Not equal countryCode", priceCompositeId, PriceCompositeId.of(DE_111_EUR), false),
+            Arguments.of("Not equal currencyCode", priceCompositeId, PriceCompositeId.of(EUR_345_CHANNEL1), false),
+            Arguments.of("Not equal channelId", priceCompositeId, PriceCompositeId.of(USD_111_CHANNEL1_01_02), false),
+            Arguments.of("Not equal customerGroupId", priceCompositeId, PriceCompositeId.of(USD_111_CUST1_01_02), false),
+            Arguments.of("Not equal validFrom", priceCompositeId, PriceCompositeId.of(USD_111_FROM_01), false),
+            Arguments.of("Not equal validUntil", priceCompositeId, PriceCompositeId.of(USD_111_UNTIL_01), false)
         );
     }
 }
