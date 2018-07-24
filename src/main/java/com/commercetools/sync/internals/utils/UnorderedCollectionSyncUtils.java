@@ -1,4 +1,4 @@
-package com.commercetools.sync.commons.utils;
+package com.commercetools.sync.internals.utils;
 
 import io.sphere.sdk.commands.UpdateAction;
 
@@ -14,7 +14,7 @@ import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static java.util.stream.Collectors.toList;
 
 /**
- * This utility class is only meant to be used for internal use of the library.
+ * This class is only meant for the internal use of the commercetools-sync-java library.
  */
 public final class UnorderedCollectionSyncUtils {
 

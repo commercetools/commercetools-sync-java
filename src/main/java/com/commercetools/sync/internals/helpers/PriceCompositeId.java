@@ -1,4 +1,4 @@
-package com.commercetools.sync.products.helpers;
+package com.commercetools.sync.internals.helpers;
 
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.models.Reference;
@@ -12,6 +12,9 @@ import java.util.Objects;
 
 import static java.util.Optional.ofNullable;
 
+/**
+ * This class is only meant for the internal use of the commercetools-sync-java library.
+ */
 public final class PriceCompositeId {
 
     private final CountryCode countryCode;

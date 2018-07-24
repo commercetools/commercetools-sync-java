@@ -1,4 +1,4 @@
-package com.commercetools.sync.products.helpers;
+package com.commercetools.sync.internals.helpers;
 
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.products.Price;
