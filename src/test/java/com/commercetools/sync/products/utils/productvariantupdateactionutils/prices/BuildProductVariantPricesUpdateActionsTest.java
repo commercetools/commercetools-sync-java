@@ -46,9 +46,6 @@ public class BuildProductVariantPricesUpdateActionsTest {
         errorMessages = new ArrayList<>();
     }
 
-    /**
-     * Case#1
-     */
     @Test
     public void withNullNewPricesAndEmptyExistingPrices_ShouldNotBuildActions() {
         // Preparation
@@ -63,9 +60,6 @@ public class BuildProductVariantPricesUpdateActionsTest {
         assertThat(updateActions).isEmpty();
     }
 
-    /**
-     * Case#1
-     */
     @Test
     public void withSomeNullNewPricesAndExistingPrices_ShouldBuildActionsAndTriggerErrorCallback() {
         // Preparation
@@ -93,9 +87,6 @@ public class BuildProductVariantPricesUpdateActionsTest {
             "New price is null."));
     }
 
-    /**
-     * Case#1
-     */
     @Test
     public void withEmptyNewPricesAndEmptyExistingPrices_ShouldNotBuildActions() {
         // Preparation
@@ -110,11 +101,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
         assertThat(updateActions).isEmpty();
     }
 
-    /**
-     * Case#2
-     */
     @Test
-
     public void withAllMatchingPrices_ShouldNotBuildActions() {
         // Preparation
         final List<PriceDraft> newPrices = asList(
@@ -139,9 +126,6 @@ public class BuildProductVariantPricesUpdateActionsTest {
         assertThat(updateActions).isEmpty();
     }
 
-    /**
-     * Case#3
-     */
     @Test
     public void withNonEmptyNewPricesButEmptyExistingPrices_ShouldBuildAddPriceActions()  {
         // Preparation
@@ -168,10 +152,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
             AddPrice.ofVariantId(oldProductVariant.getId(), DRAFT_DE_111_USD, true),
             AddPrice.ofVariantId(oldProductVariant.getId(), DRAFT_UK_111_GBP, true));
     }
-
-    /**
-     * Case#4
-     */
+    
     @Test
     public void withSomeNonChangedMatchingPricesAndNewPrices_ShouldBuildAddPriceActions() {
         // Preparation
@@ -200,9 +181,6 @@ public class BuildProductVariantPricesUpdateActionsTest {
             AddPrice.ofVariantId(oldProductVariant.getId(), DRAFT_UK_111_GBP, true));
     }
 
-    /**
-     * Case#5: NULL
-     */
     @Test
     public void withNullNewPrices_ShouldBuildRemovePricesAction() {
         // Preparation
@@ -226,9 +204,6 @@ public class BuildProductVariantPricesUpdateActionsTest {
             RemovePrice.of(DE_111_USD.getId(), true));
     }
 
-    /**
-     * Case#5: EMPTY
-     */
     @Test
     public void withEmptyNewPrices_ShouldBuildRemovePricesAction() {
         // Preparation
@@ -252,9 +227,6 @@ public class BuildProductVariantPricesUpdateActionsTest {
             RemovePrice.of(DE_111_USD.getId(), true));
     }
 
-    /**
-     * Case#6
-     */
     @Test
     public void withSomeNonChangedMatchingPricesAndNoNewPrices_ShouldBuildRemovePriceActions() {
         // Preparation
@@ -279,9 +251,6 @@ public class BuildProductVariantPricesUpdateActionsTest {
             RemovePrice.of(DE_111_USD.getId(), true));
     }
 
-    /**
-     * Case#7
-     */
     @Test
     public void withNoMatchingPrices_ShouldBuildRemoveAndAddPricesActions() {
         // Preparation
@@ -311,9 +280,6 @@ public class BuildProductVariantPricesUpdateActionsTest {
             AddPrice.ofVariantId(oldProductVariant.getId(), DRAFT_UK_111_GBP, true));
     }
 
-    /**
-     * Case#8
-     */
     @Test
     public void withSomeChangedMatchingPrices_ShouldBuildRemoveAndAddPricesActions() {
         // Preparation
@@ -347,9 +313,6 @@ public class BuildProductVariantPricesUpdateActionsTest {
             AddPrice.ofVariantId(oldProductVariant.getId(), DRAFT_UK_111_GBP, true));
     }
 
-    /**
-     * Case#9
-     */
     @Test
     public void withPricesWithOverlappingValidityDates_ShouldBuildRemoveAndAddPricesActions() {
         // Preparation
@@ -398,9 +361,6 @@ public class BuildProductVariantPricesUpdateActionsTest {
         );
     }
 
-    /**
-     * Case#10
-     */
     @Test
     public void withAllMatchingChangedPrices_ShouldBuildChangePriceActions() {
         // Preparation
@@ -479,9 +439,6 @@ public class BuildProductVariantPricesUpdateActionsTest {
             AddPrice.ofVariantId(oldProductVariant.getId(), DRAFT_DE_111_EUR_01_02, true));
     }
 
-    /**
-     * Case#11
-     */
     @Test
     public void withMixedCasesOfPriceMatches_ShouldBuildActions() {
         // Preparation
