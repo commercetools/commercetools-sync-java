@@ -33,6 +33,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [v1.0.0-M13 -  Jul 26, 2018](#v100-m13----jul-26-2018)
 - [v1.0.0-M12 -  Jun 05, 2018](#v100-m12----jun-05-2018)
 - [v1.0.0-M11 -  Mar 08, 2018](#v100-m11----mar-08-2018)
 - [v1.0.0-M10 -  Feb 13, 2018](#v100-m10----feb-13-2018)
@@ -49,18 +50,42 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-
 <!--
-### v1.0.0-M13 -  Mar 30, 2018
+### v1.0.0-M14 -  Aug 10, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M13...v1.0.0-M14) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M14)
+-->
+
+### v1.0.0-M13 -  Jul 26, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M12...v1.0.0-M13) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M13/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M13)
--->
+
+**New Features** (4) 
+- **Product Sync** - Support for syncing product prices. [#101](https://github.com/commercetools/commercetools-sync-java/issues/101)
+- **Product Sync** - `ProductSyncUtils#buildActions` now also calculates variants' all price update actions needed. [#101](https://github.com/commercetools/commercetools-sync-java/issues/101)
+- **Product Sync** - `ProductUpdateActionUtils#buildVariantsUpdateActions` now also calculates variants' all price update actions needed. [#101](https://github.com/commercetools/commercetools-sync-java/issues/101)
+- **Product Sync** - Introduced new update action build utility for building all needed update actions between two variants' prices `ProductVariantUpdateActionUtils#buildProductVariantPricesUpdateActions`. [#101](https://github.com/commercetools/commercetools-sync-java/issues/101)
+
+**Enhancements** (4)
+- **Commons** - Bumped gradle to version [gradle-4.9](https://docs.gradle.org/4.9/release-notes.html).
+- **Commons** - Bumped `com.jfrog.bintray` to 1.8.4.
+- **Commons** - Bumped `mockito` dependency to 2.19.1.
+- **Commons** - Switched to Junit5 using both `junit-jupiter-engine` and `junit-vintage-engine` for backward compatibility.
+
+**Changes** (1)
+- **Product Sync** - Removed redundant `ProductUpdateActionUtils#buildRemoveVariantUpdateActions`. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+
+
 
 ### v1.0.0-M12 -  Jun 05, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M11...v1.0.0-M12) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M12/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M12)
+
+**Enhancements** (13)
+- **Product Sync** - Support for syncing price custom fields. [#277](https://github.com/commercetools/commercetools-sync-java/issues/277)
 - **Product Sync** - `VariantReferenceResolver` now resolves prices' custom type references on all variants. [#277](https://github.com/commercetools/commercetools-sync-java/issues/277)
 - **Product Sync** - `ProductReferenceReplacementUtils#buildProductQuery` now expands custom types on prices. [#277](https://github.com/commercetools/commercetools-sync-java/issues/277)
 - **Product Sync** - `VariantReferenceReplacementUtils#replacePricesReferencesIdsWithKeys` now supports replacing price custom reference ids with keys. [#277](https://github.com/commercetools/commercetools-sync-java/issues/277)
