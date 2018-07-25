@@ -87,6 +87,8 @@ class ProductVariantPriceUpdateActionUtilsTest {
                                                                                        TIER_1_EUR_10))
                                                                                    .build();
 
+    private static final PriceDraft DRAFT_NULL_VALUE = PriceDraftBuilder.of((MonetaryAmount) null).build();
+
     private static final Price PRICE_EUR_10_NULL_TIERS = PriceBuilder.of(EUR_10)
                                                                      .id(UUID.randomUUID().toString())
                                                                      .tiers(null)
@@ -111,11 +113,20 @@ class ProductVariantPriceUpdateActionUtilsTest {
     void buildActionsTest(@Nonnull final String testCaseName,
                           @Nonnull final Price oldPrice,
                           @Nonnull final PriceDraft newPrice,
-                          @Nonnull final List<UpdateAction<Product>> expectedResult) {
+                          @Nonnull final List<UpdateAction<Product>> expectedResult,
+                          @Nonnull final List<String> expectedWarnings) {
+        // preparation
+        final List<String> warnings = new ArrayList<>();
+        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                        .warningCallback(warnings::add)
+                                                                        .build();
 
-        final List<UpdateAction<Product>> result = buildActions(0, oldPrice, newPrice, SYNC_OPTIONS);
+        // test
+        final List<UpdateAction<Product>> result = buildActions(0, oldPrice, newPrice, syncOptions);
 
+        // assertion
         assertEquals(expectedResult, result);
+        assertEquals(expectedWarnings, warnings);
     }
 
     private static Stream<Arguments> buildActionsTestCases() {
@@ -127,26 +138,33 @@ class ProductVariantPriceUpdateActionUtilsTest {
         final String case6 = "identical values and different tiers [different in minimumQuantity]";
         final String case7 = "identical values and different tiers [different in number of tiers]";
         final String case8 = "different values and different custom fields";
+        final String case9 = "different values (with a null new value)";
 
         return Stream.of(
-            Arguments.of(case1, PRICE_EUR_10_NULL_TIERS, DRAFT_EUR_10_NULL_TIERS, emptyList()),
-            Arguments.of(case2, PRICE_EUR_10_EMPTY_TIERS, DRAFT_EUR_10_EMPTY_TIERS, emptyList()),
-            Arguments.of(case3, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_10, emptyList()),
+            Arguments.of(case1, PRICE_EUR_10_NULL_TIERS, DRAFT_EUR_10_NULL_TIERS, emptyList(), emptyList()),
+            Arguments.of(case2, PRICE_EUR_10_EMPTY_TIERS, DRAFT_EUR_10_EMPTY_TIERS, emptyList(), emptyList()),
+            Arguments.of(case3, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_10, emptyList(), emptyList()),
             Arguments.of(case4, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_20_TIER_1_EUR_10,
-                singletonList(ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_20_TIER_1_EUR_10, true))),
+                singletonList(ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_20_TIER_1_EUR_10, true)),
+                emptyList()),
             Arguments.of(case5, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_20,
-                singletonList(ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_20, true))),
+                singletonList(ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_20, true)),
+                emptyList()),
             Arguments.of(case6, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_2_EUR_10,
-                singletonList(ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_2_EUR_10, true))),
+                singletonList(ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_2_EUR_10, true)),
+                emptyList()),
             Arguments.of(case7, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_MULTIPLE_TIERS,
-                singletonList(ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_MULTIPLE_TIERS, true))),
+                singletonList(ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_MULTIPLE_TIERS, true)),
+                emptyList()),
             Arguments.of(case8, DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY,
                 DRAFT_DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX,
                 asList(ChangePrice.of(DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY,
                     DRAFT_DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX, true),
                     SetProductPriceCustomField.ofJson("foo",
                         DRAFT_DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX.getCustom().getFields().get("foo"),
-                        DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY.getId(), true)))
+                        DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY.getId(), true)), emptyList()),
+            Arguments.of(case9, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_NULL_VALUE, emptyList(), singletonList(
+                format("Cannot unset 'value' field of price with id '%s'.", PRICE_EUR_10_TIER_1_EUR_10.getId())))
         );
     }
 
@@ -155,11 +173,20 @@ class ProductVariantPriceUpdateActionUtilsTest {
     void buildChangePriceUpdateActionTest(@Nonnull final String testCaseName,
                                           @Nonnull final Price oldPrice,
                                           @Nonnull final PriceDraft newPrice,
-                                          @Nullable final UpdateAction<Product> expectedResult) {
+                                          @Nullable final UpdateAction<Product> expectedResult,
+                                          @Nonnull final List<String> expectedWarnings) {
+        // preparation
+        final List<String> warnings = new ArrayList<>();
+        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                  .warningCallback(warnings::add)
+                                                                  .build();
 
-        final ChangePrice result = buildChangePriceUpdateAction(oldPrice, newPrice).orElse(null);
+        // test
+        final ChangePrice result = buildChangePriceUpdateAction(oldPrice, newPrice, syncOptions).orElse(null);
 
+        // assertion
         assertEquals(expectedResult, result);
+        assertEquals(expectedWarnings, warnings);
     }
 
     private static Stream<Arguments> buildChangePriceTestCases() {
@@ -170,20 +197,23 @@ class ProductVariantPriceUpdateActionUtilsTest {
         final String case5 = "identical values and different tiers [different in value]";
         final String case6 = "identical values and different tiers [different in minimumQuantity]";
         final String case7 = "identical values and different tiers [different in number of tiers]";
+        final String case8 = "different values (with a null new value)";
 
 
         return Stream.of(
-            Arguments.of(case1, PRICE_EUR_10_NULL_TIERS, DRAFT_EUR_10_NULL_TIERS, null),
-            Arguments.of(case2, PRICE_EUR_10_EMPTY_TIERS, DRAFT_EUR_10_EMPTY_TIERS, null),
-            Arguments.of(case3, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_10, null),
+            Arguments.of(case1, PRICE_EUR_10_NULL_TIERS, DRAFT_EUR_10_NULL_TIERS, null, emptyList()),
+            Arguments.of(case2, PRICE_EUR_10_EMPTY_TIERS, DRAFT_EUR_10_EMPTY_TIERS, null, emptyList()),
+            Arguments.of(case3, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_10, null, emptyList()),
             Arguments.of(case4, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_20_TIER_1_EUR_10,
-                ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_20_TIER_1_EUR_10, true)),
+                ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_20_TIER_1_EUR_10, true), emptyList()),
             Arguments.of(case5, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_20,
-                ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_20, true)),
+                ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_20, true), emptyList()),
             Arguments.of(case6, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_2_EUR_10,
-                ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_2_EUR_10, true)),
+                ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_2_EUR_10, true), emptyList()),
             Arguments.of(case7, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_MULTIPLE_TIERS,
-                ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_MULTIPLE_TIERS, true))
+                ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_MULTIPLE_TIERS, true), emptyList()),
+            Arguments.of(case8, PRICE_EUR_10_TIER_1_EUR_10, DRAFT_NULL_VALUE, null, singletonList(
+                format("Cannot unset 'value' field of price with id '%s'.", PRICE_EUR_10_TIER_1_EUR_10.getId())))
         );
     }
 

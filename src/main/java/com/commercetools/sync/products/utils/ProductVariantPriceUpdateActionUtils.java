@@ -10,13 +10,17 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.commands.updateactions.ChangePrice;
 
 import javax.annotation.Nonnull;
+import javax.money.MonetaryAmount;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static java.lang.String.format;
 
 public final class ProductVariantPriceUpdateActionUtils {
+    private static final String VARIANT_CHANGE_PRICE_EMPTY_VALUE = "Cannot unset 'value' field of price with id"
+        + " '%s'.";
 
     /**
      * Compares all the fields of a {@link Price} and a {@link PriceDraft} and returns a list of
@@ -39,7 +43,7 @@ public final class ProductVariantPriceUpdateActionUtils {
 
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
 
-        buildChangePriceUpdateAction(oldPrice, newPrice).ifPresent(updateActions::add);
+        buildChangePriceUpdateAction(oldPrice, newPrice, syncOptions).ifPresent(updateActions::add);
         updateActions.addAll(buildCustomUpdateActions(variantId, oldPrice, newPrice, syncOptions));
 
         return updateActions;
@@ -58,16 +62,27 @@ public final class ProductVariantPriceUpdateActionUtils {
      * {@link Optional}, otherwise if both are identical in the {@link Price} and the {@link PriceDraft}, then no update
      * action is needed and hence an empty {@link Optional} is returned.
      *
-     * @param oldPrice  the price which should be updated.
-     * @param newPrice  the price draft where we get the new name.
+     * @param oldPrice      the price which should be updated.
+     * @param newPrice      the price draft where we get the new name.
+     * @param syncOptions   responsible for supplying the sync options to the sync utility method. It is used for
+     *                      triggering the error callback within the utility, in case of errors.
      * @return A filled optional with the update action or an empty optional if the names are identical.
      */
     @Nonnull
     public static Optional<ChangePrice> buildChangePriceUpdateAction(
         @Nonnull final Price oldPrice,
-        @Nonnull final PriceDraft newPrice) {
+        @Nonnull final PriceDraft newPrice,
+        @Nonnull final ProductSyncOptions syncOptions) {
 
-        final Optional<ChangePrice> actionAfterValuesDiff = buildUpdateAction(oldPrice.getValue(), newPrice.getValue(),
+        final MonetaryAmount oldPriceValue = oldPrice.getValue();
+        final MonetaryAmount newPriceValue = newPrice.getValue();
+
+        if (newPriceValue == null && oldPriceValue != null) {
+            syncOptions.applyWarningCallback(format(VARIANT_CHANGE_PRICE_EMPTY_VALUE, oldPrice.getId()));
+            return Optional.empty();
+        }
+
+        final Optional<ChangePrice> actionAfterValuesDiff = buildUpdateAction(oldPriceValue, newPriceValue,
             () -> ChangePrice.of(oldPrice, newPrice, true));
 
         return actionAfterValuesDiff.map(Optional::of)
