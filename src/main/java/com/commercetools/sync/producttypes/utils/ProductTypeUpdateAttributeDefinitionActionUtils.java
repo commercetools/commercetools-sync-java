@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
@@ -88,12 +89,11 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      * @throws BuildUpdateActionException in case there are attribute definitions drafts with duplicate names.
      */
     @Nonnull
-    private static List<UpdateAction<ProductType>>
-        buildUpdateActions(
-            @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
-            @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts,
-            @Nonnull final ProductTypeSyncOptions syncOptions)
-            throws BuildUpdateActionException {
+    private static List<UpdateAction<ProductType>> buildUpdateActions(
+        @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
+        @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts,
+        @Nonnull final ProductTypeSyncOptions syncOptions)
+        throws BuildUpdateActionException {
 
         final HashSet<String> removedAttributesDefinitionsNames = new HashSet<>();
 
@@ -178,10 +178,10 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
                     newAttributeDefinitionDraftsNameMap.get(oldAttributeDefinitionName);
                 return ofNullable(matchingNewAttributeDefinitionDraft)
                     .map(attributeDefinitionDraft ->
-                            AttributeDefinitionUpdateActionUtils.buildActions(
+                        buildActions(
                             oldAttributeDefinition,
                             attributeDefinitionDraft,
-                                    syncOptions
+                            syncOptions
                         )
                     )
                     .orElseGet(() -> {

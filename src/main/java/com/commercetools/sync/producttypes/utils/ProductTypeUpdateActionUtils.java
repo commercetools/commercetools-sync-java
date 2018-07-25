@@ -44,6 +44,7 @@ public final class ProductTypeUpdateActionUtils {
         @Nonnull final ProductType oldProductType,
         @Nonnull final ProductTypeDraft newProductType,
         @Nonnull final ProductTypeSyncOptions syncOptions) {
+
         if (newProductType.getName() == null && oldProductType.getName() != null) {
             syncOptions.applyWarningCallback(format(PRODUCT_TYPE_CHANGE_NAME_EMPTY_NAME, oldProductType.getId()));
             return Optional.empty();
