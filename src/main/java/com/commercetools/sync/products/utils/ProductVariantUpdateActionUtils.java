@@ -1,9 +1,9 @@
 package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.internals.helpers.PriceCompositeId;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.internals.helpers.PriceCompositeId;
 import com.commercetools.sync.products.helpers.ProductAssetActionFactory;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.AssetDraft;
@@ -33,10 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.AssetsUpdateActionUtils.buildAssetsUpdateActions;
+import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
@@ -144,17 +143,14 @@ public final class ProductVariantUpdateActionUtils {
         @Nonnull final ProductVariantDraft newProductVariant,
         @Nonnull final ProductSyncOptions syncOptions) {
 
-        final Map<PriceCompositeId, Price> oldPricesMap =
-            oldProductVariant.getPrices()
-                             .stream()
-                             .collect(Collectors.toMap(PriceCompositeId::of, Function.identity()));
-
+        final List<Price> oldPrices = oldProductVariant.getPrices();
         final List<PriceDraft> newPrices = newProductVariant.getPrices();
 
-        final List<UpdateAction<Product>> updateActions = buildRemoveUpdateActions(oldPricesMap, newPrices,
-            PriceCompositeId::of, price -> RemovePrice.of(price, true));
+        final List<UpdateAction<Product>> updateActions = buildRemoveUpdateActions(oldPrices, newPrices,
+            PriceCompositeId::of, PriceCompositeId::of, price -> RemovePrice.of(price, true));
 
         final Integer variantId = oldProductVariant.getId();
+        final Map<PriceCompositeId, Price> oldPricesMap = collectionToMap(oldPrices, PriceCompositeId::of);
 
         emptyIfNull(newPrices).forEach(newPrice -> {
             if (newPrice == null) {

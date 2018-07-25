@@ -388,8 +388,11 @@ public final class ProductUpdateActionUtils {
 
         final ProductVariant oldMasterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
 
+        final List<ProductVariant> oldProductVariantsWithoutMaster =
+            oldProduct.getMasterData().getStaged().getVariants();
+
         final Map<String, ProductVariant> oldProductVariantsNoMaster =
-            collectionToMap(oldProduct.getMasterData().getStaged().getVariants(), ProductVariant::getKey);
+            collectionToMap(oldProductVariantsWithoutMaster, ProductVariant::getKey);
 
         final Map<String, ProductVariant> oldProductVariantsWithMaster = new HashMap<>(oldProductVariantsNoMaster);
         oldProductVariantsWithMaster.put(oldMasterVariant.getKey(), oldMasterVariant);
@@ -399,8 +402,8 @@ public final class ProductUpdateActionUtils {
 
         // Remove missing variants, but keep master variant (MV can't be removed)
         final List<UpdateAction<Product>> updateActions =
-            buildRemoveUpdateActions(oldProductVariantsNoMaster, newAllProductVariants, ProductVariantDraft::getKey,
-                variant -> RemoveVariant.ofVariantId(variant.getId(), true));
+            buildRemoveUpdateActions(oldProductVariantsWithoutMaster, newAllProductVariants, ProductVariant::getKey,
+                ProductVariantDraft::getKey, variant -> RemoveVariant.ofVariantId(variant.getId(), true));
 
         emptyIfNull(newAllProductVariants).forEach(newProductVariant -> {
             if (newProductVariant == null) {

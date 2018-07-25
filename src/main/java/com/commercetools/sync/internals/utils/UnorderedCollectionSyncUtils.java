@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static java.util.stream.Collectors.toList;
 
@@ -19,14 +20,14 @@ import static java.util.stream.Collectors.toList;
 public final class UnorderedCollectionSyncUtils {
 
     /**
-     * Compares a list of {@code newDrafts} with a map of {@code oldResourcesMap} and for every missing matching draft
-     * in the {@code oldResourcesMap}: a remove update action is created using the {@code removeUpdateActionMapper}.
+     * Compares a list of {@code newDrafts} with a list of {@code oldResources} and for every missing matching draft
+     * in the {@code oldResources}: a remove update action is created using the {@code removeUpdateActionMapper}.
      * The final result is a list of all the remove update actions.
      *
-     * @param oldResourcesMap          a map that consists of entries where each entry has a key=[resource matcher] and
-     *                                 the value=[the old resource itself].
+     * @param oldResources             a list of the old resource to compare to the new collection.
      * @param newDrafts                a list of the new drafts to compare to the old collection.
-     * @param keyMapper                a function that uses the draft to get its key matcher.
+     * @param oldResourceKeyMapper     a function that uses the old resource to get its key matcher.
+     * @param draftKeyMapper           a function that uses the draft to get its key matcher.
      * @param removeUpdateActionMapper a function that uses the old resource to build a remove update action.
      * @param <T>                      type of the resulting update actions.
      * @param <S>                      type of the new resource key.
@@ -37,16 +38,18 @@ public final class UnorderedCollectionSyncUtils {
      */
     @Nonnull
     public static <T, S, U, V> List<UpdateAction<T>> buildRemoveUpdateActions(
-        @Nonnull final Map<S, U> oldResourcesMap,
+        @Nonnull final List<U> oldResources,
         @Nullable final List<V> newDrafts,
-        @Nonnull final Function<V, S> keyMapper,
+        @Nonnull final Function<U, S> oldResourceKeyMapper,
+        @Nonnull final Function<V, S> draftKeyMapper,
         @Nonnull final Function<U, UpdateAction<T>> removeUpdateActionMapper) {
 
+        final Map<S, U> oldResourcesMap = collectionToMap(oldResources, oldResourceKeyMapper);
         final Map<S, U> resourcesToRemove = new HashMap<>(oldResourcesMap);
 
         emptyIfNull(newDrafts).stream()
                               .filter(Objects::nonNull)
-                              .map(keyMapper)
+                              .map(draftKeyMapper)
                               .forEach(resourcesToRemove::remove);
 
         return resourcesToRemove.values()
