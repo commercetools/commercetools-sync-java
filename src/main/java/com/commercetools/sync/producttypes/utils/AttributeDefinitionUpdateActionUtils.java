@@ -37,7 +37,6 @@ public final class AttributeDefinitionUpdateActionUtils {
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
 
-        // TODO Add Attribute Definition Update Actions
         return Stream.of(
             buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
             buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
