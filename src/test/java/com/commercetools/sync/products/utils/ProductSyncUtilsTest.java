@@ -94,6 +94,7 @@ public class ProductSyncUtilsTest {
 
     @Test
     public void buildActions_FromDraftsWithMultipleDifferentValues_ShouldBuildUpdateActions() {
+        // preparation
         final ProductDraftBuilder draftBuilder = createProductDraftBuilder(
             PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH, ProductType.referenceOfId("anyProductType"));
 
@@ -119,9 +120,11 @@ public class ProductSyncUtilsTest {
         when(expectedCategoryToRemove.toReference())
             .thenReturn(Category.referenceOfId("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"));
 
+        // test
         final List<UpdateAction<Product>> updateActions =
             ProductSyncUtils.buildActions(oldProduct, newProductDraft, productSyncOptions, new HashMap<>());
 
+        // asserts
         assertThat(updateActions).containsExactlyInAnyOrder(
             ChangeName.of(ofEnglish("new name"), true),
             SetDescription.of(ofEnglish("new description"), true),
