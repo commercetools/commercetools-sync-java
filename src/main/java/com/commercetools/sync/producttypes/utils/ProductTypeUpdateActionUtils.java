@@ -97,8 +97,6 @@ public final class ProductTypeUpdateActionUtils {
      *
      * @param oldProductType the product type which should be updated.
      * @param newProductType the product type draft where we get the key.
-     * @param syncOptions the sync options with which a custom callback function is called in case errors exists
-     *                    while building attributes update actions.
      * @return A list with the update actions or an empty list if the attributes are identical.
      */
     @Nonnull
@@ -110,8 +108,7 @@ public final class ProductTypeUpdateActionUtils {
         try {
             return buildAttributeDefinitionsUpdateActions(
                     oldProductType.getAttributes(),
-                    newProductType.getAttributes(),
-                    syncOptions);
+                    newProductType.getAttributes());
         } catch (final BuildUpdateActionException exception) {
             syncOptions.applyErrorCallback(format("Failed to build update actions for the attributes definitions "
                     + "of the product type with the key '%s'. Reason: %s", oldProductType.getKey(), exception),

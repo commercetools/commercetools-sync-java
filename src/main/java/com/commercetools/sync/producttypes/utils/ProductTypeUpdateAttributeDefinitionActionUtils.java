@@ -2,7 +2,6 @@ package com.commercetools.sync.producttypes.utils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
-import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.helpers.AttributeDefinitionCustomBuilder;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -44,8 +43,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      *
      * @param oldAttributeDefinitions                       the old list of attribute definitions.
      * @param newAttributeDefinitionsDrafts                 the new list of attribute definitions drafts.
-     * @param syncOptions                                   the sync options with which a custom callback function is
-     *                                                      called if warnings or errors.
+     *
      * @return a list of attribute definitions update actions if the list of attribute definitions is not identical.
      *         Otherwise, if the attribute definitions are identical, an empty list is returned.
      * @throws BuildUpdateActionException in case there are attribute definitions drafts with duplicate names.
@@ -53,15 +51,13 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
     @Nonnull
     public static List<UpdateAction<ProductType>> buildAttributeDefinitionsUpdateActions(
         @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
-        @Nullable final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts,
-        @Nonnull final ProductTypeSyncOptions syncOptions)
+        @Nullable final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts)
         throws BuildUpdateActionException {
 
         if (newAttributeDefinitionsDrafts != null) {
             return buildUpdateActions(
                 oldAttributeDefinitions,
-                newAttributeDefinitionsDrafts,
-                syncOptions
+                newAttributeDefinitionsDrafts
             );
         } else {
             return oldAttributeDefinitions
@@ -81,8 +77,6 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      *
      * @param oldAttributeDefinitions                       the old list of attribute definitions.
      * @param newAttributeDefinitionsDrafts                 the new list of attribute definitions drafts.
-     * @param syncOptions                                   the sync options with which a custom callback function is
-     *                                                      called if warnings or errors.
      *
      * @return a list of attribute definitions update actions if the list of attribute definitions is not identical.
      *         Otherwise, if the attribute definitions are identical, an empty list is returned.
@@ -91,8 +85,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
     @Nonnull
     private static List<UpdateAction<ProductType>> buildUpdateActions(
         @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
-        @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts,
-        @Nonnull final ProductTypeSyncOptions syncOptions)
+        @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts)
         throws BuildUpdateActionException {
 
         final HashSet<String> removedAttributesDefinitionsNames = new HashSet<>();
@@ -122,8 +115,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
             buildRemoveAttributeDefinitionOrAttributeDefinitionUpdateActions(
                 oldAttributeDefinitions,
                 removedAttributesDefinitionsNames,
-                newAttributesDefinitionsDraftsNameMap,
-                syncOptions
+                newAttributesDefinitionsDraftsNameMap
             );
 
         // Add before changing the order because commercetools API doesn't allow to add an attribute definition
@@ -156,8 +148,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      * @param removedAttributeDefinitionNames               a set containing names of removed attribute definitions.
      * @param newAttributeDefinitionDraftsNameMap           a map of names to attribute definition drafts of the new
      *                                                      list of attribute definition drafts.
-     * @param syncOptions                                   the sync options with which a custom callback function is
-     *                                                      called if warnings or errors.
+     *
      * @return a list of attribute definition update actions if there are attribute definitions that are not existing
      *      in the new draft. If the attribute definition still exists in the new draft, then compare the attribute
      *      definition fields (name, label, etc..), and add the computed actions to the list of update actions.
@@ -167,8 +158,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
     private static List<UpdateAction<ProductType>> buildRemoveAttributeDefinitionOrAttributeDefinitionUpdateActions(
         @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
         @Nonnull final Set<String> removedAttributeDefinitionNames,
-        @Nonnull final Map<String, AttributeDefinitionDraft> newAttributeDefinitionDraftsNameMap,
-        @Nonnull final ProductTypeSyncOptions syncOptions) {
+        @Nonnull final Map<String, AttributeDefinitionDraft> newAttributeDefinitionDraftsNameMap) {
 
         return oldAttributeDefinitions
             .stream()
@@ -180,8 +170,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
                     .map(attributeDefinitionDraft ->
                         buildActions(
                             oldAttributeDefinition,
-                            attributeDefinitionDraft,
-                            syncOptions
+                            attributeDefinitionDraft
                         )
                     )
                     .orElseGet(() -> {

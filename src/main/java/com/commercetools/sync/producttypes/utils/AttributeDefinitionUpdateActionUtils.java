@@ -1,6 +1,5 @@
 package com.commercetools.sync.producttypes.utils;
 
-import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -13,11 +12,12 @@ import io.sphere.sdk.producttypes.commands.updateactions.ChangeInputHint;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeConstraint;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static java.util.stream.Collectors.toList;
 
 
 public final class AttributeDefinitionUpdateActionUtils {
@@ -29,21 +29,25 @@ public final class AttributeDefinitionUpdateActionUtils {
      *
      * @param oldAttributeDefinition        the attribute definition which should be updated.
      * @param newAttributeDefinitionDraft   the attribute definition draft where we get the new fields.
-     * @param syncOptions                   responsible for supplying the sync options to the sync utility method.
-     *                                      It is used for triggering the error callback within the utility, in case of
-     *                                      errors.
      * @return A list with the update actions or an empty list if the attribute definition fields are identical.
      *
      */
     @Nonnull
     public static List<UpdateAction<ProductType>> buildActions(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
-        @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft,
-        @Nonnull final ProductTypeSyncOptions syncOptions) {
+        @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
 
         // TODO Add Attribute Definition Update Actions
-
-        return Collections.emptyList();
+        return Stream.of(
+            buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+            buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+            buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+            buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+            buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
+        )
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .collect(toList());
     }
 
     /**
