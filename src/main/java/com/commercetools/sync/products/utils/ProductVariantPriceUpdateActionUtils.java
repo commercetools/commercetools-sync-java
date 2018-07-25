@@ -77,7 +77,7 @@ public final class ProductVariantPriceUpdateActionUtils {
         final MonetaryAmount oldPriceValue = oldPrice.getValue();
         final MonetaryAmount newPriceValue = newPrice.getValue();
 
-        if (newPriceValue == null && oldPriceValue != null) {
+        if (newPriceValue == null) {
             syncOptions.applyWarningCallback(format(VARIANT_CHANGE_PRICE_EMPTY_VALUE, oldPrice.getId()));
             return Optional.empty();
         }
