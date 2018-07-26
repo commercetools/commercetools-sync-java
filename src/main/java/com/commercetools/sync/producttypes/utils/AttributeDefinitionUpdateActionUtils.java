@@ -164,4 +164,6 @@ public final class AttributeDefinitionUpdateActionUtils {
             )
         );
     }
+
+    private AttributeDefinitionUpdateActionUtils() { }
 }
