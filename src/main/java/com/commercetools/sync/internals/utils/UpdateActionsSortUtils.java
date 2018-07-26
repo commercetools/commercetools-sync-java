@@ -12,6 +12,9 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class is only meant for the internal use of the commercetools-sync-java library.
+ */
 public final class UpdateActionsSortUtils {
     /**
      * Given a list of update actions, this method returns a copy of the supplied list but sorted with the following
