@@ -33,17 +33,16 @@ class UpdateActionsSortUtilsTest {
         assertEquals(expectedResult, result);
     }
 
+    /**
+     * Testing all different conditions stated in Effective Java for comparator implementation:
+     * - anticommutation
+     * - exception symmetry
+     * - transitivity
+     * - consistency with <code>equals</code>.
+     *
+     * <p>More info here: http://www.javapractices.com/topic/TopicAction.do?Id=10
+     */
     private static Stream<Arguments> sortPriceActionsTestCases() {
-        /**
-         * Testing all different conditions stated in Effective Java for comparator implementation:
-         * - anticommutation
-         * - exception symmetry
-         * - transitivity
-         * - consistency with <code>equals</code>.
-         *
-         * More info here: http://www.javapractices.com/topic/TopicAction.do?Id=10
-         */
-
         final String case1 = "empty list";
         final String case2 = "one element";
 
