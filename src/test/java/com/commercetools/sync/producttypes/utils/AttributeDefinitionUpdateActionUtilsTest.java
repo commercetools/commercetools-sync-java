@@ -83,7 +83,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     public void buildChangeLabelAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<ProductType>> result = buildChangeLabelUpdateAction(old, newDifferent);
 
-        assertThat(result).containsInstanceOf(ChangeAttributeDefinitionLabel.class);
         assertThat(result).contains(ChangeAttributeDefinitionLabel.of(old.getName(), newDifferent.getLabel()));
     }
 
@@ -98,7 +97,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     public void buildSetInputTipAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<ProductType>> result = buildSetInputTipUpdateAction(old, newDifferent);
 
-        assertThat(result).containsInstanceOf(SetInputTip.class);
         assertThat(result).contains(SetInputTip.of(old.getName(), newDifferent.getInputTip()));
     }
 
@@ -113,7 +111,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     public void buildSetInputTipAction_WithSourceNullValues_ShouldReturnAction() {
         final Optional<UpdateAction<ProductType>> result = buildSetInputTipUpdateAction(oldNullValues, newDifferent);
 
-        assertThat(result).containsInstanceOf(SetInputTip.class);
         assertThat(result).contains(SetInputTip.of(oldNullValues.getName(), newDifferent.getInputTip()));
     }
 
@@ -121,7 +118,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     public void buildSetInputTipAction_WithTargetNullValues_ShouldReturnAction() {
         final Optional<UpdateAction<ProductType>> result = buildSetInputTipUpdateAction(old, newNullValues);
 
-        assertThat(result).containsInstanceOf(SetInputTip.class);
         assertThat(result).contains(SetInputTip.of(old.getName(), newNullValues.getInputTip()));
     }
 
@@ -129,7 +125,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     public void buildChangeIsSearchableAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<ProductType>> result = buildChangeIsSearchableUpdateAction(old, newDifferent);
 
-        assertThat(result).containsInstanceOf(ChangeIsSearchable.class);
         assertThat(result).contains(ChangeIsSearchable.of(old.getName(), newDifferent.isSearchable()));
     }
 
@@ -144,7 +139,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     public void buildChangeInputHintAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<ProductType>> result = buildChangeInputHintUpdateAction(old, newDifferent);
 
-        assertThat(result).containsInstanceOf(ChangeInputHint.class);
         assertThat(result).contains(ChangeInputHint.of(old.getName(), newDifferent.getInputHint()));
     }
 
@@ -160,7 +154,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
         final Optional<UpdateAction<ProductType>> result =
             buildChangeInputHintUpdateAction(oldNullValues, newDifferent);
 
-        assertThat(result).containsInstanceOf(ChangeInputHint.class);
         assertThat(result).contains(ChangeInputHint.of(oldNullValues.getName(), newDifferent.getInputHint()));
     }
 
@@ -168,7 +161,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     public void buildChangeInputHintAction_WithTargetNullValues_ShouldReturnAction() {
         final Optional<UpdateAction<ProductType>> result = buildChangeInputHintUpdateAction(old, newNullValues);
 
-        assertThat(result).containsInstanceOf(ChangeInputHint.class);
         assertThat(result).contains(ChangeInputHint.of(old.getName(), newNullValues.getInputHint()));
     }
 
@@ -177,7 +169,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
         final Optional<UpdateAction<ProductType>> result =
             buildChangeAttributeConstraintUpdateAction(old, newDifferent);
 
-        assertThat(result).containsInstanceOf(ChangeAttributeConstraint.class);
         assertThat(result).contains(ChangeAttributeConstraint.of(old.getName(), newDifferent.getAttributeConstraint()));
     }
 
@@ -193,7 +184,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
         final Optional<UpdateAction<ProductType>> result =
             buildChangeAttributeConstraintUpdateAction(oldNullValues, newDifferent);
 
-        assertThat(result).containsInstanceOf(ChangeAttributeConstraint.class);
         assertThat(result).contains(ChangeAttributeConstraint.of(
             oldNullValues.getName(),
             newDifferent.getAttributeConstraint())
@@ -205,7 +195,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
         final Optional<UpdateAction<ProductType>> result =
             buildChangeAttributeConstraintUpdateAction(old, newNullValues);
 
-        assertThat(result).containsInstanceOf(ChangeAttributeConstraint.class);
         assertThat(result).contains(ChangeAttributeConstraint.of(
             old.getName(),
             newNullValues.getAttributeConstraint())
