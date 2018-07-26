@@ -369,7 +369,7 @@ public final class ProductUpdateActionUtils {
      * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by
      *                    the user. For example, custom callbacks to call in case of warnings or errors occurring
      *                    on the build update action process. And other options (See {@link ProductSyncOptions}
-     *                    for more info.
+     *                    for more info).
      * @param attributesMetaData a map of attribute name -&gt; {@link AttributeMetaData}; which defines attribute
      *                           information: its name, whether a value is required or not and whether it has the
      *                           constraint "SameForAll" or not.

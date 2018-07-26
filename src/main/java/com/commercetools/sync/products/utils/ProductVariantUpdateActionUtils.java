@@ -71,7 +71,7 @@ public final class ProductVariantUpdateActionUtils {
      * @param syncOptions        the sync options wrapper which contains options related to the sync process supplied by
      *                           the user. For example, custom callbacks to call in case of warnings or errors occurring
      *                           on the build update action process. And other options (See {@link ProductSyncOptions}
-     *                           for more info.
+     *                           for more info).
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
      *          needed.
      */
@@ -131,7 +131,7 @@ public final class ProductVariantUpdateActionUtils {
      * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by
      *                    the user. For example, custom callbacks to call in case of warnings or errors occurring
      *                    on the build update action process. And other options (See {@link ProductSyncOptions}
-     *                    for more info.
+     *                    for more info).
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
      *         needed.
      */
