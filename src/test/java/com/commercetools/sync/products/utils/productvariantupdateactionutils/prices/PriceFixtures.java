@@ -186,7 +186,6 @@ public final class PriceFixtures {
     @Nonnull
     private static Price getPrice(@Nonnull final BigDecimal value,
                                   @Nonnull final CurrencyUnit currencyUnits,
-
                                   @Nullable final CountryCode countryCode,
                                   @Nullable final String customerGroupId,
                                   @Nullable final ZonedDateTime validFrom,
