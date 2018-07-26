@@ -37,12 +37,22 @@ public final class UpdateActionsSortUtils {
 
         final List<UpdateAction<Product>> actionsCopy = new ArrayList<>(updateActions);
         actionsCopy.sort((action1, action2) -> {
-            if (action1 instanceof RemovePrice || action2 instanceof AddPrice) {
+            if (action1 instanceof RemovePrice && !(action2 instanceof RemovePrice)) {
                 return -1;
             }
-            if (action1 instanceof AddPrice || action2 instanceof RemovePrice) {
+
+            if (!(action1 instanceof RemovePrice) && action2 instanceof RemovePrice) {
                 return 1;
             }
+
+            if (!(action1 instanceof AddPrice) && action2 instanceof AddPrice) {
+                return -1;
+            }
+
+            if (action1 instanceof AddPrice && !(action2 instanceof AddPrice)) {
+                return 1;
+            }
+
             return 0;
         });
         return actionsCopy;
