@@ -15,7 +15,7 @@ import static java.util.Optional.ofNullable;
 /**
  * This class is only meant for the internal use of the commercetools-sync-java library.
  *
- * Since there is no one unique identifier for prices on the commercetools API, we uniquely identify a price as a
+ * <p>Since there is no one unique identifier for prices on the commercetools API, we uniquely identify a price as a
  * composite id of the following fields: countryCode, currencyCode, channelId, customerGroupId, validFrom and
  * validUntil. This class models such composite key.
  */
