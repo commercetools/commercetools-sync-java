@@ -168,10 +168,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
                     newAttributeDefinitionDraftsNameMap.get(oldAttributeDefinitionName);
                 return ofNullable(matchingNewAttributeDefinitionDraft)
                     .map(attributeDefinitionDraft ->
-                        buildActions(
-                            oldAttributeDefinition,
-                            attributeDefinitionDraft
-                        )
+                        buildActions(oldAttributeDefinition, attributeDefinitionDraft)
                     )
                     .orElseGet(() -> {
                         removedAttributeDefinitionNames.add(oldAttributeDefinitionName);
