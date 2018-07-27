@@ -27,26 +27,25 @@ public final class AttributeDefinitionUpdateActionUtils {
      * and the {@link AttributeDefinitionDraft} have identical fields, then no update action is needed and hence an
      * empty {@link List} is returned.
      *
-     * @param oldAttributeDefinition        the attribute definition which should be updated.
-     * @param newAttributeDefinitionDraft   the attribute definition draft where we get the new fields.
+     * @param oldAttributeDefinition      the attribute definition which should be updated.
+     * @param newAttributeDefinitionDraft the attribute definition draft where we get the new fields.
      * @return A list with the update actions or an empty list if the attribute definition fields are identical.
-     *
      */
     @Nonnull
     public static List<UpdateAction<ProductType>> buildActions(
-        @Nonnull final AttributeDefinition oldAttributeDefinition,
-        @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
+            @Nonnull final AttributeDefinition oldAttributeDefinition,
+            @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
 
         return Stream.of(
-            buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-            buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-            buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-            buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-            buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
+                buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
         )
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .collect(toList());
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toList());
     }
 
     /**
@@ -61,14 +60,12 @@ public final class AttributeDefinitionUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<ProductType>> buildChangeLabelUpdateAction(
-        @Nonnull final AttributeDefinition oldAttributeDefinition,
-        @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
+            @Nonnull final AttributeDefinition oldAttributeDefinition,
+            @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
 
         return buildUpdateAction(oldAttributeDefinition.getLabel(), newAttributeDefinition.getLabel(),
-            () -> ChangeAttributeDefinitionLabel.of(
-                oldAttributeDefinition.getName(),
-                newAttributeDefinition.getLabel()
-            )
+            () -> ChangeAttributeDefinitionLabel.of(oldAttributeDefinition.getName(),
+                    newAttributeDefinition.getLabel())
         );
     }
 
@@ -84,14 +81,11 @@ public final class AttributeDefinitionUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<ProductType>> buildSetInputTipUpdateAction(
-        @Nonnull final AttributeDefinition oldAttributeDefinition,
-        @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
+            @Nonnull final AttributeDefinition oldAttributeDefinition,
+            @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
 
         return buildUpdateAction(oldAttributeDefinition.getInputTip(), newAttributeDefinition.getInputTip(),
-            () -> SetInputTip.of(
-                oldAttributeDefinition.getName(),
-                newAttributeDefinition.getInputTip()
-            )
+            () -> SetInputTip.of(oldAttributeDefinition.getName(), newAttributeDefinition.getInputTip())
         );
     }
 
@@ -107,14 +101,11 @@ public final class AttributeDefinitionUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<ProductType>> buildChangeIsSearchableUpdateAction(
-        @Nonnull final AttributeDefinition oldAttributeDefinition,
-        @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
+            @Nonnull final AttributeDefinition oldAttributeDefinition,
+            @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
 
         return buildUpdateAction(oldAttributeDefinition.isSearchable(), newAttributeDefinition.isSearchable(),
-            () -> ChangeIsSearchable.of(
-                oldAttributeDefinition.getName(),
-                newAttributeDefinition.isSearchable()
-            )
+            () -> ChangeIsSearchable.of(oldAttributeDefinition.getName(), newAttributeDefinition.isSearchable())
         );
     }
 
@@ -130,14 +121,11 @@ public final class AttributeDefinitionUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<ProductType>> buildChangeInputHintUpdateAction(
-        @Nonnull final AttributeDefinition oldAttributeDefinition,
-        @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
+            @Nonnull final AttributeDefinition oldAttributeDefinition,
+            @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
 
         return buildUpdateAction(oldAttributeDefinition.getInputHint(), newAttributeDefinition.getInputHint(),
-            () -> ChangeInputHint.of(
-                oldAttributeDefinition.getName(),
-                newAttributeDefinition.getInputHint()
-            )
+            () -> ChangeInputHint.of(oldAttributeDefinition.getName(), newAttributeDefinition.getInputHint())
         );
     }
 
@@ -153,17 +141,16 @@ public final class AttributeDefinitionUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<ProductType>> buildChangeAttributeConstraintUpdateAction(
-        @Nonnull final AttributeDefinition oldAttributeDefinition,
-        @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
+            @Nonnull final AttributeDefinition oldAttributeDefinition,
+            @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
 
         return buildUpdateAction(oldAttributeDefinition.getAttributeConstraint(),
-            newAttributeDefinition.getAttributeConstraint(),
-            () -> ChangeAttributeConstraint.of(
-                oldAttributeDefinition.getName(),
-                newAttributeDefinition.getAttributeConstraint()
-            )
+                newAttributeDefinition.getAttributeConstraint(),
+            () -> ChangeAttributeConstraint.of(oldAttributeDefinition.getName(),
+                    newAttributeDefinition.getAttributeConstraint())
         );
     }
 
-    private AttributeDefinitionUpdateActionUtils() { }
+    private AttributeDefinitionUpdateActionUtils() {
+    }
 }
