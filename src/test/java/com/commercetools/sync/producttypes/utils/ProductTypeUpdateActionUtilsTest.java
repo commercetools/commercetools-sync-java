@@ -1,8 +1,5 @@
 package com.commercetools.sync.producttypes.utils;
 
-import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
-import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -20,25 +17,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeDescription;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public class ProductTypeUpdateActionUtilsTest {
-    private static final ProductTypeSyncOptions SYNC_OPTIONS = ProductTypeSyncOptionsBuilder
-        .of(mock(SphereClient.class)).build();
     private static ProductType old;
     private static ProductTypeDraft newSame;
     private static ProductTypeDraft newDifferent;
-    private static ProductTypeDraft newNullValues;
 
     /**
      * Initialises test data.
@@ -75,15 +66,12 @@ public class ProductTypeUpdateActionUtilsTest {
                 sameAttributeDefinitionDrafts
         );
 
-        newNullValues = ProductTypeDraftBuilder.of(null, null, null, null)
-                .build();
-
         // TODO For all product types the attribute definitions will change in future commits
     }
 
     @Test
     public void buildChangeNameAction_WithDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeNameAction(old, newDifferent, SYNC_OPTIONS);
+        final Optional<UpdateAction<ProductType>> result = buildChangeNameAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(ChangeName.class);
         assertThat(result).contains(ChangeName.of(newDifferent.getName()));
@@ -91,34 +79,14 @@ public class ProductTypeUpdateActionUtilsTest {
 
     @Test
     public void buildChangeNameAction_WithSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeNameAction(old, newSame, SYNC_OPTIONS);
+        final Optional<UpdateAction<ProductType>> result = buildChangeNameAction(old, newSame);
 
         assertThat(result).isEmpty();
     }
 
     @Test
-    public void buildChangeNameAction_WithNullValues_ShouldNotBuildUpdateActionAndCallCallback() {
-        when(old.getId()).thenReturn("id1");
-
-        final ArrayList<Object> callBackResponse = new ArrayList<>();
-        final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
-
-        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class))
-            .warningCallback(updateActionWarningCallBack)
-            .build();
-
-        final Optional<UpdateAction<ProductType>> changeNameUpdateAction =
-            buildChangeNameAction(old, newNullValues, productTypeSyncOptions);
-
-        assertThat(changeNameUpdateAction).isNotPresent();
-        assertThat(callBackResponse).hasSize(1);
-        assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset 'name' field of product type with id 'id1'.");
-    }
-
-    @Test
     public void buildChangeDescriptionAction_WithDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeDescriptionAction(old, newDifferent,
-            SYNC_OPTIONS);
+        final Optional<UpdateAction<ProductType>> result = buildChangeDescriptionAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(ChangeDescription.class);
         assertThat(result).contains(ChangeDescription.of(newDifferent.getDescription()));
@@ -126,28 +94,8 @@ public class ProductTypeUpdateActionUtilsTest {
 
     @Test
     public void buildChangeDescriptionAction_WithSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeDescriptionAction(old, newSame, SYNC_OPTIONS);
+        final Optional<UpdateAction<ProductType>> result = buildChangeDescriptionAction(old, newSame);
 
         assertThat(result).isEmpty();
-    }
-
-    @Test
-    public void buildChangeNameDescription_WithNullValues_ShouldNotBuildUpdateActionAndCallCallback() {
-        when(old.getId()).thenReturn("id1");
-
-        final ArrayList<Object> callBackResponse = new ArrayList<>();
-        final Consumer<String> updateActionWarningCallBack = callBackResponse::add;
-
-        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class))
-            .warningCallback(updateActionWarningCallBack)
-            .build();
-
-        final Optional<UpdateAction<ProductType>> changeDescriptionUpdateAction =
-            buildChangeDescriptionAction(old, newNullValues, productTypeSyncOptions);
-
-        assertThat(changeDescriptionUpdateAction).isNotPresent();
-        assertThat(callBackResponse).hasSize(1);
-        assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset 'description' field of product type with id "
-            + "'id1'.");
     }
 }
