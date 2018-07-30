@@ -12,8 +12,8 @@ public class DuplicateNameExceptionTest {
         assertThatThrownBy(() -> {
             throw new DuplicateNameException(message);
         }).isExactlyInstanceOf(DuplicateNameException.class)
-            .hasNoCause()
-            .hasMessage(message);
+          .hasNoCause()
+          .hasMessage(message);
     }
 
     @Test
@@ -24,8 +24,8 @@ public class DuplicateNameExceptionTest {
         assertThatThrownBy(() -> {
             throw new DuplicateNameException(message, cause);
         }).isExactlyInstanceOf(DuplicateNameException.class)
-            .hasCause(cause)
-            .hasMessage(message);
+          .hasCause(cause)
+          .hasMessage(message);
     }
 
     @Test
@@ -35,8 +35,8 @@ public class DuplicateNameExceptionTest {
         assertThatThrownBy(() -> {
             throw new DuplicateNameException(cause);
         }).isExactlyInstanceOf(DuplicateNameException.class)
-            .hasCause(cause)
-            .hasMessage(cause.toString());
+          .hasCause(cause)
+          .hasMessage(cause.toString());
 
     }
 }
