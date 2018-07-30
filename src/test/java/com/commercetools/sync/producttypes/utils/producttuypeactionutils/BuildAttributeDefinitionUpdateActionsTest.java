@@ -1,6 +1,7 @@
 package com.commercetools.sync.producttypes.utils.producttuypeactionutils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.DifferentTypeException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
@@ -53,6 +54,8 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         RES_ROOT + "product-type-with-attribute-definitions-adbc.json";
     private static final String PRODUCT_TYPE_WITH_ATTRIBUTES_CBD =
         RES_ROOT + "product-type-with-attribute-definitions-cbd.json";
+    private static final String PRODUCT_TYPE_WITH_ATTRIBUTES_ABC_WITH_DIFFERENT_TYPE =
+        RES_ROOT + "product-type-with-attribute-definitions-abc-with-different-type.json";
 
 
     private static final ProductTypeSyncOptions SYNC_OPTIONS = ProductTypeSyncOptionsBuilder
@@ -96,6 +99,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     public void buildAttributesUpdateActions_WithNullNewAttributesAndNoOldAttributes_ShouldNotBuildActions() {
         final ProductType oldProductType = mock(ProductType.class);
         when(oldProductType.getAttributes()).thenReturn(emptyList());
+        when(oldProductType.getKey()).thenReturn("product_type_key_1");
 
         final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
             oldProductType,
@@ -110,6 +114,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     public void buildAttributesUpdateActions_WithNewAttributesAndNoOldAttributes_ShouldBuild3AddActions() {
         final ProductType oldProductType = mock(ProductType.class);
         when(oldProductType.getAttributes()).thenReturn(emptyList());
+        when(oldProductType.getKey()).thenReturn("product_type_key_1");
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
             PRODUCT_TYPE_WITH_ATTRIBUTES_ABC,
@@ -382,5 +387,42 @@ public class BuildAttributeDefinitionUpdateActionsTest {
                     )
                 )
         );
+    }
+
+    @Test
+    public void buildAttributesUpdateActions_WithDifferentAttributeType_ShouldNotBuildActionsAndTriggerErrorCb() {
+        final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
+
+        final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
+            PRODUCT_TYPE_WITH_ATTRIBUTES_ABC_WITH_DIFFERENT_TYPE,
+            ProductTypeDraft.class
+        );
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((errorMessage, exception) -> {
+                errorMessages.add(errorMessage);
+                exceptions.add(exception);
+            })
+            .build();
+
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
+            oldProductType,
+            newProductTypeDraft,
+            syncOptions
+        );
+
+        assertThat(updateActions).isEmpty();
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errorMessages.get(0)).matches("Failed to build update actions for the attributes definitions of the "
+            + "product type with the key 'key'. Reason: .*DifferentTypeException: The attribute type of the "
+            + "attribute definitions are different. Attribute name: 'a'. Old attribute type: "
+            + "'.*StringAttributeType', new attribute type: '.*LocalizedStringAttributeType'. Attribute type has "
+            + "to remain the same for the same attribute name.");
+        assertThat(exceptions).hasSize(1);
+        assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
+        assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(DifferentTypeException.class);
     }
 }
