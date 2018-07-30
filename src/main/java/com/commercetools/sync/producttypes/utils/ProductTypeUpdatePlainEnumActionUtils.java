@@ -31,13 +31,11 @@ public final class ProductTypeUpdatePlainEnumActionUtils {
      * <p>If the list of new {@link EnumValue}s is {@code null}, then remove actions are built for
      * every existing plain enum value in the {@code oldEnumValues} list.
      *
-     * @param attributeDefinitionName   the attribute name whose plain enum values are going to be synced.
-     * @param oldEnumValues             the old list of plain enum values.
-     * @param newEnumValues             the new list of plain enum values.
-     *
+     * @param attributeDefinitionName the attribute name whose plain enum values are going to be synced.
+     * @param oldEnumValues           the old list of plain enum values.
+     * @param newEnumValues           the new list of plain enum values.
      * @return a list of plain enum values update actions if the list of plain enum values is not identical.
      *         Otherwise, if the plain enum values are identical, an empty list is returned.
-     *
      * @throws DuplicateKeyException in case there are plain enum values with duplicate keys.
      */
     @Nonnull
@@ -65,7 +63,6 @@ public final class ProductTypeUpdatePlainEnumActionUtils {
     }
 
 
-
     /**
      * Compares a list of old {@link EnumValue}s with a list of new {@link EnumValue}s for a given attribute
      * definition.
@@ -73,13 +70,11 @@ public final class ProductTypeUpdatePlainEnumActionUtils {
      * for building the required update actions (AddEnumValue, RemoveEnumValue, ChangeEnumValueOrder and 1-1
      * update actions on plain enum values (e.g. changeLabel) for the required resource.
      *
-     * @param attributeDefinitionName   the attribute name whose plain enum values are going to be synced.
-     * @param oldEnumValues             the old list of plain enum values.
-     * @param newEnumValues             the new list of plain enum values.
-     *
+     * @param attributeDefinitionName the attribute name whose plain enum values are going to be synced.
+     * @param oldEnumValues           the old list of plain enum values.
+     * @param newEnumValues           the new list of plain enum values.
      * @return a list of plain enum values update actions if the list of plain enum values is not identical.
      *         Otherwise, if the plain enum values are identical, an empty list is returned.
-     *
      * @throws DuplicateKeyException in case there are plain enum values with duplicate keys.
      */
     @Nonnull
@@ -119,8 +114,8 @@ public final class ProductTypeUpdatePlainEnumActionUtils {
                 newEnumValues,
                 ChangeEnumValueOrder::of
             )
-            .map(Collections::singletonList)
-            .orElse(emptyList());
+                .map(Collections::singletonList)
+                .orElse(emptyList());
 
         return Stream.concat(
             Stream.concat(
@@ -136,5 +131,6 @@ public final class ProductTypeUpdatePlainEnumActionUtils {
     }
 
 
-    private ProductTypeUpdatePlainEnumActionUtils() { }
+    private ProductTypeUpdatePlainEnumActionUtils() {
+    }
 }

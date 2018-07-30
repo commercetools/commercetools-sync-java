@@ -19,22 +19,22 @@ public final class LocalizedEnumUpdateActionsUtils {
      * list of {@link UpdateAction}&lt;{@link ProductType}&gt; as a result. If both {@link LocalizedEnumValue} have
      * identical fields then no update action is needed and hence an empty {@link List} is returned.
      *
-     * @param attributeDefinitionName   the attribute definition name whose localized enum values belong to.
-     * @param oldEnumValue              the localized enum value which should be updated.
-     * @param newEnumValue              the localized enum value where we get the new fields.
-     *
-     * @return                          A list with the update actions or an empty list if the localized enum values are
-     *                                  identical.
+     * @param attributeDefinitionName the attribute definition name whose localized enum values belong to.
+     * @param oldEnumValue            the localized enum value which should be updated.
+     * @param newEnumValue            the localized enum value where we get the new fields.
+     * @return A list with the update actions or an empty list if the localized enum values are
+     *         identical.
      */
     @Nonnull
     public static List<UpdateAction<ProductType>> buildActions(
-            @Nonnull final String attributeDefinitionName,
-            @Nonnull final LocalizedEnumValue oldEnumValue,
-            @Nonnull final LocalizedEnumValue newEnumValue) {
+        @Nonnull final String attributeDefinitionName,
+        @Nonnull final LocalizedEnumValue oldEnumValue,
+        @Nonnull final LocalizedEnumValue newEnumValue) {
 
-        return Stream.of(
-            buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue)
-        )
+        return Stream
+            .of(
+                buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue)
+            )
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(toList());
@@ -46,12 +46,11 @@ public final class LocalizedEnumUpdateActionsUtils {
      * {@link UpdateAction}. If both, old and new {@link LocalizedEnumValue} have the same {@code label} values,
      * then no update action is needed and empty optional will be returned.
      *
-     * @param attributeDefinitionName   the attribute definition name whose localized enum values belong to.
-     * @param oldEnumValue              the old localized enum value.
-     * @param newEnumValue              the new localized enum value which contains the new description.
-     *
-     * @return                          optional containing update action or empty optional if labels
-     *                                  are identical.
+     * @param attributeDefinitionName the attribute definition name whose localized enum values belong to.
+     * @param oldEnumValue            the old localized enum value.
+     * @param newEnumValue            the new localized enum value which contains the new description.
+     * @return optional containing update action or empty optional if labels
+     *         are identical.
      */
     @Nonnull
     public static Optional<UpdateAction<ProductType>> buildChangeLabelAction(
@@ -63,5 +62,6 @@ public final class LocalizedEnumUpdateActionsUtils {
             () -> ChangeLocalizedEnumValueLabel.of(attributeDefinitionName, newEnumValue));
     }
 
-    private LocalizedEnumUpdateActionsUtils() {}
+    private LocalizedEnumUpdateActionsUtils() {
+    }
 }

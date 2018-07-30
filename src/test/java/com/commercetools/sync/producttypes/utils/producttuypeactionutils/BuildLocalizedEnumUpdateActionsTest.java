@@ -38,18 +38,18 @@ public class BuildLocalizedEnumUpdateActionsTest {
     private static final List<LocalizedEnumValue> ENUM_VALUES_CAB = asList(ENUM_VALUE_C, ENUM_VALUE_A, ENUM_VALUE_B);
     private static final List<LocalizedEnumValue> ENUM_VALUES_CB = asList(ENUM_VALUE_C, ENUM_VALUE_B);
     private static final List<LocalizedEnumValue> ENUM_VALUES_ACBD = asList(
-            ENUM_VALUE_A,
-            ENUM_VALUE_C,
-            ENUM_VALUE_B,
-            ENUM_VALUE_D
+        ENUM_VALUE_A,
+        ENUM_VALUE_C,
+        ENUM_VALUE_B,
+        ENUM_VALUE_D
     );
     private static final List<LocalizedEnumValue> ENUM_VALUES_ADBC = asList(
-            ENUM_VALUE_A,
-            ENUM_VALUE_D,
-            ENUM_VALUE_B,
-            ENUM_VALUE_C
+        ENUM_VALUE_A,
+        ENUM_VALUE_D,
+        ENUM_VALUE_B,
+        ENUM_VALUE_C
     );
-    private static final List<LocalizedEnumValue> ENUM_VALUES_CBD = asList(ENUM_VALUE_C,ENUM_VALUE_B, ENUM_VALUE_D);
+    private static final List<LocalizedEnumValue> ENUM_VALUES_CBD = asList(ENUM_VALUE_C, ENUM_VALUE_B, ENUM_VALUE_D);
 
     @Test
     public void buildLocalizedEnumUpdateActions_WithNullNewEnumValuesAndExistingEnumValues_ShouldBuildRemoveAction() {
@@ -210,9 +210,9 @@ public class BuildLocalizedEnumUpdateActionsTest {
     @Test
     public void buildLocalizedEnumUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
-                "attribute_definition_name_1",
-                ENUM_VALUES_ABC,
-                ENUM_VALUES_ACBD
+            "attribute_definition_name_1",
+            ENUM_VALUES_ABC,
+            ENUM_VALUES_ACBD
         );
 
         assertThat(updateActions).containsExactly(

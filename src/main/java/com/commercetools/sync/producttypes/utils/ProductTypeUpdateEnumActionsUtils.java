@@ -29,11 +29,10 @@ public final class ProductTypeUpdateEnumActionsUtils {
      * Given a list of enum values, gets a map where the keys are the enum value key, and the values
      * are the enum instances.
      *
-     * @param enumValues                the list of enum values.
-     * @param <T>                       the enum type of the elements of the list.
-     *
-     * @return                          a map with the enum value key as a key of the map, and the
-     *                                  enum value as a value of the map.
+     * @param enumValues the list of enum values.
+     * @param <T>        the enum type of the elements of the list.
+     * @return a map with the enum value key as a key of the map, and the
+     *         enum value as a value of the map.
      */
     @Nonnull
     public static <T extends WithKey> Map<String, T> getEnumValuesKeyMap(@Nonnull final List<T> enumValues) {
@@ -46,13 +45,11 @@ public final class ProductTypeUpdateEnumActionsUtils {
      * Given a list of new {@link EnumValue}s, gets a map where the keys are the enum value key, and the values
      * are the enum instances.
      *
-     * @param attributeDefinitionName   the attribute definition name whose the enum values belong to.
-     * @param enumValues                the list of enum values.
-     * @param <T>                       the enum type of the elements of the list.
-     *
-     * @return                          a map with the enum value key as a key of the map, and the enum
-     *                                  value as a value of the map.
-     *
+     * @param attributeDefinitionName the attribute definition name whose the enum values belong to.
+     * @param enumValues              the list of enum values.
+     * @param <T>                     the enum type of the elements of the list.
+     * @return a map with the enum value key as a key of the map, and the enum
+     *         value as a value of the map.
      * @throws DuplicateKeyException in case there are enum values with duplicate keys.
      */
     @Nonnull
@@ -64,8 +61,8 @@ public final class ProductTypeUpdateEnumActionsUtils {
             toMap(WithKey::getKey, enumValue -> enumValue,
                 (enumValueA, enumValueB) -> {
                     throw new DuplicateKeyException(format("Enum Values have duplicated keys. "
-                        + "Attribute definition name: '%s', Duplicated enum value: '%s'. "
-                        + "Enum Values are expected to be unique inside their attribute definition.",
+                            + "Attribute definition name: '%s', Duplicated enum value: '%s'. "
+                            + "Enum Values are expected to be unique inside their attribute definition.",
                         attributeDefinitionName, enumValueA.getKey()));
                 }
             ));
@@ -76,14 +73,13 @@ public final class ProductTypeUpdateEnumActionsUtils {
      * If there are, then "remove" enum values update actions are built.
      * Otherwise, if there are no old enum values, then an empty list is returned.
      *
-     * @param attributeDefinitionName   the attribute definition name whose enum values belong to.
-     * @param oldEnumValues             the list of old enum values.
-     * @param newEnumValues             the list of new enum values.
-     * @param <T>                       the enum type of the elements of the list.
-     *
-     * @return                          a list of enum values update actions if there are old enum value
-     *                                  that should be removed.
-     *                                  Otherwise, if the enum values are identical, an empty optional is returned.
+     * @param attributeDefinitionName the attribute definition name whose enum values belong to.
+     * @param oldEnumValues           the list of old enum values.
+     * @param newEnumValues           the list of new enum values.
+     * @param <T>                     the enum type of the elements of the list.
+     * @return a list of enum values update actions if there are old enum value
+     *         that should be removed.
+     *         Otherwise, if the enum values are identical, an empty optional is returned.
      */
     @Nonnull
     public static <T extends WithKey> Optional<UpdateAction<ProductType>> buildRemoveEnumValuesUpdateActions(
@@ -95,8 +91,8 @@ public final class ProductTypeUpdateEnumActionsUtils {
 
         if (newEnumValues != null && !newEnumValues.isEmpty()) {
             final Map<String, T> newEnumValuesKeyMap = getEnumValuesKeyMapWithKeyValidation(
-                    attributeDefinitionName,
-                    newEnumValues
+                attributeDefinitionName,
+                newEnumValues
             );
 
             keysToRemove = oldEnumValues
@@ -123,16 +119,13 @@ public final class ProductTypeUpdateEnumActionsUtils {
      * then a change of enum values order (with the new order) is built. If there are no changes in order an empty
      * optional is returned.
      *
-     * @param attributeDefinitionName    the attribute definition name whose enum values belong to.
-     * @param oldEnumValues              the list of old enum values.
-     * @param newEnumValues              the list of new enum values.
-     * @param changeOrderEnumCallback    the function that is called to apply the change in the order.
-     * @param <T>                        the enum type of the elements to change the order for.
-     *
-     * @return                           an optional update action if the the order of the enum values is not
-     *                                   identical.
-     *                                   Otherwise, if the enum values order is identical, an empty optional is
-     *                                   returned.
+     * @param attributeDefinitionName the attribute definition name whose enum values belong to.
+     * @param oldEnumValues           the list of old enum values.
+     * @param newEnumValues           the list of new enum values.
+     * @param changeOrderEnumCallback the function that is called to apply the change in the order.
+     * @param <T>                     the enum type of the elements to change the order for.
+     * @return an optional update action if the the order of the enum values is not identical.
+     *         Otherwise, if the enum values order is identical, an empty optional is returned.
      */
     @Nonnull
     public static <T extends WithKey> Optional<UpdateAction<ProductType>> buildChangeEnumValuesOrderUpdateAction(
@@ -158,7 +151,7 @@ public final class ProductTypeUpdateEnumActionsUtils {
             .collect(Collectors.toList());
 
         final List<String> allKeys = Stream.concat(existingKeys.stream(), notExistingKeys.stream())
-            .collect(Collectors.toList());
+                                           .collect(Collectors.toList());
 
 
         return buildUpdateAction(
@@ -173,15 +166,13 @@ public final class ProductTypeUpdateEnumActionsUtils {
      * If there are, then "add" enum values update actions are built.
      * Otherwise, if there are no new enum values, then an empty list is returned.
      *
-     * @param attributeDefinitionName   the attribute definition name whose enum values belong to.
-     * @param oldEnumValues             the list of olf enum values.
-     * @param newEnumValues             the list of new enum values.
-     * @param addEnumCallback           the function that is called in order to add the new enum instance
-     * @param <T>                       the enum type of the element to add.
-     *
-     * @return                          a list of enum values update actions if there are new enum value
-     *                                  that should be added.
-     *                                  Otherwise, if the enum values are identical, an empty optional is returned.
+     * @param attributeDefinitionName the attribute definition name whose enum values belong to.
+     * @param oldEnumValues           the list of olf enum values.
+     * @param newEnumValues           the list of new enum values.
+     * @param addEnumCallback         the function that is called in order to add the new enum instance
+     * @param <T>                     the enum type of the element to add.
+     * @return a list of enum values update actions if there are new enum value that should be added.
+     *         Otherwise, if the enum values are identical, an empty optional is returned.
      */
     @Nonnull
     public static <T extends WithKey> List<UpdateAction<ProductType>> buildAddEnumValuesUpdateActions(
@@ -204,19 +195,16 @@ public final class ProductTypeUpdateEnumActionsUtils {
      * If there are, then compare the enum value fields, and add the computed actions to the list of
      * update actions.
      *
-     * @param attributeDefinitionName   the attribute definition name whose enum values belong to.
-     * @param oldEnumValues             the list of old enum values.
-     * @param newEnumValues             the list of new enum values.
-     * @param matchingEnumCallback      the function that is called to get the update action resulting from comparing
-     *                                  the enum value fields one by one.
-     * @param <T>                       the enum type of the elements of the list.
-     *
-     * @return                          a list of enum update actions if there are enum values that are
-     *                                  existing in the map of new enum values. If the enum value still
-     *                                  exists, then compare the enum value fields (label), and add the computed
-     *                                  actions to the list of update actions.
-     *                                  Otherwise, if the enum values are identical, an empty optional is
-     *                                  returned.
+     * @param attributeDefinitionName the attribute definition name whose enum values belong to.
+     * @param oldEnumValues           the list of old enum values.
+     * @param newEnumValues           the list of new enum values.
+     * @param matchingEnumCallback    the function that is called to get the update action resulting from comparing
+     *                                the enum value fields one by one.
+     * @param <T>                     the enum type of the elements of the list.
+     * @return a list of enum update actions if there are enum values that are existing in the map of new enum values.
+     *         If the enum value still exists, then compare the enum value fields (label), and add the computed
+     *         actions to the list of update actions.
+     *         Otherwise, if the enum values are identical, an empty optional is returned.
      */
     @Nonnull
     public static <T extends WithKey> List<UpdateAction<ProductType>> buildMatchingEnumValuesUpdateActions(
@@ -226,8 +214,8 @@ public final class ProductTypeUpdateEnumActionsUtils {
         @Nonnull final TriFunction<String, T, T, List<UpdateAction<ProductType>>> matchingEnumCallback) {
 
         final Map<String, T> newEnumValuesKeyMap = getEnumValuesKeyMapWithKeyValidation(
-                attributeDefinitionName,
-                newEnumValues
+            attributeDefinitionName,
+            newEnumValues
         );
 
         return oldEnumValues
@@ -243,5 +231,6 @@ public final class ProductTypeUpdateEnumActionsUtils {
             .collect(Collectors.toList());
     }
 
-    private ProductTypeUpdateEnumActionsUtils() { }
+    private ProductTypeUpdateEnumActionsUtils() {
+    }
 }

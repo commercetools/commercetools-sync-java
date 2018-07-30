@@ -49,7 +49,7 @@ public class BuildPlainEnumUpdateActionsTest {
         ENUM_VALUE_B,
         ENUM_VALUE_C
     );
-    private static final List<EnumValue> ENUM_VALUES_CBD = asList(ENUM_VALUE_C,ENUM_VALUE_B, ENUM_VALUE_D);
+    private static final List<EnumValue> ENUM_VALUES_CBD = asList(ENUM_VALUE_C, ENUM_VALUE_B, ENUM_VALUE_D);
 
     @Test
     public void buildPlainEnumUpdateActions_WithNullNewEnumValuesAndExistingEnumValues_ShouldBuildRemoveAction() {

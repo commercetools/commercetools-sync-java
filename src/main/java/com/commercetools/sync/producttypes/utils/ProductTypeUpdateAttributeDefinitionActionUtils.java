@@ -43,9 +43,8 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      * <p>If the list of new {@link AttributeDefinitionDraft}s is {@code null}, then remove actions are built for
      * every existing attribute definition in the {@code oldAttributeDefinitions} list.
      *
-     * @param oldAttributeDefinitions                       the old list of attribute definitions.
-     * @param newAttributeDefinitionsDrafts                 the new list of attribute definitions drafts.
-     *
+     * @param oldAttributeDefinitions       the old list of attribute definitions.
+     * @param newAttributeDefinitionsDrafts the new list of attribute definitions drafts.
      * @return a list of attribute definitions update actions if the list of attribute definitions is not identical.
      *         Otherwise, if the attribute definitions are identical, an empty list is returned.
      * @throws BuildUpdateActionException in case there are attribute definitions drafts with duplicate names.
@@ -77,9 +76,8 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      * update actions on attribute definitions (e.g. changeAttributeName, changeAttributeLabel, etc..) for the required
      * resource.
      *
-     * @param oldAttributeDefinitions                       the old list of attribute definitions.
-     * @param newAttributeDefinitionsDrafts                 the new list of attribute definitions drafts.
-     *
+     * @param oldAttributeDefinitions       the old list of attribute definitions.
+     * @param newAttributeDefinitionsDrafts the new list of attribute definitions drafts.
      * @return a list of attribute definitions update actions if the list of attribute definitions is not identical.
      *         Otherwise, if the attribute definitions are identical, an empty list is returned.
      * @throws BuildUpdateActionException in case there are attribute definitions drafts with duplicate names.
@@ -104,8 +102,8 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
                 toMap(AttributeDefinitionDraft::getName, attributeDefinitionDraft -> attributeDefinitionDraft,
                     (attributeDefinitionDraftA, attributeDefinitionDraftB) -> {
                         throw new DuplicateNameException(format("Attribute definitions drafts have duplicated names. "
-                            + "Duplicated attribute definition name: '%s'. "
-                            + "Attribute definitions names are expected to be unique inside their product type.",
+                                + "Duplicated attribute definition name: '%s'. "
+                                + "Attribute definitions names are expected to be unique inside their product type.",
                             attributeDefinitionDraftA.getName()));
                     }
                 ));
@@ -148,15 +146,14 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      * Otherwise, if the attribute definition still exists in the new draft, then compare the attribute definition
      * fields (name, label, etc..), and add the computed actions to the list of update actions.
      *
-     * @param oldAttributeDefinitions                       the list of old {@link AttributeDefinition}s.
-     * @param removedAttributeDefinitionNames               a set containing names of removed attribute definitions.
-     * @param newAttributeDefinitionDraftsNameMap           a map of names to attribute definition drafts of the new
-     *                                                      list of attribute definition drafts.
-     *
+     * @param oldAttributeDefinitions             the list of old {@link AttributeDefinition}s.
+     * @param removedAttributeDefinitionNames     a set containing names of removed attribute definitions.
+     * @param newAttributeDefinitionDraftsNameMap a map of names to attribute definition drafts of the new
+     *                                            list of attribute definition drafts.
      * @return a list of attribute definition update actions if there are attribute definitions that are not existing
-     *      in the new draft. If the attribute definition still exists in the new draft, then compare the attribute
-     *      definition fields (name, label, etc..), and add the computed actions to the list of update actions.
-     *      Otherwise, if the attribute definitions are identical, an empty optional is returned.
+     *         in the new draft. If the attribute definition still exists in the new draft, then compare the attribute
+     *         definition fields (name, label, etc..), and add the computed actions to the list of update actions.
+     *         Otherwise, if the attribute definitions are identical, an empty optional is returned.
      */
     @Nonnull
     private static List<UpdateAction<ProductType>> buildRemoveAttributeDefinitionOrAttributeDefinitionUpdateActions(
@@ -189,9 +186,8 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      * {@link AttributeDefinitionDraft}s. If there is a change in order, then a change attribute definition order
      * (with the new order) is built. If there are no changes in order an empty optional is returned.
      *
-     * @param oldAttributeDefinitions                       the list of old {@link AttributeDefinition}s
-     * @param newAttributeDefinitionDrafts                  the list of new {@link AttributeDefinitionDraft}s
-
+     * @param oldAttributeDefinitions      the list of old {@link AttributeDefinition}s
+     * @param newAttributeDefinitionDrafts the list of new {@link AttributeDefinitionDraft}s
      * @return a list of attribute definition update actions if the the order of attribute definitions is not
      *         identical. Otherwise, if the attribute definitions order is identical, an empty optional is returned.
      */
@@ -223,7 +219,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
             .collect(toList());
 
         final List<String> allNames = Stream.concat(existingNames.stream(), notExistingNames.stream())
-            .collect(toList());
+                                            .collect(toList());
 
         return buildUpdateAction(
             allNames,
@@ -240,9 +236,9 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      * Otherwise, if there are no new attribute definitions, then an empty list
      * is returned.
      *
-     * @param newAttributeDefinitionDrafts                  the list of new {@link AttributeDefinitionDraft}s.
-     * @param oldAttributeDefinitionNameMap                 a map of names to AttributeDefinition of the old list
-     *                                                      of attribute definition.
+     * @param newAttributeDefinitionDrafts  the list of new {@link AttributeDefinitionDraft}s.
+     * @param oldAttributeDefinitionNameMap a map of names to AttributeDefinition of the old list
+     *                                      of attribute definition.
      * @return a list of attribute definition update actions if there are new attribute definition that should be added.
      *         Otherwise, if the attribute definitions are identical, an empty optional is returned.
      */
@@ -258,12 +254,13 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
             .stream()
             .filter(attributeDefinitionDraft ->
                 !oldAttributeDefinitionNameMap
-                .containsKey(attributeDefinitionDraft.getName())
+                    .containsKey(attributeDefinitionDraft.getName())
             )
             .map(AttributeDefinitionCustomBuilder::of)
             .map(AddAttributeDefinition::of)
             .collect(Collectors.toList());
     }
 
-    private ProductTypeUpdateAttributeDefinitionActionUtils() { }
+    private ProductTypeUpdateAttributeDefinitionActionUtils() {
+    }
 }

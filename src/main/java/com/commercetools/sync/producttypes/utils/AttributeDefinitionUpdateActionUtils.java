@@ -97,8 +97,7 @@ public final class AttributeDefinitionUpdateActionUtils {
         @Nonnull final AttributeDefinition attributeDefinitionA,
         @Nonnull final AttributeDefinitionDraft attributeDefinitionB) {
 
-        return attributeDefinitionA.getAttributeType().getClass()
-                == attributeDefinitionB.getAttributeType().getClass();
+        return attributeDefinitionA.getAttributeType().getClass() == attributeDefinitionB.getAttributeType().getClass();
     }
 
     /**

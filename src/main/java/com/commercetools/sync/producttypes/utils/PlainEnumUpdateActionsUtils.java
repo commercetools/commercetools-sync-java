@@ -19,12 +19,11 @@ public final class PlainEnumUpdateActionsUtils {
      * {@link UpdateAction}&lt;{@link ProductType}&gt; as a result. If both {@link EnumValue} have identical fields,
      * then no update action is needed and hence an empty {@link List} is returned.
      *
-     * @param attributeDefinitionName   the attribute definition name whose plain enum values belong to.
-     * @param oldEnumValue              the enum value which should be updated.
-     * @param newEnumValue              the enum value where we get the new fields.
-     *
-     * @return                          A list with the update actions or an empty list if the enum values are
-     *                                  identical.
+     * @param attributeDefinitionName the attribute definition name whose plain enum values belong to.
+     * @param oldEnumValue            the enum value which should be updated.
+     * @param newEnumValue            the enum value where we get the new fields.
+     * @return A list with the update actions or an empty list if the enum values are
+     *         identical.
      */
     @Nonnull
     public static List<UpdateAction<ProductType>> buildActions(
@@ -32,12 +31,13 @@ public final class PlainEnumUpdateActionsUtils {
         @Nonnull final EnumValue oldEnumValue,
         @Nonnull final EnumValue newEnumValue) {
 
-        return Stream.of(
-            buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue)
-        )
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .collect(toList());
+        return Stream
+            .of(
+                buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue)
+            )
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(toList());
     }
 
     /**
@@ -46,12 +46,11 @@ public final class PlainEnumUpdateActionsUtils {
      * {@link UpdateAction}. If both, old and new {@link EnumValue} have the same {@code label} values,
      * then no update action is needed and empty optional will be returned.
      *
-     * @param attributeDefinitionName   the attribute definition name whose plain enum values belong to.
-     * @param oldEnumValue              the old plain enum value.
-     * @param newEnumValue              the new plain enum value which contains the new description.
-     *
-     * @return                          optional containing update action or empty optional if labels
-     *                                  are identical.
+     * @param attributeDefinitionName the attribute definition name whose plain enum values belong to.
+     * @param oldEnumValue            the old plain enum value.
+     * @param newEnumValue            the new plain enum value which contains the new description.
+     * @return optional containing update action or empty optional if labels
+     *         are identical.
      */
     @Nonnull
     public static Optional<UpdateAction<ProductType>> buildChangeLabelAction(
@@ -63,5 +62,6 @@ public final class PlainEnumUpdateActionsUtils {
             () -> ChangePlainEnumValueLabel.of(attributeDefinitionName, newEnumValue));
     }
 
-    private PlainEnumUpdateActionsUtils() { }
+    private PlainEnumUpdateActionsUtils() {
+    }
 }

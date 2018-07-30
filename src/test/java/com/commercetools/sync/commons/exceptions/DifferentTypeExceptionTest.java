@@ -12,8 +12,8 @@ public class DifferentTypeExceptionTest {
         assertThatThrownBy(() -> {
             throw new DifferentTypeException(message);
         }).isExactlyInstanceOf(DifferentTypeException.class)
-            .hasNoCause()
-            .hasMessage(message);
+          .hasNoCause()
+          .hasMessage(message);
     }
 
     @Test
@@ -24,8 +24,8 @@ public class DifferentTypeExceptionTest {
         assertThatThrownBy(() -> {
             throw new DifferentTypeException(message, cause);
         }).isExactlyInstanceOf(DifferentTypeException.class)
-            .hasCause(cause)
-            .hasMessage(message);
+          .hasCause(cause)
+          .hasMessage(message);
     }
 
     @Test
@@ -35,8 +35,8 @@ public class DifferentTypeExceptionTest {
         assertThatThrownBy(() -> {
             throw new DifferentTypeException(cause);
         }).isExactlyInstanceOf(DifferentTypeException.class)
-            .hasCause(cause)
-            .hasMessage(cause.toString());
+          .hasCause(cause)
+          .hasMessage(cause.toString());
 
     }
 }
