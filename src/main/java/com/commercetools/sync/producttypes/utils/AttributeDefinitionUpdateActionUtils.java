@@ -36,7 +36,6 @@ public final class AttributeDefinitionUpdateActionUtils {
      *
      * @param oldAttributeDefinition      the attribute definition which should be updated.
      * @param newAttributeDefinitionDraft the attribute definition draft where we get the new fields.
-     *
      * @return A list with the update actions or an empty list if the attribute definition fields are identical.
      */
     @Nonnull
@@ -60,28 +59,32 @@ public final class AttributeDefinitionUpdateActionUtils {
                 .map(Optional::get)
                 .collect(toList());
 
-            if (isPlainEnumAttribute(oldAttributeDefinition)) {
-                updateActions.addAll(buildEnumValuesUpdateActions(
-                    oldAttributeDefinition.getName(),
-                    ((EnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
-                    ((EnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
-                ));
-            } else if (isLocalizedEnumAttribute(oldAttributeDefinition)) {
-                updateActions.addAll(buildLocalizedEnumValuesUpdateActions(
-                    oldAttributeDefinition.getName(),
-                    ((LocalizedEnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
-                    ((LocalizedEnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
-                ));
+        // attribute type is required so if null we let commercetools to throw exception
+        if (newAttributeDefinitionDraft.getAttributeType() != null) {
+            if (haveSameAttributeType(oldAttributeDefinition, newAttributeDefinitionDraft)) {
+                if (isPlainEnumAttribute(oldAttributeDefinition)) {
+                    updateActions.addAll(buildEnumValuesUpdateActions(
+                        oldAttributeDefinition.getName(),
+                        ((EnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
+                        ((EnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
+                    ));
+                } else if (isLocalizedEnumAttribute(oldAttributeDefinition)) {
+                    updateActions.addAll(buildLocalizedEnumValuesUpdateActions(
+                        oldAttributeDefinition.getName(),
+                        ((LocalizedEnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
+                        ((LocalizedEnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
+                    ));
+                }
+            } else {
+                throw new DifferentTypeException(
+                    format("The attribute type of the attribute definitions are different. "
+                            + "Attribute name: '%s'. Old attribute type: '%s', new attribute type: '%s'. "
+                            + "Attribute type has to remain the same for the same attribute name.",
+                        oldAttributeDefinition.getName(),
+                        oldAttributeDefinition.getAttributeType().getClass().getName(),
+                        newAttributeDefinitionDraft.getAttributeType().getClass().getName()));
             }
-        } else {
-            throw new DifferentTypeException(format("The attribute type of the attribute definitions are different. "
-                + "Attribute name: '%s'. Old attribute type: '%s', new attribute type: '%s'. "
-                + "Attribute type has to remain the same for the same attribute name.",
-            oldAttributeDefinition.getName(),
-            oldAttributeDefinition.getAttributeType().getClass().getName(),
-            newAttributeDefinitionDraft.getAttributeType().getClass().getName()));
         }
-
 
         return updateActions;
     }
@@ -92,7 +95,6 @@ public final class AttributeDefinitionUpdateActionUtils {
      *
      * @param attributeDefinitionA the first attribute definition to compare.
      * @param attributeDefinitionB the second attribute definition to compare.
-     *
      * @return true if both attribute definitions have the same attribute type, false otherwise.
      */
     private static boolean haveSameAttributeType(
@@ -106,7 +108,6 @@ public final class AttributeDefinitionUpdateActionUtils {
      * Indicates if the attribute definition is a plain enum value or not.
      *
      * @param attributeDefiniton the attribute definition.
-     *
      * @return true if the attribute definition is a plain enum value, false otherwise.
      */
     private static boolean isPlainEnumAttribute(@Nonnull final AttributeDefinition attributeDefiniton) {
@@ -117,7 +118,6 @@ public final class AttributeDefinitionUpdateActionUtils {
      * Indicates if the attribute definition is a localized enum value or not.
      *
      * @param attributeDefiniton the attribute definition.
-     *
      * @return true if the attribute definition is a localized enum value, false otherwise.
      */
     private static boolean isLocalizedEnumAttribute(@Nonnull final AttributeDefinition attributeDefiniton) {
