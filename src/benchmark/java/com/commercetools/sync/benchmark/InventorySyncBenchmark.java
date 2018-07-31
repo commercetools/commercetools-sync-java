@@ -31,10 +31,10 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.calculateDiff;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.integration.commons.utils.ChannelITUtils.deleteChannels;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteInventoryEntries;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteSupplyChannels;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,14 +45,14 @@ public class InventorySyncBenchmark {
     public void setup() {
         deleteInventoryEntries(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
-        deleteSupplyChannels(CTP_TARGET_CLIENT);
+        deleteChannels(CTP_TARGET_CLIENT);
     }
 
     @AfterClass
     public static void tearDown() {
         deleteInventoryEntries(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
-        deleteSupplyChannels(CTP_TARGET_CLIENT);
+        deleteChannels(CTP_TARGET_CLIENT);
     }
 
     @Test

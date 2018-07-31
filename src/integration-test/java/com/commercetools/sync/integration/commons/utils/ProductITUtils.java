@@ -27,13 +27,13 @@ import java.util.Locale;
 import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
+import static com.commercetools.sync.integration.commons.utils.ChannelITUtils.deleteChannels;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndCompose;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStates;
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteSupplyChannels;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
@@ -49,7 +49,7 @@ public final class ProductITUtils {
         deleteProductTypes(ctpClient);
         deleteAllCategories(ctpClient);
         deleteTypes(ctpClient);
-        deleteSupplyChannels(ctpClient);
+        deleteChannels(ctpClient);
         deleteStates(ctpClient, StateType.PRODUCT_STATE);
         deleteTaxCategories(ctpClient);
     }

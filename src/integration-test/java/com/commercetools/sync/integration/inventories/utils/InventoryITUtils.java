@@ -6,7 +6,6 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.commands.ChannelCreateCommand;
-import io.sphere.sdk.channels.commands.ChannelDeleteCommand;
 import io.sphere.sdk.channels.queries.ChannelQuery;
 import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
 import io.sphere.sdk.client.SphereClient;
@@ -74,29 +73,12 @@ public class InventoryITUtils {
     }
 
     /**
-     * Deletes all channels from CTP project, represented by the supplied {@code ctpClient}.
-     *
-     * @param ctpClient represents the CTP project the channels will be deleted from.
-     */
-    public static void deleteSupplyChannels(@Nonnull final SphereClient ctpClient) {
-        queryAndExecute(ctpClient, ChannelQuery.of(), ChannelDeleteCommand::of);
-    }
-
-    /**
      * Deletes all inventory entries from CTP projects defined by {@code CTP_SOURCE_CLIENT} and
      * {@code CTP_TARGET_CLIENT}.
      */
     public static void deleteInventoryEntriesFromTargetAndSource() {
         deleteInventoryEntries(CTP_SOURCE_CLIENT);
         deleteInventoryEntries(CTP_TARGET_CLIENT);
-    }
-
-    /**
-     * Deletes all channels from CTP projects defined by {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
-     */
-    public static void deleteChannelsFromTargetAndSource() {
-        deleteSupplyChannels(CTP_SOURCE_CLIENT);
-        deleteSupplyChannels(CTP_TARGET_CLIENT);
     }
 
     /**
