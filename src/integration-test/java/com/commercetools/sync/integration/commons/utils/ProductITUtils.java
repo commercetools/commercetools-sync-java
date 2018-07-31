@@ -28,6 +28,7 @@ import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ChannelITUtils.deleteChannels;
+import static com.commercetools.sync.integration.commons.utils.CustomerGroupITUtils.deleteCustomerGroups;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndCompose;
@@ -52,6 +53,7 @@ public final class ProductITUtils {
         deleteChannels(ctpClient);
         deleteStates(ctpClient, StateType.PRODUCT_STATE);
         deleteTaxCategories(ctpClient);
+        deleteCustomerGroups(ctpClient);
     }
 
     /**
