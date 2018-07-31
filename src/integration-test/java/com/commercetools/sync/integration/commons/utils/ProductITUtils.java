@@ -206,4 +206,7 @@ public final class ProductITUtils {
         return createTypeIfNotAlreadyExisting(
             typeKey, locale, name, ResourceTypeIdsSetBuilder.of().addPrices(), ctpClient);
     }
+
+    private ProductITUtils() {
+    }
 }
