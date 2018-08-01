@@ -45,19 +45,21 @@ public final class AttributeDefinitionUpdateActionUtils {
         @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft)
         throws DuplicateKeyException, DifferentTypeException {
 
-        final List<UpdateAction<ProductType>> updateActions = Stream
-            .of(
-                buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-                buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-                buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-                buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-                buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
-            )
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(toList());
+        final List<UpdateAction<ProductType>> updateActions;
 
         if (haveSameAttributeType(oldAttributeDefinition, newAttributeDefinitionDraft)) {
+            updateActions = Stream
+                .of(
+                    buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                    buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                    buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                    buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                    buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
+                )
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toList());
+
             if (isPlainEnumAttribute(oldAttributeDefinition)) {
                 updateActions.addAll(buildEnumValuesUpdateActions(
                     oldAttributeDefinition.getName(),
