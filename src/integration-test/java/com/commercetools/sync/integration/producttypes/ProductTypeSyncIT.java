@@ -381,6 +381,48 @@ public class ProductTypeSyncIT {
     }
 
     @Test
+    public void sync_FromSourceToTargetProjectWithUpdates_ShouldReturnProperStatisticsMessage() {
+        //Fetch new product types from source project. Convert them to drafts.
+        final List<ProductType> productTypes = CTP_SOURCE_CLIENT
+            .execute(ProductTypeQuery.of())
+            .toCompletableFuture().join().getResults();
+
+        final List<ProductTypeDraft> productTypeDrafts = productTypes
+            .stream()
+            .map(productType -> {
+                List<AttributeDefinitionDraft> attributeDefinitionDrafts = productType
+                    .getAttributes()
+                    .stream()
+                    .map(attribute -> AttributeDefinitionDraftBuilder.of(attribute).build())
+                    .collect(Collectors.toList());
+
+                return ProductTypeDraftBuilder
+                    .of(
+                        productType.getKey(),
+                        productType.getName() + "_updated", // name updated
+                        productType.getDescription(),
+                        attributeDefinitionDrafts)
+                    .build();
+            })
+            .collect(Collectors.toList());
+
+        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .build();
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
+
+        final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
+            .sync(productTypeDrafts)
+            .toCompletableFuture().join();
+
+        assertThat(productTypeSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 2 products types were processed in total"
+                + " (1 created, 1 updated and 0 failed to sync).");
+    }
+
+    @Test
     public void sync_WithoutKey_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // Draft without key throws an error
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
