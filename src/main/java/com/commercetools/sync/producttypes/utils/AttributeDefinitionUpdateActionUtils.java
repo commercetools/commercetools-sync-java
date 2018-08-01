@@ -95,7 +95,7 @@ public final class AttributeDefinitionUpdateActionUtils {
      *
      * @return true if both attribute definitions have the same attribute type, false otherwise.
      */
-    private static final boolean haveSameAttributeType(
+    private static boolean haveSameAttributeType(
         @Nonnull final AttributeDefinition attributeDefinitionA,
         @Nonnull final AttributeDefinitionDraft attributeDefinitionB) {
 
@@ -109,7 +109,7 @@ public final class AttributeDefinitionUpdateActionUtils {
      *
      * @return true if the attribute definition is a plain enum value, false otherwise.
      */
-    private static final boolean isPlainEnumAttribute(@Nonnull final AttributeDefinition attributeDefiniton) {
+    private static boolean isPlainEnumAttribute(@Nonnull final AttributeDefinition attributeDefiniton) {
         return attributeDefiniton.getAttributeType().getClass() == EnumAttributeType.class;
     }
 
@@ -120,7 +120,7 @@ public final class AttributeDefinitionUpdateActionUtils {
      *
      * @return true if the attribute definition is a localized enum value, false otherwise.
      */
-    private static final boolean isLocalizedEnumAttribute(@Nonnull final AttributeDefinition attributeDefiniton) {
+    private static boolean isLocalizedEnumAttribute(@Nonnull final AttributeDefinition attributeDefiniton) {
         return attributeDefiniton.getAttributeType().getClass() == LocalizedEnumAttributeType.class;
     }
 
