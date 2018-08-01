@@ -130,12 +130,8 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
 
             return updateActions;
 
-        } catch (final DuplicateNameException dne) {
-            throw new BuildUpdateActionException(dne);
-        } catch (final DuplicateKeyException dke) {
-            throw new BuildUpdateActionException(dke);
-        } catch (final DifferentTypeException dte) {
-            throw new BuildUpdateActionException(dte);
+        } catch (final DuplicateNameException | DuplicateKeyException | DifferentTypeException exception) {
+            throw new BuildUpdateActionException(exception);
         }
     }
 
