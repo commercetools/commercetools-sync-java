@@ -12,7 +12,6 @@ import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -87,9 +86,7 @@ public final class PriceReferenceResolver
         final Reference<Channel> channelReference = draftBuilder.getChannel();
         if (channelReference != null) {
             try {
-                final String keyFromExpansion = getKeyFromExpansion(channelReference);
-                final String channelKey = getKeyFromExpansionOrReference(options.shouldAllowUuidKeys(),
-                    keyFromExpansion, channelReference);
+                final String channelKey = getKeyFromResourceIdentifier(channelReference, options.shouldAllowUuidKeys());
                 return fetchOrCreateAndResolveReference(draftBuilder, channelKey);
             } catch (ReferenceResolutionException exception) {
                 return CompletableFutureUtils.exceptionallyCompletedFuture(
@@ -100,21 +97,9 @@ public final class PriceReferenceResolver
         return completedFuture(draftBuilder);
     }
 
-    /**
-     * Helper method that returns the value of the key field from the channel {@link Reference} object, if expanded.
-     * Otherwise, returns null.
-     *
-     * @return the value of the key field from the channel {@link Reference} object, if expanded.
-     *         Otherwise, returns null.
-     */
-    @Nullable
-    @SuppressWarnings("ConstantConditions") // NPE can't occur because of the isReferenceExpanded check.
-    private static String getKeyFromExpansion(@Nonnull final Reference<Channel> channelReference) {
-        return isReferenceExpanded(channelReference) ? channelReference.getObj().getKey() : null;
-    }
 
     /**
-     * Given an {@link PriceDraftBuilder} and a {@code channelKey} this method fetches the actual id of the
+     * Given a {@link PriceDraftBuilder} and a {@code channelKey} this method fetches the actual id of the
      * channel corresponding to this key, ideally from a cache. Then it sets this id on the supply channel reference
      * id of the inventory entry draft. If the id is not found in cache nor the CTP project and {@code ensureChannel}
      * option is set to true, a new channel will be created with this key and the role {@code "InventorySupply"}.
@@ -149,6 +134,7 @@ public final class PriceReferenceResolver
             });
         return result;
     }
+
 
     /**
      * Helper method that returns a completed CompletionStage with a resolved channel reference
