@@ -3,6 +3,7 @@ package com.commercetools.sync.products.helpers;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -67,7 +68,8 @@ public class VariantReferenceResolverTest { ;
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY));
         productService = getMockProductService(PRODUCT_ID);
         ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
-        referenceResolver = new VariantReferenceResolver(syncOptions, typeService, channelService, productService);
+        referenceResolver = new VariantReferenceResolver(syncOptions, typeService, channelService,
+            mock(CustomerGroupService.class), productService);
     }
 
     @Test
