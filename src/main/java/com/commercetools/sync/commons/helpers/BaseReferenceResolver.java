@@ -65,6 +65,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     protected static String getKeyFromResourceIdentifier(@Nonnull final ResourceIdentifier resourceIdentifier,
                                                          final boolean allowUuidKeys)
         throws ReferenceResolutionException {
+
         final String key = resourceIdentifier.getId();
         validateKey(key, allowUuidKeys, BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
         return key;
@@ -85,10 +86,10 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      *                            thrown if the key is blank (null/empty).
      * @throws ReferenceResolutionException thrown if the key is not valid.
      */
-    private static void validateKey(@Nullable final String key,
-                                    final boolean shouldAllowUuidKeys,
+    private static void validateKey(@Nullable final String key, final boolean shouldAllowUuidKeys,
                                     @Nonnull final String errorMessage)
         throws ReferenceResolutionException {
+
         if (isBlank(key)) {
             throw new ReferenceResolutionException(errorMessage);
         } else {
