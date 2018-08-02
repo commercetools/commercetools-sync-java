@@ -245,10 +245,8 @@ public class InventoryReferenceResolverTest {
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getMessage())
-                                 .isEqualTo("Failed to resolve supply channel reference on InventoryEntryDraft with "
-                                     + "SKU:'1000'. Reason: Key is blank (null/empty) on both expanded reference object"
-                                     + " and reference"
-                                     + " id field.");
+                                 .isEqualTo(format("Failed to resolve supply channel reference on InventoryEntryDraft"
+                                     + " with SKU:'1000'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
                              return null;
                          }).toCompletableFuture().join();
     }
@@ -266,9 +264,8 @@ public class InventoryReferenceResolverTest {
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getMessage())
-                                 .isEqualTo("Failed to resolve supply channel reference on InventoryEntryDraft with"
-                                     + " SKU:'null'. Reason: Key is blank (null/empty) on both expanded reference"
-                                     + " object and reference id field.");
+                                 .isEqualTo(format("Failed to resolve supply channel reference on InventoryEntryDraft"
+                                     + " with SKU:'null'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
                              return null;
                          }).toCompletableFuture().join();
     }

@@ -23,8 +23,8 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     private static final String UUID_NOT_ALLOWED = "Found a UUID in the id field. Expecting a key without a UUID value."
         + " If you want to allow UUID values for reference keys, please use the allowUuidKeys(true) option in the"
         + " sync options.";
-    public static final String BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER = "The value of 'id' field of the Resource"
-        + " Identifier is blank (null/empty).";
+    public static final String BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER = "The value of the 'id' field of the Resource"
+        + " Identifier/Reference is blank (null/empty).";
     private static final String UUID_REGEX = "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}";
 
     protected S options;
