@@ -69,7 +69,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * @param customerGroupService the service to fetch the customer groups for reference resolution.
      * @param taxCategoryService   the service to fetch tax categories for reference resolution.
      * @param stateService         the service to fetch product states for reference resolution.
-     * @param productService       the service to fetch products for product reference resolution on reference attributes.
+     * @param productService       the service to fetch products for product reference resolution on reference
+     *                             attributes.
      */
     public ProductReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final ProductTypeService productTypeService,
