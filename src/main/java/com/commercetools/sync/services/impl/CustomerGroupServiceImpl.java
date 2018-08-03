@@ -5,9 +5,9 @@ import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.CustomerGroupService;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customergroups.queries.CustomerGroupQuery;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,13 +17,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public final class CustomerGroupServiceImpl implements CustomerGroupService {
-
     private final BaseSyncOptions syncOptions;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
-    private boolean isCached = false;
-    private static final String CUSTOMER_GROUP_KEY_NOT_SET = "CustomerGroup with id: '%s' has no key set. Keys are "
+    public static final String CUSTOMER_GROUP_KEY_NOT_SET = "CustomerGroup with id: '%s' has no key set. Keys are "
         + "required for customer group matching.";
 
     public CustomerGroupServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
@@ -32,37 +33,32 @@ public final class CustomerGroupServiceImpl implements CustomerGroupService {
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<String>> fetchCachedCustomerGroupId(@Nonnull final String key) {
-        if (isCached) {
-            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
+    public CompletionStage<Optional<String>> fetchCachedCustomerGroupId(@Nullable final String key) {
+        if (isBlank(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
         }
-        return cacheAndFetch(key);
-    }
-
-    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
-        return cacheKeysToIds().thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
+        if (keyToIdCache.isEmpty()) {
+            return cacheAndFetch(key);
+        }
+        return CompletableFuture.completedFuture(ofNullable(keyToIdCache.get(key)));
     }
 
     @Nonnull
-    @Override
-    public CompletionStage<Map<String, String>> cacheKeysToIds() {
-        if (isCached) {
-            return CompletableFuture.completedFuture(keyToIdCache);
-        }
-
+    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
         final Consumer<List<CustomerGroup>> customerGroupPageConsumer = customerGroupsPage ->
             customerGroupsPage.forEach(customerGroup -> {
-                final String key = customerGroup.getKey();
-                final String id = customerGroup.getId();
-                if (StringUtils.isNotBlank(key)) {
-                    keyToIdCache.put(key, id);
+
+                final String fetchedCustomerGroupKey = customerGroup.getKey();
+                final String fetchedCustomerGroupId = customerGroup.getId();
+
+                if (isNotBlank(fetchedCustomerGroupKey)) {
+                    keyToIdCache.put(fetchedCustomerGroupKey, fetchedCustomerGroupId);
                 } else {
-                    syncOptions.applyWarningCallback(format(CUSTOMER_GROUP_KEY_NOT_SET, id));
+                    syncOptions.applyWarningCallback(format(CUSTOMER_GROUP_KEY_NOT_SET, fetchedCustomerGroupId));
                 }
             });
 
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), CustomerGroupQuery.of(), customerGroupPageConsumer)
-                            .thenAccept(result -> isCached = true)
-                            .thenApply(result -> keyToIdCache);
+                            .thenApply(result -> ofNullable(keyToIdCache.get(key)));
     }
 }
