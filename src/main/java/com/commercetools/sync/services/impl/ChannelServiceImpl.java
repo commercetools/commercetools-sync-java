@@ -10,7 +10,6 @@ import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.commands.ChannelCreateCommand;
 import io.sphere.sdk.channels.queries.ChannelQuery;
 import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -24,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 
 public final class ChannelServiceImpl implements ChannelService {
@@ -66,7 +66,7 @@ public final class ChannelServiceImpl implements ChannelService {
             channelsPage.forEach(channel -> {
                 final String fetchedChannelKey = channel.getKey();
                 final String id = channel.getId();
-                if (StringUtils.isNotBlank(fetchedChannelKey)) {
+                if (isNotBlank(fetchedChannelKey)) {
                     keyToIdCache.put(fetchedChannelKey, id);
                 } else {
                     syncOptions.applyWarningCallback(format(CHANNEL_KEY_NOT_SET, id));
