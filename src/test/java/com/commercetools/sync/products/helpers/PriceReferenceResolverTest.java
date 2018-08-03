@@ -30,9 +30,9 @@ import java.util.concurrent.CompletableFuture;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockCustomerGroup;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockCustomerGroupService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroup;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroupService;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -210,7 +210,7 @@ public class PriceReferenceResolverTest {
             new PriceReferenceResolver(productSyncOptions, typeService, channelService, customerGroupService);
 
         final PriceDraftBuilder resolvedBuilder = priceReferenceResolver.resolveChannelReference(priceBuilder)
-                                                               .toCompletableFuture().join();
+                                                                        .toCompletableFuture().join();
         assertThat(resolvedBuilder.getChannel()).isNotNull();
         assertThat(resolvedBuilder.getChannel().getId()).isEqualTo(CHANNEL_ID);
     }
@@ -236,7 +236,7 @@ public class PriceReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithNoCustomTypeReferenceAndNoChannelReference_ShouldNotResolveReferences() {
+    public void resolveReferences_WithNoReferences_ShouldNotResolveReferences() {
         final PriceDraft priceDraft = PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
                                                        .country(CountryCode.DE)
                                                        .build();
@@ -249,5 +249,6 @@ public class PriceReferenceResolverTest {
 
         assertThat(referencesResolvedDraft.getCustom()).isNull();
         assertThat(referencesResolvedDraft.getChannel()).isNull();
+        assertThat(referencesResolvedDraft.getCustomerGroup()).isNull();
     }
 }
