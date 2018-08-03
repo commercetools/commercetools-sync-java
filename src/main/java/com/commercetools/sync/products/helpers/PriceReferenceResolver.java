@@ -176,11 +176,12 @@ public final class PriceReferenceResolver
      */
     @Nonnull
     private CompletionStage<PriceDraftBuilder> createChannelAndSetReference(
-            @Nonnull final String channelKey,
-            @Nonnull final PriceDraftBuilder draftBuilder) {
+        @Nonnull final String channelKey,
+        @Nonnull final PriceDraftBuilder draftBuilder) {
+
         if (options.shouldEnsurePriceChannels()) {
             return channelService.createAndCacheChannel(channelKey)
-                .thenCompose(createdChannel -> setChannelReference(createdChannel.getId(), draftBuilder));
+                                 .thenApply(draftBuilder::channel);
         } else {
             final ReferenceResolutionException referenceResolutionException =
                 new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));
