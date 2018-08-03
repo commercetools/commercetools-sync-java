@@ -163,7 +163,7 @@ public class StateReferenceResolverTest {
     }
 
     @Test
-    public void resolveStateReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReference() {
+    public void resolveStateReference_WithExceptionOnFetch_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .state(State.referenceOfId("stateKey"))
             .key("dummyKey");

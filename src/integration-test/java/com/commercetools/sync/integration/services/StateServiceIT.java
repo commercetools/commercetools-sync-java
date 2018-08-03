@@ -61,7 +61,7 @@ public class StateServiceIT {
     }
 
     @Test
-    public void fetchCachedStateId_WithExistingProductType_ShouldFetchProductTypeAndCache() {
+    public void fetchCachedStateId_WithExistingState_ShouldFetchStateAndCache() {
         final Optional<String> stateId = stateService.fetchCachedStateId(oldState.getKey())
                                                                  .toCompletableFuture()
                                                                  .join();
@@ -70,7 +70,7 @@ public class StateServiceIT {
     }
 
     @Test
-    public void fetchCachedStateId_OnSecondTime_ShouldNotFindProductTypeInCache() {
+    public void fetchCachedStateId_OnSecondTime_ShouldNotFindStateInCache() {
         // Fetch any key to populate cache
         stateService.fetchCachedStateId("anyKey").toCompletableFuture().join();
 
