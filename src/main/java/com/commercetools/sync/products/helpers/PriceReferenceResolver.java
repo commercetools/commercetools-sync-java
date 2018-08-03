@@ -4,17 +4,24 @@ import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
@@ -22,17 +29,20 @@ public final class PriceReferenceResolver
     extends CustomReferenceResolver<PriceDraft, PriceDraftBuilder, ProductSyncOptions> {
 
     private ChannelService channelService;
+    private CustomerGroupService customerGroupService;
     private static final String CHANNEL_DOES_NOT_EXIST = "Channel with key '%s' does not exist.";
-    private static final String FAILED_TO_RESOLVE_CHANNEL = "Failed to resolve the channel reference on "
-        + "PriceDraft with country:'%s' and value: '%s'. Reason: %s";
     private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
         + "PriceDraft with country:'%s' and value: '%s'.";
+    private static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve '%s' reference on PriceDraft with "
+        + "country:'%s' and value: '%s'. Reason: %s";
 
     public PriceReferenceResolver(@Nonnull final ProductSyncOptions options,
                                   @Nonnull final TypeService typeService,
-                                  @Nonnull final ChannelService channelService) {
+                                  @Nonnull final ChannelService channelService,
+                                  @Nonnull final CustomerGroupService customerGroupService) {
         super(options, typeService);
         this.channelService = channelService;
+        this.customerGroupService = customerGroupService;
     }
 
     /**
@@ -50,6 +60,7 @@ public final class PriceReferenceResolver
     public CompletionStage<PriceDraft> resolveReferences(@Nonnull final PriceDraft priceDraft) {
         return resolveCustomTypeReference(PriceDraftBuilder.of(priceDraft))
             .thenCompose(this::resolveChannelReference)
+            .thenCompose(this::resolveCustomerGroupReference)
             .thenApply(PriceDraftBuilder::build);
     }
 
@@ -175,5 +186,27 @@ public final class PriceReferenceResolver
                 new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));
             return CompletableFutureUtils.exceptionallyCompletedFuture(referenceResolutionException);
         }
+    }
+
+    /**
+     * Given a {@link PriceDraftBuilder} this method attempts to resolve the customer group reference to return
+     * a {@link CompletionStage} which contains the same instance of draft builder with the resolved
+     * customer group reference.
+     *
+     * <p>The method then tries to fetch the key of the customer group, optimistically from a
+     * cache. If the id is not found in cache nor the CTP project the draft builder is returned as is without the
+     * customer group reference being set on it.
+     *
+     * @param draftBuilder the priceDraftBuilder to resolve its customer group reference.
+     * @return a {@link CompletionStage} that contains as a result a new price draft builder instance with resolved
+     *         customer group reference or no customer group reference if the customer group doesn't exist or in case an
+     *         error occurs during reference resolution a {@link ReferenceResolutionException}.
+     */
+    @Nonnull
+    CompletionStage<PriceDraftBuilder> resolveCustomerGroupReference(@Nonnull final PriceDraftBuilder draftBuilder) {
+        return resolveReference(draftBuilder, draftBuilder.getCustomerGroup(),
+            customerGroupService::fetchCachedCustomerGroupId, CustomerGroup::referenceOfId,
+            (priceDraftBuilder, reference) -> completedFuture(priceDraftBuilder.customerGroup(reference)),
+            (priceDraftBuilder, customerGroupKey) -> completedFuture(priceDraftBuilder));
     }
 }
