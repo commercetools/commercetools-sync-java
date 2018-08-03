@@ -42,10 +42,10 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     public static final String REFERENCE_ID_FIELD = "id";
 
     /**
-     * Takes a {@link ProductSyncOptions} instance, {@link TypeService}, a {@link ChannelService} and a
-     * {@link ProductService} to instantiate a {@link VariantReferenceResolver} instance that could be used to resolve
-     * the variants of product drafts in the CTP project specified in the injected {@link ProductSyncOptions}
-     * instance.
+     * Takes a {@link ProductSyncOptions} instance, {@link TypeService}, a {@link ChannelService}, a
+     * {@link CustomerGroupService} and a {@link ProductService} to instantiate a {@link VariantReferenceResolver}
+     * instance that could be used to resolve the variants of product drafts in the CTP project specified in the
+     * injected {@link ProductSyncOptions} instance.
      *
      * @param productSyncOptions   the container of all the options of the sync process including the CTP project client
      *                             and/or configuration and other sync-specific options.

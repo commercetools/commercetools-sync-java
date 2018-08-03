@@ -36,6 +36,18 @@ public final class PriceReferenceResolver
     private static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve '%s' reference on PriceDraft with "
         + "country:'%s' and value: '%s'. Reason: %s";
 
+    /**
+     * Takes a {@link ProductSyncOptions} instance, {@link TypeService}, a {@link ChannelService} and a
+     * {@link CustomerGroupService} to instantiate a {@link PriceReferenceResolver} instance that could be used to
+     * resolve the prices of variant drafts in the CTP project specified in the injected {@link ProductSyncOptions}
+     * instance.
+     *
+     * @param options              the container of all the options of the sync process including the CTP project client
+     *                             and/or configuration and other sync-specific options.
+     * @param typeService          the service to fetch the custom types for reference resolution.
+     * @param channelService       the service to fetch the channels for reference resolution.
+     * @param customerGroupService the service to fetch the customer groups for reference resolution.
+     */
     public PriceReferenceResolver(@Nonnull final ProductSyncOptions options,
                                   @Nonnull final TypeService typeService,
                                   @Nonnull final ChannelService channelService,

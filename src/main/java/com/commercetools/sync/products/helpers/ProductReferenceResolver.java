@@ -55,10 +55,10 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
     /**
      * Takes a {@link ProductSyncOptions} instance, a {@link ProductTypeService}, a {@link CategoryService}, a
-     * {@link TypeService}, a {@link ChannelService}, a {@link TaxCategoryService}, a {@link StateService} and a
-     * {@link ProductService} to instantiate a {@link ProductReferenceResolver} instance that could be used to resolve
-     * the product type, categories, variants, tax category and product state references of product drafts in the CTP
-     * project specified in the injected {@link ProductSyncOptions} instance.
+     * {@link TypeService}, a {@link ChannelService}, a {@link CustomerGroupService}, a {@link TaxCategoryService},
+     * a {@link StateService} and a {@link ProductService} to instantiate a {@link ProductReferenceResolver} instance
+     * that could be used to resolve the product type, categories, variants, tax category and product state references
+     * of product drafts in the CTP project specified in the injected {@link ProductSyncOptions} instance.
      *
      * @param productSyncOptions   the container of all the options of the sync process including the CTP project client
      *                             and/or configuration and other sync-specific options.
