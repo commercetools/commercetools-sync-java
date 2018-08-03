@@ -5,6 +5,7 @@ import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
@@ -59,21 +60,23 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * the product type, categories, variants, tax category and product state references of product drafts in the CTP
      * project specified in the injected {@link ProductSyncOptions} instance.
      *
-     * @param productSyncOptions the container of all the options of the sync process including the CTP project client
-     *                           and/or configuration and other sync-specific options.
-     * @param productTypeService the service to fetch the product type for reference resolution.
-     * @param categoryService    the service to fetch the categories for reference resolution.
-     * @param typeService        the service to fetch the custom types for reference resolution.
-     * @param channelService     the service to fetch the channels for reference resolution.
-     * @param taxCategoryService the service to fetch tax categories for reference resolution.
-     * @param stateService       the service to fetch product states for reference resolution.
-     * @param productService     the service to fetch products for product reference resolution on reference attributes.
+     * @param productSyncOptions   the container of all the options of the sync process including the CTP project client
+     *                             and/or configuration and other sync-specific options.
+     * @param productTypeService   the service to fetch the product type for reference resolution.
+     * @param categoryService      the service to fetch the categories for reference resolution.
+     * @param typeService          the service to fetch the custom types for reference resolution.
+     * @param channelService       the service to fetch the channels for reference resolution.
+     * @param customerGroupService the service to fetch the customer groups for reference resolution.
+     * @param taxCategoryService   the service to fetch tax categories for reference resolution.
+     * @param stateService         the service to fetch product states for reference resolution.
+     * @param productService       the service to fetch products for product reference resolution on reference attributes.
      */
     public ProductReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final ProductTypeService productTypeService,
                                     @Nonnull final CategoryService categoryService,
                                     @Nonnull final TypeService typeService,
                                     @Nonnull final ChannelService channelService,
+                                    @Nonnull final CustomerGroupService customerGroupService,
                                     @Nonnull final TaxCategoryService taxCategoryService,
                                     @Nonnull final StateService stateService,
                                     @Nonnull final ProductService productService) {
@@ -83,7 +86,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         this.taxCategoryService = taxCategoryService;
         this.stateService = stateService;
         this.variantReferenceResolver =
-            new VariantReferenceResolver(productSyncOptions, typeService, channelService, productService);
+            new VariantReferenceResolver(productSyncOptions, typeService, channelService, customerGroupService,
+                productService);
     }
 
     /**
