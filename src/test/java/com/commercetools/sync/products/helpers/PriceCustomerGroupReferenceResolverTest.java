@@ -23,8 +23,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockCustomerGroup;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockCustomerGroupService;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroup;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroupService;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
