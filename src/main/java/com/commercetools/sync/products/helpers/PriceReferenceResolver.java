@@ -76,80 +76,74 @@ public final class PriceReferenceResolver
      * However, if the {@code ensureChannel} is set to false, the future is completed exceptionally with a
      * {@link ReferenceResolutionException}.
      *
-     * @param draftBuilder the inventoryEntryDraft to resolve it's channel reference.
+     * @param draftBuilder the PriceDraftBuilder to resolve its channel reference.
      * @return a {@link CompletionStage} that contains as a result a new price draft builder instance with resolved
      *         supply channel or, in case an error occurs during reference resolution,
      *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
     CompletionStage<PriceDraftBuilder> resolveChannelReference(@Nonnull final PriceDraftBuilder draftBuilder) {
-        final Reference<Channel> channelReference = draftBuilder.getChannel();
-        if (channelReference != null) {
-            try {
-                final String channelKey = getKeyFromResourceIdentifier(channelReference, options.shouldAllowUuidKeys());
-                return fetchOrCreateAndResolveReference(draftBuilder, channelKey);
-            } catch (ReferenceResolutionException exception) {
-                return CompletableFutureUtils.exceptionallyCompletedFuture(
-                    new ReferenceResolutionException(format(FAILED_TO_RESOLVE_CHANNEL, draftBuilder.getCountry(),
-                        draftBuilder.getValue(), exception.getMessage()), exception));
-            }
-        }
-        return completedFuture(draftBuilder);
-    }
 
-
-    /**
-     * Given a {@link PriceDraftBuilder} and a {@code channelKey} this method fetches the actual id of the
-     * channel corresponding to this key, ideally from a cache. Then it sets this id on the supply channel reference
-     * id of the inventory entry draft. If the id is not found in cache nor the CTP project and {@code ensureChannel}
-     * option is set to true, a new channel will be created with this key and the role {@code "InventorySupply"}.
-     * However, if the {@code ensureChannel} is set to false, the future is completed exceptionally with a
-     * {@link ReferenceResolutionException}.
-     *
-     * @param draftBuilder      the price draft builder where to set resolved references.
-     * @param channelKey the key of the channel to resolve it's actual id on the draft.
-     * @return a {@link CompletionStage} that contains as a result the same {@code draft} instance with resolved
-     *         supply channel reference or an exception.
-     */
-    @Nonnull
-    private CompletionStage<PriceDraftBuilder> fetchOrCreateAndResolveReference(
-        @Nonnull final PriceDraftBuilder draftBuilder,
-        @Nonnull final String channelKey) {
-        final CompletionStage<PriceDraftBuilder> priceDraftCompletionStage = channelService
-            .fetchCachedChannelId(channelKey)
-            .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
-                .map(resolvedChannelId -> setChannelReference(resolvedChannelId, draftBuilder))
-                .orElseGet(() -> createChannelAndSetReference(channelKey, draftBuilder)));
-
-        final CompletableFuture<PriceDraftBuilder> result = new CompletableFuture<>();
-        priceDraftCompletionStage
-            .whenComplete((resolvedDraft, exception) -> {
-                if (exception != null) {
-                    result.completeExceptionally(
-                        new ReferenceResolutionException(format(FAILED_TO_RESOLVE_CHANNEL, draftBuilder.getCountry(),
-                            draftBuilder.getValue(), exception.getMessage()), exception));
-                } else {
-                    result.complete(resolvedDraft);
-                }
+        return resolveReference(draftBuilder, draftBuilder.getChannel(), channelService::fetchCachedChannelId,
+            Channel::referenceOfId,
+            (priceDraftBuilder, reference) -> completedFuture(priceDraftBuilder.channel(reference)),
+            (priceDraftBuilder, channelKey) -> {
+                final CompletableFuture<PriceDraftBuilder> result = new CompletableFuture<>();
+                createChannelAndSetReference(channelKey, priceDraftBuilder)
+                    .whenComplete((draftWithCreatedChannel, exception) -> {
+                        if (exception != null) {
+                            result.completeExceptionally(
+                                new ReferenceResolutionException(format(FAILED_TO_RESOLVE_REFERENCE,
+                                    Channel.referenceTypeId(), draftBuilder.getCountry(), draftBuilder.getValue(),
+                                    exception.getMessage()), exception));
+                        } else {
+                            result.complete(draftWithCreatedChannel);
+                        }
+                    });
+                return result;
             });
-        return result;
     }
 
-
     /**
-     * Helper method that returns a completed CompletionStage with a resolved channel reference
-     * {@link PriceDraftBuilder} object as a result of setting the passed {@code channelId} as the id of channel
-     * reference.
+     * Common function to resolve references from key.
      *
-     * @param channelId  the channel id to set on the price channel reference id field.
-     * @param builder    the price draft builder where to update the channel reference.
-     * @return a completed CompletionStage with the same instance of {@code builder} having resolved channel reference
-     *         as a result of setting the passed {@code channelId} as the id of channel reference.
+     * @param draftBuilder                    {@link PriceDraftBuilder} to update
+     * @param reference                       reference instance from which key is read
+     * @param keyToIdMapper                   function which calls respective service to fetch the reference by key
+     * @param idToReferenceMapper             function which creates {@link Reference} instance from fetched id
+     * @param referenceSetter                 function which will set the resolved reference to the {@code draftBuilder}
+     * @param nonExistingReferenceDraftMapper function which will be used to map the draft builder in case the reference
+     *                                        to exist after applying the {@code idToReferenceMapper}.
+     * @param <T>                             type of reference (e.g. {@link Channel}, {@link CustomerGroup}
+     * @return {@link CompletionStage} containing {@link PriceDraftBuilder} with resolved &lt;T&gt; reference.
      */
     @Nonnull
-    private static CompletionStage<PriceDraftBuilder> setChannelReference(@Nonnull final String channelId,
-                                                                          @Nonnull final PriceDraftBuilder builder) {
-        return completedFuture(builder.channel(Channel.referenceOfId(channelId)));
+    private <T> CompletionStage<PriceDraftBuilder> resolveReference(
+        @Nonnull final PriceDraftBuilder draftBuilder,
+        @Nullable final Reference<T> reference,
+        @Nonnull final Function<String, CompletionStage<Optional<String>>> keyToIdMapper,
+        @Nonnull final Function<String, Reference<T>> idToReferenceMapper,
+        @Nonnull final BiFunction<PriceDraftBuilder, Reference<T>, CompletionStage<PriceDraftBuilder>> referenceSetter,
+        @Nonnull final BiFunction<PriceDraftBuilder, String, CompletionStage<PriceDraftBuilder>>
+            nonExistingReferenceDraftMapper) {
+
+        if (reference == null) {
+            return completedFuture(draftBuilder);
+        }
+
+        try {
+            final String resourceKey = getKeyFromResourceIdentifier(reference, options.shouldAllowUuidKeys());
+            return keyToIdMapper.apply(resourceKey)
+                                .thenCompose(resourceIdOptional -> resourceIdOptional
+                                    .map(idToReferenceMapper)
+                                    .map(referenceToSet -> referenceSetter.apply(draftBuilder, referenceToSet))
+                                    .orElseGet(() -> nonExistingReferenceDraftMapper.apply(draftBuilder, resourceKey)));
+        } catch (ReferenceResolutionException referenceResolutionException) {
+            return exceptionallyCompletedFuture(
+                new ReferenceResolutionException(
+                    format(FAILED_TO_RESOLVE_REFERENCE, reference.getTypeId(), draftBuilder.getCountry(),
+                        draftBuilder.getValue(), referenceResolutionException.getMessage())));
+        }
     }
 
     /**
