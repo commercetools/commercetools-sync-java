@@ -64,9 +64,10 @@ public class CustomerGroupServiceIT {
 
     @Test
     public void fetchCachedCustomerGroupId_WithExistingCustomerGroup_ShouldFetchCustomerGroupAndCache() {
-        final Optional<String> customerGroupId = customerGroupService.fetchCachedCustomerGroupId(oldCustomerGroup.getKey())
-                                                                     .toCompletableFuture()
-                                                                     .join();
+        final Optional<String> customerGroupId = customerGroupService
+            .fetchCachedCustomerGroupId(oldCustomerGroup.getKey())
+            .toCompletableFuture()
+            .join();
         assertThat(customerGroupId).contains(oldCustomerGroup.getId());
         assertThat(warnings).isEmpty();
     }
