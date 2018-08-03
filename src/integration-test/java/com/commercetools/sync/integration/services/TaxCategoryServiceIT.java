@@ -105,8 +105,7 @@ public class TaxCategoryServiceIT {
                                                                  .join();
 
         assertThat(taxCategoryId).isNotEmpty();
-        assertThat(warnings).hasSize(1);
-        assertThat(warnings.get(0)).isEqualTo(format("TaxCategory with id: '%s' has no key"
+        assertThat(warnings).contains(format("TaxCategory with id: '%s' has no key"
             + " set. Keys are required for taxCategory matching.", newTaxCategory.getId()));
     }
 
