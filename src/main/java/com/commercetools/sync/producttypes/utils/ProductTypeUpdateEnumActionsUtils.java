@@ -173,7 +173,10 @@ public final class ProductTypeUpdateEnumActionsUtils {
         @Nonnull final List<T> newEnumValues,
         @Nonnull final BiFunction<String, T, UpdateAction<ProductType>> addEnumCallback) {
 
-        final Map<String, T> oldEnumValuesKeyMap = getEnumValuesKeyMap(oldEnumValues);
+        final Map<String, T> oldEnumValuesKeyMap = getEnumValuesKeyMapWithKeyValidation(
+            attributeDefinitionName,
+            oldEnumValues
+        );
 
         return newEnumValues
             .stream()
