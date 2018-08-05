@@ -220,7 +220,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithNewDifferentValues_ShouldReturnAction() {
+    public void buildActions_WithNewDifferentValues_ShouldReturnActions() {
         final List<UpdateAction<ProductType>> result = buildActions(old, newDifferent);
 
         assertThat(result).containsExactlyInAnyOrder(
