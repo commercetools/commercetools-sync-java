@@ -10,6 +10,7 @@ import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Map;
 import java.util.List;
 import java.util.Optional;
@@ -87,25 +88,16 @@ public final class ProductTypeUpdateEnumActionsUtils {
         @Nonnull final List<T> oldEnumValues,
         @Nullable final List<T> newEnumValues) {
 
-        final List<String> keysToRemove;
+        final Map<String, T> newEnumValuesKeyMap = getEnumValuesKeyMapWithKeyValidation(
+            attributeDefinitionName,
+            Optional.ofNullable(newEnumValues).orElse(Collections.emptyList())
+        );
 
-        if (newEnumValues != null && !newEnumValues.isEmpty()) {
-            final Map<String, T> newEnumValuesKeyMap = getEnumValuesKeyMapWithKeyValidation(
-                attributeDefinitionName,
-                newEnumValues
-            );
-
-            keysToRemove = oldEnumValues
-                .stream()
-                .map(WithKey::getKey)
-                .filter(oldEnumValueKey -> !newEnumValuesKeyMap.containsKey(oldEnumValueKey))
-                .collect(Collectors.toList());
-        } else {
-            keysToRemove = oldEnumValues
-                .stream()
-                .map(WithKey::getKey)
-                .collect(Collectors.toList());
-        }
+        final List<String> keysToRemove = oldEnumValues
+            .stream()
+            .map(WithKey::getKey)
+            .filter(oldEnumValueKey -> !newEnumValuesKeyMap.containsKey(oldEnumValueKey))
+            .collect(Collectors.toList());
 
         if (!keysToRemove.isEmpty()) {
             return ofNullable(RemoveEnumValues.of(attributeDefinitionName, keysToRemove));
