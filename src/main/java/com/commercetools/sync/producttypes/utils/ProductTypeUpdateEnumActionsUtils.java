@@ -215,13 +215,12 @@ public final class ProductTypeUpdateEnumActionsUtils {
 
         return oldEnumValues
             .stream()
-            .map(oldEnumValue ->
-                ofNullable(newEnumValuesKeyMap.get(oldEnumValue.getKey())).map(newEnumValue ->
-                    matchingEnumCallback.apply(attributeDefinitionName, oldEnumValue, newEnumValue)
-                )
-            )
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+            .filter(oldEnumValue -> newEnumValuesKeyMap.containsKey(oldEnumValue.getKey()))
+            .map(oldEnumValue -> matchingEnumCallback.apply(
+                attributeDefinitionName,
+                oldEnumValue,
+                newEnumValuesKeyMap.get(oldEnumValue.getKey())
+            ))
             .flatMap(Collection::stream)
             .collect(Collectors.toList());
     }
