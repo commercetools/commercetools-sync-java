@@ -7,8 +7,6 @@ import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.queries.ChannelQuery;
-import io.sphere.sdk.client.QueueSphereClientDecorator;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -150,14 +148,8 @@ public class InventorySyncIT {
 
         //Prepare InventoryEntryDraft of sku SKU_1 and reference to above supply channel key.
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
-            .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, supplyChannelReference).build();
-
-        //Ensure old entry values before sync.
-        final Optional<InventoryEntry> oldInventoryBeforeSync =
-            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, supplyChannelReference);
-        assertThat(oldInventoryBeforeSync).isPresent();
-        assertValues(oldInventoryBeforeSync.get(), QUANTITY_ON_STOCK_1, EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1);
-        assertThat(oldInventoryBeforeSync.get().getSupplyChannel().getId()).isEqualTo(supplyChannelReference.getId());
+            .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, Channel.referenceOfId(SUPPLY_CHANNEL_KEY_1))
+            .build();
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
@@ -248,22 +240,13 @@ public class InventorySyncIT {
                 channelQueryModel.roles().containsAny(singletonList(ChannelRole.INVENTORY_SUPPLY)));
         final List<Channel> targetChannelsBeforeSync = CTP_TARGET_CLIENT.execute(targetChannelsQuery)
             .toCompletableFuture().join().getResults();
-        assertThat(targetChannelsBeforeSync).isNotEmpty();
         assertThat(targetChannelsBeforeSync).hasSize(1);
         assertThat(targetChannelsBeforeSync.get(0).getKey()).isEqualTo(SUPPLY_CHANNEL_KEY_1);
 
-        //Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from source project.
-        final Optional<Channel> sourceSupplyChannel = getChannelByKey(CTP_SOURCE_CLIENT, SUPPLY_CHANNEL_KEY_1);
-        assertThat(sourceSupplyChannel).isNotEmpty();
-
-        //Make Reference from fetched Channel. Ensure that it is expanded.
-        final Reference<Channel> sourceChannelReference = sourceSupplyChannel.get().toReference();
-        assertThat(sourceChannelReference.getObj()).isNotNull();
-        assertThat(sourceChannelReference.getObj().getKey()).isEqualTo(SUPPLY_CHANNEL_KEY_1);
-
         //Prepare InventoryEntryDraft of sku SKU_1 and reference to above supply channel key.
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
-            .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, sourceChannelReference).build();
+            .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2,
+                Channel.referenceOfId(SUPPLY_CHANNEL_KEY_1)).build();
 
         //Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
         final Optional<Channel> targetSupplyChannel = getChannelByKey(CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_1);
@@ -302,20 +285,24 @@ public class InventorySyncIT {
     @Test
     public void sync_FromSourceToTargetProjectWithChannelsEnsured_ShouldReturnProperStatistics() {
         //Fetch new inventories from source project. Convert them to drafts.
-        final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
-            .execute(InventoryEntryQuery.of()
-                                        .withExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
-                                        .plusExpansionPaths(ExpansionPath.of("custom.type")))
-            .toCompletableFuture().join().getResults();
+        final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT.execute(
+            InventoryEntryQuery.of()
+                               .withExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
+                               .plusExpansionPaths(ExpansionPath.of("custom.type")))
+                                                                       .toCompletableFuture()
+                                                                       .join()
+                                                                       .getResults();
 
         final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-            .ensureChannels(true).build();
+                                                                                     .ensureChannels(true)
+                                                                                     .build();
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
-        final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(newInventories).toCompletableFuture()
-            .join();
+        final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(newInventories)
+                                                                             .toCompletableFuture()
+                                                                             .join();
         assertThat(inventorySyncStatistics).hasValues(3, 1, 1, 0);
     }
 
