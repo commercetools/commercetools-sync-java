@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
@@ -213,6 +214,82 @@ public class PriceReferenceResolverTest {
                                                                         .toCompletableFuture().join();
         assertThat(resolvedBuilder.getChannel()).isNotNull();
         assertThat(resolvedBuilder.getChannel().getId()).isEqualTo(CHANNEL_ID);
+    }
+
+    @Test
+    public void resolveChannelReference_WithNonExistingChannelKey_ShouldResolveChannelReference() {
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .allowUuidKeys(true)
+                                                                               .build();
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .country(CountryCode.DE)
+            .channel(Channel.referenceOfId("channelKey"));
+
+        final PriceReferenceResolver priceReferenceResolver =
+            new PriceReferenceResolver(productSyncOptions, typeService, channelService, customerGroupService);
+
+        final PriceDraftBuilder resolvedBuilder = priceReferenceResolver.resolveChannelReference(priceBuilder)
+                                                                        .toCompletableFuture().join();
+        assertThat(resolvedBuilder.getChannel()).isNotNull();
+        assertThat(resolvedBuilder.getChannel().getId()).isEqualTo(CHANNEL_ID);
+    }
+
+    @Test
+    public void
+    resolveSupplyChannelReference_WithNonExistingChannelAndNotEnsureChannel_ShouldNotResolveChannelReference() {
+        when(channelService.fetchCachedChannelId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .country(CountryCode.DE)
+            .channel(Channel.referenceOfId("channelKey"));
+
+        final PriceReferenceResolver priceReferenceResolver =
+            new PriceReferenceResolver(syncOptions, typeService, channelService, customerGroupService);
+
+
+        priceReferenceResolver.resolveChannelReference(priceBuilder)
+                              .exceptionally(exception -> {
+                                  assertThat(exception).isExactlyInstanceOf(CompletionException.class);
+                                  assertThat(exception.getCause())
+                                      .isExactlyInstanceOf(ReferenceResolutionException.class);
+                                  assertThat(exception.getCause().getCause())
+                                      .isExactlyInstanceOf(ReferenceResolutionException.class);
+                                  assertThat(exception.getCause().getCause().getMessage())
+                                      .isEqualTo("Channel with key 'channelKey' does not exist.");
+                                  return null;
+                              })
+                              .toCompletableFuture()
+                              .join();
+    }
+
+    @Test
+    public void
+    resolveSupplyChannelReference_WithNonExistingChannelAndEnsureChannel_ShouldResolveSupplyChannelReference() {
+        final ProductSyncOptions optionsWithEnsureChannels = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                                      .ensurePriceChannels(true)
+                                                                                      .build();
+        when(channelService.fetchCachedChannelId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .country(CountryCode.DE)
+            .channel(Channel.referenceOfId("channelKey"));
+
+        final PriceReferenceResolver priceReferenceResolver =
+            new PriceReferenceResolver(optionsWithEnsureChannels, typeService, channelService, customerGroupService);
+
+        priceReferenceResolver.resolveChannelReference(priceBuilder)
+                              .thenApply(PriceDraftBuilder::build)
+                              .thenAccept(resolvedDraft -> {
+                                  assertThat(resolvedDraft.getChannel()).isNotNull();
+                                  assertThat(resolvedDraft.getChannel().getId()).isEqualTo(CHANNEL_ID);
+                              })
+                              .toCompletableFuture()
+                              .join();
     }
 
     @Test

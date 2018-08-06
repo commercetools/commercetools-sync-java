@@ -39,6 +39,7 @@ public class InventorySyncMockUtils {
         when(channel.getId()).thenReturn(id);
         when(channel.getKey()).thenReturn(key);
         when(channel.getRoles()).thenReturn(singleton(ChannelRole.INVENTORY_SUPPLY));
+        when(channel.toReference()).thenReturn(Channel.referenceOfId(id));
         return channel;
     }
 
