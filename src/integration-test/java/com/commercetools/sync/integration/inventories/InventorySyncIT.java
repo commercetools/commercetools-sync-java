@@ -368,30 +368,6 @@ public class InventorySyncIT {
     }
 
     @Test
-    public void sync_WithSphereClientDecorator_ShouldReturnProperStatistics() {
-        //Fetch new inventories from source project. Convert them to drafts.
-        final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
-            .execute(InventoryEntryQuery.of()
-                                        .withExpansionPaths(InventoryEntryExpansionModel::supplyChannel)
-                                        .plusExpansionPaths(ExpansionPath.of("custom.type")))
-            .toCompletableFuture().join().getResults();
-
-        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
-
-        /*
-         * Prepare sync options and perform sync of draft to target project.
-         * Use QueueSphereClientDecorator to limit parallelisation on CTP requests.
-         */
-        final SphereClient client = QueueSphereClientDecorator.of(CTP_TARGET_CLIENT, 2);
-        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(client)
-            .ensureChannels(true).build();
-        final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
-        final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(newInventories).toCompletableFuture()
-            .join();
-        assertThat(inventorySyncStatistics).hasValues(3, 1, 1, 0);
-    }
-
-    @Test
     public void sync_ShouldReturnProperStatisticsObject() {
         //Fetch new inventories from source project. Convert them to drafts.
         final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
