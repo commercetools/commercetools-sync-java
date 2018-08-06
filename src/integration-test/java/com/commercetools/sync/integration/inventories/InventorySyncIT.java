@@ -148,8 +148,8 @@ public class InventorySyncIT {
 
         //Prepare InventoryEntryDraft of sku SKU_1 and reference to above supply channel key.
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
-            .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, Channel.referenceOfId(SUPPLY_CHANNEL_KEY_1))
-            .build();
+            .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2,
+                Channel.referenceOfId(SUPPLY_CHANNEL_KEY_1)).build();
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
