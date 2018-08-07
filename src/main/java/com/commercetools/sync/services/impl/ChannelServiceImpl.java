@@ -22,9 +22,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
 
 public final class ChannelServiceImpl implements ChannelService {
 
@@ -32,8 +29,6 @@ public final class ChannelServiceImpl implements ChannelService {
     private final Set<ChannelRole> channelRoles;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private boolean isCached = false;
-    private static final String CHANNEL_KEY_NOT_SET = "Channel with id: '%s' has no key set. Keys are required for "
-        + "channel matching.";
 
     public ChannelServiceImpl(@Nonnull final BaseSyncOptions syncOptions,
                               @Nonnull final Set<ChannelRole> channelRoles) {
@@ -63,15 +58,7 @@ public final class ChannelServiceImpl implements ChannelService {
         }
         final ChannelQuery query = channelQueryBuilder.build();
         final Consumer<List<Channel>> channelPageConsumer = channelsPage ->
-            channelsPage.forEach(channel -> {
-                final String fetchedChannelKey = channel.getKey();
-                final String id = channel.getId();
-                if (isNotBlank(fetchedChannelKey)) {
-                    keyToIdCache.put(fetchedChannelKey, id);
-                } else {
-                    syncOptions.applyWarningCallback(format(CHANNEL_KEY_NOT_SET, id));
-                }
-            });
+            channelsPage.forEach(channel -> keyToIdCache.put(channel.getKey(), channel.getId()));
 
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), query, channelPageConsumer)
                             .thenAccept(result -> isCached = true)
