@@ -76,8 +76,10 @@
 - **Commons** - Bumped `mockito` dependency to 2.19.1.
 - **Commons** - Switched to Junit5 using both `junit-jupiter-engine` and `junit-vintage-engine` for backward compatibility.
 
-**Changes** (1)
+**Changes** (3)
 - **Product Sync** - Removed redundant `ProductUpdateActionUtils#buildRemoveVariantUpdateActions`. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
+- **Commons** - Moved `SyncUtils#replaceCustomTypeIdWithKeys` to `CustomTypeReferenceReplacementUtils#replaceCustomTypeIdWithKeys`. [#101](https://github.com/commercetools/commercetools-sync-java/issues/101).
+- **Commons** - Moved `SyncUtils#replaceAssetsReferencesIdsWithKeys` to `AssetReferenceReplacementUtils#replaceAssetsReferencesIdsWithKeys`. [#101](https://github.com/commercetools/commercetools-sync-java/issues/101).
 
 
 

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.SyncUtils.replaceCustomTypeIdWithKeys;
+import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.replaceCustomTypeIdWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
 
 public final class InventoryReferenceReplacementUtils {
