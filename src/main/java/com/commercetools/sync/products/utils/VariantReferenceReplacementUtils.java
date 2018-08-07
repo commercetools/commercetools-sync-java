@@ -25,8 +25,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.SyncUtils.replaceAssetsReferencesIdsWithKeys;
-import static com.commercetools.sync.commons.utils.SyncUtils.replaceCustomTypeIdWithKeys;
+import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.replaceAssetsReferencesIdsWithKeys;
+import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.replaceCustomTypeIdWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static java.util.stream.Collectors.toList;

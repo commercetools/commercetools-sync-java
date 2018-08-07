@@ -5,6 +5,7 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.services.CategoryService;
+import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductTypeService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.Reference;
@@ -56,6 +57,7 @@ public class ProductTypeReferenceResolverTest {
                                                                         .build();
         referenceResolver = new ProductReferenceResolver(syncOptions, productTypeService, mock(CategoryService.class),
             getMockTypeService(), getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
+            mock(CustomerGroupService.class),
             getMockTaxCategoryService(TAX_CATEGORY_ID), getMockStateService(STATE_ID),
             getMockProductService(PRODUCT_ID));
     }
@@ -68,7 +70,7 @@ public class ProductTypeReferenceResolverTest {
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             productTypeService, mock(CategoryService.class), getMockTypeService(),
-            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
+            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)), mock(CustomerGroupService.class),
             getMockTaxCategoryService(TAX_CATEGORY_ID), getMockStateService(STATE_ID),
             getMockProductService(PRODUCT_ID));
 

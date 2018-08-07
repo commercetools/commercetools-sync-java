@@ -12,7 +12,6 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -88,9 +87,7 @@ public final class InventoryReferenceResolver
         final Reference<Channel> channelReference = draftBuilder.getSupplyChannel();
         if (channelReference != null) {
             try {
-                final String keyFromExpansion = getKeyFromExpansion(channelReference);
-                final String channelKey = getKeyFromExpansionOrReference(options.shouldAllowUuidKeys(),
-                    keyFromExpansion, channelReference);
+                final String channelKey = getKeyFromResourceIdentifier(channelReference, options.shouldAllowUuidKeys());
                 return fetchOrCreateAndResolveReference(draftBuilder, channelKey);
             } catch (ReferenceResolutionException exception) {
                 return CompletableFutureUtils.exceptionallyCompletedFuture(
@@ -141,18 +138,6 @@ public final class InventoryReferenceResolver
 
     }
 
-    /**
-     * Helper method that returns the value of the key field from the channel {@link Reference} object, if expanded.
-     * Otherwise, returns null.
-     *
-     * @return the value of the key field from the channel {@link Reference} object, if expanded.
-     *          Otherwise, returns null.
-     */
-    @Nullable
-    @SuppressWarnings("ConstantConditions") // NPE can't occur because of the isReferenceExpanded check.
-    private static String getKeyFromExpansion(@Nonnull final Reference<Channel> channelReference) {
-        return isReferenceExpanded(channelReference) ? channelReference.getObj().getKey() : null;
-    }
 
     /**
      * Helper method that returns a completed CompletionStage with a resolved channel reference
