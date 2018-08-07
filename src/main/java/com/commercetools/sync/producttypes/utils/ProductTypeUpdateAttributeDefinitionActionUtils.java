@@ -88,8 +88,6 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
         @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts)
         throws BuildUpdateActionException {
 
-        final HashSet<String> removedAttributesDefinitionsNames = new HashSet<>();
-
         final Map<String, AttributeDefinition> oldAttributesDefinitionsNameMap =
             oldAttributeDefinitions
                 .stream()
@@ -111,7 +109,6 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
             final List<UpdateAction<ProductType>> updateActions =
                 buildRemoveAttributeDefinitionOrAttributeDefinitionUpdateActions(
                     oldAttributeDefinitions,
-                    removedAttributesDefinitionsNames,
                     newAttributesDefinitionsDraftsNameMap
                 );
 
@@ -143,7 +140,6 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      * fields (name, label, etc..), and add the computed actions to the list of update actions.
      *
      * @param oldAttributeDefinitions             the list of old {@link AttributeDefinition}s.
-     * @param removedAttributeDefinitionNames     a set containing names of removed attribute definitions.
      * @param newAttributeDefinitionDraftsNameMap a map of names to attribute definition drafts of the new
      *                                            list of attribute definition drafts.
      * @return a list of attribute definition update actions if there are attribute definitions that are not existing
@@ -154,7 +150,6 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
     @Nonnull
     private static List<UpdateAction<ProductType>> buildRemoveAttributeDefinitionOrAttributeDefinitionUpdateActions(
         @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
-        @Nonnull final Set<String> removedAttributeDefinitionNames,
         @Nonnull final Map<String, AttributeDefinitionDraft> newAttributeDefinitionDraftsNameMap)
         throws DuplicateKeyException {
 
@@ -168,10 +163,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
                     .map(attributeDefinitionDraft ->
                         buildActions(oldAttributeDefinition, attributeDefinitionDraft)
                     )
-                    .orElseGet(() -> {
-                        removedAttributeDefinitionNames.add(oldAttributeDefinitionName);
-                        return singletonList(RemoveAttributeDefinition.of(oldAttributeDefinitionName));
-                    });
+                    .orElseGet(() ->singletonList(RemoveAttributeDefinition.of(oldAttributeDefinitionName)));
             })
             .flatMap(Collection::stream)
             .collect(Collectors.toList());
