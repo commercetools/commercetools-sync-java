@@ -61,7 +61,6 @@ public class CustomerGroupServiceIT {
         assertThat(customerGroupId).isEmpty();
     }
 
-
     @Test
     public void fetchCachedCustomerGroupId_WithExistingCustomerGroup_ShouldFetchCustomerGroupAndCache() {
         final Optional<String> customerGroupId = customerGroupService
@@ -71,7 +70,6 @@ public class CustomerGroupServiceIT {
         assertThat(customerGroupId).contains(oldCustomerGroup.getId());
         assertThat(warnings).isEmpty();
     }
-
 
     @Test
     public void fetchCachedCustomerGroupId_OnSecondTime_ShouldNotFindCustomerGroupInCache() {
