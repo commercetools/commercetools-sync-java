@@ -230,7 +230,7 @@ public final class PriceDraftFixtures {
     }
 
     @Nonnull
-    private static Map<String, JsonNode> createCustomFieldsJsonMap(@Nonnull final String fieldName,
+    public static Map<String, JsonNode> createCustomFieldsJsonMap(@Nonnull final String fieldName,
                                                                    @Nonnull final JsonNode fieldValue) {
         final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
         customFieldsJsons.put(fieldName, fieldValue);
@@ -239,7 +239,7 @@ public final class PriceDraftFixtures {
 
 
     @Nonnull
-    private static PriceDraft getPriceDraft(@Nonnull final BigDecimal value,
+    public static PriceDraft getPriceDraft(@Nonnull final BigDecimal value,
                                             @Nonnull final CurrencyUnit currencyUnits,
                                             @Nullable final CountryCode countryCode,
                                             @Nullable final String customerGroupId,
