@@ -38,13 +38,13 @@ public final class CustomerGroupServiceImpl implements CustomerGroupService {
             return CompletableFuture.completedFuture(Optional.empty());
         }
         if (keyToIdCache.isEmpty()) {
-            return cacheAndFetch(key);
+            return fetchAndCache(key);
         }
         return CompletableFuture.completedFuture(ofNullable(keyToIdCache.get(key)));
     }
 
     @Nonnull
-    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
+    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
         final Consumer<List<CustomerGroup>> customerGroupPageConsumer = customerGroupsPage ->
             customerGroupsPage.forEach(customerGroup -> {
 

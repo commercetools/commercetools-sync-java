@@ -50,12 +50,12 @@ public final class ChannelServiceImpl implements ChannelService {
     @Override
     public CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key) {
         if (!isCached) {
-            return cacheAndFetch(key);
+            return fetchAndCache(key);
         }
         return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
     }
 
-    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
+    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
         ChannelQueryBuilder channelQueryBuilder = ChannelQueryBuilder.of();
         if (!channelRoles.isEmpty()) {
             channelQueryBuilder = channelQueryBuilder
