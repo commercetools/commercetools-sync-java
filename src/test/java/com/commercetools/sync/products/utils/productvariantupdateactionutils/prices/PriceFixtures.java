@@ -134,8 +134,8 @@ public final class PriceFixtures {
     public static final Price UK_111_GBP_02_03 = getPrice(BigDecimal.valueOf(111), GBP, UK,
         null, byMonth(2), byMonth(3), null, null);
 
-    public static final Price UK_333_GBP_02_05 = getPrice(BigDecimal.valueOf(333), GBP, UK,
-        null, byMonth(2), byMonth(5), null, null);
+    public static final Price UK_333_GBP_03_05 = getPrice(BigDecimal.valueOf(333), GBP, UK,
+        null, byMonth(3), byMonth(5), null, null);
 
     public static final Price US_555_USD_CUST2_01_02 = getPrice(BigDecimal.valueOf(555), USD, US,
         "cust2", byMonth(1), byMonth(2), null, null);
