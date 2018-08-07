@@ -24,15 +24,14 @@ public class InventoryReferenceReplacementUtilsTest {
     @Test
     public void
         replaceInventoriesReferenceIdsWithKeys_WithAllExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+        //preparation
         final String customTypeId = UUID.randomUUID().toString();
         final String customTypeKey = "customTypeKey";
         final Type mockCustomType = mock(Type.class);
         when(mockCustomType.getId()).thenReturn(customTypeId);
         when(mockCustomType.getKey()).thenReturn(customTypeKey);
 
-
         final List<InventoryEntry> mockInventoryEntries = new ArrayList<>();
-
         final String channelKey = "channelKey";
 
         for (int i = 0; i < 10; i++) {
@@ -51,9 +50,11 @@ public class InventoryReferenceReplacementUtilsTest {
             mockInventoryEntries.add(mockInventoryEntry);
         }
 
+        //test
         final List<InventoryEntryDraft> referenceReplacedDrafts =
             replaceInventoriesReferenceIdsWithKeys(mockInventoryEntries);
 
+        //assertion
         for (InventoryEntryDraft referenceReplacedDraft : referenceReplacedDrafts) {
             assertThat(referenceReplacedDraft.getCustom().getType().getId()).isEqualTo(customTypeKey);
             assertThat(referenceReplacedDraft.getSupplyChannel().getId()).isEqualTo(channelKey);
@@ -63,9 +64,9 @@ public class InventoryReferenceReplacementUtilsTest {
     @Test
     public void
         replaceInventoriesReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
+        //preparation
         final String customTypeId = UUID.randomUUID().toString();
         final List<InventoryEntry> mockInventoryEntries = new ArrayList<>();
-
         final String channelId = UUID.randomUUID().toString();
 
         for (int i = 0; i < 10; i++) {
@@ -82,10 +83,11 @@ public class InventoryReferenceReplacementUtilsTest {
             mockInventoryEntries.add(mockInventoryEntry);
         }
 
-
+        //test
         final List<InventoryEntryDraft> referenceReplacedDrafts =
             replaceInventoriesReferenceIdsWithKeys(mockInventoryEntries);
 
+        //assertion
         for (InventoryEntryDraft referenceReplacedDraft : referenceReplacedDrafts) {
             assertThat(referenceReplacedDraft.getCustom().getType().getId()).isEqualTo(customTypeId);
             assertThat(referenceReplacedDraft.getSupplyChannel().getId()).isEqualTo(channelId);
