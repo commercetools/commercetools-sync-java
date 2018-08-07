@@ -1,4 +1,4 @@
-package com.commercetools.sync.integration.services;
+package com.commercetools.sync.integration.services.impl;
 
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -24,7 +24,7 @@ import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TaxCategoryServiceIT {
+public class TaxCategoryServiceImplIT {
     private TaxCategoryService taxCategoryService;
     private TaxCategory oldTaxCategory;
     private ArrayList<String> warnings;

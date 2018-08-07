@@ -1,4 +1,4 @@
-package com.commercetools.sync.integration.services;
+package com.commercetools.sync.integration.services.impl;
 
 import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
@@ -24,7 +24,7 @@ import static com.commercetools.sync.integration.inventories.utils.InventoryITUt
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ChannelServiceIT {
+public class ChannelServiceImplIT {
     private ChannelService channelService;
     private static final String CHANNEL_KEY = "channel_key";
 

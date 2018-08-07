@@ -1,4 +1,4 @@
-package com.commercetools.sync.integration.services;
+package com.commercetools.sync.integration.services.impl;
 
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -23,7 +23,7 @@ import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CustomerGroupServiceIT {
+public class CustomerGroupServiceImplIT {
     private CustomerGroupService customerGroupService;
     private static final String CUSTOMER_GROUP_KEY = "customerGroup_key";
     private static final String CUSTOMER_GROUP_NAME = "customerGroup_name";

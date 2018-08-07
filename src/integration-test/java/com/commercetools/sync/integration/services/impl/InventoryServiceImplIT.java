@@ -1,4 +1,4 @@
-package com.commercetools.sync.integration.services;
+package com.commercetools.sync.integration.services.impl;
 
 import com.commercetools.sync.services.InventoryService;
 import com.commercetools.sync.services.impl.InventoryServiceImpl;
@@ -36,7 +36,7 @@ import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class InventoryServiceIT {
+public class InventoryServiceImplIT {
 
     private InventoryService inventoryService;
 

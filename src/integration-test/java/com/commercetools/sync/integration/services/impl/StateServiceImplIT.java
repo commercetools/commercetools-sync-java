@@ -1,4 +1,4 @@
-package com.commercetools.sync.integration.services;
+package com.commercetools.sync.integration.services.impl;
 
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -22,7 +22,7 @@ import static com.commercetools.sync.integration.commons.utils.StateITUtils.dele
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class StateServiceIT {
+public class StateServiceImplIT {
     private static final StateType STATE_TYPE = StateType.PRODUCT_STATE;
 
     private State oldState;
