@@ -72,7 +72,7 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     public CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchCachedProductAttributeMetaDataMap(
         @Nonnull final String productTypeId) {
         if (productsAttributesMetaData.isEmpty()) {
-            return FetchAndCacheProductMetaData(productTypeId);
+            return fetchAndCacheProductMetaData(productTypeId);
         }
         return CompletableFuture.completedFuture(
             Optional.ofNullable(productsAttributesMetaData.get(productTypeId))
@@ -80,7 +80,7 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     }
 
     @Nonnull
-    private CompletionStage<Optional<Map<String, AttributeMetaData>>> FetchAndCacheProductMetaData(
+    private CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
         @Nonnull final String productTypeId) {
         final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
             productTypePage.forEach(type -> {
