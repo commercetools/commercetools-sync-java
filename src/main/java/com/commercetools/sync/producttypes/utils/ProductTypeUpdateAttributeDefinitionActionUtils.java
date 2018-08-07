@@ -16,10 +16,8 @@ import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefiniti
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Collection;
-import java.util.Set;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -163,7 +161,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
                     .map(attributeDefinitionDraft ->
                         buildActions(oldAttributeDefinition, attributeDefinitionDraft)
                     )
-                    .orElseGet(() ->singletonList(RemoveAttributeDefinition.of(oldAttributeDefinitionName)));
+                    .orElseGet(() -> singletonList(RemoveAttributeDefinition.of(oldAttributeDefinitionName)));
             })
             .flatMap(Collection::stream)
             .collect(Collectors.toList());
