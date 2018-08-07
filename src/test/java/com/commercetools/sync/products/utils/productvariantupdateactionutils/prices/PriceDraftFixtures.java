@@ -226,7 +226,7 @@ public final class PriceDraftFixtures {
 
     @Nonnull
     public static ZonedDateTime byMonth(final int month) {
-        return ZonedDateTime.of(2018, month, 1, 0, 0, 0, 0, ZoneId.systemDefault());
+        return ZonedDateTime.of(2018, month, 1, 0, 0, 0, 0, ZoneId.of("Z"));
     }
 
     @Nonnull
