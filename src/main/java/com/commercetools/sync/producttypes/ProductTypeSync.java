@@ -50,6 +50,24 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     /**
+     * Takes a {@link ProductTypeSyncOptions} instance to instantiate a new {@link ProductTypeSync} instance that
+     * could be used to sync product type drafts with the given product types in the CTP project specified in the
+     * injected {@link ProductTypeSyncOptions} instance.
+     *
+     * @param productTypeSyncOptions the container of all the options of the sync process including the CTP project
+     *                               client and/ormconfiguration and other sync-specific options.
+     * @param productTypeService     the product type service to make product type requests.
+     *
+     *
+     *
+     */
+    public ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions,
+                           @Nonnull final ProductTypeService productTypeService) {
+        super(new ProductTypeSyncStatistics(), productTypeSyncOptions);
+        this.productTypeService = productTypeService;
+    }
+
+    /**
      * Iterates through the whole {@code productTypeDrafts} list and accumulates its valid drafts to batches.
      * Every batch is then processed by {@link ProductTypeSync#processBatch(List)}.
      *
