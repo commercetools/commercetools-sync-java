@@ -10,7 +10,7 @@ import java.util.concurrent.CompletionStage;
 public interface CustomerGroupService {
     /**
      * Given a {@code key}, this method first checks if a cached map of customer group keys -&gt; ids is not empty.
-     * If not, it returns a completed future that contains an optional that contains what this key maps to in
+     * If not, it returns a completed future that contains an {@link Optional} that contains what this key maps to in
      * the cache. If the cache is empty, the method populates the cache with the mapping of all customer groups' keys to
      * ids in the CTP project, by querying the CTP project customer groups.
      *
