@@ -105,7 +105,7 @@ public class ProductSyncWithAssetsIT {
 
         final ProductDraft productDraft = ProductDraftBuilder
             .of(productType.toReference(), ofEnglish("draftName"), ofEnglish("existingSlug"),
-                createVariantDraft("v1", assetDraftsToCreateOnExistingProduct))
+                createVariantDraft("v1", assetDraftsToCreateOnExistingProduct, null))
             .key("existingProduct")
             .build();
 
@@ -151,7 +151,7 @@ public class ProductSyncWithAssetsIT {
 
         final ProductDraft productDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("slug"),
-                createVariantDraft("masterVariant", assetDrafts))
+                createVariantDraft("masterVariant", assetDrafts, null))
             .key("draftKey")
             .build();
 
@@ -181,7 +181,7 @@ public class ProductSyncWithAssetsIT {
 
         final ProductDraft productDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("slug"),
-                createVariantDraft("masterVariant", assetDrafts))
+                createVariantDraft("masterVariant", assetDrafts, null))
             .key("draftKey")
             .build();
 
@@ -225,7 +225,7 @@ public class ProductSyncWithAssetsIT {
 
         final ProductDraft productDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("existingSlug"),
-                createVariantDraft("v1", assetDrafts))
+                createVariantDraft("v1", assetDrafts, null))
             .key(product.getKey())
             .build();
 
@@ -277,7 +277,7 @@ public class ProductSyncWithAssetsIT {
 
         final ProductDraft productDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("existingSlug"),
-                createVariantDraft("v1", assetDrafts))
+                createVariantDraft("v1", assetDrafts, null))
             .key(product.getKey())
             .build();
 

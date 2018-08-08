@@ -317,21 +317,6 @@ public final class ITUtils {
 
     /**
      * Creates a {@link ProductVariantDraft} draft key and sku of the value supplied {@code variantKeyAndSku} and with
-     * the supplied {@code assetDrafts}.
-     *
-     * @param variantKeyAndSku the value of the key and sku of the created draft.
-     * @param assetDrafts the assets to assign to the created draft.
-     * @return a {@link ProductVariantDraft} draft key and sku of the value supplied {@code variantKeyAndSku} and with
-     *         the supplied {@code assetDrafts}.
-     */
-    public static ProductVariantDraft createVariantDraft(@Nonnull final String variantKeyAndSku,
-                                                         @Nullable final List<AssetDraft> assetDrafts) {
-
-        return createVariantDraft(variantKeyAndSku, assetDrafts, null);
-    }
-
-    /**
-     * Creates a {@link ProductVariantDraft} draft key and sku of the value supplied {@code variantKeyAndSku} and with
      * the supplied {@code assetDrafts} and {@code priceDrafts}
      *
      * @param variantKeyAndSku the value of the key and sku of the created draft.
