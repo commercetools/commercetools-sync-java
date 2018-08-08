@@ -13,7 +13,7 @@ import static java.util.stream.Collectors.toList;
 public final class AssetReferenceReplacementUtils {
 
     /**
-     * Takes a an asset list that is supposed to have all its assets' custom references expanded in order to be able to
+     * Takes an asset list that is supposed to have all its assets' custom references expanded in order to be able to
      * fetch the keys and replace the reference ids with the corresponding keys for the custom references. This method
      * returns as a result a {@link List} of {@link AssetDraft} that has all custom references with keys replacing the
      * ids.
