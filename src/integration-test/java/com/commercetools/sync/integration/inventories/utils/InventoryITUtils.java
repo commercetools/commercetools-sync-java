@@ -25,8 +25,6 @@ import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
-import io.sphere.sdk.types.queries.TypeQuery;
-import io.sphere.sdk.types.queries.TypeQueryBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -204,18 +202,5 @@ public class InventoryITUtils {
         final ChannelQuery channelQuery = ChannelQueryBuilder.of().plusPredicates(channelQueryModel ->
             channelQueryModel.key().is(channelKey)).build();
         return sphereClient.execute(channelQuery).toCompletableFuture().join().head();
-    }
-
-    /**
-     * Tries to fetch type of key {@code typeKey} using {@code sphereClient}.
-     *
-     * @param sphereClient sphere client used to execute requests
-     * @param typeKey key of requested type
-     * @return {@link Optional} which may contain type of key {@code typeKey}
-     */
-    public static Optional<Type> getTypeByKey(@Nonnull final SphereClient sphereClient, @Nonnull final String typeKey) {
-        final TypeQuery typeQuery = TypeQueryBuilder.of().plusPredicates(typeQueryModel ->
-            typeQueryModel.key().is(typeKey)).build();
-        return sphereClient.execute(typeQuery).toCompletableFuture().join().head();
     }
 }
