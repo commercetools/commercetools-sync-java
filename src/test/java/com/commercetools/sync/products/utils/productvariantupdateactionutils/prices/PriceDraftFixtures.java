@@ -231,7 +231,7 @@ public final class PriceDraftFixtures {
 
     @Nonnull
     public static Map<String, JsonNode> createCustomFieldsJsonMap(@Nonnull final String fieldName,
-                                                                   @Nonnull final JsonNode fieldValue) {
+                                                                  @Nonnull final JsonNode fieldValue) {
         final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
         customFieldsJsons.put(fieldName, fieldValue);
         return customFieldsJsons;
@@ -240,13 +240,13 @@ public final class PriceDraftFixtures {
 
     @Nonnull
     public static PriceDraft getPriceDraft(@Nonnull final BigDecimal value,
-                                            @Nonnull final CurrencyUnit currencyUnits,
-                                            @Nullable final CountryCode countryCode,
-                                            @Nullable final String customerGroupId,
-                                            @Nullable final ZonedDateTime validFrom,
-                                            @Nullable final ZonedDateTime validUntil,
-                                            @Nullable final String channelId,
-                                            @Nullable final CustomFieldsDraft customFieldsDraft) {
+                                           @Nonnull final CurrencyUnit currencyUnits,
+                                           @Nullable final CountryCode countryCode,
+                                           @Nullable final String customerGroupId,
+                                           @Nullable final ZonedDateTime validFrom,
+                                           @Nullable final ZonedDateTime validUntil,
+                                           @Nullable final String channelId,
+                                           @Nullable final CustomFieldsDraft customFieldsDraft) {
 
         return PriceDraftBuilder.of(Price.of(value, currencyUnits))
                                 .country(countryCode)
