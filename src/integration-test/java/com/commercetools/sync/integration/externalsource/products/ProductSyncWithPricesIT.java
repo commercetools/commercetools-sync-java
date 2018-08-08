@@ -479,7 +479,8 @@ public class ProductSyncWithPricesIT {
                                          .hasSize(2)
                                          .containsExactlyInAnyOrder(
                                              AddPrice.ofVariantId(masterVariantId, price1WithCustomerGroupWithId, true),
-                                             AddPrice.ofVariantId(masterVariantId, price2WithCustomerGroupWithId, true));
+                                             AddPrice.ofVariantId(masterVariantId, price2WithCustomerGroupWithId,
+                                                 true));
 
         final ProductProjection productProjection = CTP_TARGET_CLIENT
             .execute(ProductProjectionByKeyGet.of(newProductDraft.getKey(), ProductProjectionType.STAGED))
