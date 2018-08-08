@@ -55,6 +55,10 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      * </ol>
      * If the above checks pass, the id value is returned. Otherwise a {@link ReferenceResolutionException} is thrown.
      *
+     * <p>Note: Currently the key is expected to be set on the id field of the {@link ResourceIdentifier}. This is in
+     * order to make key setting consistent on both {@link io.sphere.sdk.models.Reference} and
+     * {@link ResourceIdentifier}. However, this will be changed when GITHUB ISSUE#138 is resolved.
+     *
      * @param resourceIdentifier the reference from which the id value is validated and returned.
      * @param allowUuidKeys flag that signals whether the key could be UUID format or not.
      * @return the id value on the {@link ResourceIdentifier}
