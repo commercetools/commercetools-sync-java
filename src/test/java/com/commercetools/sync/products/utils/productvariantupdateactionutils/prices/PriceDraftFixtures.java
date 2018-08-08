@@ -143,6 +143,12 @@ public final class PriceDraftFixtures {
     public static final PriceDraft DRAFT_UK_111_GBP_01_02 = getPriceDraft(BigDecimal.valueOf(111), GBP, UK, null,
         byMonth(1), byMonth(2), null, null);
 
+    public static final PriceDraft DRAFT_UK_111_GBP_02_03 = getPriceDraft(BigDecimal.valueOf(111), GBP, UK, null,
+        byMonth(2), byMonth(3), null, null);
+
+    public static final PriceDraft DRAFT_UK_333_GBP_03_05 = getPriceDraft(BigDecimal.valueOf(333), GBP, UK, null,
+        byMonth(3), byMonth(5), null, null);
+
     public static final PriceDraft DRAFT_UK_333_GBP_01_04 = getPriceDraft(BigDecimal.valueOf(333), GBP, UK, null,
         byMonth(1), byMonth(4), null, null);
 
@@ -161,6 +167,9 @@ public final class PriceDraftFixtures {
     public static final PriceDraft DRAFT_FR_888_EUR_01_03 = getPriceDraft(BigDecimal.valueOf(888), EUR, FR, null,
         byMonth(1), byMonth(3), null, null);
 
+    public static final PriceDraft DRAFT_FR_777_EUR_01_04 = getPriceDraft(BigDecimal.valueOf(777), EUR, FR, null,
+        byMonth(1), byMonth(4), null, null);
+
     public static final PriceDraft DRAFT_FR_999_EUR_03_06 = getPriceDraft(BigDecimal.valueOf(999), EUR, FR, null,
         byMonth(3), byMonth(6), null, null);
 
@@ -169,6 +178,12 @@ public final class PriceDraftFixtures {
 
     public static final PriceDraft DRAFT_NE_777_EUR_05_07 = getPriceDraft(BigDecimal.valueOf(777), EUR, NE, null,
         byMonth(5), byMonth(7), null, null);
+
+    public static final PriceDraft DRAFT_NE_123_EUR_01_04 = getPriceDraft(BigDecimal.valueOf(123), EUR, NE, null,
+        byMonth(1), byMonth(4), null, null);
+
+    public static final PriceDraft DRAFT_NE_321_EUR_04_06 = getPriceDraft(BigDecimal.valueOf(321), EUR, NE, null,
+        byMonth(4), byMonth(6), null, null);
 
     public static final PriceDraft DRAFT_NE_777_CUST1_CHANNEL1_EUR_05_07 = getPriceDraft(BigDecimal.valueOf(777), EUR,
         NE, "cust1",
