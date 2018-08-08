@@ -132,7 +132,7 @@ public class ProductSyncWithPricesIT {
     }
 
     /**
-     * Deletes Products and Types from the target CTP project, then it populates target CTP project with product test
+     * Deletes Products from the target CTP project, then it populates target CTP project with product test
      * data.
      */
     @Before
