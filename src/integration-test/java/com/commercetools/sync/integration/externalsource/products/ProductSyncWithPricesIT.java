@@ -109,8 +109,8 @@ public class ProductSyncWithPricesIT {
     private List<UpdateAction<Product>> updateActionsFromSync;
 
     /**
-     * Delete all product related test data from the target project. Then creates for the target CTP project a product
-     * type and an asset custom type.
+     * Delete all product related test data from the target project. Then creates price custom types, customer groups,
+     * channels and a product type for the target CTP project.
      */
     @BeforeClass
     public static void setup() {
@@ -132,8 +132,7 @@ public class ProductSyncWithPricesIT {
     }
 
     /**
-     * Deletes Products from the target CTP project, then it populates target CTP project with product test
-     * data.
+     * Deletes Products from the target CTP project.
      */
     @Before
     public void setupTest() {
