@@ -46,18 +46,17 @@ public final class AttributeDefinitionUpdateActionUtils {
 
         final List<UpdateAction<ProductType>> updateActions;
 
-        if (haveSameAttributeType(oldAttributeDefinition, newAttributeDefinitionDraft)) {
-            updateActions = Stream
-                .of(
-                    buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-                    buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-                    buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-                    buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-                    buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
-                )
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(toList());
+        updateActions = Stream
+            .of(
+                buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
+            )
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(toList());
 
         // attribute type is required so if null we let commercetools to throw exception
         if (newAttributeDefinitionDraft.getAttributeType() != null) {
@@ -88,6 +87,7 @@ public final class AttributeDefinitionUpdateActionUtils {
 
         return updateActions;
     }
+
 
     /**
      * Compares the attribute types of the {@code attributeDefinitionA} and the {@code attributeDefinitionB} and
