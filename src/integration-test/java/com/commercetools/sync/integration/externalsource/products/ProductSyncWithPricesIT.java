@@ -15,6 +15,7 @@ import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
+import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
@@ -430,18 +431,21 @@ public class ProductSyncWithPricesIT {
             DRAFT_DE_111_EUR_03_04,
             DRAFT_DE_111_EUR_01_02);
 
-        final PriceDraft draft_de_eur_222_cust1 = getPriceDraft(BigDecimal.valueOf(222), EUR,
-            DE, cust1.getId(), null, null, null, null);
+        final PriceDraft price1WithCustomerGroupWithKey = getPriceDraft(BigDecimal.valueOf(222), EUR,
+            DE, "cust1", null, null, null, null);
+        final PriceDraft price2WithCustomerGroupWithKey = getPriceDraft(BigDecimal.valueOf(333), USD,
+            DE, "cust1", null, null, null, null);
 
-        final PriceDraft draft_de_usd_333_cust1 = getPriceDraft(BigDecimal.valueOf(333), USD,
+        final PriceDraft price1WithCustomerGroupWithId = getPriceDraft(BigDecimal.valueOf(222), EUR,
+            DE, cust1.getId(), null, null, null, null);
+        final PriceDraft price2WithCustomerGroupWithId = getPriceDraft(BigDecimal.valueOf(333), USD,
             DE, cust1.getId(), null, null, null, null);
 
         final List<PriceDraft> newPrices = asList(
             DRAFT_DE_111_EUR,
             DRAFT_UK_111_GBP,
-            draft_de_eur_222_cust1,
-            draft_de_usd_333_cust1);
-
+            price1WithCustomerGroupWithKey,
+            price2WithCustomerGroupWithKey);
 
         final ProductDraft existingProductDraft = ProductDraftBuilder
             .of(productType.toReference(), ofEnglish("foo"), ofEnglish("bar"),
@@ -474,96 +478,53 @@ public class ProductSyncWithPricesIT {
         assertThat(updateActionsFromSync).filteredOn(action -> action instanceof AddPrice)
                                          .hasSize(2)
                                          .containsExactlyInAnyOrder(
-                                             AddPrice.ofVariantId(masterVariantId, draft_de_eur_222_cust1, true),
-                                             AddPrice.ofVariantId(masterVariantId, draft_de_usd_333_cust1, true));
+                                             AddPrice.ofVariantId(masterVariantId, price1WithCustomerGroupWithId, true),
+                                             AddPrice.ofVariantId(masterVariantId, price2WithCustomerGroupWithId, true));
 
         final ProductProjection productProjection = CTP_TARGET_CLIENT
             .execute(ProductProjectionByKeyGet.of(newProductDraft.getKey(), ProductProjectionType.STAGED))
             .toCompletableFuture().join();
 
         assertThat(productProjection).isNotNull();
-        assertPricesAreEqual(productProjection.getMasterVariant().getPrices(), newPrices);
+
+        final List<PriceDraft> newPricesWithIds = asList(
+            DRAFT_DE_111_EUR,
+            DRAFT_UK_111_GBP,
+            price1WithCustomerGroupWithId,
+            price2WithCustomerGroupWithId);
+        assertPricesAreEqual(productProjection.getMasterVariant().getPrices(), newPricesWithIds);
     }
 
     @Test
     public void withMixedCasesOfPriceMatches_ShouldBuildActions() {
         // Preparation
+        createExistingProductWithPrices();
+        final ProductDraft newProductDraft = createProductDraftWithNewPrices();
+
+
         final ObjectNode lTextWithEnDe = JsonNodeFactory.instance.objectNode()
                                                                  .put("de", "rot")
                                                                  .put("en", "red");
-        final ObjectNode lTextWithEnDeIt = lTextWithEnDe.put("it", "rosso");
-        final CustomFieldsDraft customType1WithEnDe = CustomFieldsDraft.ofTypeIdAndJson("customType1",
+
+        final PriceDraft de222EurCust1Ofid = PriceDraftBuilder.of(DRAFT_DE_222_EUR_CUST1)
+                                                              .customerGroup(cust1)
+                                                              .build();
+
+        final PriceDraft de333UsdCust1Ofid = PriceDraftBuilder.of(DRAFT_DE_333_USD_CUST1)
+                                                              .customerGroup(cust1)
+                                                              .build();
+
+        final PriceDraft us666Usd0102Cust2OfId = PriceDraftBuilder.of(DRAFT_US_666_USD_CUST2_01_02)
+                                                                  .customerGroup(cust2)
+                                                                  .build();
+
+        final CustomFieldsDraft customType1WithEnDeOfId = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
             createCustomFieldsJsonMap(LOCALISED_STRING_CUSTOM_FIELD_NAME, lTextWithEnDe));
+        final PriceDraft withChannel1CustomType1WithEnDeOfId = getPriceDraft(BigDecimal.valueOf(100), EUR,
+            DE, null, byMonth(1), byMonth(2), channel1.getId(), customType1WithEnDeOfId);
+        final PriceDraft withChannel2CustomType1WithEnDeOfId = getPriceDraft(BigDecimal.valueOf(100), EUR,
+            DE, null, byMonth(1), byMonth(2), channel2.getId(), customType1WithEnDeOfId);
 
-        final PriceDraft draft_de_eur_100_01_02_channel1_ct1_de_en = getPriceDraft(BigDecimal.valueOf(100), EUR,
-            DE, null, byMonth(1), byMonth(2), "channel1", customType1WithEnDe);
-
-        final PriceDraft draft_de_eur_100_01_02_channel2_ct1_de_en = getPriceDraft(BigDecimal.valueOf(100), EUR,
-            DE, null, byMonth(1), byMonth(2), "channel2", customType1WithEnDe);
-
-        final List<PriceDraft> newPrices = asList(
-            DRAFT_DE_111_EUR,
-            DRAFT_DE_222_EUR_CUST1,
-            DRAFT_DE_111_EUR_01_02,
-            DRAFT_DE_111_EUR_03_04,
-            draft_de_eur_100_01_02_channel1_ct1_de_en,
-            draft_de_eur_100_01_02_channel2_ct1_de_en,
-            DRAFT_DE_333_USD_CUST1,
-            DRAFT_DE_22_USD,
-            DRAFT_UK_111_GBP_01_02,
-            DRAFT_UK_999_GBP,
-            DRAFT_US_666_USD_CUST2_01_02,
-            DRAFT_FR_888_EUR_01_03,
-            DRAFT_FR_999_EUR_03_06,
-            DRAFT_NE_777_EUR_01_04,
-            DRAFT_NE_777_EUR_05_07);
-
-
-        final CustomFieldsDraft customType2ByIdWithEnDeIt = CustomFieldsDraft
-            .ofTypeIdAndJson(ProductSyncWithPricesIT.customType1.getId(),
-                createCustomFieldsJsonMap(LOCALISED_STRING_CUSTOM_FIELD_NAME, lTextWithEnDeIt));
-
-        final PriceDraft draft_de_eur_222_01_02_channel1_ct1_de_en_it = getPriceDraft(BigDecimal.valueOf(222), EUR,
-            DE, null, byMonth(1), byMonth(2), channel1.getId(), customType2ByIdWithEnDeIt);
-
-        final CustomFieldsDraft customType2ByIdWithEnDe = CustomFieldsDraft.ofTypeIdAndJson(customType2.getId(),
-            createCustomFieldsJsonMap(LOCALISED_STRING_CUSTOM_FIELD_NAME, lTextWithEnDe));
-
-        final PriceDraft draft_de_eur_222_01_02_channel2_ct2_de_en = getPriceDraft(BigDecimal.valueOf(222), EUR,
-            DE, null, byMonth(1), byMonth(2), channel2.getId(),
-            customType2ByIdWithEnDe);
-
-        final PriceDraft draft_de_eur_345_cust2 = getPriceDraft(BigDecimal.valueOf(345), EUR,
-            DE, cust2.getId(), null, null, null, null);
-
-        final List<PriceDraft> oldPrices = asList(
-            DRAFT_DE_111_EUR,
-            draft_de_eur_345_cust2,
-            draft_de_eur_222_01_02_channel1_ct1_de_en_it,
-            draft_de_eur_222_01_02_channel2_ct2_de_en,
-            DRAFT_DE_22_USD,
-            DRAFT_UK_111_GBP_01_02,
-            DRAFT_UK_111_GBP_02_03,
-            DRAFT_UK_333_GBP_03_05,
-            DRAFT_FR_777_EUR_01_04,
-            DRAFT_NE_123_EUR_01_04,
-            DRAFT_NE_321_EUR_04_06
-        );
-
-
-        final ProductDraft existingProductDraft = ProductDraftBuilder
-            .of(productType.toReference(), ofEnglish("foo"), ofEnglish("bar"),
-                createVariantDraft("foo", null, oldPrices))
-            .key("bar")
-            .build();
-
-        product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)));
-
-        final ProductDraft newProductDraft = ProductDraftBuilder
-            .of(referenceOfId(productType.getKey()), ofEnglish("foo"), ofEnglish("bar"),
-                createVariantDraft("foo", null, newPrices))
-            .key("bar")
-            .build();
 
 
         // test
@@ -585,16 +546,17 @@ public class ProductSyncWithPricesIT {
                                          .hasSize(1);
         assertThat(updateActionsFromSync).filteredOn(action -> action instanceof SetProductPriceCustomField)
                                          .hasSize(1);
+
         assertThat(updateActionsFromSync)
             .filteredOn(action -> action instanceof AddPrice)
             .hasSize(9)
             .containsExactlyInAnyOrder(
-                AddPrice.ofVariantId(masterVariantId, DRAFT_DE_222_EUR_CUST1, true),
+                AddPrice.ofVariantId(masterVariantId, de222EurCust1Ofid, true),
                 AddPrice.ofVariantId(masterVariantId, DRAFT_DE_111_EUR_01_02, true),
                 AddPrice.ofVariantId(masterVariantId, DRAFT_DE_111_EUR_03_04, true),
-                AddPrice.ofVariantId(masterVariantId, DRAFT_DE_333_USD_CUST1, true),
+                AddPrice.ofVariantId(masterVariantId, de333UsdCust1Ofid, true),
                 AddPrice.ofVariantId(masterVariantId, DRAFT_UK_999_GBP, true),
-                AddPrice.ofVariantId(masterVariantId, DRAFT_US_666_USD_CUST2_01_02, true),
+                AddPrice.ofVariantId(masterVariantId, us666Usd0102Cust2OfId, true),
                 AddPrice.ofVariantId(masterVariantId, DRAFT_FR_888_EUR_01_03, true),
                 AddPrice.ofVariantId(masterVariantId, DRAFT_FR_999_EUR_03_06, true),
                 AddPrice.ofVariantId(masterVariantId, DRAFT_NE_777_EUR_05_07, true));
@@ -604,7 +566,149 @@ public class ProductSyncWithPricesIT {
             .toCompletableFuture().join();
 
         assertThat(productProjection).isNotNull();
-        assertPricesAreEqual(productProjection.getMasterVariant().getPrices(), newPrices);
+
+        final List<PriceDraft> newPricesWithReferenceIds = asList(
+            DRAFT_DE_111_EUR,
+            de222EurCust1Ofid,
+            DRAFT_DE_111_EUR_01_02,
+            DRAFT_DE_111_EUR_03_04,
+            withChannel1CustomType1WithEnDeOfId,
+            withChannel2CustomType1WithEnDeOfId,
+            de333UsdCust1Ofid,
+            DRAFT_DE_22_USD,
+            DRAFT_UK_111_GBP_01_02,
+            DRAFT_UK_999_GBP,
+            us666Usd0102Cust2OfId,
+            DRAFT_FR_888_EUR_01_03,
+            DRAFT_FR_999_EUR_03_06,
+            DRAFT_NE_777_EUR_01_04,
+            DRAFT_NE_777_EUR_05_07);
+        assertPricesAreEqual(productProjection.getMasterVariant().getPrices(), newPricesWithReferenceIds);
+    }
+
+    /**
+     * Creates a productDraft with a master variant containing the following priceDrafts:
+     * <ul>
+     * <li>DE_111_EUR</li>
+     * <li>DE_222_EUR_CUST1</li>
+     * <li>DE_111_EUR_01_02</li>
+     * <li>DE_111_EUR_03_04</li>
+     * <li>DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELD{en, de}</li>
+     * <li>DE_100_EUR_01_02_CHANNEL2_CUSTOMTYPE1_CUSTOMFIELD{en, de}</li>
+     * <li>DE_333_USD_CUST1</li>
+     * <li>DE_22_USD</li>
+     * <li>UK_111_GBP_01_02</li>
+     * <li>UK_999_GBP</li>
+     * <li>US_666_USD_CUST2_01_02,</li>
+     * <li>FR_888_EUR_01_03</li>
+     * <li>FR_999_EUR_03_06</li>
+     * <li>NE_777_EUR_01_04</li>
+     * <li>NE_777_EUR_05_07</li>
+     * </ul>
+     */
+    private ProductDraft createProductDraftWithNewPrices() {
+        final ObjectNode lTextWithEnDe = JsonNodeFactory.instance.objectNode()
+                                                                 .put("de", "rot")
+                                                                 .put("en", "red");
+
+
+        final CustomFieldsDraft customType1WithEnDeOfKey = CustomFieldsDraft.ofTypeIdAndJson("customType1",
+            createCustomFieldsJsonMap(LOCALISED_STRING_CUSTOM_FIELD_NAME, lTextWithEnDe));
+        final PriceDraft withChannel1CustomType1WithEnDeOfKey = getPriceDraft(BigDecimal.valueOf(100), EUR,
+            DE, null, byMonth(1), byMonth(2), "channel1", customType1WithEnDeOfKey);
+        final PriceDraft withChannel2CustomType1WithEnDeOfKey = getPriceDraft(BigDecimal.valueOf(100), EUR,
+            DE, null, byMonth(1), byMonth(2), "channel2", customType1WithEnDeOfKey);
+
+        final List<PriceDraft> newPrices = asList(
+            DRAFT_DE_111_EUR,
+            DRAFT_DE_222_EUR_CUST1,
+            DRAFT_DE_111_EUR_01_02,
+            DRAFT_DE_111_EUR_03_04,
+            withChannel1CustomType1WithEnDeOfKey,
+            withChannel2CustomType1WithEnDeOfKey,
+            DRAFT_DE_333_USD_CUST1,
+            DRAFT_DE_22_USD,
+            DRAFT_UK_111_GBP_01_02,
+            DRAFT_UK_999_GBP,
+            DRAFT_US_666_USD_CUST2_01_02,
+            DRAFT_FR_888_EUR_01_03,
+            DRAFT_FR_999_EUR_03_06,
+            DRAFT_NE_777_EUR_01_04,
+            DRAFT_NE_777_EUR_05_07);
+
+        return ProductDraftBuilder
+            .of(referenceOfId(productType.getKey()), ofEnglish("foo"), ofEnglish("bar"),
+                createVariantDraft("foo", null, newPrices))
+            .key("bar")
+            .build();
+    }
+
+    /**
+     * Creates a product with a master variant containing the following prices:
+     * <ul>
+     * <li>DE_111_EUR</li>
+     * <li>DE_345_EUR_CUST2</li>
+     * <li>DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELD{en, de, it}</li>
+     * <li>DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE2_CUSTOMFIELD{en, de}</li>
+     * <li>DE_22_USD</li>
+     * <li>UK_111_GBP_01_02</li>
+     * <li>UK_111_GBP_02_03</li>
+     * <li>UK_333_GBP_03_05</li>
+     * <li>FR_777_EUR_01_04</li>
+     * <li>NE_123_EUR_01_04</li>
+     * <li>NE_321_EUR_04_06</li>
+     * </ul>
+     */
+    private void createExistingProductWithPrices() {
+
+        final ObjectNode lTextWithEnDeIt = JsonNodeFactory.instance.objectNode()
+                                                                   .put("de", "rot")
+                                                                   .put("en", "red")
+                                                                   .put("it", "rosso");
+
+
+        final ObjectNode lTextWithEnDe = JsonNodeFactory.instance.objectNode()
+                                                                 .put("de", "rot")
+                                                                 .put("en", "red");
+
+
+        final CustomFieldsDraft customType1WithEnDeItOfId = CustomFieldsDraft
+            .ofTypeIdAndJson(ProductSyncWithPricesIT.customType1.getId(),
+                createCustomFieldsJsonMap(LOCALISED_STRING_CUSTOM_FIELD_NAME, lTextWithEnDeIt));
+
+        final CustomFieldsDraft customType2WithEnDeOfId = CustomFieldsDraft.ofTypeIdAndJson(customType2.getId(),
+            createCustomFieldsJsonMap(LOCALISED_STRING_CUSTOM_FIELD_NAME, lTextWithEnDe));
+
+        final PriceDraft de222Eur0102Channel1Ct1DeEnItOfId = getPriceDraft(BigDecimal.valueOf(222), EUR,
+            DE, null, byMonth(1), byMonth(2), channel1.getId(), customType1WithEnDeItOfId);
+
+        final PriceDraft de222Eur0102Channel2Ct2DeEnOfId = getPriceDraft(BigDecimal.valueOf(222), EUR,
+            DE, null, byMonth(1), byMonth(2), channel2.getId(), customType2WithEnDeOfId);
+
+        final PriceDraft de345EurCust2OfId = getPriceDraft(BigDecimal.valueOf(345), EUR,
+            DE, cust2.getId(), null, null, null, null);
+
+        final List<PriceDraft> oldPrices = asList(
+            DRAFT_DE_111_EUR,
+            de345EurCust2OfId,
+            de222Eur0102Channel1Ct1DeEnItOfId,
+            de222Eur0102Channel2Ct2DeEnOfId,
+            DRAFT_DE_22_USD,
+            DRAFT_UK_111_GBP_01_02,
+            DRAFT_UK_111_GBP_02_03,
+            DRAFT_UK_333_GBP_03_05,
+            DRAFT_FR_777_EUR_01_04,
+            DRAFT_NE_123_EUR_01_04,
+            DRAFT_NE_321_EUR_04_06
+        );
+
+        final ProductDraft existingProductDraft = ProductDraftBuilder
+            .of(productType.toReference(), ofEnglish("foo"), ofEnglish("bar"),
+                createVariantDraft("foo", null, oldPrices))
+            .key("bar")
+            .build();
+
+        product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)));
     }
 
     /**
