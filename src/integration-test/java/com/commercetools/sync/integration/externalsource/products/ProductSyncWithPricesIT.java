@@ -175,7 +175,7 @@ public class ProductSyncWithPricesIT {
     }
 
     @Test
-    public void sync_withNullNewPricesAndEmptyExistingPrices_ShouldNotBuildActions() {
+    public void sync_withNullNewPricesAndEmptyExistingPrices_ShouldNotBuildUpdateActions() {
         // Preparation
         final ProductDraft existingProductDraft = ProductDraftBuilder
             .of(productType.toReference(), ofEnglish("draftName"), ofEnglish("existingSlug"),
@@ -186,9 +186,9 @@ public class ProductSyncWithPricesIT {
         product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)));
 
         final ProductDraft newProductDraft = ProductDraftBuilder
-            .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("slug"),
-                createVariantDraft("masterVariant", null, null))
-            .key("draftKey")
+            .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("existingSlug"),
+                createVariantDraft("v1", null, null))
+            .key("existingProduct")
             .build();
 
 
@@ -197,7 +197,7 @@ public class ProductSyncWithPricesIT {
             executeBlocking(productSync.sync(singletonList(newProductDraft)));
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
