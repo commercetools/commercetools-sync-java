@@ -18,7 +18,7 @@ public final class AssetReferenceReplacementUtils {
      * returns as a result a {@link List} of {@link AssetDraft} that has all custom references with keys replacing the
      * ids.
      *
-     * <p>Any custom reference that is not expanded will have it's id in place and not replaced by the key.
+     * <p>Any custom reference that is not expanded will have its id in place and not replaced by the key.
      *
      * @param assets the list of assets to replace their custom ids with keys.
      * @return a {@link List} of {@link AssetDraft} that has all channel references with keys replacing the ids.
