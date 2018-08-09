@@ -330,7 +330,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         final List<Price> oldPrices = asList(
             DE_111_EUR,
-            UK_333_GBP_02_05,
+            UK_333_GBP_03_05,
             US_555_USD_CUST2_01_02,
             FR_777_EUR_01_04,
             NE_123_EUR_01_04,
@@ -345,7 +345,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
         // Assertion
         assertThat(updateActions).containsExactlyInAnyOrder(
             RemovePrice.of(DE_111_EUR.getId(), true),
-            RemovePrice.of(UK_333_GBP_02_05.getId(), true),
+            RemovePrice.of(UK_333_GBP_03_05.getId(), true),
             RemovePrice.of(US_555_USD_CUST2_01_02.getId(), true),
             RemovePrice.of(FR_777_EUR_01_04.getId(), true),
             RemovePrice.of(NE_321_EUR_04_06.getId(), true),
@@ -468,7 +468,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
             DE_22_USD,
             UK_111_GBP_01_02,
             UK_111_GBP_02_03,
-            UK_333_GBP_02_05,
+            UK_333_GBP_03_05,
             FR_777_EUR_01_04,
             NE_123_EUR_01_04,
             NE_321_EUR_04_06
@@ -483,7 +483,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
         assertThat(updateActions).containsExactlyInAnyOrder(
             RemovePrice.of(DE_345_EUR_CUST2.getId(), true),
             RemovePrice.of(UK_111_GBP_02_03.getId(), true),
-            RemovePrice.of(UK_333_GBP_02_05.getId(), true),
+            RemovePrice.of(UK_333_GBP_03_05.getId(), true),
             RemovePrice.of(FR_777_EUR_01_04.getId(), true),
             RemovePrice.of(NE_321_EUR_04_06.getId(), true),
             ChangePrice.of(DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY,

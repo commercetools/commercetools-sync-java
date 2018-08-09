@@ -284,7 +284,5 @@ public abstract class BaseSyncStatistics {
      *
      * @return a summary message of the statistics report.
      */
-    public String getReportMessage() {
-        return reportMessage;
-    }
+    public abstract String getReportMessage();
 }

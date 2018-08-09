@@ -1,5 +1,6 @@
 package com.commercetools.sync.products;
 
+import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
@@ -43,6 +45,7 @@ import java.util.stream.Collectors;
 
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -235,6 +238,37 @@ public class ProductSyncMockUtils {
         when(stateService.fetchCachedStateId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
         return stateService;
+    }
+
+    /**
+     * Creates a mock {@link CustomerGroup} with the supplied {@code id} and {@code key}.
+     * @param id the id of the created mock {@link CustomerGroup}.
+     * @param key the key of the created mock {@link CustomerGroup}.
+     * @return a mock customerGroup with the supplied id and key.
+     */
+    public static CustomerGroup getMockCustomerGroup(final String id, final String key) {
+        final CustomerGroup customerGroup = mock(CustomerGroup.class);
+        when(customerGroup.getId()).thenReturn(id);
+        when(customerGroup.getKey()).thenReturn(key);
+        return customerGroup;
+    }
+
+    /**
+     * Creates a mock {@link CustomerGroupService} that returns a completed {@link CompletableFuture} containing an
+     * {@link Optional} containing the id of the supplied value whenever the following method is called on the service:
+     * <ul>
+     * <li>{@link CustomerGroupService#fetchCachedCustomerGroupId(String)}</li>
+     * </ul>
+     *
+     * @return the created mock of the {@link CustomerGroupService}.
+     */
+    public static CustomerGroupService getMockCustomerGroupService(@Nonnull final CustomerGroup customerGroup) {
+        final String customerGroupId = customerGroup.getId();
+
+        final CustomerGroupService customerGroupService = mock(CustomerGroupService.class);
+        when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
+            .thenReturn(completedFuture(Optional.of(customerGroupId)));
+        return customerGroupService;
     }
 
     /**

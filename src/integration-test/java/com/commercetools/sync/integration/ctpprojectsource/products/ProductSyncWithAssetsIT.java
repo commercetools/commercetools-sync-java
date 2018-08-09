@@ -152,7 +152,7 @@ public class ProductSyncWithAssetsIT {
 
         final ProductDraft draftToCreateOnSourceProject = ProductDraftBuilder
             .of(sourceProductType.toReference(), ofEnglish("draftName"), ofEnglish("existingProductInSource"),
-                createVariantDraft("masterVariant", assetDraftsToCreateOnExistingProduct))
+                createVariantDraft("masterVariant", assetDraftsToCreateOnExistingProduct, null))
             .key("existingProductInSource")
             .build();
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(draftToCreateOnSourceProject)).toCompletableFuture().join();
@@ -198,7 +198,7 @@ public class ProductSyncWithAssetsIT {
         final String productKey = "same-product";
         final ProductDraft draftToCreateOnTargetProject = ProductDraftBuilder
             .of(targetProductType.toReference(), ofEnglish("draftName"), ofEnglish("existingProductInTarget"),
-                createVariantDraft("masterVariant", assetDraftsToCreateOnExistingProductOnTargetProject))
+                createVariantDraft("masterVariant", assetDraftsToCreateOnExistingProductOnTargetProject, null))
             .key(productKey)
             .build();
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(draftToCreateOnTargetProject)).toCompletableFuture().join();
@@ -206,7 +206,7 @@ public class ProductSyncWithAssetsIT {
         final ProductDraft draftToCreateOnSourceProject = ProductDraftBuilder
             .of(sourceProductType.toReference(), draftToCreateOnTargetProject.getName(),
                 draftToCreateOnTargetProject.getSlug(), createVariantDraft("masterVariant",
-                    assetDraftsToCreateOnExistingProductOnSourceProject))
+                    assetDraftsToCreateOnExistingProductOnSourceProject, null))
             .key(productKey)
             .build();
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(draftToCreateOnSourceProject)).toCompletableFuture().join();
