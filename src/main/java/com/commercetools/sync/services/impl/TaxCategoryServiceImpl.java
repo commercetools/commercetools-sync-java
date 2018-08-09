@@ -35,13 +35,13 @@ public class TaxCategoryServiceImpl implements TaxCategoryService {
             return CompletableFuture.completedFuture(Optional.empty());
         }
         if (keyToIdCache.isEmpty()) {
-            return cacheAndFetch(key);
+            return fetchAndCache(key);
         }
         return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
     }
 
     @Nonnull
-    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
+    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
         final Consumer<List<TaxCategory>> taxCategoryPageConsumer = taxCategoryPage ->
             taxCategoryPage.forEach(taxCategory -> {
                 final String fetchedTaxCategoryKey = taxCategory.getKey();

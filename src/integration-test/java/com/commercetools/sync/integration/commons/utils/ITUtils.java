@@ -11,6 +11,7 @@ import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.AssetSourceBuilder;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Resource;
+import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.queries.PagedResult;
@@ -30,6 +31,7 @@ import io.sphere.sdk.types.queries.TypeQuery;
 import io.sphere.sdk.types.queries.TypeQueryBuilder;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -315,20 +317,23 @@ public final class ITUtils {
 
     /**
      * Creates a {@link ProductVariantDraft} draft key and sku of the value supplied {@code variantKeyAndSku} and with
-     * the supplied {@code assetDrafts}.
+     * the supplied {@code assetDrafts} and {@code priceDrafts}
      *
      * @param variantKeyAndSku the value of the key and sku of the created draft.
      * @param assetDrafts the assets to assign to the created draft.
+     * @param priceDrafts the prices to assign to the created draft.
      * @return a {@link ProductVariantDraft} draft key and sku of the value supplied {@code variantKeyAndSku} and with
-     *         the supplied {@code assetDrafts}.
+     *         the supplied {@code assetDrafts} and {@code priceDrafts}.
      */
     public static ProductVariantDraft createVariantDraft(@Nonnull final String variantKeyAndSku,
-                                                         @Nonnull final List<AssetDraft> assetDrafts) {
+                                                         @Nullable final List<AssetDraft> assetDrafts,
+                                                         @Nullable final List<PriceDraft> priceDrafts) {
 
         return ProductVariantDraftBuilder.of()
                                          .key(variantKeyAndSku)
                                          .sku(variantKeyAndSku)
                                          .assets(assetDrafts)
+                                         .prices(priceDrafts)
                                          .build();
     }
 

@@ -5,6 +5,7 @@ import com.commercetools.sync.commons.helpers.AssetReferenceResolver;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -41,23 +42,26 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     public static final String REFERENCE_ID_FIELD = "id";
 
     /**
-     * Takes a {@link ProductSyncOptions} instance, {@link TypeService}, a {@link ChannelService} and a
-     * {@link ProductService} to instantiate a {@link VariantReferenceResolver} instance that could be used to resolve
-     * the variants of product drafts in the CTP project specified in the injected {@link ProductSyncOptions}
-     * instance.
+     * Takes a {@link ProductSyncOptions} instance, {@link TypeService}, a {@link ChannelService}, a
+     * {@link CustomerGroupService} and a {@link ProductService} to instantiate a {@link VariantReferenceResolver}
+     * instance that could be used to resolve the variants of product drafts in the CTP project specified in the
+     * injected {@link ProductSyncOptions} instance.
      *
-     * @param productSyncOptions the container of all the options of the sync process including the CTP project client
-     *                           and/or configuration and other sync-specific options.
-     * @param typeService        the service to fetch the custom types for reference resolution.
-     * @param channelService     the service to fetch the channels for reference resolution.
-     * @param productService     the service to fetch the products for reference resolution.
+     * @param productSyncOptions   the container of all the options of the sync process including the CTP project client
+     *                             and/or configuration and other sync-specific options.
+     * @param typeService          the service to fetch the custom types for reference resolution.
+     * @param channelService       the service to fetch the channels for reference resolution.
+     * @param customerGroupService the service to fetch the customer groups for reference resolution.
+     * @param productService       the service to fetch the products for reference resolution.
      */
     public VariantReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final TypeService typeService,
                                     @Nonnull final ChannelService channelService,
+                                    @Nonnull final CustomerGroupService customerGroupService,
                                     @Nonnull final ProductService productService) {
         super(productSyncOptions);
-        this.priceReferenceResolver = new PriceReferenceResolver(productSyncOptions, typeService, channelService);
+        this.priceReferenceResolver = new PriceReferenceResolver(productSyncOptions, typeService, channelService,
+            customerGroupService);
         this.assetReferenceResolver = new AssetReferenceResolver(productSyncOptions, typeService);
         this.productService = productService;
     }

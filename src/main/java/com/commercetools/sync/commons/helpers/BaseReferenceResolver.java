@@ -3,7 +3,6 @@ package com.commercetools.sync.commons.helpers;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
-import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 
 import javax.annotation.Nonnull;
@@ -24,10 +23,8 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     private static final String UUID_NOT_ALLOWED = "Found a UUID in the id field. Expecting a key without a UUID value."
         + " If you want to allow UUID values for reference keys, please use the allowUuidKeys(true) option in the"
         + " sync options.";
-    private static final String KEY_NOT_SET_ON_EXPANSION_OR_ID_FIELD = "Key is blank (null/empty) on both expanded"
-        + " reference object and reference id field.";
-    public static final String BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER = "The value of 'id' field of the Resource"
-        + " Identifier is blank (null/empty).";
+    public static final String BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER = "The value of the 'id' field of the Resource"
+        + " Identifier/Reference is blank (null/empty).";
     private static final String UUID_REGEX = "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}";
 
     protected S options;
@@ -58,6 +55,10 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      * </ol>
      * If the above checks pass, the id value is returned. Otherwise a {@link ReferenceResolutionException} is thrown.
      *
+     * <p>Note: Currently the key is expected to be set on the id field of the {@link ResourceIdentifier}. This is in
+     * order to make key setting consistent on both {@link io.sphere.sdk.models.Reference} and
+     * {@link ResourceIdentifier}. However, this will be changed when GITHUB ISSUE#138 is resolved.
+     *
      * @param resourceIdentifier the reference from which the id value is validated and returned.
      * @param allowUuidKeys flag that signals whether the key could be UUID format or not.
      * @return the id value on the {@link ResourceIdentifier}
@@ -68,37 +69,9 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     protected static String getKeyFromResourceIdentifier(@Nonnull final ResourceIdentifier resourceIdentifier,
                                                          final boolean allowUuidKeys)
         throws ReferenceResolutionException {
+
         final String key = resourceIdentifier.getId();
         validateKey(key, allowUuidKeys, BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
-        return key;
-    }
-
-    /**
-     * Given a key value ({@code keyFromExpansion}) which is potentially fetched from the expansion of a reference. This
-     * method checks if this value is not blank (empty string/null), if it is, it tries to fetch the key value from the
-     * id field on the reference. If it's not blank it returns it. Whether the value is fetched from the expansion or
-     * from the reference's id field, this method makes sure the key is valid:
-     * <ol>
-     *     <li>is not blank (empty/null).</li>
-     *     <li>can only have a UUID format if allowed by the {@code options} instance of this class.</li>
-     * </ol>
-     * If the key is not valid a {@link ReferenceResolutionException} will be thrown.
-     *
-     *
-     * @param allowUuidKeys flag that signals whether the key could be UUID format or not.
-     * @param keyFromExpansion the key value fetched after expansion of the {@code reference}.
-     * @param reference the reference object to get the key from.
-     * @return the key of the referenced object.
-     * @throws ReferenceResolutionException thrown if the key is not valid.
-     */
-    @Nonnull
-    @SuppressWarnings("ConstantConditions") //To remove the warning on the key is null, because it can't be null.
-    protected static String getKeyFromExpansionOrReference(final boolean allowUuidKeys,
-                                                           @Nullable final String keyFromExpansion,
-                                                           @Nonnull final Reference reference)
-        throws ReferenceResolutionException {
-        final String key = isBlank(keyFromExpansion) ? reference.getId() : keyFromExpansion;
-        validateKey(key, allowUuidKeys, KEY_NOT_SET_ON_EXPANSION_OR_ID_FIELD);
         return key;
     }
 
@@ -117,10 +90,10 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      *                            thrown if the key is blank (null/empty).
      * @throws ReferenceResolutionException thrown if the key is not valid.
      */
-    private static void validateKey(@Nullable final String key,
-                                    final boolean shouldAllowUuidKeys,
+    private static void validateKey(@Nullable final String key, final boolean shouldAllowUuidKeys,
                                     @Nonnull final String errorMessage)
         throws ReferenceResolutionException {
+
         if (isBlank(key)) {
             throw new ReferenceResolutionException(errorMessage);
         } else {
@@ -139,15 +112,5 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     private static boolean isUuid(@Nonnull final String id) {
         final Pattern regexPattern = Pattern.compile(UUID_REGEX);
         return regexPattern.matcher(id).matches();
-    }
-
-    /**
-     * Helper method to check if passed {@link Reference} instance is expanded.
-     *
-     * @param reference the reference to check.
-     * @return true if the {@link Reference} is expanded.
-     */
-    protected static boolean isReferenceExpanded(@Nonnull final Reference reference) {
-        return reference.getObj() != null;
     }
 }
