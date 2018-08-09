@@ -1,7 +1,6 @@
 package com.commercetools.sync.producttypes.utils;
 
 import com.commercetools.sync.commons.exceptions.DifferentTypeException;
-import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -42,7 +41,7 @@ public final class AttributeDefinitionUpdateActionUtils {
     public static List<UpdateAction<ProductType>> buildActions(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft)
-        throws DuplicateKeyException, DifferentTypeException {
+        throws DifferentTypeException {
 
         final List<UpdateAction<ProductType>> updateActions;
 
@@ -107,21 +106,21 @@ public final class AttributeDefinitionUpdateActionUtils {
     /**
      * Indicates if the attribute definition is a plain enum value or not.
      *
-     * @param attributeDefiniton the attribute definition.
+     * @param attributeDefinition the attribute definition.
      * @return true if the attribute definition is a plain enum value, false otherwise.
      */
-    private static boolean isPlainEnumAttribute(@Nonnull final AttributeDefinition attributeDefiniton) {
-        return attributeDefiniton.getAttributeType().getClass() == EnumAttributeType.class;
+    private static boolean isPlainEnumAttribute(@Nonnull final AttributeDefinition attributeDefinition) {
+        return attributeDefinition.getAttributeType().getClass() == EnumAttributeType.class;
     }
 
     /**
      * Indicates if the attribute definition is a localized enum value or not.
      *
-     * @param attributeDefiniton the attribute definition.
+     * @param attributeDefinition the attribute definition.
      * @return true if the attribute definition is a localized enum value, false otherwise.
      */
-    private static boolean isLocalizedEnumAttribute(@Nonnull final AttributeDefinition attributeDefiniton) {
-        return attributeDefiniton.getAttributeType().getClass() == LocalizedEnumAttributeType.class;
+    private static boolean isLocalizedEnumAttribute(@Nonnull final AttributeDefinition attributeDefinition) {
+        return attributeDefinition.getAttributeType().getClass() == LocalizedEnumAttributeType.class;
     }
 
     /**
