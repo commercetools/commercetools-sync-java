@@ -1,7 +1,6 @@
 package com.commercetools.sync.producttypes.utils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
-import com.commercetools.sync.commons.exceptions.DifferentTypeException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
 import com.commercetools.sync.producttypes.helpers.AttributeDefinitionCustomBuilder;
@@ -15,6 +14,8 @@ import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefiniti
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Collection;
@@ -125,7 +126,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
 
             return updateActions;
 
-        } catch (final DuplicateNameException | DuplicateKeyException | DifferentTypeException exception) {
+        } catch (final DuplicateNameException | DuplicateKeyException exception) {
             throw new BuildUpdateActionException(exception);
         }
     }
@@ -158,13 +159,42 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
                 final AttributeDefinitionDraft matchingNewAttributeDefinitionDraft =
                     newAttributeDefinitionDraftsNameMap.get(oldAttributeDefinitionName);
                 return ofNullable(matchingNewAttributeDefinitionDraft)
-                    .map(attributeDefinitionDraft ->
-                        buildActions(oldAttributeDefinition, attributeDefinitionDraft)
-                    )
+                    .map(attributeDefinitionDraft -> {
+                        // attribute type is required so if null we let commercetools to throw exception
+                        if (attributeDefinitionDraft.getAttributeType() != null) {
+                            if (haveSameAttributeType(oldAttributeDefinition, attributeDefinitionDraft)) {
+                                return buildActions(oldAttributeDefinition, attributeDefinitionDraft);
+                            } else {
+                                return Arrays.asList(
+                                    RemoveAttributeDefinition.of(oldAttributeDefinitionName),
+                                    AddAttributeDefinition
+                                        .of(AttributeDefinitionCustomBuilder.of(attributeDefinitionDraft))
+                                );
+                            }
+                        } else {
+                            return new ArrayList<UpdateAction<ProductType>>();
+                        }
+
+                    })
                     .orElseGet(() -> singletonList(RemoveAttributeDefinition.of(oldAttributeDefinitionName)));
             })
             .flatMap(Collection::stream)
             .collect(Collectors.toList());
+    }
+
+    /**
+     * Compares the attribute types of the {@code attributeDefinitionA} and the {@code attributeDefinitionB} and
+     * returns true if both attribute definitions have the same attribute type, false otherwise.
+     *
+     * @param attributeDefinitionA the first attribute definition to compare.
+     * @param attributeDefinitionB the second attribute definition to compare.
+     * @return true if both attribute definitions have the same attribute type, false otherwise.
+     */
+    private static boolean haveSameAttributeType(
+        @Nonnull final AttributeDefinition attributeDefinitionA,
+        @Nonnull final AttributeDefinitionDraft attributeDefinitionB) {
+
+        return attributeDefinitionA.getAttributeType().getClass() == attributeDefinitionB.getAttributeType().getClass();
     }
 
     /**

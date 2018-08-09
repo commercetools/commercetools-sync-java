@@ -1,7 +1,6 @@
 package com.commercetools.sync.producttypes.utils.producttuypeactionutils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
-import com.commercetools.sync.commons.exceptions.DifferentTypeException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
@@ -9,6 +8,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
+import io.sphere.sdk.products.attributes.LocalizedStringAttributeType;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
@@ -64,6 +64,10 @@ public class BuildAttributeDefinitionUpdateActionsTest {
 
     private static final AttributeDefinition ATTRIBUTE_DEFINITION_A = AttributeDefinitionBuilder
         .of("a", ofEnglish("label_en"), StringAttributeType.of())
+        .build();
+
+    private static final AttributeDefinition ATTRIBUTE_DEFINITION_A_LOCALIZED_TYPE = AttributeDefinitionBuilder
+        .of("a", ofEnglish("label_en"), LocalizedStringAttributeType.of())
         .build();
 
     private static final AttributeDefinition ATTRIBUTE_DEFINITION_B = AttributeDefinitionBuilder
@@ -390,7 +394,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithDifferentAttributeType_ShouldNotBuildActionsAndTriggerErrorCb() {
+    public void buildAttributesUpdateActions_WithDifferentAttributeType_ShouldRemoveOldAttributeAndAddNewAttribute() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
@@ -398,14 +402,8 @@ public class BuildAttributeDefinitionUpdateActionsTest {
             ProductTypeDraft.class
         );
 
-        final List<String> errorMessages = new ArrayList<>();
-        final List<Throwable> exceptions = new ArrayList<>();
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(mock(SphereClient.class))
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
-            })
             .build();
 
         final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
@@ -414,15 +412,9 @@ public class BuildAttributeDefinitionUpdateActionsTest {
             syncOptions
         );
 
-        assertThat(updateActions).isEmpty();
-        assertThat(errorMessages).hasSize(1);
-        assertThat(errorMessages.get(0)).matches("Failed to build update actions for the attributes definitions of the "
-            + "product type with the key 'key'. Reason: .*DifferentTypeException: The attribute type of the "
-            + "attribute definitions are different. Attribute name: 'a'. Old attribute type: "
-            + "'.*StringAttributeType', new attribute type: '.*LocalizedStringAttributeType'. Attribute type has "
-            + "to remain the same for the same attribute name.");
-        assertThat(exceptions).hasSize(1);
-        assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
-        assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(DifferentTypeException.class);
+        assertThat(updateActions).containsExactly(
+            RemoveAttributeDefinition.of("a"),
+            AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_A_LOCALIZED_TYPE)
+        );
     }
 }

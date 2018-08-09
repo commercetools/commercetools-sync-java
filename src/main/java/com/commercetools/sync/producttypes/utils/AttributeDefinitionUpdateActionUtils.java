@@ -1,6 +1,5 @@
 package com.commercetools.sync.producttypes.utils;
 
-import com.commercetools.sync.commons.exceptions.DifferentTypeException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -23,7 +22,6 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateLocalizedEnumActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdatePlainEnumActionUtils.buildEnumValuesUpdateActions;
 import static java.util.stream.Collectors.toList;
-import static java.lang.String.format;
 
 
 public final class AttributeDefinitionUpdateActionUtils {
@@ -40,8 +38,7 @@ public final class AttributeDefinitionUpdateActionUtils {
     @Nonnull
     public static List<UpdateAction<ProductType>> buildActions(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
-        @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft)
-        throws DifferentTypeException {
+        @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
 
         final List<UpdateAction<ProductType>> updateActions;
 
@@ -57,50 +54,22 @@ public final class AttributeDefinitionUpdateActionUtils {
             .map(Optional::get)
             .collect(toList());
 
-        // attribute type is required so if null we let commercetools to throw exception
-        if (newAttributeDefinitionDraft.getAttributeType() != null) {
-            if (haveSameAttributeType(oldAttributeDefinition, newAttributeDefinitionDraft)) {
-                if (isPlainEnumAttribute(oldAttributeDefinition)) {
-                    updateActions.addAll(buildEnumValuesUpdateActions(
-                        oldAttributeDefinition.getName(),
-                        ((EnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
-                        ((EnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
-                    ));
-                } else if (isLocalizedEnumAttribute(oldAttributeDefinition)) {
-                    updateActions.addAll(buildLocalizedEnumValuesUpdateActions(
-                        oldAttributeDefinition.getName(),
-                        ((LocalizedEnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
-                        ((LocalizedEnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
-                    ));
-                }
-            } else {
-                throw new DifferentTypeException(
-                    format("The attribute type of the attribute definitions are different. "
-                            + "Attribute name: '%s'. Old attribute type: '%s', new attribute type: '%s'. "
-                            + "Attribute type has to remain the same for the same attribute name.",
-                        oldAttributeDefinition.getName(),
-                        oldAttributeDefinition.getAttributeType().getClass().getName(),
-                        newAttributeDefinitionDraft.getAttributeType().getClass().getName()));
-            }
+
+        if (isPlainEnumAttribute(oldAttributeDefinition)) {
+            updateActions.addAll(buildEnumValuesUpdateActions(
+                oldAttributeDefinition.getName(),
+                ((EnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
+                ((EnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
+            ));
+        } else if (isLocalizedEnumAttribute(oldAttributeDefinition)) {
+            updateActions.addAll(buildLocalizedEnumValuesUpdateActions(
+                oldAttributeDefinition.getName(),
+                ((LocalizedEnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
+                ((LocalizedEnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
+            ));
         }
 
         return updateActions;
-    }
-
-
-    /**
-     * Compares the attribute types of the {@code attributeDefinitionA} and the {@code attributeDefinitionB} and
-     * returns true if both attribute definitions have the same attribute type, false otherwise.
-     *
-     * @param attributeDefinitionA the first attribute definition to compare.
-     * @param attributeDefinitionB the second attribute definition to compare.
-     * @return true if both attribute definitions have the same attribute type, false otherwise.
-     */
-    private static boolean haveSameAttributeType(
-        @Nonnull final AttributeDefinition attributeDefinitionA,
-        @Nonnull final AttributeDefinitionDraft attributeDefinitionB) {
-
-        return attributeDefinitionA.getAttributeType().getClass() == attributeDefinitionB.getAttributeType().getClass();
     }
 
     /**
