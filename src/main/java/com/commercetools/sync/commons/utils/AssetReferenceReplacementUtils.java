@@ -13,12 +13,12 @@ import static java.util.stream.Collectors.toList;
 public final class AssetReferenceReplacementUtils {
 
     /**
-     * Takes a an asset list that is supposed to have all its assets' custom references expanded in order to be able to
+     * Takes an asset list that is supposed to have all its assets' custom references expanded in order to be able to
      * fetch the keys and replace the reference ids with the corresponding keys for the custom references. This method
      * returns as a result a {@link List} of {@link AssetDraft} that has all custom references with keys replacing the
      * ids.
      *
-     * <p>Any custom reference that is not expanded will have it's id in place and not replaced by the key.
+     * <p>Any custom reference that is not expanded will have its id in place and not replaced by the key.
      *
      * @param assets the list of assets to replace their custom ids with keys.
      * @return a {@link List} of {@link AssetDraft} that has all channel references with keys replacing the ids.
