@@ -57,7 +57,7 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M14)
 -->
 
-### v1.0.0-M13 -  Jul 26, 2018
+### v1.0.0-M13 -  Aug 09, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M12...v1.0.0-M13) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M13/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M13)
@@ -73,7 +73,10 @@
 **Enhancements** (4)
 - **Commons** - Bumped gradle to version [gradle-4.9](https://docs.gradle.org/4.9/release-notes.html).
 - **Commons** - Bumped `com.jfrog.bintray` to 1.8.4.
-- **Commons** - Bumped `mockito` dependency to 2.19.1.
+- **Commons** - Bumped `mockito` to 2.21.0.
+- **Commons** - Bumped `org.ajoberstar.grgit` to 2.3.0.
+- **Commons** - Bumped `com.adarshr.test-logger` to 1.4.0.
+- **Commons** - Bumped `commercetools-jvm-sdk` to [1.34.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_34_0).
 - **Commons** - Switched to Junit5 using both `junit-jupiter-engine` and `junit-vintage-engine` for backward compatibility.
 
 **Changes** (3)
