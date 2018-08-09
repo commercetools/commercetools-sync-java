@@ -76,7 +76,6 @@
 - **Commons** - Bumped `mockito` to 2.21.0.
 - **Commons** - Bumped `org.ajoberstar.grgit` to 2.3.0.
 - **Commons** - Bumped `com.adarshr.test-logger` to 1.4.0.
-- **Commons** - Bumped `commercetools-jvm-sdk` to [1.34.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_34_0).
 - **Commons** - Switched to Junit5 using both `junit-jupiter-engine` and `junit-vintage-engine` for backward compatibility.
 
 **Changes** (3)
