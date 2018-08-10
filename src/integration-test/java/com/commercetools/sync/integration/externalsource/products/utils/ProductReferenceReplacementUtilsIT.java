@@ -117,7 +117,7 @@ public class ProductReferenceReplacementUtilsIT {
 
         final ProductDraft parentProductDraft = ProductDraftBuilder
             .of(productType.toReference(), ofEnglish("parentProduct"), ofEnglish("parentProduct"),
-                createVariantDraft("parent", emptyList()))
+                createVariantDraft("parent", emptyList(), null))
             .key("parentProduct")
             .build();
 

@@ -1,4 +1,4 @@
-package com.commercetools.sync.integration.services;
+package com.commercetools.sync.integration.services.impl;
 
 import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
@@ -14,17 +14,17 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.Optional;
 
+import static com.commercetools.sync.integration.commons.utils.ChannelITUtils.deleteChannelsFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteChannelsFromTargetAndSource;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteInventoryEntriesFromTargetAndSource;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateTargetProject;
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ChannelServiceIT {
+public class ChannelServiceImplIT {
     private ChannelService channelService;
     private static final String CHANNEL_KEY = "channel_key";
 
@@ -39,9 +39,8 @@ public class ChannelServiceIT {
         deleteChannelsFromTargetAndSource();
         populateTargetProject();
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                                    .build();
-        channelService = new ChannelServiceImpl(inventorySyncOptions,
-            Collections.singleton(ChannelRole.INVENTORY_SUPPLY));
+                                                                                     .build();
+        channelService = new ChannelServiceImpl(inventorySyncOptions, singleton(ChannelRole.INVENTORY_SUPPLY));
     }
 
     /**
@@ -57,15 +56,15 @@ public class ChannelServiceIT {
     @Test
     public void fetchCachedChannelId_WithNonExistingChannel_ShouldNotFetchAChannel() {
         Optional<String> channelId = channelService.fetchCachedChannelId(CHANNEL_KEY)
-                                                    .toCompletableFuture()
-                                                    .join();
+                                                   .toCompletableFuture()
+                                                   .join();
         assertThat(channelId).isEmpty();
     }
 
     @Test
     public void fetchCachedChannelId_WithExistingChannel_ShouldFetchChannelAndCache() {
         final ChannelDraft draft = ChannelDraftBuilder.of(CHANNEL_KEY)
-                                                      .roles(Collections.singleton(ChannelRole.INVENTORY_SUPPLY))
+                                                      .roles(singleton(ChannelRole.INVENTORY_SUPPLY))
                                                       .build();
         CTP_TARGET_CLIENT.execute(ChannelCreateCommand.of(draft)).toCompletableFuture().join();
         assertThat(channelService.fetchCachedChannelId(CHANNEL_KEY).toCompletableFuture().join()).isNotEmpty();
@@ -79,7 +78,7 @@ public class ChannelServiceIT {
         // Create new channel
         final String newChannelKey = "new_channel_key";
         final ChannelDraft draft = ChannelDraftBuilder.of(newChannelKey)
-                                                      .roles(Collections.singleton(ChannelRole.INVENTORY_SUPPLY))
+                                                      .roles(singleton(ChannelRole.INVENTORY_SUPPLY))
                                                       .build();
         CTP_TARGET_CLIENT.execute(ChannelCreateCommand.of(draft)).toCompletableFuture().join();
 
@@ -109,13 +108,12 @@ public class ChannelServiceIT {
         assertThat(createdChannelOptional).contains(result);
     }
 
-
     @Test
     public void createAndCacheChannel_ShouldCreateChannelAndCacheIt() {
         final String newChannelKey = "new_channel_key";
         final Channel result = channelService.createAndCacheChannel(newChannelKey)
-                                               .toCompletableFuture()
-                                               .join();
+                                             .toCompletableFuture()
+                                             .join();
 
         assertThat(result).isNotNull();
         assertThat(result.getRoles()).containsExactly(ChannelRole.INVENTORY_SUPPLY);

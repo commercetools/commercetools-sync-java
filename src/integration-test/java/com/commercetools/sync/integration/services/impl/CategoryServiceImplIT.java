@@ -1,4 +1,4 @@
-package com.commercetools.sync.integration.services;
+package com.commercetools.sync.integration.services.impl;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
@@ -44,7 +44,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class CategoryServiceIT {
+public class CategoryServiceImplIT {
     private CategoryService categoryService;
     private Category oldCategory;
     private static final String oldCategoryKey = "oldCategoryKey";

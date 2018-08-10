@@ -25,7 +25,6 @@ import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
-import io.sphere.sdk.products.commands.updateactions.SetPrices;
 import io.sphere.sdk.products.queries.ProductProjectionByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.Type;
@@ -58,7 +57,6 @@ import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -107,7 +105,7 @@ public class ProductSyncWithAssetsIT {
 
         final ProductDraft productDraft = ProductDraftBuilder
             .of(productType.toReference(), ofEnglish("draftName"), ofEnglish("existingSlug"),
-                createVariantDraft("v1", assetDraftsToCreateOnExistingProduct))
+                createVariantDraft("v1", assetDraftsToCreateOnExistingProduct, null))
             .key("existingProduct")
             .build();
 
@@ -153,7 +151,7 @@ public class ProductSyncWithAssetsIT {
 
         final ProductDraft productDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("slug"),
-                createVariantDraft("masterVariant", assetDrafts))
+                createVariantDraft("masterVariant", assetDrafts, null))
             .key("draftKey")
             .build();
 
@@ -183,7 +181,7 @@ public class ProductSyncWithAssetsIT {
 
         final ProductDraft productDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("slug"),
-                createVariantDraft("masterVariant", assetDrafts))
+                createVariantDraft("masterVariant", assetDrafts, null))
             .key("draftKey")
             .build();
 
@@ -227,7 +225,7 @@ public class ProductSyncWithAssetsIT {
 
         final ProductDraft productDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("existingSlug"),
-                createVariantDraft("v1", assetDrafts))
+                createVariantDraft("v1", assetDrafts, null))
             .key(product.getKey())
             .build();
 
@@ -248,7 +246,6 @@ public class ProductSyncWithAssetsIT {
                                                             .stream().collect(toMap(Asset::getKey, Asset::getId));
 
         assertThat(updateActionsFromSync).containsExactly(
-            SetPrices.of(1, emptyList()),
             RemoveAsset.ofVariantIdWithKey(1, "1", true),
             ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("new name"), true),
             SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),
@@ -280,7 +277,7 @@ public class ProductSyncWithAssetsIT {
 
         final ProductDraft productDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("existingSlug"),
-                createVariantDraft("v1", assetDrafts))
+                createVariantDraft("v1", assetDrafts, null))
             .key(product.getKey())
             .build();
 
@@ -288,7 +285,7 @@ public class ProductSyncWithAssetsIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         // Assert results of sync
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0);
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).matches("Failed to build update actions for the assets of the product "
@@ -300,7 +297,7 @@ public class ProductSyncWithAssetsIT {
         assertThat(errorCallBackExceptions.get(0).getMessage()).contains("Supplied asset drafts have duplicate "
             + "keys. Asset keys are expected to be unique inside their container (a product variant or a category).");
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(DuplicateKeyException.class);
-        assertThat(updateActionsFromSync).containsExactly(SetPrices.of(1, emptyList()));
+        assertThat(updateActionsFromSync).isEmpty();
 
 
         // Assert that existing assets haven't changed.

@@ -41,13 +41,13 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     @Override
     public CompletionStage<Optional<String>> fetchCachedProductTypeId(@Nonnull final String key) {
         if (!isCached) {
-            return cacheAndFetch(key);
+            return fetchAndCache(key);
         }
         return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
     }
 
     @Nonnull
-    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
+    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
         final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
                 productTypePage.forEach(type -> {
                     final String fetchedTypeKey = type.getKey();
@@ -79,7 +79,7 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     public CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchCachedProductAttributeMetaDataMap(
             @Nonnull final String productTypeId) {
         if (productsAttributesMetaData.isEmpty()) {
-            return cacheAndFetchProductMetaData(productTypeId);
+            return fetchAndCacheProductMetaData(productTypeId);
         }
         return CompletableFuture.completedFuture(
                 Optional.ofNullable(productsAttributesMetaData.get(productTypeId))
@@ -112,7 +112,6 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     }
 
     @Nonnull
-    private CompletionStage<Optional<Map<String, AttributeMetaData>>> cacheAndFetchProductMetaData(
             @Nonnull final String productTypeId) {
         final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
                 productTypePage.forEach(type -> {

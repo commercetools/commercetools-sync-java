@@ -5,6 +5,7 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.services.CategoryService;
+import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.TaxCategoryService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.Reference;
@@ -54,8 +55,8 @@ public class TaxCategoryReferenceResolverTest {
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
         referenceResolver = new ProductReferenceResolver(syncOptions,
             getMockProductTypeService(PRODUCT_TYPE_ID), mock(CategoryService.class), getMockTypeService(),
-            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)), taxCategoryService,
-            getMockStateService(STATE_ID), getMockProductService(PRODUCT_ID));
+            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)), mock(CustomerGroupService.class),
+            taxCategoryService, getMockStateService(STATE_ID), getMockProductService(PRODUCT_ID));
     }
 
     @Test
@@ -68,8 +69,8 @@ public class TaxCategoryReferenceResolverTest {
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             getMockProductTypeService(PRODUCT_TYPE_ID), mock(CategoryService.class), getMockTypeService(),
-            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)), taxCategoryService,
-            getMockStateService(STATE_ID), getMockProductService(PRODUCT_ID));
+            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)), mock(CustomerGroupService.class),
+            taxCategoryService, getMockStateService(STATE_ID), getMockProductService(PRODUCT_ID));
 
         final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveTaxCategoryReference(productBuilder)
                                                                           .toCompletableFuture().join();
