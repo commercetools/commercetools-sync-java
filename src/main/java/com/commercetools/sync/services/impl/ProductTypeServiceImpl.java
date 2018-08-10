@@ -61,17 +61,20 @@ public class ProductTypeServiceImpl implements ProductTypeService {
                     }
                 });
 
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
-                .thenAccept(result -> isCached = true)
-                .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
+        return CtpQueryUtils
+            .queryAll(syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
+            .thenAccept(result -> isCached = true)
+            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 
     @Nonnull
     private static Map<String, AttributeMetaData> getAttributeMetaDataMap(@Nonnull final ProductType productType) {
-        return productType.getAttributes().stream()
-                .map(AttributeMetaData::of)
-                .collect(
-                        Collectors.toMap(AttributeMetaData::getName, attributeMetaData -> attributeMetaData));
+        return productType
+            .getAttributes().stream()
+            .map(AttributeMetaData::of)
+            .collect(
+                Collectors.toMap(AttributeMetaData::getName, attributeMetaData -> attributeMetaData)
+            );
     }
 
     @Nonnull
