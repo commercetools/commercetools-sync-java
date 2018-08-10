@@ -4,7 +4,7 @@ import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
 import static java.lang.String.format;
 
-public final class ProductTypeSyncStatistics extends BaseSyncStatistics {
+public class ProductTypeSyncStatistics extends BaseSyncStatistics {
     /**
      * Builds a summary of the product type sync statistics instance that looks like the following example:
      *
@@ -19,8 +19,5 @@ public final class ProductTypeSyncStatistics extends BaseSyncStatistics {
             getProcessed(), getCreated(), getUpdated(), getFailed());
 
         return reportMessage;
-    }
-
-    private ProductTypeSyncStatistics() {
     }
 }
