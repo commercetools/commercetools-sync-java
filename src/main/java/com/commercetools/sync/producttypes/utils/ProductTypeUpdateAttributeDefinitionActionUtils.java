@@ -138,6 +138,9 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      * Otherwise, if the attribute definition still exists in the new draft, then compare the attribute definition
      * fields (name, label, etc..), and add the computed actions to the list of update actions.
      *
+     * <p> Note: If the attribute type field changes, the old attribute definition is removed and the new attribute
+     *     definition is added with the new attribute type.
+     *
      * @param oldAttributeDefinitions             the list of old {@link AttributeDefinition}s.
      * @param newAttributeDefinitionDraftsNameMap a map of names to attribute definition drafts of the new
      *                                            list of attribute definition drafts.

@@ -24,13 +24,13 @@ public final class ProductTypeSyncUtils {
      * result. If no update action is needed, for example in case where both the {@link ProductType} and the
      * {@link ProductTypeDraft} have the same description, an empty {@link List} is returned.
      *
-     * @param oldProductType the product which should be updated.
-     * @param newProductType the product draft where we get the new data.
+     * @param oldProductType the {@link ProductType} which should be updated.
+     * @param newProductType the {@link ProductTypeDraft}  where we get the new data.
      * @param syncOptions    the sync options wrapper which contains options related to the sync process supplied by
      *                       the user. For example, custom callbacks to call in case of warnings or errors occurring
      *                       on the build update action process. And other options (See {@link ProductTypeSyncOptions}
      *                       for more info.
-     * @return A list of product type-specific update actions.
+     * @return A list of productType-specific update actions.
      */
     @Nonnull
     public static List<UpdateAction<ProductType>> buildActions(
