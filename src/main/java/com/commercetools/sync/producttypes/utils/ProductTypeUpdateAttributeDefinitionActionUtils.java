@@ -92,23 +92,11 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
                 .stream()
                 .collect(toMap(AttributeDefinition::getName, attributeDefinition -> attributeDefinition));
 
-        final Map<String, AttributeDefinitionDraft> newAttributesDefinitionsDraftsNameMap;
-
         try {
-            newAttributesDefinitionsDraftsNameMap = newAttributeDefinitionsDrafts.stream().collect(
-                toMap(AttributeDefinitionDraft::getName, attributeDefinitionDraft -> attributeDefinitionDraft,
-                    (attributeDefinitionDraftA, attributeDefinitionDraftB) -> {
-                        throw new DuplicateNameException(format("Attribute definitions drafts have duplicated names. "
-                                + "Duplicated attribute definition name: '%s'. "
-                                + "Attribute definitions names are expected to be unique inside their product type.",
-                            attributeDefinitionDraftA.getName()));
-                    }
-                ));
-
             final List<UpdateAction<ProductType>> updateActions =
                 buildRemoveAttributeDefinitionOrAttributeDefinitionUpdateActions(
                     oldAttributeDefinitions,
-                    newAttributesDefinitionsDraftsNameMap
+                    newAttributeDefinitionsDrafts
                 );
 
             updateActions.addAll(
@@ -133,17 +121,16 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
 
     /**
      * Checks if there are any attribute definitions which are not existing in the
-     * {@code newAttributeDefinitionDraftsNameMap}. If there are, then "remove" attribute definition update actions are
+     * {@code newAttributeDefinitionsDrafts}. If there are, then "remove" attribute definition update actions are
      * built.
      * Otherwise, if the attribute definition still exists in the new draft, then compare the attribute definition
      * fields (name, label, etc..), and add the computed actions to the list of update actions.
      *
-     * <p> Note: If the attribute type field changes, the old attribute definition is removed and the new attribute
+     * <p>Note: If the attribute type field changes, the old attribute definition is removed and the new attribute
      *     definition is added with the new attribute type.
      *
      * @param oldAttributeDefinitions             the list of old {@link AttributeDefinition}s.
-     * @param newAttributeDefinitionDraftsNameMap a map of names to attribute definition drafts of the new
-     *                                            list of attribute definition drafts.
+     * @param newAttributeDefinitionsDrafts       the list of new {@link AttributeDefinitionDraft}s.
      * @return a list of attribute definition update actions if there are attribute definitions that are not existing
      *         in the new draft. If the attribute definition still exists in the new draft, then compare the attribute
      *         definition fields (name, label, etc..), and add the computed actions to the list of update actions.
@@ -152,15 +139,27 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
     @Nonnull
     private static List<UpdateAction<ProductType>> buildRemoveAttributeDefinitionOrAttributeDefinitionUpdateActions(
         @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
-        @Nonnull final Map<String, AttributeDefinitionDraft> newAttributeDefinitionDraftsNameMap)
+        @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts)
         throws DuplicateKeyException {
+
+        final Map<String, AttributeDefinitionDraft> newAttributesDefinitionsDraftsNameMap =
+            newAttributeDefinitionsDrafts
+                .stream().collect(
+                toMap(AttributeDefinitionDraft::getName, attributeDefinitionDraft -> attributeDefinitionDraft,
+                    (attributeDefinitionDraftA, attributeDefinitionDraftB) -> {
+                        throw new DuplicateNameException(format("Attribute definitions drafts have duplicated names. "
+                                + "Duplicated attribute definition name: '%s'. "
+                                + "Attribute definitions names are expected to be unique inside their product type.",
+                            attributeDefinitionDraftA.getName()));
+                    }
+                ));
 
         return oldAttributeDefinitions
             .stream()
             .map(oldAttributeDefinition -> {
                 final String oldAttributeDefinitionName = oldAttributeDefinition.getName();
                 final AttributeDefinitionDraft matchingNewAttributeDefinitionDraft =
-                    newAttributeDefinitionDraftsNameMap.get(oldAttributeDefinitionName);
+                    newAttributesDefinitionsDraftsNameMap.get(oldAttributeDefinitionName);
                 return ofNullable(matchingNewAttributeDefinitionDraft)
                     .map(attributeDefinitionDraft -> {
                         // attribute type is required so if null we let commercetools to throw exception
