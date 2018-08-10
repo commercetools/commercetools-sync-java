@@ -139,8 +139,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
     @Nonnull
     private static List<UpdateAction<ProductType>> buildRemoveAttributeDefinitionOrAttributeDefinitionUpdateActions(
         @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
-        @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts)
-        throws DuplicateKeyException {
+        @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts) {
 
         final Map<String, AttributeDefinitionDraft> newAttributesDefinitionsDraftsNameMap =
             newAttributeDefinitionsDrafts
