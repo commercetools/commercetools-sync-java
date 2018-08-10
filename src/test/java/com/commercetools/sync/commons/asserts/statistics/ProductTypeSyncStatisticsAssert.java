@@ -4,7 +4,7 @@ import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
 
 import javax.annotation.Nullable;
 
-public class ProductTypeSyncStatisticsAssert extends
+public final class ProductTypeSyncStatisticsAssert extends
     AbstractSyncStatisticsAssert<ProductTypeSyncStatisticsAssert, ProductTypeSyncStatistics> {
 
     ProductTypeSyncStatisticsAssert(@Nullable final ProductTypeSyncStatistics actual) {
