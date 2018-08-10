@@ -160,7 +160,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithDuplicatettributeNames_ShouldNotBuildActionsAndTriggerErrorCb() {
+    public void buildAttributesUpdateActions_WithDuplicateAttributeNames_ShouldNotBuildActionsAndTriggerErrorCb() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
@@ -366,7 +366,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMovettributeActions() {
+    public void buildAttributesUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveAttributeActions() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
