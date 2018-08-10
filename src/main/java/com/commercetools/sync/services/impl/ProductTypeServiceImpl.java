@@ -111,8 +111,9 @@ public class ProductTypeServiceImpl implements ProductTypeService {
         return syncOptions.getCtpClient().execute(ProductTypeUpdateCommand.of(productType, updateActions));
     }
 
-    @Nonnull
-            @Nonnull final String productTypeId) {
+    private CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
+        @Nonnull final String productTypeId) {
+
         final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
                 productTypePage.forEach(type -> {
                     final String id = type.getId();
