@@ -14,7 +14,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class ProductTypeSyncOptions extends BaseSyncOptions<ProductType, ProductTypeDraft> {
+public final class ProductTypeSyncOptions extends BaseSyncOptions<ProductType, ProductTypeDraft> {
     ProductTypeSyncOptions(
         @Nonnull final SphereClient ctpClient,
         @Nullable final BiConsumer<String, Throwable> updateActionErrorCallBack,
