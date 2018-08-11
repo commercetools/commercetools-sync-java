@@ -15,7 +15,7 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
     @Override
     public String getReportMessage() {
         reportMessage = format(
-            "Summary: %s products types were processed in total (%s created, %s updated and %s failed to sync).",
+            "Summary: %s product types were processed in total (%s created, %s updated and %s failed to sync).",
             getProcessed(), getCreated(), getUpdated(), getFailed());
 
         return reportMessage;
