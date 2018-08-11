@@ -427,7 +427,7 @@ public class ProductTypeSyncIT {
 
         assertThat(productTypeSyncStatistics
             .getReportMessage())
-            .isEqualTo("Summary: 2 products types were processed in total"
+            .isEqualTo("Summary: 2 product types were processed in total"
                 + " (1 created, 1 updated and 0 failed to sync).");
     }
 
