@@ -66,7 +66,7 @@ import static org.mockito.Mockito.when;
 public class ProductTypeSyncIT {
 
     /**
-     * Deletes inventories and supply channels from source and target CTP projects.
+     * Deletes product types from source and target CTP projects.
      * Populates source and target CTP projects with test data.
      */
     @Before
