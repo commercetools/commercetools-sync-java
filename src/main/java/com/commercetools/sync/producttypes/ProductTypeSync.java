@@ -14,7 +14,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -27,6 +26,7 @@ import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.bui
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static java.util.Collections.emptyList;
 
 /**
  * This class syncs product type drafts with the given product types in the CTP project.
@@ -106,9 +106,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             final Set<String> keys = validProductTypeDrafts.stream().map(ProductTypeDraft::getKey).collect(toSet());
 
             return fetchExistingProductTypes(keys)
-                .thenCompose(oldProductTypeOptional -> oldProductTypeOptional
-                    .map(oldProductTypes -> syncBatch(oldProductTypes, validProductTypeDrafts))
-                    .orElseGet(() -> completedFuture(statistics)))
+                .thenCompose(oldProductTypes -> syncBatch(oldProductTypes, validProductTypeDrafts))
                 .thenApply(v -> {
                     statistics.incrementProcessed(batch.size());
                     return statistics;
@@ -142,15 +140,14 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param keys the keys of the product types that are wanted to be fetched.
      * @return a future which contains the list of product types corresponding to the keys.
      */
-    private CompletionStage<Optional<List<ProductType>>> fetchExistingProductTypes(@Nonnull final Set<String> keys) {
+    private CompletionStage<List<ProductType>> fetchExistingProductTypes(@Nonnull final Set<String> keys) {
         return productTypeService
                 .fetchMatchingProductsTypesByKeys(keys)
-                .thenApply(Optional::of)
                 .exceptionally(exception -> {
                     final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keys);
                     handleError(errorMessage, exception, keys.size());
 
-                    return Optional.empty();
+                    return emptyList();
                 });
     }
 
