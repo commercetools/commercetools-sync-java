@@ -25,6 +25,7 @@ import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
@@ -102,10 +103,9 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             statistics.incrementProcessed(batch.size());
             return completedFuture(statistics);
         } else {
-            final Map<String, ProductTypeDraft> keysProductTypeDraftMap = getKeysProductTypeMap(validProductTypeDrafts);
+            final Set<String> keys = validProductTypeDrafts.stream().map(ProductTypeDraft::getKey).collect(toSet());
 
-
-            return fetchExistingProductTypes(keysProductTypeDraftMap.keySet())
+            return fetchExistingProductTypes(keys)
                 .thenCompose(oldProductTypeOptional -> oldProductTypeOptional
                     .map(oldProductTypes -> syncBatch(oldProductTypes, validProductTypeDrafts))
                     .orElseGet(() -> completedFuture(statistics)))
