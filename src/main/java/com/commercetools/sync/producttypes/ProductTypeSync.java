@@ -171,6 +171,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      *
      * @param errorMessage The error message describing the reason(s) of failure.
      * @param exception    The exception that called caused the failure, if any.
+     * @param failedTimes  The number of times that the failed product types counter is incremented.
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
                              final int failedTimes) {
