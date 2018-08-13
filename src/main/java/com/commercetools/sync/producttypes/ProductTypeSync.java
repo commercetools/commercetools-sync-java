@@ -107,7 +107,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
             return fetchExistingProductTypes(keys)
                 .thenCompose(oldProductTypes -> syncBatch(oldProductTypes, validProductTypeDrafts))
-                .thenApply(v -> {
+                .thenApply((ignored) -> {
                     statistics.incrementProcessed(batch.size());
                     return statistics;
                 });
