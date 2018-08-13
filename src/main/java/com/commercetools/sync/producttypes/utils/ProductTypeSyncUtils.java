@@ -22,7 +22,7 @@ public final class ProductTypeSyncUtils {
      * {@link ProductTypeUpdateActionUtils#buildAttributesUpdateActions}) of a {@link ProductType} and a
      * {@link ProductTypeDraft}. It returns a {@link List} of {@link UpdateAction}&lt;{@link ProductType}&gt; as a
      * result. If no update action is needed, for example in case where both the {@link ProductType} and the
-     * {@link ProductTypeDraft} have the same description, an empty {@link List} is returned.
+     * {@link ProductTypeDraft} have the same fields, an empty {@link List} is returned.
      *
      * @param oldProductType the {@link ProductType} which should be updated.
      * @param newProductType the {@link ProductTypeDraft}  where we get the new data.
