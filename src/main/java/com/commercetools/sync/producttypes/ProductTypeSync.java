@@ -27,6 +27,9 @@ import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.bui
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+/**
+ * This class syncs product type drafts with the given product types in the CTP project.
+ */
 public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncStatistics, ProductTypeSyncOptions> {
     private static final String CTP_PRODUCT_TYPE_FETCH_FAILED = "Failed to fetch existing product types of keys '%s'.";
     private static final String CTP_PRODUCT_TYPE_UPDATE_FAILED = "Failed to update product type of key '%s'.";
@@ -36,31 +39,11 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
     private final ProductTypeService productTypeService;
 
-    /**
-     * Takes a {@link ProductTypeSyncOptions} instance to instantiate a new {@link ProductTypeSync} instance that
-     * could be used to sync product type drafts with the given product types in the CTP project specified in the
-     * injected {@link ProductTypeSyncOptions} instance.
-     *
-     * @param productTypeSyncOptions the container of all the options of the sync process including the CTP project
-     *                               client and/ormconfiguration and other sync-specific options.
-     */
     public ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions) {
         super(new ProductTypeSyncStatistics(), productTypeSyncOptions);
         this.productTypeService = new ProductTypeServiceImpl(productTypeSyncOptions);
     }
 
-    /**
-     * Takes a {@link ProductTypeSyncOptions} instance to instantiate a new {@link ProductTypeSync} instance that
-     * could be used to sync product type drafts with the given product types in the CTP project specified in the
-     * injected {@link ProductTypeSyncOptions} instance.
-     *
-     * @param productTypeSyncOptions the container of all the options of the sync process including the CTP project
-     *                               client and/ormconfiguration and other sync-specific options.
-     * @param productTypeService     the product type service to make product type requests.
-     *
-     *
-     *
-     */
     public ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions,
                            @Nonnull final ProductTypeService productTypeService) {
         super(new ProductTypeSyncStatistics(), productTypeSyncOptions);
