@@ -97,8 +97,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     @Override
     protected CompletionStage<ProductTypeSyncStatistics> processBatch(@Nonnull final List<ProductTypeDraft> batch) {
         final List<ProductTypeDraft> validProductTypeDrafts = batch.stream()
-                .filter(this::validateDraft)
-                .collect(toList());
+                                                                   .filter(this::validateDraft)
+                                                                   .collect(toList());
 
         if (validProductTypeDrafts.isEmpty()) {
             statistics.incrementProcessed(batch.size());
