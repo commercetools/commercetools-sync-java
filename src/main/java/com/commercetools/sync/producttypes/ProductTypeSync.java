@@ -159,7 +159,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param <T>          a type that extends of {@link WithKey}.
      * @return the map of keys to {@link ProductType}/{@link ProductTypeDraft} instances.
      */
-    protected <T extends WithKey> Map<String, T> getKeysProductTypeMap(@Nonnull final List<T> productTypes) {
+    private <T extends WithKey> Map<String, T> getKeysProductTypeMap(@Nonnull final List<T> productTypes) {
         return productTypes.stream().collect(Collectors.toMap(WithKey::getKey, p -> p,
             (productTypeA, productTypeB) -> productTypeB));
     }
