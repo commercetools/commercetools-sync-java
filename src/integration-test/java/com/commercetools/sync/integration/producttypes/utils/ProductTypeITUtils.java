@@ -24,7 +24,7 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndE
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 
-public class ProductTypeITUtils {
+public final class ProductTypeITUtils {
     public static final String PRODUCT_TYPE_KEY_1 = "key_1";
     public static final String PRODUCT_TYPE_KEY_2 = "key_2";
 
@@ -146,5 +146,9 @@ public class ProductTypeITUtils {
             .build();
 
         return sphereClient.execute(query).toCompletableFuture().join().head();
+    }
+
+    private ProductTypeITUtils() {
+        
     }
 }
