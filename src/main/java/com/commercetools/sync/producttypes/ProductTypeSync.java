@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
 import static java.util.stream.Collectors.toList;
@@ -191,25 +192,19 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     private CompletionStage<ProductTypeSyncStatistics> syncBatch(
             @Nonnull final List<ProductType> oldProductTypes,
             @Nonnull final List<ProductTypeDraft> newProductTypes) {
-
         final Map<String, ProductType> oldProductTypeMap = getKeysProductTypeMap(oldProductTypes);
 
-        List<CompletableFuture<Void>> futures = newProductTypes
-                .stream()
-                .map(newProductType -> {
-                    final ProductType oldProductType = oldProductTypeMap.get(newProductType.getKey());
+        return CompletableFuture.allOf(newProductTypes
+            .stream()
+            .map(newProductType -> {
+                final ProductType oldProductType = oldProductTypeMap.get(newProductType.getKey());
 
-                    if (oldProductType == null) {
-                        return createProductType(newProductType);
-                    } else {
-                        return updateProductType(oldProductType, newProductType);
-                    }
-                })
-                .map(CompletionStage::toCompletableFuture)
-                .collect(toList());
-
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
-                .thenApply(result -> statistics);
+                return ofNullable(oldProductType)
+                    .map(productType -> updateProductType(oldProductType, newProductType))
+                    .orElseGet(() -> createProductType(newProductType));
+            })
+            .map(CompletionStage::toCompletableFuture)
+            .toArray(CompletableFuture[]::new)).thenApply(result -> statistics);
     }
 
     /**
