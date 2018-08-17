@@ -114,11 +114,11 @@ public class ProductTypeSyncIT {
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
         assertThat(oldProductTypeAfter).isNotEmpty();
-        assertThat(oldProductTypeAfter.get().getName()).isEqualTo(PRODUCT_TYPE_NAME_2);
-        assertThat(oldProductTypeAfter.get().getDescription()).isEqualTo(PRODUCT_TYPE_DESCRIPTION_2);
-        assertAttributesAreEqual(oldProductTypeAfter.get().getAttributes(),
-            singletonList(ATTRIBUTE_DEFINITION_DRAFT_1));
-
+        assertThat(oldProductTypeAfter).hasValueSatisfying(productType -> {
+            assertThat(productType.getName()).isEqualTo(PRODUCT_TYPE_NAME_2);
+            assertThat(productType.getDescription()).isEqualTo(PRODUCT_TYPE_DESCRIPTION_2);
+            assertAttributesAreEqual(productType.getAttributes(), singletonList(ATTRIBUTE_DEFINITION_DRAFT_1));
+        });
     }
 
     @Test
@@ -149,10 +149,11 @@ public class ProductTypeSyncIT {
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_2);
 
         assertThat(oldProductTypeAfter).isNotEmpty();
-        assertThat(oldProductTypeAfter.get().getName()).isEqualTo(PRODUCT_TYPE_NAME_2);
-        assertThat(oldProductTypeAfter.get().getDescription()).isEqualTo(PRODUCT_TYPE_DESCRIPTION_2);
-        assertAttributesAreEqual(oldProductTypeAfter.get().getAttributes(),
-            singletonList(ATTRIBUTE_DEFINITION_DRAFT_1));
+        assertThat(oldProductTypeAfter).hasValueSatisfying(productType -> {
+            assertThat(productType.getName()).isEqualTo(PRODUCT_TYPE_NAME_2);
+            assertThat(productType.getDescription()).isEqualTo(PRODUCT_TYPE_DESCRIPTION_2);
+            assertAttributesAreEqual(productType.getAttributes(), singletonList(ATTRIBUTE_DEFINITION_DRAFT_1));
+        });
     }
 
     @Test
