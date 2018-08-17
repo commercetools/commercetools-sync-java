@@ -29,7 +29,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static java.util.Collections.emptyList;
 
 /**
- * This class syncs product type drafts with the given product types in the CTP project.
+ * This class syncs product type drafts with the corresponding product types in the CTP project.
  */
 public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncStatistics, ProductTypeSyncOptions> {
     private static final String CTP_PRODUCT_TYPE_FETCH_FAILED = "Failed to fetch existing product types of keys '%s'.";
