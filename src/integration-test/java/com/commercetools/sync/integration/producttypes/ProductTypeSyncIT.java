@@ -519,7 +519,7 @@ public class ProductTypeSyncIT {
             PRODUCT_TYPE_KEY_2,
             PRODUCT_TYPE_NAME_2,
             PRODUCT_TYPE_DESCRIPTION_2,
-            Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_1)
+            singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
         );
 
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
@@ -553,7 +553,7 @@ public class ProductTypeSyncIT {
             PRODUCT_TYPE_KEY_1,
             PRODUCT_TYPE_NAME_1,
             PRODUCT_TYPE_DESCRIPTION_1,
-            Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_1)
+            singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
         );
 
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
@@ -660,7 +660,7 @@ public class ProductTypeSyncIT {
                 "product_type_key_" + Integer.toString(i),
                 "product_type_name_" + Integer.toString(i),
                 "product_type_description_" + Integer.toString(i),
-                Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_1)
+                singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
             ))
             .collect(Collectors.toList());
 
