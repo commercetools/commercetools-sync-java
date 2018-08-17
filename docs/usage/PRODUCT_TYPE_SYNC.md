@@ -116,3 +116,4 @@ More examples of those utils for different fields can be found [here](/src/test/
 ## Caveats
 
 1. Product types are either created or updated. Currently the tool does not support product type deletion.
+2. Syncing product types with an attribute of type [NestedType](https://docs.commercetools.com/http-api-projects-productTypes.html#nestedtype) is not supported yet.
