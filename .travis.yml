@@ -37,9 +37,10 @@ cache:
 notifications:
   slack:
     template:
-    - '<https://github.com/commercetools/commercetools-sync-java|#%{repository}>#<%{build_url}|#%{build_number}>\n
-    (%{branch} - <%{compare_url}|#%{commit}> : %{author}): %{message}\n
-    Build duration:\n %{duration}.'
+    - '<https://github.com/commercetools/commercetools-sync-java|%{repository}>#<%{build_url}|#%{build_number}>'
+    - '(%{branch} - <%{compare_url}|%{commit}> : %{author}): %{message}'
+    - 'Build duration:'
+    - '%{duration}.'
     on_pull_requests: false
     on_success: change
     on_failure: always
