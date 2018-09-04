@@ -42,8 +42,7 @@ public final class ProductTypeUpdateLocalizedEnumActionUtils {
     public static List<UpdateAction<ProductType>> buildLocalizedEnumValuesUpdateActions(
         @Nonnull final String attributeDefinitionName,
         @Nonnull final List<LocalizedEnumValue> oldEnumValues,
-        @Nullable final List<LocalizedEnumValue> newEnumValues)
-        throws DuplicateKeyException {
+        @Nullable final List<LocalizedEnumValue> newEnumValues) {
 
         if (newEnumValues != null && !newEnumValues.isEmpty()) {
             return buildUpdateActions(
@@ -80,8 +79,7 @@ public final class ProductTypeUpdateLocalizedEnumActionUtils {
     private static List<UpdateAction<ProductType>> buildUpdateActions(
         @Nonnull final String attributeDefinitionName,
         @Nonnull final List<LocalizedEnumValue> oldEnumValues,
-        @Nonnull final List<LocalizedEnumValue> newEnumValues)
-        throws DuplicateKeyException {
+        @Nonnull final List<LocalizedEnumValue> newEnumValues) {
 
         final List<UpdateAction<ProductType>> removeEnumValuesUpdateActions = buildRemoveEnumValuesUpdateActions(
             attributeDefinitionName,
