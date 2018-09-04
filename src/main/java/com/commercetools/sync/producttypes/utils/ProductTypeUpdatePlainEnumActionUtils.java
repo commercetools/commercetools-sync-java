@@ -1,6 +1,5 @@
 package com.commercetools.sync.producttypes.utils;
 
-import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.producttypes.ProductType;
@@ -36,27 +35,17 @@ public final class ProductTypeUpdatePlainEnumActionUtils {
      * @param newEnumValues           the new list of plain enum values.
      * @return a list of plain enum values update actions if the list of plain enum values is not identical.
      *         Otherwise, if the plain enum values are identical, an empty list is returned.
-     * @throws DuplicateKeyException in case there are plain enum values with duplicate keys.
      */
     @Nonnull
     public static List<UpdateAction<ProductType>> buildEnumValuesUpdateActions(
         @Nonnull final String attributeDefinitionName,
         @Nonnull final List<EnumValue> oldEnumValues,
-        @Nullable final List<EnumValue> newEnumValues)
-        throws DuplicateKeyException {
+        @Nullable final List<EnumValue> newEnumValues) {
 
         if (newEnumValues != null && !newEnumValues.isEmpty()) {
-            return buildUpdateActions(
-                attributeDefinitionName,
-                oldEnumValues,
-                newEnumValues
-            );
+            return buildUpdateActions(attributeDefinitionName, oldEnumValues, newEnumValues);
         } else {
-            return buildRemoveEnumValuesUpdateActions(
-                attributeDefinitionName,
-                oldEnumValues,
-                newEnumValues
-            )
+            return buildRemoveEnumValuesUpdateActions(attributeDefinitionName, oldEnumValues, newEnumValues)
                 .map(Collections::singletonList)
                 .orElse(emptyList());
         }
@@ -66,7 +55,7 @@ public final class ProductTypeUpdatePlainEnumActionUtils {
     /**
      * Compares a list of old {@link EnumValue}s with a list of new {@link EnumValue}s for a given attribute
      * definition.
-     * The method serves as a generic implementation for plain enum values syncing. The method takes in functions
+     * The method serves as a implementation for plain enum values syncing. The method takes in functions
      * for building the required update actions (AddEnumValue, RemoveEnumValue, ChangeEnumValueOrder and 1-1
      * update actions on plain enum values (e.g. changeLabel) for the required resource.
      *
@@ -75,14 +64,12 @@ public final class ProductTypeUpdatePlainEnumActionUtils {
      * @param newEnumValues           the new list of plain enum values.
      * @return a list of plain enum values update actions if the list of plain enum values is not identical.
      *         Otherwise, if the plain enum values are identical, an empty list is returned.
-     * @throws DuplicateKeyException in case there are plain enum values with duplicate keys.
      */
     @Nonnull
     private static List<UpdateAction<ProductType>> buildUpdateActions(
         @Nonnull final String attributeDefinitionName,
         @Nonnull final List<EnumValue> oldEnumValues,
-        @Nonnull final List<EnumValue> newEnumValues)
-        throws DuplicateKeyException {
+        @Nonnull final List<EnumValue> newEnumValues) {
 
         final List<UpdateAction<ProductType>> removeEnumValuesUpdateActions = buildRemoveEnumValuesUpdateActions(
             attributeDefinitionName,
