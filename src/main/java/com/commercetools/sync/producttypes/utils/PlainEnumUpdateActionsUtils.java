@@ -31,13 +31,10 @@ public final class PlainEnumUpdateActionsUtils {
         @Nonnull final EnumValue oldEnumValue,
         @Nonnull final EnumValue newEnumValue) {
 
-        return Stream
-            .of(
-                buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue)
-            )
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(toList());
+        return Stream.of(buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue))
+                     .filter(Optional::isPresent)
+                     .map(Optional::get)
+                     .collect(toList());
     }
 
     /**

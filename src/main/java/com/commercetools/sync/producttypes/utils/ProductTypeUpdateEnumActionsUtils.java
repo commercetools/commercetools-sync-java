@@ -10,7 +10,6 @@ import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.Map;
 import java.util.List;
 import java.util.Optional;
@@ -21,27 +20,13 @@ import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
+import static java.util.Optional.of;
 import static java.util.stream.Collectors.toMap;
 
 public final class ProductTypeUpdateEnumActionsUtils {
-    /**
-     * Given a list of enum values, gets a map where the keys are the enum value key, and the values
-     * are the enum instances.
-     *
-     * @param enumValues the list of enum values.
-     * @param <T>        the enum type of the elements of the list.
-     * @return a map with the enum value key as a key of the map, and the
-     *         enum value as a value of the map.
-     */
-    @Nonnull
-    public static <T extends WithKey> Map<String, T> getEnumValuesKeyMap(@Nonnull final List<T> enumValues) {
-        return enumValues
-            .stream()
-            .collect(toMap(WithKey::getKey, enumValue -> enumValue));
-    }
-
     /**
      * Given a list of new {@link EnumValue}s, gets a map where the keys are the enum value key, and the values
      * are the enum instances.
@@ -51,12 +36,11 @@ public final class ProductTypeUpdateEnumActionsUtils {
      * @param <T>                     the enum type of the elements of the list.
      * @return a map with the enum value key as a key of the map, and the enum
      *         value as a value of the map.
-     * @throws DuplicateKeyException in case there are enum values with duplicate keys.
      */
     @Nonnull
     public static <T extends WithKey> Map<String, T> getEnumValuesKeyMapWithKeyValidation(
         @Nonnull final String attributeDefinitionName,
-        @Nonnull final List<T> enumValues) throws DuplicateKeyException {
+        @Nonnull final List<T> enumValues) {
 
         return enumValues.stream().collect(
             toMap(WithKey::getKey, enumValue -> enumValue,
@@ -90,7 +74,7 @@ public final class ProductTypeUpdateEnumActionsUtils {
 
         final Map<String, T> newEnumValuesKeyMap = getEnumValuesKeyMapWithKeyValidation(
             attributeDefinitionName,
-            Optional.ofNullable(newEnumValues).orElse(Collections.emptyList())
+            ofNullable(newEnumValues).orElse(emptyList())
         );
 
         final List<String> keysToRemove = oldEnumValues
@@ -99,11 +83,7 @@ public final class ProductTypeUpdateEnumActionsUtils {
             .filter(oldEnumValueKey -> !newEnumValuesKeyMap.containsKey(oldEnumValueKey))
             .collect(Collectors.toList());
 
-        if (!keysToRemove.isEmpty()) {
-            return ofNullable(RemoveEnumValues.of(attributeDefinitionName, keysToRemove));
-        } else {
-            return empty();
-        }
+        return keysToRemove.isEmpty() ? empty() : of(RemoveEnumValues.of(attributeDefinitionName, keysToRemove));
     }
 
     /**

@@ -36,4 +36,5 @@ public final class ProductTypeSyncOptions extends BaseSyncOptions<ProductType, P
             beforeCreateCallback
         );
     }
+
 }

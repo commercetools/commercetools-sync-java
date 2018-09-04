@@ -1,4 +1,4 @@
-package com.commercetools.sync.producttypes.utils.producttuypeactionutils;
+package com.commercetools.sync.producttypes.utils.producttypeactionutils;
 
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import io.sphere.sdk.commands.UpdateAction;

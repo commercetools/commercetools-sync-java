@@ -65,8 +65,6 @@ public class ProductTypeUpdateActionUtilsTest {
                 "description 2",
                 sameAttributeDefinitionDrafts
         );
-
-        // TODO For all product types the attribute definitions will change in future commits
     }
 
     @Test
