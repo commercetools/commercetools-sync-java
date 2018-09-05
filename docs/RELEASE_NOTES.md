@@ -33,7 +33,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-- [v1.0.0-M13 -  Jul 26, 2018](#v100-m13----jul-26-2018)
+- [v1.0.0-M13 -  Sept 5, 2018](#v100-m13----sept-5-2018)
 - [v1.0.0-M12 -  Jun 05, 2018](#v100-m12----jun-05-2018)
 - [v1.0.0-M11 -  Mar 08, 2018](#v100-m11----mar-08-2018)
 - [v1.0.0-M10 -  Feb 13, 2018](#v100-m10----feb-13-2018)
@@ -57,7 +57,7 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M14)
 -->
 
-### v1.0.0-M13 -  Sept 4, 2018
+### v1.0.0-M13 -  Sept 5, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M12...v1.0.0-M13) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M13/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M13)
