@@ -83,6 +83,7 @@
 - **Commons** - Bumped gradle to version [gradle-4.10](https://docs.gradle.org/4.10/release-notes.html).
 - **Commons** - Bumped `com.jfrog.bintray` to 1.8.4.
 - **Commons** - Bumped `mockito` to 2.21.0.
+- **Commons** - Bumped `assertj` to 3.11.1.
 - **Commons** - Bumped `org.ajoberstar.grgit` to 2.3.0.
 - **Commons** - Bumped `com.adarshr.test-logger` to 1.4.0.
 - **Commons** - Switched to Junit5 using both `junit-jupiter-engine` and `junit-vintage-engine` for backward compatibility.
