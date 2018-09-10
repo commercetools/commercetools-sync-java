@@ -6,3 +6,8 @@
 # gradle specific
 .gradle/
 build/
+
+# Benchmarks
+benchmarks.json
+
+out

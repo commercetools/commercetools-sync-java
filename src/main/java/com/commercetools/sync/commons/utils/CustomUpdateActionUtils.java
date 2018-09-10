@@ -178,10 +178,10 @@ public final class CustomUpdateActionUtils {
 
     /**
      * Compares a non null {@link CustomFields} to a non null {@link CustomFieldsDraft} and returns a
-     * {@link List&lt;UpdateAction&gt;} as a result. The keys are used to compare the custom types. The key of the old
-     * resource custom type is fetched from the caching mechanism of the {@link TypeService} instance supplied as
-     * a param to the method. The key of the new resource custom type is expected to be set on the type.
-     * If no update action is needed an empty {@link List&lt;UpdateAction&gt;} is returned.
+     * {@link List}&lt;{@link UpdateAction}&gt; as a result. The keys are used to compare the custom types.
+     * The key of the old resource custom type is fetched from the caching mechanism of the {@link TypeService} instance
+     * supplied as a param to the method. The key of the new resource custom type is expected to be set on the type.
+     * If no update action is needed an empty {@link List}&lt;{@link UpdateAction}&gt; is returned.
      *
      * <p>An update action will be added to the result list in the following cases:-
      * <ol>
@@ -261,8 +261,9 @@ public final class CustomUpdateActionUtils {
 
     /**
      * Compares two {@link Map} objects representing a map of the custom field name to the JSON representation
-     * of the value of the corresponding custom field. It returns a {@link List&lt;UpdateAction&gt;} as a result.
-     * If no update action is needed an empty {@link List&lt;UpdateAction&gt;} is returned.
+     * of the value of the corresponding custom field. It returns a {@link List}&lt;{@link UpdateAction}&gt; as a
+     * result.
+     * If no update action is needed an empty {@link List}&lt;{@link UpdateAction}&gt; is returned.
      *
      * <p>An update action will be added to the result list in the following cases:-
      * <ol>
@@ -315,8 +316,8 @@ public final class CustomUpdateActionUtils {
     /**
      * Traverses the new resource's custom fields map of JSON values {@link Map} to create
      * "setCustomField" update actions that represent either the modification of an existent custom field's
-     * value or the addition of a new one. It returns a {@link List&lt;UpdateAction&gt;} as a result.
-     * If no update action is needed an empty {@link List&lt;UpdateAction&gt;} is returned.
+     * value or the addition of a new one. It returns a {@link List}&lt;{@link UpdateAction}&gt; as a result.
+     * If no update action is needed an empty {@link List}&lt;{@link UpdateAction}&gt; is returned.
      *
      * @param <T>                    the type of the old {@link Resource} which has the custom fields.
      * @param <U>                    the type of the resource in which the update actions will be applied on.
@@ -352,8 +353,8 @@ public final class CustomUpdateActionUtils {
     /**
      * Traverses the old resource's custom fields map of JSON values {@link Map} to create update
      * "setCustomField" update actions that represent removal of an existent custom field from the new resource's custom
-     * fields. It returns a {@link List&lt;UpdateAction&gt;} as a result.
-     * If no update action is needed an empty {@link List&lt;UpdateAction&gt;} is returned.
+     * fields. It returns a {@link List}&lt;{@link UpdateAction}&gt; as a result.
+     * If no update action is needed an empty {@link List}&lt;{@link UpdateAction}&gt; is returned.
      *
      * @param <T>                    the type of the old {@link Resource} which has the custom fields.
      * @param <U>                    the type of the resource in which the update actions will be applied on.

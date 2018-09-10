@@ -185,8 +185,5 @@ More examples of those utils for different fields can be found [here](/src/integ
     is the recommended good balance for stability and performance for the sync process.
 4. The library will not sync attribute field types with `ReferenceType` and `SetType` field definitions, except 
 for Product references. (See more: [#87](https://github.com/commercetools/commercetools-sync-java/issues/87) [#160](https://github.com/commercetools/commercetools-sync-java/issues/87))
-5. Currently the library will not calculate price update actions and will always generate a SetPrices update action
-for every variant being synced. This could have an impact on the performance of the library. However, price syncing is planned to be 
-introduced soon. (See more: [#101](https://github.com/commercetools/commercetools-sync-java/issues/101)) 
 
 

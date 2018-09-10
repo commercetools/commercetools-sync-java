@@ -1,0 +1,53 @@
+{
+  "name": {
+    "en": "category name"
+  },
+  "slug": {
+    "en": "catSlug"
+  },
+  "assets": [
+    {
+      "id": "1",
+      "sources": [
+        {
+          "uri": "new uri"
+        },
+        {
+          "key": "new source"
+        }
+      ],
+      "name": {
+        "en": "asset new name"
+      },
+      "key": "a",
+      "tags": ["new tag"]
+    },
+    {
+      "id": "2",
+      "sources": [
+        {
+          "uri": "uri"
+        }
+      ],
+      "name": {
+        "en": "asset new name 2"
+      },
+      "key": "b",
+      "tags": []
+    },
+    {
+      "id": "3",
+      "sources": [
+        {
+          "uri": "uri",
+          "key": "newKey"
+        }
+      ],
+      "name": {
+        "en": "asset new name 3"
+      },
+      "key": "c",
+      "tags": []
+    }
+  ]
+}

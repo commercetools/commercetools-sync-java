@@ -9,7 +9,6 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Image;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
@@ -32,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftFromJson;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductFromJson;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.BLANK_NEW_MASTER_VARIANT_KEY;
@@ -40,7 +38,6 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.BLA
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.BLANK_OLD_MASTER_VARIANT_KEY;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddVariantUpdateActionFromDraft;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeMasterVariantUpdateAction;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildRemoveVariantUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -88,7 +85,7 @@ public class ProductUpdateActionUtilsTest {
 
         // check remove variants are the first in the list, but not the master variant
         assertThat(updateActions.subList(0, 2))
-            .containsExactlyInAnyOrder(RemoveVariant.of(2), RemoveVariant.of(3));
+            .containsExactlyInAnyOrder(RemoveVariant.ofVariantId(2, true), RemoveVariant.ofVariantId(3, true));
 
         // check add actions
         ProductVariantDraft draftMaster = productDraftNew.getMasterVariant();
@@ -144,7 +141,8 @@ public class ProductUpdateActionUtilsTest {
 
         // check remove variants are the first in the list, but not the master variant
         assertThat(updateActions.subList(0, 3))
-            .containsExactlyInAnyOrder(RemoveVariant.of(2), RemoveVariant.of(3), RemoveVariant.of(4));
+            .containsExactlyInAnyOrder(RemoveVariant.ofVariantId(2, true),
+                RemoveVariant.ofVariantId(3, true), RemoveVariant.ofVariantId(4, true));
 
         // change master variant must be always after variants are added/updated,
         // because it is set by SKU and we should be sure the master variant is already added and SKUs are actual.
@@ -206,43 +204,6 @@ public class ProductUpdateActionUtilsTest {
                 .contains(productOld.getKey())
                 .containsIgnoringCase(errorMessages[i]);
         }
-    }
-
-    @Test
-    public void buildRemoveVariantUpdateAction_removesMissedVariants() {
-        Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
-        ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
-
-        ProductData oldStaged = productOld.getMasterData().getStaged();
-        Map<String, ProductVariant> oldVariants =
-            collectionToMap(oldStaged.getAllVariants(), ProductVariant::getKey);
-
-        ArrayList<ProductVariantDraft> newVariants = new ArrayList<>(productDraftNew.getVariants());
-        newVariants.add(productDraftNew.getMasterVariant());
-
-        List<RemoveVariant> updateActions = buildRemoveVariantUpdateActions(oldVariants, newVariants);
-        assertThat(updateActions)
-            .containsExactlyInAnyOrder(RemoveVariant.of(1), RemoveVariant.of(2), RemoveVariant.of(3));
-        // removes master (1) and two other variants (2, 3)
-    }
-
-    @Test
-    public void buildRemoveVariantUpdateAction_WithNullVariants_removesOnlyMissedVariantsAndSKipsNullVariants() {
-        Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
-        ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
-
-        ProductData oldStaged = productOld.getMasterData().getStaged();
-        Map<String, ProductVariant> oldVariants =
-            collectionToMap(oldStaged.getAllVariants(), ProductVariant::getKey);
-
-        ArrayList<ProductVariantDraft> newVariants = new ArrayList<>(productDraftNew.getVariants());
-        newVariants.add(productDraftNew.getMasterVariant());
-        newVariants.add(null);
-
-        List<RemoveVariant> updateActions = buildRemoveVariantUpdateActions(oldVariants, newVariants);
-        assertThat(updateActions)
-            .containsExactlyInAnyOrder(RemoveVariant.of(1), RemoveVariant.of(2), RemoveVariant.of(3));
-        // removes master (1) and two other variants (2, 3)
     }
 
     @Test

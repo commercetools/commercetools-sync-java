@@ -16,18 +16,26 @@ import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.states.StateType;
+import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
+import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
+import static com.commercetools.sync.integration.commons.utils.ChannelITUtils.deleteChannels;
+import static com.commercetools.sync.integration.commons.utils.CustomerGroupITUtils.deleteCustomerGroups;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndCompose;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStates;
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteSupplyChannels;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 public final class ProductITUtils {
@@ -42,9 +50,10 @@ public final class ProductITUtils {
         deleteProductTypes(ctpClient);
         deleteAllCategories(ctpClient);
         deleteTypes(ctpClient);
-        deleteSupplyChannels(ctpClient);
+        deleteChannels(ctpClient);
         deleteStates(ctpClient, StateType.PRODUCT_STATE);
         deleteTaxCategories(ctpClient);
+        deleteCustomerGroups(ctpClient);
     }
 
     /**
@@ -113,33 +122,91 @@ public final class ProductITUtils {
     }
 
     /**
-     * Gets the supplied {@link ProductDraft} with the price channel reference attached on its variants' prices.
+     * Gets the supplied {@link ProductDraft} with the price reference attached on all its variants' prices.
+     *
+     * <p>TODO: GITHUB ISSUE#152
      *
      * @param productDraft     the product draft to attach the channel reference on its variants' prices.
      * @param channelReference the channel reference to attach on the product draft's variants' prices.
-     * @return the product draft with the supplied channel reference attached on the product draft's variants' prices.
+     * @return the product draft with the supplied references attached on the product draft's variants' prices.
      */
-    public static ProductDraft getDraftWithPriceChannelReferences(@Nonnull final ProductDraft productDraft,
-                                                                  @Nonnull final Reference<Channel> channelReference) {
+    public static ProductDraft getDraftWithPriceReferences(@Nonnull final ProductDraft productDraft,
+                                                           @Nullable final Reference<Channel> channelReference,
+                                                           @Nullable final CustomFieldsDraft customFieldsDraft) {
         final List<ProductVariantDraft> allVariants = productDraft
             .getVariants().stream().map(productVariant -> {
-                final List<PriceDraft> priceDraftsWithChannelReferences =
-                    productVariant.getPrices().stream()
-                                  .map(price -> PriceDraftBuilder.of(price).channel(channelReference).build())
-                                  .collect(toList());
+                final List<PriceDraft> priceDraftsWithChannelReferences = getPriceDraftsWithReferences(productVariant,
+                    channelReference, customFieldsDraft);
                 return ProductVariantDraftBuilder.of(productVariant)
                                                  .prices(priceDraftsWithChannelReferences)
                                                  .build();
             })
             .collect(toList());
-        final List<PriceDraft> masterVariantPriceDrafts = productDraft
-            .getMasterVariant().getPrices().stream().map(price -> PriceDraftBuilder.of(price)
-                                                                                   .channel(channelReference)
-                                                                                   .build()).collect(toList());
-        return ProductDraftBuilder.of(productDraft)
-                                  .masterVariant(ProductVariantDraftBuilder.of(productDraft.getMasterVariant())
-                                                                           .prices(masterVariantPriceDrafts).build())
-                                  .variants(allVariants)
-                                  .build();
+
+        return ofNullable(productDraft.getMasterVariant())
+            .map(masterVariant -> {
+                final List<PriceDraft> priceDraftsWithReferences = getPriceDraftsWithReferences(masterVariant,
+                    channelReference, customFieldsDraft);
+                final ProductVariantDraft masterVariantWithPriceDrafts =
+                    ProductVariantDraftBuilder.of(masterVariant)
+                                              .prices(priceDraftsWithReferences)
+                                              .build();
+
+                return ProductDraftBuilder.of(productDraft)
+                                          .masterVariant(masterVariantWithPriceDrafts)
+                                          .variants(allVariants)
+                                          .build();
+            })
+            .orElse(ProductDraftBuilder.of(productDraft).variants(allVariants).build());
+    }
+
+    /**
+     * Builds a list of {@link PriceDraft} elements which are identical to the supplied {@link ProductVariantDraft}'s
+     * list of prices and sets the channel and custom type references on the prices if they are not null.
+     *
+     * <p>TODO: GITHUB ISSUE#152
+     *
+     * @param productVariant the product variant to create an identical price list from.
+     * @param channelReference the channel reference to set on the resulting price drafts.
+     * @param customFieldsDraft the custom fields to set on the resulting price drafts.
+     * @return a list of {@link PriceDraft} elements which are identical to the supplied {@link ProductVariantDraft}'s
+     *         list of prices and sets the channel and custom type references on the prices if they are not null.
+     */
+    @Nonnull
+    private static List<PriceDraft> getPriceDraftsWithReferences(
+        @Nonnull final ProductVariantDraft productVariant,
+        @Nullable final Reference<Channel> channelReference,
+        @Nullable final CustomFieldsDraft customFieldsDraft) {
+
+        return productVariant.getPrices()
+                             .stream()
+                             .map(PriceDraftBuilder::of)
+                             .map(priceDraftBuilder -> ofNullable(channelReference).map(priceDraftBuilder::channel)
+                                                                                   .orElse(priceDraftBuilder))
+                             .map(priceDraftBuilder -> ofNullable(customFieldsDraft).map(priceDraftBuilder::custom)
+                                                                                    .orElse(priceDraftBuilder))
+                             .map(PriceDraftBuilder::build)
+                             .collect(toList());
+    }
+
+    /**
+     * This method blocks to create a price custom Type on the CTP project defined by the supplied
+     * {@code ctpClient}, with the supplied data.
+     * @param typeKey   the type key
+     * @param locale    the locale to be used for specifying the type name and field definitions names.
+     * @param name      the name of the custom type.
+     * @param ctpClient defines the CTP project to create the type on.
+     */
+    public static Type createPricesCustomType(
+        @Nonnull final String typeKey,
+        @Nonnull final Locale locale,
+        @Nonnull final String name,
+        @Nonnull final SphereClient ctpClient) {
+
+        return createTypeIfNotAlreadyExisting(
+            typeKey, locale, name, ResourceTypeIdsSetBuilder.of().addPrices(), ctpClient);
+    }
+
+    private ProductITUtils() {
     }
 }

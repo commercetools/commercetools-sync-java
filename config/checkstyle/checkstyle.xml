@@ -43,7 +43,6 @@
             <property name="ignorePattern"
                       value="^package.*|^import.*|a href|href|http://|https://|ftp://" />
         </module>
-        <module name="AvoidStarImport" />
         <module name="UnusedImports"/>
         <module name="OneTopLevelClass" />
         <module name="NoLineWrap" />
@@ -53,9 +52,6 @@
                       value="LITERAL_TRY, LITERAL_FINALLY, LITERAL_IF, LITERAL_ELSE, LITERAL_SWITCH" />
         </module>
         <module name="NeedBraces" />
-        <module name="LeftCurly">
-            <property name="maxLineLength" value="120" />
-        </module>
         <module name="RightCurly" />
         <module name="RightCurly">
             <property name="option" value="alone" />
@@ -71,6 +67,12 @@
                      value="WhitespaceAround: ''{0}'' is not followed by whitespace. Empty blocks may only be represented as '{}' when not part of a multi-block statement (4.1.3)" />
             <message key="ws.notPreceded"
                      value="WhitespaceAround: ''{0}'' is not preceded with whitespace." />
+        </module>
+        <module name="AvoidStarImport">
+            <property name="excludes" value="com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures,
+            com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceFixtures"/>
+            <property name="allowClassImports" value="false"/>
+            <property name="allowStaticMemberImports" value="false"/>
         </module>
         <module name="OneStatementPerLine" />
         <module name="MultipleVariableDeclarations" />
@@ -174,10 +176,6 @@
         </module>
         <module name="NonEmptyAtclauseDescription" />
         <module name="JavadocTagContinuationIndentation" />
-        <module name="SummaryJavadoc">
-            <property name="forbiddenSummaryFragments"
-                      value="^@return the *|^This method returns |^A [{]@code [a-zA-Z0-9]+[}]( is a )" />
-        </module>
         <module name="JavadocParagraph" />
         <module name="AtclauseOrder">
             <property name="tagOrder" value="@param, @return, @throws, @deprecated" />

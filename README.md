@@ -2,9 +2,9 @@
 # commercetools sync
 [![Build Status](https://travis-ci.org/commercetools/commercetools-sync-java.svg?branch=master)](https://travis-ci.org/commercetools/commercetools-sync-java)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
-[![Benchmarks M10](https://img.shields.io/badge/Benchmarks-M10-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
+[![Benchmarks M13](https://img.shields.io/badge/Benchmarks-M13-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
 [![Download](https://api.bintray.com/packages/commercetools/maven/commercetools-sync-java/images/download.svg) ](https://bintray.com/commercetools/maven/commercetools-sync-java/_latestVersion)
-[![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M10/)
+[![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M13/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
 Java API which exposes utilities for building update actions and automatic syncing of CTP data from external sources 
@@ -22,7 +22,7 @@ Java API which exposes utilities for building update actions and automatic synci
     - [Ivy](#ivy)
 - [Roadmap](#roadmap)
 - [Release Notes](/docs/RELEASE_NOTES.md)
-- [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M10/)
+- [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M13/)
 - [Benchmarks](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -43,6 +43,7 @@ Currently this library supports synchronising
  - [Categories](/docs/usage/CATEGORY_SYNC.md)
  - [Products](/docs/usage/PRODUCT_SYNC.md) (_Beta_: Not recommended for production use yet.)
  - [InventoryEntries](/docs/usage/INVENTORY_SYNC.md) (_Beta_: Not recommended for production use yet.)
+ - [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md) (_Beta_: Not recommended for production use yet.)
 
 ### Prerequisites
  
@@ -58,20 +59,20 @@ most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>v1.0.0-M10</version>
+  <version>v1.0.0-M13</version>
 </dependency>
 ````
 #### Gradle
 ````groovy
-implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M10'
+implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M13'
 ````
 #### SBT 
 ````
-libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "v1.0.0-M10"
+libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "v1.0.0-M13"
 ````
 #### Ivy 
 ````xml
-<dependency org="com.commercetools" name="commercetools-sync-java" rev="v1.0.0-M10"/>
+<dependency org="com.commercetools" name="commercetools-sync-java" rev="v1.0.0-M13"/>
 ````
 
 

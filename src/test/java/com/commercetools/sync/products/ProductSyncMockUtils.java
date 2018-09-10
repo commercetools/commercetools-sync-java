@@ -1,5 +1,6 @@
 package com.commercetools.sync.products;
 
+import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
@@ -9,6 +10,8 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.customergroups.CustomerGroup;
+import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.CategoryOrderHints;
@@ -24,6 +27,8 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
+import io.sphere.sdk.types.CustomFields;
+import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -39,6 +44,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -234,6 +241,37 @@ public class ProductSyncMockUtils {
     }
 
     /**
+     * Creates a mock {@link CustomerGroup} with the supplied {@code id} and {@code key}.
+     * @param id the id of the created mock {@link CustomerGroup}.
+     * @param key the key of the created mock {@link CustomerGroup}.
+     * @return a mock customerGroup with the supplied id and key.
+     */
+    public static CustomerGroup getMockCustomerGroup(final String id, final String key) {
+        final CustomerGroup customerGroup = mock(CustomerGroup.class);
+        when(customerGroup.getId()).thenReturn(id);
+        when(customerGroup.getKey()).thenReturn(key);
+        return customerGroup;
+    }
+
+    /**
+     * Creates a mock {@link CustomerGroupService} that returns a completed {@link CompletableFuture} containing an
+     * {@link Optional} containing the id of the supplied value whenever the following method is called on the service:
+     * <ul>
+     * <li>{@link CustomerGroupService#fetchCachedCustomerGroupId(String)}</li>
+     * </ul>
+     *
+     * @return the created mock of the {@link CustomerGroupService}.
+     */
+    public static CustomerGroupService getMockCustomerGroupService(@Nonnull final CustomerGroup customerGroup) {
+        final String customerGroupId = customerGroup.getId();
+
+        final CustomerGroupService customerGroupService = mock(CustomerGroupService.class);
+        when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
+            .thenReturn(completedFuture(Optional.of(customerGroupId)));
+        return customerGroupService;
+    }
+
+    /**
      * Creates a mock {@link ProductService} that returns a completed {@link CompletableFuture} containing an
      * {@link Optional} containing the id of the supplied value whenever the following method is called on the service:
      * <ul>
@@ -250,15 +288,31 @@ public class ProductSyncMockUtils {
     }
 
     /**
-     * Creates a mock {@link Price} with the supplied {@link Channel} {@link Reference}.
+     * Creates a mock {@link Price} with the supplied {@link Channel} {@link Reference} and custom {@link Type}
+     * {@link Reference}.
+     *
+     * <p>If the supplied {@code customTypeReference} is {@code null}, no custom fields are stubbed on the
+     * resulting price mock.
+     *
      * @param channelReference the channel reference to attach on the mock {@link Price}.
-     * @return a mock price with the supplied channel reference.
+     * @param customTypeReference the custom type reference to attach on the mock {@link Price}.
+     * @return a mock price with the supplied references.
      */
     @Nonnull
-    public static Price getPriceMockWithChannelReference(@Nullable final Reference<Channel> channelReference) {
+    public static Price getPriceMockWithReferences(@Nullable final Reference<Channel> channelReference,
+                                                   @Nullable final Reference<Type> customTypeReference) {
         final Price price = mock(Price.class);
         when(price.getChannel()).thenReturn(channelReference);
-        return price;
+
+        return ofNullable(customTypeReference)
+            .map(typeReference -> {
+                // If type reference is supplied, mock Custom with expanded type reference.
+                final CustomFields mockCustomFields = mock(CustomFields.class);
+                when(mockCustomFields.getType()).thenReturn(customTypeReference);
+                when(price.getCustom()).thenReturn(mockCustomFields);
+                return price;
+            })
+            .orElse(price);
     }
 
     /**
@@ -267,9 +321,24 @@ public class ProductSyncMockUtils {
      * @return a mock product variant with the supplied prices.
      */
     @Nonnull
-    public static ProductVariant getProductVariantMockWithPrices(@Nonnull final List<Price> prices) {
+    public static ProductVariant getProductVariantMock(@Nonnull final List<Price> prices) {
         final ProductVariant productVariant = mock(ProductVariant.class);
         when(productVariant.getPrices()).thenReturn(prices);
+        return productVariant;
+    }
+
+    /**
+     * Creates a mock {@link ProductVariant} with the supplied {@link Price} and {@link Asset} {@link List}.
+     * @param prices the prices to attach on the mock {@link ProductVariant}.
+     * @param assets the assets to attach on the mock {@link ProductVariant}.
+     * @return a mock product variant with the supplied prices and assets.
+     */
+    @Nonnull
+    public static ProductVariant getProductVariantMock(@Nonnull final List<Price> prices,
+                                                       @Nonnull final List<Asset> assets) {
+        final ProductVariant productVariant = mock(ProductVariant.class);
+        when(productVariant.getPrices()).thenReturn(prices);
+        when(productVariant.getAssets()).thenReturn(assets);
         return productVariant;
     }
 
