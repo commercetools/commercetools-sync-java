@@ -107,7 +107,7 @@ a callback that is called whenever an event occurs during the sync process that 
 
 - `beforeUpdateCallback`
 a filter function which can be applied on a generated list of update actions. It allows the user to intercept inventory 
-entry update and modify (add/remove) update actions just before they are send to CTP API.
+entry updates and modify (add/remove) update actions just before they are send to CTP API.
 
 - `beforeCreateCallback`
 a filter function which can be applied on a inventoryEntry draft before a request to create it on CTP is issued. It allows the 
@@ -120,7 +120,7 @@ a flag, if set to `true`, enables the user to use keys with UUID format for refe
 a number that could be used to set the batch size with which inventory entries are fetched and processed with,
 as inventory entries are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
 `batchSize` inventory entries from the input list, then fetches the corresponding inventory entries from the target CTP project
-in a single request. Playing with this option can slightly improve or reduce processing speed. (The default values is `150`).
+in a single request. Playing with this option can slightly improve or reduce processing speed. (The default value is `150`).
 
 <!-- TODO Update above options with links to tests. Tests should be written when inventory sync could actually use them (when custom update actions would use them).  -->
 
