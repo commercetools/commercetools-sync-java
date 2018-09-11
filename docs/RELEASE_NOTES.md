@@ -160,7 +160,6 @@ for secondary resources (e.g. assets and prices). [#3](https://github.com/commer
 **Bug Fixes** (1)
 - **Build Tools** - Fixed bug where jar and Codecov were triggered on benchmark stages of the build when they should 
 only be triggered on the full build. [#249](https://github.com/commercetools/commercetools-sync-java/issues/249)
--->
 
 
 ### v1.0.0-M10 -  Feb 13, 2018
