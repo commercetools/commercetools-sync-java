@@ -1,21 +1,25 @@
 package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.internals.helpers.PriceCompositeId;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.helpers.ProductAssetActionFactory;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.products.Image;
+import io.sphere.sdk.products.Price;
+import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
+import io.sphere.sdk.products.commands.updateactions.AddPrice;
 import io.sphere.sdk.products.commands.updateactions.MoveImageToPosition;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
-import io.sphere.sdk.products.commands.updateactions.SetPrices;
+import io.sphere.sdk.products.commands.updateactions.RemovePrice;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
 
 import javax.annotation.Nonnull;
@@ -28,10 +32,14 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.AssetsUpdateActionUtils.buildAssetsUpdateActions;
+import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.internals.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
+import static com.commercetools.sync.internals.utils.UpdateActionsSortUtils.sortPriceActions;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
+import static com.commercetools.sync.products.utils.ProductVariantPriceUpdateActionUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -43,6 +51,7 @@ public final class ProductVariantUpdateActionUtils {
         + "setAttribute/setAttributeInAllVariants update action for the attribute with the name '%s' in the "
         + "ProductVariantDraft with key '%s' on the product with key '%s'. Reason: %s";
     private static final String NULL_PRODUCT_VARIANT_ATTRIBUTE = "AttributeDraft is null.";
+    private static final String NULL_PRODUCT_VARIANT_PRICE = "New price is null.";
 
     /**
      * Compares the attributes of a {@link ProductVariantDraft} and a {@link ProductVariant} to build either
@@ -62,7 +71,7 @@ public final class ProductVariantUpdateActionUtils {
      * @param syncOptions        the sync options wrapper which contains options related to the sync process supplied by
      *                           the user. For example, custom callbacks to call in case of warnings or errors occurring
      *                           on the build update action process. And other options (See {@link ProductSyncOptions}
-     *                           for more info.
+     *                           for more info).
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
      *          needed.
      */
@@ -117,24 +126,46 @@ public final class ProductVariantUpdateActionUtils {
      * {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of prices, then no update action
      * is needed and hence an empty {@link List} is returned.
      *
-     * <p>TODO: NOTE: Right now it always builds SetPrices UpdateAction, comparison should be
-     * TODO: calculated GITHUB ISSUE#101.
-     *
-     * <p>TODO: UNIT TESTS
-     *
      * @param oldProductVariant the {@link ProductVariant} which should be updated.
      * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of prices.
+     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by
+     *                    the user. For example, custom callbacks to call in case of warnings or errors occurring
+     *                    on the build update action process. And other options (See {@link ProductSyncOptions}
+     *                    for more info).
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
      *         needed.
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantPricesUpdateActions(
         @Nonnull final ProductVariant oldProductVariant,
-        @Nonnull final ProductVariantDraft newProductVariant) {
-        //TODO: Right now it always builds SetPrices UpdateAction, comparison should be calculated GITHUB ISSUE#101.
-        final SetPrices setPricesUpdateAction = SetPrices.of(oldProductVariant.getId(),
-            emptyIfNull(newProductVariant.getPrices()));
-        return singletonList(setPricesUpdateAction);
+        @Nonnull final ProductVariantDraft newProductVariant,
+        @Nonnull final ProductSyncOptions syncOptions) {
+
+        final List<Price> oldPrices = oldProductVariant.getPrices();
+        final List<PriceDraft> newPrices = newProductVariant.getPrices();
+
+        final List<UpdateAction<Product>> updateActions = buildRemoveUpdateActions(oldPrices, newPrices,
+            PriceCompositeId::of, PriceCompositeId::of, price -> RemovePrice.of(price, true));
+
+        final Integer variantId = oldProductVariant.getId();
+        final Map<PriceCompositeId, Price> oldPricesMap = collectionToMap(oldPrices, PriceCompositeId::of);
+
+        emptyIfNull(newPrices).forEach(newPrice -> {
+            if (newPrice == null) {
+                syncOptions.applyErrorCallback(format("Failed to build prices update actions for one price on the "
+                        + "variant with id '%d' and key '%s'. Reason: %s", variantId, oldProductVariant.getKey(),
+                    NULL_PRODUCT_VARIANT_PRICE));
+            } else {
+                final PriceCompositeId newPriceCompositeId = PriceCompositeId.of(newPrice);
+                final Price matchingOldPrice = oldPricesMap.get(newPriceCompositeId);
+                final List<UpdateAction<Product>> updateOrAddPrice = ofNullable(matchingOldPrice)
+                    .map(oldPrice -> buildActions(variantId, oldPrice, newPrice, syncOptions))
+                    .orElseGet(() -> singletonList(AddPrice.ofVariantId(variantId, newPrice, true)));
+                updateActions.addAll(updateOrAddPrice);
+            }
+        });
+
+        return sortPriceActions(updateActions);
     }
 
     /**

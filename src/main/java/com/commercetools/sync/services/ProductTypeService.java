@@ -1,11 +1,15 @@
 package com.commercetools.sync.services;
 
 import com.commercetools.sync.products.AttributeMetaData;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.producttypes.ProductType;
+import io.sphere.sdk.producttypes.ProductTypeDraft;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 public interface ProductTypeService {
@@ -49,5 +53,36 @@ public interface ProductTypeService {
      */
     @Nonnull
     CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchCachedProductAttributeMetaDataMap(
-        @Nonnull final String productTypeId);
+            @Nonnull final String productTypeId);
+
+    /**
+     * Queries existing {@link ProductType}'s against set of keys.
+     *
+     * @param keys {@link List} of sku values, used in search predicate
+     * @return {@link List} of matching product types or empty list when there was no product type of key matching to
+     * {@code keys}.
+     */
+    @Nonnull
+    CompletionStage<List<ProductType>> fetchMatchingProductsTypesByKeys(@Nonnull final Set<String> keys);
+
+
+    /**
+     * Creates new product type from {@code productTypeDraft}.
+     *
+     * @param productTypeDraft draft with data for new product type
+     * @return {@link CompletionStage} with created {@link ProductType} or an exception
+     */
+    @Nonnull
+    CompletionStage<ProductType> createProductType(@Nonnull final ProductTypeDraft productTypeDraft);
+
+    /**
+     * Updates existing product type with {@code updateActions}.
+     *
+     * @param productType   product type that should be updated
+     * @param updateActions {@link List} of actions that should be applied to {@code productType}
+     * @return {@link CompletionStage} with updated {@link ProductType} or an exception
+     */
+    @Nonnull
+    CompletionStage<ProductType> updateProductType(@Nonnull final ProductType productType,
+                                                   @Nonnull final List<UpdateAction<ProductType>> updateActions);
 }

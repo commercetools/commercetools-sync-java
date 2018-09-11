@@ -1,4 +1,4 @@
-package com.commercetools.sync.integration.services;
+package com.commercetools.sync.integration.services.impl;
 
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -20,7 +20,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductTypeServiceIT {
+public class ProductTypeServiceImplIT {
     private ProductTypeService productTypeService;
     private static final String OLD_PRODUCT_TYPE_KEY = "old_product_type_key";
     private static final String OLD_PRODUCT_TYPE_NAME = "old_product_type_name";

@@ -2,20 +2,16 @@ package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.InventoryService;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.CustomFieldsDraftBuilder;
-import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -43,6 +39,7 @@ public class InventorySyncMockUtils {
         when(channel.getId()).thenReturn(id);
         when(channel.getKey()).thenReturn(key);
         when(channel.getRoles()).thenReturn(singleton(ChannelRole.INVENTORY_SUPPLY));
+        when(channel.toReference()).thenReturn(Channel.referenceOfId(id));
         return channel;
     }
 
@@ -74,33 +71,7 @@ public class InventorySyncMockUtils {
         return inventoryEntry;
     }
 
-    /**
-     * Returns mock {@link CustomFields} instance. Executing {@link CustomFields#getType()} on returned instance will
-     * return {@link Reference} of given {@code typeId} with mock {@link Type} instance of {@code typeId} and {@code
-     * typeKey} (getters of key and id would return given values). Executing {@link CustomFields#getFieldsJsonMap()} on
-     * returned instance will return {@link Map} populated with given {@code fieldName} and {@code fieldValue}
-     *
-     * @param typeId custom type id
-     * @param fieldName custom field name
-     * @param fieldValue custom field value
-     * @return mock instance of {@link CustomFields}
-     */
-    public static CustomFields getMockCustomFields(final String typeId, final String fieldName,
-                                                   final Object fieldValue) {
-        final CustomFields customFields = mock(CustomFields.class);
-        final Type type = mock(Type.class);
-        when(type.getId()).thenReturn(typeId);
-        when(customFields.getFieldsJsonMap()).thenReturn(mockFields(fieldName, fieldValue));
-        when(customFields.getType()).thenReturn(Type.referenceOfId(typeId).filled(type));
-        return customFields;
-    }
 
-    private static Map<String, JsonNode> mockFields(final String name, final Object obj) {
-        return CustomFieldsDraftBuilder.ofTypeKey("123")
-                .addObject(name, obj)
-                .build()
-                .getFields();
-    }
 
     /**
      * Returns mock instance of {@link InventoryService}. Executing any method with any parameter on this instance
