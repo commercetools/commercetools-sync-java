@@ -14,6 +14,7 @@ public enum ActionGroup {
     STATE,
     ATTRIBUTES,
     PRICES,
+    ASSETS,
     IMAGES,
     SKU
 }

@@ -48,12 +48,14 @@
         "sku": "3065833",
         "prices": [
           {
+            "id": "4dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f",
             "value": {
               "currencyCode": "EUR",
               "centAmount": 108
             }
           },
           {
+            "id": "4dfc8bea-84f2-45bc-b3c2-r9e7wv99vfb",
             "value": {
               "currencyCode": "EGP",
               "centAmount": 10

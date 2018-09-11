@@ -7,4 +7,12 @@ public class BuildUpdateActionException extends Exception {
     public BuildUpdateActionException(@Nonnull final String message) {
         super(message);
     }
+
+    public BuildUpdateActionException(@Nonnull final Throwable cause) {
+        super(cause);
+    }
+
+    public BuildUpdateActionException(@Nonnull final String message, @Nonnull final Throwable cause) {
+        super(message, cause);
+    }
 }

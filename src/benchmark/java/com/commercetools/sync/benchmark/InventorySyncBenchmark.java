@@ -9,7 +9,6 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.queries.QueryPredicate;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -32,10 +31,10 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.calculateDiff;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.integration.commons.utils.ChannelITUtils.deleteChannels;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteInventoryEntries;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteSupplyChannels;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,14 +45,14 @@ public class InventorySyncBenchmark {
     public void setup() {
         deleteInventoryEntries(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
-        deleteSupplyChannels(CTP_TARGET_CLIENT);
+        deleteChannels(CTP_TARGET_CLIENT);
     }
 
     @AfterClass
     public static void tearDown() {
         deleteInventoryEntries(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
-        deleteSupplyChannels(CTP_TARGET_CLIENT);
+        deleteChannels(CTP_TARGET_CLIENT);
     }
 
     @Test
@@ -77,16 +76,6 @@ public class InventorySyncBenchmark {
         assertThat(diff).withFailMessage(format("Diff of benchmark '%e' is longer than expected"
                             + " threshold of '%d'.", diff, THRESHOLD))
                         .isLessThanOrEqualTo(THRESHOLD);
-
-        // Assert actual state of CTP project (number of updated inventories)
-        final CompletableFuture<Integer> totalUpdatedInventoriesFuture =
-            CTP_TARGET_CLIENT.execute(InventoryEntryQuery.of().withPredicates(QueryPredicate.of("version = \"2\"")))
-                             .thenApply(PagedQueryResult::getTotal)
-                             .thenApply(Long::intValue)
-                             .toCompletableFuture();
-
-        executeBlocking(totalUpdatedInventoriesFuture);
-        assertThat(totalUpdatedInventoriesFuture).isCompletedWithValue(0);
 
         // Assert actual state of CTP project (total number of existing inventories)
         final CompletableFuture<Integer> totalNumberOfInventories =

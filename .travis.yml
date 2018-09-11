@@ -22,7 +22,7 @@ jobs:
       if: tag IS present
       script: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
     - stage: full build
-      script: ./gradlew clean setLibraryVersion build
+      script: ./gradlew clean dependencyUpdates setLibraryVersion build
       after_success:
       - bash <(curl -s https://codecov.io/bash)
       - ./travis-publish.sh || travis_terminate 1
@@ -35,15 +35,14 @@ cache:
   - $HOME/.gradle/caches/
   - $HOME/.gradle/wrapper/
 notifications:
-  hipchat:
+  slack:
     template:
-    - '<b><a href="https://github.com/commercetools/commercetools-sync-java">%{repository}</a></b>
-    #<a href="%{build_url}">%{build_number}</a>
-    <br>(%{branch} - <a href="%{compare_url}">%{commit}</a> : %{author}): <b>%{message}</b>
-      <br><b>Build duration:</b> %{duration}.'
-    format: html
+    - '<https://github.com/commercetools/commercetools-sync-java|%{repository}>#<%{build_url}|%{build_number}>'
+    - '(%{branch} - <%{compare_url}|%{commit}> : %{author}): %{message}'
+    - 'Build duration:'
+    - '%{duration}.'
     on_pull_requests: false
     on_success: change
     on_failure: always
     rooms:
-      secure: GamqCH6vg3VJJ8XypH+QvDtlfK8H3z+jhNswp4G1l4TLkkDIBwEC5Iu8GwQm3TjrgrNYGGNAtgcFrDNOJzDdQtsrYv7NyvJnHXzznX4kzjrIa8o+NmYpxw07s7g/2kzcRTzvOC7KvGz++a0BDMLa2Di/0UVM/Q12BFli0JuDxoVEzcD7ubqcv2MjEIjJcDRf7wrx4QPMcTZIvPPBC6Z/h7lU0WnQHeEj5qb3Uim4Z0qdzRgjxSM++37cCsiFxcV85ff0e9BmTeV2sdmS/GmCTY8bJ/FwH1ZuLUhbvwlOikHMJqvVxkeqeDto0p/sECn0tMkdS3dwx/T8L9G4YUHlL4N46khnNLZYISqUk36ncW+lGxe5sQU+kRL9Yv0Lk5BIB3vw00XMpIoKz+lsN7mgkTCyfeMM5+jgFk7gEnR/PtVulO2XIj1xwskip+EnyEZR7G+qzeGGPSMTJs2LzoEWYKwCh2aAQjYOLX4H3Gt6mhHkB4qIR51m2PINQYhQE/WXKGnJ4c+wOHavRo7foSYyWnB7CnyNkZZofqYqlTCQkIumkJ3vTGQmu+rkRSJ+NXoY6h1w0Bzz6GktCVofWd3Yg6h3eZ3Ge2HV73VCsyuPn72BZ4d+8/zpm6cGvLEJ6UnSbzDUrVHybaaAXaJcWYvKL6yVsWjXRR93EVKEp4ajdMs=
+      secure: diL83Fqrx+Eyxd7ViNbmxHH+TO8BT1jqdVqcAVAJxRlr4ka+dG3CLaGvgK26/0cb/mj576eWIxmUFhOct+x4WziVl9EFxIP1aEQUxSMIBE9x/G3tFEfNlwDr9RlxqBbTKyuk4gQ6aZtS6eIqa7Zuz3uRfdQkUXTYe3CTR2Y3jTGBdJpwaZkGj1goGVkQb2YY1IT1YR6c5Mh7ac1g+xA3ES8fn6jEHwAQCjw+1Heo0A4PMLVFDZ+ySKS7U1trvpu+4o1uwv9Xf30czsSgcFa64fUw7rP8SrzaI68wvy4aqx1gPH3BdQdHY0uduywT8pUAaE+ZoZ6Mn80J/IuYQlsr7zrFjdAPHEOiKFFJrT+eEtMv/f6iQ6rsBhzwjca+Ah3SVHbrzYGNdWSwrpbN+uPbyVuXMjym+q/i6lvDpzgl1rEov4RJGFGsLZs06KqJ2Ql47qcMOB8zg4lGnqg6A7i0GkvF5Ftc//0BliMVvO0zpZW6wDVromNIqJmIKLgHZS9fb4NNwHiEHwA17zyrOucvCLXYgvSR+mcluBDfluRbQbyPUdevSkI11Uevfj5WWdfOBHGqVOq5kIwsG0pHKGcTfqtDYPaoP4TorKLEIFm8Ce8Ame77A8f/BB7gZaNuttPU937mXRLqTQXheHVwtYra9uKAmT3+NzhisMyTgS4IyOQ=

@@ -7,6 +7,7 @@ import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
@@ -14,6 +15,7 @@ import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
+import com.commercetools.sync.services.impl.CustomerGroupServiceImpl;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import com.commercetools.sync.services.impl.StateServiceImpl;
@@ -76,6 +78,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 new CategoryServiceImpl(CategorySyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
                 new TypeServiceImpl(productSyncOptions),
                 new ChannelServiceImpl(productSyncOptions),
+                new CustomerGroupServiceImpl(productSyncOptions),
                 new TaxCategoryServiceImpl(productSyncOptions),
                 new StateServiceImpl(productSyncOptions, PRODUCT_STATE));
     }
@@ -83,12 +86,14 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService,
                 @Nonnull final ProductTypeService productTypeService, @Nonnull final CategoryService categoryService,
                 @Nonnull final TypeService typeService, @Nonnull final ChannelService channelService,
+                @Nonnull final CustomerGroupService customerGroupService,
                 @Nonnull final TaxCategoryService taxCategoryService, @Nonnull final StateService stateService) {
         super(new ProductSyncStatistics(), productSyncOptions);
         this.productService = productService;
         this.productTypeService = productTypeService;
         this.productReferenceResolver = new ProductReferenceResolver(productSyncOptions, productTypeService,
-            categoryService, typeService, channelService, taxCategoryService, stateService, productService);
+            categoryService, typeService, channelService, customerGroupService, taxCategoryService, stateService,
+            productService);
     }
 
     @Override

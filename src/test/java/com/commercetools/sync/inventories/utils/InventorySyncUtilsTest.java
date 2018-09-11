@@ -1,6 +1,7 @@
 package com.commercetools.sync.inventories.utils;
 
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -24,7 +25,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockCustomFields;
+import static com.commercetools.sync.commons.MockUtils.getMockCustomFields;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,8 +53,8 @@ public class InventorySyncUtilsTest {
     public void setup() {
         final Channel channel = getMockSupplyChannel("111", "key1");
         final Reference<Channel> reference = Channel.referenceOfId("111").filled(channel);
-        final CustomFields customFields =
-            getMockCustomFields(CUSTOM_TYPE_ID, CUSTOM_FIELD_1_NAME, CUSTOM_FIELD_1_VALUE);
+        final CustomFields customFields = getMockCustomFields(CUSTOM_TYPE_ID, CUSTOM_FIELD_1_NAME,
+            JsonNodeFactory.instance.textNode(CUSTOM_FIELD_1_VALUE));
 
         inventoryEntry = getMockInventoryEntry("123", 10L, 10, DATE_1, reference, null);
         inventoryEntryWithCustomField1 = getMockInventoryEntry("123", 10L, 10, DATE_1, reference, customFields);

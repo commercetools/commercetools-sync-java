@@ -38,7 +38,7 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.d
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDraftsWithPrefix;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsJsons;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.syncBatches;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
@@ -333,7 +333,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "parent"),
                 LocalizedString.of(Locale.ENGLISH, "parent"))
             .key("parent")
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
         final Category parentCreated = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(parentDraft))
                                                         .toCompletableFuture().join();
@@ -343,7 +343,7 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "child"))
             .key("child")
             .parent(parentCreated.toResourceIdentifier())
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(childDraft)).toCompletableFuture().join();
         //------------------------------------------------------------------------------------------------------------
@@ -353,7 +353,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "new-parent"),
                 LocalizedString.of(Locale.ENGLISH, "new-parent"))
             .key("new-parent")
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
         final Category sourceParentCreated = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(sourceParentDraft))
                                                         .toCompletableFuture().join();
@@ -363,7 +363,7 @@ public class CategorySyncIT {
                 LocalizedString.of(Locale.ENGLISH, "child"))
             .key("child")
             .parent(sourceParentCreated.toResourceIdentifier())
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, getCustomFieldsJsons()))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
         CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(sourceChildDraft)).toCompletableFuture().join();
         //---------------------------------------------------------------

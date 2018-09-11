@@ -5,9 +5,14 @@ import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.models.Asset;
+import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -37,6 +42,33 @@ public class MockUtils {
         customFieldsJsons
             .put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
         return CustomFieldsDraft.ofTypeIdAndJson("StepCategoryTypeId", customFieldsJsons);
+    }
+
+    /**
+     * Returns mock {@link CustomFields} instance. Executing {@link CustomFields#getType()} on returned instance will
+     * return {@link Reference} of given {@code typeId} with mock {@link Type} instance of {@code typeId} and {@code
+     * typeKey} (getters of key and id would return given values). Executing {@link CustomFields#getFieldsJsonMap()} on
+     * returned instance will return {@link Map} populated with given {@code fieldName} and {@code fieldValue}
+     *
+     * @param typeId custom type id
+     * @param fieldName custom field name
+     * @param fieldValue custom field value
+     * @return mock instance of {@link CustomFields}
+     */
+    public static CustomFields getMockCustomFields(final String typeId, final String fieldName,
+                                                   final JsonNode fieldValue) {
+        final CustomFields customFields = mock(CustomFields.class);
+        final Type type = mock(Type.class);
+        when(type.getId()).thenReturn(typeId);
+        when(customFields.getFieldsJsonMap()).thenReturn(mockFields(fieldName, fieldValue));
+        when(customFields.getType()).thenReturn(Type.referenceOfId(typeId).filled(type));
+        return customFields;
+    }
+
+    private static Map<String, JsonNode> mockFields(final String name, final JsonNode value) {
+        final HashMap<String, JsonNode> fields = new HashMap<>();
+        fields.put(name, value);
+        return fields;
     }
 
     public static CategoryService mockCategoryService(@Nonnull final Set<Category> existingCategories,
@@ -75,5 +107,36 @@ public class MockUtils {
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(completedFuture(Optional.of("typeId")));
         return typeService;
+    }
+
+    /**
+     * Creates a mock {@link Type} with the supplied {@code id} and {@code key}.
+     * @param id the id of the type mock.
+     * @param key the key of the type mock.
+     * @return a mock product variant with the supplied prices and assets.
+     */
+    @Nonnull
+    public static Type getTypeMock(@Nonnull final String id, @Nonnull final String key) {
+        final Type mockCustomType = mock(Type.class);
+        when(mockCustomType.getId()).thenReturn(id);
+        when(mockCustomType.getKey()).thenReturn(key);
+        return mockCustomType;
+    }
+
+    /**
+     * Creates a mock {@link Asset} with the supplied {@link Type} reference for it's custom field.
+     * @param typeReference the type reference to attach to the custom field of the created asset.
+     * @return a mock asset with the supplied type reference on it's custom field.
+     */
+    @Nonnull
+    public static Asset getAssetMockWithCustomFields(@Nullable final Reference<Type> typeReference) {
+        // Mock Custom with expanded type reference
+        final CustomFields mockCustomFields = mock(CustomFields.class);
+        when(mockCustomFields.getType()).thenReturn(typeReference);
+
+        // Mock asset with custom fields
+        final Asset asset = mock(Asset.class);
+        when(asset.getCustom()).thenReturn(mockCustomFields);
+        return asset;
     }
 }
