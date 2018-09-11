@@ -159,8 +159,8 @@ for secondary resources (e.g. assets and prices). [#3](https://github.com/commer
 - **Product Sync** - `ProductSyncUtils#buildCoreActions` is now removed. `ProductSyncUtils#buildActions` should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Category Sync** - `CategorySyncUtils#buildCoreActions` is now removed. `CategorySyncUtils#buildActions` should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 
-- **Build Tools** - Bumped commercetools-jvm-sdk to version [1.29.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_29_0). [#262](https://github.com/commercetools/commercetools-sync-java/issues/262)
 **Enhancements** (1)
+- **Build Tools** - Bumped commercetools-jvm-sdk to version [1.30.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_30_0). [#262](https://github.com/commercetools/commercetools-sync-java/issues/262)
 
 **Bug Fixes** (1)
 - **Build Tools** - Fixed bug where jar and Codecov were triggered on benchmark stages of the build when they should 
