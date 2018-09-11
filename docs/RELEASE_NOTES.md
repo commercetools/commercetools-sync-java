@@ -100,7 +100,6 @@
 - **Commons** - Moved `SyncUtils#replaceAssetsReferencesIdsWithKeys` to `AssetReferenceReplacementUtils#replaceAssetsReferencesIdsWithKeys`. [#101](https://github.com/commercetools/commercetools-sync-java/issues/101).
 
 
-
 ### v1.0.0-M12 -  Jun 05, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M11...v1.0.0-M12) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M12/) | 
