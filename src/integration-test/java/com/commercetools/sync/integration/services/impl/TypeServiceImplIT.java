@@ -1,4 +1,4 @@
-package com.commercetools.sync.integration.services;
+package com.commercetools.sync.integration.services.impl;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
@@ -22,7 +22,7 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTyp
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TypeServiceIT {
+public class TypeServiceImplIT {
     private TypeService typeService;
     private static final String OLD_TYPE_KEY = "old_type_key";
     private static final String OLD_TYPE_NAME = "old_type_name";

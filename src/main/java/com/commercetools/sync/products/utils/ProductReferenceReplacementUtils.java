@@ -227,9 +227,10 @@ public final class ProductReferenceReplacementUtils {
      *     <li>Product Type</li>
      *     <li>Tax Category</li>
      *     <li>Product State</li>
-     *     <li>Asset Custom Types</li>
+     *     <li>Staged Assets' Custom Types</li>
      *     <li>Staged Product Categories</li>
-     *     <li>Staged Price Channels</li>
+     *     <li>Staged Prices' Channels</li>
+     *     <li>Staged Prices' Custom Types</li>
      *     <li>Reference Attributes</li>
      *     <li>Reference Set Attributes</li>
      * </ul>
@@ -248,6 +249,10 @@ public final class ProductReferenceReplacementUtils {
                                expansionModel.masterData().staged().categories())
                            .plusExpansionPaths(expansionModel ->
                                expansionModel.masterData().staged().allVariants().prices().channel())
+                           .plusExpansionPaths(
+                               ExpansionPath.of("masterData.staged.masterVariant.prices[*].custom.type"))
+                            .plusExpansionPaths(
+                               ExpansionPath.of("masterData.staged.variants[*].prices[*].custom.type"))
                            .plusExpansionPaths(expansionModel ->
                                expansionModel.masterData().staged().allVariants().attributes().value())
                            .plusExpansionPaths(expansionModel ->

@@ -1,4 +1,4 @@
-package com.commercetools.sync.integration.services;
+package com.commercetools.sync.integration.services.impl;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
@@ -44,7 +44,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class CategoryServiceIT {
+public class CategoryServiceImplIT {
     private CategoryService categoryService;
     private Category oldCategory;
     private static final String oldCategoryKey = "oldCategoryKey";
@@ -277,8 +277,9 @@ public class CategoryServiceIT {
 
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Invalid key '1'. Keys may only contain "
-            + "alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
+        assertThat(errorCallBackMessages.get(0)).contains("Invalid key '1'. Keys may only contain alphanumeric"
+            + " characters, underscores and hyphens and must have a minimum length of 2 characters and maximum length"
+            + " of 256 characters.");
         assertThat(createdCategories).hasSize(1);
     }
 
@@ -308,8 +309,9 @@ public class CategoryServiceIT {
         assertThat(errorCallBackExceptions).hasSize(2);
         assertThat(errorCallBackMessages).hasSize(2);
         // Since the order of creation is not ensured by allOf, so we assert in list of error messages (as string):
-        assertThat(errorCallBackMessages.toString()).contains("Invalid key '1'. Keys may only contain"
-            + " alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
+        assertThat(errorCallBackMessages.toString()).contains("Invalid key '1'. Keys may only contain alphanumeric"
+            + " characters, underscores and hyphens and must have a minimum length of 2 characters and maximum length"
+            + " of 256 characters.");
         assertThat(errorCallBackMessages.toString()).contains(" A duplicate value '\"furniture\"' exists for field "
             + "'slug.en'");
         assertThat(createdCategories).isEmpty();
@@ -396,8 +398,9 @@ public class CategoryServiceIT {
         assertThat(createdCategoryOptional).isEmpty();
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Invalid key '1'. Keys may only contain "
-            + "alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
+        assertThat(errorCallBackMessages.get(0)).contains("Invalid key '1'. Keys may only contain alphanumeric"
+            + " characters, underscores and hyphens and must have a minimum length of 2 characters and maximum length"
+            + " of 256 characters.");
 
         //assert CTP state
         final Optional<Category> categoryOptional = CTP_TARGET_CLIENT

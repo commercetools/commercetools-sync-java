@@ -1,21 +1,12 @@
 package com.commercetools.sync.commons.utils;
 
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.types.Custom;
-import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-
-import static java.util.stream.Collectors.toList;
 
 public final class SyncUtils {
 
@@ -35,33 +26,6 @@ public final class SyncUtils {
             batches.add(elements.subList(i, Math.min(i + batchSize, elements.size())));
         }
         return batches;
-    }
-
-    /**
-     * Given a resource of type {@code T} that extends {@link Custom} (i.e. it has {@link CustomFields}, this method
-     * checks if the custom fields are existing (not null) and they are reference expanded. If they are then
-     * it returns a {@link CustomFieldsDraft} instance with the custom type key in place of the id of the reference.
-     * Otherwise, if its not reference expanded it returns a {@link CustomFieldsDraft} with the id not replaced. If the
-     * resource has no or null {@link Custom}, then it returns {@code null}.
-     *
-     * @param resource the resource to replace its custom type id, if possible.
-     * @param <T> the type of the resource.
-     * @return an instance of {@link CustomFieldsDraft} instance with the custom type key in place of the id, if the
-     *         custom type reference was existing and reference expanded on the resource. Otherwise, if its not
-     *         reference expanded it returns a {@link CustomFieldsDraft} with the id not replaced with key. If the
-     *         resource has no or null {@link Custom}, then it returns {@code null}.
-     */
-    @Nullable
-    public static <T extends Custom> CustomFieldsDraft replaceCustomTypeIdWithKeys(@Nonnull final T resource) {
-        final CustomFields custom = resource.getCustom();
-        if (custom != null) {
-            if (custom.getType().getObj() != null) {
-                return CustomFieldsDraft.ofTypeIdAndJson(custom.getType().getObj().getKey(),
-                    custom.getFieldsJsonMap());
-            }
-            return CustomFieldsDraftBuilder.of(custom).build();
-        }
-        return null;
     }
 
     /**
@@ -86,25 +50,6 @@ public final class SyncUtils {
             return keyInReferenceSupplier.get();
         }
         return reference;
-    }
-
-    /**
-     * Takes a an asset list that is supposed to have all its assets' custom references expanded in order to be able to
-     * fetch the keys and replace the reference ids with the corresponding keys for the custom references. This method
-     * returns as a result a {@link List} of {@link AssetDraft} that has all custom references with keys replacing the
-     * ids.
-     *
-     * <p>Any custom reference that is not expanded will have it's id in place and not replaced by the key.
-     *
-     * @param assets the list of assets to replace their custom ids with keys.
-     * @return a {@link List} of {@link AssetDraft} that has all channel references with keys replacing the ids.
-     */
-    @Nonnull
-    public static List<AssetDraft> replaceAssetsReferencesIdsWithKeys(@Nonnull final List<Asset> assets) {
-        return assets.stream().map(asset ->
-            AssetDraftBuilder.of(asset)
-                             .custom(replaceCustomTypeIdWithKeys(asset)).build())
-                     .collect(toList());
     }
 
     private SyncUtils() {

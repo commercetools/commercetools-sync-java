@@ -48,11 +48,11 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
         if (keyToIdCache.containsKey(key)) {
             return CompletableFuture.completedFuture(Optional.of(keyToIdCache.get(key)));
         }
-        return cacheAndFetch(key);
+        return fetchAndCache(key);
     }
 
     @Nonnull
-    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
+    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
         return cacheKeysToIds(singleton(key)).thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 

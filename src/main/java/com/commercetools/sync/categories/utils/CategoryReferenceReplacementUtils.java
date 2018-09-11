@@ -15,8 +15,8 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.SyncUtils.replaceAssetsReferencesIdsWithKeys;
-import static com.commercetools.sync.commons.utils.SyncUtils.replaceCustomTypeIdWithKeys;
+import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.replaceAssetsReferencesIdsWithKeys;
+import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.replaceCustomTypeIdWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
 
 public final class CategoryReferenceReplacementUtils {
