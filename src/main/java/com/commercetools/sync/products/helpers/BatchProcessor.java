@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.helpers;
 
+import com.commercetools.sync.commons.utils.OptionalUtils;
 import com.commercetools.sync.products.ProductSync;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.products.ProductDraft;
@@ -17,10 +18,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static com.commercetools.sync.commons.utils.StreamUtils.asSet;
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.isProductReference;
 import static java.lang.String.format;
@@ -28,6 +27,7 @@ import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -118,7 +118,7 @@ public class BatchProcessor {
                               .filter(Objects::nonNull)
                               .map(BatchProcessor::getReferencedProductKeys)
                               .flatMap(Collection::stream)
-                              .collect(Collectors.toSet());
+                              .collect(toSet());
     }
 
     /**
@@ -148,9 +148,12 @@ public class BatchProcessor {
      */
     @Nonnull
     static Set<String> getReferencedProductKeysFromSet(@Nonnull final JsonNode referenceSet) {
-        return asSet(StreamSupport.stream(referenceSet.spliterator(), false)
+        return StreamSupport.stream(referenceSet.spliterator(), false)
                             .filter(Objects::nonNull)
-                            .map(BatchProcessor::getProductKeyFromReference));
+                            .map(BatchProcessor::getProductKeyFromReference)
+                            .flatMap(OptionalUtils::filterEmptyOptionals)
+                            .collect(toSet());
+
     }
 
     /**

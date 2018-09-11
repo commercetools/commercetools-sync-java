@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.utils;
 
+import com.commercetools.sync.commons.utils.OptionalUtils;
 import com.commercetools.sync.products.ActionGroup;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -14,9 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.StreamUtils.asList;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionIfPassesFilter;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionsIfPassesFilter;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddToCategoryUpdateActions;
@@ -33,6 +32,7 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetTaxCategoryUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildTransitionStateUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
+import static java.util.stream.Collectors.toList;
 
 public final class ProductSyncUtils {
     /**
@@ -138,7 +138,9 @@ public final class ProductSyncUtils {
     @Nonnull
     private static List<UpdateAction<Product>> buildUpdateActionsFromOptionals(
         @Nonnull final List<Optional<? extends UpdateAction<Product>>> optionalUpdateActions) {
-        return asList(optionalUpdateActions.stream());
+        return optionalUpdateActions.stream()
+                                    .flatMap(OptionalUtils::filterEmptyOptionals)
+                                    .collect(toList());
     }
 
     private ProductSyncUtils() {
