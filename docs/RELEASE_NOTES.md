@@ -51,10 +51,19 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <!--
-### v1.0.0-M14 -  Aug 10, 2018
+### v1.0.0-M14 -  Oct 10, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M13...v1.0.0-M14) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M14)
+
+
+**Enhancements** (6)
+- **Product Sync** - Products create and update requests are now issued in parallel. This should lead to a performance improvement. [#238](https://github.com/commercetools/commercetools-sync-java/issues/238)
+- **Commons** - Bumped `com.adarshr.test-logger` to 1.5.0.
+- **Commons** - Bumped `mockito` to 2.22.0.
+- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.3.1.
+- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.3.1.
+- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.3.1.
 -->
 
 ### v1.0.0-M13 -  Sept 5, 2018
@@ -79,20 +88,19 @@
 - **ProductType Sync** - Exposed `LocalizedEnumUpdateActionsUtils` which contains utils for calculating needed update actions after comparing two `LocalizedEnumValue`s. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
 - **ProductType Sync** - Exposed `PlainEnumUpdateActionsUtils` which contains utils for calculating needed update actions after comparing two `EnumValue`s. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
 
-**Enhancements** (4)
+**Enhancements** (7)
 - **Commons** - Bumped gradle to version [gradle-4.10](https://docs.gradle.org/4.10/release-notes.html).
 - **Commons** - Bumped `com.jfrog.bintray` to 1.8.4.
-- **Commons** - Bumped `mockito` to 2.21.0.
 - **Commons** - Bumped `assertj` to 3.11.1.
+- **Commons** - Bumped `mockito` to 2.21.0.
 - **Commons** - Bumped `org.ajoberstar.grgit` to 2.3.0.
 - **Commons** - Bumped `com.adarshr.test-logger` to 1.4.0.
 - **Commons** - Switched to Junit5 using both `junit-jupiter-engine` and `junit-vintage-engine` for backward compatibility.
 
-**Changes** (3)
+**Breaking Changes** (3)
 - **Product Sync** - Removed redundant `ProductUpdateActionUtils#buildRemoveVariantUpdateActions`. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - Moved `SyncUtils#replaceCustomTypeIdWithKeys` to `CustomTypeReferenceReplacementUtils#replaceCustomTypeIdWithKeys`. [#101](https://github.com/commercetools/commercetools-sync-java/issues/101).
 - **Commons** - Moved `SyncUtils#replaceAssetsReferencesIdsWithKeys` to `AssetReferenceReplacementUtils#replaceAssetsReferencesIdsWithKeys`. [#101](https://github.com/commercetools/commercetools-sync-java/issues/101).
-
 
 
 ### v1.0.0-M12 -  Jun 05, 2018
