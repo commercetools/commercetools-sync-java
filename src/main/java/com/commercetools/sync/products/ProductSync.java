@@ -46,6 +46,7 @@ import static com.commercetools.sync.products.utils.ProductSyncUtils.buildAction
 import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.stream.Collectors.toList;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
@@ -129,7 +130,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                  final Set<String> productDraftKeys = getProductDraftKeys(existingDrafts);
                                  return productService.fetchMatchingProductsByKeys(productDraftKeys)
                                                       .thenAccept(this::processFetchedProducts)
-                                                      .thenCompose(ignoredResult -> createOrUpdateProducts())
+                                                      .thenCompose(ignoredResult -> createAndUpdateProducts())
                                                       .thenApply(ignoredResult -> {
                                                           statistics.incrementProcessed(batch.size());
                                                           return statistics;
@@ -186,11 +187,16 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     @Nonnull
-    private CompletionStage<List<Optional<Product>>> createOrUpdateProducts() {
-        return productService.createProducts(draftsToCreate)
-                             .thenAccept(createdProducts ->
-                                 updateStatistics(createdProducts, draftsToCreate.size()))
-                             .thenCompose(ignoredResult -> syncProducts(productsToSync));
+    private CompletableFuture<Void> createAndUpdateProducts() {
+        final CompletableFuture<Void> createRequestsStage =
+            productService.createProducts(draftsToCreate)
+                          .thenAccept(createdProducts -> updateStatistics(createdProducts, draftsToCreate.size()))
+                          .toCompletableFuture();
+
+        final CompletableFuture<List<Optional<Product>>> updateRequestsStage =
+            syncProducts(productsToSync).toCompletableFuture();
+
+        return allOf(createRequestsStage, updateRequestsStage);
     }
 
     private void updateStatistics(@Nonnull final Set<Product> createdProducts,
