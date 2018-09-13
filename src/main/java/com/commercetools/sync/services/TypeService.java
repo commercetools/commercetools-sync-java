@@ -2,9 +2,14 @@ package com.commercetools.sync.services;
 
 
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.types.Type;
+import io.sphere.sdk.types.TypeDraft;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 public interface TypeService {
@@ -26,4 +31,35 @@ public interface TypeService {
      */
     @Nonnull
     CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key);
+
+    /**
+     * Queries existing {@link Type}'s against set of keys.
+     *
+     * @param keys {@link List} of sku values, used in search predicate
+     * @return {@link List} of matching types or empty list when there was not type of key matching to
+     * {@code keys}.
+     */
+    @Nonnull
+    CompletionStage<List<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys);
+
+
+    /**
+     * Creates new type from {@code typeDraft}.
+     *
+     * @param typeDraft draft with data for new type
+     * @return {@link CompletionStage} with created {@link Type} or an exception
+     */
+    @Nonnull
+    CompletionStage<Type> createType(@Nonnull final TypeDraft typeDraft);
+
+    /**
+     * Updates existing product type with {@code updateActions}.
+     *
+     * @param type  type that should be updated
+     * @param updateActions {@link List} of actions that should be applied to {@code type}
+     * @return {@link CompletionStage} with updated {@link Type} or an exception
+     */
+    @Nonnull
+    CompletionStage<Type> updateType(@Nonnull final Type type,
+                                                   @Nonnull final List<UpdateAction<Type>> updateActions);
 }
