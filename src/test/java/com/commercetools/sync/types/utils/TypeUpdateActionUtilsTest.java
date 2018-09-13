@@ -2,7 +2,11 @@ package com.commercetools.sync.types.utils;
 
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.types.*;
+import io.sphere.sdk.types.FieldDefinition;
+import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
+import io.sphere.sdk.types.Type;
+import io.sphere.sdk.types.TypeDraft;
+import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.commands.updateactions.ChangeName;
 import io.sphere.sdk.types.commands.updateactions.SetDescription;
 import org.junit.BeforeClass;

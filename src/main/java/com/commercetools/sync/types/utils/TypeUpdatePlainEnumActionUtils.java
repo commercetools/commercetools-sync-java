@@ -75,7 +75,7 @@ public final class TypeUpdatePlainEnumActionUtils {
             AddEnumValue::of
         );
 
-        final List<UpdateAction<Type>> changeEnumValuesOrderUpdateActions=
+        final List<UpdateAction<Type>> changeEnumValuesOrderUpdateActions =
             buildChangeEnumValuesOrderUpdateAction(
                 fieldDefinitionName,
                 oldEnumValues,

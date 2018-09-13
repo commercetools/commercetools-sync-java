@@ -56,7 +56,7 @@ public final class TypeUpdateActionUtils {
             @Nonnull final Type oldType,
             @Nonnull final TypeDraft newType) {
         return buildUpdateAction(oldType.getDescription(), newType.getDescription(),
-                () -> SetDescription.of(newType.getDescription()));
+            () -> SetDescription.of(newType.getDescription()));
     }
 
     /**

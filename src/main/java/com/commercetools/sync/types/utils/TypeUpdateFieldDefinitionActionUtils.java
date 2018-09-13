@@ -12,7 +12,12 @@ import io.sphere.sdk.types.commands.updateactions.RemoveFieldDefinition;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -65,8 +70,8 @@ public final class TypeUpdateFieldDefinitionActionUtils {
     /**
      * Compares a list of {@link FieldDefinition}s with a list of {@link FieldDefinition}s.
      * The method serves as an implementation for field definitions syncing. The method takes in functions
-     * for building the required update actions (AddFieldDefinition, RemoveFieldDefinition, ChangeFieldDefinitionOrder and 1-1
-     * update actions on field definitions (e.g. changeFieldDefinitionLabel, etc..) for the required
+     * for building the required update actions (AddFieldDefinition, RemoveFieldDefinition, ChangeFieldDefinitionOrder
+     * and 1-1 update actions on field definitions (e.g. changeFieldDefinitionLabel, etc..) for the required
      * resource.
      *
      * @param oldFieldDefinitions       the old list of field definitions.
@@ -143,7 +148,8 @@ public final class TypeUpdateFieldDefinitionActionUtils {
                                 (fieldDefinitionA, fieldDefinitionB) -> {
                                     throw new DuplicateNameException(format("Field definitions have duplicated names. "
                                                     + "Duplicated field definition name: '%s'. "
-                                                    + "Field definitions names are expected to be unique inside their type.",
+                                                    + "Field definitions names are expected "
+                                                    + "to be unique inside their type.",
                                             fieldDefinitionA.getName()));
                                 }
                         ));
@@ -157,9 +163,9 @@ public final class TypeUpdateFieldDefinitionActionUtils {
 
                     return ofNullable(matchingNewFieldDefinition)
                         .map(newFieldDefinition -> {
-                            if (newFieldDefinition.getType() != null){
+                            if (newFieldDefinition.getType() != null) {
                                 // field type is required so if null we let commercetools to throw exception
-                                if (haveSameFieldType(oldFieldDefinition, newFieldDefinition)){
+                                if (haveSameFieldType(oldFieldDefinition, newFieldDefinition)) {
                                     return buildActions(oldFieldDefinition, newFieldDefinition);
                                 } else {
                                     return Arrays.asList(

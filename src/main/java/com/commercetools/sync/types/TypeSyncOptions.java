@@ -22,7 +22,8 @@ public final class TypeSyncOptions extends BaseSyncOptions<Type, TypeDraft> {
         @Nullable final Consumer<String> updateActionWarningCallBack,
         final int batchSize,
         final boolean allowUuid,
-        @Nullable final TriFunction<List<UpdateAction<Type>>, TypeDraft, Type, List<UpdateAction<Type>>> beforeUpdateCallback,
+        @Nullable final TriFunction<List<UpdateAction<Type>>, TypeDraft,
+                Type, List<UpdateAction<Type>>> beforeUpdateCallback,
         @Nullable final Function<TypeDraft, TypeDraft> beforeCreateCallback
     ) {
 

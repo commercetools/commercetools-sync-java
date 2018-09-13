@@ -63,13 +63,14 @@ public final class TypeServiceImpl implements TypeService {
 
     @Nonnull
     @Override
-    public CompletionStage<Type> createType(@Nonnull TypeDraft typeDraft) {
+    public CompletionStage<Type> createType(@Nonnull final TypeDraft typeDraft) {
         return syncOptions.getCtpClient().execute(TypeCreateCommand.of(typeDraft));
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Type> updateType(@Nonnull Type type, @Nonnull List<UpdateAction<Type>> updateActions) {
+    public CompletionStage<Type> updateType(@Nonnull final Type type,
+                                            @Nonnull final List<UpdateAction<Type>> updateActions) {
         return syncOptions.getCtpClient().execute(TypeUpdateCommand.of(type, updateActions));
     }
 

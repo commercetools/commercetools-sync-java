@@ -47,13 +47,13 @@ public final class FieldDefinitionUpdateActionUtils {
             .collect(toList());
 
 
-        if (isPlainEnumField(oldFieldDefinition)){
+        if (isPlainEnumField(oldFieldDefinition)) {
             updateActions.addAll(buildEnumValuesUpdateActions(
                     oldFieldDefinition.getName(),
                     ((EnumFieldType) oldFieldDefinition.getType()).getValues(),
                     ((EnumFieldType) newFieldDefinition.getType()).getValues()
             ));
-        } else if (isLocalizedEnumAttribute(oldFieldDefinition)){
+        } else if (isLocalizedEnumAttribute(oldFieldDefinition)) {
             updateActions.addAll(buildLocalizedEnumValuesUpdateActions(
                     oldFieldDefinition.getName(),
                     ((LocalizedEnumFieldType) oldFieldDefinition.getType()).getValues(),

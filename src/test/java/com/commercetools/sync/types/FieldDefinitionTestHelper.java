@@ -4,17 +4,21 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.TextInputHint;
-import io.sphere.sdk.types.*;
+import io.sphere.sdk.types.EnumFieldType;
+import io.sphere.sdk.types.FieldDefinition;
+import io.sphere.sdk.types.ReferenceFieldType;
+import io.sphere.sdk.types.SetFieldType;
+import io.sphere.sdk.types.StringFieldType;
 
 import java.util.Arrays;
 import java.util.List;
 
 public final class FieldDefinitionTestHelper {
 
-    public static FieldDefinition stringFieldDefinition(String fieldName,
-                                                        String labelEng,
+    public static FieldDefinition stringFieldDefinition(final String fieldName,
+                                                        final String labelEng,
                                                         boolean required,
-                                                        TextInputHint hint){
+                                                        final TextInputHint hint) {
         return FieldDefinition.of(StringFieldType.of(),
                         fieldName,
                         LocalizedString.ofEnglish(labelEng),
