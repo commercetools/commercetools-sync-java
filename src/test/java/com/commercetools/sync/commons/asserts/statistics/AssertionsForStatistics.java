@@ -4,6 +4,7 @@ import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
+import com.commercetools.sync.types.helpers.TypeSyncStatistics;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -54,5 +55,16 @@ public final class AssertionsForStatistics {
     @Nonnull
     public static ProductTypeSyncStatisticsAssert assertThat(@Nullable final ProductTypeSyncStatistics statistics) {
         return new ProductTypeSyncStatisticsAssert(statistics);
+    }
+
+    /**
+     * Create assertion for {@link TypeSyncStatistics}.
+     *
+     * @param statistics the actual value.
+     * @return the created assertion object.
+     */
+    @Nonnull
+    public static TypeSyncStatisticsAssert assertThat(@Nullable final TypeSyncStatistics statistics) {
+        return new TypeSyncStatisticsAssert(statistics);
     }
 }
