@@ -4,7 +4,6 @@ import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.WithKey;
 import io.sphere.sdk.types.Type;
@@ -88,7 +87,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
 
     /**
      * Fetches existing {@link Type} objects from CTP project that correspond to passed {@code batch}.
-     * Having existing product types fetched, {@code batch} is compared and synced with fetched objects by
+     * Having existing types fetched, {@code batch} is compared and synced with fetched objects by
      * {@link TypeSync#syncBatch(List, List)} function. When fetching existing types results in
      * an empty optional then {@code batch} isn't processed.
      *
@@ -161,19 +160,19 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param <T>          a type that extends of {@link WithKey}.
      * @return the map of keys to {@link Type}/{@link TypeDraft} instances.
      */
-    private <T extends WithKey> Map<String, T> getKeysProductTypeMap(@Nonnull final List<T> types) {
+    private <T extends WithKey> Map<String, T> getKeysTypeMap(@Nonnull final List<T> types) {
         return types.stream().collect(Collectors.toMap(WithKey::getKey, p -> p,
-            (productTypeA, productTypeB) -> productTypeB));
+            (typeA, typeB) -> typeB));
     }
 
     /**
      * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
      * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
-     * incrementing the total number of failed product types to sync.
+     * incrementing the total number of failed types to sync.
      *
      * @param errorMessage The error message describing the reason(s) of failure.
      * @param exception    The exception that called caused the failure, if any.
-     * @param failedTimes  The number of times that the failed product types counter is incremented.
+     * @param failedTimes  The number of times that the failed types counter is incremented.
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
                              final int failedTimes) {
@@ -193,7 +192,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
     private CompletionStage<TypeSyncStatistics> syncBatch(
             @Nonnull final List<Type> oldTypes,
             @Nonnull final List<TypeDraft> newTypes) {
-        final Map<String, Type> oldTypeMap = getKeysProductTypeMap(oldTypes);
+        final Map<String, Type> oldTypeMap = getKeysTypeMap(oldTypes);
 
         return CompletableFuture.allOf(newTypes
             .stream()
@@ -201,7 +200,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
                 final Type oldType = oldTypeMap.get(newType.getKey());
 
                 return ofNullable(oldType)
-                    .map(type -> updateProductType(oldType, newType))
+                    .map(type -> updateType(oldType, newType))
                     .orElseGet(() -> createType(newType));
             })
             .map(CompletionStage::toCompletableFuture)
@@ -215,7 +214,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * out successfully or not. If an exception was thrown on executing the request to CTP, the error handling method
      * is called.
      *
-     * @param typeDraft the type draft to create the product type from.
+     * @param typeDraft the type draft to create the type from.
      * @return a future which contains an empty result after execution of the create.
      */
     private CompletionStage<Void> createType(@Nonnull final TypeDraft typeDraft) {
@@ -235,8 +234,8 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
 
     /**
      * Given an existing {@link Type} and a new {@link TypeDraft}, the method calculates all the
-     * update actions required to synchronize the existing product type to be the same as the new one. If there are
-     * update actions found, a request is made to CTP to update the existing product type, otherwise it doesn't issue a
+     * update actions required to synchronize the existing type to be the same as the new one. If there are
+     * update actions found, a request is made to CTP to update the existing type, otherwise it doesn't issue a
      * request.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
@@ -247,8 +246,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param newType draft containing data that could differ from data in {@code oldType}.
      * @return a future which contains an empty result after execution of the update.
      */
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<Void> updateProductType(@Nonnull final Type oldType,
+    private CompletionStage<Void> updateType(@Nonnull final Type oldType,
                                                     @Nonnull final TypeDraft newType) {
 
         final List<UpdateAction<Type>> updateActions = buildActions(oldType, newType, syncOptions);
@@ -261,7 +259,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
 
         if (!updateActionsAfterCallback.isEmpty()) {
             return typeService.updateType(oldType, updateActionsAfterCallback)
-                    .thenAccept(updatedProductType -> statistics.incrementUpdated())
+                    .thenAccept(updatedType -> statistics.incrementUpdated())
                     .exceptionally(exception -> {
                         final String errorMessage = format(CTP_TYPE_UPDATE_FAILED, newType.getKey());
                         handleError(errorMessage, exception, 1);

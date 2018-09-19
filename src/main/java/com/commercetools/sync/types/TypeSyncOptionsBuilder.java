@@ -28,7 +28,7 @@ public final class TypeSyncOptionsBuilder extends BaseSyncOptionsBuilder<TypeSyn
     }
 
     /**
-     * Creates new instance of {@link TypeSyncOptions} enriched with all attributes provided to {@code this}
+     * Creates new instance of {@link TypeSyncOptions} enriched with all fields provided to {@code this}
      * builder.
      *
      * @return new instance of {@link TypeSyncOptions}

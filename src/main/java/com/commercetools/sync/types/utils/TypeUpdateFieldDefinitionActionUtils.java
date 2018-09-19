@@ -39,7 +39,7 @@ public final class TypeUpdateFieldDefinitionActionUtils {
      * resource.
      *
      * <p>If the list of new {@link FieldDefinition}s is {@code null}, then remove actions are built for
-     * every existing field definition in the {@code oldAttributeDefinitions} list.
+     * every existing field definition in the {@code oldFieldDefinitions} list.
      *
      * @param oldFieldDefinitions       the old list of field definitions.
      * @param newFieldDefinitions the new list of field definitions.
@@ -59,7 +59,7 @@ public final class TypeUpdateFieldDefinitionActionUtils {
                 newFieldDefinitions
             );
         } else {
-            return newFieldDefinitions
+            return oldFieldDefinitions
                 .stream()
                 .map(FieldDefinition::getName)
                 .map(RemoveFieldDefinition::of)
@@ -76,7 +76,7 @@ public final class TypeUpdateFieldDefinitionActionUtils {
      *
      * @param oldFieldDefinitions       the old list of field definitions.
      * @param newFieldDefinitions the new list of field definitions drafts.
-     * @return a list of field definitions update actions if the list of attribute definitions is not identical.
+     * @return a list of field definitions update actions if the list of field definitions is not identical.
      *         Otherwise, if the field definitions are identical, an empty list is returned.
      * @throws BuildUpdateActionException in case there are field definitions drafts with duplicate names.
      */
@@ -126,7 +126,7 @@ public final class TypeUpdateFieldDefinitionActionUtils {
      * Otherwise, if the field definition still exists in the new field definition, then compare the field definition
      * fields (label, etc..), and add the computed actions to the list of update actions.
      *
-     * <p>Note: If the field type field changes, the old field definition is removed and the new attribute
+     * <p>Note: If the field type field changes, the old field definition is removed and the new field
      *     definition is added with the new field type.
      *
      * @param oldFieldDefinitions       the list of old {@link FieldDefinition}s.
@@ -186,7 +186,7 @@ public final class TypeUpdateFieldDefinitionActionUtils {
 
     /**
      * Compares the field types of the {@code fieldDefinitionA} and the {@code fieldDefinitionB} and
-     * returns true if both field definitions have the same attribute type, false otherwise.
+     * returns true if both field definitions have the same field type, false otherwise.
      *
      * @param fieldDefinitionA the first field to compare.
      * @param fieldDefinitionB the second field definition to compare.
@@ -250,7 +250,7 @@ public final class TypeUpdateFieldDefinitionActionUtils {
     /**
      * Checks if there are any new field definition drafts which are not existing in the
      * {@code oldFieldDefinitionNameMap}. If there are, then "add" field definition update actions are built.
-     * Otherwise, if there are no new attribute definitions, then an empty list is returned.
+     * Otherwise, if there are no new field definitions, then an empty list is returned.
      *
      * @param newFieldDefinitions       the list of new {@link FieldDefinition}s.
      * @param oldFieldDefinitionNameMap a map of names to FieldDefinition of the old list

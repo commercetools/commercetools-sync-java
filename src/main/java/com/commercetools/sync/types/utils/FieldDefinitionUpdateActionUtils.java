@@ -53,7 +53,7 @@ public final class FieldDefinitionUpdateActionUtils {
                     ((EnumFieldType) oldFieldDefinition.getType()).getValues(),
                     ((EnumFieldType) newFieldDefinition.getType()).getValues()
             ));
-        } else if (isLocalizedEnumAttribute(oldFieldDefinition)) {
+        } else if (isLocalizedEnumField(oldFieldDefinition)) {
             updateActions.addAll(buildLocalizedEnumValuesUpdateActions(
                     oldFieldDefinition.getName(),
                     ((LocalizedEnumFieldType) oldFieldDefinition.getType()).getValues(),
@@ -81,7 +81,7 @@ public final class FieldDefinitionUpdateActionUtils {
      * @param fieldDefinition the field definition.
      * @return true if the field definition is a localized enum value, false otherwise.
      */
-    private static boolean isLocalizedEnumAttribute(@Nonnull final FieldDefinition fieldDefinition) {
+    private static boolean isLocalizedEnumField(@Nonnull final FieldDefinition fieldDefinition) {
         return fieldDefinition.getType().getClass() == LocalizedEnumFieldType.class;
     }
 

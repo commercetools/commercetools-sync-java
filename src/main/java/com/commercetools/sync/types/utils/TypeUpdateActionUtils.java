@@ -60,10 +60,10 @@ public final class TypeUpdateActionUtils {
     }
 
     /**
-     * Compares the attributes of a {@link Type} and a {@link TypeDraft} and returns a list of
+     * Compares the fields of a {@link Type} and a {@link TypeDraft} and returns a list of
      * {@link UpdateAction}&lt;{@link Type}&gt; as a result. If both the {@link Type} and
      * the {@link TypeDraft} have identical field definitions, then no update action is needed and hence an empty
-     * {@link List} is returned. In case, the new product type draft has a list of field definitions in which a
+     * {@link List} is returned. In case, the new type draft has a list of field definitions in which a
      * duplicate name exists, the error callback is triggered and an empty list is returned.
      *
      * @param oldType the type which should be updated.
@@ -74,7 +74,7 @@ public final class TypeUpdateActionUtils {
      * @return A list with the update actions or an empty list if the field definitions are identical.
      */
     @Nonnull
-    public static List<UpdateAction<Type>> buildFieldUpdateActions(
+    public static List<UpdateAction<Type>> buildFieldDefinitionUpdateActions(
         @Nonnull final Type oldType,
         @Nonnull final TypeDraft newType,
         @Nonnull final TypeSyncOptions syncOptions) {

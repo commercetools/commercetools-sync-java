@@ -17,7 +17,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.commercetools.sync.types.FieldDefinitionTestHelper.*;
+import static com.commercetools.sync.types.FieldDefinitionTestHelper.imageUrlFieldDefinition;
+import static com.commercetools.sync.types.FieldDefinitionTestHelper.relatedCategoriesFieldDefinition;
+import static com.commercetools.sync.types.FieldDefinitionTestHelper.stateFieldDefinition;
 import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildChangeNameAction;
 import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildSetDescriptionUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,7 +36,7 @@ public class TypeUpdateActionUtilsTest {
      */
     @BeforeClass
     public static void setup() {
-        final String key = "category-customtype-key";
+        final String key = "category-custom-type-key";
         final LocalizedString name = LocalizedString.ofEnglish("type for standard categories");
         final LocalizedString desc = LocalizedString.ofEnglish("description for category custom type");
 
@@ -62,10 +64,10 @@ public class TypeUpdateActionUtilsTest {
                 .build();
 
 
-        newDifferent = TypeDraftBuilder.of("222-category-customtype-key-2",
-                LocalizedString.ofEnglish("222type for standard categories 222"),
+        newDifferent = TypeDraftBuilder.of("category-custom-type-key-2",
+                LocalizedString.ofEnglish("type for standard categories 2"),
                 resourceTypeIds)
-                .description(LocalizedString.ofEnglish("222 description for category custom type 2222"))
+                .description(LocalizedString.ofEnglish("description for category custom type 2"))
                 .fieldDefinitions(fieldDefinitions)
                 .build();
     }

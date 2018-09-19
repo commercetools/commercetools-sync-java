@@ -33,10 +33,8 @@ public class FieldDefinitionUpdateActionUtilsTest {
 
 
     private static FieldDefinition old;
-    private static FieldDefinition oldNullValues;
     private static FieldDefinition newSame;
     private static FieldDefinition newDifferent;
-    private static FieldDefinition newNullValues;
 
     private static final EnumValue ENUM_VALUE_A = EnumValue.of("a", "label_a");
     private static final EnumValue ENUM_VALUE_B = EnumValue.of("b", "label_b");
@@ -49,12 +47,9 @@ public class FieldDefinitionUpdateActionUtilsTest {
      */
     @BeforeClass
     public static void setup() {
-
         old = stringFieldDefinition(FIELD_NAME_1, LABEL_1, false, TextInputHint.SINGLE_LINE);
-        oldNullValues = stringFieldDefinition(FIELD_NAME_1, LABEL_1, false, null);
         newSame = stringFieldDefinition(FIELD_NAME_1, LABEL_1, false, TextInputHint.SINGLE_LINE);
         newDifferent = stringFieldDefinition(FIELD_NAME_1, LABEL_2, true, TextInputHint.MULTI_LINE);
-        newNullValues = stringFieldDefinition(FIELD_NAME_1, LABEL_2, true, null);
     }
 
     @Test
@@ -108,7 +103,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
                 buildActions(oldFieldDefinition, newFieldDefinition);
 
 
-        assertThat(result).containsExactly(AddEnumValue.of(FIELD_NAME_1, ENUM_VALUE_A));
+        assertThat(result).containsExactly(AddEnumValue.of(FIELD_NAME_1, ENUM_VALUE_B));
     }
 
 

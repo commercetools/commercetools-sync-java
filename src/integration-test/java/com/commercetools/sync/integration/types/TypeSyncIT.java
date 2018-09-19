@@ -128,7 +128,7 @@ public class TypeSyncIT {
     @Test
     public void sync_WithNewType_ShouldCreateType() {
         final Optional<Type> oldTypeBefore = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_2);
-        assertThat(oldTypeBefore).isNotEmpty();
+        assertThat(oldTypeBefore).isEmpty();
 
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
                 TYPE_KEY_2,
@@ -187,7 +187,7 @@ public class TypeSyncIT {
 
         AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
 
-        final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_2);
+        final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
 
         assertThat(oldTypeAfter).isNotEmpty();
         assertFieldDefinitionsAreEqual(oldTypeAfter.get().getFieldDefinitions(), asList(
@@ -198,7 +198,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedType_WithoutOldFieldDefinition_ShouldUpdateTypeRemovingAttribute() {
+    public void sync_WithUpdatedType_WithoutOldFieldDefinition_ShouldUpdateTypeRemovingFieldDefinition() {
         final Optional<Type> oldTypeBefore = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
         assertThat(oldTypeBefore).isNotEmpty();
 
@@ -561,7 +561,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithErrorUpdatingTheProductTypeInCT_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    public void sync_WithErrorUpdatingTheTypeInCT_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
                 TYPE_KEY_1,
                 TYPE_NAME_1,
@@ -667,9 +667,9 @@ public class TypeSyncIT {
                 .range(0, 100)
                 .mapToObj(i -> TypeDraftBuilder.of(
                         "key__" + Integer.toString(i),
-                        LocalizedString.ofEnglish("name__"+ Integer.toString(i)),
+                        LocalizedString.ofEnglish("name__" + Integer.toString(i)),
                         ResourceTypeIdsSetBuilder.of().addCategories().build())
-                        .description(LocalizedString.ofEnglish("description__"+ Integer.toString(i)))
+                        .description(LocalizedString.ofEnglish("description__" + Integer.toString(i)))
                         .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
                         .build())
                 .collect(Collectors.toList());
@@ -790,7 +790,8 @@ public class TypeSyncIT {
                     assertThat(oldFieldDefinition.getName()).isEqualTo(newFieldDefinition.getName());
                     assertThat(oldFieldDefinition.getLabel()).isEqualTo(newFieldDefinition.getLabel());
                     assertThat(oldFieldDefinition.getType()).isEqualTo(newFieldDefinition.getType());
-                    assertThat(oldFieldDefinition.getInputHint()).isEqualTo(newFieldDefinition.getInputHint());
+                    // no update action exists for the input hint
+                    //assertThat(oldFieldDefinition.getInputHint()).isEqualTo(newFieldDefinition.getInputHint());
                     assertThat(oldFieldDefinition.isRequired()).isEqualTo(newFieldDefinition.isRequired());
 
                     if (oldFieldDefinition.getType().getClass() == EnumFieldType.class) {

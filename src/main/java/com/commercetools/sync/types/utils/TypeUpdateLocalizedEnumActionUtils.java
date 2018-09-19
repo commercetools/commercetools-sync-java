@@ -21,7 +21,7 @@ import static java.util.Collections.emptyList;
 public final class TypeUpdateLocalizedEnumActionUtils {
     /**
      * Compares a list of old {@link LocalizedEnumValue}s with a list of new {@link LocalizedEnumValue}s for a given
-     * attribute definition.
+     * field definition.
      * The method serves as a generic implementation for localized enum values syncing. The method takes in functions
      * for building the required update actions (AddLocalizedEnumValue, RemoveEnumValue, ChangeLocalizedEnumValueOrder
      * and 1-1 update actions on localized enum values (e.g. changeLabel) for the required resource.
@@ -29,7 +29,7 @@ public final class TypeUpdateLocalizedEnumActionUtils {
      * <p>If the list of new {@link LocalizedEnumValue}s is {@code null}, then remove actions are built for
      * every existing localized enum value in the {@code oldEnumValues} list.
      *
-     * @param fieldDefinitionName     the attribute name whose localized enum values are going to be synced.
+     * @param fieldDefinitionName     the field name whose localized enum values are going to be synced.
      * @param oldEnumValues           the old list of localized enum values.
      * @param newEnumValues           the new list of localized enum values.
      * @return a list of localized enum values update actions if the list of localized enum values is not identical.
@@ -55,12 +55,12 @@ public final class TypeUpdateLocalizedEnumActionUtils {
 
     /**
      * Compares a list of old {@link LocalizedEnumValue}s with a list of new {@link LocalizedEnumValue}s for a given
-     * attribute definition.
+     * field definition.
      * The method serves as a generic implementation for localized enum values syncing. The method takes in functions
      * for building the required update actions (AddEnumValue, RemoveEnumValue, ChangeEnumValueOrder and 1-1
      * update actions on localized enum values (e.g. changeLabel) for the required resource.
      *
-     * @param attributeDefinitionName the attribute name whose localized enum values are going to be synced.
+     * @param fieldDefinitionName the attribute name whose localized enum values are going to be synced.
      * @param oldEnumValues           the old list of localized enum values.
      * @param newEnumValues           the new list of localized enum values.
      * @return a list of localized enum values update actions if the list of localized enum values is not identical.
@@ -69,13 +69,13 @@ public final class TypeUpdateLocalizedEnumActionUtils {
      */
     @Nonnull
     private static List<UpdateAction<Type>> buildUpdateActions(
-        @Nonnull final String attributeDefinitionName,
+        @Nonnull final String fieldDefinitionName,
         @Nonnull final List<LocalizedEnumValue> oldEnumValues,
         @Nonnull final List<LocalizedEnumValue> newEnumValues) {
 
 
         final List<UpdateAction<Type>> addEnumValuesUpdateActions = buildAddEnumValuesUpdateActions(
-            attributeDefinitionName,
+            fieldDefinitionName,
             oldEnumValues,
             newEnumValues,
             AddLocalizedEnumValue::of
@@ -83,7 +83,7 @@ public final class TypeUpdateLocalizedEnumActionUtils {
 
         final List<UpdateAction<Type>> changeEnumValuesOrderUpdateActions =
             buildChangeEnumValuesOrderUpdateAction(
-                attributeDefinitionName,
+                fieldDefinitionName,
                 oldEnumValues,
                 newEnumValues,
                 ChangeLocalizedEnumValueOrder::of

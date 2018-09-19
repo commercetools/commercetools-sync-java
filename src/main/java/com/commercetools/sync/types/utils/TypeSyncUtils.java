@@ -10,15 +10,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.*;
+import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildChangeNameAction;
+import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildFieldDefinitionUpdateActions;
+import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildSetDescriptionUpdateAction;
 import static java.util.stream.Collectors.toList;
 
 public final class TypeSyncUtils {
 
     /**
      * Compares all the fields (including the attributes see
-     * {@link TypeUpdateActionUtils#buildFieldUpdateActions(Type, TypeDraft, TypeSyncOptions)}) of a {@link Type} and a
-     * {@link TypeDraft}. It returns a {@link List} of {@link UpdateAction}&lt;{@link Type}&gt; as a
+     * {@link TypeUpdateActionUtils#buildFieldDefinitionUpdateActions(Type, TypeDraft, TypeSyncOptions)})
+     * of a {@link Type} and a {@link TypeDraft}.
+     * It returns a {@link List} of {@link UpdateAction}&lt;{@link Type}&gt; as a
      * result. If no update action is needed, for example in case where both the {@link Type} and the
      * {@link TypeDraft} have the same fields, an empty {@link List} is returned.
      *
@@ -28,7 +31,7 @@ public final class TypeSyncUtils {
      *                       the user. For example, custom callbacks to call in case of warnings or errors occurring
      *                       on the build update action process. And other options (See {@link TypeSyncOptions}
      *                       for more info.
-     * @return A list of productType-specific update actions.
+     * @return A list of type-specific update actions.
      */
     @Nonnull
     public static List<UpdateAction<Type>> buildActions(
@@ -44,7 +47,7 @@ public final class TypeSyncUtils {
                 .map(Optional::get)
                 .collect(toList());
 
-        updateActions.addAll(buildFieldUpdateActions(oldType, newType, syncOptions));
+        updateActions.addAll(buildFieldDefinitionUpdateActions(oldType, newType, syncOptions));
 
         return updateActions;
     }

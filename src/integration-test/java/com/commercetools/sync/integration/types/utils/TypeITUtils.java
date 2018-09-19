@@ -30,9 +30,9 @@ public final class TypeITUtils {
     public static final LocalizedString TYPE_NAME_1 = LocalizedString.ofEnglish("name_1");
     public static final LocalizedString TYPE_NAME_2 = LocalizedString.ofEnglish("name_2");
 
-    public static final String FIELD_DEFINITION_NAME_1 = "field_1";
-    public static final String FIELD_DEFINITION_NAME_2 = "field_2";
-    public static final String FIELD_DEFINITION_NAME_3 = "field_2";
+    public static final String FIELD_DEFINITION_NAME_1 = "field_name_1";
+    public static final String FIELD_DEFINITION_NAME_2 = "field_name_2";
+    public static final String FIELD_DEFINITION_NAME_3 = "field_name_3";
 
 
     public static final LocalizedString FIELD_DEFINITION_LABEL_1 = LocalizedString.ofEnglish("label_1");
@@ -84,7 +84,7 @@ public final class TypeITUtils {
 
 
     /**
-     * Deletes all product types from CTP project, represented by provided {@code ctpClient}.
+     * Deletes all types from CTP project, represented by provided {@code ctpClient}.
      *
      * @param ctpClient represents the CTP project the types will be deleted from.
      */
@@ -94,7 +94,7 @@ public final class TypeITUtils {
 
 
     /**
-     * Deletes all product types from CTP projects defined by {@code CTP_SOURCE_CLIENT} and
+     * Deletes all types from CTP projects defined by {@code CTP_SOURCE_CLIENT} and
      * {@code CTP_TARGET_CLIENT}.
      */
     public static void deleteTypesFromTargetAndSource() {
@@ -104,10 +104,10 @@ public final class TypeITUtils {
 
     /**
      * Populate source CTP project.
-     * Creates product type with key TYPE_KEY_1, TYPE_NAME_1, TYPE_DESCRIPTION_1 and
-     * attributes attributeDefinitionDraft1, attributeDefinitionDraft2.
-     * Creates product type with key TYPE_KEY_2, TYPE_NAME_2, TYPE_DESCRIPTION_2 and
-     * attributes attributeDefinitionDraft1.
+     * Creates type with key TYPE_KEY_1, TYPE_NAME_1, TYPE_DESCRIPTION_1 and
+     * fields FIELD_DEFINITION_1, FIELD_DEFINITION_2.
+     * Creates type with key TYPE_KEY_2, TYPE_NAME_2, TYPE_DESCRIPTION_2 and
+     * fields FIELD_DEFINITION_1.
      */
     public static void populateSourceProject() {
         CTP_SOURCE_CLIENT.execute(TypeCreateCommand.of(typeDraft1)).toCompletableFuture().join();
@@ -116,8 +116,8 @@ public final class TypeITUtils {
 
     /**
      * Populate source CTP project.
-     * Creates product type with key TYPE_KEY_1, TYPE_NAME_1, TYPE_DESCRIPTION_1 and
-     * attributes attributeDefinitionDraft1, attributeDefinitionDraft2.
+     * Creates type with key TYPE_KEY_1, TYPE_NAME_1, TYPE_DESCRIPTION_1 and
+     * fields FIELD_DEFINITION_1, FIELD_DEFINITION_2.
      */
     public static void populateTargetProject() {
         CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(typeDraft1)).toCompletableFuture().join();
