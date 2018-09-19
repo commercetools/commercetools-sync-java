@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateLocalizedEnumActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdatePlainEnumActionUtils.buildEnumValuesUpdateActions;
 import static java.util.stream.Collectors.toList;
@@ -42,17 +43,14 @@ public final class AttributeDefinitionUpdateActionUtils {
 
         final List<UpdateAction<ProductType>> updateActions;
 
-        updateActions = Stream
-            .of(
+        updateActions = filterEmptyOptionals(
+            Stream.of(
                 buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
                 buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
                 buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
                 buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
                 buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
-            )
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(toList());
+            ).collect(toList()));
 
 
         if (isPlainEnumAttribute(oldAttributeDefinition)) {

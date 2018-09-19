@@ -9,15 +9,14 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildChangeQuantityAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetExpectedDeliveryAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetRestockableInDaysAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetSupplyChannelAction;
-import static java.util.stream.Collectors.toList;
+import static java.util.Arrays.asList;
 
 /**
  * This class provides factory methods for assembling update actions of inventory entries.
@@ -44,15 +43,13 @@ public final class InventorySyncUtils {
     public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldEntry,
                                                                   @Nonnull final InventoryEntryDraft newEntry,
                                                                   @Nonnull final InventorySyncOptions syncOptions) {
-        final List<UpdateAction<InventoryEntry>> actions =
-            Stream.of(
+        final List<UpdateAction<InventoryEntry>> actions = filterEmptyOptionals(
+            asList(
                 buildChangeQuantityAction(oldEntry, newEntry),
                 buildSetRestockableInDaysAction(oldEntry, newEntry),
                 buildSetExpectedDeliveryAction(oldEntry, newEntry),
-                buildSetSupplyChannelAction(oldEntry, newEntry))
-                  .filter(Optional::isPresent)
-                  .map(Optional::get)
-                  .collect(toList());
+                buildSetSupplyChannelAction(oldEntry, newEntry)
+            ));
 
         actions.addAll(buildPrimaryResourceCustomUpdateActions(oldEntry, newEntry, inventoryCustomActionBuilder,
             syncOptions));

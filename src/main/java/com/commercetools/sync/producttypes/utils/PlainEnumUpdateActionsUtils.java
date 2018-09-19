@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static java.util.stream.Collectors.toList;
 
 public final class PlainEnumUpdateActionsUtils {
@@ -31,10 +32,12 @@ public final class PlainEnumUpdateActionsUtils {
         @Nonnull final EnumValue oldEnumValue,
         @Nonnull final EnumValue newEnumValue) {
 
-        return Stream.of(buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue))
-                     .filter(Optional::isPresent)
-                     .map(Optional::get)
-                     .collect(toList());
+        final List<Optional<UpdateAction<ProductType>>> optionalActions =
+            Stream.of(
+                buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue))
+                  .collect(toList());
+
+        return filterEmptyOptionals(optionalActions);
     }
 
     /**

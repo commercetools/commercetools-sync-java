@@ -10,12 +10,11 @@ import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionIfPassesFilter;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionsIfPassesFilter;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddToCategoryUpdateActions;
@@ -32,6 +31,7 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetTaxCategoryUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildTransitionStateUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
+import static java.util.Arrays.asList;
 
 public final class ProductSyncUtils {
     /**
@@ -62,7 +62,7 @@ public final class ProductSyncUtils {
                                                                attributesMetaData) {
         final SyncFilter syncFilter = syncOptions.getSyncFilter();
 
-        final List<UpdateAction<Product>> updateActions = new ArrayList<>(buildUpdateActionsFromOptionals(Arrays.asList(
+        final List<Optional<UpdateAction<Product>>> optionalUpdateActions = asList(
             buildActionIfPassesFilter(syncFilter, ActionGroup.NAME, () ->
                 buildChangeNameUpdateAction(oldProduct, newProduct)),
 
@@ -85,11 +85,13 @@ public final class ProductSyncUtils {
                 buildSetMetaKeywordsUpdateAction(oldProduct, newProduct)),
 
             buildActionIfPassesFilter(syncFilter, ActionGroup.TAXCATEGORY, () ->
-                buildSetTaxCategoryUpdateAction(oldProduct, newProduct)),
+                buildSetTaxCategoryUpdateAction(oldProduct, newProduct).map(action -> (UpdateAction<Product>) action)),
 
             buildActionIfPassesFilter(syncFilter, ActionGroup.STATE, () ->
-                buildTransitionStateUpdateAction(oldProduct, newProduct))
-        )));
+                buildTransitionStateUpdateAction(oldProduct, newProduct).map(action -> (UpdateAction<Product>) action))
+        );
+
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>(filterEmptyOptionals(optionalUpdateActions));
 
         final List<UpdateAction<Product>> productCategoryUpdateActions =
             buildActionsIfPassesFilter(syncFilter, ActionGroup.CATEGORIES, () ->
@@ -122,25 +124,6 @@ public final class ProductSyncUtils {
         updateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));
         updateActions.addAll(buildRemoveFromCategoryUpdateActions(oldProduct, newProduct));
         return updateActions;
-    }
-
-    /**
-     * Given a list of product {@link UpdateAction} elements, where each is wrapped in an {@link Optional}; this method
-     * filters out the optionals which are only present and returns a new list of product {@link UpdateAction}
-     * elements.
-     *
-     * @param optionalUpdateActions list of product {@link UpdateAction} elements, where each is wrapped
-     *                              in an {@link Optional}.
-     * @return a List of product update actions from the optionals that were present in
-     *         the {@code optionalUpdateActions} list parameter.
-     */
-    @Nonnull
-    private static List<UpdateAction<Product>> buildUpdateActionsFromOptionals(
-        @Nonnull final List<Optional<? extends UpdateAction<Product>>> optionalUpdateActions) {
-        return optionalUpdateActions.stream()
-                                    .filter(Optional::isPresent)
-                                    .map(Optional::get)
-                                    .collect(Collectors.toList());
     }
 
     private ProductSyncUtils() {

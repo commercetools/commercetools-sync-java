@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildAttributesUpdateActions;
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeDescriptionAction;
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeNameAction;
@@ -38,13 +39,13 @@ public final class ProductTypeSyncUtils {
             @Nonnull final ProductTypeDraft newProductType,
             @Nonnull final ProductTypeSyncOptions syncOptions) {
 
-        final List<UpdateAction<ProductType>> updateActions = Stream.of(
+        final List<Optional<UpdateAction<ProductType>>> optionalActions =
+            Stream.of(
                 buildChangeNameAction(oldProductType, newProductType),
-                buildChangeDescriptionAction(oldProductType, newProductType)
-        )
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(toList());
+                buildChangeDescriptionAction(oldProductType, newProductType))
+                  .collect(toList());
+
+        final List<UpdateAction<ProductType>> updateActions = filterEmptyOptionals(optionalActions);
 
         updateActions.addAll(buildAttributesUpdateActions(oldProductType, newProductType, syncOptions));
 

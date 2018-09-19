@@ -16,9 +16,9 @@ import io.sphere.sdk.products.commands.updateactions.SetAssetTags;
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static java.util.Arrays.asList;
 
 public final class ProductVariantAssetUpdateActionUtils {
@@ -42,34 +42,16 @@ public final class ProductVariantAssetUpdateActionUtils {
         @Nonnull final AssetDraft newAsset,
         @Nonnull final ProductSyncOptions syncOptions) {
 
-        final List<UpdateAction<Product>> updateActions = buildUpdateActionsFromOptionals(asList(
-            buildChangeAssetNameUpdateAction(variantId, oldAsset, newAsset),
-            buildSetAssetDescriptionUpdateAction(variantId, oldAsset, newAsset),
-            buildSetAssetTagsUpdateAction(variantId, oldAsset, newAsset),
-            buildSetAssetSourcesUpdateAction(variantId, oldAsset, newAsset)
-        ));
+        final List<UpdateAction<Product>> updateActions = filterEmptyOptionals(
+            asList(
+                buildChangeAssetNameUpdateAction(variantId, oldAsset, newAsset),
+                buildSetAssetDescriptionUpdateAction(variantId, oldAsset, newAsset),
+                buildSetAssetTagsUpdateAction(variantId, oldAsset, newAsset),
+                buildSetAssetSourcesUpdateAction(variantId, oldAsset, newAsset)
+            ));
 
         updateActions.addAll(buildCustomUpdateActions(variantId, oldAsset, newAsset, syncOptions));
         return updateActions;
-    }
-
-    /**
-     * TODO: THIS WILL BE REMOVED AS SOON AS GITHUB ISSUE#255 is resolved.
-     * Given a list of product {@link UpdateAction}s, where each is wrapped in an {@link Optional}; this method
-     * filters out the optionals which are only present and returns a new list of category {@link UpdateAction}
-     * elements.
-     *
-     * @param optionalUpdateActions list of product {@link UpdateAction} where each is wrapped in an {@link Optional}.
-     * @return a List of product update actions from the optionals that were present in the
-     *         {@code optionalUpdateActions} list parameter.
-     */
-    @Nonnull
-    private static List<UpdateAction<Product>> buildUpdateActionsFromOptionals(
-        @Nonnull final List<Optional<UpdateAction<Product>>> optionalUpdateActions) {
-        return optionalUpdateActions.stream()
-                                    .filter(Optional::isPresent)
-                                    .map(Optional::get)
-                                    .collect(Collectors.toList());
     }
 
     /**
