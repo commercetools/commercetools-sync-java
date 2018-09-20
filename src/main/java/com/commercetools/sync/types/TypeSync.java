@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.WithKey;
 import io.sphere.sdk.types.Type;
@@ -246,6 +247,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param newType draft containing data that could differ from data in {@code oldType}.
      * @return a future which contains an empty result after execution of the update.
      */
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> updateType(@Nonnull final Type oldType,
                                                     @Nonnull final TypeDraft newType) {
 
