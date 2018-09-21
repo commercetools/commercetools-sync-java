@@ -25,6 +25,7 @@ public final class UnorderedCollectionSyncUtils {
      * The final result is a list of all the remove update actions.
      *
      * <p>The resulting list of update actions is ensured to contain no null values.
+     *
      * <p>If the draft has null key as defined by {@code draftKeyMapper}, the method will ignore generating a remove
      * update action for it.
      *
