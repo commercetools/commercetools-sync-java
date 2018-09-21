@@ -84,10 +84,14 @@ public class BuildProductVariantAttributesUpdateActionsTest {
         when(oldProductVariant.getKey()).thenReturn(variantKey);
 
         final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
-        final AttributeDefinition attributeDefinition =
+        final AttributeDefinition booleanAttributeDefinition =
             AttributeDefinitionBuilder.of(BOOLEAN_ATTRIBUTE_TRUE.getName(), ofEnglish("label"),
                 BooleanAttributeType.of()).build();
-        attributesMetaData.put(BOOLEAN_ATTRIBUTE_TRUE.getName(), AttributeMetaData.of(attributeDefinition));
+        final AttributeDefinition textAttributeDefinition =
+            AttributeDefinitionBuilder.of(TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"),
+                StringAttributeType.of()).build();
+        attributesMetaData.put(BOOLEAN_ATTRIBUTE_TRUE.getName(), AttributeMetaData.of(booleanAttributeDefinition));
+        attributesMetaData.put(TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
 
         // Test
         final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
