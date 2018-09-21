@@ -47,10 +47,10 @@ import static java.util.Optional.ofNullable;
 
 
 public final class ProductVariantUpdateActionUtils {
-    private static final String FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION = "Failed to build a "
+    public static final String FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION = "Failed to build a "
         + "setAttribute/setAttributeInAllVariants update action for the attribute with the name '%s' in the "
         + "ProductVariantDraft with key '%s' on the product with key '%s'. Reason: %s";
-    private static final String NULL_PRODUCT_VARIANT_ATTRIBUTE = "AttributeDraft is null.";
+    public static final String NULL_PRODUCT_VARIANT_ATTRIBUTE = "AttributeDraft is null.";
     private static final String NULL_PRODUCT_VARIANT_PRICE = "New price is null.";
 
     /**
