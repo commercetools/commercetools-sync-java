@@ -39,11 +39,13 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static com.commercetools.sync.internals.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
 import static com.commercetools.sync.internals.utils.UpdateActionsSortUtils.sortPriceActions;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
+import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildUnSetAttribute;
 import static com.commercetools.sync.products.utils.ProductVariantPriceUpdateActionUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 
 
 public final class ProductVariantUpdateActionUtils {
@@ -214,9 +216,10 @@ public final class ProductVariantUpdateActionUtils {
 
         for (int oldIndex = 0; oldIndex < oldImageListSize; oldIndex++) {
             final Image oldImage = oldImages.get(oldIndex);
-            final Integer newIndex = ofNullable(imageIndexMap.get(oldImage)) // constant-time operation
-                                                                             .orElseThrow(() ->
-                                                                                 new IllegalArgumentException(format("Old image [%s] not found in the new images list.", oldImage)));
+            final Integer newIndex =
+                ofNullable(imageIndexMap.get(oldImage))
+                    .orElseThrow(() -> new IllegalArgumentException(
+                        format("Old image [%s] not found in the new images list.", oldImage)));
 
             if (oldIndex != newIndex) {
                 updateActions.add(
@@ -291,41 +294,49 @@ public final class ProductVariantUpdateActionUtils {
         @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
         @Nonnull final ProductSyncOptions syncOptions) {
 
-        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
+        final Integer oldProductVariantId = oldProductVariant.getId();
         final List<AttributeDraft> newProductVariantAttributes = newProductVariant.getAttributes();
-        if (newProductVariantAttributes == null) {
-            return updateActions;
-        }
+        final List<Attribute> oldProductVariantAttributes = oldProductVariant.getAttributes();
 
-        // TODO: NEED TO HANDLE REMOVED ATTRIBUTES FROM OLD PRODUCT VARIANT.
-        for (AttributeDraft newProductVariantAttribute : newProductVariantAttributes) {
-            if (newProductVariantAttribute == null) {
+        final List<UpdateAction<Product>> updateActions = buildRemoveUpdateActions(oldProductVariantAttributes,
+            newProductVariantAttributes, Attribute::getName, AttributeDraft::getName,
+            attribute -> {
+                try {
+                    return buildUnSetAttribute(oldProductVariantId, attribute.getName(), attributesMetaData);
+                } catch (final BuildUpdateActionException buildUpdateActionException) {
+                    final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, attribute.getName(),
+                        newProductVariant.getKey(), productKey, buildUpdateActionException.getMessage());
+                    syncOptions.applyErrorCallback(errorMessage, buildUpdateActionException);
+                    return null;
+                }
+            });
+
+        final Map<String, Attribute> oldAttributesMap =
+            collectionToMap(oldProductVariantAttributes, Attribute::getName);
+
+        emptyIfNull(newProductVariantAttributes).forEach(newAttribute -> {
+            if (newAttribute == null) {
                 final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, null,
                     newProductVariant.getKey(), productKey, NULL_PRODUCT_VARIANT_ATTRIBUTE);
                 syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
-                continue;
+            } else {
+                final String newAttributeName = newAttribute.getName();
+                final Attribute matchingOldAttribute = oldAttributesMap.get(newAttributeName);
+
+                try {
+                    buildProductVariantAttributeUpdateAction(oldProductVariantId, matchingOldAttribute,
+                        newAttribute, attributesMetaData).ifPresent(updateActions::add);
+                } catch (final BuildUpdateActionException buildUpdateActionException) {
+                    final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, newAttributeName,
+                        newProductVariant.getKey(), productKey, buildUpdateActionException.getMessage());
+                    syncOptions.applyErrorCallback(errorMessage, buildUpdateActionException);
+                }
             }
 
-            final String newProductVariantAttributeName = newProductVariantAttribute.getName();
-            final Optional<Attribute> oldProductVariantAttributeOptional = oldProductVariant
-                .findAttribute(newProductVariantAttributeName);
+        });
 
-            final Attribute oldProductVariantAttribute = oldProductVariantAttributeOptional.orElse(null);
-            final AttributeMetaData attributeMetaData = attributesMetaData.get(newProductVariantAttributeName);
+        return updateActions.stream().filter(Objects::nonNull).collect(toList());
 
-            try {
-                final Optional<UpdateAction<Product>> variantAttributeUpdateActionOptional =
-                    buildProductVariantAttributeUpdateAction(oldProductVariant.getId(), oldProductVariantAttribute,
-                        newProductVariantAttribute, attributeMetaData);
-                variantAttributeUpdateActionOptional.ifPresent(updateActions::add);
-            } catch (@Nonnull final BuildUpdateActionException buildUpdateActionException) {
-                final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
-                    newProductVariantAttributeName, newProductVariant.getKey(), productKey,
-                    buildUpdateActionException.getMessage());
-                syncOptions.applyErrorCallback(errorMessage, buildUpdateActionException);
-            }
-        }
-        return updateActions;
     }
 
     private ProductVariantUpdateActionUtils() {
