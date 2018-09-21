@@ -21,6 +21,7 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
+import io.sphere.sdk.products.queries.ProductByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateType;
@@ -379,6 +380,24 @@ public class ProductSyncIT {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
+
+        final Product targetProduct2 = CTP_TARGET_CLIENT.execute(ProductByKeyGet.of("productKey2"))
+                                                        .toCompletableFuture()
+                                                        .join();
+
+        final Product targetProduct3 = CTP_TARGET_CLIENT.execute(ProductByKeyGet.of("productKey3"))
+                                                        .toCompletableFuture()
+                                                        .join();
+
+        final ObjectNode targetProductReferenceValue2 = getProductReferenceWithId(targetProduct2.getId());
+        final ObjectNode targetProductReferenceValue3 = getProductReferenceWithId(targetProduct3.getId());
+
+        final AttributeDraft targetProductRefAttr =
+            AttributeDraft.of("product-reference", targetProductReferenceValue2);
+        final AttributeDraft targetProductSetRefAttr =
+            getProductReferenceSetAttributeDraft("product-reference-set", targetProductReferenceValue2,
+                targetProductReferenceValue3);
+
         assertThat(updateActions).containsExactlyInAnyOrder(
             SetAttributeInAllVariants.ofUnsetAttribute("priceInfo", true),
             SetAttributeInAllVariants.ofUnsetAttribute("size", true),
@@ -392,8 +411,8 @@ public class ProductSyncIT {
             SetAttributeInAllVariants.ofUnsetAttribute("anlieferung", true),
             SetAttributeInAllVariants.ofUnsetAttribute("zubereitung", true),
             SetAttribute.ofUnsetAttribute(1, "localisedText", true),
-            SetAttributeInAllVariants.of(productRefAttr.getName(), productRefAttr.getValue(), true),
-            SetAttributeInAllVariants.of(productSetRefAttr.getName(), productSetRefAttr.getValue(), true)
+            SetAttributeInAllVariants.of(targetProductRefAttr.getName(), targetProductRefAttr.getValue(), true),
+            SetAttributeInAllVariants.of(targetProductSetRefAttr.getName(), targetProductSetRefAttr.getValue(), true)
         );
 
         final UpdateAction<Product> productReferenceAction = updateActions.get(0);
