@@ -44,6 +44,7 @@ Currently this library supports synchronising
  - [Products](/docs/usage/PRODUCT_SYNC.md) (_Beta_: Not recommended for production use yet.)
  - [InventoryEntries](/docs/usage/INVENTORY_SYNC.md) (_Beta_: Not recommended for production use yet.)
  - [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md) (_Beta_: Not recommended for production use yet.)
+ - [Types](/docs/usage/TYPE_SYNC.md) (_Beta_: Not recommended for production use yet.)
 
 ### Prerequisites
  
