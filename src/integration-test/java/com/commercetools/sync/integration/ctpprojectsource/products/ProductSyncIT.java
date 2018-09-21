@@ -19,6 +19,7 @@ import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
+import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
@@ -378,7 +379,22 @@ public class ProductSyncIT {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
-        assertThat(updateActions).hasSize(2);
+        assertThat(updateActions).containsExactlyInAnyOrder(
+            SetAttributeInAllVariants.ofUnsetAttribute("priceInfo", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("size", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("rinderrasse", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("herkunft", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("teilstueck", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("fuetterung", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("reifung", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("haltbarkeit", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("verpackung", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("anlieferung", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("zubereitung", true),
+            SetAttribute.ofUnsetAttribute(1, "localisedText", true),
+            SetAttributeInAllVariants.of(productRefAttr.getName(), productRefAttr.getValue(), true),
+            SetAttributeInAllVariants.of(productSetRefAttr.getName(), productSetRefAttr.getValue(), true)
+        );
 
         final UpdateAction<Product> productReferenceAction = updateActions.get(0);
         assertThat(productReferenceAction).isExactlyInstanceOf(SetAttributeInAllVariants.class);
