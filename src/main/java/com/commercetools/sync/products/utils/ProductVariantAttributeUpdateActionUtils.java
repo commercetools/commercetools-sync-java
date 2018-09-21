@@ -13,6 +13,7 @@ import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
@@ -41,7 +42,7 @@ public final class ProductVariantAttributeUpdateActionUtils {
      *                           messages if any.
      * @param oldProductVariantAttribute the {@link Attribute} which should be updated.
      * @param newProductVariantAttribute the {@link AttributeDraft} where we get the new value.
-     * @param attributeMetaData a map of attribute name -&gt; {@link AttributeMetaData}; which defines attribute
+     * @param attributesMetaData a map of attribute name -&gt; {@link AttributeMetaData}; which defines attribute
      *                           information: its name, whether a value is required or not and whether it has the
      *                           constraint "SameForAll" or not.
      * @return A filled optional with the update action or an empty optional if the attributes are identical.
@@ -53,12 +54,14 @@ public final class ProductVariantAttributeUpdateActionUtils {
         final int variantId,
         @Nullable final Attribute oldProductVariantAttribute,
         @Nonnull final AttributeDraft newProductVariantAttribute,
-        @Nullable final AttributeMetaData attributeMetaData)
-        throws BuildUpdateActionException {
+        @Nonnull final Map<String, AttributeMetaData> attributesMetaData) throws BuildUpdateActionException {
+
         final String newProductVariantAttributeName = newProductVariantAttribute.getName();
         final JsonNode newProductVariantAttributeValue = newProductVariantAttribute.getValue();
         final JsonNode oldProductVariantAttributeValue = oldProductVariantAttribute != null
             ? oldProductVariantAttribute.getValueAsJsonNode() : null;
+
+        final AttributeMetaData attributeMetaData = attributesMetaData.get(newProductVariantAttributeName);
 
         if (attributeMetaData == null) {
             final String errorMessage = format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, newProductVariantAttributeName);
@@ -75,13 +78,34 @@ public final class ProductVariantAttributeUpdateActionUtils {
                         () -> SetAttributeInAllVariants.of(newProductVariantAttribute, true)) :
                     buildUpdateAction(oldProductVariantAttributeValue, newProductVariantAttributeValue,
                         () -> SetAttribute.of(variantId, newProductVariantAttribute, true));
-            } else {
-                return attributeMetaData.isSameForAll()
-                    ? Optional.of(SetAttributeInAllVariants.ofUnsetAttribute(newProductVariantAttributeName, true)) :
-                    Optional.of(SetAttribute.ofUnsetAttribute(variantId, newProductVariantAttributeName, true));
             }
+            return Optional.of(buildUnSetAttribute(variantId, newProductVariantAttributeName, attributeMetaData));
         }
 
+    }
+
+    static UpdateAction<Product> buildUnSetAttribute(@Nonnull final Integer variantId,
+                                                     @Nonnull final String attributeName,
+                                                     @Nonnull final Map<String, AttributeMetaData> attributesMetaData)
+            throws BuildUpdateActionException {
+
+        final AttributeMetaData attributeMetaData = attributesMetaData.get(attributeName);
+
+        if (attributeMetaData == null) {
+            final String errorMessage = format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, attributeName);
+            throw new BuildUpdateActionException(errorMessage);
+        }
+
+        return buildUnSetAttribute(variantId, attributeName, attributeMetaData);
+    }
+
+    private static UpdateAction<Product> buildUnSetAttribute(@Nonnull final Integer variantId,
+                                                             @Nonnull final String attributeName,
+                                                             @Nonnull final AttributeMetaData attributeMetaData) {
+
+        return attributeMetaData.isSameForAll()
+                ? SetAttributeInAllVariants.ofUnsetAttribute(attributeName, true) :
+                SetAttribute.ofUnsetAttribute(variantId, attributeName, true);
     }
 
     private ProductVariantAttributeUpdateActionUtils() {
