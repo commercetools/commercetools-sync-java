@@ -55,6 +55,7 @@ public final class UnorderedCollectionSyncUtils {
         final Map<S, U> resourcesToRemove = new HashMap<>(oldResourcesMap);
 
         emptyIfNull(newDrafts).stream()
+                              .filter(Objects::nonNull)
                               .map(draftKeyMapper)
                               .filter(Objects::nonNull)
                               .forEach(resourcesToRemove::remove);

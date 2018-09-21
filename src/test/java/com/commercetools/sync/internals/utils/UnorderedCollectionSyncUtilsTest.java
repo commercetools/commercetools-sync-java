@@ -121,6 +121,27 @@ public class UnorderedCollectionSyncUtilsTest {
     }
 
     @Test
+    public void buildRemoveUpdateActions_withNullDrafts_ShouldNotBuildRemoveActions() {
+        // preparation
+        final ProductVariant productVariant = mock(ProductVariant.class);
+        when(productVariant.getId()).thenReturn(1);
+
+        final ProductVariant productVariant2 = mock(ProductVariant.class);
+        when(productVariant2.getId()).thenReturn(2);
+
+        final List<ProductVariant> oldVariants = asList(productVariant, productVariant2);
+        final List<ProductVariantDraft> newDrafts = singletonList(null);
+
+        // test
+        final List<UpdateAction<Product>> removeUpdateActions = buildRemoveUpdateActions(oldVariants,
+            newDrafts, ProductVariant::getKey, ProductVariantDraft::getKey,
+            p -> RemoveVariant.ofVariantId(p.getId(), true));
+
+        // assertion
+        assertThat(removeUpdateActions).isEmpty();
+    }
+
+    @Test
     public void buildRemoveUpdateActions_withNullReturningActionMapper_ShouldBuildActionsWithNoNullElement() {
         // preparation
         final ProductVariant productVariant = mock(ProductVariant.class);
