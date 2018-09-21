@@ -45,7 +45,6 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
 
 
 public final class ProductVariantUpdateActionUtils {
@@ -335,7 +334,7 @@ public final class ProductVariantUpdateActionUtils {
 
         });
 
-        return updateActions.stream().filter(Objects::nonNull).collect(toList());
+        return updateActions;
 
     }
 

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.commercetools.sync.internals.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -70,6 +71,75 @@ public class UnorderedCollectionSyncUtilsTest {
         // assertion
         assertThat(removeUpdateActions)
             .containsExactly(RemoveVariant.ofVariantId(productVariant.getId(), true));
+    }
+
+    @Test
+    public void buildRemoveUpdateActions_withSomeMatchingDrafts_ShouldBuildRemoveActionsForEveryMissingDraft() {
+        // preparation
+        final ProductVariant productVariant = mock(ProductVariant.class);
+        when(productVariant.getId()).thenReturn(1);
+        when(productVariant.getKey()).thenReturn("1");
+
+        final ProductVariant productVariant2 = mock(ProductVariant.class);
+        when(productVariant2.getId()).thenReturn(2);
+        when(productVariant2.getKey()).thenReturn("2");
+
+        final List<ProductVariant> oldVariants = asList(productVariant, productVariant2);
+        final List<ProductVariantDraft> newDrafts =
+            singletonList(ProductVariantDraftBuilder.of(productVariant).build());
+
+        // test
+        final List<UpdateAction<Product>> removeUpdateActions = buildRemoveUpdateActions(oldVariants,
+            newDrafts, ProductVariant::getKey, ProductVariantDraft::getKey,
+            p -> RemoveVariant.ofVariantId(p.getId(), true));
+
+        // assertion
+        assertThat(removeUpdateActions)
+            .containsExactly(RemoveVariant.ofVariantId(productVariant2.getId(), true));
+    }
+
+    @Test
+    public void buildRemoveUpdateActions_withDraftsWithNullKeys_ShouldNotBuildRemoveActionsForDraftsWithNullKeys() {
+        // preparation
+        final ProductVariant productVariant = mock(ProductVariant.class);
+        when(productVariant.getId()).thenReturn(1);
+
+        final ProductVariant productVariant2 = mock(ProductVariant.class);
+        when(productVariant2.getId()).thenReturn(2);
+
+        final List<ProductVariant> oldVariants = asList(productVariant, productVariant2);
+        final List<ProductVariantDraft> newDrafts =
+            singletonList(ProductVariantDraftBuilder.of(productVariant).build());
+
+        // test
+        final List<UpdateAction<Product>> removeUpdateActions = buildRemoveUpdateActions(oldVariants,
+            newDrafts, ProductVariant::getKey, ProductVariantDraft::getKey,
+            p -> RemoveVariant.ofVariantId(p.getId(), true));
+
+        // assertion
+        assertThat(removeUpdateActions).isEmpty();
+    }
+
+    @Test
+    public void buildRemoveUpdateActions_withNullReturningActionMapper_ShouldBuildActionsWithNoNullElement() {
+        // preparation
+        final ProductVariant productVariant = mock(ProductVariant.class);
+        when(productVariant.getId()).thenReturn(1);
+
+        final ProductVariant productVariant2 = mock(ProductVariant.class);
+        when(productVariant2.getId()).thenReturn(2);
+        when(productVariant2.getKey()).thenReturn("2");
+
+        final List<ProductVariant> oldVariants = asList(productVariant, productVariant2);
+        final List<ProductVariantDraft> newDrafts =
+            singletonList(ProductVariantDraftBuilder.of(productVariant).build());
+
+        // test
+        final List<UpdateAction<Product>> removeUpdateActions = buildRemoveUpdateActions(oldVariants,
+            newDrafts, ProductVariant::getKey, ProductVariantDraft::getKey, p -> null);
+
+        // assertion
+        assertThat(removeUpdateActions).doesNotContainNull();
     }
 
     @Test

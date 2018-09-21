@@ -24,6 +24,10 @@ public final class UnorderedCollectionSyncUtils {
      * in the {@code oldResources}: a remove update action is created using the {@code removeUpdateActionMapper}.
      * The final result is a list of all the remove update actions.
      *
+     * <p>The resulting list of update actions is ensured to contain no null values.
+     * <p>If the draft has null key as defined by {@code draftKeyMapper}, the method will ignore generating a remove
+     * update action for it.
+     *
      * @param oldResources             a list of the old resource to compare to the new collection.
      * @param newDrafts                a list of the new drafts to compare to the old collection.
      * @param oldResourceKeyMapper     a function that uses the old resource to get its key matcher.
@@ -45,16 +49,19 @@ public final class UnorderedCollectionSyncUtils {
         @Nonnull final Function<U, UpdateAction<T>> removeUpdateActionMapper) {
 
         final Map<S, U> oldResourcesMap = collectionToMap(oldResources, oldResourceKeyMapper);
+        oldResourcesMap.remove(null);
+
         final Map<S, U> resourcesToRemove = new HashMap<>(oldResourcesMap);
 
         emptyIfNull(newDrafts).stream()
-                              .filter(Objects::nonNull)
                               .map(draftKeyMapper)
+                              .filter(Objects::nonNull)
                               .forEach(resourcesToRemove::remove);
 
         return resourcesToRemove.values()
                                 .stream()
                                 .map(removeUpdateActionMapper)
+                                .filter(Objects::nonNull)
                                 .collect(toList());
     }
 
