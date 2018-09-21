@@ -323,8 +323,11 @@ public final class ProductVariantUpdateActionUtils {
                 final Attribute matchingOldAttribute = oldAttributesMap.get(newAttributeName);
 
                 try {
+
                     buildProductVariantAttributeUpdateAction(oldProductVariantId, matchingOldAttribute,
-                        newAttribute, attributesMetaData).ifPresent(updateActions::add);
+                        newAttribute, attributesMetaData)
+                        .ifPresent(updateActions::add);
+
                 } catch (final BuildUpdateActionException buildUpdateActionException) {
                     final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, newAttributeName,
                         newProductVariant.getKey(), productKey, buildUpdateActionException.getMessage());
