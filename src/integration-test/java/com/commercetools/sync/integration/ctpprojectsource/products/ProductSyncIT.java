@@ -312,7 +312,7 @@ public class ProductSyncIT {
             targetProductType.toReference())
             .slug(LocalizedString.ofEnglish("newSlug3"))
             .key("productKey3")
-            .masterVariant(ProductVariantDraftBuilder.of().key("v3").build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("v3").sku("s3").build())
             .taxCategory(null)
             .state(null)
             .categories(Collections.emptySet())
