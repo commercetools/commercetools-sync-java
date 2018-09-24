@@ -305,8 +305,8 @@ public class ProductSyncIT {
         final ProductDraft existingProductDraft2 = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH,
             targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
             targetCategoryReferencesWithIds, createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
-        final Product targetProductWithKey2 = CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft2))
-                                                               .toCompletableFuture().join();
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft2))
+                         .toCompletableFuture().join();
 
         final ProductDraft existingProductDraft3 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             targetProductType.toReference())
