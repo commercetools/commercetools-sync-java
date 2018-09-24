@@ -286,6 +286,7 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withProductTypeReference_ShouldUpdateProducts() {
+        // Preparation
         // Create custom options with whitelisting and action filter callback..
         final ProductSyncOptions customSyncOptions =
             ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -368,11 +369,15 @@ public class ProductSyncIT {
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraftWithProductReference))
                          .toCompletableFuture().join();
 
+
+        // Test
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
         final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
         final ProductSyncStatistics syncStatistics =  customSync.sync(productDrafts).toCompletableFuture().join();
 
+
+        // Assertion
         assertThat(syncStatistics).hasValues(3, 0, 1, 0);
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
