@@ -412,18 +412,5 @@ public class ProductSyncIT {
             SetAttributeInAllVariants.of(targetProductSetRefAttr.getName(), targetProductSetRefAttr.getValue(), true)
         );
 
-        final UpdateAction<Product> productReferenceAction = updateActions.get(0);
-        assertThat(productReferenceAction).isExactlyInstanceOf(SetAttributeInAllVariants.class);
-        final SetAttributeInAllVariants action1 = (SetAttributeInAllVariants) productReferenceAction;
-        assertThat(action1.getName()).isEqualTo("product-reference");
-        assertThat(action1.getValue()).isNotNull();
-        assertThat(action1.getValue().get("id").asText()).isEqualTo(targetProductWithKey2.getId());
-
-        final UpdateAction<Product> productReferenceSetAction = updateActions.get(1);
-        assertThat(productReferenceSetAction).isExactlyInstanceOf(SetAttributeInAllVariants.class);
-        final SetAttributeInAllVariants action2 = (SetAttributeInAllVariants) productReferenceSetAction;
-        assertThat(action2.getName()).isEqualTo("product-reference-set");
-        assertThat(action2.getValue()).isNotNull();
-        assertThat(action2.getValue().isArray()).isTrue();
     }
 }
