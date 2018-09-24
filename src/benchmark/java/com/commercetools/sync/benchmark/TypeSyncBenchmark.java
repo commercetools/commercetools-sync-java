@@ -60,7 +60,7 @@ public class TypeSyncBenchmark {
 
     @AfterClass
     public static void tearDown() {
-       deleteTypes(CTP_TARGET_CLIENT);
+        deleteTypes(CTP_TARGET_CLIENT);
     }
 
     @Before
