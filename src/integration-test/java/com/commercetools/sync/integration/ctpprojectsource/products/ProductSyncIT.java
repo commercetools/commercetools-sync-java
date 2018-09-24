@@ -296,8 +296,6 @@ public class ProductSyncIT {
                                      .build();
         final ProductSync customSync = new ProductSync(customSyncOptions);
 
-
-
         // Create 3 existing products in target project with keys (productKey1, productKey2 and productKey3)
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
@@ -327,7 +325,7 @@ public class ProductSyncIT {
             sourceProductType.toReference(), sourceTaxCategory.toReference(), sourceProductState.toReference(),
             sourceCategoryReferencesWithIds, createRandomCategoryOrderHints(sourceCategoryReferencesWithIds));
         final Product product2 = CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft2))
-                                                 .toCompletableFuture().join();
+                                                  .toCompletableFuture().join();
         final ProductDraft newProductDraft3 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             sourceProductType.toReference())
             .slug(LocalizedString.ofEnglish("newSlug3"))
@@ -339,8 +337,11 @@ public class ProductSyncIT {
             .categoryOrderHints(null)
             .build();
         final Product product3 = CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft3))
-                                                 .toCompletableFuture().join();
+                                                  .toCompletableFuture().join();
 
+
+        // Create existing product with productKey1 in source project that has references to products with keys
+        // (productKey2 and productKey3).
 
         final ObjectNode productReferenceValue1 = getProductReferenceWithId(product2.getId());
         final ObjectNode productReferenceValue2 = getProductReferenceWithId(product3.getId());
@@ -356,8 +357,6 @@ public class ProductSyncIT {
                                                                             .sku("s1")
                                                                             .attributes(attributeDrafts).build();
 
-        // Create existing product with productKey1 in source project that has references to products with keys
-        // (productKey2 and productKey3).
         final ProductDraft newProductDraftWithProductReference =
             createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toReference())
                 .masterVariant(masterVariant)
@@ -371,9 +370,7 @@ public class ProductSyncIT {
 
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
-
         final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
-
         final ProductSyncStatistics syncStatistics =  customSync.sync(productDrafts).toCompletableFuture().join();
 
         assertThat(syncStatistics).hasValues(3, 0, 1, 0);
