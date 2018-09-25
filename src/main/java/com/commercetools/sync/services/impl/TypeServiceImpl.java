@@ -45,7 +45,7 @@ public final class TypeServiceImpl implements TypeService {
     @Override
     public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key) {
         if (!isCached) {
-            return fetchAndCache(key);
+            return cacheAndFetch(key);
         }
         return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
     }
@@ -75,7 +75,7 @@ public final class TypeServiceImpl implements TypeService {
     }
 
     @Nonnull
-    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
+    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
         final Consumer<List<Type>> typePageConsumer = typesPage ->
             typesPage.forEach(type -> keyToIdCache.put(type.getKey(), type.getId()));
 

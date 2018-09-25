@@ -99,7 +99,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithOneEnumValueSwitch_ShouldBuildRemoveAndAddEnumValueActions() {
+    public void buildLocalizedEnumUpdateActions_WithOneEnumValueSwitch_ShouldBuildAddEnumValueActions() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,
@@ -130,7 +130,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
+    public void buildLocalizedEnumUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderActions() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,
@@ -185,7 +185,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveEnumValueActions() {
+    public void buildLocalizedEnumUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAddAndOrderEnumValueActions() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,

@@ -33,8 +33,8 @@ public final class TypeUpdateFieldDefinitionActionUtils {
 
     /**
      * Compares a list of {@link FieldDefinition}s with a list of {@link FieldDefinition}s.
-     * The method serves as a generic implementation for field definitions syncing. The method takes in functions
-     * for building the required update actions (AddFieldDefinition, RemoveFieldDefinition, ChangeFieldDefinitionOrder
+     * The method serves as a generic implementation for field definitions syncing and building the required
+     * update actions (AddFieldDefinition, RemoveFieldDefinition, ChangeFieldDefinitionOrder)
      * and 1-1 update actions on field definitions (e.g. changeFieldDefinitionLabel, etc..) for the required
      * resource.
      *
@@ -69,8 +69,8 @@ public final class TypeUpdateFieldDefinitionActionUtils {
 
     /**
      * Compares a list of {@link FieldDefinition}s with a list of {@link FieldDefinition}s.
-     * The method serves as an implementation for field definitions syncing. The method takes in functions
-     * for building the required update actions (AddFieldDefinition, RemoveFieldDefinition, ChangeFieldDefinitionOrder
+     * The method serves as an implementation for field definitions syncing and building the required
+     * update actions (AddFieldDefinition, RemoveFieldDefinition, ChangeFieldDefinitionOrder)
      * and 1-1 update actions on field definitions (e.g. changeFieldDefinitionLabel, etc..) for the required
      * resource.
      *
@@ -86,11 +86,6 @@ public final class TypeUpdateFieldDefinitionActionUtils {
         @Nonnull final List<FieldDefinition> newFieldDefinitions)
         throws BuildUpdateActionException {
 
-        final Map<String, FieldDefinition> oldFieldDefinitionsNameMap =
-            oldFieldDefinitions
-                .stream()
-                .collect(toMap(FieldDefinition::getName, fieldDefinition -> fieldDefinition));
-
         try {
 
             final List<UpdateAction<Type>> updateActions =
@@ -101,8 +96,8 @@ public final class TypeUpdateFieldDefinitionActionUtils {
 
             updateActions.addAll(
                 buildAddFieldDefinitionUpdateActions(
-                    newFieldDefinitions,
-                    oldFieldDefinitionsNameMap
+                    oldFieldDefinitions,
+                    newFieldDefinitions
                 )
             );
 
@@ -215,7 +210,6 @@ public final class TypeUpdateFieldDefinitionActionUtils {
         @Nonnull final List<FieldDefinition> oldFieldDefinitions,
         @Nonnull final List<FieldDefinition> newFieldDefinitions) {
 
-
         final List<String> newNames = newFieldDefinitions
             .stream()
             .map(FieldDefinition::getName)
@@ -252,20 +246,25 @@ public final class TypeUpdateFieldDefinitionActionUtils {
      * {@code oldFieldDefinitionNameMap}. If there are, then "add" field definition update actions are built.
      * Otherwise, if there are no new field definitions, then an empty list is returned.
      *
-     * @param newFieldDefinitions       the list of new {@link FieldDefinition}s.
-     * @param oldFieldDefinitionNameMap a map of names to FieldDefinition of the old list
-     *                                  of field definition.
+     * @param oldFieldDefinitions the list of old {@link FieldDefinition}s
+     * @param newFieldDefinitions the list of new {@link FieldDefinition}s
+     *
      * @return a list of field definition update actions if there are new field definition that should be added.
      *         Otherwise, if the field definitions are identical, an empty optional is returned.
      */
     @Nonnull
     private static List<UpdateAction<Type>> buildAddFieldDefinitionUpdateActions(
-        @Nonnull final List<FieldDefinition> newFieldDefinitions,
-        @Nonnull final Map<String, FieldDefinition> oldFieldDefinitionNameMap) {
+        @Nonnull final List<FieldDefinition> oldFieldDefinitions,
+        @Nonnull final List<FieldDefinition> newFieldDefinitions) {
+
+        final Map<String, FieldDefinition> oldFieldDefinitionsNameMap =
+                oldFieldDefinitions
+                        .stream()
+                        .collect(toMap(FieldDefinition::getName, fieldDefinition -> fieldDefinition));
 
         return newFieldDefinitions
             .stream()
-            .filter(fieldDefinition -> !oldFieldDefinitionNameMap.containsKey(fieldDefinition.getName()))
+            .filter(fieldDefinition -> !oldFieldDefinitionsNameMap.containsKey(fieldDefinition.getName()))
             .map(fieldDefinition -> FieldDefinition.of(fieldDefinition.getType(),
                     fieldDefinition.getName(),
                     fieldDefinition.getLabel(),

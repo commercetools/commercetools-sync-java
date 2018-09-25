@@ -48,19 +48,6 @@ public final class TypeUpdatePlainEnumActionUtils {
     }
 
 
-    /**
-     * Compares a list of old {@link EnumValue}s with a list of new {@link EnumValue}s for a given field
-     * definition.
-     * The method serves as a implementation for plain enum values syncing. The method takes in functions
-     * for building the required update actions (AddEnumValue, RemoveEnumValue, ChangeEnumValueOrder and 1-1
-     * update actions on plain enum values (e.g. changeLabel) for the required resource.
-     *
-     * @param fieldDefinitionName     the field definition name whose plain enum values are going to be synced.
-     * @param oldEnumValues           the old list of plain enum values.
-     * @param newEnumValues           the new list of plain enum values.
-     * @return a list of plain enum values update actions if the list of plain enum values is not identical.
-     *         Otherwise, if the plain enum values are identical, an empty list is returned.
-     */
     @Nonnull
     private static List<UpdateAction<Type>> buildUpdateActions(
         @Nonnull final String fieldDefinitionName,

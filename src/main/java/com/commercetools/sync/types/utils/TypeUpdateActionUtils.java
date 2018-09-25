@@ -22,10 +22,9 @@ import static java.util.Collections.emptyList;
 public final class TypeUpdateActionUtils {
 
     /**
-     * Compares the {@code name} values of a {@link Type} and a {@link Type}
+     * Compares the {@code name} values of a {@link Type} and a {@link TypeDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "changeName"}
-     * {@link UpdateAction}. If both {@link Type} and {@link Type} have the same
-     * {@code name} values, then no update action is needed and empty optional will be returned.
+     * {@link UpdateAction} if values are different.
      *
      * @param oldType the type that should be updated.
      * @param newType the type draft which contains the new name.
@@ -43,9 +42,8 @@ public final class TypeUpdateActionUtils {
 
     /**
      * Compares the {@link LocalizedString} descriptions of a {@link Type} and a {@link TypeDraft} and
-     * returns an {@link UpdateAction}&lt;{@link Type}&gt; as a result in an {@link Optional}. If both the
-     * {@link Type} and the {@link TypeDraft} have the same description, then no update action is needed and
-     * hence an empty {@link Optional} is returned.
+     * returns an {@link UpdateAction}&lt;{@link Type}&gt; as a result in an {@link Optional}
+     * of update action if values are different.
      *
      * @param oldType the type which should be updated.
      * @param newType the type draft where we get the new description.
@@ -60,10 +58,9 @@ public final class TypeUpdateActionUtils {
     }
 
     /**
-     * Compares the fields of a {@link Type} and a {@link TypeDraft} and returns a list of
-     * {@link UpdateAction}&lt;{@link Type}&gt; as a result. If both the {@link Type} and
-     * the {@link TypeDraft} have identical field definitions, then no update action is needed and hence an empty
-     * {@link List} is returned. In case, the new type draft has a list of field definitions in which a
+     * Compares the field definitions of a {@link Type} and a {@link TypeDraft} and returns a list of
+     * {@link UpdateAction}&lt;{@link Type}&gt; as a result in an {@link Optional} of update action
+     * if values are different.  In case, the new type draft has a list of field definitions in which a
      * duplicate name exists, the error callback is triggered and an empty list is returned.
      *
      * @param oldType the type which should be updated.

@@ -99,7 +99,7 @@ public final class TypeUpdateEnumActionsUtils {
      * Otherwise, if there are no new enum values, then an empty list is returned.
      *
      * @param fieldDefinitionName     the field definition name whose enum values belong to.
-     * @param oldEnumValues           the list of olf enum values.
+     * @param oldEnumValues           the list of old enum values.
      * @param newEnumValues           the list of new enum values.
      * @param addEnumCallback         the function that is called in order to add the new enum instance
      * @param <T>                     the enum type of the element to add.

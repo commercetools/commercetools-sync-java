@@ -1,6 +1,6 @@
 # commercetools type sync
 
-Utility which provides API for building CTP type update actions and type synchronisation.
+Utility which provides an API for building CTP type update actions and type synchronisation.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -30,7 +30,7 @@ matched.
     - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
 
-   You can use the same client instantiating used in the integration tests for this library found
+   You can use the same client instance in the integration tests for this library found
    [here](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
 
 4. After the `sphereClient` is setup, a `TypeSyncOptions` should be be built as follows:
@@ -109,8 +109,8 @@ Utility methods provided by the library to compare the specific fields of a `Typ
 ````java
 Optional<UpdateAction<Type>> updateAction = TypeUpdateActionUtils.buildChangeNameAction(oldType, typeDraft);
 ````
-More examples of those utils for different fields can be found [here](/src/test/java/com/commercetools/sync/types/utils/TypeUpdateActionUtilsTest.java).
-
+More examples of those utils for different types can be found [here](/src/test/java/com/commercetools/sync/types/utils/TypeUpdateActionUtilsTest.java).
+and field definitions can be found [here](/src/test/java/com/commercetools/sync/types/utils/FieldDefinitionUpdateActionUtilsTest.java).
 
 ## Caveats
 
@@ -118,3 +118,4 @@ More examples of those utils for different fields can be found [here](/src/test/
 2. Updating the label of enum values and localized enum values of field definition is not supported yet.
 3. Removing the enum values from the field definition is not supported yet.
 4. Updating the input hint of field definition is not supported yet.
+5. Updating the reference and field definition type is not supported yet.

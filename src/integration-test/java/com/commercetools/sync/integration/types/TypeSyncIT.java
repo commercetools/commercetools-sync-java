@@ -465,7 +465,8 @@ public class TypeSyncIT {
                 .sync(singletonList(newTypeDraft))
                 .toCompletableFuture().join();
 
-        verify(spyTypeSyncOptions).applyErrorCallback("Failed to process type draft without key.", null);
+        verify(spyTypeSyncOptions)
+                .applyErrorCallback("Failed to process type draft without key.", null);
 
         AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
@@ -684,7 +685,8 @@ public class TypeSyncIT {
                 .sync(typeDrafts)
                 .toCompletableFuture().join();
 
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(100, 100, 0, 0);
+        AssertionsForStatistics.assertThat(typeSyncStatistics)
+                .hasValues(100, 100, 0, 0);
     }
 
     @Test
@@ -780,7 +782,7 @@ public class TypeSyncIT {
     }
 
     private static void assertFieldDefinitionsAreEqual(@Nonnull final List<FieldDefinition> oldFields,
-                                             @Nonnull final List<FieldDefinition> newFields) {
+                                                       @Nonnull final List<FieldDefinition> newFields) {
 
         IntStream.range(0, newFields.size())
                 .forEach(index -> {

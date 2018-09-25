@@ -53,20 +53,7 @@ public final class TypeUpdateLocalizedEnumActionUtils {
         return emptyList();
     }
 
-    /**
-     * Compares a list of old {@link LocalizedEnumValue}s with a list of new {@link LocalizedEnumValue}s for a given
-     * field definition.
-     * The method serves as a generic implementation for localized enum values syncing. The method takes in functions
-     * for building the required update actions (AddEnumValue, RemoveEnumValue, ChangeEnumValueOrder and 1-1
-     * update actions on localized enum values (e.g. changeLabel) for the required resource.
-     *
-     * @param fieldDefinitionName the attribute name whose localized enum values are going to be synced.
-     * @param oldEnumValues           the old list of localized enum values.
-     * @param newEnumValues           the new list of localized enum values.
-     * @return a list of localized enum values update actions if the list of localized enum values is not identical.
-     *         Otherwise, if the localized enum values are identical, an empty list is returned.
-     * @throws DuplicateKeyException in case there are localized enum values with duplicate keys.
-     */
+
     @Nonnull
     private static List<UpdateAction<Type>> buildUpdateActions(
         @Nonnull final String fieldDefinitionName,

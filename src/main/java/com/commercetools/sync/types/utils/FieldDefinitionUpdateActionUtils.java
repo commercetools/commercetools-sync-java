@@ -22,13 +22,13 @@ import static java.util.stream.Collectors.toList;
 public final class FieldDefinitionUpdateActionUtils {
 
     /**
-     * Compares all the fields of an {@link FieldDefinition} and an {@link FieldDefinition} and returns
+     * Compares all the fields of old {@link FieldDefinition} with new {@link FieldDefinition} and returns
      * a list of {@link UpdateAction}&lt;{@link Type}&gt; as a result. If both the {@link FieldDefinition}
      * and the {@link FieldDefinition} have identical fields, then no update action is needed and hence an
      * empty {@link List} is returned.
      *
-     * @param oldFieldDefinition  the field definition which should be updated.
-     * @param newFieldDefinition the field definition draft where we get the new fields.
+     * @param oldFieldDefinition the old field definition which should be updated.
+     * @param newFieldDefinition the new field definition where we get the new fields.
      * @return A list with the update actions or an empty list if the field definition fields are identical.
      */
     @Nonnull
@@ -36,12 +36,8 @@ public final class FieldDefinitionUpdateActionUtils {
         @Nonnull final FieldDefinition oldFieldDefinition,
         @Nonnull final FieldDefinition newFieldDefinition) {
 
-        final List<UpdateAction<Type>> updateActions;
-
-        updateActions = Stream
-            .of(
-                buildChangeLabelUpdateAction(oldFieldDefinition, newFieldDefinition)
-            )
+        final List<UpdateAction<Type>> updateActions = Stream.of(
+                buildChangeLabelUpdateAction(oldFieldDefinition, newFieldDefinition))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(toList());
@@ -86,13 +82,13 @@ public final class FieldDefinitionUpdateActionUtils {
     }
 
     /**
-     * Compares the {@link LocalizedString} labels of an {@link FieldDefinition} and an
+     * Compares the {@link LocalizedString} labels of old {@link FieldDefinition} with new
      * {@link FieldDefinition} and returns an {@link UpdateAction}&lt;{@link Type}&gt; as a result in
      * an {@link Optional}. If both the {@link FieldDefinition} and the {@link FieldDefinition} have the
      * same label, then no update action is needed and hence an empty {@link Optional} is returned.
      *
-     * @param oldFieldDefinition the field definition which should be updated.
-     * @param newFieldDefinition the field definition draft where we get the new label.
+     * @param oldFieldDefinition the old field definition which should be updated.
+     * @param newFieldDefinition the new field definition draft where we get the new label.
      * @return A filled optional with the update action or an empty optional if the labels are identical.
      */
     @Nonnull

@@ -65,11 +65,8 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      *         processes performed by this sync instance.
      */
     @Override
-    protected CompletionStage<TypeSyncStatistics> process(
-            @Nonnull final List<TypeDraft> typeDrafts) {
-
+    protected CompletionStage<TypeSyncStatistics> process(@Nonnull final List<TypeDraft> typeDrafts) {
         final List<List<TypeDraft>> batches = batchElements(typeDrafts, syncOptions.getBatchSize());
-
         return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
 
@@ -90,16 +87,14 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * Fetches existing {@link Type} objects from CTP project that correspond to passed {@code batch}.
      * Having existing types fetched, {@code batch} is compared and synced with fetched objects by
      * {@link TypeSync#syncBatch(List, List)} function. When fetching existing types results in
-     * an empty optional then {@code batch} isn't processed.
+     * an empty updated/created statistics then {@code batch} isn't processed.
      *
      * @param batch batch of drafts that need to be synced
-     * @return {@link CompletionStage} of {@link Void} that indicates method progress.
+     * @return {@link CompletionStage} of {@link TypeSyncStatistics} that indicates method progress.
      */
     @Override
     protected CompletionStage<TypeSyncStatistics> processBatch(@Nonnull final List<TypeDraft> batch) {
-        final List<TypeDraft> validTypeDrafts = batch.stream()
-                                                                   .filter(this::validateDraft)
-                                                                   .collect(toList());
+        final List<TypeDraft> validTypeDrafts = batch.stream().filter(this::validateDraft).collect(toList());
 
         if (validTypeDrafts.isEmpty()) {
             statistics.incrementProcessed(batch.size());
@@ -140,7 +135,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * Given a set of type keys, fetches the corresponding types from CTP if they exist.
      *
      * @param keys the keys of the types that are wanted to be fetched.
-     * @return a future which contains the list of types corresponding to the keys.
+     * @return a {@link CompletionStage} which contains the list of types corresponding to the keys.
      */
     private CompletionStage<List<Type>> fetchExistingTypes(@Nonnull final Set<String> keys) {
         return typeService
@@ -188,7 +183,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      *
      * @param oldTypes old types.
      * @param newTypes drafts that need to be synced.
-     * @return a future which contains an empty result after execution of the update
+     * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
     private CompletionStage<TypeSyncStatistics> syncBatch(
             @Nonnull final List<Type> oldTypes,
@@ -216,7 +211,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * is called.
      *
      * @param typeDraft the type draft to create the type from.
-     * @return a future which contains an empty result after execution of the create.
+     * @return a {@link CompletionStage} which contains an empty result after execution of the create.
      */
     private CompletionStage<Void> createType(@Nonnull final TypeDraft typeDraft) {
         return syncOptions.applyBeforeCreateCallBack(typeDraft)
@@ -245,7 +240,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      *
      * @param oldType existing type that could be updated.
      * @param newType draft containing data that could differ from data in {@code oldType}.
-     * @return a future which contains an empty result after execution of the update.
+     * @return a {@link CompletionStage} which contains an empty result after execution of the update.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> updateType(@Nonnull final Type oldType,
