@@ -1,11 +1,15 @@
 package com.commercetools.sync.types.utils.typeactionutils;
 
+import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
+import com.commercetools.sync.types.utils.TypeUpdateLocalizedEnumActionUtils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.commands.updateactions.AddLocalizedEnumValue;
 import io.sphere.sdk.types.commands.updateactions.ChangeLocalizedEnumValueOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +29,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
 
     private static final List<LocalizedEnumValue> ENUM_VALUES_ABC = asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_C);
     private static final List<LocalizedEnumValue> ENUM_VALUES_ABD = asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_D);
+    private static final List<LocalizedEnumValue> ENUM_VALUES_ABB = asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_B);
     private static final List<LocalizedEnumValue> ENUM_VALUES_ABCD = asList(
         ENUM_VALUE_A,
         ENUM_VALUE_B,
@@ -46,6 +51,9 @@ public class BuildLocalizedEnumUpdateActionsTest {
         ENUM_VALUE_C
     );
     private static final List<LocalizedEnumValue> ENUM_VALUES_CBD = asList(ENUM_VALUE_C, ENUM_VALUE_B, ENUM_VALUE_D);
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void buildLocalizedEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOlEnumValues_ShouldNotBuildActions() {
@@ -200,6 +208,20 @@ public class BuildLocalizedEnumUpdateActionsTest {
                 ENUM_VALUE_B.getKey(),
                 ENUM_VALUE_D.getKey()
             ))
+        );
+    }
+
+    @Test
+    public void buildLocalizedEnumUpdateActions_WithDuplicatePlainEnumValues_ShouldTriggerDuplicateKeyError() {
+        expectedException.expect(DuplicateKeyException.class);
+        expectedException.expectMessage("Enum Values have duplicated keys. Field definition name: "
+                + "'field_definition_name', Duplicated enum value: 'b'. Enum Values are expected to be unique inside "
+                + "their field definition.");
+
+        TypeUpdateLocalizedEnumActionUtils.buildLocalizedEnumValuesUpdateActions(
+                "field_definition_name",
+                ENUM_VALUES_ABC,
+                ENUM_VALUES_ABB
         );
     }
 }

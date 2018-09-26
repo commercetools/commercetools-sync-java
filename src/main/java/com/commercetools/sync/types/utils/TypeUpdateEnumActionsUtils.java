@@ -46,7 +46,6 @@ public final class TypeUpdateEnumActionsUtils {
             ));
     }
 
-
     /**
      * Compares the order of a list of old enum values and a list of new enum values. If there is a change in order,
      * then a change of enum values order (with the new order) is built. If there are no changes in order an empty
@@ -118,7 +117,12 @@ public final class TypeUpdateEnumActionsUtils {
             oldEnumValues
         );
 
-        return newEnumValues
+        final Map<String, T> newEnumValuesKeyMap = getEnumValuesKeyMapWithKeyValidation(
+            fieldDefinitionName,
+            newEnumValues
+        );
+
+        return newEnumValuesKeyMap.values()
             .stream()
             .filter(newEnumValue -> !oldEnumValuesKeyMap.containsKey(newEnumValue.getKey()))
             .map(newEnumValue -> addEnumCallback.apply(fieldDefinitionName, newEnumValue))

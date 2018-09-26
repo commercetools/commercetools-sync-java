@@ -244,7 +244,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> updateType(@Nonnull final Type oldType,
-                                                    @Nonnull final TypeDraft newType) {
+                                             @Nonnull final TypeDraft newType) {
 
         final List<UpdateAction<Type>> updateActions = buildActions(oldType, newType, syncOptions);
 

@@ -56,9 +56,6 @@ update and modify (add/remove) update actions just before they are send to CTP A
 a filter function which can be applied on a type draft before a request to create it on CTP is issued. It allows the
 user to intercept type create requests modify the draft before the create request is sent to CTP API.
 
-- `allowUuid`
-a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
-
 Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning
 streams, would look as follows:
 ```java
@@ -118,4 +115,3 @@ and field definitions can be found [here](/src/test/java/com/commercetools/sync/
 2. Updating the label of enum values and localized enum values of field definition is not supported yet.
 3. Removing the enum values from the field definition is not supported yet.
 4. Updating the input hint of field definition is not supported yet.
-5. Updating the reference and field definition type is not supported yet.

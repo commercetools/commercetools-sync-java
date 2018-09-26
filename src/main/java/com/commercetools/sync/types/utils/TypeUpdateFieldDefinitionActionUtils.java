@@ -25,7 +25,6 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static com.commercetools.sync.types.utils.FieldDefinitionUpdateActionUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -156,27 +155,26 @@ public final class TypeUpdateFieldDefinitionActionUtils {
                     final FieldDefinition matchingNewFieldDefinition =
                             newFieldDefinitionsNameMap.get(oldFieldDefinitionName);
 
-                    return ofNullable(matchingNewFieldDefinition)
-                        .map(newFieldDefinition -> {
-                            if (newFieldDefinition.getType() != null) {
-                                // field type is required so if null we let commercetools to throw exception
-                                if (haveSameFieldType(oldFieldDefinition, newFieldDefinition)) {
-                                    return buildActions(oldFieldDefinition, newFieldDefinition);
-                                } else {
-                                    return Arrays.asList(
-                                            RemoveFieldDefinition.of(oldFieldDefinitionName),
-                                            AddFieldDefinition.of(newFieldDefinition)
-                                    );
-                                }
+                    if (matchingNewFieldDefinition == null) {
+                        return singletonList(RemoveFieldDefinition.of(oldFieldDefinitionName));
+                    } else {
+                        if (matchingNewFieldDefinition.getType() != null) {
+                            // field type is required so if null we let commercetools to throw exception
+                            if (haveSameFieldType(oldFieldDefinition, matchingNewFieldDefinition)) {
+                                return buildActions(oldFieldDefinition, matchingNewFieldDefinition);
                             } else {
-                                return new ArrayList<UpdateAction<Type>>();
+                                return Arrays.asList(
+                                        RemoveFieldDefinition.of(oldFieldDefinitionName),
+                                        AddFieldDefinition.of(matchingNewFieldDefinition)
+                                );
                             }
-                        })
-                        .orElseGet(() -> singletonList(RemoveFieldDefinition.of(oldFieldDefinitionName)));
+                        } else {
+                            return new ArrayList<UpdateAction<Type>>();
+                        }
+                    }
                 })
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
-
     }
 
     /**

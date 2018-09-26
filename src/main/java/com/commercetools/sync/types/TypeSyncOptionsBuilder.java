@@ -40,7 +40,6 @@ public final class TypeSyncOptionsBuilder extends BaseSyncOptionsBuilder<TypeSyn
             errorCallback,
             warningCallback,
             batchSize,
-            allowUuid,
             beforeUpdateCallback,
             beforeCreateCallback
         );
