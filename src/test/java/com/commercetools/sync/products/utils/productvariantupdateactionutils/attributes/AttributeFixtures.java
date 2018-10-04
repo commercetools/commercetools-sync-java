@@ -8,8 +8,12 @@ public final class AttributeFixtures {
 
     public static final Attribute BOOLEAN_ATTRIBUTE_TRUE =
         readObjectFromResource("boolean-attribute-true.json", Attribute.class);
+    public static final Attribute BOOLEAN_ATTRIBUTE_FALSE =
+        readObjectFromResource("boolean-attribute-false.json", Attribute.class);
     public static final Attribute TEXT_ATTRIBUTE_BAR =
         readObjectFromResource("text-attribute-bar.json", Attribute.class);
+    public static final Attribute TEXT_ATTRIBUTE_FOO =
+        readObjectFromResource("text-attribute-foo.json", Attribute.class);
     public static final Attribute LTEXT_ATTRIBUTE_EN_BAR =
         readObjectFromResource("ltext-attribute-en-bar.json", Attribute.class);
     public static final Attribute ENUM_ATTRIBUTE_BARLABEL_BARKEY =
