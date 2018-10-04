@@ -57,13 +57,14 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M14)
 
 
-**Enhancements** (6)
+**Enhancements** (7)
 - **Product Sync** - Products create and update requests are now issued in parallel. This should lead to a performance improvement. [#238](https://github.com/commercetools/commercetools-sync-java/issues/238)
 - **Commons** - Bumped `com.adarshr.test-logger` to 1.5.0.
 - **Commons** - Bumped `mockito` to 2.22.0.
 - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.3.1.
 - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.3.1.
 - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.3.1.
+- **Commons** - Bumped gradle to version [gradle-4.10.2](https://docs.gradle.org/4.10.2/release-notes.html).
 -->
 
 ### v1.0.0-M13 -  Sept 5, 2018
