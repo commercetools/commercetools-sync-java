@@ -601,7 +601,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withSomeChangedMatchingAttributes_WithNoExistingAttributeInMetaData_ShouldBuildNoActionsAndTriggerErrorCallback() {
+    public void withSomeChangedMatchingAttrs_WithNoExistingMetaData_ShouldBuildNoActionsAndTriggerErrorCallback() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";

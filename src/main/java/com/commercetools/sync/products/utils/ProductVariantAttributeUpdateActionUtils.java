@@ -66,7 +66,7 @@ public final class ProductVariantAttributeUpdateActionUtils {
 
         return attributeMetaData.isSameForAll()
             ? buildUpdateAction(oldProductVariantAttributeValue, newProductVariantAttributeValue,
-            () -> SetAttributeInAllVariants.of(newProductVariantAttribute, true)) :
+                () -> SetAttributeInAllVariants.of(newProductVariantAttribute, true)) :
             buildUpdateAction(oldProductVariantAttributeValue, newProductVariantAttributeValue,
                 () -> SetAttribute.of(variantId, newProductVariantAttribute, true));
 
