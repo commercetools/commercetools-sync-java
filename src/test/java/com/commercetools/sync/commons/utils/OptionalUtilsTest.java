@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 class OptionalUtilsTest {
 
     @Test
-    void filterEmptyOptionals_withEmptyCollection_ShouldReturnEmptyCollection() {
+    void filterEmptyOptionals_withEmptyCollection_ShouldReturnEmptyList() {
         // preparation
         final List<Optional<String>> optionalStrings = emptyList();
 
@@ -38,7 +38,7 @@ class OptionalUtilsTest {
     }
 
     @Test
-    void filterEmptyOptionals_withAllEmptyOptionals_ShouldReturnEmptyCollection() {
+    void filterEmptyOptionals_withAllEmptyOptionals_ShouldReturnEmptyList() {
         // preparation
         final List<Optional<String>> optionalStrings = asList(Optional.empty(), Optional.empty());
 
@@ -50,7 +50,7 @@ class OptionalUtilsTest {
     }
 
     @Test
-    void filterEmptyOptionals_withSomeEmptyOptionals_ShouldReturnEmptyCollection() {
+    void filterEmptyOptionals_withSomeEmptyOptionals_ShouldFilterEmptyOptionals() {
         // preparation
         final List<Optional<String>> optionalStrings = asList(Optional.of("foo"), Optional.empty());
 
