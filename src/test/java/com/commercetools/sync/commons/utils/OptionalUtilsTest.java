@@ -21,7 +21,7 @@ class OptionalUtilsTest {
         // test
         final List<String> filteredOptionals = filterEmptyOptionals(optionalStrings);
 
-        //assertion
+        // assertion
         assertEquals(emptyList(), filteredOptionals);
     }
 
@@ -33,7 +33,7 @@ class OptionalUtilsTest {
         // test
         final List<String> filteredOptionals = filterEmptyOptionals(optionalStrings);
 
-        //assertion
+        // assertion
         assertEquals(asList("foo", "bar"), filteredOptionals);
     }
 
@@ -45,7 +45,7 @@ class OptionalUtilsTest {
         // test
         final List<String> filteredOptionals = filterEmptyOptionals(optionalStrings);
 
-        //assertion
+        // assertion
         assertEquals(emptyList(), filteredOptionals);
     }
 
@@ -57,7 +57,7 @@ class OptionalUtilsTest {
         // test
         final List<String> filteredOptionals = filterEmptyOptionals(optionalStrings);
 
-        //assertion
+        // assertion
         assertEquals(singletonList("foo"), filteredOptionals);
     }
 }
