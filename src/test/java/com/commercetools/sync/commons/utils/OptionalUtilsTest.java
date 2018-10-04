@@ -62,4 +62,40 @@ class OptionalUtilsTest {
         // assertion
         assertEquals(singletonList("foo"), filteredOptionals);
     }
+
+    @Test
+    void filterEmptyOptionals_withNoVarArgs_ShouldReturnEmptyList() {
+        // test
+        final List<String> filteredOptionals = filterEmptyOptionals();
+
+        // assertion
+        assertEquals(emptyList(), filteredOptionals);
+    }
+
+    @Test
+    void filterEmptyOptionals_withVarArgsAllEmptyOptionals_ShouldReturnEmptyList() {
+        // test
+        final List<String> filteredOptionals = filterEmptyOptionals(empty(), empty());
+
+        // assertion
+        assertEquals(emptyList(), filteredOptionals);
+    }
+
+    @Test
+    void filterEmptyOptionals_withVarArgsAllNonEmptyOptionals_ShouldReturnAllElementsInList() {
+        // test
+        final List<String> filteredOptionals = filterEmptyOptionals(of("foo"), of("bar"));
+
+        // assertion
+        assertEquals(asList("foo", "bar"), filteredOptionals);
+    }
+
+    @Test
+    void filterEmptyOptionals_withVarArgsSomeEmptyOptionals_ShouldFilterEmptyOptionals() {
+        // test
+        final List<String> filteredOptionals = filterEmptyOptionals(of("foo"), empty());
+
+        // assertion
+        assertEquals(singletonList("foo"), filteredOptionals);
+    }
 }
