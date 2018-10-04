@@ -306,7 +306,8 @@ public final class ProductVariantUpdateActionUtils {
                 } catch (final BuildUpdateActionException buildUpdateActionException) {
                     final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, attribute.getName(),
                         newProductVariant.getKey(), productKey, buildUpdateActionException.getMessage());
-                    syncOptions.applyErrorCallback(errorMessage, buildUpdateActionException);
+                    syncOptions.applyErrorCallback(errorMessage,
+                        new BuildUpdateActionException(errorMessage, buildUpdateActionException));
                     return null;
                 }
             });
@@ -332,7 +333,8 @@ public final class ProductVariantUpdateActionUtils {
                 } catch (final BuildUpdateActionException buildUpdateActionException) {
                     final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, newAttributeName,
                         newProductVariant.getKey(), productKey, buildUpdateActionException.getMessage());
-                    syncOptions.applyErrorCallback(errorMessage, buildUpdateActionException);
+                    syncOptions.applyErrorCallback(errorMessage,
+                        new BuildUpdateActionException(errorMessage, buildUpdateActionException));
                 }
             }
 
