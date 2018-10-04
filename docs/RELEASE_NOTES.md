@@ -33,6 +33,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [v1.0.0-M14 -  Oct 5, 2018](#v100-m14----oct-5-2018)
 - [v1.0.0-M13 -  Sept 5, 2018](#v100-m13----sept-5-2018)
 - [v1.0.0-M12 -  Jun 05, 2018](#v100-m12----jun-05-2018)
 - [v1.0.0-M11 -  Mar 08, 2018](#v100-m11----mar-08-2018)
@@ -51,7 +52,15 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <!--
-### v1.0.0-M14 -  Oct 10, 2018
+
+### v1.0.0-M15 -  Oct 20, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...v1.0.0-M15) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M15/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M15)
+-->
+
+
+### v1.0.0-M14 -  Oct 5, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M13...v1.0.0-M14) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M14)
@@ -65,7 +74,7 @@
 - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.3.1.
 - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.3.1.
 - **Commons** - Bumped gradle to version [gradle-4.10.2](https://docs.gradle.org/4.10.2/release-notes.html).
--->
+
 
 ### v1.0.0-M13 -  Sept 5, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M12...v1.0.0-M13) |
