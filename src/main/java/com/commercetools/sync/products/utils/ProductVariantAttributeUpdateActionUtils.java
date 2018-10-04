@@ -64,28 +64,12 @@ public final class ProductVariantAttributeUpdateActionUtils {
             throw new BuildUpdateActionException(errorMessage);
         }
 
-    static UpdateAction<Product> buildUnSetAttribute(@Nonnull final Integer variantId,
-                                                     @Nonnull final String attributeName,
-                                                     @Nonnull final Map<String, AttributeMetaData> attributesMetaData)
-            throws BuildUpdateActionException {
-
-        final AttributeMetaData attributeMetaData = attributesMetaData.get(attributeName);
-
-        if (attributeMetaData == null) {
-            final String errorMessage = format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, attributeName);
-            throw new BuildUpdateActionException(errorMessage);
-        }
-
-        return buildUnSetAttribute(variantId, attributeName, attributeMetaData);
-    }
-
-    private static UpdateAction<Product> buildUnSetAttribute(@Nonnull final Integer variantId,
-                                                             @Nonnull final String attributeName,
-                                                             @Nonnull final AttributeMetaData attributeMetaData) {
-
         return attributeMetaData.isSameForAll()
-                ? SetAttributeInAllVariants.ofUnsetAttribute(attributeName, true) :
-                SetAttribute.ofUnsetAttribute(variantId, attributeName, true);
+            ? buildUpdateAction(oldProductVariantAttributeValue, newProductVariantAttributeValue,
+            () -> SetAttributeInAllVariants.of(newProductVariantAttribute, true)) :
+            buildUpdateAction(oldProductVariantAttributeValue, newProductVariantAttributeValue,
+                () -> SetAttribute.of(variantId, newProductVariantAttribute, true));
+
     }
 
     private ProductVariantAttributeUpdateActionUtils() {

@@ -20,6 +20,8 @@ import io.sphere.sdk.products.commands.updateactions.AddPrice;
 import io.sphere.sdk.products.commands.updateactions.MoveImageToPosition;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemovePrice;
+import io.sphere.sdk.products.commands.updateactions.SetAttribute;
+import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
 
 import javax.annotation.Nonnull;
@@ -38,8 +40,8 @@ import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollect
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.internals.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
 import static com.commercetools.sync.internals.utils.UpdateActionsSortUtils.sortPriceActions;
+import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
-import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildUnSetAttribute;
 import static com.commercetools.sync.products.utils.ProductVariantPriceUpdateActionUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
@@ -338,7 +340,23 @@ public final class ProductVariantUpdateActionUtils {
         });
 
         return updateActions;
+    }
 
+    private static UpdateAction<Product> buildUnSetAttribute(
+        @Nonnull final Integer variantId,
+        @Nonnull final String attributeName,
+        @Nonnull final Map<String, AttributeMetaData> attributesMetaData) throws BuildUpdateActionException {
+
+        final AttributeMetaData attributeMetaData = attributesMetaData.get(attributeName);
+
+        if (attributeMetaData == null) {
+            final String errorMessage = format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, attributeName);
+            throw new BuildUpdateActionException(errorMessage);
+        }
+
+        return attributeMetaData.isSameForAll()
+            ? SetAttributeInAllVariants.ofUnsetAttribute(attributeName, true) :
+            SetAttribute.ofUnsetAttribute(variantId, attributeName, true);
     }
 
     private ProductVariantUpdateActionUtils() {
