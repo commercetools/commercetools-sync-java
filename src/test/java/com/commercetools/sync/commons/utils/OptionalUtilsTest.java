@@ -9,6 +9,8 @@ import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOpti
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
 
 class OptionalUtilsTest {
@@ -40,7 +42,7 @@ class OptionalUtilsTest {
     @Test
     void filterEmptyOptionals_withAllEmptyOptionals_ShouldReturnEmptyList() {
         // preparation
-        final List<Optional<String>> optionalStrings = asList(Optional.empty(), Optional.empty());
+        final List<Optional<String>> optionalStrings = asList(empty(), empty());
 
         // test
         final List<String> filteredOptionals = filterEmptyOptionals(optionalStrings);
@@ -52,7 +54,7 @@ class OptionalUtilsTest {
     @Test
     void filterEmptyOptionals_withSomeEmptyOptionals_ShouldFilterEmptyOptionals() {
         // preparation
-        final List<Optional<String>> optionalStrings = asList(Optional.of("foo"), Optional.empty());
+        final List<Optional<String>> optionalStrings = asList(Optional.of("foo"), empty());
 
         // test
         final List<String> filteredOptionals = filterEmptyOptionals(optionalStrings);
