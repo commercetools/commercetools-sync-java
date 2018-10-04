@@ -19,7 +19,6 @@ import java.util.Optional;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.lang.String.format;
 
-// TODO: Add tests.
 public final class ProductVariantAttributeUpdateActionUtils {
     public static final String ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA = "Cannot find the attribute with the name '%s'"
         + " in the supplied attribute metadata.";
