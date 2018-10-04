@@ -77,7 +77,6 @@ public class ProductUpdateActionUtilsTest {
         final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
         final AttributeMetaData priceInfo = mock(AttributeMetaData.class);
         when(priceInfo.getName()).thenReturn("priceInfo");
-        when(priceInfo.isRequired()).thenReturn(false);
         attributesMetaData.put("priceInfo", priceInfo);
 
         final List<UpdateAction<Product>> updateActions =
@@ -133,7 +132,6 @@ public class ProductUpdateActionUtilsTest {
         final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
         final AttributeMetaData priceInfo = mock(AttributeMetaData.class);
         when(priceInfo.getName()).thenReturn("priceInfo");
-        when(priceInfo.isRequired()).thenReturn(false);
         attributesMetaData.put("priceInfo", priceInfo);
 
         final List<UpdateAction<Product>> updateActions =

@@ -21,10 +21,8 @@ import static java.lang.String.format;
 
 // TODO: Add tests.
 public final class ProductVariantAttributeUpdateActionUtils {
-    private static final String ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA = "Cannot find the attribute with the name '%s'"
+    public static final String ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA = "Cannot find the attribute with the name '%s'"
         + " in the supplied attribute metadata.";
-    private static final String REQUIRED_ATTRIBUTE_VALUE_IS_NULL = "The attribute with the name '%s' is null but it is"
-        + " required to have a value according to the supplied attribute metadata.";
 
     /**
      * Compares the attributes of a {@link AttributeDraft} and a {@link Attribute} to build either a
@@ -43,8 +41,7 @@ public final class ProductVariantAttributeUpdateActionUtils {
      * @param oldProductVariantAttribute the {@link Attribute} which should be updated.
      * @param newProductVariantAttribute the {@link AttributeDraft} where we get the new value.
      * @param attributesMetaData a map of attribute name -&gt; {@link AttributeMetaData}; which defines attribute
-     *                           information: its name, whether a value is required or not and whether it has the
-     *                           constraint "SameForAll" or not.
+     *                           information: its name and whether it has the constraint "SameForAll" or not.
      * @return A filled optional with the update action or an empty optional if the attributes are identical.
      * @throws BuildUpdateActionException thrown if attribute as not found in the {@code attributeMetaData} or
      *          if the attribute is required and the new value is null.
@@ -67,22 +64,6 @@ public final class ProductVariantAttributeUpdateActionUtils {
             final String errorMessage = format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, newProductVariantAttributeName);
             throw new BuildUpdateActionException(errorMessage);
         }
-
-        if (attributeMetaData.isRequired() && newProductVariantAttributeValue == null) {
-            final String errorMessage = format(REQUIRED_ATTRIBUTE_VALUE_IS_NULL, newProductVariantAttributeName);
-            throw new BuildUpdateActionException(errorMessage);
-        } else {
-            if (newProductVariantAttributeValue != null) {
-                return attributeMetaData.isSameForAll()
-                    ? buildUpdateAction(oldProductVariantAttributeValue, newProductVariantAttributeValue,
-                        () -> SetAttributeInAllVariants.of(newProductVariantAttribute, true)) :
-                    buildUpdateAction(oldProductVariantAttributeValue, newProductVariantAttributeValue,
-                        () -> SetAttribute.of(variantId, newProductVariantAttribute, true));
-            }
-            return Optional.of(buildUnSetAttribute(variantId, newProductVariantAttributeName, attributeMetaData));
-        }
-
-    }
 
     static UpdateAction<Product> buildUnSetAttribute(@Nonnull final Integer variantId,
                                                      @Nonnull final String attributeName,
