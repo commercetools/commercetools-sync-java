@@ -270,7 +270,6 @@ public final class ProductVariantUpdateActionUtils {
      * {@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants} update actions.
      * If both the {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of attributes, then
      * no update action is needed and hence an empty {@link List} is returned.
-     * // TODO: UNIT TESTS
      *
      * @param productKey         the key of the product that the variants belong to. It is used only in the error
      *                           messages if any.
