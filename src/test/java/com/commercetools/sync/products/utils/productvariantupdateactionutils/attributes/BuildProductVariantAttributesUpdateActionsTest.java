@@ -104,8 +104,8 @@ public class BuildProductVariantAttributesUpdateActionsTest {
         // Assertion
         assertThat(updateActions).containsExactly(SetAttribute.ofUnsetAttribute(oldProductVariant.getId(),
             TEXT_ATTRIBUTE_BAR.getName(), true));
-        assertThat(errorMessages).containsExactly(format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, null, productKey,
-            variantKey, NULL_PRODUCT_VARIANT_ATTRIBUTE));
+        assertThat(errorMessages).containsExactly(format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, null,
+            variantKey, productKey, NULL_PRODUCT_VARIANT_ATTRIBUTE));
     }
 
     @Test
@@ -358,9 +358,9 @@ public class BuildProductVariantAttributesUpdateActionsTest {
         // Assertion
         assertThat(updateActions).isEmpty();
         assertThat(errorMessages).containsExactlyInAnyOrder(
-            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, TEXT_ATTRIBUTE_BAR.getName(), productKey, variantKey,
+            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, TEXT_ATTRIBUTE_BAR.getName(), variantKey, productKey,
                 format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, TEXT_ATTRIBUTE_BAR.getName())),
-            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, BOOLEAN_ATTRIBUTE_TRUE.getName(), productKey, variantKey,
+            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, BOOLEAN_ATTRIBUTE_TRUE.getName(), variantKey, productKey,
                 format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, BOOLEAN_ATTRIBUTE_TRUE.getName())));
     }
 
@@ -462,7 +462,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
             SetAttribute.ofUnsetAttribute(oldProductVariant.getId(), TEXT_ATTRIBUTE_BAR.getName(), true)
         );
         assertThat(errorMessages).containsExactly(
-            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, BOOLEAN_ATTRIBUTE_TRUE.getName(), productKey, variantKey,
+            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, BOOLEAN_ATTRIBUTE_TRUE.getName(), variantKey, productKey,
                 format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, BOOLEAN_ATTRIBUTE_TRUE.getName())));
     }
 
@@ -489,9 +489,9 @@ public class BuildProductVariantAttributesUpdateActionsTest {
         // Assertion
         assertThat(updateActions).isEmpty();
         assertThat(errorMessages).containsExactlyInAnyOrder(
-            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, TEXT_ATTRIBUTE_BAR.getName(), productKey, variantKey,
+            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, TEXT_ATTRIBUTE_BAR.getName(), variantKey, productKey,
                 format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, TEXT_ATTRIBUTE_BAR.getName())),
-            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, BOOLEAN_ATTRIBUTE_TRUE.getName(), productKey, variantKey,
+            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, BOOLEAN_ATTRIBUTE_TRUE.getName(), variantKey, productKey,
                 format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, BOOLEAN_ATTRIBUTE_TRUE.getName())));
     }
 
@@ -561,7 +561,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
             SetAttribute.of(oldProductVariant.getId(), AttributeDraftBuilder.of(TEXT_ATTRIBUTE_FOO).build(), true)
         );
         assertThat(errorMessages).containsExactly(
-            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, BOOLEAN_ATTRIBUTE_TRUE.getName(), productKey, variantKey,
+            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, BOOLEAN_ATTRIBUTE_TRUE.getName(), variantKey, productKey,
                 format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, BOOLEAN_ATTRIBUTE_TRUE.getName())));
     }
 
@@ -624,9 +624,9 @@ public class BuildProductVariantAttributesUpdateActionsTest {
         // Assertion
         assertThat(updateActions).isEmpty();
         assertThat(errorMessages).containsExactlyInAnyOrder(
-            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, TEXT_ATTRIBUTE_BAR.getName(), productKey, variantKey,
+            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, TEXT_ATTRIBUTE_BAR.getName(), variantKey, productKey,
                 format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, TEXT_ATTRIBUTE_BAR.getName())),
-            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, BOOLEAN_ATTRIBUTE_TRUE.getName(), productKey, variantKey,
+            format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, BOOLEAN_ATTRIBUTE_TRUE.getName(), variantKey, productKey,
                 format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, BOOLEAN_ATTRIBUTE_TRUE.getName())));
     }
 
