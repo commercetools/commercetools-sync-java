@@ -56,6 +56,10 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M14)
 
+**New Features** (1)
+- **Commons** - Added `OptionalUtils#filterEmptyOptionals` which are utility methods that filter out the 
+empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
+optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255) 
 
 **Enhancements** (6)
 - **Product Sync** - Products create and update requests are now issued in parallel. This should lead to a performance improvement. [#238](https://github.com/commercetools/commercetools-sync-java/issues/238)
