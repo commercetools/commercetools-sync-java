@@ -7,22 +7,20 @@ import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.EnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeDefinitionLabel;
-import io.sphere.sdk.producttypes.commands.updateactions.SetInputTip;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeIsSearchable;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeInputHint;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeConstraint;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeDefinitionLabel;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeInputHint;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeIsSearchable;
+import io.sphere.sdk.producttypes.commands.updateactions.SetInputTip;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateLocalizedEnumActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdatePlainEnumActionUtils.buildEnumValuesUpdateActions;
-import static java.util.stream.Collectors.toList;
 
 
 public final class AttributeDefinitionUpdateActionUtils {
@@ -44,13 +42,12 @@ public final class AttributeDefinitionUpdateActionUtils {
         final List<UpdateAction<ProductType>> updateActions;
 
         updateActions = filterEmptyOptionals(
-            Stream.of(
-                buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-                buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-                buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-                buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-                buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
-            ).collect(toList()));
+            buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+            buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+            buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+            buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+            buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
+        );
 
 
         if (isPlainEnumAttribute(oldAttributeDefinition)) {

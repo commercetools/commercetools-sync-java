@@ -8,11 +8,9 @@ import io.sphere.sdk.producttypes.commands.updateactions.ChangeLocalizedEnumValu
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
-import static java.util.stream.Collectors.toList;
 
 public final class LocalizedEnumUpdateActionsUtils {
     /**
@@ -32,12 +30,9 @@ public final class LocalizedEnumUpdateActionsUtils {
         @Nonnull final LocalizedEnumValue oldEnumValue,
         @Nonnull final LocalizedEnumValue newEnumValue) {
 
-        final List<Optional<UpdateAction<ProductType>>> optionalActions =
-            Stream.of(
-                buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue))
-                  .collect(toList());
-
-        return filterEmptyOptionals(optionalActions);
+        return filterEmptyOptionals(
+            buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue)
+        );
     }
 
     /**

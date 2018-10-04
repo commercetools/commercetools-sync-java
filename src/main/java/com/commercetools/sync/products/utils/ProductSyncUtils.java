@@ -12,7 +12,6 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionIfPassesFilter;
@@ -31,7 +30,6 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetTaxCategoryUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildTransitionStateUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
-import static java.util.Arrays.asList;
 
 public final class ProductSyncUtils {
     /**
@@ -60,38 +58,42 @@ public final class ProductSyncUtils {
                                                            @Nonnull final ProductSyncOptions syncOptions,
                                                            @Nonnull final Map<String, AttributeMetaData>
                                                                attributesMetaData) {
+
         final SyncFilter syncFilter = syncOptions.getSyncFilter();
 
-        final List<Optional<UpdateAction<Product>>> optionalUpdateActions = asList(
-            buildActionIfPassesFilter(syncFilter, ActionGroup.NAME, () ->
-                buildChangeNameUpdateAction(oldProduct, newProduct)),
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>(
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.DESCRIPTION, () ->
-                buildSetDescriptionUpdateAction(oldProduct, newProduct)),
+            filterEmptyOptionals(
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.SLUG, () ->
-                buildChangeSlugUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.NAME, () ->
+                    buildChangeNameUpdateAction(oldProduct, newProduct)),
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.SEARCHKEYWORDS, () ->
-                buildSetSearchKeywordsUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.DESCRIPTION, () ->
+                    buildSetDescriptionUpdateAction(oldProduct, newProduct)),
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.METATITLE, () ->
-                buildSetMetaTitleUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.SLUG, () ->
+                    buildChangeSlugUpdateAction(oldProduct, newProduct)),
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.METADESCRIPTION, () ->
-                buildSetMetaDescriptionUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.SEARCHKEYWORDS, () ->
+                    buildSetSearchKeywordsUpdateAction(oldProduct, newProduct)),
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.METAKEYWORDS, () ->
-                buildSetMetaKeywordsUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.METATITLE, () ->
+                    buildSetMetaTitleUpdateAction(oldProduct, newProduct)),
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.TAXCATEGORY, () ->
-                buildSetTaxCategoryUpdateAction(oldProduct, newProduct).map(action -> (UpdateAction<Product>) action)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.METADESCRIPTION, () ->
+                    buildSetMetaDescriptionUpdateAction(oldProduct, newProduct)),
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.STATE, () ->
-                buildTransitionStateUpdateAction(oldProduct, newProduct).map(action -> (UpdateAction<Product>) action))
-        );
+                buildActionIfPassesFilter(syncFilter, ActionGroup.METAKEYWORDS, () ->
+                    buildSetMetaKeywordsUpdateAction(oldProduct, newProduct)),
 
-        final List<UpdateAction<Product>> updateActions = new ArrayList<>(filterEmptyOptionals(optionalUpdateActions));
+                buildActionIfPassesFilter(syncFilter, ActionGroup.TAXCATEGORY, () ->
+                    buildSetTaxCategoryUpdateAction(oldProduct, newProduct)
+                        .map(action -> (UpdateAction<Product>) action)),
+
+                buildActionIfPassesFilter(syncFilter, ActionGroup.STATE, () ->
+                    buildTransitionStateUpdateAction(oldProduct, newProduct)
+                        .map(action -> (UpdateAction<Product>) action))
+            ));
 
         final List<UpdateAction<Product>> productCategoryUpdateActions =
             buildActionsIfPassesFilter(syncFilter, ActionGroup.CATEGORIES, () ->

@@ -16,7 +16,6 @@ import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtil
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetExpectedDeliveryAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetRestockableInDaysAction;
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetSupplyChannelAction;
-import static java.util.Arrays.asList;
 
 /**
  * This class provides factory methods for assembling update actions of inventory entries.
@@ -44,12 +43,11 @@ public final class InventorySyncUtils {
                                                                   @Nonnull final InventoryEntryDraft newEntry,
                                                                   @Nonnull final InventorySyncOptions syncOptions) {
         final List<UpdateAction<InventoryEntry>> actions = filterEmptyOptionals(
-            asList(
-                buildChangeQuantityAction(oldEntry, newEntry),
-                buildSetRestockableInDaysAction(oldEntry, newEntry),
-                buildSetExpectedDeliveryAction(oldEntry, newEntry),
-                buildSetSupplyChannelAction(oldEntry, newEntry)
-            ));
+            buildChangeQuantityAction(oldEntry, newEntry),
+            buildSetRestockableInDaysAction(oldEntry, newEntry),
+            buildSetExpectedDeliveryAction(oldEntry, newEntry),
+            buildSetSupplyChannelAction(oldEntry, newEntry)
+        );
 
         actions.addAll(buildPrimaryResourceCustomUpdateActions(oldEntry, newEntry, inventoryCustomActionBuilder,
             syncOptions));

@@ -19,7 +19,6 @@ import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
-import static java.util.Arrays.asList;
 
 public final class ProductVariantAssetUpdateActionUtils {
 
@@ -42,13 +41,13 @@ public final class ProductVariantAssetUpdateActionUtils {
         @Nonnull final AssetDraft newAsset,
         @Nonnull final ProductSyncOptions syncOptions) {
 
-        final List<UpdateAction<Product>> updateActions = filterEmptyOptionals(
-            asList(
+        final List<UpdateAction<Product>> updateActions =
+            filterEmptyOptionals(
                 buildChangeAssetNameUpdateAction(variantId, oldAsset, newAsset),
                 buildSetAssetDescriptionUpdateAction(variantId, oldAsset, newAsset),
                 buildSetAssetTagsUpdateAction(variantId, oldAsset, newAsset),
                 buildSetAssetSourcesUpdateAction(variantId, oldAsset, newAsset)
-            ));
+            );
 
         updateActions.addAll(buildCustomUpdateActions(variantId, oldAsset, newAsset, syncOptions));
         return updateActions;
