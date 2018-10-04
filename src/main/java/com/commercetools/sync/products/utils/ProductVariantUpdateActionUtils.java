@@ -191,7 +191,6 @@ public final class ProductVariantUpdateActionUtils {
      * @param newImages the new list of images.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
      *         needed.
-     * @throws IllegalArgumentException if arrays have different size or different items.
      */
     public static List<MoveImageToPosition> buildMoveImageToPositionUpdateActions(
         final int variantId,
