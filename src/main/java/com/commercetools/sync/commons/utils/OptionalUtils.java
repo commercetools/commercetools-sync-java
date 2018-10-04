@@ -54,7 +54,7 @@ public final class OptionalUtils {
      */
     @Nonnull
     private static <T, C extends Collection<T>> C filterEmptyOptionals(@Nonnull final Collection<Optional<T>> optionals,
-                                                                      @Nonnull final Supplier<C> collectionFactory) {
+                                                                       @Nonnull final Supplier<C> collectionFactory) {
 
         return optionals.stream()
                         .filter(Optional::isPresent)
