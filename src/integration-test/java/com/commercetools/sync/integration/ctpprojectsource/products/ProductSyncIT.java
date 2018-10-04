@@ -5,6 +5,7 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.SyncFilter;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
@@ -59,6 +60,7 @@ import static com.commercetools.sync.integration.commons.utils.StateITUtils.crea
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxCategory;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_1;
 import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_ATTRIBUTES_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
@@ -351,7 +353,8 @@ public class ProductSyncIT {
         final AttributeDraft productSetRefAttr =
             getProductReferenceSetAttributeDraft("product-reference-set", productReferenceValue1,
                 productReferenceValue2);
-        final List<AttributeDraft> attributeDrafts = Arrays.asList(productRefAttr, productSetRefAttr);
+        final List<AttributeDraft> attributeDrafts = existingProductDraft.getMasterVariant().getAttributes();
+        attributeDrafts.addAll(Arrays.asList(productRefAttr, productSetRefAttr));
 
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder.of()
                                                                             .key("v1")
@@ -401,7 +404,64 @@ public class ProductSyncIT {
                 targetProductReferenceValue3);
 
         assertThat(updateActions).containsExactlyInAnyOrder(
-            SetAttributeInAllVariants.ofUnsetAttribute("priceInfo", true),
+            SetAttributeInAllVariants.of(targetProductRefAttr.getName(), targetProductRefAttr.getValue(), true),
+            SetAttributeInAllVariants.of(targetProductSetRefAttr.getName(), targetProductSetRefAttr.getValue(), true)
+        );
+    }
+
+    @Test
+    public void sync_withChangedAttributes_ShouldUpdateProducts() {
+        // Preparation
+        // Create custom options with whitelisting and action filter callback..
+        final ProductSyncOptions customSyncOptions =
+            ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                                     .errorCallback(this::errorCallback)
+                                     .warningCallback(warningCallBackMessages::add)
+                                     .beforeUpdateCallback(this::beforeUpdateCallback)
+                                     .syncFilter(SyncFilter.ofWhiteList(ATTRIBUTES))
+                                     .build();
+        final ProductSync customSync = new ProductSync(customSyncOptions);
+
+        // Create existing products in target project with keys (productKey1)
+        final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
+            targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
+            targetCategoryReferencesWithIds, createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)).toCompletableFuture().join();
+
+
+        // Create existing product with productKey1 in source project with changed attributes
+        final ProductDraft newProductDraftWithProductReference =
+            createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_ATTRIBUTES_RESOURCE_PATH, sourceProductType.toReference())
+                .taxCategory(sourceTaxCategory.toReference())
+                .state(sourceProductState.toReference())
+                .categories(Collections.emptySet())
+                .categoryOrderHints(null)
+                .build();
+        CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraftWithProductReference))
+                         .toCompletableFuture().join();
+
+
+        // Test
+        final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
+                                                        .toCompletableFuture().join().getResults();
+        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final ProductSyncStatistics syncStatistics =  customSync.sync(productDrafts).toCompletableFuture().join();
+
+
+        // Assertion
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+
+        final AttributeDraft priceInfoAttrDraft =
+            AttributeDraft.of("priceInfo", JsonNodeFactory.instance.textNode("100/kg"));
+        final AttributeDraft angebotAttrDraft =
+            AttributeDraft.of("angebot", JsonNodeFactory.instance.textNode("big discount"));
+
+        assertThat(updateActions).containsExactlyInAnyOrder(
+            SetAttributeInAllVariants.of(priceInfoAttrDraft, true),
+            SetAttribute.of(1, angebotAttrDraft, true),
             SetAttributeInAllVariants.ofUnsetAttribute("size", true),
             SetAttributeInAllVariants.ofUnsetAttribute("rinderrasse", true),
             SetAttributeInAllVariants.ofUnsetAttribute("herkunft", true),
@@ -412,10 +472,7 @@ public class ProductSyncIT {
             SetAttributeInAllVariants.ofUnsetAttribute("verpackung", true),
             SetAttributeInAllVariants.ofUnsetAttribute("anlieferung", true),
             SetAttributeInAllVariants.ofUnsetAttribute("zubereitung", true),
-            SetAttribute.ofUnsetAttribute(1, "localisedText", true),
-            SetAttributeInAllVariants.of(targetProductRefAttr.getName(), targetProductRefAttr.getValue(), true),
-            SetAttributeInAllVariants.of(targetProductSetRefAttr.getName(), targetProductSetRefAttr.getValue(), true)
+            SetAttribute.ofUnsetAttribute(1, "localisedText", true)
         );
-
     }
 }
