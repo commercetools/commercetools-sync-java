@@ -12,11 +12,11 @@ public final class OptionalUtils {
 
     /**
      *  Takes a {@link Collection} of {@link Optional}s containing some elements of type {@link T}, this method filters
-     *  out any empty {@link Optional} and returns a new collection containing the values of the non-empty optionals.
+     *  out any empty {@link Optional} and returns a new list containing the values of the non-empty optionals.
      *
      * @param optionals the collection of optionals that should be filtered out of empty optionals.
      * @param <T> The type of the elements in the Optionals in the supplied collection {@code optionals}.
-     * @return a new collection containing the values of the non-empty optionals from the supplied {@code optionals}
+     * @return a new list containing the values of the non-empty optionals from the supplied {@code optionals}
      *         collection.
      */
     @Nonnull
