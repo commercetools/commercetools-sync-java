@@ -10,6 +10,8 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
 import static com.commercetools.sync.internals.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
 import static java.util.Arrays.asList;
@@ -151,13 +153,23 @@ public class UnorderedCollectionSyncUtilsTest {
         when(productVariant2.getId()).thenReturn(2);
         when(productVariant2.getKey()).thenReturn("2");
 
-        final List<ProductVariant> oldVariants = asList(productVariant, productVariant2);
+        final ProductVariant productVariant3 = mock(ProductVariant.class);
+        when(productVariant2.getId()).thenReturn(3);
+        when(productVariant2.getKey()).thenReturn("3");
+
+        final List<ProductVariant> oldVariants = asList(productVariant, productVariant2, productVariant3);
         final List<ProductVariantDraft> newDrafts =
             singletonList(ProductVariantDraftBuilder.of(productVariant).build());
 
         // test
+        final Function<ProductVariant, UpdateAction<Product>> onlyRemoveV2Mapper = variant -> {
+            if (Objects.equals(variant.getKey(), productVariant2.getKey())) {
+                return RemoveVariant.ofVariantId(productVariant2.getId(), true);
+            }
+            return null;
+        };
         final List<UpdateAction<Product>> removeUpdateActions = buildRemoveUpdateActions(oldVariants,
-            newDrafts, ProductVariant::getKey, ProductVariantDraft::getKey, p -> null);
+            newDrafts, ProductVariant::getKey, ProductVariantDraft::getKey, onlyRemoveV2Mapper);
 
         // assertion
         assertThat(removeUpdateActions).doesNotContainNull();
