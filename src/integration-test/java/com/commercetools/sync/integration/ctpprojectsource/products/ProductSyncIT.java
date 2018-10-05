@@ -5,6 +5,7 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.SyncFilter;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
@@ -19,7 +20,9 @@ import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
+import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
+import io.sphere.sdk.products.queries.ProductByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateType;
@@ -57,6 +60,7 @@ import static com.commercetools.sync.integration.commons.utils.StateITUtils.crea
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxCategory;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_1;
 import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_ATTRIBUTES_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
@@ -284,6 +288,7 @@ public class ProductSyncIT {
 
     @Test
     public void sync_withProductTypeReference_ShouldUpdateProducts() {
+        // Preparation
         // Create custom options with whitelisting and action filter callback..
         final ProductSyncOptions customSyncOptions =
             ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -294,8 +299,6 @@ public class ProductSyncIT {
                                      .build();
         final ProductSync customSync = new ProductSync(customSyncOptions);
 
-
-
         // Create 3 existing products in target project with keys (productKey1, productKey2 and productKey3)
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
@@ -305,14 +308,14 @@ public class ProductSyncIT {
         final ProductDraft existingProductDraft2 = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH,
             targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
             targetCategoryReferencesWithIds, createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
-        final Product targetProductWithKey2 = CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft2))
-                                                               .toCompletableFuture().join();
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft2))
+                         .toCompletableFuture().join();
 
         final ProductDraft existingProductDraft3 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             targetProductType.toReference())
             .slug(LocalizedString.ofEnglish("newSlug3"))
             .key("productKey3")
-            .masterVariant(ProductVariantDraftBuilder.of().key("v3").build())
+            .masterVariant(ProductVariantDraftBuilder.of().key("v3").sku("s3").build())
             .taxCategory(null)
             .state(null)
             .categories(Collections.emptySet())
@@ -325,7 +328,7 @@ public class ProductSyncIT {
             sourceProductType.toReference(), sourceTaxCategory.toReference(), sourceProductState.toReference(),
             sourceCategoryReferencesWithIds, createRandomCategoryOrderHints(sourceCategoryReferencesWithIds));
         final Product product2 = CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft2))
-                                                 .toCompletableFuture().join();
+                                                  .toCompletableFuture().join();
         final ProductDraft newProductDraft3 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             sourceProductType.toReference())
             .slug(LocalizedString.ofEnglish("newSlug3"))
@@ -337,8 +340,11 @@ public class ProductSyncIT {
             .categoryOrderHints(null)
             .build();
         final Product product3 = CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft3))
-                                                 .toCompletableFuture().join();
+                                                  .toCompletableFuture().join();
 
+
+        // Create existing product with productKey1 in source project that has references to products with keys
+        // (productKey2 and productKey3).
 
         final ObjectNode productReferenceValue1 = getProductReferenceWithId(product2.getId());
         final ObjectNode productReferenceValue2 = getProductReferenceWithId(product3.getId());
@@ -347,15 +353,14 @@ public class ProductSyncIT {
         final AttributeDraft productSetRefAttr =
             getProductReferenceSetAttributeDraft("product-reference-set", productReferenceValue1,
                 productReferenceValue2);
-        final List<AttributeDraft> attributeDrafts = Arrays.asList(productRefAttr, productSetRefAttr);
+        final List<AttributeDraft> attributeDrafts = existingProductDraft.getMasterVariant().getAttributes();
+        attributeDrafts.addAll(Arrays.asList(productRefAttr, productSetRefAttr));
 
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder.of()
                                                                             .key("v1")
                                                                             .sku("s1")
                                                                             .attributes(attributeDrafts).build();
 
-        // Create existing product with productKey1 in source project that has references to products with keys
-        // (productKey2 and productKey3).
         final ProductDraft newProductDraftWithProductReference =
             createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toReference())
                 .masterVariant(masterVariant)
@@ -367,31 +372,107 @@ public class ProductSyncIT {
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraftWithProductReference))
                          .toCompletableFuture().join();
 
+
+        // Test
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
-
         final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
-
         final ProductSyncStatistics syncStatistics =  customSync.sync(productDrafts).toCompletableFuture().join();
 
+
+        // Assertion
         assertThat(syncStatistics).hasValues(3, 0, 1, 0);
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
-        assertThat(updateActions).hasSize(2);
 
-        final UpdateAction<Product> productReferenceAction = updateActions.get(0);
-        assertThat(productReferenceAction).isExactlyInstanceOf(SetAttributeInAllVariants.class);
-        final SetAttributeInAllVariants action1 = (SetAttributeInAllVariants) productReferenceAction;
-        assertThat(action1.getName()).isEqualTo("product-reference");
-        assertThat(action1.getValue()).isNotNull();
-        assertThat(action1.getValue().get("id").asText()).isEqualTo(targetProductWithKey2.getId());
+        final Product targetProduct2 = CTP_TARGET_CLIENT.execute(ProductByKeyGet.of("productKey2"))
+                                                        .toCompletableFuture()
+                                                        .join();
 
-        final UpdateAction<Product> productReferenceSetAction = updateActions.get(1);
-        assertThat(productReferenceSetAction).isExactlyInstanceOf(SetAttributeInAllVariants.class);
-        final SetAttributeInAllVariants action2 = (SetAttributeInAllVariants) productReferenceSetAction;
-        assertThat(action2.getName()).isEqualTo("product-reference-set");
-        assertThat(action2.getValue()).isNotNull();
-        assertThat(action2.getValue().isArray()).isTrue();
+        final Product targetProduct3 = CTP_TARGET_CLIENT.execute(ProductByKeyGet.of("productKey3"))
+                                                        .toCompletableFuture()
+                                                        .join();
+
+        final ObjectNode targetProductReferenceValue2 = getProductReferenceWithId(targetProduct2.getId());
+        final ObjectNode targetProductReferenceValue3 = getProductReferenceWithId(targetProduct3.getId());
+
+        final AttributeDraft targetProductRefAttr =
+            AttributeDraft.of("product-reference", targetProductReferenceValue2);
+        final AttributeDraft targetProductSetRefAttr =
+            getProductReferenceSetAttributeDraft("product-reference-set", targetProductReferenceValue2,
+                targetProductReferenceValue3);
+
+        assertThat(updateActions).containsExactlyInAnyOrder(
+            SetAttributeInAllVariants.of(targetProductRefAttr.getName(), targetProductRefAttr.getValue(), true),
+            SetAttributeInAllVariants.of(targetProductSetRefAttr.getName(), targetProductSetRefAttr.getValue(), true)
+        );
+    }
+
+    @Test
+    public void sync_withChangedAttributes_ShouldUpdateProducts() {
+        // Preparation
+        // Create custom options with whitelisting and action filter callback..
+        final ProductSyncOptions customSyncOptions =
+            ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                                     .errorCallback(this::errorCallback)
+                                     .warningCallback(warningCallBackMessages::add)
+                                     .beforeUpdateCallback(this::beforeUpdateCallback)
+                                     .syncFilter(SyncFilter.ofWhiteList(ATTRIBUTES))
+                                     .build();
+        final ProductSync customSync = new ProductSync(customSyncOptions);
+
+        // Create existing products in target project with keys (productKey1)
+        final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
+            targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
+            targetCategoryReferencesWithIds, createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)).toCompletableFuture().join();
+
+
+        // Create existing product with productKey1 in source project with changed attributes
+        final ProductDraft newProductDraftWithProductReference =
+            createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_ATTRIBUTES_RESOURCE_PATH, sourceProductType.toReference())
+                .taxCategory(sourceTaxCategory.toReference())
+                .state(sourceProductState.toReference())
+                .categories(Collections.emptySet())
+                .categoryOrderHints(null)
+                .build();
+        CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraftWithProductReference))
+                         .toCompletableFuture().join();
+
+
+        // Test
+        final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
+                                                        .toCompletableFuture().join().getResults();
+        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final ProductSyncStatistics syncStatistics =  customSync.sync(productDrafts).toCompletableFuture().join();
+
+
+        // Assertion
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+
+        final AttributeDraft priceInfoAttrDraft =
+            AttributeDraft.of("priceInfo", JsonNodeFactory.instance.textNode("100/kg"));
+        final AttributeDraft angebotAttrDraft =
+            AttributeDraft.of("angebot", JsonNodeFactory.instance.textNode("big discount"));
+
+        assertThat(updateActions).containsExactlyInAnyOrder(
+            SetAttributeInAllVariants.of(priceInfoAttrDraft, true),
+            SetAttribute.of(1, angebotAttrDraft, true),
+            SetAttributeInAllVariants.ofUnsetAttribute("size", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("rinderrasse", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("herkunft", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("teilstueck", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("fuetterung", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("reifung", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("haltbarkeit", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("verpackung", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("anlieferung", true),
+            SetAttributeInAllVariants.ofUnsetAttribute("zubereitung", true),
+            SetAttribute.ofUnsetAttribute(1, "localisedText", true)
+        );
     }
 }

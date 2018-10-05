@@ -65,15 +65,23 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M14)
 
+**Bug Fixes** (1)
+ **Product Sync** - Fixed a bug where the removed attributes in the source product variant draft were not being removed from the target variant. [#238](https://github.com/commercetools/commercetools-sync-java/issues/308)
 
-**Enhancements** (7)
+**Enhancements** (8)
 - **Product Sync** - Products create and update requests are now issued in parallel. This should lead to a performance improvement. [#238](https://github.com/commercetools/commercetools-sync-java/issues/238)
 - **Commons** - Bumped `com.adarshr.test-logger` to 1.5.0.
 - **Commons** - Bumped `mockito` to 2.22.0.
 - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.3.1.
 - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.3.1.
 - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.3.1.
+- **Commons** - `UnorderedCollectionSyncUtils#buildRemoveUpdateActions ensures no `null` elements in the resulting list and ignores `null` keys now. [#238](https://github.com/commercetools/commercetools-sync-java/issues/308)
 - **Commons** - Bumped gradle to version [gradle-4.10.2](https://docs.gradle.org/4.10.2/release-notes.html).
+
+**Breaking Changes** (3)
+-- **Product Sync** - Products attributes are not validated anymore whether they are required or not. [#308](https://github.com/commercetools/commercetools-sync-java/issues/308)
+-- **Product Sync** - `AttributeMetaData#buildRemoveUpdateActions` now filters out `null` elements resulting from ``. [#308](https://github.com/commercetools/commercetools-sync-java/issues/308)
+-- **Product Sync** - `ProductVariantAttributeUpdateActionUtils#buildProductVariantAttributeUpdateAction` now takes a map of all meta data instead of the specific metadata entry. [#308](https://github.com/commercetools/commercetools-sync-java/issues/308)
 
 
 ### v1.0.0-M13 -  Sept 5, 2018
