@@ -78,9 +78,8 @@
 - **Commons** - `UnorderedCollectionSyncUtils#buildRemoveUpdateActions ensures no `null` elements in the resulting list and ignores `null` keys now. [#238](https://github.com/commercetools/commercetools-sync-java/issues/308)
 - **Commons** - Bumped gradle to version [gradle-4.10.2](https://docs.gradle.org/4.10.2/release-notes.html).
 
-**Breaking Changes** (3)
-- **Product Sync** - Products attributes are not validated anymore whether they are required or not. [#308](https://github.com/commercetools/commercetools-sync-java/issues/308)
-- **Product Sync** - `AttributeMetaData#buildRemoveUpdateActions` now filters out `null` elements resulting from ``. [#308](https://github.com/commercetools/commercetools-sync-java/issues/308)
+**Breaking Changes** (2)
+- **Product Sync** - `AttributeMetaData#isRequired` is now removed. [#308](https://github.com/commercetools/commercetools-sync-java/issues/308)
 - **Product Sync** - `ProductVariantAttributeUpdateActionUtils#buildProductVariantAttributeUpdateAction` now takes a map of all meta data instead of the specific metadata entry. [#308](https://github.com/commercetools/commercetools-sync-java/issues/308)
 
 
