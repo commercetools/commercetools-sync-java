@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static com.commercetools.sync.commons.utils.StreamUtils.asSet;
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.isProductReference;
 import static java.lang.String.format;
@@ -147,12 +148,9 @@ public class BatchProcessor {
      */
     @Nonnull
     static Set<String> getReferencedProductKeysFromSet(@Nonnull final JsonNode referenceSet) {
-        return StreamSupport.stream(referenceSet.spliterator(), false)
+        return asSet(StreamSupport.stream(referenceSet.spliterator(), false)
                             .filter(Objects::nonNull)
-                            .map(BatchProcessor::getProductKeyFromReference)
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .collect(Collectors.toSet());
+                            .map(BatchProcessor::getProductKeyFromReference));
     }
 
     /**

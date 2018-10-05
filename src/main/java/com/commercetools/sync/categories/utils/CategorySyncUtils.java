@@ -25,6 +25,8 @@ import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 
+import static com.commercetools.sync.commons.utils.StreamUtils.asList;
+
 public final class CategorySyncUtils {
     private static final CategoryCustomActionBuilder categoryCustomActionBuilder =
         new CategoryCustomActionBuilder();
@@ -87,10 +89,7 @@ public final class CategorySyncUtils {
     @Nonnull
     private static List<UpdateAction<Category>> buildUpdateActionsFromOptionals(
         @Nonnull final List<Optional<UpdateAction<Category>>> optionalUpdateActions) {
-        return optionalUpdateActions.stream()
-                                    .filter(Optional::isPresent)
-                                    .map(Optional::get)
-                                    .collect(Collectors.toList());
+        return asList(optionalUpdateActions.stream());
     }
 
     private CategorySyncUtils() {
