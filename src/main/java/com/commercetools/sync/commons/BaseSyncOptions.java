@@ -20,7 +20,6 @@ public class BaseSyncOptions<U, V> {
     private final BiConsumer<String, Throwable> errorCallBack;
     private final Consumer<String> warningCallBack;
     private int batchSize;
-    private boolean allowUuid = false;
     private final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
     private final Function<V, V> beforeCreateCallback;
 
@@ -28,7 +27,6 @@ public class BaseSyncOptions<U, V> {
                               @Nullable final BiConsumer<String, Throwable> errorCallBack,
                               @Nullable final Consumer<String> warningCallBack,
                               final int batchSize,
-                              final boolean allowUuid,
                               @Nullable final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
                                   beforeUpdateCallback,
                               @Nullable final Function<V, V> beforeCreateCallback) {
@@ -36,7 +34,6 @@ public class BaseSyncOptions<U, V> {
         this.errorCallBack = errorCallBack;
         this.batchSize = batchSize;
         this.warningCallBack = warningCallBack;
-        this.allowUuid = allowUuid;
         this.beforeUpdateCallback = beforeUpdateCallback;
         this.beforeCreateCallback = beforeCreateCallback;
     }
@@ -111,18 +108,6 @@ public class BaseSyncOptions<U, V> {
      */
     public void applyErrorCallback(@Nonnull final String errorMessage) {
         applyErrorCallback(errorMessage, null);
-    }
-
-    /**
-     * The sync expects the user to pass the keys to references in the {@code id} field of References. If the key values
-     * are in UUID format, then this flag must be set to true, otherwise the sync will fail to resolve the reference.
-     * This flag, if set to true, enables the user to use keys with UUID format. By default, it is set to {@code false}.
-     *
-     * @return a {@code boolean} flag, if set to true, enables the user to use keys with UUID format for references.
-     *      By default, it is set to {@code false}.
-     */
-    public boolean shouldAllowUuidKeys() {
-        return allowUuid;
     }
 
     /**

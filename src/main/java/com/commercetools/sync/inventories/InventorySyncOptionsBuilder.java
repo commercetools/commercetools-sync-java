@@ -61,7 +61,6 @@ public final class InventorySyncOptionsBuilder extends
             errorCallback,
             warningCallback,
             batchSize,
-            allowUuid,
             ensureChannels,
             beforeUpdateCallback,
             beforeCreateCallback);
