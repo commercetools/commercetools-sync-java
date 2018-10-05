@@ -149,6 +149,8 @@ public final class FieldDefinitionsUpdateActionUtils {
                             if (haveSameFieldType(oldFieldDefinition, matchingNewFieldDefinition)) {
                                 return buildActions(oldFieldDefinition, matchingNewFieldDefinition);
                             } else {
+                                // this is a work around for changing the type of the definition.
+                                // since there is no action, so we remove then add again.
                                 return Arrays.asList(
                                         RemoveFieldDefinition.of(oldFieldDefinitionName),
                                         AddFieldDefinition.of(matchingNewFieldDefinition)
