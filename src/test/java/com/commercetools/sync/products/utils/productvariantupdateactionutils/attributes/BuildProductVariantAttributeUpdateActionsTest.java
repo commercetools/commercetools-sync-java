@@ -74,7 +74,7 @@ public class BuildProductVariantAttributeUpdateActionsTest {
     }
 
     @Test
-    public void withNullOldAndNonNullNew_WithNoExistingAttributeInMetaData_ShouldBuildSetAction() {
+    public void withNullOldAndNonNullNew_WithNoExistingAttributeInMetaData_ShouldThrowException() {
 
         // Preparation
         final Attribute oldAttribute = null;
@@ -110,7 +110,7 @@ public class BuildProductVariantAttributeUpdateActionsTest {
     }
 
     @Test
-    public void withSameValues_ShouldBuildSetAction() throws BuildUpdateActionException {
+    public void withSameValues_ShouldNotBuildAction() throws BuildUpdateActionException {
         // Preparation
         final Attribute oldAttribute = Attribute.of("foo", JsonNodeFactory.instance.textNode("foo"));
         final AttributeDraft newAttribute = AttributeDraft.of("foo", JsonNodeFactory.instance.textNode("foo"));
