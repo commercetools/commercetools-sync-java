@@ -48,8 +48,7 @@ public final class ProductSyncUtils {
      *                           on the build update action process. And other options (See {@link ProductSyncOptions}
      *                           for more info).
      * @param attributesMetaData a map of attribute name -&gt; {@link AttributeMetaData}; which defines each attribute's
-     *                           information: its name, whether a value is required or not and whether it has the
-     *                           constraint "SameForAll" or not.
+     *                           information: its name and whether it has the constraint "SameForAll" or not.
      * @return A list of product-specific update actions.
      */
     @Nonnull

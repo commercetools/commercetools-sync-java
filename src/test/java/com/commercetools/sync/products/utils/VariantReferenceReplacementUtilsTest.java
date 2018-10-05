@@ -27,21 +27,7 @@ import java.util.UUID;
 
 import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFields;
 import static com.commercetools.sync.commons.MockUtils.getTypeMock;
-import static com.commercetools.sync.products.ProductSyncMockUtils.BOOLEAN_ATTRIBUTE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_REFERENCE_ATTRIBUTE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.DATE_ATTRIBUTE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.DATE_TIME_ATTRIBUTE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.ENUM_ATTRIBUTE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.LENUM_ATTRIBUTE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.LTEXT_ATTRIBUTE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.LTEXT_SET_ATTRIBUTE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.MONEY_ATTRIBUTE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.NUMBER_ATTRIBUTE;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_REFERENCE_ATTRIBUTE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_REFERENCE_SET_ATTRIBUTE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.TEXT_ATTRIBUTE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.TIME_ATTRIBUTE;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithReferences;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMock;
@@ -53,6 +39,20 @@ import static com.commercetools.sync.products.utils.VariantReferenceReplacementU
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceChannelReferenceIdWithKey;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replacePricesReferencesIdsWithKeys;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceVariantsReferenceIdsWithKeys;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.CATEGORY_REFERENCE_ATTRIBUTE;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.DATE_ATTRIBUTE_2017_11_09;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.DATE_TIME_ATTRIBUTE_2016_05_20T01_02_46;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.ENUM_ATTRIBUTE_BARLABEL_BARKEY;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.LENUM_ATTRIBUTE_EN_BAR;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.LTEXT_ATTRIBUTE_EN_BAR;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.LTEXT_SET_ATTRIBUTE;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.MONEY_ATTRIBUTE_EUR_2300;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.NUMBER_ATTRIBUTE_10;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.PRODUCT_REFERENCE_ATTRIBUTE;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.PRODUCT_REFERENCE_SET_ATTRIBUTE;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.TEXT_ATTRIBUTE_BAR;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.TIME_ATTRIBUTE_10_08_46;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -479,97 +479,37 @@ public class VariantReferenceReplacementUtilsTest {
 
     @Test
     public void isProductReference_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceAttributeOnly() {
-        final Attribute booleanAttribute = readObjectFromResource(BOOLEAN_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(booleanAttribute)).isFalse();
-
-        final Attribute textAttribute = readObjectFromResource(TEXT_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(textAttribute)).isFalse();
-
-        final Attribute ltextAttribute = readObjectFromResource(LTEXT_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(ltextAttribute)).isFalse();
-
-        final Attribute enumAttribute = readObjectFromResource(ENUM_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(enumAttribute)).isFalse();
-
-        final Attribute lenumAttribute = readObjectFromResource(LENUM_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(lenumAttribute)).isFalse();
-
-        final Attribute numberAttribute = readObjectFromResource(NUMBER_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(numberAttribute)).isFalse();
-
-        final Attribute moneyAttribute = readObjectFromResource(MONEY_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(moneyAttribute)).isFalse();
-
-        final Attribute dateAttribute = readObjectFromResource(DATE_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(dateAttribute)).isFalse();
-
-        final Attribute timeAttribute = readObjectFromResource(TIME_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(timeAttribute)).isFalse();
-
-        final Attribute dateTimeAttribute = readObjectFromResource(DATE_TIME_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(dateTimeAttribute)).isFalse();
-
-        final Attribute productReferenceSetAttribute =
-            readObjectFromResource(PRODUCT_REFERENCE_SET_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(productReferenceSetAttribute)).isFalse();
-
-        final Attribute categoryReferenceAttribute =
-            readObjectFromResource(CATEGORY_REFERENCE_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(categoryReferenceAttribute)).isFalse();
-
-        final Attribute ltextSetAttribute = readObjectFromResource(LTEXT_SET_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(ltextSetAttribute)).isFalse();
-
-        final Attribute productReferenceAttribute =
-            readObjectFromResource(PRODUCT_REFERENCE_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReference(productReferenceAttribute)).isTrue();
+        assertThat(isProductReference(BOOLEAN_ATTRIBUTE_TRUE)).isFalse();
+        assertThat(isProductReference(TEXT_ATTRIBUTE_BAR)).isFalse();
+        assertThat(isProductReference(LTEXT_ATTRIBUTE_EN_BAR)).isFalse();
+        assertThat(isProductReference(ENUM_ATTRIBUTE_BARLABEL_BARKEY)).isFalse();
+        assertThat(isProductReference(LENUM_ATTRIBUTE_EN_BAR)).isFalse();
+        assertThat(isProductReference(NUMBER_ATTRIBUTE_10)).isFalse();
+        assertThat(isProductReference(MONEY_ATTRIBUTE_EUR_2300)).isFalse();
+        assertThat(isProductReference(DATE_ATTRIBUTE_2017_11_09)).isFalse();
+        assertThat(isProductReference(TIME_ATTRIBUTE_10_08_46)).isFalse();
+        assertThat(isProductReference(DATE_TIME_ATTRIBUTE_2016_05_20T01_02_46)).isFalse();
+        assertThat(isProductReference(PRODUCT_REFERENCE_SET_ATTRIBUTE)).isFalse();
+        assertThat(isProductReference(CATEGORY_REFERENCE_ATTRIBUTE)).isFalse();
+        assertThat(isProductReference(LTEXT_SET_ATTRIBUTE)).isFalse();
+        assertThat(isProductReference(PRODUCT_REFERENCE_ATTRIBUTE)).isTrue();
     }
 
     @Test
     public void isProductReferenceSet_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceSetAttributeOnly() {
-        final Attribute booleanAttribute = readObjectFromResource(BOOLEAN_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReferenceSet(booleanAttribute)).isFalse();
-
-        final Attribute textAttribute = readObjectFromResource(TEXT_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReferenceSet(textAttribute)).isFalse();
-
-        final Attribute ltextAttribute = readObjectFromResource(LTEXT_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReferenceSet(ltextAttribute)).isFalse();
-
-        final Attribute enumAttribute = readObjectFromResource(ENUM_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReferenceSet(enumAttribute)).isFalse();
-
-        final Attribute lenumAttribute = readObjectFromResource(LENUM_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReferenceSet(lenumAttribute)).isFalse();
-
-        final Attribute numberAttribute = readObjectFromResource(NUMBER_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReferenceSet(numberAttribute)).isFalse();
-
-        final Attribute moneyAttribute = readObjectFromResource(MONEY_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReferenceSet(moneyAttribute)).isFalse();
-
-        final Attribute dateAttribute = readObjectFromResource(DATE_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReferenceSet(dateAttribute)).isFalse();
-
-        final Attribute timeAttribute = readObjectFromResource(TIME_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReferenceSet(timeAttribute)).isFalse();
-
-        final Attribute dateTimeAttribute = readObjectFromResource(DATE_TIME_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReferenceSet(dateTimeAttribute)).isFalse();
-
-        final Attribute productReferenceAttribute =
-            readObjectFromResource(PRODUCT_REFERENCE_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReferenceSet(productReferenceAttribute)).isFalse();
-
-        final Attribute categoryReferenceAttribute =
-            readObjectFromResource(CATEGORY_REFERENCE_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReferenceSet(categoryReferenceAttribute)).isFalse();
-
-        final Attribute ltextSetAttribute = readObjectFromResource(LTEXT_SET_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReferenceSet(ltextSetAttribute)).isFalse();
-
-        final Attribute productReferenceSetAttribute =
-            readObjectFromResource(PRODUCT_REFERENCE_SET_ATTRIBUTE, Attribute.class);
-        assertThat(isProductReferenceSet(productReferenceSetAttribute)).isTrue();
+        assertThat(isProductReferenceSet(BOOLEAN_ATTRIBUTE_TRUE)).isFalse();
+        assertThat(isProductReferenceSet(TEXT_ATTRIBUTE_BAR)).isFalse();
+        assertThat(isProductReferenceSet(LTEXT_ATTRIBUTE_EN_BAR)).isFalse();
+        assertThat(isProductReferenceSet(ENUM_ATTRIBUTE_BARLABEL_BARKEY)).isFalse();
+        assertThat(isProductReferenceSet(LENUM_ATTRIBUTE_EN_BAR)).isFalse();
+        assertThat(isProductReferenceSet(NUMBER_ATTRIBUTE_10)).isFalse();
+        assertThat(isProductReferenceSet(MONEY_ATTRIBUTE_EUR_2300)).isFalse();
+        assertThat(isProductReferenceSet(DATE_ATTRIBUTE_2017_11_09)).isFalse();
+        assertThat(isProductReferenceSet(TIME_ATTRIBUTE_10_08_46)).isFalse();
+        assertThat(isProductReferenceSet(DATE_TIME_ATTRIBUTE_2016_05_20T01_02_46)).isFalse();
+        assertThat(isProductReferenceSet(PRODUCT_REFERENCE_ATTRIBUTE)).isFalse();
+        assertThat(isProductReferenceSet(CATEGORY_REFERENCE_ATTRIBUTE)).isFalse();
+        assertThat(isProductReferenceSet(LTEXT_SET_ATTRIBUTE)).isFalse();
+        assertThat(isProductReferenceSet(PRODUCT_REFERENCE_SET_ATTRIBUTE)).isTrue();
     }
 }
