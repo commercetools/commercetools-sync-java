@@ -14,11 +14,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.types.utils.TypeUpdateEnumActionsUtils.buildAddEnumValuesUpdateActions;
-import static com.commercetools.sync.types.utils.TypeUpdateEnumActionsUtils.buildChangeEnumValuesOrderUpdateAction;
+import static com.commercetools.sync.types.utils.EnumUpdateActionsUtils.buildAddEnumValuesUpdateActions;
+import static com.commercetools.sync.types.utils.EnumUpdateActionsUtils.buildChangeEnumValuesOrderUpdateAction;
 import static java.util.Collections.emptyList;
 
-public final class TypeUpdateLocalizedEnumActionUtils {
+public final class LocalizedEnumUpdateActionUtils {
     /**
      * Compares a list of old {@link LocalizedEnumValue}s with a list of new {@link LocalizedEnumValue}s for a given
      * field definition.
@@ -86,6 +86,6 @@ public final class TypeUpdateLocalizedEnumActionUtils {
         ).collect(Collectors.toList());
     }
 
-    private TypeUpdateLocalizedEnumActionUtils() {
+    private LocalizedEnumUpdateActionUtils() {
     }
 }

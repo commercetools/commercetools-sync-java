@@ -88,7 +88,7 @@ stats.getReportMessage();
 
 __Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
  1. The sync processing time should not take into account the time between supplying batches to the sync.
- 2. It is not not known by the sync which batch is going to be the last one supplied.
+ 2. It is not known by the sync which batch is going to be the last one supplied.
 
 More examples of how to use the sync can be found [here](/src/integration-test/java/com/commercetools/sync/integration/types/TypeSyncIT.java).
 

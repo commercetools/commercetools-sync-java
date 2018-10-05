@@ -1,7 +1,7 @@
 package com.commercetools.sync.types.utils.typeactionutils;
 
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
-import com.commercetools.sync.types.utils.TypeUpdateLocalizedEnumActionUtils;
+import com.commercetools.sync.types.utils.LocalizedEnumUpdateActionUtils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.types.Type;
@@ -14,7 +14,7 @@ import org.junit.rules.ExpectedException;
 import java.util.Collections;
 import java.util.List;
 
-import static com.commercetools.sync.types.utils.TypeUpdateLocalizedEnumActionUtils.buildLocalizedEnumValuesUpdateActions;
+import static com.commercetools.sync.types.utils.LocalizedEnumUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -218,7 +218,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
                 + "'field_definition_name', Duplicated enum value: 'b'. Enum Values are expected to be unique inside "
                 + "their field definition.");
 
-        TypeUpdateLocalizedEnumActionUtils.buildLocalizedEnumValuesUpdateActions(
+        LocalizedEnumUpdateActionUtils.buildLocalizedEnumValuesUpdateActions(
                 "field_definition_name",
                 ENUM_VALUES_ABC,
                 ENUM_VALUES_ABB

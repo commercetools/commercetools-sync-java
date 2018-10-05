@@ -10,7 +10,7 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 
-import static com.commercetools.sync.types.utils.TypeUpdatePlainEnumActionUtils.buildEnumValuesUpdateActions;
+import static com.commercetools.sync.types.utils.PlainEnumUpdateActionUtils.buildEnumValuesUpdateActions;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -28,7 +28,7 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-public final class TypeUpdateFieldDefinitionActionUtils {
+public final class FieldDefinitionsUpdateActionUtils {
 
     /**
      * Compares a list of {@link FieldDefinition}s with a list of {@link FieldDefinition}s.
@@ -272,6 +272,6 @@ public final class TypeUpdateFieldDefinitionActionUtils {
             .collect(Collectors.toList());
     }
 
-    private TypeUpdateFieldDefinitionActionUtils() {
+    private FieldDefinitionsUpdateActionUtils() {
     }
 }

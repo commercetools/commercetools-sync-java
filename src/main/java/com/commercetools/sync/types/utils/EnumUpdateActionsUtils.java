@@ -18,7 +18,7 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
 
-public final class TypeUpdateEnumActionsUtils {
+public final class EnumUpdateActionsUtils {
 
     /**
      * Given a list of new {@link EnumValue}s, gets a map where the keys are the enum value key, and the values
@@ -129,6 +129,6 @@ public final class TypeUpdateEnumActionsUtils {
             .collect(Collectors.toList());
     }
 
-    private TypeUpdateEnumActionsUtils() {
+    private EnumUpdateActionsUtils() {
     }
 }

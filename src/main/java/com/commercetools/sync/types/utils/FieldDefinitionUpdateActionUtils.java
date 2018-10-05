@@ -14,8 +14,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static com.commercetools.sync.types.utils.TypeUpdateLocalizedEnumActionUtils.buildLocalizedEnumValuesUpdateActions;
-import static com.commercetools.sync.types.utils.TypeUpdatePlainEnumActionUtils.buildEnumValuesUpdateActions;
+import static com.commercetools.sync.types.utils.LocalizedEnumUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
+import static com.commercetools.sync.types.utils.PlainEnumUpdateActionUtils.buildEnumValuesUpdateActions;
 import static java.util.stream.Collectors.toList;
 
 
