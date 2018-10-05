@@ -22,7 +22,7 @@ public final class TypeSyncUtils {
      * {@link TypeUpdateActionUtils#buildFieldDefinitionUpdateActions(Type, TypeDraft, TypeSyncOptions)})
      * of a {@link Type} and a {@link TypeDraft}.
      * It returns a {@link List} of {@link UpdateAction}&lt;{@link Type}&gt; as a
-     * result. If no update action are needed, for example in case where both the {@link Type} and the
+     * result. If no update actions are needed, for example in case where both the {@link Type} and the
      * {@link TypeDraft} have the same fields, an empty {@link List} is returned.
      *
      * @param oldType       the {@link Type} which should be updated.
