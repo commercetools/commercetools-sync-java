@@ -21,12 +21,9 @@ public final class PlainEnumUpdateActionUtils {
     /**
      * Compares a list of old {@link EnumValue}s with a list of new {@link EnumValue}s for a given
      * field definition.
-     * The method serves as a generic implementation for plain enum values syncing. The method takes in functions
+     * The method serves as an implementation for plain enum values syncing. The method takes in functions
      * for building the required update actions (AddEnumValue, ChangeEnumValueOrder
      * and 1-1 update actions on plain enum values (e.g. changeLabel) for the required resource.
-     *
-     * <p>If the list of new {@link EnumValue}s is {@code null}, then remove actions are built for
-     * every existing plain enum value in the {@code oldEnumValues} list.
      *
      * @param fieldDefinitionName     the field name whose plain enum values are going to be synced.
      * @param oldEnumValues           the old list of plain enum values.
@@ -43,6 +40,11 @@ public final class PlainEnumUpdateActionUtils {
         if (newEnumValues != null && !newEnumValues.isEmpty()) {
             return buildUpdateActions(fieldDefinitionName, oldEnumValues, newEnumValues);
         }
+
+        /*
+          TODO: If the list of newEnumValues is null, then remove actions are built
+                for every existing plain enum value in the oldEnumValues list.
+         */
 
         return emptyList();
     }
@@ -72,9 +74,7 @@ public final class PlainEnumUpdateActionUtils {
             .map(Collections::singletonList)
             .orElse(emptyList());
 
-        return Stream.concat(
-                    addEnumValuesUpdateActions.stream(),
-                    changeEnumValuesOrderUpdateActions.stream())
+        return Stream.concat(addEnumValuesUpdateActions.stream(), changeEnumValuesOrderUpdateActions.stream())
                 .collect(Collectors.toList());
     }
 

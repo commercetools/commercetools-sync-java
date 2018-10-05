@@ -191,16 +191,16 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
         final Map<String, Type> oldTypeMap = getKeysTypeMap(oldTypes);
 
         return CompletableFuture.allOf(newTypes
-            .stream()
-            .map(newType -> {
-                final Type oldType = oldTypeMap.get(newType.getKey());
+                .stream()
+                .map(newType -> {
+                    final Type oldType = oldTypeMap.get(newType.getKey());
 
-                return ofNullable(oldType)
-                    .map(type -> updateType(oldType, newType))
-                    .orElseGet(() -> createType(newType));
-            })
-            .map(CompletionStage::toCompletableFuture)
-            .toArray(CompletableFuture[]::new)).thenApply(result -> statistics);
+                    return ofNullable(oldType)
+                        .map(type -> updateType(oldType, newType))
+                        .orElseGet(() -> createType(newType));
+                })
+                .map(CompletionStage::toCompletableFuture)
+                .toArray(CompletableFuture[]::new)).thenApply(result -> statistics);
     }
 
     /**

@@ -20,7 +20,7 @@ import java.util.Set;
 import static com.commercetools.sync.types.FieldDefinitionTestHelper.imageUrlFieldDefinition;
 import static com.commercetools.sync.types.FieldDefinitionTestHelper.relatedCategoriesFieldDefinition;
 import static com.commercetools.sync.types.FieldDefinitionTestHelper.stateFieldDefinition;
-import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildChangeNameAction;
+import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildChangeNameUpdateAction;
 import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildSetDescriptionUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -74,7 +74,7 @@ public class TypeUpdateActionUtilsTest {
 
     @Test
     public void buildChangeNameAction_WithDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Type>> result = buildChangeNameAction(old, newDifferent);
+        final Optional<UpdateAction<Type>> result = buildChangeNameUpdateAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(ChangeName.class);
         assertThat(result).contains(ChangeName.of(newDifferent.getName()));
@@ -82,7 +82,7 @@ public class TypeUpdateActionUtilsTest {
 
     @Test
     public void buildChangeNameAction_WithSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Type>> result = buildChangeNameAction(old, newSame);
+        final Optional<UpdateAction<Type>> result = buildChangeNameUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }

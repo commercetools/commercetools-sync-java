@@ -22,7 +22,7 @@ import static java.util.Collections.emptyList;
 public final class TypeUpdateActionUtils {
 
     /**
-     * Compares the {@code name} values of a {@link Type} and a {@link TypeDraft}
+     * Compares the {@link LocalizedString} name values of a {@link Type} and a {@link TypeDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "changeName"}
      * {@link UpdateAction} if values are different.
      *
@@ -31,7 +31,7 @@ public final class TypeUpdateActionUtils {
      * @return optional containing update action or empty optional if names are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Type>> buildChangeNameAction(
+    public static Optional<UpdateAction<Type>> buildChangeNameUpdateAction(
         @Nonnull final Type oldType,
         @Nonnull final TypeDraft newType) {
 
@@ -51,8 +51,8 @@ public final class TypeUpdateActionUtils {
      */
     @Nonnull
     public static Optional<UpdateAction<Type>> buildSetDescriptionUpdateAction(
-            @Nonnull final Type oldType,
-            @Nonnull final TypeDraft newType) {
+        @Nonnull final Type oldType,
+        @Nonnull final TypeDraft newType) {
         return buildUpdateAction(oldType.getDescription(), newType.getDescription(),
             () -> SetDescription.of(newType.getDescription()));
     }
@@ -63,8 +63,8 @@ public final class TypeUpdateActionUtils {
      * if values are different.  In case, the new type draft has a list of field definitions in which a
      * duplicate name exists, the error callback is triggered and an empty list is returned.
      *
-     * @param oldType the type which should be updated.
-     * @param newType the type draft where we get the key.
+     * @param oldType        the type which should be updated.
+     * @param newType        the type draft where we get the key.
      * @param syncOptions    responsible for supplying the sync options to the sync utility method.
      *                       It is used for triggering the error callback within the utility, in case of
      *                       errors.

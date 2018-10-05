@@ -22,12 +22,9 @@ public final class LocalizedEnumUpdateActionUtils {
     /**
      * Compares a list of old {@link LocalizedEnumValue}s with a list of new {@link LocalizedEnumValue}s for a given
      * field definition.
-     * The method serves as a generic implementation for localized enum values syncing. The method takes in functions
+     * The method serves as an implementation for localized enum values syncing. The method takes in functions
      * for building the required update actions (AddLocalizedEnumValue, RemoveEnumValue, ChangeLocalizedEnumValueOrder
      * and 1-1 update actions on localized enum values (e.g. changeLabel) for the required resource.
-     *
-     * <p>If the list of new {@link LocalizedEnumValue}s is {@code null}, then remove actions are built for
-     * every existing localized enum value in the {@code oldEnumValues} list.
      *
      * @param fieldDefinitionName     the field name whose localized enum values are going to be synced.
      * @param oldEnumValues           the old list of localized enum values.
@@ -43,12 +40,13 @@ public final class LocalizedEnumUpdateActionUtils {
         @Nullable final List<LocalizedEnumValue> newEnumValues) {
 
         if (newEnumValues != null && !newEnumValues.isEmpty()) {
-            return buildUpdateActions(
-                fieldDefinitionName,
-                oldEnumValues,
-                newEnumValues
-            );
+            return buildUpdateActions(fieldDefinitionName, oldEnumValues, newEnumValues);
         }
+
+        /*
+          TODO: If the list of newEnumValues is null, then remove actions are built
+                for every existing localized enum value in the oldEnumValues list.
+         */
 
         return emptyList();
     }

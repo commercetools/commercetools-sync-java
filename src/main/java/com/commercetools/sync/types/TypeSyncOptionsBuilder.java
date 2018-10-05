@@ -7,8 +7,8 @@ import io.sphere.sdk.types.TypeDraft;
 
 import javax.annotation.Nonnull;
 
-public final class TypeSyncOptionsBuilder extends BaseSyncOptionsBuilder<TypeSyncOptionsBuilder,
-        TypeSyncOptions, Type, TypeDraft> {
+public final class TypeSyncOptionsBuilder
+        extends BaseSyncOptionsBuilder<TypeSyncOptionsBuilder, TypeSyncOptions, Type, TypeDraft> {
 
     public static final int BATCH_SIZE_DEFAULT = 50;
 
@@ -28,8 +28,7 @@ public final class TypeSyncOptionsBuilder extends BaseSyncOptionsBuilder<TypeSyn
     }
 
     /**
-     * Creates new instance of {@link TypeSyncOptions} enriched with all fields provided to {@code this}
-     * builder.
+     * Creates new instance of {@link TypeSyncOptions} enriched with all fields provided to {@code this} builder.
      *
      * @return new instance of {@link TypeSyncOptions}
      */
