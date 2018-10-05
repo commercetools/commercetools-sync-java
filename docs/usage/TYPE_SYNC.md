@@ -30,7 +30,7 @@ matched.
     - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
 
-   You can use the same client instance in the integration tests for this library found
+   You can instantiate the client the same way it is instantiated in the integration tests for this library found
    [here](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
 
 4. After the `sphereClient` is setup, a `TypeSyncOptions` should be be built as follows:
