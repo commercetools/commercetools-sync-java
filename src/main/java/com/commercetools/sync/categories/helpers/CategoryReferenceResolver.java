@@ -176,7 +176,8 @@ public final class CategoryReferenceResolver
 
         if (parentCategoryResourceIdentifier != null) {
             try {
-                return Optional.of(getKeyFromResourceIdentifier(parentCategoryResourceIdentifier));
+                final String parentKey = getKeyFromResourceIdentifier(parentCategoryResourceIdentifier);
+                return Optional.of(parentKey);
             } catch (ReferenceResolutionException referenceResolutionException) {
                 throw new ReferenceResolutionException(format(FAILED_TO_RESOLVE_PARENT, categoryKey,
                     referenceResolutionException.getMessage()), referenceResolutionException);
