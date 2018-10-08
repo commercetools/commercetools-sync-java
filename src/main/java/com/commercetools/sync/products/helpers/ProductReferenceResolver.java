@@ -204,19 +204,20 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     private CompletionStage<ProductDraftBuilder> fetchAndResolveCategoryReferences(
             @Nonnull final ProductDraftBuilder draftBuilder,
             @Nonnull final Set<String> categoryKeys) {
+
         final Map<String, String> categoryOrderHintsMap = new HashMap<>();
         final CategoryOrderHints categoryOrderHints = draftBuilder.getCategoryOrderHints();
 
         return categoryService.fetchMatchingCategoriesByKeys(categoryKeys)
             .thenApply(categories ->
                 categories.stream().map(category -> {
-                    final Reference<Category> categoryReference = category.toReference();
+                    final String categoryKey = category.getKey();
                     if (categoryOrderHints != null) {
-                        ofNullable(categoryOrderHints.get(category.getKey()))
+                        ofNullable(categoryOrderHints.get(categoryKey))
                             .ifPresent(orderHintValue -> categoryOrderHintsMap.put(category.getId(), orderHintValue));
                     }
-                    return categoryReference;
-                }).collect(toList()))
+                    return ResourceIdentifier.<Category>ofKey(categoryKey);
+                }).collect(toSet()))
             .thenApply(categoryReferences -> draftBuilder
                 .categories(categoryReferences)
                 .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintsMap)));
