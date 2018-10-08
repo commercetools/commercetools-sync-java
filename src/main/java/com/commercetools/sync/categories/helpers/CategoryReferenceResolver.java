@@ -12,16 +12,15 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
@@ -113,10 +112,9 @@ public final class CategoryReferenceResolver
         try {
             return getParentCategoryKey(draftBuilder)
                 .map(parentCategoryKey -> fetchAndResolveParentReference(draftBuilder, parentCategoryKey))
-                .orElseGet(() -> CompletableFuture.completedFuture(draftBuilder));
+                .orElseGet(() -> completedFuture(draftBuilder));
         } catch (ReferenceResolutionException referenceResolutionException) {
-            return CompletableFutureUtils
-                .exceptionallyCompletedFuture(referenceResolutionException);
+            return exceptionallyCompletedFuture(referenceResolutionException);
         }
     }
 
