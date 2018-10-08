@@ -7,13 +7,11 @@ import io.sphere.sdk.producttypes.ProductTypeDraft;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildAttributesUpdateActions;
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeDescriptionAction;
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeNameAction;
-import static java.util.stream.Collectors.toList;
 
 public final class ProductTypeSyncUtils {
 
@@ -38,13 +36,11 @@ public final class ProductTypeSyncUtils {
             @Nonnull final ProductTypeDraft newProductType,
             @Nonnull final ProductTypeSyncOptions syncOptions) {
 
-        final List<UpdateAction<ProductType>> updateActions = Stream.of(
+        final List<UpdateAction<ProductType>> updateActions =
+            filterEmptyOptionals(
                 buildChangeNameAction(oldProductType, newProductType),
                 buildChangeDescriptionAction(oldProductType, newProductType)
-        )
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(toList());
+            );
 
         updateActions.addAll(buildAttributesUpdateActions(oldProductType, newProductType, syncOptions));
 
