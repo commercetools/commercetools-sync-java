@@ -105,7 +105,7 @@ public abstract class CustomReferenceResolver
     private CompletionStage<Optional<String>> getCustomTypeId(@Nonnull final CustomFieldsDraft custom,
                                                               @Nonnull final String referenceResolutionErrorMessage) {
         try {
-            final String customTypeKey = getKeyFromResourceIdentifier(custom.getType(), options.shouldAllowUuidKeys());
+            final String customTypeKey = getKeyFromResourceIdentifier(custom.getType());
             return typeService.fetchCachedTypeId(customTypeKey);
         } catch (ReferenceResolutionException exception) {
             return CompletableFutureUtils.exceptionallyCompletedFuture(

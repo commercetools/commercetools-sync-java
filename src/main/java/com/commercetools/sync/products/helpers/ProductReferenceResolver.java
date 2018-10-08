@@ -236,8 +236,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             @Nonnull final ResourceIdentifier<ProductType> productTypeResourceIdentifier,
             @Nonnull final String referenceResolutionErrorMessage) {
         try {
-            final String productTypeKey = getKeyFromResourceIdentifier(productTypeResourceIdentifier,
-                options.shouldAllowUuidKeys());
+            final String productTypeKey = getKeyFromResourceIdentifier(productTypeResourceIdentifier);
             return productTypeService.fetchCachedProductTypeId(productTypeKey);
         } catch (ReferenceResolutionException exception) {
             return exceptionallyCompletedFuture(
@@ -305,7 +304,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         }
 
         try {
-            final String resourceKey = getKeyFromResourceIdentifier(reference, options.shouldAllowUuidKeys());
+            final String resourceKey = getKeyFromResourceIdentifier(reference);
             return keyToIdMapper.apply(resourceKey)
                 .thenApply(optId -> optId
                     .map(idToReferenceMapper)
