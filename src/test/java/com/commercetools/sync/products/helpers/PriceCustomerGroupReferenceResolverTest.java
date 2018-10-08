@@ -19,6 +19,7 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
@@ -51,6 +52,28 @@ public class PriceCustomerGroupReferenceResolverTest {
     }
 
     @Test
+    public void resolveCustomerGroupReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReference() {
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .allowUuidKeys(true)
+                                                                               .build();
+
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .customerGroup(CustomerGroup.referenceOfId(UUID.randomUUID().toString()));
+
+        final PriceReferenceResolver priceReferenceResolver =
+            new PriceReferenceResolver(productSyncOptions, mock(TypeService.class), mock(ChannelService.class),
+                customerGroupService);
+
+
+        final PriceDraftBuilder resolvedDraft = priceReferenceResolver.resolveCustomerGroupReference(priceBuilder)
+                                                                      .toCompletableFuture().join();
+
+        assertThat(resolvedDraft.getCustomerGroup()).isNotNull();
+        assertThat(resolvedDraft.getCustomerGroup().getId()).isEqualTo(CUSTOMER_GROUP_ID);
+    }
+
+    @Test
     public void resolveCustomerGroupReference_WithKeys_ShouldResolveReference() {
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
@@ -61,6 +84,23 @@ public class PriceCustomerGroupReferenceResolverTest {
 
         assertThat(resolvedDraft.getCustomerGroup()).isNotNull();
         assertThat(resolvedDraft.getCustomerGroup().getId()).isEqualTo(CUSTOMER_GROUP_ID);
+    }
+
+    @Test
+    public void resolveCustomerGroupReference_WithKeysAsUuidSetAndNotAllowed_ShouldNotResolveReference() {
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .customerGroup(CustomerGroup.referenceOfId(UUID.randomUUID().toString()));
+
+        assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
+            .hasFailed()
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage(format("Failed to resolve 'customer-group' reference on PriceDraft"
+                    + " with country:'%s' and value: '%s'. Reason: Found a UUID in the id field. Expecting a key"
+                    + " without a UUID value. If you want to allow UUID values for reference keys, please use the"
+                    + " allowUuidKeys(true) option in the sync options.",
+                priceBuilder.getCountry(), priceBuilder.getValue()));
     }
 
     @Test

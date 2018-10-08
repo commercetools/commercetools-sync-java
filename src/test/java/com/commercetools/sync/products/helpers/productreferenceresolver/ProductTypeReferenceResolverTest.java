@@ -25,6 +25,7 @@ import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockC
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithProductTypeRef;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithProductTypeRefId;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductTypeUuid;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
@@ -62,6 +63,27 @@ public class ProductTypeReferenceResolverTest {
     }
 
     @Test
+    public void resolveProductTypeReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReference() {
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .allowUuidKeys(true)
+                                                                               .build();
+
+        final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
+            productTypeService, mock(CategoryService.class), getMockTypeService(),
+            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)), mock(CustomerGroupService.class),
+            getMockTaxCategoryService(TAX_CATEGORY_ID), getMockStateService(STATE_ID),
+            getMockProductService(PRODUCT_ID));
+
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid();
+
+        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveProductTypeReference(productBuilder)
+                                                                          .toCompletableFuture().join();
+
+        assertThat(resolvedDraft.getProductType()).isNotNull();
+        assertThat(resolvedDraft.getProductType().getId()).isEqualTo(PRODUCT_TYPE_ID);
+    }
+
+    @Test
     public void resolveProductTypeReference_WithKeys_ShouldResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefId("productTypeKey");
 
@@ -70,6 +92,21 @@ public class ProductTypeReferenceResolverTest {
 
         assertThat(resolvedDraft.getProductType()).isNotNull();
         assertThat(resolvedDraft.getProductType().getId()).isEqualTo(PRODUCT_TYPE_ID);
+    }
+
+    @Test
+    public void resolveProductTypeReference_WithKeysAsUuidSetAndNotAllowed_ShouldNotResolveReference() {
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid();
+
+        assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
+            .hasFailed()
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage("Failed to resolve product type reference on ProductDraft"
+                + " with key:'" + productBuilder.getKey() + "'. Reason: Found a UUID"
+                + " in the id field. Expecting a key without a UUID value. If you want to"
+                + " allow UUID values for reference keys, please use the "
+                + "allowUuidKeys(true) option in the sync options.");
     }
 
     @Test

@@ -7,6 +7,7 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.models.Builder;
 import io.sphere.sdk.types.CustomDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
@@ -16,7 +17,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static io.sphere.sdk.types.CustomFieldsDraft.ofTypeIdAndJson;
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 
 /**
@@ -87,7 +87,6 @@ public abstract class CustomReferenceResolver
                 .thenApply(resolvedTypeIdOptional ->
                     resolvedTypeIdOptional.map(resolvedTypeId ->
                         customSetter.apply(draftBuilder, ofTypeIdAndJson(resolvedTypeId, custom.getFields())))
-                                          //should throw error if it is empty!!
                                           .orElse(draftBuilder));
         }
         return CompletableFuture.completedFuture(draftBuilder);
@@ -101,17 +100,17 @@ public abstract class CustomReferenceResolver
      * @param referenceResolutionErrorMessage the message containing the information about the draft to attach to the
      *                                        {@link ReferenceResolutionException} in case it occurs.
      * @return a {@link CompletionStage} that contains as a result an optional which either contains the custom type id
-     *         if it exists or empty if it doesn't.
+     *      if it exists or empty if it doesn't.
      */
     private CompletionStage<Optional<String>> getCustomTypeId(@Nonnull final CustomFieldsDraft custom,
                                                               @Nonnull final String referenceResolutionErrorMessage) {
         try {
-            final String customTypeKey = getKeyFromResourceIdentifier(custom.getType());
+            final String customTypeKey = getKeyFromResourceIdentifier(custom.getType(), options.shouldAllowUuidKeys());
             return typeService.fetchCachedTypeId(customTypeKey);
         } catch (ReferenceResolutionException exception) {
-            final String errorMessage =
-                format("%s Reason: %s", referenceResolutionErrorMessage, exception.getMessage());
-            return exceptionallyCompletedFuture(new ReferenceResolutionException(errorMessage, exception));
+            return CompletableFutureUtils.exceptionallyCompletedFuture(
+                new ReferenceResolutionException(
+                    format("%s Reason: %s", referenceResolutionErrorMessage, exception.getMessage()), exception));
         }
     }
 

@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
@@ -59,6 +60,26 @@ public class StateReferenceResolverTest {
     }
 
     @Test
+    public void resolveStateReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReference() {
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .allowUuidKeys(true)
+                                                                               .build();
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+            .state(State.referenceOfId(UUID.randomUUID().toString()));
+
+        final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
+            getMockProductTypeService(PRODUCT_TYPE_ID), mock(CategoryService.class), getMockTypeService(),
+            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)), mock(CustomerGroupService.class),
+            getMockTaxCategoryService(TAX_CATEGORY_ID), stateService, getMockProductService(PRODUCT_ID));
+
+        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveStateReference(productBuilder)
+                                                                          .toCompletableFuture().join();
+
+        assertThat(resolvedDraft.getState()).isNotNull();
+        assertThat(resolvedDraft.getState().getId()).isEqualTo(STATE_ID);
+    }
+
+    @Test
     public void resolveStateReference_WithKeys_ShouldResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .state(State.referenceOfId("stateKey"));
@@ -68,6 +89,23 @@ public class StateReferenceResolverTest {
 
         assertThat(resolvedDraft.getState()).isNotNull();
         assertThat(resolvedDraft.getState().getId()).isEqualTo(STATE_ID);
+    }
+
+    @Test
+    public void resolveStateReference_WithKeysAsUuidSetAndNotAllowed_ShouldNotResolveReference() {
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+            .state(State.referenceOfId(UUID.randomUUID().toString()))
+            .key("dummyKey");
+
+        assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
+            .hasFailed()
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage("Failed to resolve reference 'state' on ProductDraft"
+                + " with key:'" + productBuilder.getKey() + "'. Reason: Found a UUID"
+                + " in the id field. Expecting a key without a UUID value. If you want to"
+                + " allow UUID values for reference keys, please use the "
+                + "allowUuidKeys(true) option in the sync options.");
     }
 
     @Test
