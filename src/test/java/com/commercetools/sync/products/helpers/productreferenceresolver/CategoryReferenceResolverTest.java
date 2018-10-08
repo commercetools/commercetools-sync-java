@@ -53,6 +53,7 @@ public class CategoryReferenceResolverTest {
 
     @Test
     public void resolveCategoryReferences_WithCategoryKeysAndCategoryOrderHints_ShouldResolveReferences() {
+        // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
         final int nCategories = 10;
@@ -76,9 +77,11 @@ public class CategoryReferenceResolverTest {
             getMockTaxCategoryService(TAX_CATEGORY_ID), getMockStateService(STATE_ID),
             getMockProductService(PRODUCT_ID));
 
+        // test
         final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveCategoryReferences(productBuilder)
                                                                           .toCompletableFuture().join();
 
+        // assertion
         assertThat(resolvedDraft.getCategories()).isNotNull();
         assertThat(resolvedDraft.getCategories()).hasSize(nCategories);
         assertThat(resolvedDraft.getCategories()).containsOnlyElementsOf(categoryReferences);
@@ -88,6 +91,7 @@ public class CategoryReferenceResolverTest {
 
     @Test
     public void resolveCategoryReferences_WithCategoryKeysAndNoCategoryOrderHints_ShouldResolveReferences() {
+        // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
         final int nCategories = 10;
@@ -107,9 +111,11 @@ public class CategoryReferenceResolverTest {
             getMockTaxCategoryService(TAX_CATEGORY_ID), getMockStateService(STATE_ID),
             getMockProductService(PRODUCT_ID));
 
+        // test
         final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveCategoryReferences(productBuilder)
                                                                           .toCompletableFuture().join();
 
+        // assertion
         assertThat(resolvedDraft.getCategories()).isNotNull();
         assertThat(resolvedDraft.getCategories()).hasSize(nCategories);
         assertThat(resolvedDraft.getCategories()).containsOnlyElementsOf(categoryReferences);
@@ -119,6 +125,7 @@ public class CategoryReferenceResolverTest {
 
     @Test
     public void resolveCategoryReferences_WithCategoryKeysAndSomeCategoryOrderHints_ShouldResolveReferences() {
+        // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
         final int nCategories = 10;
@@ -143,9 +150,11 @@ public class CategoryReferenceResolverTest {
             getMockTaxCategoryService(TAX_CATEGORY_ID), getMockStateService(STATE_ID),
             getMockProductService(PRODUCT_ID));
 
+        // test
         final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveCategoryReferences(productBuilder)
                                                                           .toCompletableFuture().join();
 
+        // assertion
         assertThat(resolvedDraft.getCategories()).isNotNull();
         assertThat(resolvedDraft.getCategories()).hasSize(nCategories);
         assertThat(resolvedDraft.getCategories()).containsOnlyElementsOf(categoryReferences);
@@ -155,6 +164,7 @@ public class CategoryReferenceResolverTest {
 
     @Test
     public void resolveCategoryReferences_WithNullCategoryReferences_ShouldNotResolveReferences() {
+        // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
@@ -167,6 +177,7 @@ public class CategoryReferenceResolverTest {
             getMockTaxCategoryService(TAX_CATEGORY_ID), getMockStateService(STATE_ID),
             getMockProductService(PRODUCT_ID));
 
+        // test and assertion
         assertThat(productReferenceResolver.resolveCategoryReferences(productBuilder).toCompletableFuture())
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft -> resolvedDraft.getCategories().isEmpty());
@@ -175,6 +186,7 @@ public class CategoryReferenceResolverTest {
     @Ignore("TODO: SHOULD FAIL ON RESOLUTION IF NOT FOUND ON FETCH GITHUB ISSUE#219")
     @Test
     public void resolveCategoryReferences_WithANonExistentCategoryReference_ShouldNotResolveReference() {
+        // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
@@ -199,6 +211,7 @@ public class CategoryReferenceResolverTest {
 
     @Test
     public void resolveCategoryReferences_WithNullIdOnCategoryReference_ShouldNotResolveReference() {
+        // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
@@ -212,6 +225,7 @@ public class CategoryReferenceResolverTest {
             getMockTaxCategoryService(TAX_CATEGORY_ID), getMockStateService(STATE_ID),
             getMockProductService(PRODUCT_ID));
 
+        // test and assertion
         assertThat(productReferenceResolver.resolveCategoryReferences(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
@@ -235,6 +249,7 @@ public class CategoryReferenceResolverTest {
             getMockTaxCategoryService(TAX_CATEGORY_ID), getMockStateService(STATE_ID),
             getMockProductService(PRODUCT_ID));
 
+        // test and assertion
         assertThat(productReferenceResolver.resolveCategoryReferences(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
@@ -265,6 +280,7 @@ public class CategoryReferenceResolverTest {
             getMockTaxCategoryService(TAX_CATEGORY_ID), getMockStateService(STATE_ID),
             getMockProductService(PRODUCT_ID));
 
+        // test and assertion
         assertThat(productReferenceResolver.resolveCategoryReferences(productBuilder).toCompletableFuture())
             .hasFailed()
             .hasFailedWithThrowableThat()
