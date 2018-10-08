@@ -87,6 +87,7 @@ public abstract class CustomReferenceResolver
                 .thenApply(resolvedTypeIdOptional ->
                     resolvedTypeIdOptional.map(resolvedTypeId ->
                         customSetter.apply(draftBuilder, ofTypeIdAndJson(resolvedTypeId, custom.getFields())))
+                                          //should throw error if it is empty!!
                                           .orElse(draftBuilder));
         }
         return CompletableFuture.completedFuture(draftBuilder);
