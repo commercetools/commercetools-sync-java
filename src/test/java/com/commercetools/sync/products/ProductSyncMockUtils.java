@@ -382,19 +382,6 @@ public class ProductSyncMockUtils {
     }
 
     @Nonnull
-    }
-
-    @Nonnull
-    public static ProductDraftBuilder getBuilderWithRandomProductTypeUuid() {
-        return getBuilderWithProductTypeRefId(UUID.randomUUID().toString());
-    }
-
-    @Nonnull
-    public static ProductDraftBuilder getBuilderWithProductTypeRef(
-        @Nonnull final Reference<ProductType> reference) {
-        return ProductDraftBuilder.of(reference,
-            LocalizedString.ofEnglish("testName"),
-            LocalizedString.ofEnglish("testSlug"),
     public static ProductDraftBuilder getBuilderWithProductTypeRefKey(@Nullable final String key) {
         return ProductDraftBuilder.of(ResourceIdentifier.ofKey(key),
             ofEnglish("testName"),
