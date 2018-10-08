@@ -37,6 +37,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateS
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockTaxCategoryService;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
@@ -52,7 +53,6 @@ public class CategoryReferenceResolverTest {
 
     @Test
     public void resolveCategoryReferences_WithCategoryKeysAndCategoryOrderHints_ShouldResolveReferences() {
-        //todo: Mock this completley
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
         final int nCategories = 10;
@@ -179,7 +179,7 @@ public class CategoryReferenceResolverTest {
                                                                                .build();
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
-            .categories(Collections.singleton(Category.referenceOfId("non-existent-category")));
+            .categories(singleton(Category.referenceOfId("non-existent-category")));
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             getMockProductTypeService(PRODUCT_TYPE_ID), mockCategoryService, getMockTypeService(),
@@ -203,7 +203,7 @@ public class CategoryReferenceResolverTest {
                                                                                .build();
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
-            .categories(Collections.singleton(Category.referenceOfId(null)));
+            .categories(singleton(Category.referenceOfId(null)));
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             getMockProductTypeService(PRODUCT_TYPE_ID), mockCategoryService, getMockTypeService(),
@@ -217,7 +217,7 @@ public class CategoryReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve reference 'category' on ProductDraft with "
-                + "key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                + "key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
@@ -226,8 +226,8 @@ public class CategoryReferenceResolverTest {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
-        final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefKey("anyProductTypeKey")
-            .categories(singleton(ResourceIdentifier.ofKey("")));
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+            .categories(singleton(Category.referenceOfId("")));
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             getMockProductTypeService(PRODUCT_TYPE_ID), mockCategoryService, getMockTypeService(),
