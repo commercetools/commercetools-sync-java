@@ -169,6 +169,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     public CompletionStage<ProductDraftBuilder> resolveCategoryReferences(
         @Nonnull final ProductDraftBuilder draftBuilder) {
+
         final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = draftBuilder.getCategories();
         final Set<String> categoryKeys = new HashSet<>();
         for (ResourceIdentifier<Category> categoryResourceIdentifier: categoryResourceIdentifiers) {
@@ -179,7 +180,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                 } catch (ReferenceResolutionException referenceResolutionException) {
                     return exceptionallyCompletedFuture(
                         new ReferenceResolutionException(
-                            format(FAILED_TO_RESOLVE_REFERENCE, categoryResourceIdentifier.getTypeId(),
+                            format(FAILED_TO_RESOLVE_REFERENCE, Category.referenceTypeId(),
                                 draftBuilder.getKey(),referenceResolutionException.getMessage())));
                 }
             }
