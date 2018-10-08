@@ -20,6 +20,8 @@ import io.sphere.sdk.products.commands.updateactions.AddPrice;
 import io.sphere.sdk.products.commands.updateactions.MoveImageToPosition;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemovePrice;
+import io.sphere.sdk.products.commands.updateactions.SetAttribute;
+import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
 
 import javax.annotation.Nonnull;
@@ -38,6 +40,7 @@ import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollect
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.internals.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
 import static com.commercetools.sync.internals.utils.UpdateActionsSortUtils.sortPriceActions;
+import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
 import static com.commercetools.sync.products.utils.ProductVariantPriceUpdateActionUtils.buildActions;
 import static java.lang.String.format;
@@ -47,77 +50,30 @@ import static java.util.Optional.ofNullable;
 
 
 public final class ProductVariantUpdateActionUtils {
-    private static final String FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION = "Failed to build a "
+    public static final String FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION = "Failed to build a "
         + "setAttribute/setAttributeInAllVariants update action for the attribute with the name '%s' in the "
         + "ProductVariantDraft with key '%s' on the product with key '%s'. Reason: %s";
-    private static final String NULL_PRODUCT_VARIANT_ATTRIBUTE = "AttributeDraft is null.";
+    public static final String NULL_PRODUCT_VARIANT_ATTRIBUTE = "AttributeDraft is null.";
     private static final String NULL_PRODUCT_VARIANT_PRICE = "New price is null.";
 
     /**
-     * Compares the attributes of a {@link ProductVariantDraft} and a {@link ProductVariant} to build either
-     * {@link io.sphere.sdk.products.commands.updateactions.SetAttribute} or
-     * {@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants} update actions.
-     * If both the {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of attributes, then
-     * no update action is needed and hence an empty {@link List} is returned.
-     * // TODO: UNIT TESTS
+     * Compares the SKUs of a {@link ProductVariantDraft} and a {@link ProductVariant}. It returns a {@link SetSku}
+     * update action as a result in an {@link Optional}. If both the {@link ProductVariantDraft}
+     * and the {@link ProductVariant} have identical identical SKUs, then no update action is needed and hence an
+     * empty {@link Optional} is returned.
      *
-     * @param productKey         the key of the product that the variants belong to. It is used only in the error
-     *                           messages if any.
-     * @param oldProductVariant  the {@link ProductVariant} which should be updated.
-     * @param newProductVariant  the {@link ProductVariantDraft} where we get the new list of attributes.
-     * @param attributesMetaData a map of attribute name -&gt; {@link AttributeMetaData}; which defines attribute
-     *                           information: its name, whether a value is required or not and whether it has the
-     *                           constraint "SameForAll" or not.
-     * @param syncOptions        the sync options wrapper which contains options related to the sync process supplied by
-     *                           the user. For example, custom callbacks to call in case of warnings or errors occurring
-     *                           on the build update action process. And other options (See {@link ProductSyncOptions}
-     *                           for more info).
-     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
-     *          needed.
+     * @param oldProductVariant the variant which should be updated.
+     * @param newProductVariant the variant draft where we get the new SKU.
+     * @return A filled optional with the update action or an empty optional if the SKUs are identical.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildProductVariantAttributesUpdateActions(
-            @Nullable final String productKey,
-            @Nonnull final ProductVariant oldProductVariant,
-            @Nonnull final ProductVariantDraft newProductVariant,
-            @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
-            @Nonnull final ProductSyncOptions syncOptions) {
-
-        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-        final List<AttributeDraft> newProductVariantAttributes = newProductVariant.getAttributes();
-        if (newProductVariantAttributes == null) {
-            return updateActions;
-        }
-
-        // TODO: NEED TO HANDLE REMOVED ATTRIBUTES FROM OLD PRODUCT VARIANT.
-        for (AttributeDraft newProductVariantAttribute : newProductVariantAttributes) {
-            if (newProductVariantAttribute == null) {
-                final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, null,
-                        newProductVariant.getKey(), productKey, NULL_PRODUCT_VARIANT_ATTRIBUTE);
-                syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
-                continue;
-            }
-
-            final String newProductVariantAttributeName = newProductVariantAttribute.getName();
-            final Optional<Attribute> oldProductVariantAttributeOptional = oldProductVariant
-                    .findAttribute(newProductVariantAttributeName);
-
-            final Attribute oldProductVariantAttribute = oldProductVariantAttributeOptional.orElse(null);
-            final AttributeMetaData attributeMetaData = attributesMetaData.get(newProductVariantAttributeName);
-
-            try {
-                final Optional<UpdateAction<Product>> variantAttributeUpdateActionOptional =
-                    buildProductVariantAttributeUpdateAction(oldProductVariant.getId(), oldProductVariantAttribute,
-                        newProductVariantAttribute, attributeMetaData);
-                variantAttributeUpdateActionOptional.ifPresent(updateActions::add);
-            } catch (@Nonnull final BuildUpdateActionException buildUpdateActionException) {
-                final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
-                        newProductVariantAttributeName, newProductVariant.getKey(), productKey,
-                        buildUpdateActionException.getMessage());
-                syncOptions.applyErrorCallback(errorMessage, buildUpdateActionException);
-            }
-        }
-        return updateActions;
+    public static Optional<SetSku> buildProductVariantSkuUpdateAction(
+        @Nonnull final ProductVariant oldProductVariant,
+        @Nonnull final ProductVariantDraft newProductVariant) {
+        final String oldProductVariantSku = oldProductVariant.getSku();
+        final String newProductVariantSku = newProductVariant.getSku();
+        return buildUpdateAction(oldProductVariantSku, newProductVariantSku,
+            () -> SetSku.of(oldProductVariant.getId(), newProductVariantSku, true));
     }
 
     /**
@@ -166,40 +122,6 @@ public final class ProductVariantUpdateActionUtils {
         });
 
         return sortPriceActions(updateActions);
-    }
-
-    /**
-     * Compares the {@link List} of {@link AssetDraft}s of a {@link ProductVariantDraft} and a
-     * {@link ProductVariant} and returns a {@link List} of {@link UpdateAction}&lt;{@link Product}&gt;. If both the
-     * {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of assets, then no update action
-     * is needed and hence an empty {@link List} is returned. In case, the new product variant draft has a list of
-     * assets in which a duplicate key exists, the error callback is triggered and an empty list is returned.
-     *
-     * @param oldProductVariant the {@link ProductVariant} which should be updated.
-     * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of assets.
-     * @param syncOptions       responsible for supplying the sync options to the sync utility method. It is used for
-     *                          triggering the error callback within the utility, in case of errors.
-     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
-     *         needed.
-     */
-    @Nonnull
-    public static List<UpdateAction<Product>> buildProductVariantAssetsUpdateActions(
-        @Nonnull final ProductVariant oldProductVariant,
-        @Nonnull final ProductVariantDraft newProductVariant,
-        @Nonnull final ProductSyncOptions syncOptions) {
-
-        try {
-            return buildAssetsUpdateActions(
-                oldProductVariant.getAssets(),
-                newProductVariant.getAssets(),
-                new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions));
-
-        } catch (final BuildUpdateActionException exception) {
-            syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
-                + "of the product variant with the sku '%s'. Reason: %s", oldProductVariant.getSku(), exception),
-                exception);
-            return emptyList();
-        }
     }
 
     /**
@@ -269,12 +191,11 @@ public final class ProductVariantUpdateActionUtils {
      * @param newImages the new list of images.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
      *         needed.
-     * @throws IllegalArgumentException if arrays have different size or different items.
      */
     public static List<MoveImageToPosition> buildMoveImageToPositionUpdateActions(
-            final int variantId,
-            @Nonnull final List<Image> oldImages,
-            @Nonnull final List<Image> newImages) throws IllegalArgumentException {
+        final int variantId,
+        @Nonnull final List<Image> oldImages,
+        @Nonnull final List<Image> newImages) {
         final int oldImageListSize = oldImages.size();
         final int newImageListSize = newImages.size();
         if (oldImageListSize != newImageListSize) {
@@ -295,9 +216,10 @@ public final class ProductVariantUpdateActionUtils {
 
         for (int oldIndex = 0; oldIndex < oldImageListSize; oldIndex++) {
             final Image oldImage = oldImages.get(oldIndex);
-            final Integer newIndex = ofNullable(imageIndexMap.get(oldImage)) // constant-time operation
-                .orElseThrow(() ->
-                    new IllegalArgumentException(format("Old image [%s] not found in the new images list.", oldImage)));
+            final Integer newIndex =
+                ofNullable(imageIndexMap.get(oldImage))
+                    .orElseThrow(() -> new IllegalArgumentException(
+                        format("Old image [%s] not found in the new images list.", oldImage)));
 
             if (oldIndex != newIndex) {
                 updateActions.add(
@@ -308,23 +230,133 @@ public final class ProductVariantUpdateActionUtils {
     }
 
     /**
-     * Compares the SKUs of a {@link ProductVariantDraft} and a {@link ProductVariant}. It returns a {@link SetSku}
-     * update action as a result in an {@link Optional}. If both the {@link ProductVariantDraft}
-     * and the {@link ProductVariant} have identical identical SKUs, then no update action is needed and hence an
-     * empty {@link Optional} is returned.
+     * Compares the {@link List} of {@link AssetDraft}s of a {@link ProductVariantDraft} and a
+     * {@link ProductVariant} and returns a {@link List} of {@link UpdateAction}&lt;{@link Product}&gt;. If both the
+     * {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of assets, then no update action
+     * is needed and hence an empty {@link List} is returned. In case, the new product variant draft has a list of
+     * assets in which a duplicate key exists, the error callback is triggered and an empty list is returned.
      *
-     * @param oldProductVariant the variant which should be updated.
-     * @param newProductVariant the variant draft where we get the new SKU.
-     * @return A filled optional with the update action or an empty optional if the SKUs are identical.
+     * @param oldProductVariant the {@link ProductVariant} which should be updated.
+     * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of assets.
+     * @param syncOptions       responsible for supplying the sync options to the sync utility method. It is used for
+     *                          triggering the error callback within the utility, in case of errors.
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
+     *         needed.
      */
     @Nonnull
-    public static Optional<SetSku> buildProductVariantSkuUpdateAction(
+    public static List<UpdateAction<Product>> buildProductVariantAssetsUpdateActions(
         @Nonnull final ProductVariant oldProductVariant,
-        @Nonnull final ProductVariantDraft newProductVariant) {
-        final String oldProductVariantSku = oldProductVariant.getSku();
-        final String newProductVariantSku = newProductVariant.getSku();
-        return buildUpdateAction(oldProductVariantSku, newProductVariantSku,
-            () -> SetSku.of(oldProductVariant.getId(), newProductVariantSku, true));
+        @Nonnull final ProductVariantDraft newProductVariant,
+        @Nonnull final ProductSyncOptions syncOptions) {
+
+        try {
+            return buildAssetsUpdateActions(
+                oldProductVariant.getAssets(),
+                newProductVariant.getAssets(),
+                new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions));
+
+        } catch (final BuildUpdateActionException exception) {
+            syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
+                    + "of the product variant with the sku '%s'. Reason: %s", oldProductVariant.getSku(), exception),
+                exception);
+            return emptyList();
+        }
+    }
+
+
+    /**
+     * Compares the attributes of a {@link ProductVariantDraft} and a {@link ProductVariant} to build either
+     * {@link io.sphere.sdk.products.commands.updateactions.SetAttribute} or
+     * {@link io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants} update actions.
+     * If both the {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of attributes, then
+     * no update action is needed and hence an empty {@link List} is returned.
+     *
+     * @param productKey         the key of the product that the variants belong to. It is used only in the error
+     *                           messages if any.
+     * @param oldProductVariant  the {@link ProductVariant} which should be updated.
+     * @param newProductVariant  the {@link ProductVariantDraft} where we get the new list of attributes.
+     * @param attributesMetaData a map of attribute name -&gt; {@link AttributeMetaData}; which defines attribute
+     *                           information: its name, whether a value is required or not and whether it has the
+     *                           constraint "SameForAll" or not.
+     * @param syncOptions        the sync options wrapper which contains options related to the sync process supplied by
+     *                           the user. For example, custom callbacks to call in case of warnings or errors occurring
+     *                           on the build update action process. And other options (See {@link ProductSyncOptions}
+     *                           for more info).
+     * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
+     *          needed.
+     */
+    @Nonnull
+    public static List<UpdateAction<Product>> buildProductVariantAttributesUpdateActions(
+        @Nullable final String productKey,
+        @Nonnull final ProductVariant oldProductVariant,
+        @Nonnull final ProductVariantDraft newProductVariant,
+        @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
+        @Nonnull final ProductSyncOptions syncOptions) {
+
+        final Integer oldProductVariantId = oldProductVariant.getId();
+        final List<AttributeDraft> newProductVariantAttributes = newProductVariant.getAttributes();
+        final List<Attribute> oldProductVariantAttributes = oldProductVariant.getAttributes();
+
+        final List<UpdateAction<Product>> updateActions = buildRemoveUpdateActions(oldProductVariantAttributes,
+            newProductVariantAttributes, Attribute::getName, AttributeDraft::getName,
+            attribute -> {
+                try {
+                    return buildUnSetAttribute(oldProductVariantId, attribute.getName(), attributesMetaData);
+                } catch (final BuildUpdateActionException buildUpdateActionException) {
+                    final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, attribute.getName(),
+                        newProductVariant.getKey(), productKey, buildUpdateActionException.getMessage());
+                    syncOptions.applyErrorCallback(errorMessage,
+                        new BuildUpdateActionException(errorMessage, buildUpdateActionException));
+                    return null;
+                }
+            });
+
+        final Map<String, Attribute> oldAttributesMap =
+            collectionToMap(oldProductVariantAttributes, Attribute::getName);
+
+        emptyIfNull(newProductVariantAttributes).forEach(newAttribute -> {
+            if (newAttribute == null) {
+                final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, null,
+                    newProductVariant.getKey(), productKey, NULL_PRODUCT_VARIANT_ATTRIBUTE);
+                syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
+            } else {
+                final String newAttributeName = newAttribute.getName();
+                final Attribute matchingOldAttribute = oldAttributesMap.get(newAttributeName);
+
+                try {
+
+                    buildProductVariantAttributeUpdateAction(oldProductVariantId, matchingOldAttribute,
+                        newAttribute, attributesMetaData)
+                        .ifPresent(updateActions::add);
+
+                } catch (final BuildUpdateActionException buildUpdateActionException) {
+                    final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, newAttributeName,
+                        newProductVariant.getKey(), productKey, buildUpdateActionException.getMessage());
+                    syncOptions.applyErrorCallback(errorMessage,
+                        new BuildUpdateActionException(errorMessage, buildUpdateActionException));
+                }
+            }
+
+        });
+
+        return updateActions;
+    }
+
+    private static UpdateAction<Product> buildUnSetAttribute(
+        @Nonnull final Integer variantId,
+        @Nonnull final String attributeName,
+        @Nonnull final Map<String, AttributeMetaData> attributesMetaData) throws BuildUpdateActionException {
+
+        final AttributeMetaData attributeMetaData = attributesMetaData.get(attributeName);
+
+        if (attributeMetaData == null) {
+            final String errorMessage = format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, attributeName);
+            throw new BuildUpdateActionException(errorMessage);
+        }
+
+        return attributeMetaData.isSameForAll()
+            ? SetAttributeInAllVariants.ofUnsetAttribute(attributeName, true) :
+            SetAttribute.ofUnsetAttribute(variantId, attributeName, true);
     }
 
     private ProductVariantUpdateActionUtils() {
