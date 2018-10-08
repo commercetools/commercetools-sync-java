@@ -124,6 +124,12 @@ public final class CategoryReferenceResolver
         return getParentCategoryKey(draftBuilder.getParent(), draftBuilder.getKey());
     }
 
+    @Nonnull
+    public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraft draft)
+        throws ReferenceResolutionException {
+        return getParentCategoryKey(draft.getParent(), draft.getKey());
+    }
+
     /**
      * Given a {@link CategoryDraftBuilder} and a {@code parentCategoryKey} this method fetches the actual id of the
      * category corresponding to this key, ideally from a cache. Then it sets this id on the parent reference
@@ -144,12 +150,6 @@ public final class CategoryReferenceResolver
                 .map(resolvedParentId ->
                     draftBuilder.parent(Category.referenceOfId(resolvedParentId).toResourceIdentifier()))
                 .orElse(draftBuilder));
-    }
-
-    @Nonnull
-    public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraft draft)
-        throws ReferenceResolutionException {
-        return getParentCategoryKey(draft.getParent(), draft.getKey());
     }
 
     /**
