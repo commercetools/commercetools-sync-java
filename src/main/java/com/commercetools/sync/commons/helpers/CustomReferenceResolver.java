@@ -7,7 +7,6 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.models.Builder;
 import io.sphere.sdk.types.CustomDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
@@ -17,6 +16,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static io.sphere.sdk.types.CustomFieldsDraft.ofTypeIdAndJson;
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 
 /**
