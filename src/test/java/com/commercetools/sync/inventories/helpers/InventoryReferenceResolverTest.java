@@ -111,7 +111,6 @@ public class InventoryReferenceResolverTest {
 
     @Test
     public void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
-        //todo: check this
         final InventoryEntryDraftBuilder draftBuilder = InventoryEntryDraftBuilder
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(UUID_KEY))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
