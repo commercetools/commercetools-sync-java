@@ -171,8 +171,8 @@ public final class FieldDefinitionsUpdateActionUtils {
         @Nonnull final FieldDefinition fieldDefinitionA,
         @Nonnull final FieldDefinition fieldDefinitionB) {
 
-        return  fieldDefinitionA.getType() != null && fieldDefinitionB.getType() != null &&
-                fieldDefinitionA.getType().getClass() == fieldDefinitionB.getType().getClass();
+        return  fieldDefinitionA.getType() != null && fieldDefinitionB.getType() != null
+                && fieldDefinitionA.getType().getClass() == fieldDefinitionB.getType().getClass();
     }
 
     /**
