@@ -12,7 +12,6 @@ import io.sphere.sdk.types.commands.updateactions.RemoveFieldDefinition;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -144,20 +143,15 @@ public final class FieldDefinitionsUpdateActionUtils {
                     if (matchingNewFieldDefinition == null) {
                         return singletonList(RemoveFieldDefinition.of(oldFieldDefinitionName));
                     } else {
-                        if (matchingNewFieldDefinition.getType() != null) {
-                            // field type is required so if null we let commercetools to throw exception
-                            if (haveSameFieldType(oldFieldDefinition, matchingNewFieldDefinition)) {
-                                return buildActions(oldFieldDefinition, matchingNewFieldDefinition);
-                            } else {
-                                // this is a work around for changing the type of the definition.
-                                // since there is no action, so we remove then add again.
-                                return Arrays.asList(
-                                        RemoveFieldDefinition.of(oldFieldDefinitionName),
-                                        AddFieldDefinition.of(matchingNewFieldDefinition)
-                                );
-                            }
+                        if (haveSameFieldType(oldFieldDefinition, matchingNewFieldDefinition)) {
+                            return buildActions(oldFieldDefinition, matchingNewFieldDefinition);
                         } else {
-                            return new ArrayList<UpdateAction<Type>>();
+                            // this is a work around for changing the type of the definition.
+                            // since there is no action, so we remove then add again.
+                            return Arrays.asList(
+                                    RemoveFieldDefinition.of(oldFieldDefinitionName),
+                                    AddFieldDefinition.of(matchingNewFieldDefinition)
+                            );
                         }
                     }
                 })
@@ -177,7 +171,8 @@ public final class FieldDefinitionsUpdateActionUtils {
         @Nonnull final FieldDefinition fieldDefinitionA,
         @Nonnull final FieldDefinition fieldDefinitionB) {
 
-        return fieldDefinitionA.getType().getClass() == fieldDefinitionB.getType().getClass();
+        return  fieldDefinitionA.getType() != null && fieldDefinitionB.getType() != null &&
+                fieldDefinitionA.getType().getClass() == fieldDefinitionB.getType().getClass();
     }
 
     /**
