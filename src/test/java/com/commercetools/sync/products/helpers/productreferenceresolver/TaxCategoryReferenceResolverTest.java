@@ -57,6 +57,7 @@ public class TaxCategoryReferenceResolverTest {
             getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)), mock(CustomerGroupService.class),
             taxCategoryService, getMockStateService(STATE_ID), getMockProductService(PRODUCT_ID));
     }
+
     @Test
     public void resolveTaxCategoryReference_WithKeys_ShouldResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
