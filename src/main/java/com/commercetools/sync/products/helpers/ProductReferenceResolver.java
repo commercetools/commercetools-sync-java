@@ -40,6 +40,7 @@ import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 public final class ProductReferenceResolver extends BaseReferenceResolver<ProductDraft, ProductSyncOptions> {
     private final ProductTypeService productTypeService;
@@ -146,9 +147,11 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     public CompletionStage<ProductDraftBuilder> resolveProductTypeReference(
         @Nonnull final ProductDraftBuilder draftBuilder) {
+
         final ResourceIdentifier<ProductType> productTypeResourceIdentifier = draftBuilder.getProductType();
-        return getProductTypeId(productTypeResourceIdentifier,
-            format(FAILED_TO_RESOLVE_PRODUCT_TYPE, draftBuilder.getKey()))
+        final String resolutionErrorMessage = format(FAILED_TO_RESOLVE_PRODUCT_TYPE, draftBuilder.getKey());
+
+        return getProductTypeId(productTypeResourceIdentifier, resolutionErrorMessage)
             .thenApply(resolvedProductTypeIdOptional -> {
                 resolvedProductTypeIdOptional.ifPresent(resolvedTypeId -> draftBuilder
                     .productType(ResourceIdentifier.ofId(resolvedTypeId, ProductType.referenceTypeId())));
