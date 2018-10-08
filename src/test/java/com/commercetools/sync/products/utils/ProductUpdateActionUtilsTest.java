@@ -14,6 +14,7 @@ import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraftDsl;
+import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.AddVariant;
@@ -42,7 +43,6 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 
 public class ProductUpdateActionUtilsTest {
@@ -75,9 +75,9 @@ public class ProductUpdateActionUtilsTest {
                                                                                .build();
 
         final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
-        final AttributeMetaData priceInfo = mock(AttributeMetaData.class);
-        when(priceInfo.getName()).thenReturn("priceInfo");
-        when(priceInfo.isRequired()).thenReturn(false);
+        final AttributeMetaData priceInfo = AttributeMetaData.of(
+            AttributeDefinitionBuilder.of("priceInfo", null, null)
+                                      .build());
         attributesMetaData.put("priceInfo", priceInfo);
 
         final List<UpdateAction<Product>> updateActions =
@@ -131,9 +131,11 @@ public class ProductUpdateActionUtilsTest {
                                                                                .build();
 
         final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
-        final AttributeMetaData priceInfo = mock(AttributeMetaData.class);
-        when(priceInfo.getName()).thenReturn("priceInfo");
-        when(priceInfo.isRequired()).thenReturn(false);
+
+
+        final AttributeMetaData priceInfo = AttributeMetaData.of(
+            AttributeDefinitionBuilder.of("priceInfo", null, null)
+                                      .build());
         attributesMetaData.put("priceInfo", priceInfo);
 
         final List<UpdateAction<Product>> updateActions =
