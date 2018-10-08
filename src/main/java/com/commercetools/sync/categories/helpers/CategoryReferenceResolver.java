@@ -143,10 +143,7 @@ public final class CategoryReferenceResolver
             .thenApply(resolvedParentIdOptional -> resolvedParentIdOptional
                 .map(resolvedParentId ->
                     draftBuilder.parent(Category.referenceOfId(resolvedParentId).toResourceIdentifier()))
-                .orElseGet(() -> {
-                    // TODO: Missing reference! Might come later in the batch!
-                    return draftBuilder;
-                }));
+                .orElse(draftBuilder));
     }
 
     @Nonnull
