@@ -142,6 +142,18 @@ public final class CategoryReferenceResolver
                 .orElse(draftBuilder));
     }
 
+    @Nonnull
+    public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraft draft)
+        throws ReferenceResolutionException {
+        return getParentCategoryKey(draft.getParent(), draft.getKey());
+    }
+
+    @Nonnull
+    public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraftBuilder draftBuilder)
+        throws ReferenceResolutionException {
+        return getParentCategoryKey(draftBuilder.getParent(), draftBuilder.getKey());
+    }
+
     /**
      * Given a category parent resource identifier, if it is not null the method validates the id field value. If it is
      * not valid, a {@link ReferenceResolutionException} will be thrown. The validity checks are:
@@ -173,17 +185,5 @@ public final class CategoryReferenceResolver
             }
         }
         return Optional.empty();
-    }
-
-    @Nonnull
-    public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraft draft)
-            throws ReferenceResolutionException {
-        return getParentCategoryKey(draft.getParent(), draft.getKey());
-    }
-
-    @Nonnull
-    public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraftBuilder draftBuilder)
-            throws ReferenceResolutionException {
-        return getParentCategoryKey(draftBuilder.getParent(), draftBuilder.getKey());
     }
 }
