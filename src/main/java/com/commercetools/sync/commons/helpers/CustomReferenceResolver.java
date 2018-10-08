@@ -100,7 +100,7 @@ public abstract class CustomReferenceResolver
      * @param referenceResolutionErrorMessage the message containing the information about the draft to attach to the
      *                                        {@link ReferenceResolutionException} in case it occurs.
      * @return a {@link CompletionStage} that contains as a result an optional which either contains the custom type id
-     *      if it exists or empty if it doesn't.
+     *         if it exists or empty if it doesn't.
      */
     private CompletionStage<Optional<String>> getCustomTypeId(@Nonnull final CustomFieldsDraft custom,
                                                               @Nonnull final String referenceResolutionErrorMessage) {
@@ -108,9 +108,9 @@ public abstract class CustomReferenceResolver
             final String customTypeKey = getKeyFromResourceIdentifier(custom.getType());
             return typeService.fetchCachedTypeId(customTypeKey);
         } catch (ReferenceResolutionException exception) {
-            return CompletableFutureUtils.exceptionallyCompletedFuture(
-                new ReferenceResolutionException(
-                    format("%s Reason: %s", referenceResolutionErrorMessage, exception.getMessage()), exception));
+            final String errorMessage =
+                format("%s Reason: %s", referenceResolutionErrorMessage, exception.getMessage());
+            return exceptionallyCompletedFuture(new ReferenceResolutionException(errorMessage, exception));
         }
     }
 
