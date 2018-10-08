@@ -40,7 +40,6 @@ import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 public final class ProductReferenceResolver extends BaseReferenceResolver<ProductDraft, ProductSyncOptions> {
     private final ProductTypeService productTypeService;
@@ -214,13 +213,12 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         return categoryService.fetchMatchingCategoriesByKeys(categoryKeys)
             .thenApply(categories ->
                 categories.stream().map(category -> {
-                    final String categoryKey = category.getKey();
                     if (categoryOrderHints != null) {
-                        ofNullable(categoryOrderHints.get(categoryKey))
+                        ofNullable(categoryOrderHints.get(category.getKey()))
                             .ifPresent(orderHintValue -> categoryOrderHintsMap.put(category.getId(), orderHintValue));
                     }
-                    return ResourceIdentifier.<Category>ofKey(categoryKey);
-                }).collect(toSet()))
+                    return category.toReference();
+                }).collect(toList()))
             .thenApply(categoryReferences -> draftBuilder
                 .categories(categoryReferences)
                 .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintsMap)));
