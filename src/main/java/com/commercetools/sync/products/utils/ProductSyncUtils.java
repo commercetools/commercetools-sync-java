@@ -10,12 +10,10 @@ import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionIfPassesFilter;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionsIfPassesFilter;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddToCategoryUpdateActions;
@@ -59,36 +57,42 @@ public final class ProductSyncUtils {
                                                            @Nonnull final ProductSyncOptions syncOptions,
                                                            @Nonnull final Map<String, AttributeMetaData>
                                                                attributesMetaData) {
+
         final SyncFilter syncFilter = syncOptions.getSyncFilter();
 
-        final List<UpdateAction<Product>> updateActions = new ArrayList<>(buildUpdateActionsFromOptionals(Arrays.asList(
-            buildActionIfPassesFilter(syncFilter, ActionGroup.NAME, () ->
-                buildChangeNameUpdateAction(oldProduct, newProduct)),
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>(
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.DESCRIPTION, () ->
-                buildSetDescriptionUpdateAction(oldProduct, newProduct)),
+            filterEmptyOptionals(
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.SLUG, () ->
-                buildChangeSlugUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.NAME, () ->
+                    buildChangeNameUpdateAction(oldProduct, newProduct)),
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.SEARCHKEYWORDS, () ->
-                buildSetSearchKeywordsUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.DESCRIPTION, () ->
+                    buildSetDescriptionUpdateAction(oldProduct, newProduct)),
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.METATITLE, () ->
-                buildSetMetaTitleUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.SLUG, () ->
+                    buildChangeSlugUpdateAction(oldProduct, newProduct)),
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.METADESCRIPTION, () ->
-                buildSetMetaDescriptionUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.SEARCHKEYWORDS, () ->
+                    buildSetSearchKeywordsUpdateAction(oldProduct, newProduct)),
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.METAKEYWORDS, () ->
-                buildSetMetaKeywordsUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.METATITLE, () ->
+                    buildSetMetaTitleUpdateAction(oldProduct, newProduct)),
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.TAXCATEGORY, () ->
-                buildSetTaxCategoryUpdateAction(oldProduct, newProduct)),
+                buildActionIfPassesFilter(syncFilter, ActionGroup.METADESCRIPTION, () ->
+                    buildSetMetaDescriptionUpdateAction(oldProduct, newProduct)),
 
-            buildActionIfPassesFilter(syncFilter, ActionGroup.STATE, () ->
-                buildTransitionStateUpdateAction(oldProduct, newProduct))
-        )));
+                buildActionIfPassesFilter(syncFilter, ActionGroup.METAKEYWORDS, () ->
+                    buildSetMetaKeywordsUpdateAction(oldProduct, newProduct)),
+
+                buildActionIfPassesFilter(syncFilter, ActionGroup.TAXCATEGORY, () ->
+                    buildSetTaxCategoryUpdateAction(oldProduct, newProduct)
+                        .map(action -> (UpdateAction<Product>) action)),
+
+                buildActionIfPassesFilter(syncFilter, ActionGroup.STATE, () ->
+                    buildTransitionStateUpdateAction(oldProduct, newProduct)
+                        .map(action -> (UpdateAction<Product>) action))
+            ));
 
         final List<UpdateAction<Product>> productCategoryUpdateActions =
             buildActionsIfPassesFilter(syncFilter, ActionGroup.CATEGORIES, () ->
@@ -121,25 +125,6 @@ public final class ProductSyncUtils {
         updateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));
         updateActions.addAll(buildRemoveFromCategoryUpdateActions(oldProduct, newProduct));
         return updateActions;
-    }
-
-    /**
-     * Given a list of product {@link UpdateAction} elements, where each is wrapped in an {@link Optional}; this method
-     * filters out the optionals which are only present and returns a new list of product {@link UpdateAction}
-     * elements.
-     *
-     * @param optionalUpdateActions list of product {@link UpdateAction} elements, where each is wrapped
-     *                              in an {@link Optional}.
-     * @return a List of product update actions from the optionals that were present in
-     *         the {@code optionalUpdateActions} list parameter.
-     */
-    @Nonnull
-    private static List<UpdateAction<Product>> buildUpdateActionsFromOptionals(
-        @Nonnull final List<Optional<? extends UpdateAction<Product>>> optionalUpdateActions) {
-        return optionalUpdateActions.stream()
-                                    .filter(Optional::isPresent)
-                                    .map(Optional::get)
-                                    .collect(Collectors.toList());
     }
 
     private ProductSyncUtils() {

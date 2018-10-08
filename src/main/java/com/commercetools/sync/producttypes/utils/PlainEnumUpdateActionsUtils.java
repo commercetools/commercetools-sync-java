@@ -8,10 +8,9 @@ import io.sphere.sdk.producttypes.commands.updateactions.ChangePlainEnumValueLab
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static java.util.stream.Collectors.toList;
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 
 public final class PlainEnumUpdateActionsUtils {
     /**
@@ -31,10 +30,9 @@ public final class PlainEnumUpdateActionsUtils {
         @Nonnull final EnumValue oldEnumValue,
         @Nonnull final EnumValue newEnumValue) {
 
-        return Stream.of(buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue))
-                     .filter(Optional::isPresent)
-                     .map(Optional::get)
-                     .collect(toList());
+        return filterEmptyOptionals(
+            buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue)
+        );
     }
 
     /**

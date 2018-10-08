@@ -57,6 +57,13 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...v1.0.0-M15) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M15/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M15)
+
+**New Features** (1)
+- **Commons** - Added `OptionalUtils#filterEmptyOptionals` which are utility methods that filter out the 
+empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
+optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255) 
+
+
 -->
 
 
