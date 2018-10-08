@@ -12,8 +12,8 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.Product;
@@ -44,6 +44,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
@@ -381,11 +382,6 @@ public class ProductSyncMockUtils {
     }
 
     @Nonnull
-    public static ProductDraftBuilder getBuilderWithProductTypeRefId(@Nonnull final String refId) {
-        return ProductDraftBuilder.of(ProductType.referenceOfId(refId),
-            LocalizedString.ofEnglish("testName"),
-            LocalizedString.ofEnglish("testSlug"),
-            (ProductVariantDraft)null);
     }
 
     @Nonnull
@@ -399,6 +395,10 @@ public class ProductSyncMockUtils {
         return ProductDraftBuilder.of(reference,
             LocalizedString.ofEnglish("testName"),
             LocalizedString.ofEnglish("testSlug"),
+    public static ProductDraftBuilder getBuilderWithProductTypeRefKey(@Nullable final String key) {
+        return ProductDraftBuilder.of(ResourceIdentifier.ofKey(key),
+            ofEnglish("testName"),
+            ofEnglish("testSlug"),
             (ProductVariantDraft)null);
     }
 }
