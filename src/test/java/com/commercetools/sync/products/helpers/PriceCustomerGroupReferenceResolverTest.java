@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroup;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroupService;
 import static java.lang.String.format;
@@ -100,7 +100,7 @@ public class PriceCustomerGroupReferenceResolverTest {
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve 'customer-group' reference on PriceDraft with country:'%s' and"
                 + " value: '%s'. Reason: %s", priceBuilder.getCountry(), priceBuilder.getValue(),
-                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
@@ -115,7 +115,7 @@ public class PriceCustomerGroupReferenceResolverTest {
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve 'customer-group' reference on PriceDraft with country:'%s' and"
                     + " value: '%s'. Reason: %s", priceBuilder.getCountry(), priceBuilder.getValue(),
-                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test

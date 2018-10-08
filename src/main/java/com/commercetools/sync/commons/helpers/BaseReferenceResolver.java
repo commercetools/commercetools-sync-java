@@ -18,7 +18,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  *            specified by the user, on reference resolution.
  */
 public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
-    public static final String BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER = "The value of the 'key' field of the Resource"
+    public static final String BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER = "The value of the 'id' field of the Resource"
         + " Identifier/Reference is blank (null/empty).";
 
     protected S options;
@@ -40,7 +40,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     public abstract CompletionStage<T> resolveReferences(@Nonnull final T draft);
 
     /**
-     * This method fetches the key value on the passed {@link ResourceIdentifier}, if valid. If it is not valid, a
+     * This method fetches the id value on the passed {@link ResourceIdentifier}, if valid. If it is not valid, a
      * {@link ReferenceResolutionException} will be thrown. The validity checks are:
      * <ul>
      * <li>Checks if the id value is not null or not empty.</li>
@@ -55,9 +55,9 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     protected static String getKeyFromResourceIdentifier(@Nonnull final ResourceIdentifier resourceIdentifier)
         throws ReferenceResolutionException {
 
-        final String key = resourceIdentifier.getKey();
+        final String key = resourceIdentifier.getId();
         if (isBlank(key)) {
-            throw new ReferenceResolutionException(BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER);
+            throw new ReferenceResolutionException(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
         }
         return key;
     }

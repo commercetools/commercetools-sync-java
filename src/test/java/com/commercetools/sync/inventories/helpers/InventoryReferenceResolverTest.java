@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -165,7 +165,7 @@ public class InventoryReferenceResolverTest {
                              assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getMessage())
                                  .isEqualTo(format("Failed to resolve supply channel reference on InventoryEntryDraft"
-                                     + " with SKU:'1000'. Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                                     + " with SKU:'1000'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
                              return null;
                          }).toCompletableFuture().join();
     }
@@ -184,7 +184,7 @@ public class InventoryReferenceResolverTest {
                              assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getMessage())
                                  .isEqualTo(format("Failed to resolve supply channel reference on InventoryEntryDraft"
-                                     + " with SKU:'null'. Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                                     + " with SKU:'null'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
                              return null;
                          }).toCompletableFuture().join();
     }
@@ -205,7 +205,7 @@ public class InventoryReferenceResolverTest {
                                  .isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getCause().getMessage())
                                  .isEqualTo(format("Failed to resolve custom type reference on InventoryEntryDraft"
-                                     + " with SKU:'1000'. Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                                     + " with SKU:'1000'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
                              return null;
                          }).toCompletableFuture().join();
     }

@@ -28,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroup;
@@ -66,7 +66,7 @@ public class PriceReferenceResolverTest {
     //todo: fix
     public void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
         final String customTypeKey = "customTypeKey";
-        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, new HashMap<>());
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeKey, new HashMap<>());
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)
@@ -87,9 +87,9 @@ public class PriceReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomTypeReference_WithNullKeyOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
+    public void resolveCustomTypeReference_WithNullIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final CustomFieldsDraft customFieldsDraft = mock(CustomFieldsDraft.class);
-        final ResourceIdentifier<Type> typeReference = ResourceIdentifier.ofKey(null);
+        final ResourceIdentifier<Type> typeReference = ResourceIdentifier.ofId(null);
         when(customFieldsDraft.getType()).thenReturn(typeReference);
 
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
@@ -105,12 +105,12 @@ public class PriceReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve custom type reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10'. Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                + " with country:'DE' and value: 'EUR 10'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
-    public void resolveCustomTypeReference_WithEmptyKeyOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
-        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeKeyAndJson("", new HashMap<>());
+    public void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson("", new HashMap<>());
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)
@@ -124,13 +124,13 @@ public class PriceReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve custom type reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10'. Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                + " with country:'DE' and value: 'EUR 10'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
     public void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         final String customTypeKey = "customTypeKey";
-        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, new HashMap<>());
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeKey, new HashMap<>());
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)
