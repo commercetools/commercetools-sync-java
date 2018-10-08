@@ -87,7 +87,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * Fetches existing {@link Type} objects from CTP project that correspond to passed {@code batch}.
      * Having existing types fetched, {@code batch} is compared and synced with fetched objects by
      * {@link TypeSync#syncBatch(List, List)} function. When fetching existing types results in
-     * an empty updated/created statistics then {@code batch} isn't processed.
+     * an empty {@link TypeSyncStatistics} object then {@code batch} isn't processed.
      *
      * @param batch batch of drafts that need to be synced
      * @return {@link CompletionStage} of {@link TypeSyncStatistics} that indicates method progress.
