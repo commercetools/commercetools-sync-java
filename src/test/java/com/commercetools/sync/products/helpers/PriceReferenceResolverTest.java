@@ -63,7 +63,6 @@ public class PriceReferenceResolverTest {
     }
 
     @Test
-    //todo: fix
     public void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
         final String customTypeKey = "customTypeKey";
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeKey, new HashMap<>());
