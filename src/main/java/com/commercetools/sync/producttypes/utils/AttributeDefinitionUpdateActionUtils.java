@@ -30,8 +30,8 @@ public final class AttributeDefinitionUpdateActionUtils {
      * and the {@link AttributeDefinitionDraft} have identical fields, then no update action is needed and hence an
      * empty {@link List} is returned.
      *
-     * @param oldAttributeDefinition      the attribute definition which should be updated.
-     * @param newAttributeDefinitionDraft the attribute definition draft where we get the new fields.
+     * @param oldAttributeDefinition      the old attribute definition which should be updated.
+     * @param newAttributeDefinitionDraft the new attribute definition draft where we get the new fields.
      * @return A list with the update actions or an empty list if the attribute definition fields are identical.
      */
     @Nonnull

@@ -1,6 +1,6 @@
 # commercetools product type sync
 
-Utility which provides API for building CTP product type update actions and product type synchronisation.
+Utility which provides an API for building CTP product type update actions and product type synchronisation.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -30,7 +30,7 @@ matched.
     - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
 
-   You can use the same client instantiating used in the integration tests for this library found
+   You can instantiate the client the same way it is instantiated in the integration tests for this library found
    [here](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
 
 4. After the `sphereClient` is setup, a `ProductTypeSyncOptions` should be be built as follows:
@@ -55,9 +55,6 @@ update and modify (add/remove) update actions just before they are send to CTP A
 - `beforeCreateCallback`
 a filter function which can be applied on a product type draft before a request to create it on CTP is issued. It allows the
 user to intercept product type create requests modify the draft before the create request is sent to CTP API.
-
-- `allowUuid`
-a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
 Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning
 streams, would look as follows:
@@ -92,7 +89,7 @@ stats.getReportMessage();
 
 __Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
  1. The sync processing time should not take into account the time between supplying batches to the sync.
- 2. It is not not known by the sync which batch is going to be the last one supplied.
+ 2. It is not known by the sync which batch is going to be the last one supplied.
 
 More examples of how to use the sync can be found [here](/src/integration-test/java/com/commercetools/sync/integration/producttypes/ProductTypeSyncIT.java).
 

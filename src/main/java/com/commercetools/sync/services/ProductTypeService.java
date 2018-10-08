@@ -58,9 +58,9 @@ public interface ProductTypeService {
     /**
      * Queries existing {@link ProductType}'s against set of keys.
      *
-     * @param keys {@link List} of sku values, used in search predicate
-     * @return {@link List} of matching product types or empty list when there was no product type of key matching to
-     * {@code keys}.
+     * @param keys {@link Set} of sku values, used in search predicate
+     * @return {@link CompletionStage} of matching product types or empty list when there is no product type with
+     *         corresponding {@code keys}.
      */
     @Nonnull
     CompletionStage<List<ProductType>> fetchMatchingProductsTypesByKeys(@Nonnull final Set<String> keys);
@@ -70,7 +70,7 @@ public interface ProductTypeService {
      * Creates new product type from {@code productTypeDraft}.
      *
      * @param productTypeDraft draft with data for new product type
-     * @return {@link CompletionStage} with created {@link ProductType} or an exception
+     * @return {@link CompletionStage} with created {@link ProductType}.
      */
     @Nonnull
     CompletionStage<ProductType> createProductType(@Nonnull final ProductTypeDraft productTypeDraft);
@@ -80,7 +80,7 @@ public interface ProductTypeService {
      *
      * @param productType   product type that should be updated
      * @param updateActions {@link List} of actions that should be applied to {@code productType}
-     * @return {@link CompletionStage} with updated {@link ProductType} or an exception
+     * @return {@link CompletionStage} with updated {@link ProductType}.
      */
     @Nonnull
     CompletionStage<ProductType> updateProductType(@Nonnull final ProductType productType,

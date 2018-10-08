@@ -15,6 +15,7 @@ import io.sphere.sdk.queries.QueryExecutionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -82,7 +83,7 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     public CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchCachedProductAttributeMetaDataMap(
             @Nonnull final String productTypeId) {
         if (productsAttributesMetaData.isEmpty()) {
-            return fetchAndCacheProductMetaData(productTypeId);
+            return cacheAndFetchProductMetaData(productTypeId);
         }
         return CompletableFuture.completedFuture(
                 Optional.ofNullable(productsAttributesMetaData.get(productTypeId))
@@ -92,6 +93,10 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     @Nonnull
     @Override
     public CompletionStage<List<ProductType>> fetchMatchingProductsTypesByKeys(@Nonnull final Set<String> keys) {
+        if (keys.isEmpty()) {
+            return CompletableFuture.completedFuture(Collections.emptyList());
+        }
+
         final ProductTypeQuery query = ProductTypeQueryBuilder
                 .of()
                 .plusPredicates(queryModel -> queryModel.key().isIn(keys))
@@ -114,7 +119,7 @@ public class ProductTypeServiceImpl implements ProductTypeService {
         return syncOptions.getCtpClient().execute(ProductTypeUpdateCommand.of(productType, updateActions));
     }
 
-    private CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
+    private CompletionStage<Optional<Map<String, AttributeMetaData>>> cacheAndFetchProductMetaData(
         @Nonnull final String productTypeId) {
 
         final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->

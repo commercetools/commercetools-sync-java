@@ -20,14 +20,14 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static java.util.Collections.emptyList;
 
 /**
  * This class syncs product type drafts with the corresponding product types in the CTP project.
@@ -89,10 +89,10 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * Fetches existing {@link ProductType} objects from CTP project that correspond to passed {@code batch}.
      * Having existing product types fetched, {@code batch} is compared and synced with fetched objects by
      * {@link ProductTypeSync#syncBatch(List, List)} function. When fetching existing product types results in
-     * an empty optional then {@code batch} isn't processed.
+     * an empty {@link ProductTypeSyncStatistics} object then {@code batch} isn't processed.
      *
      * @param batch batch of drafts that need to be synced
-     * @return {@link CompletionStage} of {@link Void} that indicates method progress.
+     * @return {@link CompletionStage} of {@link ProductTypeSyncStatistics} that indicates method progress.
      */
     @Override
     protected CompletionStage<ProductTypeSyncStatistics> processBatch(@Nonnull final List<ProductTypeDraft> batch) {
@@ -139,7 +139,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * Given a set of product type keys, fetches the corresponding product types from CTP if they exist.
      *
      * @param keys the keys of the product types that are wanted to be fetched.
-     * @return a future which contains the list of product types corresponding to the keys.
+     * @return a {@link CompletionStage} which contains the list of product types corresponding to the keys.
      */
     private CompletionStage<List<ProductType>> fetchExistingProductTypes(@Nonnull final Set<String> keys) {
         return productTypeService
@@ -187,7 +187,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      *
      * @param oldProductTypes old product types.
      * @param newProductTypes drafts that need to be synced.
-     * @return a future which contains an empty result after execution of the update
+     * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
     private CompletionStage<ProductTypeSyncStatistics> syncBatch(
             @Nonnull final List<ProductType> oldProductTypes,
@@ -215,7 +215,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * is called.
      *
      * @param productTypeDraft the product type draft to create the product type from.
-     * @return a future which contains an empty result after execution of the create.
+     * @return a {@link CompletionStage} which contains an empty result after execution of the create.
      */
     private CompletionStage<Void> createProductType(@Nonnull final ProductTypeDraft productTypeDraft) {
         return syncOptions.applyBeforeCreateCallBack(productTypeDraft)
@@ -244,7 +244,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      *
      * @param oldProductType existing product type that could be updated.
      * @param newProductType draft containing data that could differ from data in {@code oldProductType}.
-     * @return a future which contains an empty result after execution of the update.
+     * @return a {@link CompletionStage} which contains an empty result after execution of the update.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> updateProductType(@Nonnull final ProductType oldProductType,
