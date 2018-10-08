@@ -174,8 +174,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         for (ResourceIdentifier<Category> categoryResourceIdentifier: categoryResourceIdentifiers) {
             if (categoryResourceIdentifier != null) {
                 try {
-                    final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier,
-                        options.shouldAllowUuidKeys());
+                    final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier);
                     categoryKeys.add(categoryKey);
                 } catch (ReferenceResolutionException referenceResolutionException) {
                     return exceptionallyCompletedFuture(
