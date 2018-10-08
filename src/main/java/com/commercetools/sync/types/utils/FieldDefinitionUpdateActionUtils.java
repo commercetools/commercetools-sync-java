@@ -11,12 +11,11 @@ import io.sphere.sdk.types.commands.updateactions.ChangeFieldDefinitionLabel;
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.types.utils.LocalizedEnumUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static com.commercetools.sync.types.utils.PlainEnumUpdateActionUtils.buildEnumValuesUpdateActions;
-import static java.util.stream.Collectors.toList;
 
 
 public final class FieldDefinitionUpdateActionUtils {
@@ -36,12 +35,8 @@ public final class FieldDefinitionUpdateActionUtils {
         @Nonnull final FieldDefinition oldFieldDefinition,
         @Nonnull final FieldDefinition newFieldDefinition) {
 
-        final List<UpdateAction<Type>> updateActions = Stream.of(
-                buildChangeLabelUpdateAction(oldFieldDefinition, newFieldDefinition))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(toList());
-
+        final List<UpdateAction<Type>> updateActions =
+            filterEmptyOptionals(buildChangeLabelUpdateAction(oldFieldDefinition, newFieldDefinition));
 
         if (isPlainEnumField(oldFieldDefinition)) {
             updateActions.addAll(buildEnumValuesUpdateActions(
