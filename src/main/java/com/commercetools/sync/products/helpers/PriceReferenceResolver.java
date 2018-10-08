@@ -155,7 +155,7 @@ public final class PriceReferenceResolver
         }
 
         try {
-            final String resourceKey = getKeyFromResourceIdentifier(reference, options.shouldAllowUuidKeys());
+            final String resourceKey = getKeyFromResourceIdentifier(reference);
             return keyToIdMapper.apply(resourceKey)
                                 .thenCompose(resourceIdOptional -> resourceIdOptional
                                     .map(idToReferenceMapper)
