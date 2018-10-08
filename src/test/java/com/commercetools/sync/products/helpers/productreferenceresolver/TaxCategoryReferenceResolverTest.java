@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
@@ -57,6 +58,27 @@ public class TaxCategoryReferenceResolverTest {
             getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)), mock(CustomerGroupService.class),
             taxCategoryService, getMockStateService(STATE_ID), getMockProductService(PRODUCT_ID));
     }
+
+    @Test
+    public void resolveTaxCategoryReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReference() {
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .allowUuidKeys(true)
+                                                                               .build();
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+            .taxCategory(TaxCategory.referenceOfId(UUID.randomUUID().toString()));
+
+        final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
+            getMockProductTypeService(PRODUCT_TYPE_ID), mock(CategoryService.class), getMockTypeService(),
+            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)), mock(CustomerGroupService.class),
+            taxCategoryService, getMockStateService(STATE_ID), getMockProductService(PRODUCT_ID));
+
+        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveTaxCategoryReference(productBuilder)
+                                                                          .toCompletableFuture().join();
+
+        assertThat(resolvedDraft.getTaxCategory()).isNotNull();
+        assertThat(resolvedDraft.getTaxCategory().getId()).isEqualTo(TAX_CATEGORY_ID);
+    }
+
     @Test
     public void resolveTaxCategoryReference_WithKeys_ShouldResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
@@ -67,6 +89,23 @@ public class TaxCategoryReferenceResolverTest {
 
         assertThat(resolvedDraft.getTaxCategory()).isNotNull();
         assertThat(resolvedDraft.getTaxCategory().getId()).isEqualTo(TAX_CATEGORY_ID);
+    }
+
+    @Test
+    public void resolveTaxCategoryReference_WithKeysAsUuidSetAndNotAllowed_ShouldNotResolveReference() {
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+            .taxCategory(TaxCategory.referenceOfId(UUID.randomUUID().toString()))
+            .key("dummyKey");
+
+        assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder).toCompletableFuture())
+            .hasFailed()
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage("Failed to resolve reference 'tax-category' on ProductDraft"
+                + " with key:'" + productBuilder.getKey() + "'. Reason: Found a UUID"
+                + " in the id field. Expecting a key without a UUID value. If you want to"
+                + " allow UUID values for reference keys, please use the "
+                + "allowUuidKeys(true) option in the sync options.");
     }
 
     @Test

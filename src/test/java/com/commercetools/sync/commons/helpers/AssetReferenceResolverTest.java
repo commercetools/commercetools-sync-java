@@ -17,6 +17,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
@@ -40,6 +41,74 @@ public class AssetReferenceResolverTest {
     public void setup() {
         typeService = getMockTypeService();
         syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+    }
+
+    @Test
+    public void resolveCustomTypeReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReferences() {
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .allowUuidKeys(true)
+                                                                               .build();
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
+            .ofTypeIdAndJson(UUID.randomUUID().toString(), new HashMap<>());
+
+        final AssetDraftBuilder assetDraftBuilder = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
+                                                                     .custom(customFieldsDraft);
+
+        final AssetReferenceResolver assetReferenceResolver =
+            new AssetReferenceResolver(productSyncOptions, typeService);
+
+
+        final AssetDraftBuilder resolvedDraftBuilder =
+            assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder)
+                                  .toCompletableFuture().join();
+
+        assertThat(resolvedDraftBuilder.getCustom()).isNotNull();
+        assertThat(resolvedDraftBuilder.getCustom().getType().getId()).isEqualTo("typeId");
+    }
+
+    @Test
+    public void resolveCustomTypeReference_WithKeysAndNotAllowedUuids_ShouldResolveReferences() {
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .build();
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
+            .ofTypeIdAndJson("typeKey", new HashMap<>());
+
+        final AssetDraftBuilder assetDraftBuilder = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
+                                                                     .custom(customFieldsDraft);
+
+        final AssetReferenceResolver assetReferenceResolver =
+            new AssetReferenceResolver(productSyncOptions, typeService);
+
+
+        final AssetDraftBuilder resolvedDraftBuilder =
+            assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder)
+                                  .toCompletableFuture().join();
+
+        assertThat(resolvedDraftBuilder.getCustom()).isNotNull();
+        assertThat(resolvedDraftBuilder.getCustom().getType().getId()).isEqualTo("typeId");
+    }
+
+
+    @Test
+    public void resolveCustomTypeReference_WithKeyAsUuidSetAndNotAllowed_ShouldNotResolveCustomTypeReference() {
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
+            .ofTypeIdAndJson(UUID.randomUUID().toString(), new HashMap<>());
+
+        final AssetDraftBuilder assetDraftBuilder = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
+                                                                     .key("assetKey")
+                                                                     .custom(customFieldsDraft);
+
+        final AssetReferenceResolver assetReferenceResolver = new AssetReferenceResolver(syncOptions, typeService);
+
+        assertThat(assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder).toCompletableFuture())
+            .hasFailed()
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage("Failed to resolve custom type reference on AssetDraft"
+                + " with key:'assetKey'. Reason: Found a UUID"
+                + " in the id field. Expecting a key without a UUID value. If you want to"
+                + " allow UUID values for reference keys, please use the "
+                + "allowUuidKeys(true) option in the sync options.");
     }
 
     @Test

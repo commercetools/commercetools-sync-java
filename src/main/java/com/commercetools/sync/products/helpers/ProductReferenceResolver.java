@@ -174,7 +174,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         for (ResourceIdentifier<Category> categoryResourceIdentifier: categoryResourceIdentifiers) {
             if (categoryResourceIdentifier != null) {
                 try {
-                    final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier);
+                    final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier,
+                        options.shouldAllowUuidKeys());
                     categoryKeys.add(categoryKey);
                 } catch (ReferenceResolutionException referenceResolutionException) {
                     return exceptionallyCompletedFuture(
@@ -235,7 +236,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             @Nonnull final ResourceIdentifier<ProductType> productTypeResourceIdentifier,
             @Nonnull final String referenceResolutionErrorMessage) {
         try {
-            final String productTypeKey = getKeyFromResourceIdentifier(productTypeResourceIdentifier);
+            final String productTypeKey = getKeyFromResourceIdentifier(productTypeResourceIdentifier,
+                options.shouldAllowUuidKeys());
             return productTypeService.fetchCachedProductTypeId(productTypeKey);
         } catch (ReferenceResolutionException exception) {
             return exceptionallyCompletedFuture(
@@ -303,7 +305,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         }
 
         try {
-            final String resourceKey = getKeyFromResourceIdentifier(reference);
+            final String resourceKey = getKeyFromResourceIdentifier(reference, options.shouldAllowUuidKeys());
             return keyToIdMapper.apply(resourceKey)
                 .thenApply(optId -> optId
                     .map(idToReferenceMapper)

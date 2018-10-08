@@ -279,6 +279,54 @@ public class CategorySyncTest {
     }
 
     @Test
+    public void sync_WithNotAllowedUuidCustomTypeKey_ShouldFailSync() {
+        final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
+        final CategoryService mockCategoryService =
+            mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
+        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
+            mockCategoryService);
+        final List<CategoryDraft> categoryDrafts = singletonList(
+            getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
+                UUID.randomUUID().toString(), new HashMap<>()));
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+            + " key:'key'. Reason: %s: Failed to resolve custom type reference on "
+            + "CategoryDraft with key:'key'. Reason: Found a UUID in the id field. Expecting a key"
+            + " without a UUID value. If you want to allow UUID values for reference keys, please use the"
+            + " allowUuidKeys(true) option in the sync options.",
+            ReferenceResolutionException.class.getCanonicalName()));
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
+    }
+
+    @Test
+    public void sync_WithAllowedUuidCustomTypeKey_ShouldSync() {
+        categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
+                                                        .allowUuidKeys(true)
+                                                        .build();
+
+        final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
+        final CategoryService mockCategoryService =
+            mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
+        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
+            mockCategoryService);
+        final List<CategoryDraft> categoryDrafts = singletonList(
+            getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
+                UUID.randomUUID().toString(), new HashMap<>()));
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(errorCallBackExceptions).hasSize(0);
+    }
+
+    @Test
     public void requiresChangeParentUpdateAction_WithTwoDifferentParents_ShouldReturnTrue() {
         final String parentId = "parentId";
         final Category category = mock(Category.class);

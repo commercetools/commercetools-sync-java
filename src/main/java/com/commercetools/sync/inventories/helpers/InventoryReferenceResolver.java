@@ -87,7 +87,7 @@ public final class InventoryReferenceResolver
         final Reference<Channel> channelReference = draftBuilder.getSupplyChannel();
         if (channelReference != null) {
             try {
-                final String channelKey = getKeyFromResourceIdentifier(channelReference);
+                final String channelKey = getKeyFromResourceIdentifier(channelReference, options.shouldAllowUuidKeys());
                 return fetchOrCreateAndResolveReference(draftBuilder, channelKey);
             } catch (ReferenceResolutionException exception) {
                 return CompletableFutureUtils.exceptionallyCompletedFuture(

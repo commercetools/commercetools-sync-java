@@ -9,6 +9,7 @@ import com.commercetools.sync.services.CustomerGroupService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.ProductDraftBuilder;
@@ -20,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -52,8 +54,8 @@ public class CategoryReferenceResolverTest {
 
     @Test
     public void resolveCategoryReferences_WithCategoryKeysAndCategoryOrderHints_ShouldResolveReferences() {
-        //todo: Mock this completley
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .allowUuidKeys(true)
                                                                                .build();
         final int nCategories = 10;
         final List<Category> categories = IntStream.range(0, nCategories)
@@ -89,6 +91,7 @@ public class CategoryReferenceResolverTest {
     @Test
     public void resolveCategoryReferences_WithCategoryKeysAndNoCategoryOrderHints_ShouldResolveReferences() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .allowUuidKeys(true)
                                                                                .build();
         final int nCategories = 10;
         final List<Category> categories = IntStream.range(0, nCategories)
@@ -120,6 +123,7 @@ public class CategoryReferenceResolverTest {
     @Test
     public void resolveCategoryReferences_WithCategoryKeysAndSomeCategoryOrderHints_ShouldResolveReferences() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .allowUuidKeys(true)
                                                                                .build();
         final int nCategories = 10;
         final List<Category> categories = IntStream.range(0, nCategories)
@@ -151,6 +155,81 @@ public class CategoryReferenceResolverTest {
         assertThat(resolvedDraft.getCategories()).containsOnlyElementsOf(categoryReferences);
         assertThat(resolvedDraft.getCategoryOrderHints()).isNotNull();
         assertThat(resolvedDraft.getCategoryOrderHints().getAsMap()).hasSize(3);
+    }
+
+    @Test
+    public void resolveCategoryReferences_WithKeysAsUuidSetAndAllowed_ShouldResolveReference() {
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .allowUuidKeys(true)
+                                                                               .build();
+        final int nCategories = 10;
+        final List<Category> categories = IntStream.range(0, nCategories)
+                                                   .mapToObj(i -> UUID.randomUUID().toString())
+                                                   .map(key -> getMockCategory(key, key))
+                                                   .collect(Collectors.toList());
+        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), emptySet());
+        final List<Reference<Category>> categoryReferences = categories.stream()
+                                                                       .map(Category::toReference)
+                                                                       .collect(Collectors.toList());
+        final Map<String, String> categoryOrderHintValues = categories.stream()
+                                                                      .collect(Collectors.toMap(Category::getKey,
+                                                                          Resource::getId));
+        final CategoryOrderHints categoryOrderHints = CategoryOrderHints.of(categoryOrderHintValues);
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+            .categories(categoryReferences).categoryOrderHints(categoryOrderHints);
+        final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
+            getMockProductTypeService(PRODUCT_TYPE_ID), mockCategoryService, getMockTypeService(),
+            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
+            mock(CustomerGroupService.class),
+            getMockTaxCategoryService(TAX_CATEGORY_ID), getMockStateService(STATE_ID),
+            getMockProductService(PRODUCT_ID));
+
+        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveCategoryReferences(productBuilder)
+                                                                          .toCompletableFuture().join();
+
+        assertThat(resolvedDraft.getCategories()).isNotNull();
+        assertThat(resolvedDraft.getCategories()).hasSize(nCategories);
+        assertThat(resolvedDraft.getCategories()).containsOnlyElementsOf(categoryReferences);
+        assertThat(resolvedDraft.getCategoryOrderHints()).isNotNull();
+        assertThat(resolvedDraft.getCategoryOrderHints().getAsMap()).hasSize(categoryOrderHintValues.size());
+    }
+
+    @Test
+    public void resolveCategoryReferences_WithKeysAsUuidSetAndNotAllowed_ShouldResolveReference() {
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .allowUuidKeys(false)
+                                                                               .build();
+        final int nCategories = 10;
+        final List<Category> categories = IntStream.range(0, nCategories)
+                                                   .mapToObj(i -> UUID.randomUUID().toString())
+                                                   .map(key -> getMockCategory(key, key))
+                                                   .collect(Collectors.toList());
+        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), emptySet());
+        final List<Reference<Category>> categoryReferences = categories.stream()
+                                                                       .map(Category::toReference)
+                                                                       .collect(Collectors.toList());
+        final Map<String, String> categoryOrderHintValues = categories.stream()
+                                                                      .collect(Collectors.toMap(Category::getKey,
+                                                                          Resource::getId));
+        final CategoryOrderHints categoryOrderHints = CategoryOrderHints.of(categoryOrderHintValues);
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+            .categories(categoryReferences).categoryOrderHints(categoryOrderHints);
+        final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
+            getMockProductTypeService(PRODUCT_TYPE_ID), mockCategoryService, getMockTypeService(),
+            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
+            mock(CustomerGroupService.class),
+            getMockTaxCategoryService(TAX_CATEGORY_ID), getMockStateService(STATE_ID),
+            getMockProductService(PRODUCT_ID));
+
+        assertThat(productReferenceResolver.resolveCategoryReferences(productBuilder).toCompletableFuture())
+            .hasFailed()
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage("Failed to resolve reference 'category' on ProductDraft"
+                + " with key:'" + productBuilder.getKey() + "'. Reason: Found a UUID"
+                + " in the id field. Expecting a key without a UUID value. If you want to"
+                + " allow UUID values for reference keys, please use the "
+                + "allowUuidKeys(true) option in the sync options.");
     }
 
     @Test

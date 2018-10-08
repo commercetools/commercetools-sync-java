@@ -23,10 +23,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
@@ -41,6 +41,7 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -176,6 +177,37 @@ public class InventorySyncTest {
                 + " with SKU:'%s'. Reason: %s: Failed to resolve supply channel reference on InventoryEntryDraft with"
                 + " SKU:'%s'. Reason: Channel with key '%s' does not exist.", SKU_3,
             ReferenceResolutionException.class.getCanonicalName(), SKU_3, KEY_3));
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
+    }
+
+    @Test
+    public void sync_WithInValidSupplyChannelKey_ShouldFailSync() {
+        final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
+            Channel.referenceOfId(UUID.randomUUID().toString()));
+
+        final InventorySyncOptions options = getInventorySyncOptions(30, false, false);
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+        final ChannelService channelService = mock(ChannelService.class);
+        when(channelService.fetchCachedChannelId(anyString()))
+            .thenReturn(completedFuture(Optional.empty()));
+
+        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
+            mock(TypeService.class));
+
+        final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNewChannel))
+                                                           .toCompletableFuture()
+                                                           .join();
+
+        assertThat(stats).hasValues(1, 0, 0, 1);
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on InventoryEntryDraft"
+                + " with SKU:'%s'. Reason: %s: Failed to resolve supply channel reference on InventoryEntryDraft with"
+                + " SKU:'%s'. Reason: Found a UUID in the id field. Expecting a key without a UUID value. If you want"
+                + " to allow UUID values for reference keys, please use the allowUuidKeys(true) option in the sync"
+                + " options.", SKU_3, ReferenceResolutionException.class.getCanonicalName(), SKU_3));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -343,6 +375,69 @@ public class InventorySyncTest {
     }
 
     @Test
+    public void sync_WithNotAllowedUuidCustomTypeKey_ShouldFailSync() {
+        final InventorySyncOptions options = getInventorySyncOptions(3, false, false);
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+
+        final ChannelService channelService = mock(ChannelService.class);
+        when(channelService.fetchCachedChannelId(anyString()))
+            .thenReturn(completedFuture(Optional.of(REF_2)));
+        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
+            mock(TypeService.class));
+
+        final String uuidCustomTypeKey = UUID.randomUUID().toString();
+        final List<InventoryEntryDraft> newDrafts = new ArrayList<>();
+        final InventoryEntryDraft draftWithNullCustomTypeId =
+            InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
+                               .withCustom(CustomFieldsDraft.ofTypeIdAndJson(uuidCustomTypeKey, new HashMap<>()));
+        newDrafts.add(draftWithNullCustomTypeId);
+
+        final InventorySyncStatistics syncStatistics = inventorySync.sync(newDrafts).toCompletableFuture().join();
+
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(errorCallBackMessages).isNotEmpty();
+        assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve references on"
+                + " InventoryEntryDraft with SKU:'%s'. Reason: %s: Failed to resolve custom type reference on"
+                + " InventoryEntryDraft with SKU:'%s'. Reason:"
+                + " Found a UUID in the id field."
+                + " Expecting a key without a UUID value. If you want to allow UUID values for reference keys, please"
+                + " use the allowUuidKeys(true) option in the sync options.", SKU_1,
+            ReferenceResolutionException.class.getCanonicalName(), SKU_1));
+        assertThat(errorCallBackExceptions).isNotEmpty();
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
+    }
+
+    @Test
+    public void sync_WithAllowedUuidCustomTypeKey_ShouldSync() {
+        final InventorySyncOptions options = getInventorySyncOptions(3, false, true);
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+        when(inventoryService.fetchInventoryEntriesBySkus(any())).thenReturn(completedFuture(existingInventories));
+
+        final ChannelService channelService = mock(ChannelService.class);
+        when(channelService.fetchCachedChannelId(anyString()))
+            .thenReturn(completedFuture(Optional.of(REF_2)));
+
+        final TypeService mockTypeService = mock(TypeService.class);
+        when(mockTypeService.fetchCachedTypeId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of("key")));
+        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
+            mockTypeService);
+
+        final String uuidCustomTypeKey = UUID.randomUUID().toString();
+        final List<InventoryEntryDraft> newDrafts = new ArrayList<>();
+        final InventoryEntryDraft draftWithNullCustomTypeId =
+            InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
+                               .withCustom(CustomFieldsDraft.ofTypeIdAndJson(uuidCustomTypeKey, new HashMap<>()));
+        newDrafts.add(draftWithNullCustomTypeId);
+
+        final InventorySyncStatistics syncStatistics = inventorySync.sync(newDrafts).toCompletableFuture().join();
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+    }
+
+    @Test
     public void syncDrafts_WithNewSupplyChannelAndEnsure_ShouldSync() {
         final InventorySyncOptions options = getInventorySyncOptions(3, true, false);
 
@@ -433,6 +528,7 @@ public class InventorySyncTest {
         return InventorySyncOptionsBuilder.of(mock(SphereClient.class))
                                           .batchSize(batchSize)
                                           .ensureChannels(ensureChannels)
+                                          .allowUuidKeys(allowUuid)
                                           .errorCallback((callBackError, exception) -> {
                                               errorCallBackMessages.add(callBackError);
                                               errorCallBackExceptions.add(exception);
