@@ -59,7 +59,6 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -687,98 +686,6 @@ public class TypeSyncIT {
 
         AssertionsForStatistics.assertThat(typeSyncStatistics)
                 .hasValues(100, 100, 0, 0);
-    }
-
-    @Test
-    public void sync_beforeCreate_ShouldCallBeforeCreateCallback() {
-        final TypeDraft newTypeDraft = TypeDraftBuilder.of(
-                TYPE_KEY_2,
-                TYPE_NAME_2,
-                ResourceTypeIdsSetBuilder.of().addCategories().build())
-                .description(TYPE_DESCRIPTION_2)
-                .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
-                .build();
-
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
-                .of(CTP_TARGET_CLIENT)
-                .build();
-
-        TypeSyncOptions spyTypeSyncOptions = spy(typeSyncOptions);
-
-        final TypeSync typeSync = new TypeSync(spyTypeSyncOptions);
-
-        typeSync.sync(singletonList(newTypeDraft)).toCompletableFuture().join();
-
-        verify(spyTypeSyncOptions).applyBeforeCreateCallBack(newTypeDraft);
-    }
-
-    @Test
-    public void sync_beforeCreate_ShouldNotCallBeforeUpdateCallback() {
-        final TypeDraft newTypeDraft = TypeDraftBuilder.of(
-                TYPE_KEY_2,
-                TYPE_NAME_2,
-                ResourceTypeIdsSetBuilder.of().addCategories().build())
-                .description(TYPE_DESCRIPTION_2)
-                .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
-                .build();
-
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
-                .of(CTP_TARGET_CLIENT)
-                .build();
-
-        TypeSyncOptions spyTypeSyncOptions = spy(typeSyncOptions);
-
-        final TypeSync typeSync = new TypeSync(spyTypeSyncOptions);
-
-        typeSync.sync(singletonList(newTypeDraft)).toCompletableFuture().join();
-
-        verify(spyTypeSyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
-    }
-
-    @Test
-    public void sync_beforeUpdate_ShouldCallBeforeUpdateCallback() {
-        final TypeDraft newTypeDraft = TypeDraftBuilder.of(
-                TYPE_KEY_1,
-                TYPE_NAME_2,
-                ResourceTypeIdsSetBuilder.of().addCategories().build())
-                .description(TYPE_DESCRIPTION_2)
-                .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
-                .build();
-
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
-                .of(CTP_TARGET_CLIENT)
-                .build();
-
-        TypeSyncOptions spyTypeSyncOptions = spy(typeSyncOptions);
-
-        final TypeSync typeSync = new TypeSync(spyTypeSyncOptions);
-
-        typeSync.sync(singletonList(newTypeDraft)).toCompletableFuture().join();
-
-        verify(spyTypeSyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
-    }
-
-    @Test
-    public void sync_beforeUpdate_ShouldNotCallBeforeCreateCallback() {
-        final TypeDraft newTypeDraft = TypeDraftBuilder.of(
-                TYPE_KEY_1,
-                TYPE_NAME_2,
-                ResourceTypeIdsSetBuilder.of().addCategories().build())
-                .description(TYPE_DESCRIPTION_2)
-                .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
-                .build();
-
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
-                .of(CTP_TARGET_CLIENT)
-                .build();
-
-        TypeSyncOptions spyTypeSyncOptions = spy(typeSyncOptions);
-
-        final TypeSync typeSync = new TypeSync(spyTypeSyncOptions);
-
-        typeSync.sync(singletonList(newTypeDraft)).toCompletableFuture().join();
-
-        verify(spyTypeSyncOptions, never()).applyBeforeCreateCallBack(newTypeDraft);
     }
 
     private static void assertFieldDefinitionsAreEqual(@Nonnull final List<FieldDefinition> oldFields,

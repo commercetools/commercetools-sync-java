@@ -15,6 +15,7 @@ import io.sphere.sdk.types.queries.TypeQuery;
 import io.sphere.sdk.types.queries.TypeQueryBuilder;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -53,6 +54,10 @@ public final class TypeServiceImpl implements TypeService {
     @Nonnull
     @Override
     public CompletionStage<List<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys) {
+        if (keys.isEmpty()) {
+            return CompletableFuture.completedFuture(Collections.emptyList());
+        }
+
         final TypeQuery query = TypeQueryBuilder
                 .of()
                 .plusPredicates(queryModel -> queryModel.key().isIn(keys))
