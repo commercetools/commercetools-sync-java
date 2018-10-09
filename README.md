@@ -28,18 +28,18 @@ Java API which exposes utilities for building update actions and automatic synci
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 ## Usage
 
-commercetools sync is a Java library that could be used to synchronise CTP data in any of the following ways:
+commercetools sync is a Java library that could be used to synchronize CTP data in any of the following ways:
 
-1. Synchronise data coming from an external system in any form (CSV, XML, etc..) that has been already mapped to 
+1. Synchronize data coming from an external system in any form (CSV, XML, etc..) that has been already mapped to 
 [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
-2. Synchronise data coming from an already-existing commercetools project in the form of 
+2. Synchronize data coming from an already-existing commercetools project in the form of 
 [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
 
-Currently this library supports synchronising
+Currently, this library supports synchronizing
  - [Categories](/docs/usage/CATEGORY_SYNC.md)
  - [Products](/docs/usage/PRODUCT_SYNC.md) (_Beta_: Not recommended for production use yet.)
  - [InventoryEntries](/docs/usage/INVENTORY_SYNC.md) (_Beta_: Not recommended for production use yet.)
