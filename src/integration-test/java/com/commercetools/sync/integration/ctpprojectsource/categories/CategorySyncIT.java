@@ -12,6 +12,7 @@ import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -25,7 +26,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.buildCategoryQuery;
 import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.replaceCategoriesReferenceIdsWithKeys;
@@ -39,12 +39,13 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.d
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDraftsWithPrefix;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.syncBatches;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CategorySyncIT {
@@ -152,7 +153,7 @@ public class CategorySyncIT {
 
         final List<CategoryDraft> categoryDrafts = categories.stream()
                                                              .map(category -> CategoryDraftBuilder.of(category).build())
-                                                             .collect(Collectors.toList());
+                                                             .collect(toList());
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
@@ -436,22 +437,36 @@ public class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
         assertThat(syncStatistics).hasValues(2, 0, 0, 2, 0);
-        assertThat(callBackErrorResponses).hasSize(2);
-        assertThat(callBackErrorResponses.get(0)).contains("\"code\" : \"DuplicateField\"");
-        assertThat(callBackErrorResponses.get(0)).contains("\"field\" : \"slug.en\"");
 
-        assertThat(callBackErrorResponses.get(1)).contains("\"code\" : \"DuplicateField\"");
-        assertThat(callBackErrorResponses.get(1)).contains("\"field\" : \"slug.en\"");
+        assertThat(callBackErrorResponses)
+            .hasSize(2)
+            .allSatisfy(errorMessage -> {
+                assertThat(errorMessage).contains("\"code\" : \"DuplicateField\"");
+                assertThat(errorMessage).contains("\"field\" : \"slug.en\"");
+            });
 
-        assertThat(callBackExceptions).hasSize(2);
-        assertThat(callBackExceptions.get(0)).isExactlyInstanceOf(ErrorResponseException.class);
-        assertThat(callBackExceptions.get(1)).isExactlyInstanceOf(ErrorResponseException.class);
+        assertThat(callBackExceptions)
+            .hasSize(2)
+            .allSatisfy(exception -> {
+                assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponse = ((ErrorResponseException)exception);
 
-        assertThat(callBackWarningResponses).hasSize(2);
-        assertThat(callBackWarningResponses.get(0))
-            .matches("Category with id: '.*' has no key set. Keys are required for category matching.");
-        assertThat(callBackWarningResponses.get(1))
-            .matches("Category with id: '.*' has no key set. Keys are required for category matching.");
+                final List<DuplicateFieldError> fieldErrors = errorResponse
+                    .getErrors()
+                    .stream()
+                    .map(sphereError -> {
+                        assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
+                        return sphereError.as(DuplicateFieldError.class);
+                    })
+                    .collect(toList());
+                assertThat(fieldErrors).hasSize(1);
+                assertThat(fieldErrors).allSatisfy(error -> assertThat(error.getField()).isEqualTo("slug.en"));
+            });
 
+        assertThat(callBackWarningResponses)
+            .hasSize(2)
+            .allSatisfy(warningMessage ->
+                assertThat(warningMessage)
+                    .matches("Category with id: '.*' has no key set. Keys are required for category matching."));
     }
 }

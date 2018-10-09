@@ -11,6 +11,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.products.Image;
 import io.sphere.sdk.products.ImageDimensions;
 import io.sphere.sdk.products.Product;
@@ -65,6 +66,7 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
@@ -433,15 +435,35 @@ public class ProductServiceImplIT {
         final Set<Product> createdProducts = productService.createProducts(productDrafts)
                                                                .toCompletableFuture().join();
 
-        assertThat(errorCallBackExceptions).hasSize(2);
-        assertThat(errorCallBackMessages).hasSize(2);
-        assertThat(errorCallBackMessages.get(0)).contains("\"code\" : \"DuplicateField\"");
-        assertThat(errorCallBackMessages.get(0)).contains("\"field\" : \"slug.en\"");
-        assertThat(errorCallBackMessages.get(0)).contains("\"duplicateValue\" : \"english-slug\"");
+        final String duplicatedSlug = "english-slug";
+        assertThat(errorCallBackExceptions)
+            .hasSize(2)
+            .allSatisfy(exception -> {
+                assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponse = ((ErrorResponseException)exception);
 
-        assertThat(errorCallBackMessages.get(1)).contains("\"code\" : \"DuplicateField\"");
-        assertThat(errorCallBackMessages.get(1)).contains("\"field\" : \"slug.en\"");
-        assertThat(errorCallBackMessages.get(1)).contains("\"duplicateValue\" : \"english-slug\"");
+                final List<DuplicateFieldError> fieldErrors = errorResponse
+                    .getErrors()
+                    .stream()
+                    .map(sphereError -> {
+                        assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
+                        return sphereError.as(DuplicateFieldError.class);
+                    })
+                    .collect(toList());
+                assertThat(fieldErrors).hasSize(1);
+                assertThat(fieldErrors).allSatisfy(error -> {
+                    assertThat(error.getField()).isEqualTo("slug.en");
+                    assertThat(error.getDuplicateValue()).isEqualTo(duplicatedSlug);
+                });
+            });
+
+        assertThat(errorCallBackMessages)
+            .hasSize(2)
+            .allSatisfy(errorMessage -> {
+                assertThat(errorMessage).contains("\"code\" : \"DuplicateField\"");
+                assertThat(errorMessage).contains("\"field\" : \"slug.en\"");
+                assertThat(errorMessage).contains("\"duplicateValue\" : \"" + duplicatedSlug + "\"");
+            });
 
         assertThat(createdProducts).isEmpty();
     }
@@ -593,11 +615,35 @@ public class ProductServiceImplIT {
         final Optional<Product> createdProductOptional = productService.createProduct(productDraft1)
                                                                           .toCompletableFuture().join();
         assertThat(createdProductOptional).isEmpty();
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("\"code\" : \"DuplicateField\"");
-        assertThat(errorCallBackMessages.get(0)).contains("\"field\" : \"slug.en\"");
-        assertThat(errorCallBackMessages.get(0)).contains("\"duplicateValue\" : \"english-slug\"");
+        final String duplicatedSlug = "english-slug";
+        assertThat(errorCallBackExceptions)
+            .hasSize(1)
+            .allSatisfy(exception -> {
+                assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponse = ((ErrorResponseException)exception);
+
+                final List<DuplicateFieldError> fieldErrors = errorResponse
+                    .getErrors()
+                    .stream()
+                    .map(sphereError -> {
+                        assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
+                        return sphereError.as(DuplicateFieldError.class);
+                    })
+                    .collect(toList());
+                assertThat(fieldErrors).hasSize(1);
+                assertThat(fieldErrors).allSatisfy(error -> {
+                    assertThat(error.getField()).isEqualTo("slug.en");
+                    assertThat(error.getDuplicateValue()).isEqualTo(duplicatedSlug);
+                });
+            });
+
+        assertThat(errorCallBackMessages)
+            .hasSize(1)
+            .allSatisfy(errorMessage -> {
+                assertThat(errorMessage).contains("\"code\" : \"DuplicateField\"");
+                assertThat(errorMessage).contains("\"field\" : \"slug.en\"");
+                assertThat(errorMessage).contains("\"duplicateValue\" : \"" + duplicatedSlug + "\"");
+            });
 
 
         //assert CTP state
@@ -652,14 +698,30 @@ public class ProductServiceImplIT {
 
         final ChangeSlug changeSlugUpdateAction = ChangeSlug.of(productDraft1.getSlug());
 
-        productService.updateProduct(product, Collections.singletonList(changeSlugUpdateAction))
-                      .exceptionally(exception -> {
-                          assertThat(exception).isNotNull();
-                          assertThat(exception.getMessage()).contains(format("A duplicate value '\"%s\"' exists for "
-                              + "field 'slug.en'", productDraft1.getSlug().get(Locale.ENGLISH)));
-                          return null;
-                      })
-                      .toCompletableFuture().join();
+        productService
+            .updateProduct(product, Collections.singletonList(changeSlugUpdateAction))
+            .exceptionally(exception -> {
+                assertThat(exception).isNotNull();
+
+                assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponse = ((ErrorResponseException) exception);
+
+                final List<DuplicateFieldError> fieldErrors = errorResponse
+                    .getErrors()
+                    .stream()
+                    .map(sphereError -> {
+                        assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
+                        return sphereError.as(DuplicateFieldError.class);
+                    })
+                    .collect(toList());
+                assertThat(fieldErrors).hasSize(1);
+                assertThat(fieldErrors).allSatisfy(error -> {
+                    assertThat(error.getField()).isEqualTo("slug.en");
+                    assertThat(error.getDuplicateValue()).isEqualTo(productDraft1.getSlug().get(Locale.ENGLISH));
+                });
+                return null;
+            })
+            .toCompletableFuture().join();
 
 
         //assert CTP state
