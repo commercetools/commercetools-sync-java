@@ -241,8 +241,11 @@ public class ProductSyncIT {
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ErrorResponseException.class);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains(format("A duplicate value '\\\"%s\\\"' exists for field"
-            + " 'slug.en' on", product.getMasterData().getStaged().getSlug().get(Locale.ENGLISH)));
+        assertThat(errorCallBackMessages.get(0)).contains("\"code\" : \"DuplicateField\"");
+        assertThat(errorCallBackMessages.get(0)).contains("\"field\" : \"slug.en\"");
+        assertThat(errorCallBackMessages.get(0)).contains(format("\"duplicateValue\" : \"%s\"",
+            product.getMasterData().getStaged().getSlug().get(Locale.ENGLISH)));
+
         assertThat(warningCallBackMessages).isEmpty();
     }
 
@@ -516,9 +519,12 @@ public class ProductSyncIT {
         errorCallBackExceptions
             .forEach(exception -> assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class));
         assertThat(errorCallBackMessages).hasSize(3);
-        errorCallBackMessages.forEach(errorMessage -> assertThat(errorMessage)
-            .contains(format("A duplicate value '\\\"%s\\\"' exists for field 'slug.en' on",
-                key3Draft.getSlug().get(Locale.ENGLISH))));
+        errorCallBackMessages.forEach(errorMessage -> {
+            assertThat(errorMessage).contains("\"code\" : \"DuplicateField\"");
+            assertThat(errorMessage).contains("\"field\" : \"slug.en\"");
+            assertThat(errorMessage).contains(format("\"duplicateValue\" : \"%s\"",
+                key3Draft.getSlug().get(Locale.ENGLISH)));
+        });
         assertThat(warningCallBackMessages).isEmpty();
     }
 

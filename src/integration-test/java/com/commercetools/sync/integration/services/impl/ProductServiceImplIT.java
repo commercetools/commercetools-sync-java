@@ -435,10 +435,14 @@ public class ProductServiceImplIT {
 
         assertThat(errorCallBackExceptions).hasSize(2);
         assertThat(errorCallBackMessages).hasSize(2);
-        assertThat(errorCallBackMessages.get(0)).contains(" A duplicate value '\"english-slug\"' exists for field "
-            + "'slug.en'");
-        assertThat(errorCallBackMessages.get(1)).contains(" A duplicate value '\"english-slug\"' exists for field "
-            + "'slug.en'");
+        assertThat(errorCallBackMessages.get(0)).contains("\"code\" : \"DuplicateField\"");
+        assertThat(errorCallBackMessages.get(0)).contains("\"field\" : \"slug.en\"");
+        assertThat(errorCallBackMessages.get(0)).contains("\"duplicateValue\" : \"english-slug\"");
+
+        assertThat(errorCallBackMessages.get(1)).contains("\"code\" : \"DuplicateField\"");
+        assertThat(errorCallBackMessages.get(1)).contains("\"field\" : \"slug.en\"");
+        assertThat(errorCallBackMessages.get(1)).contains("\"duplicateValue\" : \"english-slug\"");
+
         assertThat(createdProducts).isEmpty();
     }
 
@@ -591,8 +595,10 @@ public class ProductServiceImplIT {
         assertThat(createdProductOptional).isEmpty();
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("A duplicate value '\\\"english-slug\\\"' exists for field"
-            + " 'slug.en' on");
+        assertThat(errorCallBackMessages.get(0)).contains("\"code\" : \"DuplicateField\"");
+        assertThat(errorCallBackMessages.get(0)).contains("\"field\" : \"slug.en\"");
+        assertThat(errorCallBackMessages.get(0)).contains("\"duplicateValue\" : \"english-slug\"");
+
 
         //assert CTP state
         final Optional<Product> productOptional = CTP_TARGET_CLIENT

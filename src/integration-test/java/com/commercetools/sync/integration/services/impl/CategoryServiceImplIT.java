@@ -312,8 +312,10 @@ public class CategoryServiceImplIT {
         assertThat(errorCallBackMessages.toString()).contains("Invalid key '1'. Keys may only contain alphanumeric"
             + " characters, underscores and hyphens and must have a minimum length of 2 characters and maximum length"
             + " of 256 characters.");
-        assertThat(errorCallBackMessages.toString()).contains(" A duplicate value '\"furniture\"' exists for field "
-            + "'slug.en'");
+        assertThat(errorCallBackMessages.toString()).contains("\"code\" : \"DuplicateField\"");
+        assertThat(errorCallBackMessages.toString()).contains("\"field\" : \"slug.en\"");
+        assertThat(errorCallBackMessages.toString()).contains("\"duplicateValue\" : \"furniture\"");
+
         assertThat(createdCategories).isEmpty();
     }
 
@@ -454,7 +456,7 @@ public class CategoryServiceImplIT {
             .custom(getCustomFieldsDraft())
             .build();
         final Category newCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
-                                               .toCompletableFuture().join();
+                                                      .toCompletableFuture().join();
 
 
         final LocalizedString newSlug = LocalizedString.of(Locale.ENGLISH, "furniture");
@@ -463,8 +465,9 @@ public class CategoryServiceImplIT {
         categoryService.updateCategory(newCategory, Collections.singletonList(changeSlugUpdateAction))
             .exceptionally(exception -> {
                 assertThat(exception).isNotNull();
-                assertThat(exception.getMessage()).contains("A duplicate value '\"furniture\"' exists for field"
-                    + " 'slug.en'");
+                assertThat(exception.getMessage()).contains("\"code\" : \"DuplicateField\"");
+                assertThat(exception.getMessage()).contains("\"field\" : \"slug.en\"");
+                assertThat(exception.getMessage()).contains("\"duplicateValue\" : \"furniture\"");
                 return null;
             })
             .toCompletableFuture().join();

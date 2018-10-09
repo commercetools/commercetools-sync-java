@@ -437,10 +437,11 @@ public class CategorySyncIT {
 
         assertThat(syncStatistics).hasValues(2, 0, 0, 2, 0);
         assertThat(callBackErrorResponses).hasSize(2);
-        assertThat(callBackErrorResponses.get(0))
-            .containsPattern("A duplicate value '.*' exists for field 'slug\\.en' on ");
-        assertThat(callBackErrorResponses.get(1))
-            .containsPattern("A duplicate value '.*' exists for field 'slug\\.en' on ");
+        assertThat(callBackErrorResponses.get(0)).contains("\"code\" : \"DuplicateField\"");
+        assertThat(callBackErrorResponses.get(0)).contains("\"field\" : \"slug.en\"");
+
+        assertThat(callBackErrorResponses.get(1)).contains("\"code\" : \"DuplicateField\"");
+        assertThat(callBackErrorResponses.get(1)).contains("\"field\" : \"slug.en\"");
 
         assertThat(callBackExceptions).hasSize(2);
         assertThat(callBackExceptions.get(0)).isExactlyInstanceOf(ErrorResponseException.class);
