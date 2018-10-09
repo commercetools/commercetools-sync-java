@@ -56,7 +56,8 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         RES_ROOT + "product-type-with-attribute-definitions-cbd.json";
     private static final String PRODUCT_TYPE_WITH_ATTRIBUTES_ABC_WITH_DIFFERENT_TYPE =
         RES_ROOT + "product-type-with-attribute-definitions-abc-with-different-type.json";
-
+    private static final String PRODUCT_TYPE_WITH_ATTRIBUTES_ABC_WITHOUT_ATTRIBUTE_TYPE =
+            RES_ROOT + "product-type-with-attribute-definitions-abc-without-attribute-type.json";
 
     private static final ProductTypeSyncOptions SYNC_OPTIONS = ProductTypeSyncOptionsBuilder
         .of(mock(SphereClient.class))
@@ -415,6 +416,32 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         assertThat(updateActions).containsExactly(
             RemoveAttributeDefinition.of("a"),
             AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_A_LOCALIZED_TYPE)
+        );
+    }
+
+    @Test
+    public void buildAttributesUpdateActions_WithoutAttributeType_ShouldRemoveOldAttributeAndAddNewAttribute() {
+        final ProductType oldProductType =
+                readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC_WITHOUT_ATTRIBUTE_TYPE, ProductType.class);
+
+        final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
+                PRODUCT_TYPE_WITH_ATTRIBUTES_ABC,
+                ProductTypeDraft.class
+        );
+
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
+                oldProductType,
+                newProductTypeDraft,
+                SYNC_OPTIONS
+        );
+
+        assertThat(updateActions).containsExactly(
+                RemoveAttributeDefinition.of("a"),
+                AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_A),
+                RemoveAttributeDefinition.of("b"),
+                AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_B),
+                RemoveAttributeDefinition.of("c"),
+                AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_C)
         );
     }
 }
