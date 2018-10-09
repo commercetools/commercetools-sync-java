@@ -20,6 +20,8 @@ Utility which provides API for building CTP product type update actions and prod
 
 ### Sync list of product type drafts
 
+<!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
+
 #### Prerequisites
 1. The sync expects a list of non-null `ProductTypeDrafts` objects that have their `key` fields set to match the
 product types from the source to the target. Also the target project is expected to have the `key` fields set, otherwise they won't be

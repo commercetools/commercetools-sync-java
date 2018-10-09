@@ -20,7 +20,7 @@ Utility which provides API for building CTP category update actions and category
 
 ### Sync list of category drafts
 
-<!-- TODO: Split into explanation of how to "sync from project to project" vs "import from feed"-->
+<!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
 
 #### Prerequisites
 1. The sync expects a list of non-null `CategoryDraft` objects that have their `key` fields set to match the

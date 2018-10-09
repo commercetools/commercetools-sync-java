@@ -30,7 +30,7 @@ For other examples of update actions, please check [here](https://github.com/com
 
 ### Sync list of inventory entry drafts
 
-<!-- TODO: Split into explanation of how to "sync from project to project" vs "import from feed"-->
+<!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
 
 In order to use the inventory sync an instance of
 [InventorySyncOptions](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/inventories/InventorySyncOptions.java)
