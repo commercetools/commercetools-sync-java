@@ -42,6 +42,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -703,8 +704,9 @@ public class ProductServiceImplIT {
             .exceptionally(exception -> {
                 assertThat(exception).isNotNull();
 
-                assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
-                final ErrorResponseException errorResponse = ((ErrorResponseException) exception);
+                assertThat(exception).isExactlyInstanceOf(CompletionException.class);
+                assertThat(exception.getCause()).isExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponse = ((ErrorResponseException) exception.getCause());
 
                 final List<DuplicateFieldError> fieldErrors = errorResponse
                     .getErrors()
