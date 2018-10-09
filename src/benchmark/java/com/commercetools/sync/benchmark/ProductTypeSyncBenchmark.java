@@ -15,7 +15,6 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -35,7 +34,6 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.calculateDiff;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
 import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.deleteProductTypes;
@@ -50,11 +48,6 @@ public class ProductTypeSyncBenchmark {
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
-
-    @BeforeClass
-    public static void setup() {
-        deleteTypesFromTargetAndSource();
-    }
 
     @AfterClass
     public static void tearDown() {
