@@ -91,7 +91,7 @@ public class ProductReferenceResolverIT {
 
     @Test
     public void sync_withNewProductWithInvalidCategoryReferences_ShouldFailCreatingTheProduct() {
-        // Replace the id with key for one category reference but not the other.
+        // Create a list of category references that contains one valid and one invalid.
         final List<Reference<Category>> invalidCategoryReferences = new ArrayList<>();
         invalidCategoryReferences.add(Category.referenceOfId(categories.get(0).getId()));
         invalidCategoryReferences.add(Category.referenceOfId(null));
