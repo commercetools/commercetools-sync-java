@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.services.impl;
 
+import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ProductTypeService;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -88,6 +90,42 @@ public class ProductTypeServiceImplIT {
             productTypeService.fetchCachedProductTypeId(newProductTypeKey).toCompletableFuture().join();
 
         assertThat(newProductTypeId).isEmpty();
+    }
+
+
+    @Test
+    public void fetchCachedProductAttributeMetaDataMap_WithMetadataCache_ShouldReturnAnyAttributeMetadata() {
+        final Optional<String> productTypeId = productTypeService.fetchCachedProductTypeId(OLD_PRODUCT_TYPE_KEY)
+                .toCompletableFuture()
+                .join();
+
+        assertThat(productTypeId).isNotEmpty();
+
+        Optional<Map<String, AttributeMetaData>> fetchCachedProductAttributeMetaDataMap
+                = productTypeService.fetchCachedProductAttributeMetaDataMap(productTypeId.get())
+                .toCompletableFuture()
+                .join();
+
+        assertThat(fetchCachedProductAttributeMetaDataMap).isNotEmpty();
+    }
+
+    @Test
+    public void fetchCachedProductAttributeMetaDataMap_WithoutMetadataCache_ShouldReturnAnyAttributeMetadata() {
+        final Optional<ProductType> productTypeOptional = CTP_TARGET_CLIENT
+                .execute(ProductTypeQuery.of().byKey(OLD_PRODUCT_TYPE_KEY))
+                .toCompletableFuture()
+                .join().head();
+
+        assertThat(productTypeOptional).isNotEmpty();
+
+        if (productTypeOptional.isPresent()) {
+            Optional<Map<String, AttributeMetaData>> fetchCachedProductAttributeMetaDataMap
+                    = productTypeService.fetchCachedProductAttributeMetaDataMap(productTypeOptional.get().getId())
+                    .toCompletableFuture()
+                    .join();
+
+            assertThat(fetchCachedProductAttributeMetaDataMap).isNotEmpty();
+        }
     }
 
     @Test
