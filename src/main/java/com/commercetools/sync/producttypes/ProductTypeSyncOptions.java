@@ -20,6 +20,7 @@ public final class ProductTypeSyncOptions extends BaseSyncOptions<ProductType, P
         @Nullable final BiConsumer<String, Throwable> updateActionErrorCallBack,
         @Nullable final Consumer<String> updateActionWarningCallBack,
         final int batchSize,
+        final boolean allowUuid,
         @Nullable final TriFunction<List<UpdateAction<ProductType>>, ProductTypeDraft, ProductType,
                 List<UpdateAction<ProductType>>> beforeUpdateCallback,
         @Nullable final Function<ProductTypeDraft, ProductTypeDraft> beforeCreateCallback
@@ -30,7 +31,7 @@ public final class ProductTypeSyncOptions extends BaseSyncOptions<ProductType, P
             updateActionErrorCallBack,
             updateActionWarningCallBack,
             batchSize,
-            false,
+            allowUuid,
             beforeUpdateCallback,
             beforeCreateCallback
         );

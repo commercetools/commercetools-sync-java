@@ -40,6 +40,7 @@ public final class ProductTypeSyncOptionsBuilder extends BaseSyncOptionsBuilder<
             errorCallback,
             warningCallback,
             batchSize,
+            allowUuid,
             beforeUpdateCallback,
             beforeCreateCallback
         );
