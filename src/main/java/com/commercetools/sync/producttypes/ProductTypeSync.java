@@ -89,7 +89,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * Fetches existing {@link ProductType} objects from CTP project that correspond to passed {@code batch}.
      * Having existing product types fetched, {@code batch} is compared and synced with fetched objects by
      * {@link ProductTypeSync#syncBatch(List, List)} function. When fetching existing product types results in
-     * an empty {@link ProductTypeSyncStatistics} object then {@code batch} isn't processed.
+     * a {@link ProductTypeSyncStatistics} with initial values {@code 0} of created, updated, failed
+     * then {@code batch} isn't processed.
      *
      * @param batch batch of drafts that need to be synced
      * @return {@link CompletionStage} of {@link ProductTypeSyncStatistics} that indicates method progress.
