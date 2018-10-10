@@ -62,16 +62,6 @@ public class ProductTypeSyncOptionsBuilderTest {
         assertThat(productTypeSyncOptions.getBeforeCreateCallback()).isNotNull();
     }
 
-
-    @Test
-    public void allowUuid_WithFalse_ShouldSetFlag() {
-        productTypeSyncOptionsBuilder.allowUuidKeys(true);
-
-        final ProductTypeSyncOptions productTypeSyncOptions = productTypeSyncOptionsBuilder.build();
-        assertThat(productTypeSyncOptions.shouldAllowUuidKeys()).isNotNull();
-        assertThat(productTypeSyncOptions.shouldAllowUuidKeys()).isFalse();
-    }
-
     @Test
     public void errorCallBack_WithCallBack_ShouldSetCallBack() {
         final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
