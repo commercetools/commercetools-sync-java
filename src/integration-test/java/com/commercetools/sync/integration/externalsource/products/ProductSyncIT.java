@@ -100,7 +100,7 @@ public class ProductSyncIT {
      * a product type, a tax category, 2 categories, custom types for the categories and a product state.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
@@ -124,7 +124,7 @@ public class ProductSyncIT {
      * data.
      */
     @Before
-    public void setupTest() {
+    public void setup() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         syncOptions = buildSyncOptions();
@@ -156,7 +156,7 @@ public class ProductSyncIT {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 

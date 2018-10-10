@@ -35,7 +35,7 @@ public class QueryAllTest {
      * {@link SphereClient#execute(SphereRequest)}.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         final Category mockCategory = mock(Category.class);
         when(mockCategory.getKey()).thenReturn(CATEGORY_KEY);
         when(mockCategory.getId()).thenReturn(CATEGORY_ID);

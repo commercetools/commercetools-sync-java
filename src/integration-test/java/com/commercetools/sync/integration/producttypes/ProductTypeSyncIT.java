@@ -37,7 +37,6 @@ import java.util.stream.IntStream;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-
 import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
 import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_2;
 import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_3;
@@ -81,7 +80,7 @@ public class ProductTypeSyncIT {
      * were set up in this test class.
      */
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteProductTypesFromTargetAndSource();
     }
 

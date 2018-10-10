@@ -47,7 +47,7 @@ public class TaxCategoryServiceImplIT {
      * Cleans up the target and source test data that were built in this test class.
      */
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteTaxCategories(CTP_TARGET_CLIENT);
     }
 

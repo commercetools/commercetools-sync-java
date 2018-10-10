@@ -36,7 +36,7 @@ public class ChangeParentIT {
      * category test data.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
 
@@ -62,7 +62,7 @@ public class ChangeParentIT {
      * Cleans the callback response collector.
      */
     @Before
-    public void setupTest() {
+    public void setup() {
         callBackResponses = new ArrayList<>();
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                                         .warningCallback(callBackResponses::add)
@@ -73,7 +73,7 @@ public class ChangeParentIT {
      * Cleans up the target test data that was built in this test class.
      */
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
     }

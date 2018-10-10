@@ -70,7 +70,7 @@ public class ProductSyncFilterIT {
      * productType for the products of the target CTP project.
      */
     @BeforeClass
-    public static void setupAllTests() {
+    public static void setupClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
                 OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
@@ -88,7 +88,7 @@ public class ProductSyncFilterIT {
      * 4. Create a product in the target CTP project.
      */
     @Before
-    public void setupPerTest() {
+    public void setup() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         syncOptionsBuilder = getProductSyncOptionsBuilder();
@@ -125,7 +125,7 @@ public class ProductSyncFilterIT {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 

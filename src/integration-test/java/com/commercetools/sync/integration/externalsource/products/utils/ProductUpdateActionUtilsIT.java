@@ -23,12 +23,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductUpdateActionUtilsIT {
@@ -44,13 +44,13 @@ public class ProductUpdateActionUtilsIT {
      * CTP projects categories.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         targetProductType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
@@ -58,7 +58,7 @@ public class ProductUpdateActionUtilsIT {
      * Create old product from the draft.
      */
     @Before
-    public void setUp() {
+    public void setup() {
         ProductDraft productDraftOld = SphereJsonUtils.readObjectFromResource(OLD_PRODUCT, ProductDraft.class);
         ProductDraft productDraft = ProductDraftBuilder.of(productDraftOld)
             .productType(ResourceIdentifier.ofKey(targetProductType.getKey()))

@@ -47,7 +47,7 @@ public class StateServiceImplIT {
      * Cleans up the target test data that were built in this test class.
      */
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteStates(CTP_TARGET_CLIENT, STATE_TYPE);
     }
 

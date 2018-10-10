@@ -37,7 +37,7 @@ public class ChangeParentIT {
      * category test data.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteAllCategories(CTP_SOURCE_CLIENT);
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
@@ -66,7 +66,7 @@ public class ChangeParentIT {
      * Deletes all the categories in the source CTP project and the callback response collector.
      */
     @Before
-    public void setupTest() {
+    public void setup() {
         deleteAllCategories(CTP_SOURCE_CLIENT);
         callBackResponses = new ArrayList<>();
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -78,7 +78,7 @@ public class ChangeParentIT {
      * Cleans up the target and source test data that were built in this test class.
      */
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteAllCategories(CTP_SOURCE_CLIENT);
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();

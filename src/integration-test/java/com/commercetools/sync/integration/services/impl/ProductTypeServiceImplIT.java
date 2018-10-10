@@ -42,7 +42,7 @@ public class ProductTypeServiceImplIT {
      * Cleans up the target test data that were built in this test class.
      */
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteProductTypes(CTP_TARGET_CLIENT);
     }
 

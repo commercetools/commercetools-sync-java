@@ -77,7 +77,7 @@ public class ProductSyncWithAssetsIT {
      * types and asset custom types.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         deleteProductSyncTestData(CTP_SOURCE_CLIENT);
 
@@ -96,7 +96,7 @@ public class ProductSyncWithAssetsIT {
      * new {@link ProductSync} instance.
      */
     @Before
-    public void setupTest() {
+    public void setup() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         deleteAllProducts(CTP_SOURCE_CLIENT);
@@ -131,7 +131,7 @@ public class ProductSyncWithAssetsIT {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         deleteProductSyncTestData(CTP_SOURCE_CLIENT);
     }

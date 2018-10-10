@@ -21,7 +21,7 @@ public class PlainEnumValueUpdateActionUtilsTest {
      * Initialises test data.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         old = EnumValue.of("key1", "label1");
         newSame = EnumValue.of("key1", "label1");
         newDifferent = EnumValue.of("key1", "label2");

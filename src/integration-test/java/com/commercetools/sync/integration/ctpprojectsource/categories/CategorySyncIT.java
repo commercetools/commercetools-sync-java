@@ -38,8 +38,8 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.d
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDraftsWithPrefix;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.syncBatches;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -58,7 +58,7 @@ public class CategorySyncIT {
      * CTP project categories.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteAllCategories(CTP_SOURCE_CLIENT);
         deleteTypesFromTargetAndSource();
@@ -71,7 +71,7 @@ public class CategorySyncIT {
      * category test data.
      */
     @Before
-    public void setupTest() {
+    public void setup() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteAllCategories(CTP_SOURCE_CLIENT);
 
@@ -96,7 +96,7 @@ public class CategorySyncIT {
      * Cleans up the target and source test data that were built in this test class.
      */
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteAllCategories(CTP_SOURCE_CLIENT);
         deleteTypesFromTargetAndSource();

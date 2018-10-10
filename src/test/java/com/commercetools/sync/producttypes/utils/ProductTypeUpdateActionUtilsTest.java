@@ -8,14 +8,6 @@ import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
-
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeDescriptionAction;
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeNameAction;
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeDescription;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
@@ -26,6 +18,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeDescriptionAction;
+import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeNameAction;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 public class ProductTypeUpdateActionUtilsTest {
     private static ProductType old;
     private static ProductTypeDraft newSame;
@@ -35,7 +34,7 @@ public class ProductTypeUpdateActionUtilsTest {
      * Initialises test data.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         final LocalizedString label = LocalizedString.of(Locale.ENGLISH, "label1");
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
                 .of("attributeName1", label, StringAttributeType.of())

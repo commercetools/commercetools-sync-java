@@ -49,7 +49,7 @@ public class CustomerGroupServiceImplIT {
      * Cleans up the target test data that were built in this test class.
      */
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteCustomerGroups(CTP_TARGET_CLIENT);
     }
 

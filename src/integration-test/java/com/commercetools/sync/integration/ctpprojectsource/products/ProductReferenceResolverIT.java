@@ -68,7 +68,7 @@ public class ProductReferenceResolverIT {
      * CTP projects categories.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         deleteProductSyncTestData(CTP_SOURCE_CLIENT);
 
@@ -100,7 +100,7 @@ public class ProductReferenceResolverIT {
      * data.
      */
     @Before
-    public void setupTest() {
+    public void setup() {
         deleteAllProducts(CTP_TARGET_CLIENT);
         deleteAllProducts(CTP_SOURCE_CLIENT);
 
@@ -124,7 +124,7 @@ public class ProductReferenceResolverIT {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         deleteProductSyncTestData(CTP_SOURCE_CLIENT);
     }

@@ -41,7 +41,7 @@ public class ProductServiceTest {
     private List<Throwable> errorExceptions;
 
     @Before
-    public void setUp() {
+    public void setup() {
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
         productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))

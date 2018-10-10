@@ -33,8 +33,8 @@ import java.util.function.BiConsumer;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildNewOrModifiedCustomFieldsUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildNonNullCustomFieldsUpdateActions;
-import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildRemovedCustomFieldsUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
+import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildRemovedCustomFieldsUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,7 +49,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     private CategorySyncOptions categorySyncOptions;
 
     @Before
-    public void setupTest() {
+    public void setup() {
         errorMessages = new ArrayList<>();
         exceptions = new ArrayList<>();
         final BiConsumer<String, Throwable> updateActionErrorCallBack = (errorMessage, exception) -> {

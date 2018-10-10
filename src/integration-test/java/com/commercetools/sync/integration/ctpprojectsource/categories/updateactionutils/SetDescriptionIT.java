@@ -29,7 +29,7 @@ public class SetDescriptionIT {
      * category test data.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteAllCategories(CTP_SOURCE_CLIENT);
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
@@ -49,7 +49,7 @@ public class SetDescriptionIT {
      * Deletes all the categories in the source CTP project.
      */
     @Before
-    public void setupTest() {
+    public void setup() {
         deleteAllCategories(CTP_SOURCE_CLIENT);
     }
 
@@ -57,7 +57,7 @@ public class SetDescriptionIT {
      * Cleans up the target and source test data that were built in this test class.
      */
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteAllCategories(CTP_SOURCE_CLIENT);
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();

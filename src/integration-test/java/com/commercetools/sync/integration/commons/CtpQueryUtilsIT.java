@@ -32,7 +32,7 @@ public class CtpQueryUtilsIT {
      * Delete all categories and types from target project. Then create custom types for target CTP project categories.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH, "anyName", CTP_TARGET_CLIENT);
@@ -43,7 +43,7 @@ public class CtpQueryUtilsIT {
      * data.
      */
     @Before
-    public void setupTest() {
+    public void setup() {
         deleteAllCategories(CTP_TARGET_CLIENT);
     }
 
@@ -51,7 +51,7 @@ public class CtpQueryUtilsIT {
      * Cleans up the target test data that were built in this test class.
      */
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
     }

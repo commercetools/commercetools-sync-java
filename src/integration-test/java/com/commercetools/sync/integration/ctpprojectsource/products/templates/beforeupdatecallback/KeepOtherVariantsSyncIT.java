@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
@@ -35,7 +36,6 @@ import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 
 public class KeepOtherVariantsSyncIT {
 
@@ -52,7 +52,7 @@ public class KeepOtherVariantsSyncIT {
      * target CTP project.
      */
     @BeforeClass
-    public static void setupAllTests() {
+    public static void setupClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
@@ -65,7 +65,7 @@ public class KeepOtherVariantsSyncIT {
      * variant.
      */
     @Before
-    public void setupPerTest() {
+    public void setup() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         syncOptions = getProductSyncOptions();
@@ -97,7 +97,7 @@ public class KeepOtherVariantsSyncIT {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 

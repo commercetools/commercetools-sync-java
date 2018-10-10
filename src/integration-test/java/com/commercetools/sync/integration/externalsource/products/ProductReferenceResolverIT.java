@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
@@ -37,7 +38,6 @@ import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 
 public class ProductReferenceResolverIT {
 
@@ -48,7 +48,7 @@ public class ProductReferenceResolverIT {
     private List<Throwable> errorCallBackExceptions;
 
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
@@ -57,7 +57,7 @@ public class ProductReferenceResolverIT {
     }
 
     @Before
-    public void setupPerTest() {
+    public void setup() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
     }
@@ -83,7 +83,7 @@ public class ProductReferenceResolverIT {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 

@@ -36,7 +36,7 @@ public class InventoryUpdateActionUtilsTest {
      * Initialises test data.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         final ZonedDateTime date1 = ZonedDateTime.of(2017, 5, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
         final ZonedDateTime date2 = ZonedDateTime.of(2017, 4, 1, 12, 0, 0, 0, ZoneId.of("UTC"));
         

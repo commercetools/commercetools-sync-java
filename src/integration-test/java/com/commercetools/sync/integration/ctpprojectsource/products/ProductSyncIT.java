@@ -107,7 +107,7 @@ public class ProductSyncIT {
      * channels, product types, tax categories, categories, custom types for categories and product states.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         deleteProductSyncTestData(CTP_SOURCE_CLIENT);
 
@@ -149,7 +149,7 @@ public class ProductSyncIT {
      * new {@link ProductSync} instance.
      */
     @Before
-    public void setupTest() {
+    public void setup() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         deleteAllProducts(CTP_SOURCE_CLIENT);
@@ -185,7 +185,7 @@ public class ProductSyncIT {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         deleteProductSyncTestData(CTP_SOURCE_CLIENT);
     }

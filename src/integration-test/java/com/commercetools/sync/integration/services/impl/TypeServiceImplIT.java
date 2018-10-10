@@ -45,7 +45,7 @@ public class TypeServiceImplIT {
      * Cleans up the target and source test data that were built in this test class.
      */
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteTypesFromTargetAndSource();
     }
 

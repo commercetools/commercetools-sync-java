@@ -71,7 +71,7 @@ public class ProductReferenceReplacementUtilsIT {
      * Delete all product related test data from the target project.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
@@ -79,7 +79,7 @@ public class ProductReferenceReplacementUtilsIT {
      * Delete all product related test data from the target project.
      */
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 

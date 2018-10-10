@@ -49,7 +49,7 @@ public class InventorySyncBenchmark {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteInventoryEntries(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
         deleteChannels(CTP_TARGET_CLIENT);

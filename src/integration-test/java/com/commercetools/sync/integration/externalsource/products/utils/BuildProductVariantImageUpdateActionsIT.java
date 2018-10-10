@@ -58,13 +58,13 @@ public class BuildProductVariantImageUpdateActionsIT {
      * CTP projects.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
@@ -72,7 +72,7 @@ public class BuildProductVariantImageUpdateActionsIT {
      * Create old product from the draft.
      */
     @Before
-    public void setUp() {
+    public void setup() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
 

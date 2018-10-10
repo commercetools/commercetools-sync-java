@@ -64,7 +64,7 @@ public class InventoryUpdateActionUtilsIT {
      * were set up in this test class.
      */
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteInventoryEntriesFromTargetAndSource();
         deleteTypesFromTargetAndSource();
         deleteChannelsFromTargetAndSource();

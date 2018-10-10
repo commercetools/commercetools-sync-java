@@ -113,7 +113,7 @@ public class ProductSyncWithPricesIT {
      * channels and a product type for the target CTP project.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
 
         customType1 = createPricesCustomType("customType1", Locale.ENGLISH,
@@ -135,7 +135,7 @@ public class ProductSyncWithPricesIT {
      * Deletes Products from the target CTP project.
      */
     @Before
-    public void setupTest() {
+    public void setup() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         productSync = new ProductSync(buildSyncOptions());
@@ -169,7 +169,7 @@ public class ProductSyncWithPricesIT {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 

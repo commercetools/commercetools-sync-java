@@ -27,7 +27,7 @@ public class SetMetaTitleIT {
      * Deletes Categories and Types from the target CTP projects, then it populates it with category test data.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
 
@@ -50,7 +50,7 @@ public class SetMetaTitleIT {
      * Cleans up the target data that was built in this test class.
      */
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
     }

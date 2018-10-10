@@ -79,7 +79,7 @@ public class ProductSyncWithAssetsIT {
      * type and an asset custom type.
      */
     @BeforeClass
-    public static void setup() {
+    public static void setupClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         assetsCustomType = createAssetsCustomType(ASSETS_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             "assetsCustomTypeName", CTP_TARGET_CLIENT);
@@ -92,7 +92,7 @@ public class ProductSyncWithAssetsIT {
      * data.
      */
     @Before
-    public void setupTest() {
+    public void setup() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         productSync = new ProductSync(buildSyncOptions());
@@ -140,7 +140,7 @@ public class ProductSyncWithAssetsIT {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
