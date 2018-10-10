@@ -43,7 +43,7 @@ public final class CtpQueryUtils {
      * Queries all elements matching a query by using a limit based pagination with a combination of id sorting and a
      * page size 500. More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset
      *
-     * <p>The method takes a consumer {@link Consumer} that is applied on on every page of elements queried.
+     * <p>The method takes a consumer {@link Consumer} that is applied on every page of elements queried.
      *
      * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.
      *
@@ -94,7 +94,7 @@ public final class CtpQueryUtils {
      * supplied {@code pageSize}.
      * More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset
      *
-     * <p>The method takes a consumer {@link Consumer} that is applied on on every page of elements queried.
+     * <p>The method takes a consumer {@link Consumer} that is applied on every page of elements queried.
      *
      * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.
      *

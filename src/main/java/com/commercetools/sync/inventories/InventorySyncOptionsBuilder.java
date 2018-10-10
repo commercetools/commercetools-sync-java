@@ -22,7 +22,7 @@ public final class InventorySyncOptionsBuilder extends
 
     /**
      * Creates a new instance of {@link InventorySyncOptionsBuilder} given a {@link SphereClient} responsible for
-     * interaction with the target CTP project, with the dafult batch size ({@code BATCH_SIZE_DEFAULT} = 150).
+     * interaction with the target CTP project, with the default batch size ({@code BATCH_SIZE_DEFAULT} = 150).
      *
      * @param ctpClient {@link SphereClient} responsible for interaction with the target CTP project.
      * @return new instance of {@link InventorySyncOptionsBuilder}
@@ -33,14 +33,14 @@ public final class InventorySyncOptionsBuilder extends
     }
 
     /**
-     * Set option that indicates whether sync process should create supply channel of given key when it doesn't exists
+     * Set option that indicates whether sync process should create a supply channel of given key when it doesn't exist
      * in a target project yet. If set to {@code true} sync process would try to create new supply channel of given key,
-     * otherwise sync process would log error and fail to process draft with given supply channel key.
+     * otherwise sync process would log an error and fail to process draft with given supply channel key.
      *
      * <p>This property is {@link InventorySyncOptionsBuilder#ENSURE_CHANNELS_DEFAULT} by default.
      *
      * @param ensureChannels boolean that indicates whether sync process should create supply channel of given key when
-     *                       it doesn't exists in a target project yet
+     *                       it doesn't exist in a target project yet
      * @return {@code this} instance of {@link InventorySyncOptionsBuilder}
      */
     public InventorySyncOptionsBuilder ensureChannels(final boolean ensureChannels) {

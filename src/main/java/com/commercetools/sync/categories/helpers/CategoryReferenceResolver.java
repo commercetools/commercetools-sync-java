@@ -60,8 +60,8 @@ public final class CategoryReferenceResolver
      * taken from the id field of the references.
      *
      * @param categoryDraft the categoryDraft to resolve it's references.
-     * @return a {@link CompletionStage} that contains as a result a new categoryDraft instance with resolved category
-     *          references or, in case an error occurs during reference resolution,
+     * @return a {@link CompletionStage} that contains as a result of a new categoryDraft instance with resolved
+     *          category references or, in case an error occurs during reference resolution,
      *          a {@link ReferenceResolutionException}.
      */
     @Nonnull
@@ -126,9 +126,9 @@ public final class CategoryReferenceResolver
      * id. If the id is not found in cache nor the CTP project, the resultant draft builder
      * would remain exactly the same as the passed category draft (without parent reference resolution).
      *
-     * @param draftBuilder the category draft builder to accept resolved references values.
+     * @param draftBuilder      the category draft builder to accept resolved references values.
      * @param parentCategoryKey the parent category key of to resolve it's actual id on the draft.
-     * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} category draft builder
+     * @return a {@link CompletionStage} that contains as a result, the same {@code draftBuilder} category draft builder
      *         instance with resolved parent category references or an exception.
      */
     @Nonnull

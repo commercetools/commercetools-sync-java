@@ -1,6 +1,6 @@
 # commercetools product sync
 
-A utility which provides an API for building CTP product update actions and product synchronisation.
+A utility which provides an API for building CTP product update actions and product synchronization.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
