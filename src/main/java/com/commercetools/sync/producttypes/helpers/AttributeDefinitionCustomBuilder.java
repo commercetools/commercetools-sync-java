@@ -17,7 +17,7 @@ public final class AttributeDefinitionCustomBuilder {
      * 'null, its default value will be 'SINGLE_LINE'.
      *
      * @param attributeDefinitionDraft  the attribute definition draft which should be transformed.
-     * @return The attribute definition with the same fields as the  attribute definition draft.
+     * @return The attribute definition with the same fields as the attribute definition draft.
      */
     public static AttributeDefinition of(@Nonnull final AttributeDefinitionDraft attributeDefinitionDraft) {
         // Bug in the commercetools JVM SDK. AddAttributeDefinition should expect an AttributeDefinitionDraft rather

@@ -10,10 +10,10 @@ import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.List;
-import java.util.Optional;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,8 +22,8 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
-import static java.util.Optional.ofNullable;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
 public final class ProductTypeUpdateEnumActionsUtils {
@@ -62,7 +62,7 @@ public final class ProductTypeUpdateEnumActionsUtils {
      * @param oldEnumValues           the list of old enum values.
      * @param newEnumValues           the list of new enum values.
      * @param <T>                     the enum type of the elements of the list.
-     * @return a list of enum values update actions if there are old enum value
+     * @return a list of enum values update actions if there are an old enum value
      *         that should be removed.
      *         Otherwise, if the enum values are identical, an empty optional is returned.
      */

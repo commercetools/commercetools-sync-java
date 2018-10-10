@@ -16,9 +16,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -205,7 +205,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      *
      * @param oldAttributeDefinitions      the list of old {@link AttributeDefinition}s
      * @param newAttributeDefinitionDrafts the list of new {@link AttributeDefinitionDraft}s
-     * @return a list of attribute definition update actions if the the order of attribute definitions is not
+     * @return a list of attribute definition update actions if the order of attribute definitions is not
      *         identical. Otherwise, if the attribute definitions order is identical, an empty optional is returned.
      */
     @Nonnull
