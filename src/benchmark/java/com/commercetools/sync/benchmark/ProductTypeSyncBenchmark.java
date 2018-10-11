@@ -248,9 +248,9 @@ public class ProductTypeSyncBenchmark {
         return IntStream
                 .range(0, numberOfTypes)
                 .mapToObj(i -> ProductTypeDraftBuilder.of(
-                        "key__" + Integer.toString(i),
-                        "name__" + Integer.toString(i),
-                        "description__" + Integer.toString(i),
+                        format("key__%d", i),
+                        format("name__%d", i),
+                        format("description__%d", i),
                         singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
                 ).build())
                 .collect(Collectors.toList());
