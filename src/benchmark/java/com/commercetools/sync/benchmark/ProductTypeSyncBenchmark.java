@@ -62,6 +62,7 @@ public class ProductTypeSyncBenchmark {
         productTypeSyncOptions = buildSyncOptions();
     }
 
+    @Nonnull
     private ProductTypeSyncOptions buildSyncOptions() {
         final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
             errorCallBackMessages.add(errorMessage);
