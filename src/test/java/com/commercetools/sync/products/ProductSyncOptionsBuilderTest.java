@@ -37,7 +37,6 @@ public class ProductSyncOptionsBuilderTest {
     public void build_WithClient_ShouldBuildProductSyncOptions() {
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions).isNotNull();
-        assertThat(productSyncOptions.shouldAllowUuidKeys()).isFalse();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
         assertThat(productSyncOptions.getSyncFilter()).isSameAs(SyncFilter.of());
         assertThat(productSyncOptions.getBeforeUpdateCallback()).isNull();
@@ -81,16 +80,6 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getBeforeCreateCallback()).isNotNull();
     }
 
-
-    @Test
-    public void allowUuid_WithTrue_ShouldSetFlag() {
-        productSyncOptionsBuilder.allowUuidKeys(true);
-
-        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.shouldAllowUuidKeys()).isNotNull();
-        assertThat(productSyncOptions.shouldAllowUuidKeys()).isTrue();
-    }
-
     @Test
     public void errorCallBack_WithCallBack_ShouldSetCallBack() {
         final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
@@ -123,7 +112,6 @@ public class ProductSyncOptionsBuilderTest {
     public void productSyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
             .of(CTP_CLIENT)
-            .allowUuidKeys(true)
             .batchSize(30)
             .beforeCreateCallback((newProduct) -> null)
             .beforeUpdateCallback((updateActions, newCategory, oldCategory) -> Collections.emptyList())

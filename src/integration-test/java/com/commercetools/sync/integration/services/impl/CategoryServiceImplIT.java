@@ -13,8 +13,10 @@ import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.categories.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.AfterClass;
@@ -30,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
@@ -39,6 +42,7 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTyp
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
@@ -312,8 +316,10 @@ public class CategoryServiceImplIT {
         assertThat(errorCallBackMessages.toString()).contains("Invalid key '1'. Keys may only contain alphanumeric"
             + " characters, underscores and hyphens and must have a minimum length of 2 characters and maximum length"
             + " of 256 characters.");
-        assertThat(errorCallBackMessages.toString()).contains(" A duplicate value '\"furniture\"' exists for field "
-            + "'slug.en'");
+        assertThat(errorCallBackMessages.toString()).contains("\"code\" : \"DuplicateField\"");
+        assertThat(errorCallBackMessages.toString()).contains("\"field\" : \"slug.en\"");
+        assertThat(errorCallBackMessages.toString()).contains("\"duplicateValue\" : \"furniture\"");
+
         assertThat(createdCategories).isEmpty();
     }
 
@@ -454,17 +460,32 @@ public class CategoryServiceImplIT {
             .custom(getCustomFieldsDraft())
             .build();
         final Category newCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
-                                               .toCompletableFuture().join();
+                                                      .toCompletableFuture().join();
 
 
         final LocalizedString newSlug = LocalizedString.of(Locale.ENGLISH, "furniture");
         final ChangeSlug changeSlugUpdateAction = ChangeSlug.of(newSlug);
 
-        categoryService.updateCategory(newCategory, Collections.singletonList(changeSlugUpdateAction))
+        categoryService
+            .updateCategory(newCategory, Collections.singletonList(changeSlugUpdateAction))
             .exceptionally(exception -> {
-                assertThat(exception).isNotNull();
-                assertThat(exception.getMessage()).contains("A duplicate value '\"furniture\"' exists for field"
-                    + " 'slug.en'");
+                assertThat(exception).isExactlyInstanceOf(CompletionException.class);
+                assertThat(exception.getCause()).isExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponse = ((ErrorResponseException) exception.getCause());
+
+                final List<DuplicateFieldError> fieldErrors = errorResponse
+                    .getErrors()
+                    .stream()
+                    .map(sphereError -> {
+                        assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
+                        return sphereError.as(DuplicateFieldError.class);
+                    })
+                    .collect(toList());
+                assertThat(fieldErrors).hasSize(1);
+                assertThat(fieldErrors).allSatisfy(error -> {
+                    assertThat(error.getField()).isEqualTo("slug.en");
+                    assertThat(error.getDuplicateValue()).isEqualTo("furniture");
+                });
                 return null;
             })
             .toCompletableFuture().join();

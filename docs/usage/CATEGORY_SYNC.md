@@ -20,22 +20,20 @@ Utility which provides API for building CTP category update actions and category
 
 ### Sync list of category drafts
 
+<!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
+
 #### Prerequisites
 1. The sync expects a list of non-null `CategoryDraft` objects that have their `key` fields set to match the
 categories from the source to the target. Also the target project is expected to have the `key` fields set, otherwise they won't be
 matched.
 2. Every category may have a reference to a `parent category` and a reference to the `Type` of its custom fields. Categories 
    and Types are matched by their `key` Therefore, in order for the sync to resolve the 
-    actual ids of those references, the `key` of the `Type`/parent `Category` has to be supplied in one of two ways:
+    actual ids of those references, the `key` of the `Type`/parent `Category` has to be supplied in the following way:
     - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
-    reference would return its `key`. Note that the library will check that this `key` is not 
-    provided in `UUID` format by default. However, if you want to provide the `key` in `UUID` format, you can
-     set it through the sync options. <!--TODO Different example of sync performed that way can be found [here]().-->
-    - Provide the reference expanded. This means that calling `getObj()` on the reference should not return `null`,
-     but return the `Type` object, from which the its `key` can be directly accessible.  
-   
+    reference would return its `key`.  
+
    **Note**: This library provides you with a utility method 
-    [`replaceCategoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M1/com/commercetools/sync/commons/utils/SyncUtils.html#replaceCategoriesReferenceIdsWithKeys-java.util.List-)
+    [`replaceCategoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/commons/utils/SyncUtils.html#replaceCategoriesReferenceIdsWithKeys-java.util.List-)
     that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
     ````java
     // Puts the keys in the reference id fields to prepare for reference resolution
@@ -74,9 +72,6 @@ update and modify (add/remove) update actions just before they are send to CTP A
 - `beforeCreateCallback`
 a filter function which can be applied on a category draft before a request to create it on CTP is issued. It allows the 
 user to intercept category create requests modify the draft before the create request is sent to CTP API.
-
-- `allowUuid`
-a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
 Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
 streams, would look as follows:
