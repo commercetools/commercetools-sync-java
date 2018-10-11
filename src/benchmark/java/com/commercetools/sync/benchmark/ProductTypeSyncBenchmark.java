@@ -216,7 +216,7 @@ public class ProductTypeSyncBenchmark {
         final CompletableFuture<Integer> totalNumberOfProductTypesWithOldName =
                 CTP_TARGET_CLIENT.execute(ProductTypeQuery.of()
                                                           .withPredicates(
-                                                                  p -> p.attributes().name().is("attr_name_1_old")))
+                                                              p -> p.attributes().name().is("attr_name_1_old")))
                                  .thenApply(PagedQueryResult::getTotal)
                                  .thenApply(Long::intValue)
                                  .toCompletableFuture();
