@@ -90,7 +90,7 @@ update and modify (add/remove) update actions just before they are sent to CTP A
 
 - `beforeCreateCallback`
 a filter function which can be applied on a product draft before a request to create it on CTP is issued. It allows the 
-user to intercept product creates requests modify the draft before the create request is sent to CTP API.
+user to intercept product create requests modify the draft before the create request is sent to CTP API.
 
 - `allowUuid`
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
