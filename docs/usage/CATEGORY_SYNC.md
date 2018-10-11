@@ -49,7 +49,7 @@ matched.
     - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the 
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
    
-   You can use the same client instantiating used in the integration tests for this library found 
+   You can instantiate the client the same way it is instantiated in the integration tests for this library found
    [here](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
 
 4. After the `sphereClient` is set up, a `CategorySyncOptions` should be built as follows: 
@@ -73,7 +73,7 @@ update and modify (add/remove) update actions just before they are sent to CTP A
 
 - `beforeCreateCallback`
 a filter function which can be applied on a category draft before a request to create it on CTP is issued. It allows the 
-user to intercept category creates requests to modify the draft before the create request is sent to CTP API.
+user to intercept category create requests to modify the draft before the create request is sent to CTP API.
 
 - `allowUuid`
 a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
