@@ -69,9 +69,9 @@ public class ProductTypeSyncBenchmark {
         final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
 
         return ProductTypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                .errorCallback(errorCallBack)
-                .warningCallback(warningCallBack)
-                .build();
+                                            .errorCallback(errorCallBack)
+                                            .warningCallback(warningCallBack)
+                                            .build();
     }
 
     private void clearSyncTestCollections() {
@@ -100,9 +100,9 @@ public class ProductTypeSyncBenchmark {
         // Assert actual state of CTP project (total number of existing product types)
         final CompletableFuture<Integer> totalNumberOfProductTypes =
                 CTP_TARGET_CLIENT.execute(ProductTypeQuery.of())
-                        .thenApply(PagedQueryResult::getTotal)
-                        .thenApply(Long::intValue)
-                        .toCompletableFuture();
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
 
         executeBlocking(totalNumberOfProductTypes);
         assertThat(totalNumberOfProductTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
@@ -123,14 +123,15 @@ public class ProductTypeSyncBenchmark {
         final List<ProductTypeDraft> productTypeDrafts = buildProductTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
 
         // Create drafts to target project with different attribute definition name
-        CompletableFuture.allOf(productTypeDrafts.stream()
-                .map(ProductTypeDraftBuilder::of)
-                .map(ProductTypeSyncBenchmark::applyAttributeDefinitionNameChange)
-                .map(ProductTypeDraftBuilder::build)
-                .map(draft -> CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(draft)))
-                .map(CompletionStage::toCompletableFuture)
-                .toArray(CompletableFuture[]::new))
-                .join();
+        CompletableFuture.allOf(
+                productTypeDrafts.stream()
+                                 .map(ProductTypeDraftBuilder::of)
+                                 .map(ProductTypeSyncBenchmark::applyAttributeDefinitionNameChange)
+                                 .map(ProductTypeDraftBuilder::build)
+                                 .map(draft -> CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(draft)))
+                                 .map(CompletionStage::toCompletableFuture)
+                                 .toArray(CompletableFuture[]::new))
+                         .join();
 
         // Sync new drafts
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
@@ -149,10 +150,10 @@ public class ProductTypeSyncBenchmark {
         // Assert actual state of CTP project (number of updated product types)
         final CompletableFuture<Integer> totalNumberOfUpdatedProductTypes =
                 CTP_TARGET_CLIENT.execute(ProductTypeQuery.of()
-                        .withPredicates(p -> p.attributes().name().is("attr_name_1")))
-                        .thenApply(PagedQueryResult::getTotal)
-                        .thenApply(Long::intValue)
-                        .toCompletableFuture();
+                                                          .withPredicates(p -> p.attributes().name().is("attr_name_1")))
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
 
         executeBlocking(totalNumberOfUpdatedProductTypes);
         assertThat(totalNumberOfUpdatedProductTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
@@ -160,9 +161,10 @@ public class ProductTypeSyncBenchmark {
         // Assert actual state of CTP project (total number of existing product types)
         final CompletableFuture<Integer> totalNumberOfProductTypes =
                 CTP_TARGET_CLIENT.execute(ProductTypeQuery.of())
-                        .thenApply(PagedQueryResult::getTotal)
-                        .thenApply(Long::intValue)
-                        .toCompletableFuture();
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
+
         executeBlocking(totalNumberOfProductTypes);
         assertThat(totalNumberOfProductTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
@@ -186,13 +188,13 @@ public class ProductTypeSyncBenchmark {
 
         // Create first half of drafts to target project with different attribute definition name
         CompletableFuture.allOf(firstHalf.stream()
-                .map(ProductTypeDraftBuilder::of)
-                .map(ProductTypeSyncBenchmark::applyAttributeDefinitionNameChange)
-                .map(ProductTypeDraftBuilder::build)
-                .map(draft -> CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(draft)))
-                .map(CompletionStage::toCompletableFuture)
-                .toArray(CompletableFuture[]::new))
-                .join();
+                                         .map(ProductTypeDraftBuilder::of)
+                                         .map(ProductTypeSyncBenchmark::applyAttributeDefinitionNameChange)
+                                         .map(ProductTypeDraftBuilder::build)
+                                         .map(draft -> CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(draft)))
+                                         .map(CompletionStage::toCompletableFuture)
+                                         .toArray(CompletableFuture[]::new))
+                         .join();
 
         // Sync new drafts
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
@@ -211,10 +213,11 @@ public class ProductTypeSyncBenchmark {
         // Assert actual state of CTP project (number of updated product types)
         final CompletableFuture<Integer> totalNumberOfUpdatedProductTypes =
                 CTP_TARGET_CLIENT.execute(ProductTypeQuery.of()
-                        .withPredicates(p -> p.attributes().name().is("attr_name_1_old")))
-                        .thenApply(PagedQueryResult::getTotal)
-                        .thenApply(Long::intValue)
-                        .toCompletableFuture();
+                                                          .withPredicates(
+                                                                  p -> p.attributes().name().is("attr_name_1_old")))
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
 
         executeBlocking(totalNumberOfUpdatedProductTypes);
         assertThat(totalNumberOfUpdatedProductTypes).isCompletedWithValue(0);
@@ -222,9 +225,9 @@ public class ProductTypeSyncBenchmark {
         // Assert actual state of CTP project (total number of existing product types)
         final CompletableFuture<Integer> totalNumberOfProductTypes =
                 CTP_TARGET_CLIENT.execute(ProductTypeQuery.of())
-                        .thenApply(PagedQueryResult::getTotal)
-                        .thenApply(Long::intValue)
-                        .toCompletableFuture();
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
         executeBlocking(totalNumberOfProductTypes);
         assertThat(totalNumberOfProductTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
@@ -249,20 +252,21 @@ public class ProductTypeSyncBenchmark {
                         "name__" + Integer.toString(i),
                         "description__" + Integer.toString(i),
                         singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
-                        ).build())
+                ).build())
                 .collect(Collectors.toList());
     }
 
     private static ProductTypeDraftBuilder applyAttributeDefinitionNameChange(final ProductTypeDraftBuilder builder) {
-        final List<AttributeDefinitionDraft> list = builder.getAttributes()
-                .stream()
-                .map(attributeDefinitionDraft -> AttributeDefinitionDraftBuilder.of(
-                        attributeDefinitionDraft.getAttributeType(),
-                        attributeDefinitionDraft.getName() + "_old",
-                        attributeDefinitionDraft.getLabel(),
-                        true
-                ).build())
-                .collect(Collectors.toList());
+        final List<AttributeDefinitionDraft> list =
+                builder.getAttributes()
+                       .stream()
+                       .map(attributeDefinitionDraft -> AttributeDefinitionDraftBuilder.of(
+                               attributeDefinitionDraft.getAttributeType(),
+                               attributeDefinitionDraft.getName() + "_old",
+                               attributeDefinitionDraft.getLabel(),
+                               true
+                       ).build())
+                       .collect(Collectors.toList());
         return builder.attributes(list);
     }
 
