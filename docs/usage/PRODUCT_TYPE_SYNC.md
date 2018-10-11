@@ -1,6 +1,6 @@
 # commercetools product type sync
 
-A utility which provides an API for building CTP product type update actions and product type synchronization.
+A utility which provides an API for building CTP product type update actions and product type synchronisation.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->

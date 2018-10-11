@@ -1,6 +1,6 @@
 # commercetools category sync
 
-A utility which provides an API for building CTP category update actions and category synchronization.
+A utility which provides an API for building CTP category update actions and category synchronisation.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
