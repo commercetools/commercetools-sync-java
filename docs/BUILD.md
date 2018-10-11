@@ -80,7 +80,7 @@ See more configuration details of the oss uploading in [oss-publish.gradle](/gra
 
 ## Publish to Bintray
 
-[Bintray documentation about publishing process](https://blog.bintray.com/2014/02/11/bintray-as-pain-free-gateway-to-maven-central/)
+[Bintray documentation about the publishing process](https://blog.bintray.com/2014/02/11/bintray-as-pain-free-gateway-to-maven-central/)
 
 Bintray publish is performed by [`gradle-bintray-plugin`](https://github.com/bintray/gradle-bintray-plugin). 
 The artifacts are published to [bintray commercetools maven repo](https://bintray.com/commercetools/maven/commercetools-sync-java).
