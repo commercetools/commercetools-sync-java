@@ -130,55 +130,6 @@ public class CategoryReferenceResolverTest {
         assertThat(resolvedAssetDraft.getCustom().getType().getId()).isEqualTo("typeId");
     }
 
-    @Test
-    public void resolveParentReference_WithNoKeysAsUuidSet_ShouldResolveParentReference() {
-        final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
-            CACHED_CATEGORY_KEY, "customTypeId", new HashMap<>());
-
-        final CategoryDraft draftWithResolvedReferences = referenceResolver.resolveParentReference(categoryDraft)
-                                                                           .toCompletableFuture().join()
-                                                                           .build();
-
-        assertThat(draftWithResolvedReferences.getParent()).isNotNull();
-        assertThat(draftWithResolvedReferences.getParent().getId()).isEqualTo(CACHED_CATEGORY_ID);
-    }
-
-    @Test
-    public void resolveCustomTypeReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReferences() {
-        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                                  .allowUuidKeys(true)
-                                                                                  .build();
-        final String uuidKey = String.valueOf(UUID.randomUUID());
-        final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
-            uuidKey, uuidKey, new HashMap<>());
-
-        final CategoryReferenceResolver categoryReferenceResolver =
-            new CategoryReferenceResolver(categorySyncOptions, typeService, categoryService);
-        final CategoryDraft draftWithResolvedReferences = categoryReferenceResolver
-            .resolveCustomTypeReference(categoryDraft)
-            .toCompletableFuture().join()
-            .build();
-
-        assertThat(draftWithResolvedReferences.getCustom()).isNotNull();
-        assertThat(draftWithResolvedReferences.getCustom().getType().getId()).isEqualTo("typeId");
-    }
-
-    @Test
-    public void resolveParentReference_WithParentKeyAsUuidSetAndNotAllowed_ShouldNotResolveParentReference() {
-        final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
-            UUID.randomUUID().toString(), "customTypeId", new HashMap<>());
-
-        assertThat(referenceResolver.resolveParentReference(categoryDraft)
-            .toCompletableFuture())
-            .hasFailed()
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve parent reference on CategoryDraft with"
-                + " key:'key'. Reason: Found a UUID in the id field. Expecting a"
-                + " key without a UUID value. If you want to allow UUID values for"
-                + " reference keys, please use the allowUuidKeys(true) option in"
-                + " the sync options.");
-    }
 
     @Ignore("TODO: SHOULD COMPLETE EXCEPTIONALLY. GITHUB ISSUE#219")
     @Test
@@ -211,24 +162,6 @@ public class CategoryReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
             .hasMessageContaining("CTP error on fetch");
-    }
-
-    @Test
-    public void resolveCustomTypeReference_WithKeyAsUuidSetAndNotAllowed_ShouldNotResolveCustomTypeReference() {
-        final String customTypeUuid = String.valueOf(UUID.randomUUID());
-        final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
-            CACHED_CATEGORY_KEY, customTypeUuid, new HashMap<>());
-
-        assertThat(referenceResolver.resolveCustomTypeReference(categoryDraft)
-            .toCompletableFuture())
-            .hasFailed()
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve custom type reference on CategoryDraft"
-                + " with key:'key'. Reason: Found a UUID in the id field. Expecting"
-                + " a key without a UUID value. If you want to allow UUID values for"
-                + " reference keys, please use the allowUuidKeys(true) option in"
-                + " the sync options.");
     }
 
     @Test

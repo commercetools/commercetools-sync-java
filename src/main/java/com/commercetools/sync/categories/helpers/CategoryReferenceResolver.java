@@ -12,16 +12,15 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
@@ -111,13 +110,58 @@ public final class CategoryReferenceResolver
     @Nonnull
     CompletionStage<CategoryDraftBuilder> resolveParentReference(@Nonnull final CategoryDraftBuilder draftBuilder) {
         try {
-            return getParentCategoryKey(draftBuilder, options.shouldAllowUuidKeys())
+            return getParentCategoryKey(draftBuilder)
                 .map(parentCategoryKey -> fetchAndResolveParentReference(draftBuilder, parentCategoryKey))
-                .orElseGet(() -> CompletableFuture.completedFuture(draftBuilder));
+                .orElseGet(() -> completedFuture(draftBuilder));
         } catch (ReferenceResolutionException referenceResolutionException) {
-            return CompletableFutureUtils
-                .exceptionallyCompletedFuture(referenceResolutionException);
+            return exceptionallyCompletedFuture(referenceResolutionException);
         }
+    }
+
+    @Nonnull
+    public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraftBuilder draftBuilder)
+        throws ReferenceResolutionException {
+        return getParentCategoryKey(draftBuilder.getParent(), draftBuilder.getKey());
+    }
+
+    @Nonnull
+    public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraft draft)
+        throws ReferenceResolutionException {
+        return getParentCategoryKey(draft.getParent(), draft.getKey());
+    }
+
+    /**
+     * Given a category parent resource identifier, if it is not null the method validates the id field value. If it is
+     * not valid, a {@link ReferenceResolutionException} will be thrown. The validity checks are:
+     * <ul>
+     * <li>Checks if the id value is not null or not empty.</li>
+     * </ul>
+     * If the above checks pass, the id value is returned in an optional. Otherwise a
+     * {@link ReferenceResolutionException} is thrown.
+     *
+     * <p>If the passed resource identifier is {@code null}, then an emptu optional is returned.
+     *
+     * @param parentCategoryResourceIdentifier the category parent resource identifier. If null - an empty optional is
+     *                                         returned.
+     * @param categoryKey                      the category key used in the error message if the key was not valid.
+     * @return an optional containing the id or an empty optional if there is no parent reference.
+     * @throws ReferenceResolutionException thrown if the key is invalid.
+     */
+    @Nonnull
+    private static Optional<String> getParentCategoryKey(
+        @Nullable final ResourceIdentifier<Category> parentCategoryResourceIdentifier,
+        @Nullable final String categoryKey) throws ReferenceResolutionException {
+
+        if (parentCategoryResourceIdentifier != null) {
+            try {
+                final String parentKey = getKeyFromResourceIdentifier(parentCategoryResourceIdentifier);
+                return Optional.of(parentKey);
+            } catch (ReferenceResolutionException referenceResolutionException) {
+                throw new ReferenceResolutionException(format(FAILED_TO_RESOLVE_PARENT, categoryKey,
+                    referenceResolutionException.getMessage()), referenceResolutionException);
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -128,68 +172,18 @@ public final class CategoryReferenceResolver
      *
      * @param draftBuilder      the category draft builder to accept resolved references values.
      * @param parentCategoryKey the parent category key of to resolve it's actual id on the draft.
-     * @return a {@link CompletionStage} that contains, as a result, the same {@code draftBuilder} category draft
-     *         builder instance with resolved parent category references or an exception.
+     * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} category draft builder
+     *         instance with resolved parent category references or an exception.
      */
     @Nonnull
     private CompletionStage<CategoryDraftBuilder> fetchAndResolveParentReference(
-            @Nonnull final CategoryDraftBuilder draftBuilder,
-            @Nonnull final String parentCategoryKey) {
-        return categoryService.fetchCachedCategoryId(parentCategoryKey)
+        @Nonnull final CategoryDraftBuilder draftBuilder,
+        @Nonnull final String parentCategoryKey) {
+        return categoryService
+            .fetchCachedCategoryId(parentCategoryKey)
             .thenApply(resolvedParentIdOptional -> resolvedParentIdOptional
                 .map(resolvedParentId ->
                     draftBuilder.parent(Category.referenceOfId(resolvedParentId).toResourceIdentifier()))
                 .orElse(draftBuilder));
-    }
-
-    /**
-     * Given a category parent resource identifier, if it is not null the method validates the id field value. If it is
-     * not valid, a {@link ReferenceResolutionException} will be thrown. The validity checks are:
-     * <ol>
-     * <li>Checks if the id value has a UUID format and the passed {@code shouldAllowUuidKeys} flag is set to true,
-     * or the id value doesn't have a UUID format.</li>
-     * <li>Checks if the id value is not null or not empty.</li>
-     * </ol>
-     * If the above checks pass, the id value is returned in an optional. Otherwise a
-     * {@link ReferenceResolutionException} is thrown.
-     *
-     * <p>If the passed resource identifier is {@code null}, then an emptu optional is returned.
-     *
-     * @param parentCategoryResourceIdentifier the category parent resource identifier. If null - an empty optional is
-     *                                         returned.
-     * @param categoryKey                      the category key used in the error message if the key was not valid.
-     * @param shouldAllowUuidKeys              a flag that specifies whether the key could be in UUID format or not.
-     * @return an optional containing the id or an empty optional if there is no parent reference.
-     * @throws ReferenceResolutionException thrown if the key is invalid (empty/null/in UUID when the flag is false).
-     */
-    @Nonnull
-    private static Optional<String> getParentCategoryKey(
-        @Nullable final ResourceIdentifier<Category> parentCategoryResourceIdentifier,
-        @Nullable final String categoryKey,
-        final boolean shouldAllowUuidKeys) throws ReferenceResolutionException {
-
-        if (parentCategoryResourceIdentifier != null) {
-            try {
-                return Optional.of(getKeyFromResourceIdentifier(parentCategoryResourceIdentifier, shouldAllowUuidKeys));
-            } catch (ReferenceResolutionException referenceResolutionException) {
-                throw new ReferenceResolutionException(format(FAILED_TO_RESOLVE_PARENT, categoryKey,
-                    referenceResolutionException.getMessage()), referenceResolutionException);
-            }
-        }
-        return Optional.empty();
-    }
-
-    @Nonnull
-    public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraft draft,
-                                                        final boolean shouldAllowUuidKeys)
-            throws ReferenceResolutionException {
-        return getParentCategoryKey(draft.getParent(), draft.getKey(), shouldAllowUuidKeys);
-    }
-
-    @Nonnull
-    public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraftBuilder draftBuilder,
-                                                        final boolean shouldAllowUuidKeys)
-            throws ReferenceResolutionException {
-        return getParentCategoryKey(draftBuilder.getParent(), draftBuilder.getKey(), shouldAllowUuidKeys);
     }
 }

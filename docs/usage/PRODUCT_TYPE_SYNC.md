@@ -20,6 +20,8 @@ A utility which provides an API for building CTP product type update actions and
 
 ### Sync list of product type drafts
 
+<!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
+
 #### Prerequisites
 1. The sync expects a list of non-null `ProductTypeDrafts` objects that have their `key` fields set to match the
 product types from the source to the target. Also, the target project is expected to have the `key` fields set, otherwise they won't be
@@ -55,9 +57,6 @@ update and modify (add/remove) update actions just before they are sent to CTP A
 - `beforeCreateCallback`
 a filter function which can be applied on a product type draft before a request to create it on CTP is issued. It allows the
 user to intercept product type create requests to modify the draft before the create request is sent to CTP API.
-
-- `allowUuid`
-a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
 Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning
 streams, would look as follows:

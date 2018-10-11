@@ -71,7 +71,6 @@ public final class ProductSyncOptionsBuilder
             errorCallback,
             warningCallback,
             batchSize,
-            allowUuid,
             syncFilter,
             beforeUpdateCallback,
             beforeCreateCallback,

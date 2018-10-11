@@ -36,7 +36,6 @@ public class CategorySyncOptionsBuilderTest {
     public void build_WithClient_ShouldBuildCategorySyncOptions() {
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions).isNotNull();
-        assertThat(categorySyncOptions.shouldAllowUuidKeys()).isFalse();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNull();
         assertThat(categorySyncOptions.getBeforeCreateCallback()).isNull();
         assertThat(categorySyncOptions.getErrorCallBack()).isNull();
@@ -62,15 +61,6 @@ public class CategorySyncOptionsBuilderTest {
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions.getBeforeCreateCallback()).isNotNull();
-    }
-
-    @Test
-    public void allowUuid_WithTrue_ShouldSetFlag() {
-        categorySyncOptionsBuilder.allowUuidKeys(true);
-
-        final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
-        assertThat(categorySyncOptions.shouldAllowUuidKeys()).isNotNull();
-        assertThat(categorySyncOptions.shouldAllowUuidKeys()).isTrue();
     }
 
     @Test
@@ -105,7 +95,6 @@ public class CategorySyncOptionsBuilderTest {
     public void categorySyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(CTP_CLIENT)
-            .allowUuidKeys(true)
             .batchSize(30)
             .beforeUpdateCallback((updateActions, newCategory, oldCategory) -> Collections.emptyList())
             .beforeCreateCallback(newCategoryDraft -> null)

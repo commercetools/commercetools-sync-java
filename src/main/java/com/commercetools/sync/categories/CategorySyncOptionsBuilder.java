@@ -41,7 +41,6 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
             errorCallback,
             warningCallback,
             batchSize,
-            allowUuid,
             beforeUpdateCallback,
             beforeCreateCallback);
     }

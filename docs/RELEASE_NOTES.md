@@ -61,7 +61,18 @@
 **New Features** (1)
 - **Commons** - Added `OptionalUtils#filterEmptyOptionals` which are utility methods that filter out the 
 empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
-optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255) 
+optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255)
+
+**Changes** (3)
+- **Product Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
+- **Category Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
+- **Inventory Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
+
+**Breaking Changes** (4)
+- **Product Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
+- **Category Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
+- **Inventory Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
+- **ProductType Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 
 
 -->
