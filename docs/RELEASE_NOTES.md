@@ -63,6 +63,8 @@
 empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
 optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255) 
 
+**Enhancements** (1)
+- **ProductType Sync** - Added benchmark test `ProductTypeSyncBenchmark` for the benchmarking product type sync to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
 
 -->
 
