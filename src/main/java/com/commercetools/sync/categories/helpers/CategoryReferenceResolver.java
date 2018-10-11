@@ -128,8 +128,8 @@ public final class CategoryReferenceResolver
      *
      * @param draftBuilder      the category draft builder to accept resolved references values.
      * @param parentCategoryKey the parent category key of to resolve it's actual id on the draft.
-     * @return a {@link CompletionStage} that contains as a result, the same {@code draftBuilder} category draft builder
-     *         instance with resolved parent category references or an exception.
+     * @return a {@link CompletionStage} that contains, as a result, the same {@code draftBuilder} category draft
+     *         builder instance with resolved parent category references or an exception.
      */
     @Nonnull
     private CompletionStage<CategoryDraftBuilder> fetchAndResolveParentReference(
