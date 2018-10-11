@@ -100,7 +100,7 @@ Having an inventory entry, with a missing supply channel reference, could be pro
 - `batchSize`
 a number that could be used to set the batch size with which inventory entries are fetched and processed with,
 as inventory entries are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
-`batchSize` inventory entries from the input list, then fetch the corresponding inventory entries from the target CTP project
+`batchSize` inventory entries from the input list, then fetches the corresponding inventory entries from the target CTP project
 in a single request and then performs the update actions needed. Playing with this option can slightly improve or reduce processing speed.
 An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L318).
     - If not provided, it is set to `30` by default.
