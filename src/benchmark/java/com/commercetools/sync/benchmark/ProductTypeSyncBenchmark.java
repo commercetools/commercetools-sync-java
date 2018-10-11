@@ -247,7 +247,7 @@ public class ProductTypeSyncBenchmark {
                 .mapToObj(i -> ProductTypeDraftBuilder.of(
                         "key__" + Integer.toString(i),
                         "name__" + Integer.toString(i),
-                        "newDescription",
+                        "description__" + Integer.toString(i),
                         singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
                         ).build())
                 .collect(Collectors.toList());
