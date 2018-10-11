@@ -211,7 +211,7 @@ public class ProductTypeSyncBenchmark {
                 .isLessThanOrEqualTo(THRESHOLD);
 
         // Assert actual state of CTP project (number of updated product types)
-        final CompletableFuture<Integer> totalNumberOfUpdatedProductTypes =
+        final CompletableFuture<Integer> totalNumberOfProductTypesWithOldName =
                 CTP_TARGET_CLIENT.execute(ProductTypeQuery.of()
                                                           .withPredicates(
                                                                   p -> p.attributes().name().is("attr_name_1_old")))
@@ -219,8 +219,8 @@ public class ProductTypeSyncBenchmark {
                                  .thenApply(Long::intValue)
                                  .toCompletableFuture();
 
-        executeBlocking(totalNumberOfUpdatedProductTypes);
-        assertThat(totalNumberOfUpdatedProductTypes).isCompletedWithValue(0);
+        executeBlocking(totalNumberOfProductTypesWithOldName);
+        assertThat(totalNumberOfProductTypesWithOldName).isCompletedWithValue(0);
 
         // Assert actual state of CTP project (total number of existing product types)
         final CompletableFuture<Integer> totalNumberOfProductTypes =
