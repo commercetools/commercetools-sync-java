@@ -157,8 +157,8 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
                         if (haveSameAttributeType(oldAttributeDefinition, attributeDefinitionDraft)) {
                             return buildActions(oldAttributeDefinition, attributeDefinitionDraft);
                         } else {
-                            //since there is no way to change an attribute type on CTP,
-                            // we remove the attribute definition and a new one with a new attribute type
+                            // since there is no way to change an attribute type on CTP,
+                            // we remove the attribute definition and add a new one with a new attribute type
                             return Arrays.asList(
                                 RemoveAttributeDefinition.of(oldAttributeDefinitionName),
                                 AddAttributeDefinition
