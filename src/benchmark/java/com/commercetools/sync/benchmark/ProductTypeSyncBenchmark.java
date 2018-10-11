@@ -17,6 +17,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -244,7 +245,8 @@ public class ProductTypeSyncBenchmark {
     }
 
 
-    private List<ProductTypeDraft> buildProductTypeDrafts(final int numberOfTypes) {
+    @Nonnull
+    private static List<ProductTypeDraft> buildProductTypeDrafts(final int numberOfTypes) {
         return IntStream
                 .range(0, numberOfTypes)
                 .mapToObj(i -> ProductTypeDraftBuilder.of(
@@ -256,7 +258,9 @@ public class ProductTypeSyncBenchmark {
                 .collect(Collectors.toList());
     }
 
+    @Nonnull
     private static ProductTypeDraftBuilder applyAttributeDefinitionNameChange(final ProductTypeDraftBuilder builder) {
+
         final List<AttributeDefinitionDraft> list =
                 builder.getAttributes()
                        .stream()
