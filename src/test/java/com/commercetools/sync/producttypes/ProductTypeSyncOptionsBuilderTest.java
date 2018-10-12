@@ -212,7 +212,7 @@ public class ProductTypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeCreateCallBack_WithNullReturnCallback_ShouldReturnEmptyOptional() {
+    public void applyBeforeCreateCallBack_WithCallbackReturningNull_ShouldReturnEmptyOptional() {
         final Function<ProductTypeDraft, ProductTypeDraft> draftFunction = productDraft -> null;
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder.of(CTP_CLIENT)
                 .beforeCreateCallback(draftFunction)
