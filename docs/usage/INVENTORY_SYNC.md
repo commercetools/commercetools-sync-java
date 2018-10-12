@@ -139,7 +139,7 @@ Currently the tool does not support inventory deletion.
                 .join();
     ````
     Scaling can be done by changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) 
-    within the `sphereClient` configuration or by changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M13/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-) and not by executing the batches themselves in parallel.
+    within the `sphereClient` configuration or by changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-) and not by executing the batches themselves in parallel.
      
     The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
     is the recommended good balance for stability and performance for the sync process.
