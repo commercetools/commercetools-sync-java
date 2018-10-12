@@ -17,7 +17,6 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     protected BiConsumer<String, Throwable> errorCallback;
     protected Consumer<String> warningCallback;
     protected int batchSize = 30;
-    protected boolean allowUuid = false;
     protected TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
     protected Function<V, V> beforeCreateCallback;
 
@@ -63,19 +62,6 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
         if (batchSize > 0) {
             this.batchSize = batchSize;
         }
-        return getThis();
-    }
-
-    /**
-     * The sync expects the user to pass the keys to references in the {@code id} field of References. If the key values
-     * are in UUID format, then this flag must be set to true, otherwise the sync will fail to resolve the reference.
-     * This flag, if set to true, enables the user to use keys with UUID format. By default, it is set to {@code false}.
-     *
-     * @param allowUuid new value to set to the boolean flag.
-     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
-     */
-    public T allowUuidKeys(final boolean allowUuid) {
-        this.allowUuid = allowUuid;
         return getThis();
     }
 
