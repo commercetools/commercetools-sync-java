@@ -163,7 +163,7 @@ More examples of those utils for different fields can be found [here](/src/integ
     final CompletableFuture<ProductSyncStatistics> syncFuture2 = productSync.sync(batch2).toCompletableFuture();
     CompletableFuture.allOf(syncFuture1, syncFuture2).join;
     ````
-    The aforementioned example, demonstrates how the library should **not** be used. The library, however, should be instead
+    The aforementioned example demonstrates how the library should **not** be used. The library, however, should be instead
     used in a sequential fashion:
     ````java
     final ProductSync productSync = new ProductSync(syncOptions);

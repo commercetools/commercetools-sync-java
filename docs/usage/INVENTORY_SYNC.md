@@ -129,7 +129,7 @@ Currently the tool does not support inventory deletion.
     final CompletableFuture<InventorySyncStatistics> syncFuture2 = inventorySync.sync(batch2).toCompletableFuture();
     CompletableFuture.allOf(syncFuture1, syncFuture2).join;
     ````
-    The aforementioned example, demonstrates how the library should **not** be used. The library, however, should be instead
+    The aforementioned example demonstrates how the library should **not** be used. The library, however, should be instead
     used in a sequential fashion:
     ````java
     final InventorySync inventorySync = new InventorySync(syncOptions);
