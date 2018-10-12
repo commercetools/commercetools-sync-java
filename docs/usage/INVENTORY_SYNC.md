@@ -141,6 +141,6 @@ Currently the tool does not support inventory deletion.
     Scaling can be done by changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) 
     within the `sphereClient` configuration or by changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M13/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-) and not by executing the batches themselves in parallel.
      
-    Current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
+    The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
     is the recommended good balance for stability and performance for the sync process.
 3. The library will sync all field types of custom fields, except `ReferenceType`. [#87](https://github.com/commercetools/commercetools-sync-java/issues/3). 

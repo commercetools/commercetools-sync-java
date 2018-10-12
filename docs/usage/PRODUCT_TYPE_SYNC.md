@@ -141,6 +141,6 @@ More examples of those utils for different fields can be found [here](/src/test/
     Scaling can be done by changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) 
     within the `sphereClient` configuration or by changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M13/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-) and not by executing the batches themselves in parallel.
      
-    Current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
+    The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
     is the recommended good balance for stability and performance for the sync process.
 3. Syncing product types with an attribute of type [NestedType](https://docs.commercetools.com/http-api-projects-productTypes.html#nestedtype) is not supported yet.
