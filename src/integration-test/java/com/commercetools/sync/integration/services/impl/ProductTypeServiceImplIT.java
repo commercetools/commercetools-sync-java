@@ -17,7 +17,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -131,7 +130,7 @@ public class ProductTypeServiceImplIT {
     @Test
     public void fetchMatchingProductTypesByKeys_WithEmptySetOfKeys_ShouldReturnEmptyList() {
         final Set<String> typeKeys = new HashSet<>();
-        final List<ProductType> matchingProductTypes = productTypeService.fetchMatchingProductsTypesByKeys(typeKeys)
+        final Set<ProductType> matchingProductTypes = productTypeService.fetchMatchingProductsTypesByKeys(typeKeys)
                 .toCompletableFuture()
                 .join();
 
@@ -144,7 +143,7 @@ public class ProductTypeServiceImplIT {
         typeKeys.add("type_key_1");
         typeKeys.add("type_key_2");
 
-        final List<ProductType> matchingProductTypes = productTypeService.fetchMatchingProductsTypesByKeys(typeKeys)
+        final Set<ProductType> matchingProductTypes = productTypeService.fetchMatchingProductsTypesByKeys(typeKeys)
                 .toCompletableFuture()
                 .join();
 
@@ -156,7 +155,7 @@ public class ProductTypeServiceImplIT {
         final Set<String> typeKeys = new HashSet<>();
         typeKeys.add(OLD_PRODUCT_TYPE_KEY);
 
-        final List<ProductType> matchingProductTypes = productTypeService.fetchMatchingProductsTypesByKeys(typeKeys)
+        final Set<ProductType> matchingProductTypes = productTypeService.fetchMatchingProductsTypesByKeys(typeKeys)
                 .toCompletableFuture()
                 .join();
 

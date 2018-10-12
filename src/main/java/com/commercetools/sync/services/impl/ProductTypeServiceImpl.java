@@ -10,8 +10,6 @@ import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
 import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import io.sphere.sdk.producttypes.queries.ProductTypeQueryBuilder;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -24,11 +22,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
 public class ProductTypeServiceImpl implements ProductTypeService {
+    private static final String FETCH_FAILED = "Failed to fetch ProductTypes with keys: '%s'. Reason: %s";
     private final BaseSyncOptions syncOptions;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private boolean isCached = false;
@@ -92,17 +92,27 @@ public class ProductTypeServiceImpl implements ProductTypeService {
 
     @Nonnull
     @Override
-    public CompletionStage<List<ProductType>> fetchMatchingProductsTypesByKeys(@Nonnull final Set<String> keys) {
+    public CompletionStage<Set<ProductType>> fetchMatchingProductsTypesByKeys(@Nonnull final Set<String> keys) {
         if (keys.isEmpty()) {
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return CompletableFuture.completedFuture(Collections.emptySet());
         }
 
-        final ProductTypeQuery query = ProductTypeQueryBuilder
-                .of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(keys))
-                .build();
-
-        return QueryExecutionUtils.queryAll(syncOptions.getCtpClient(), query);
+        final Function<List<ProductType>, List<ProductType>> productTypePageCallBack
+                = productTypePage -> productTypePage;
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(),
+                ProductTypeQuery.of().plusPredicates(queryModel -> queryModel.key().isIn(keys)),
+                productTypePageCallBack)
+                            .handle((fetchedProductTypes, sphereException) -> {
+                                if (sphereException != null) {
+                                    syncOptions
+                                            .applyErrorCallback(format(FETCH_FAILED, keys, sphereException),
+                                                    sphereException);
+                                    return Collections.emptySet();
+                                }
+                                return fetchedProductTypes.stream()
+                                                        .flatMap(List::stream)
+                                                        .collect(Collectors.toSet());
+                            });
     }
 
     @Nonnull

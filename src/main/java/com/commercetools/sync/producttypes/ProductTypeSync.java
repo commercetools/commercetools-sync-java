@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
@@ -88,7 +88,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     /**
      * Fetches existing {@link ProductType} objects from CTP project that correspond to passed {@code batch}.
      * Having existing product types fetched, {@code batch} is compared and synced with fetched objects by
-     * {@link ProductTypeSync#syncBatch(List, List)} function. When fetching existing product types results in
+     * {@link ProductTypeSync#syncBatch(Set, List)} function. When fetching existing product types results in
      * a {@link ProductTypeSyncStatistics} with initial values {@code 0} of created, updated, failed
      * then {@code batch} isn't processed.
      *
@@ -140,16 +140,16 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * Given a set of product type keys, fetches the corresponding product types from CTP if they exist.
      *
      * @param keys the keys of the product types that are wanted to be fetched.
-     * @return a {@link CompletionStage} which contains the list of product types corresponding to the keys.
+     * @return a {@link CompletionStage} which contains the set of product types corresponding to the keys.
      */
-    private CompletionStage<List<ProductType>> fetchExistingProductTypes(@Nonnull final Set<String> keys) {
+    private CompletionStage<Set<ProductType>> fetchExistingProductTypes(@Nonnull final Set<String> keys) {
         return productTypeService
                 .fetchMatchingProductsTypesByKeys(keys)
                 .exceptionally(exception -> {
                     final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keys);
                     handleError(errorMessage, exception, keys.size());
 
-                    return emptyList();
+                    return emptySet();
                 });
     }
 
@@ -161,7 +161,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param <T>          a type that extends of {@link WithKey}.
      * @return the map of keys to {@link ProductType}/{@link ProductTypeDraft} instances.
      */
-    private <T extends WithKey> Map<String, T> getProductTypeKeysMap(@Nonnull final List<T> productTypes) {
+    private <T extends WithKey> Map<String, T> getProductTypeKeysMap(@Nonnull final Set<T> productTypes) {
         return productTypes.stream().collect(Collectors.toMap(WithKey::getKey, p -> p,
             (productTypeA, productTypeB) -> productTypeB));
     }
@@ -191,7 +191,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
     private CompletionStage<ProductTypeSyncStatistics> syncBatch(
-            @Nonnull final List<ProductType> oldProductTypes,
+            @Nonnull final Set<ProductType> oldProductTypes,
             @Nonnull final List<ProductTypeDraft> newProductTypes) {
         final Map<String, ProductType> oldProductTypeMap = getProductTypeKeysMap(oldProductTypes);
 
