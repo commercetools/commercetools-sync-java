@@ -138,8 +138,9 @@ More examples of those utils for different fields can be found [here](/src/test/
                .toCompletableFuture()
                .join();
     ````
-    Scaling can be done by changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) 
-    within the `sphereClient` configuration or by changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-) and not by executing the batches themselves in parallel.
+    By design, scaling the sync process should **not** be done by executing the batches themselves in parallel. However, it can be done either by:
+     - Changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) within the `sphereClient` configuration, which dictate how many requests the client can execute in parallel.
+     - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-), which dictate how many drafts can one batch constitute.
      
     The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
     is the recommended good balance for stability and performance for the sync process.
