@@ -193,7 +193,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void createProductType_WithInvalidProductType_ShouldNotCreateProductType() {
+    public void createProductType_WithInvalidProductType_ShouldCompleteExceptionally() {
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
                 PRODUCT_TYPE_KEY_1,
                 PRODUCT_TYPE_NAME_1,
@@ -239,7 +239,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void updateProductType_WithInvalidChanges_ShouldNotUpdateProductType() {
+    public void updateProductType_WithInvalidChanges_ShouldCompleteExceptionally() {
         final Optional<ProductType> typeOptional = CTP_TARGET_CLIENT
                 .execute(ProductTypeQuery.of()
                         .withPredicates(typeQueryModel -> typeQueryModel.key().is(OLD_PRODUCT_TYPE_KEY)))
