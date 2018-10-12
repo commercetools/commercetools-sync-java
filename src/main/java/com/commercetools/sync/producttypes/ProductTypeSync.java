@@ -161,7 +161,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param <T>          a type that extends of {@link WithKey}.
      * @return the map of keys to {@link ProductType}/{@link ProductTypeDraft} instances.
      */
-    private <T extends WithKey> Map<String, T> getKeysProductTypeMap(@Nonnull final List<T> productTypes) {
+    private <T extends WithKey> Map<String, T> getProductTypeKeysMap(@Nonnull final List<T> productTypes) {
         return productTypes.stream().collect(Collectors.toMap(WithKey::getKey, p -> p,
             (productTypeA, productTypeB) -> productTypeB));
     }
@@ -193,7 +193,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     private CompletionStage<ProductTypeSyncStatistics> syncBatch(
             @Nonnull final List<ProductType> oldProductTypes,
             @Nonnull final List<ProductTypeDraft> newProductTypes) {
-        final Map<String, ProductType> oldProductTypeMap = getKeysProductTypeMap(oldProductTypes);
+        final Map<String, ProductType> oldProductTypeMap = getProductTypeKeysMap(oldProductTypes);
 
         return CompletableFuture.allOf(newProductTypes
             .stream()
