@@ -94,7 +94,6 @@ public class ProductTypeSyncOptionsBuilderTest {
     public void productTypeSyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_CLIENT)
-            .allowUuidKeys(true)
             .batchSize(30)
             .beforeCreateCallback((newProduct) -> null)
             .beforeUpdateCallback((updateActions, newProductType, oldProductType) -> Collections.emptyList())

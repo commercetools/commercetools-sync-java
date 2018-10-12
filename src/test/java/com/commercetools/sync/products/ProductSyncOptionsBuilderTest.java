@@ -37,7 +37,6 @@ public class ProductSyncOptionsBuilderTest {
     public void build_WithClient_ShouldBuildProductSyncOptions() {
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions).isNotNull();
-        assertThat(productSyncOptions.shouldAllowUuidKeys()).isFalse();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
         assertThat(productSyncOptions.getSyncFilter()).isSameAs(SyncFilter.of());
         assertThat(productSyncOptions.getBeforeUpdateCallback()).isNull();
