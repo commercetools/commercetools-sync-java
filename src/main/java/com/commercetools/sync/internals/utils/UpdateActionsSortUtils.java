@@ -1,13 +1,16 @@
 package com.commercetools.sync.internals.utils;
 
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
+import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
+import io.sphere.sdk.products.commands.updateactions.SetAssetDescription;
+import io.sphere.sdk.products.commands.updateactions.SetAssetSources;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.AddPrice;
 import io.sphere.sdk.products.commands.updateactions.AddVariant;
-import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangePrice;
@@ -16,10 +19,7 @@ import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemovePrice;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
-import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
-import io.sphere.sdk.products.commands.updateactions.SetAssetDescription;
-import io.sphere.sdk.products.commands.updateactions.SetAssetSources;
 import io.sphere.sdk.products.commands.updateactions.SetAssetTags;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
@@ -38,6 +38,17 @@ import java.util.Objects;
 public final class UpdateActionsSortUtils {
 
 
+    /**
+     * Given a list of update actions, this method returns a copy of the supplied list but sorted with the following
+     * precedence:
+     * <ol>
+     * <li>TODO
+     * </ol>
+     *
+     * @param updateActions TODO
+     * @param masterVariantId TODO
+     * @return TODO
+     */
     @Nonnull
     public static List<UpdateAction<Product>> sortVariantActions(
         @Nonnull final List<UpdateAction<Product>> updateActions,
@@ -158,6 +169,16 @@ public final class UpdateActionsSortUtils {
             && Objects.isNull(((SetAttributeInAllVariants) action).getValue()));
     }
 
+    /**
+     * Given a list of update actions, this method returns a copy of the supplied list but sorted with the following
+     * precedence:
+     * <ol>
+     * <li>TODO
+     * </ol>
+     *
+     * @param updateActions TODO
+     * @return TODO
+     */
     @Nonnull
     public static List<UpdateAction<Product>> sortAttributeActions(
         @Nonnull final List<UpdateAction<Product>> updateActions) {
@@ -176,6 +197,16 @@ public final class UpdateActionsSortUtils {
         return actionsCopy;
     }
 
+    /**
+     * Given a list of update actions, this method returns a copy of the supplied list but sorted with the following
+     * precedence:
+     * <ol>
+     * <li>TODO
+     * </ol>
+     *
+     * @param updateActions TODO
+     * @return TODO
+     */
     @Nonnull
     public static List<UpdateAction<Product>> sortImageActions(
         @Nonnull final List<UpdateAction<Product>> updateActions) {
@@ -245,6 +276,16 @@ public final class UpdateActionsSortUtils {
         return actionsCopy;
     }
 
+    /**
+     * Given a list of update actions, this method returns a copy of the supplied list but sorted with the following
+     * precedence:
+     * <ol>
+     * <li>TODO
+     * </ol>
+     *
+     * @param updateActions TODO
+     * @return TODO
+     */
     @Nonnull
     public static List<UpdateAction<Product>> sortProductVariantAssetActions(
         @Nonnull final List<UpdateAction<Product>> updateActions) {
@@ -280,6 +321,16 @@ public final class UpdateActionsSortUtils {
         return actionsCopy;
     }
 
+    /**
+     * Given a list of update actions, this method returns a copy of the supplied list but sorted with the following
+     * precedence:
+     * <ol>
+     * <li>TODO
+     * </ol>
+     *
+     * @param updateActions TODO
+     * @return TODO
+     */
     @Nonnull
     public static List<UpdateAction<Category>> sortCategoryAssetActions(
         @Nonnull final List<UpdateAction<Category>> updateActions) {
