@@ -165,7 +165,7 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildVariantsUpdateActions_withEmptyOldMasterVariantKey() throws Exception {
+    public void buildVariantsUpdateActions_withEmptyOldMasterVariantKey() {
         assertMissingMasterVariantKey(OLD_PROD_WITHOUT_MV_KEY_SKU, NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER,
             BLANK_OLD_MASTER_VARIANT_KEY);
     }
@@ -254,7 +254,7 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildAddVariantUpdateActionFromDraft_returnsProperties() throws Exception {
+    public void buildAddVariantUpdateActionFromDraft_returnsProperties() {
         List<AttributeDraft> attributeList = Collections.emptyList();
         List<PriceDraft> priceList = Collections.emptyList();
         List<Image> imageList = Collections.emptyList();
