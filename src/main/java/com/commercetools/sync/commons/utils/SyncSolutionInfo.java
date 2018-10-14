@@ -3,7 +3,7 @@ package com.commercetools.sync.commons.utils;
 import io.sphere.sdk.client.SolutionInfo;
 
 public final class SyncSolutionInfo extends SolutionInfo {
-    private static final String LIB_NAME = "commercetools-sync-java";
+    public static final String LIB_NAME = "commercetools-sync-java";
     /**
      * This value is injected by the script at gradle-scripts/set-library-version.gradle.
      */
