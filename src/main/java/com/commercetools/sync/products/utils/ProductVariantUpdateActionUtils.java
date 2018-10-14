@@ -250,10 +250,12 @@ public final class ProductVariantUpdateActionUtils {
         @Nonnull final ProductSyncOptions syncOptions) {
 
         try {
-            return buildAssetsUpdateActions(
+            final List<UpdateAction<Product>> unsortedActions = buildAssetsUpdateActions(
                 oldProductVariant.getAssets(),
                 newProductVariant.getAssets(),
                 new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions));
+
+            return sortProductVariantAssetActions(unsortedActions);
 
         } catch (final BuildUpdateActionException exception) {
             syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "

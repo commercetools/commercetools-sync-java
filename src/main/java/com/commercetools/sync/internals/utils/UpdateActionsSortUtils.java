@@ -59,6 +59,41 @@ public final class UpdateActionsSortUtils {
     }
 
     @Nonnull
+    public static List<UpdateAction<Product>> sortProductVariantAssetActions(
+        @Nonnull final List<UpdateAction<Product>> updateActions) {
+
+        final List<UpdateAction<Product>> actionsCopy = new ArrayList<>(updateActions);
+        actionsCopy.sort((action1, action2) -> {
+            if (action1 instanceof RemoveAsset && !(action2 instanceof RemoveAsset)) {
+                return -1;
+            }
+
+            if (!(action1 instanceof RemoveAsset) && action2 instanceof RemoveAsset) {
+                return 1;
+            }
+
+            if (!(action1 instanceof AddAsset) && action2 instanceof AddAsset) {
+                return -1;
+            }
+
+            if (action1 instanceof AddAsset && !(action2 instanceof AddAsset)) {
+                return 1;
+            }
+
+            if (!(action1 instanceof ChangeAssetOrder) && action2 instanceof ChangeAssetOrder) {
+                return -1;
+            }
+
+            if (action1 instanceof ChangeAssetOrder && !(action2 instanceof ChangeAssetOrder)) {
+                return 1;
+            }
+
+            return 0;
+        });
+        return actionsCopy;
+    }
+
+    @Nonnull
     public static List<UpdateAction<Category>> sortCategoryAssetActions(
         @Nonnull final List<UpdateAction<Category>> updateActions) {
 
