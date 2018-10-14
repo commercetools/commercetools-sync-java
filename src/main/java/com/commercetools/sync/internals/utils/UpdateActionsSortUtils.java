@@ -16,6 +16,38 @@ import java.util.List;
  * This class is only meant for the internal use of the commercetools-sync-java library.
  */
 public final class UpdateActionsSortUtils {
+    private static boolean isSetAttribute(@Nonnull final UpdateAction<Product> action) {
+        return (action instanceof SetAttribute
+            && Objects.nonNull(((SetAttribute) action).getValue()))
+            || (action instanceof SetAttributeInAllVariants
+            && Objects.nonNull(((SetAttributeInAllVariants) action).getValue()));
+    }
+
+    private static boolean isUnSetAttribute(@Nonnull final UpdateAction<Product> action) {
+        return (action instanceof SetAttribute
+            && Objects.isNull(((SetAttribute) action).getValue()))
+            || (action instanceof SetAttributeInAllVariants
+            && Objects.isNull(((SetAttributeInAllVariants) action).getValue()));
+    }
+
+    @Nonnull
+    public static List<UpdateAction<Product>> sortAttributeActions(
+        @Nonnull final List<UpdateAction<Product>> updateActions) {
+
+        final List<UpdateAction<Product>> actionsCopy = new ArrayList<>(updateActions);
+        actionsCopy.sort((action1, action2) -> {
+            if (isUnSetAttribute(action1) && !isUnSetAttribute(action2)) {
+                return -1;
+            }
+
+            if (!isUnSetAttribute(action1) && isUnSetAttribute(action2)) {
+                return 1;
+            }
+            return 0;
+        });
+        return actionsCopy;
+    }
+
     @Nonnull
     public static List<UpdateAction<Product>> sortImageActions(
         @Nonnull final List<UpdateAction<Product>> updateActions) {

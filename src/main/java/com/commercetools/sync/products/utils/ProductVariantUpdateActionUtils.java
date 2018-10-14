@@ -39,6 +39,7 @@ import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.internals.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
+import static com.commercetools.sync.internals.utils.UpdateActionsSortUtils.sortAttributeActions;
 import static com.commercetools.sync.internals.utils.UpdateActionsSortUtils.sortImageActions;
 import static com.commercetools.sync.internals.utils.UpdateActionsSortUtils.sortPriceActions;
 import static com.commercetools.sync.internals.utils.UpdateActionsSortUtils.sortProductVariantAssetActions;
@@ -344,7 +345,7 @@ public final class ProductVariantUpdateActionUtils {
 
         });
 
-        return updateActions;
+        return sortAttributeActions(updateActions);
     }
 
     private static UpdateAction<Product> buildUnSetAttribute(
