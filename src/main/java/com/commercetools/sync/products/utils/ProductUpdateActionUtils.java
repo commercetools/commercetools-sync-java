@@ -53,6 +53,7 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActions;
 import static com.commercetools.sync.commons.utils.FilterUtils.executeSupplierIfPassesFilter;
 import static com.commercetools.sync.internals.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
+import static com.commercetools.sync.internals.utils.UpdateActionsSortUtils.sortVariantActions;
 import static com.commercetools.sync.products.ActionGroup.ASSETS;
 import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
 import static com.commercetools.sync.products.ActionGroup.IMAGES;
@@ -423,7 +424,7 @@ public final class ProductUpdateActionUtils {
         });
 
         updateActions.addAll(buildChangeMasterVariantUpdateAction(oldProduct, newProduct, syncOptions));
-        return updateActions;
+        return sortVariantActions(updateActions, oldMasterVariant.getId());
     }
 
     @Nonnull
