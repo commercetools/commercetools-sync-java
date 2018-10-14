@@ -1,5 +1,5 @@
 ext{
-    commercetoolsJvmSdkVersion = '1.33.0'
+    commercetoolsJvmSdkVersion = '1.35.0'
     mockitoVersion = '2.22.0'
     jupiterApiVersion = '5.3.1'
     assertjVersion = '3.11.1'
