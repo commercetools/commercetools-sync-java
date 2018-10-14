@@ -58,6 +58,47 @@ public final class UpdateActionsSortUtils {
         return actionsCopy;
     }
 
+    @Nonnull
+    public static List<UpdateAction<Category>> sortCategoryAssetActions(
+        @Nonnull final List<UpdateAction<Category>> updateActions) {
+
+        final List<UpdateAction<Category>> actionsCopy = new ArrayList<>(updateActions);
+        actionsCopy.sort((action1, action2) -> {
+            if (action1 instanceof io.sphere.sdk.categories.commands.updateactions.RemoveAsset
+                && !(action2 instanceof io.sphere.sdk.categories.commands.updateactions.RemoveAsset)) {
+                return -1;
+            }
+
+            if (!(action1 instanceof io.sphere.sdk.categories.commands.updateactions.RemoveAsset)
+                && action2 instanceof io.sphere.sdk.categories.commands.updateactions.RemoveAsset) {
+                return 1;
+            }
+
+            if (!(action1 instanceof io.sphere.sdk.categories.commands.updateactions.AddAsset)
+                && action2 instanceof io.sphere.sdk.categories.commands.updateactions.AddAsset) {
+                return -1;
+            }
+
+            if (action1 instanceof io.sphere.sdk.categories.commands.updateactions.AddAsset
+                && !(action2 instanceof io.sphere.sdk.categories.commands.updateactions.AddAsset)) {
+                return 1;
+            }
+
+            if (!(action1 instanceof io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder)
+                && action2 instanceof io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder) {
+                return -1;
+            }
+
+            if (action1 instanceof io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder
+                && !(action2 instanceof io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder)) {
+                return 1;
+            }
+
+            return 0;
+        });
+        return actionsCopy;
+    }
+
     private UpdateActionsSortUtils() {
     }
 }

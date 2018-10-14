@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.internals.utils.UpdateActionsSortUtils.sortCategoryAssetActions;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 
@@ -247,10 +248,12 @@ public final class CategoryUpdateActionUtils {
         @Nonnull final CategorySyncOptions syncOptions) {
 
         try {
-            return AssetsUpdateActionUtils.buildAssetsUpdateActions(
+            final List<UpdateAction<Category>> unsortedActions = AssetsUpdateActionUtils.buildAssetsUpdateActions(
                 oldCategory.getAssets(),
                 newCategory.getAssets(),
                 new CategoryAssetActionFactory(syncOptions));
+            return sortCategoryAssetActions(unsortedActions);
+
         } catch (final BuildUpdateActionException exception) {
             syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
                 + "of the category with the key '%s'. Reason: %s", oldCategory.getKey(), exception), exception);
