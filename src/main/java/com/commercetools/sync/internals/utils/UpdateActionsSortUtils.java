@@ -16,6 +16,33 @@ import java.util.List;
  * This class is only meant for the internal use of the commercetools-sync-java library.
  */
 public final class UpdateActionsSortUtils {
+    @Nonnull
+    public static List<UpdateAction<Product>> sortImageActions(
+        @Nonnull final List<UpdateAction<Product>> updateActions) {
+
+        final List<UpdateAction<Product>> actionsCopy = new ArrayList<>(updateActions);
+        actionsCopy.sort((action1, action2) -> {
+            if (action1 instanceof RemoveImage && !(action2 instanceof RemoveImage)) {
+                return -1;
+            }
+
+            if (!(action1 instanceof RemoveImage) && action2 instanceof RemoveImage) {
+                return 1;
+            }
+
+            if (!(action1 instanceof MoveImageToPosition) && action2 instanceof MoveImageToPosition) {
+                return -1;
+            }
+
+            if (action1 instanceof MoveImageToPosition && !(action2 instanceof MoveImageToPosition)) {
+                return 1;
+            }
+
+            return 0;
+        });
+        return actionsCopy;
+    }
+
     /**
      * Given a list of update actions, this method returns a copy of the supplied list but sorted with the following
      * precedence:

@@ -39,7 +39,9 @@ import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.internals.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
+import static com.commercetools.sync.internals.utils.UpdateActionsSortUtils.sortImageActions;
 import static com.commercetools.sync.internals.utils.UpdateActionsSortUtils.sortPriceActions;
+import static com.commercetools.sync.internals.utils.UpdateActionsSortUtils.sortProductVariantAssetActions;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
 import static com.commercetools.sync.products.utils.ProductVariantPriceUpdateActionUtils.buildActions;
@@ -171,7 +173,8 @@ public final class ProductVariantUpdateActionUtils {
             updateActions.addAll(buildMoveImageToPositionUpdateActions(oldProductVariantId,
                     updatedOldImages, newImages));
         }
-        return updateActions;
+
+        return sortImageActions(updateActions);
     }
 
     /**
