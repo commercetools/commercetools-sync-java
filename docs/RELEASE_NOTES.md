@@ -69,7 +69,7 @@ optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issue
 - **ProductType Sync** - Renamed `ProductTypeUpdatePlainEnumActionUtils` to `PlainEnumsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - Renamed `LocalizedEnumUpdateActionsUtils` to `LocalizedEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - Renamed `PlainEnumUpdateActionsUtils` to `PlainEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - Renamed `EnumUpdateActionsUtils` to `EnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+- **ProductType Sync** - Renamed `EnumUpdateActionsUtils` to `EnumsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 
 -->
 
