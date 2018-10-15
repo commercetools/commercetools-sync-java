@@ -13,10 +13,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.producttypes.utils.EnumUpdateActionsUtils.buildAddEnumValuesUpdateActions;
-import static com.commercetools.sync.producttypes.utils.EnumUpdateActionsUtils.buildChangeEnumValuesOrderUpdateAction;
-import static com.commercetools.sync.producttypes.utils.EnumUpdateActionsUtils.buildMatchingEnumValuesUpdateActions;
-import static com.commercetools.sync.producttypes.utils.EnumUpdateActionsUtils.buildRemoveEnumValuesUpdateActions;
+import static com.commercetools.sync.producttypes.utils.EnumUpdateActionUtils.buildAddEnumValuesUpdateActions;
+import static com.commercetools.sync.producttypes.utils.EnumUpdateActionUtils.buildChangeEnumValuesOrderUpdateAction;
+import static com.commercetools.sync.producttypes.utils.EnumUpdateActionUtils.buildMatchingEnumValuesUpdateActions;
+import static com.commercetools.sync.producttypes.utils.EnumUpdateActionUtils.buildRemoveEnumValuesUpdateActions;
 import static java.util.Collections.emptyList;
 
 public final class PlainEnumsUpdateActionUtils {
