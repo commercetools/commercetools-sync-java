@@ -266,13 +266,20 @@ public class ProductTypeSyncBenchmark {
         final List<AttributeDefinitionDraft> list =
                 builder.getAttributes()
                        .stream()
-                       .map(attributeDefinitionDraft -> AttributeDefinitionDraftBuilder.of(
-                               attributeDefinitionDraft.getAttributeType(),
-                               attributeDefinitionDraft.getName() + "_old",
-                               attributeDefinitionDraft.getLabel(),
-                               true
-                       ).build())
+                       .map(attributeDefinitionDraft -> AttributeDefinitionDraftBuilder
+                               .of(
+                                       attributeDefinitionDraft.getAttributeType(),
+                                       attributeDefinitionDraft.getName() + "_old",
+                                       attributeDefinitionDraft.getLabel(),
+                                       attributeDefinitionDraft.isRequired()
+                               )
+                               .attributeConstraint(attributeDefinitionDraft.getAttributeConstraint())
+                               .inputTip(attributeDefinitionDraft.getInputTip())
+                               .inputHint(attributeDefinitionDraft.getInputHint())
+                               .isSearchable(attributeDefinitionDraft.isSearchable())
+                               .build())
                        .collect(Collectors.toList());
+
         return builder.attributes(list);
     }
 
