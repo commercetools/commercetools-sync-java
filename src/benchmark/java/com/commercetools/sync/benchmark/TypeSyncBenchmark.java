@@ -6,7 +6,6 @@ import com.commercetools.sync.types.TypeSync;
 import com.commercetools.sync.types.TypeSyncOptions;
 import com.commercetools.sync.types.TypeSyncOptionsBuilder;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
-import com.sun.istack.internal.NotNull;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.types.FieldDefinition;
@@ -268,7 +267,7 @@ public class TypeSyncBenchmark {
                 .collect(Collectors.toList());
     }
 
-    @NotNull
+    @Nonnull
     private static TypeDraftBuilder applyFieldDefinitionNameChange(@Nonnull final TypeDraftBuilder builder) {
         final List<FieldDefinition> list = builder.getFieldDefinitions()
                                                   .stream()
