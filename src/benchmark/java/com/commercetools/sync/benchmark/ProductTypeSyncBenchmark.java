@@ -247,7 +247,7 @@ public class ProductTypeSyncBenchmark {
 
 
     @Nonnull
-    private static List<ProductTypeDraft> buildProductTypeDrafts(@Nonnull final int numberOfTypes) {
+    private static List<ProductTypeDraft> buildProductTypeDrafts(final int numberOfTypes) {
         return IntStream
                 .range(0, numberOfTypes)
                 .mapToObj(i -> ProductTypeDraftBuilder.of(
@@ -262,6 +262,7 @@ public class ProductTypeSyncBenchmark {
     @Nonnull
     private static ProductTypeDraftBuilder applyAttributeDefinitionNameChange(
             @Nonnull final ProductTypeDraftBuilder builder) {
+
         final List<AttributeDefinitionDraft> list =
                 builder.getAttributes()
                        .stream()
