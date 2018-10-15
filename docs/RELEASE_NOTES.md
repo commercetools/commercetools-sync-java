@@ -70,6 +70,17 @@ optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issue
 - **Type Sync** - Exposed `FieldDefinitionsUpdateActionUtils` which contains utils for calculating needed update actions after comparing a list of `FieldDefinition`s and a list of `FieldDefinition`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 - **Type Sync** - Exposed `FieldDefinitionUpdateActionUtils` which contains utils for calculating needed update actions after comparing a `FieldDefinition` and a `FieldDefinition`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 
+**Changes** (3)
+- **Product Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
+- **Category Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
+- **Inventory Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
+
+**Breaking Changes** (4)
+- **Product Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
+- **Category Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
+- **Inventory Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
+- **ProductType Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
+
 **Enhancements** (1)
 - **Type Sync** - Added `TypeSyncBenchmark` to benchmark the type sync, to be able to compare the performance of the sync with the future releases. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 -->

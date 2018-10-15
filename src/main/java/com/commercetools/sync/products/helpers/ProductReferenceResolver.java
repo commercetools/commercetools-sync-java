@@ -146,9 +146,11 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     public CompletionStage<ProductDraftBuilder> resolveProductTypeReference(
         @Nonnull final ProductDraftBuilder draftBuilder) {
+
         final ResourceIdentifier<ProductType> productTypeResourceIdentifier = draftBuilder.getProductType();
-        return getProductTypeId(productTypeResourceIdentifier,
-            format(FAILED_TO_RESOLVE_PRODUCT_TYPE, draftBuilder.getKey()))
+        final String resolutionErrorMessage = format(FAILED_TO_RESOLVE_PRODUCT_TYPE, draftBuilder.getKey());
+
+        return getProductTypeId(productTypeResourceIdentifier, resolutionErrorMessage)
             .thenApply(resolvedProductTypeIdOptional -> {
                 resolvedProductTypeIdOptional.ifPresent(resolvedTypeId -> draftBuilder
                     .productType(ResourceIdentifier.ofId(resolvedTypeId, ProductType.referenceTypeId())));
@@ -169,18 +171,18 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     public CompletionStage<ProductDraftBuilder> resolveCategoryReferences(
         @Nonnull final ProductDraftBuilder draftBuilder) {
+
         final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = draftBuilder.getCategories();
         final Set<String> categoryKeys = new HashSet<>();
         for (ResourceIdentifier<Category> categoryResourceIdentifier: categoryResourceIdentifiers) {
             if (categoryResourceIdentifier != null) {
                 try {
-                    final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier,
-                        options.shouldAllowUuidKeys());
+                    final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier);
                     categoryKeys.add(categoryKey);
                 } catch (ReferenceResolutionException referenceResolutionException) {
                     return exceptionallyCompletedFuture(
                         new ReferenceResolutionException(
-                            format(FAILED_TO_RESOLVE_REFERENCE, categoryResourceIdentifier.getTypeId(),
+                            format(FAILED_TO_RESOLVE_REFERENCE, Category.referenceTypeId(),
                                 draftBuilder.getKey(),referenceResolutionException.getMessage())));
                 }
             }
@@ -204,18 +206,18 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     private CompletionStage<ProductDraftBuilder> fetchAndResolveCategoryReferences(
             @Nonnull final ProductDraftBuilder draftBuilder,
             @Nonnull final Set<String> categoryKeys) {
+
         final Map<String, String> categoryOrderHintsMap = new HashMap<>();
         final CategoryOrderHints categoryOrderHints = draftBuilder.getCategoryOrderHints();
 
         return categoryService.fetchMatchingCategoriesByKeys(categoryKeys)
             .thenApply(categories ->
                 categories.stream().map(category -> {
-                    final Reference<Category> categoryReference = category.toReference();
                     if (categoryOrderHints != null) {
                         ofNullable(categoryOrderHints.get(category.getKey()))
                             .ifPresent(orderHintValue -> categoryOrderHintsMap.put(category.getId(), orderHintValue));
                     }
-                    return categoryReference;
+                    return category.toReference();
                 }).collect(toList()))
             .thenApply(categoryReferences -> draftBuilder
                 .categories(categoryReferences)
@@ -236,8 +238,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             @Nonnull final ResourceIdentifier<ProductType> productTypeResourceIdentifier,
             @Nonnull final String referenceResolutionErrorMessage) {
         try {
-            final String productTypeKey = getKeyFromResourceIdentifier(productTypeResourceIdentifier,
-                options.shouldAllowUuidKeys());
+            final String productTypeKey = getKeyFromResourceIdentifier(productTypeResourceIdentifier);
             return productTypeService.fetchCachedProductTypeId(productTypeKey);
         } catch (ReferenceResolutionException exception) {
             return exceptionallyCompletedFuture(
@@ -305,7 +306,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         }
 
         try {
-            final String resourceKey = getKeyFromResourceIdentifier(reference, options.shouldAllowUuidKeys());
+            final String resourceKey = getKeyFromResourceIdentifier(reference);
             return keyToIdMapper.apply(resourceKey)
                 .thenApply(optId -> optId
                     .map(idToReferenceMapper)

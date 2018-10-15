@@ -13,7 +13,7 @@ import static java.util.Arrays.asList;
 public final class OptionalUtils {
 
     /**
-     *  Takes a {@link Collection} of {@link Optional}s containing some elements of type {@link T}, this method filters
+     *  Takes a {@link Collection} of {@link Optional}s containing some elements of type {@code T}, this method filters
      *  out any empty {@link Optional} and returns a new list containing the values of the non-empty optionals.
      *
      * @param optionals the collection of optionals that should be filtered out of empty optionals.
@@ -27,7 +27,7 @@ public final class OptionalUtils {
     }
 
     /**
-     *  Takes zero or more {@link Optional}s containing some elements of type {@link T}, this method filters
+     *  Takes zero or more {@link Optional}s containing some elements of type {@code T}, this method filters
      *  out any empty {@link Optional} and returns a new list containing the values of the non-empty optionals.
      *
      * @param optionals zero or more optionals that should be filtered out of empty optionals.
@@ -41,7 +41,7 @@ public final class OptionalUtils {
     }
 
     /**
-     *  Takes a {@link Collection} of {@link Optional}s containing some elements of type {@link T}, this method filters
+     *  Takes a {@link Collection} of {@link Optional}s containing some elements of type {@code T}, this method filters
      *  out any empty {@link Optional} and returns a new collection, of a type based on the supplied
      *  {@code collectionFactory}, containing the values of the non-empty optionals.
      *
