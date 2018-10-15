@@ -294,13 +294,12 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param categoryDraft the category draft to check whether it's parent is missing or not.
      * @param keyToIdCache  the cache containing mapping of all existing category keys to ids.
      * @return the same identical supplied category draft. However, with a null parent field, if the parent is missing.
-     * @throws ReferenceResolutionException thrown if the parent key is not valid, either not set, reference not
-     *                                      expanded or UUID is used in place of key when it shouldn't.
+     * @throws ReferenceResolutionException thrown if the parent key is not valid.
      */
     private CategoryDraft updateCategoriesWithMissingParents(@Nonnull final CategoryDraft categoryDraft,
                                                              @Nonnull final Map<String, String> keyToIdCache)
         throws ReferenceResolutionException {
-        return getParentCategoryKey(categoryDraft, syncOptions.shouldAllowUuidKeys())
+        return getParentCategoryKey(categoryDraft)
             .map(parentCategoryKey -> {
                 if (isMissingCategory(parentCategoryKey, keyToIdCache)) {
                     statistics.putMissingParentCategoryChildKey(parentCategoryKey, categoryDraft.getKey());

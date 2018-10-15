@@ -16,9 +16,6 @@ import java.util.function.Function;
 
 import static java.util.Optional.ofNullable;
 
-/**
- * TODO: auto publish, revert staged changes, update current.
- */
 public final class ProductSyncOptions extends BaseSyncOptions<Product, ProductDraft> {
     private final SyncFilter syncFilter; // which attributes to calculate update actions to black list or white list
     private final boolean ensurePriceChannels;
@@ -27,13 +24,12 @@ public final class ProductSyncOptions extends BaseSyncOptions<Product, ProductDr
                        @Nullable final BiConsumer<String, Throwable> errorCallBack,
                        @Nullable final Consumer<String> warningCallBack,
                        final int batchSize,
-                       final boolean allowUuid,
                        @Nullable final SyncFilter syncFilter,
                        @Nullable final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product,
                            List<UpdateAction<Product>>> beforeUpdateCallback,
                        @Nullable final Function<ProductDraft, ProductDraft> beforeCreateCallback,
                        boolean ensurePriceChannels) {
-        super(ctpClient, errorCallBack, warningCallBack, batchSize, allowUuid, beforeUpdateCallback,
+        super(ctpClient, errorCallBack, warningCallBack, batchSize, beforeUpdateCallback,
             beforeCreateCallback);
         this.syncFilter = ofNullable(syncFilter).orElseGet(SyncFilter::of);
         this.ensurePriceChannels = ensurePriceChannels;

@@ -13,6 +13,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -76,6 +77,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
@@ -238,11 +240,37 @@ public class ProductSyncIT {
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(singletonList(productDraft)));
 
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ErrorResponseException.class);
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains(format("A duplicate value '\\\"%s\\\"' exists for field"
-            + " 'slug.en' on", product.getMasterData().getStaged().getSlug().get(Locale.ENGLISH)));
+
+        final String duplicatedSlug = product.getMasterData().getStaged().getSlug().get(Locale.ENGLISH);
+        assertThat(errorCallBackExceptions)
+            .hasSize(1)
+            .allSatisfy(exception -> {
+                assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponse = ((ErrorResponseException) exception);
+
+                final List<DuplicateFieldError> fieldErrors = errorResponse
+                    .getErrors()
+                    .stream()
+                    .map(sphereError -> {
+                        assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
+                        return sphereError.as(DuplicateFieldError.class);
+                    })
+                    .collect(toList());
+                assertThat(fieldErrors).hasSize(1);
+                assertThat(fieldErrors).allSatisfy(error -> {
+                    assertThat(error.getField()).isEqualTo("slug.en");
+                    assertThat(error.getDuplicateValue()).isEqualTo(duplicatedSlug);
+                });
+            });
+
+        assertThat(errorCallBackMessages)
+            .hasSize(1)
+            .allSatisfy(errorMessage -> {
+                assertThat(errorMessage).contains("\"code\" : \"DuplicateField\"");
+                assertThat(errorMessage).contains("\"field\" : \"slug.en\"");
+                assertThat(errorMessage).contains(format("\"duplicateValue\" : \"%s\"", duplicatedSlug));
+            });
+
         assertThat(warningCallBackMessages).isEmpty();
     }
 
@@ -512,13 +540,35 @@ public class ProductSyncIT {
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(batch));
 
         assertThat(syncStatistics).hasValues(5, 1, 1, 3);
+
+        final String duplicatedSlug = key3Draft.getSlug().get(Locale.ENGLISH);
         assertThat(errorCallBackExceptions).hasSize(3);
-        errorCallBackExceptions
-            .forEach(exception -> assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class));
-        assertThat(errorCallBackMessages).hasSize(3);
-        errorCallBackMessages.forEach(errorMessage -> assertThat(errorMessage)
-            .contains(format("A duplicate value '\\\"%s\\\"' exists for field 'slug.en' on",
-                key3Draft.getSlug().get(Locale.ENGLISH))));
+        assertThat(errorCallBackExceptions).allSatisfy(exception -> {
+            assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
+            final ErrorResponseException errorResponse = ((ErrorResponseException)exception);
+
+            final List<DuplicateFieldError> fieldErrors = errorResponse
+                .getErrors()
+                .stream()
+                .map(sphereError -> {
+                    assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
+                    return sphereError.as(DuplicateFieldError.class);
+                })
+                .collect(toList());
+            assertThat(fieldErrors).hasSize(1);
+            assertThat(fieldErrors).allSatisfy(error -> {
+                assertThat(error.getField()).isEqualTo("slug.en");
+                assertThat(error.getDuplicateValue()).isEqualTo(duplicatedSlug);
+            });
+        });
+
+        assertThat(errorCallBackMessages)
+            .hasSize(3)
+            .allSatisfy(errorMessage -> {
+                assertThat(errorMessage).contains("\"code\" : \"DuplicateField\"");
+                assertThat(errorMessage).contains("\"field\" : \"slug.en\"");
+                assertThat(errorMessage).contains(format("\"duplicateValue\" : \"%s\"", duplicatedSlug));
+            });
         assertThat(warningCallBackMessages).isEmpty();
     }
 

@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
@@ -35,6 +36,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
+import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
@@ -89,10 +91,10 @@ public class ProductReferenceResolverIT {
 
     @Test
     public void sync_withNewProductWithInvalidCategoryReferences_ShouldFailCreatingTheProduct() {
-        // Replace the id with key for one category reference but not the other.
+        // Create a list of category references that contains one valid and one invalid reference.
         final List<Reference<Category>> invalidCategoryReferences = new ArrayList<>();
         invalidCategoryReferences.add(Category.referenceOfId(categories.get(0).getId()));
-        invalidCategoryReferences.add(Category.referenceOfId(categories.get(1).getKey()));
+        invalidCategoryReferences.add(Category.referenceOfId(null));
 
         // Create a product with the invalid category references. (i.e. not ready for reference resolution).
         final ProductDraft productDraft =
@@ -109,8 +111,7 @@ public class ProductReferenceResolverIT {
         assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class)
                              .hasMessageContaining("Failed to resolve reference 'category' on ProductDraft with "
                                  + "key:'productKey1'")
-                             .hasMessageContaining("Reason: Found a UUID in the id field. Expecting a key without a "
-                                 + "UUID value.");
+                             .hasMessageContaining(format("Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
 
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0))
