@@ -26,7 +26,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
-public final class EnumUpdateActionUtils {
+public final class EnumsUpdateActionUtils {
     /**
      * Given a list of new {@link EnumValue}s, gets a map where the keys are the enum value key, and the values
      * are the enum instances.
@@ -205,6 +205,6 @@ public final class EnumUpdateActionUtils {
             .collect(Collectors.toList());
     }
 
-    private EnumUpdateActionUtils() {
+    private EnumsUpdateActionUtils() {
     }
 }

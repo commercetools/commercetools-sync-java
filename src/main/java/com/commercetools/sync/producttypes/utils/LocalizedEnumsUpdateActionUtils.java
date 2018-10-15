@@ -14,10 +14,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.producttypes.utils.EnumUpdateActionUtils.buildAddEnumValuesUpdateActions;
-import static com.commercetools.sync.producttypes.utils.EnumUpdateActionUtils.buildChangeEnumValuesOrderUpdateAction;
-import static com.commercetools.sync.producttypes.utils.EnumUpdateActionUtils.buildMatchingEnumValuesUpdateActions;
-import static com.commercetools.sync.producttypes.utils.EnumUpdateActionUtils.buildRemoveEnumValuesUpdateActions;
+import static com.commercetools.sync.producttypes.utils.EnumsUpdateActionUtils.buildAddEnumValuesUpdateActions;
+import static com.commercetools.sync.producttypes.utils.EnumsUpdateActionUtils.buildChangeEnumValuesOrderUpdateAction;
+import static com.commercetools.sync.producttypes.utils.EnumsUpdateActionUtils.buildMatchingEnumValuesUpdateActions;
+import static com.commercetools.sync.producttypes.utils.EnumsUpdateActionUtils.buildRemoveEnumValuesUpdateActions;
 import static java.util.Collections.emptyList;
 
 public final class LocalizedEnumsUpdateActionUtils {
