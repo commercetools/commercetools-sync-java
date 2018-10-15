@@ -6,6 +6,7 @@ import com.commercetools.sync.types.TypeSync;
 import com.commercetools.sync.types.TypeSyncOptions;
 import com.commercetools.sync.types.TypeSyncOptionsBuilder;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
+import com.sun.istack.internal.NotNull;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.types.FieldDefinition;
@@ -19,6 +20,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +72,7 @@ public class TypeSyncBenchmark {
         typeSyncOptions = buildSyncOptions();
     }
 
+    @Nonnull
     private TypeSyncOptions buildSyncOptions() {
         final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
             errorCallBackMessages.add(errorMessage);
@@ -78,9 +81,9 @@ public class TypeSyncBenchmark {
         final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
 
         return TypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                .errorCallback(errorCallBack)
-                .warningCallback(warningCallBack)
-                .build();
+                                     .errorCallback(errorCallBack)
+                                     .warningCallback(warningCallBack)
+                                     .build();
     }
 
     private void clearSyncTestCollections() {
@@ -109,9 +112,9 @@ public class TypeSyncBenchmark {
         // Assert actual state of CTP project (total number of existing types)
         final CompletableFuture<Integer> totalNumberOfTypes =
                 CTP_TARGET_CLIENT.execute(TypeQuery.of())
-                        .thenApply(PagedQueryResult::getTotal)
-                        .thenApply(Long::intValue)
-                        .toCompletableFuture();
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
 
         executeBlocking(totalNumberOfTypes);
         assertThat(totalNumberOfTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
@@ -133,13 +136,13 @@ public class TypeSyncBenchmark {
 
         // Create drafts to target project with different field type name
         CompletableFuture.allOf(typeDrafts.stream()
-                .map(TypeDraftBuilder::of)
-                .map(TypeSyncBenchmark::applyFieldDefinitionNameChange)
-                .map(TypeDraftBuilder::build)
-                .map(draft -> CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(draft)))
-                .map(CompletionStage::toCompletableFuture)
-                .toArray(CompletableFuture[]::new))
-                .join();
+                                          .map(TypeDraftBuilder::of)
+                                          .map(TypeSyncBenchmark::applyFieldDefinitionNameChange)
+                                          .map(TypeDraftBuilder::build)
+                                          .map(draft -> CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(draft)))
+                                          .map(CompletionStage::toCompletableFuture)
+                                          .toArray(CompletableFuture[]::new))
+                         .join();
 
         // Sync new drafts
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
@@ -158,10 +161,11 @@ public class TypeSyncBenchmark {
         // Assert actual state of CTP project (number of updated types)
         final CompletableFuture<Integer> totalNumberOfUpdatedTypes =
                 CTP_TARGET_CLIENT.execute(TypeQuery.of()
-                        .withPredicates(p -> p.fieldDefinitions().name().is(FIELD_DEFINITION_NAME_1)))
-                        .thenApply(PagedQueryResult::getTotal)
-                        .thenApply(Long::intValue)
-                        .toCompletableFuture();
+                                                   .withPredicates(p -> p.fieldDefinitions().name().is(
+                                                           FIELD_DEFINITION_NAME_1)))
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
 
         executeBlocking(totalNumberOfUpdatedTypes);
         assertThat(totalNumberOfUpdatedTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
@@ -169,9 +173,9 @@ public class TypeSyncBenchmark {
         // Assert actual state of CTP project (total number of existing types)
         final CompletableFuture<Integer> totalNumberOfTypes =
                 CTP_TARGET_CLIENT.execute(TypeQuery.of())
-                        .thenApply(PagedQueryResult::getTotal)
-                        .thenApply(Long::intValue)
-                        .toCompletableFuture();
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
         executeBlocking(totalNumberOfTypes);
         assertThat(totalNumberOfTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
@@ -195,13 +199,13 @@ public class TypeSyncBenchmark {
 
         // Create first half of drafts to target project with different field definition name
         CompletableFuture.allOf(firstHalf.stream()
-                .map(TypeDraftBuilder::of)
-                .map(TypeSyncBenchmark::applyFieldDefinitionNameChange)
-                .map(TypeDraftBuilder::build)
-                .map(draft -> CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(draft)))
-                .map(CompletionStage::toCompletableFuture)
-                .toArray(CompletableFuture[]::new))
-                .join();
+                                         .map(TypeDraftBuilder::of)
+                                         .map(TypeSyncBenchmark::applyFieldDefinitionNameChange)
+                                         .map(TypeDraftBuilder::build)
+                                         .map(draft -> CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(draft)))
+                                         .map(CompletionStage::toCompletableFuture)
+                                         .toArray(CompletableFuture[]::new))
+                         .join();
 
         // Sync new drafts
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
@@ -218,22 +222,23 @@ public class TypeSyncBenchmark {
                 .isLessThanOrEqualTo(THRESHOLD);
 
         // Assert actual state of CTP project (number of updated types)
-        final CompletableFuture<Integer> totalNumberOfUpdatedTypes =
+        final CompletableFuture<Integer> totalNumberOfUpdatedTypesWithOldFielDefinitionName =
                 CTP_TARGET_CLIENT.execute(TypeQuery.of()
-                        .withPredicates(p -> p.fieldDefinitions().name().is(FIELD_DEFINITION_NAME_1 + "_old")))
-                        .thenApply(PagedQueryResult::getTotal)
-                        .thenApply(Long::intValue)
-                        .toCompletableFuture();
+                                                   .withPredicates(p -> p.fieldDefinitions().name().is(
+                                                           FIELD_DEFINITION_NAME_1 + "_old")))
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
 
-        executeBlocking(totalNumberOfUpdatedTypes);
-        assertThat(totalNumberOfUpdatedTypes).isCompletedWithValue(0);
+        executeBlocking(totalNumberOfUpdatedTypesWithOldFielDefinitionName);
+        assertThat(totalNumberOfUpdatedTypesWithOldFielDefinitionName).isCompletedWithValue(0);
 
         // Assert actual state of CTP project (total number of existing types)
         final CompletableFuture<Integer> totalNumberOfTypes =
                 CTP_TARGET_CLIENT.execute(TypeQuery.of())
-                        .thenApply(PagedQueryResult::getTotal)
-                        .thenApply(Long::intValue)
-                        .toCompletableFuture();
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
         executeBlocking(totalNumberOfTypes);
         assertThat(totalNumberOfTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
@@ -249,28 +254,30 @@ public class TypeSyncBenchmark {
         saveNewResult(SyncSolutionInfo.LIB_VERSION, TYPE_SYNC, UPDATES_ONLY, totalTime);
     }
 
-    private List<TypeDraft> buildTypeDrafts(final int numberOfTypes) {
+    @Nonnull
+    private static List<TypeDraft> buildTypeDrafts(final int numberOfTypes) {
         return IntStream
                 .range(0, numberOfTypes)
                 .mapToObj(i -> TypeDraftBuilder.of(
-                        "key__" + Integer.toString(i),
-                        LocalizedString.ofEnglish("name__" + Integer.toString(i)),
+                        format("key__%d", i),
+                        LocalizedString.ofEnglish(format("name__%d", i)),
                         ResourceTypeIdsSetBuilder.of().addCategories().build())
-                        .description(LocalizedString.ofEnglish("newDescription"))
-                        .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
-                        .build())
+                                               .description(LocalizedString.ofEnglish(format("description__%d", i)))
+                                               .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
+                                               .build())
                 .collect(Collectors.toList());
     }
 
-    private static TypeDraftBuilder applyFieldDefinitionNameChange(final TypeDraftBuilder builder) {
+    @NotNull
+    private static TypeDraftBuilder applyFieldDefinitionNameChange(@Nonnull final TypeDraftBuilder builder) {
         final List<FieldDefinition> list = builder.getFieldDefinitions()
-                .stream()
-                .map(fieldDefinition -> FieldDefinition.of(fieldDefinition.getType(),
-                        fieldDefinition.getName() + "_old",
-                        fieldDefinition.getLabel(),
-                        fieldDefinition.isRequired(),
-                        fieldDefinition.getInputHint()))
-                .collect(Collectors.toList());
+                                                  .stream()
+                                                  .map(fieldDefinition -> FieldDefinition.of(fieldDefinition.getType(),
+                                                          fieldDefinition.getName() + "_old",
+                                                          fieldDefinition.getLabel(),
+                                                          fieldDefinition.isRequired(),
+                                                          fieldDefinition.getInputHint()))
+                                                  .collect(Collectors.toList());
 
         return builder.fieldDefinitions(list);
     }
