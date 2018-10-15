@@ -58,21 +58,10 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M15/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M15)
 
-**New Features** (1)
+**New Features** (8)
 - **Commons** - Added `OptionalUtils#filterEmptyOptionals` which are utility methods that filter out the 
 empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
 optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255) 
-
-
--->
-
-
-### v1.0.0-M14 -  Oct 5, 2018
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M13...v1.0.0-M14) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M14)
-
-**New Features** (7)
 - **Type Sync** - Support for syncing types. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300) For more info how to use it please refer to [Type usage doc](/docs/usage/TYPE_SYNC.md). 
 - **Type Sync** - Exposed `TypeSyncUtils#buildActions` which calculates all needed update actions after comparing a `Type` and a `TypeDraft`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 - **Type Sync** - Exposed `TypeUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `Type` and a `TypeDraft`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
@@ -80,6 +69,16 @@ optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issue
 - **Type Sync** - Exposed `PlainEnumUpdateActionUtils` which contains utils for calculating needed update actions after comparing two lists of `EnumValue`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 - **Type Sync** - Exposed `FieldDefinitionsUpdateActionUtils` which contains utils for calculating needed update actions after comparing a list of `FieldDefinition`s and a list of `FieldDefinition`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 - **Type Sync** - Exposed `FieldDefinitionUpdateActionUtils` which contains utils for calculating needed update actions after comparing a `FieldDefinition` and a `FieldDefinition`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
+
+**Enhancements** (1)
+- **Type Sync** - Added `TypeSyncBenchmark` to benchmark the type sync, to be able to compare the performance of the sync with the future releases. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
+-->
+
+
+### v1.0.0-M14 -  Oct 5, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M13...v1.0.0-M14) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M14)
 
 **Enhancements** (8)
 - **Product Sync** - Products create and update requests are now issued in parallel. This should lead to a performance improvement. [#238](https://github.com/commercetools/commercetools-sync-java/issues/238)
