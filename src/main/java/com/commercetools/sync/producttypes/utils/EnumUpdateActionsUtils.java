@@ -10,10 +10,10 @@ import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.List;
-import java.util.Optional;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,11 +22,11 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
-import static java.util.Optional.ofNullable;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
-public final class ProductTypeUpdateEnumActionsUtils {
+public final class EnumUpdateActionsUtils {
     /**
      * Given a list of new {@link EnumValue}s, gets a map where the keys are the enum value key, and the values
      * are the enum instances.
@@ -205,6 +205,6 @@ public final class ProductTypeUpdateEnumActionsUtils {
             .collect(Collectors.toList());
     }
 
-    private ProductTypeUpdateEnumActionsUtils() {
+    private EnumUpdateActionsUtils() {
     }
 }

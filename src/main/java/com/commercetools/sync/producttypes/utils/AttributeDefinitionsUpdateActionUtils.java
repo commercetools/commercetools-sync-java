@@ -30,7 +30,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-public final class ProductTypeUpdateAttributeDefinitionActionUtils {
+public final class AttributeDefinitionsUpdateActionUtils {
     /**
      * Compares a list of {@link AttributeDefinition}s with a list of {@link AttributeDefinitionDraft}s.
      * The method serves as a generic implementation for attribute definitions syncing and building the required
@@ -275,6 +275,6 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
             .collect(Collectors.toList());
     }
 
-    private ProductTypeUpdateAttributeDefinitionActionUtils() {
+    private AttributeDefinitionsUpdateActionUtils() {
     }
 }

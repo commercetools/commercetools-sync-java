@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateAttributeDefinitionActionUtils.buildAttributeDefinitionsUpdateActions;
+import static com.commercetools.sync.producttypes.utils.AttributeDefinitionsUpdateActionUtils.buildAttributeDefinitionsUpdateActions;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 
