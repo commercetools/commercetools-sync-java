@@ -5,83 +5,55 @@ Utility which provides API for building CTP inventory update actions and invento
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Usage](#usage)
+  - [Sync list of inventory entry drafts](#sync-list-of-inventory-entry-drafts)
+    - [Prerequisites](#prerequisites)
+    - [Running the sync](#running-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
-  - [Sync list of inventory entry drafts](#sync-list-of-inventory-entry-drafts)
 - [Caveats](#caveats)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Usage
 
-### Build all update actions
-
-<!-- TODO: Probably #14 affects inventory sync as well. Ensure before providing the code snippet. -->
-
-### Build particular update action(s)
-
-To build the update action for changing inventory quantity:
-
-````java
-final Optional<UpdateAction<InventoryEntry>> updateAction = buildChangeQuantityAction(oldInventory, inventoryDraft);
-````
-
-For other examples of update actions, please check [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/utils/InventoryUpdateActionUtilsItTest.java).
-
 ### Sync list of inventory entry drafts
 
 <!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
 
-In order to use the inventory sync an instance of
-[InventorySyncOptions](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/inventories/InventorySyncOptions.java)
-has to be injected.
+#### Prerequisites
+1. The sync expects a list of `InventoryEntryDraft` objects that have their `sku` fields set,
+   otherwise the sync will trigger an `errorCallback` function set by the user (more on it can be found down below in the options explanations).
 
-In order to instantiate a `InventorySyncOptions`, a `sphereClient` is required:
+2. Every inventory entry may have a reference to a supply `Channel` and a reference to the `Type` of its custom fields. These
+   references are matched by their `key`. Therefore, in order for the sync to resolve the actual ids of those references,
+   their `key`s has to be supplied in the following way:
+   - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
+   reference would return its `key`. 
+     
+        **Note**: This library provides you with a utility method 
+         [`replaceInventoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/inventories/utils/InventoryReferenceReplacementUtils.html#replaceInventoriesReferenceIdsWithKeys-java.util.List-)
+         that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
+         ````java
+         // Puts the keys in the reference id fields to prepare for reference resolution
+         final List<InventoryEntryDraft> inventoryEntryDrafts = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
+         ````
+     
+3. It is an important responsibility of the user of the library to instantiate a `sphereClient` that has the following properties:
+    - Limits the amount of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with 
+   [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html) 
+    - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the 
+   [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
+   
+   You can use the same client instantiating used in the integration tests for this library found 
+   [here](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
 
+4. After the `sphereClient` is setup, a `InventorySyncOptions` should be be built as follows: 
 ````java
-// instantiating an InventorySyncOptions
+// instantiating a InventorySyncOptions
 final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(sphereClient).build();
 ````
-
-then to start the sync:
-
-````java
-// instantiating an inventory sync
-final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
-
-// execute the sync on your list of inventories
-inventorySync.sync(inventoryEntryDrafts);
-````
-
-**Note:** We encourage you to use `QueueSphereClientDecorator` as `sphereClient` implementation. It will reduce amount
-of concurrent requests to CTP, thus will improve its performance. An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L345).
-
-**Preconditions:** The sync expects a list of `InventoryEntryDraft` objects that have their `sku` fields set,
-otherwise the sync will trigger an `errorCallback` function set by the user (more on it can be found down below in the options explanations).
-
-Every inventory entry may have a reference to a supply `Channel` and a reference to the `Type` of its custom fields. These
-references are matched by their `key`. Therefore, in order for the sync to resolve the actual ids of those references,
-their `key`s has to be supplied in the following way:
-- Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
-reference would return its `key`.
-
-The sync results in a `CompletionStage` that contains an `InventorySyncStatistics` object. This object contains all
-the stats of the sync process: a report message, the total number of updated, created, failed, processed inventory entries
-and the processing time of the sync in different time units and in a human readable format. An example of how it looks like can be found
-[here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L366).
-
-<!-- TODO: Update above after resolving #23 -->
-<!-- TODO: Consider if getStatistics() is needed. Express your doubts in a #23 -->
-````java
-inventorySync.sync(inventoryEntryDrafts)
-            .thenAccept(inventorySyncStatistics -> inventorySyncStatistics.getReportMessage());
-//"Summary: 2000 inventory entries were processed in total (1000 created, 995 updated, 5 failed to sync)"
-````
-
-__Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
- 1. The sync processing time should not take into account the time between supplying batches to the sync. 
- 2. It is not not known by the sync which batch is going to be the last one supplied.
 
 Additional optional configuration for the sync can be configured on the `InventorySyncOptionsBuilder` instance, according to your need:
 
@@ -89,10 +61,10 @@ Additional optional configuration for the sync can be configured on the `Invento
 a flag which represents a strategy to handle syncing inventory entries with missing supply channels.
 Having an inventory entry, with a missing supply channel reference, could be processed in either of the following ways:
     - If `ensureChannels` is set to `false` this inventory entry won't be synced and the `errorCallback` will be triggered.
-    An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L301).
+    An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/inventories/InventorySyncIT.java#L310).
     - If `ensureChannels` is set to `true` the sync will attempt to create the missing channel with the given key.
       If it fails to create the supply channel, the inventory entry won't sync and `errorCallback` will be triggered.
-      An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L284).
+      An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/inventories/InventorySyncIT.java#L286).
     - If not provided, it is set to `false` by default.
 
 - `errorCallBack`
@@ -115,7 +87,61 @@ as inventory entries are obtained from the target CTP project in batches for bet
 `batchSize` inventory entries from the input list, then fetches the corresponding inventory entries from the target CTP project
 in a single request. Playing with this option can slightly improve or reduce processing speed. (The default value is `150`).
 
-<!-- TODO Update above options with links to tests. Tests should be written when inventory sync could actually use them (when custom update actions would use them).  -->
+Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
+streams, would look as follows:
+ ```java
+ final Logger logger = LoggerFactory.getLogger(MySync.class);
+ final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(sphereClient)
+                                                                              .errorCallBack(logger::error)
+                                                                              .warningCallBack(logger::warn)
+                                                                              .build();
+ ```
+
+#### Running the sync
+After all the aforementioned points in the previous section have been fulfilled, to run the sync:
+````java
+// instantiating an inventory sync
+final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
+
+// execute the sync on your list of inventories
+CompletionStage<InventorySyncStatistics> syncStatisticsStage = inventorySync.sync(inventoryEntryDrafts);
+````
+The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `InventorySyncStatistics`
+which contains all the stats of the sync process; which includes a report message, the total number of updated, created, 
+failed, processed categories and the processing time of the sync in different time units and in a
+human readable format.
+````java
+final InventorySyncStatistics stats = syncStatisticsStage.toCompletebleFuture().join();
+stats.getReportMessage(); 
+/*"Summary: 25 inventory entries were processed in total (9 created, 5 updated, 2 failed to sync)."*/
+````
+
+__Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
+ 1. The sync processing time should not take into account the time between supplying batches to the sync. 
+ 2. It is not not known by the sync which batch is going to be the last one supplied.
+
+
+More examples of how to use the sync [here](/src/integration-test/java/com/commercetools/sync/integration/inventories/InventorySyncIT.java).
+
+### Build all update actions
+
+A utility method provided by the library to compare an InventoryEntry with a new InventoryEntryDraft and results in a list of InventoryEntry
+ update actions. 
+```java
+List<UpdateAction<InventoryEntry>> updateActions = InventorySyncUtils.buildActions(oldEntry, newEntry, inventorySyncOptions);
+```
+
+Examples of its usage can be found in the tests 
+[here](/src/test/java/com/commercetools/sync/inventories/utils/InventorySyncUtilsTest.java).
+
+### Build particular update action(s)
+
+Utility methods provided by the library to compare the specific fields of an InventoryEntry and a new InventoryEntryDraft, and in turn builds
+ the update action. One example is the `buildChangeQuantityAction` which compares quantities:
+  
+````java
+Optional<UpdateAction<InventoryEntry>> updateAction = buildChangeQuantityAction(oldEntry, newEntry);
+````
 
 ## Caveats
 
