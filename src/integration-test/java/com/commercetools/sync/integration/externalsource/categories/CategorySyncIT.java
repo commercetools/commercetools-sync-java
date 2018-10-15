@@ -32,7 +32,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -567,68 +566,6 @@ public class CategorySyncIT {
         assertThat(syncStatistics).hasValues(6, 5, 0, 1, 0);
     }
 
-    @Test
-    public void syncDrafts_WithDraftWithInvalidParentKey_ShouldNotSyncIt() {
-        final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
-
-        // Category draft coming from external source.
-        final CategoryDraft categoryDraft1 = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
-                LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
-            .key(oldCategoryKey)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
-            .build();
-
-        final CategoryDraft categoryDraft2 = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "cat1"),
-                LocalizedString.of(Locale.ENGLISH, "modern-furniture1"))
-            .key("cat1")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
-            .build();
-
-        // With invalid parent key
-        final CategoryDraft categoryDraft3 = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "cat2"),
-                LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
-            .key("cat2")
-            .parent(Category.referenceOfId(UUID.randomUUID().toString()).toResourceIdentifier())
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
-            .build();
-
-        final CategoryDraft categoryDraft4 = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "cat3"),
-                LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
-            .key("cat3")
-            .parent(Category.referenceOfId("cat1").toResourceIdentifier())
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
-            .build();
-
-        final CategoryDraft categoryDraft5 = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "cat4"),
-                LocalizedString.of(Locale.ENGLISH, "modern-furniture4"))
-            .key("cat4")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
-            .build();
-
-        final CategoryDraft categoryDraft6 = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "cat5"),
-                LocalizedString.of(Locale.ENGLISH, "modern-furniture5"))
-            .key("cat5")
-            .parent(Category.referenceOfId("cat4").toResourceIdentifier())
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
-            .build();
-
-        newCategoryDrafts.add(categoryDraft1);
-        newCategoryDrafts.add(categoryDraft2);
-        newCategoryDrafts.add(categoryDraft3);
-        newCategoryDrafts.add(categoryDraft4);
-        newCategoryDrafts.add(categoryDraft5);
-        newCategoryDrafts.add(categoryDraft6);
-
-        final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
-
-        assertThat(syncStatistics).hasValues(6, 4, 1, 1, 0);
-    }
 
     @Test
     public void syncDrafts_WithValidAndInvalidCustomTypeKeys_ShouldSyncCorrectly() {

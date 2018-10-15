@@ -30,6 +30,8 @@ For other examples of update actions, please check [here](https://github.com/com
 
 ### Sync list of inventory entry drafts
 
+<!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
+
 In order to use the inventory sync an instance of
 [InventorySyncOptions](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/inventories/InventorySyncOptions.java)
 has to be injected.
@@ -59,14 +61,9 @@ otherwise the sync will trigger an `errorCallback` function set by the user (mor
 
 Every inventory entry may have a reference to a supply `Channel` and a reference to the `Type` of its custom fields. These
 references are matched by their `key`. Therefore, in order for the sync to resolve the actual ids of those references,
-their `key`s has to be supplied in one of two ways:
+their `key`s has to be supplied in the following way:
 - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
-reference would return its `key`. Note that the library will check that this `key` is not
-provided in `UUID` format by default. However, if you want to provide the `key` in `UUID` format, you can
-set it through the sync options. Different example of sync performed that way can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncTest.java#L160).
-- Provide the reference expanded. This means that calling `getObj()` on the reference should not return `null`,
-but return the actual object complete object of the reference, from which the its `key` can be directly accessible.
-Example of sync performed that way can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncTest.java#L123).
+reference would return its `key`.
 
 The sync results in a `CompletionStage` that contains an `InventorySyncStatistics` object. This object contains all
 the stats of the sync process: a report message, the total number of updated, created, failed, processed inventory entries
@@ -111,9 +108,6 @@ An example of use can be found [here](https://github.com/commercetools/commercet
 
 - `warningCallBack`
 a callback that is called whenever an event occurs during the sync process that represents a warning.
-
-- `allowUuid`
-a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
 
 - `beforeUpdateCallback`
 a filter function which can be applied on a generated list of update actions. It allows the user to intercept inventory 
