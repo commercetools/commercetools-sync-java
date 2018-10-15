@@ -63,6 +63,13 @@
 empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
 optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255) 
 
+**Breaking Changes** (6)
+- **ProductType Sync** - Renamed `ProductTypeUpdateAttributeDefinitionActionUtils` to `AttributeDefinitionsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+- **ProductType Sync** - Renamed `ProductTypeUpdateLocalizedEnumActionUtils` to `LocalizedEnumsUpdateActionUtils.` [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+- **ProductType Sync** - Renamed `ProductTypeUpdatePlainEnumActionUtils` to `PlainEnumsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+- **ProductType Sync** - Renamed `LocalizedEnumUpdateActionsUtils` to `LocalizedEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+- **ProductType Sync** - Renamed `PlainEnumUpdateActionsUtils` to `PlainEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+- **ProductType Sync** - Renamed `EnumUpdateActionsUtils` to `EnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 
 -->
 
@@ -105,12 +112,12 @@ optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issue
 - **InventoryEntry Sync** - `InventoryReferenceReplacementUtils#replaceInventoriesReferenceIdsWithKeys` now supports replacing channel reference ids with keys. [#101](https://github.com/commercetools/commercetools-sync-java/issues/101)
 - **ProductType Sync** - Exposed `ProductTypeSyncUtils#buildActions` which calculates all needed update actions after comparing a `ProductType` and a `ProductTypeDraft`. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
 - **ProductType Sync** - Exposed `ProductTypeUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `ProductType` and a `ProductTypeDraft`. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
-- **ProductType Sync** - Exposed `AttributeDefinitionsUpdateActionUtils` which contains utils for calculating needed update actions after comparing a list of `AttributeDefinition`s and a list of `AttributeDefinitionDraft`s. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
-- **ProductType Sync** - Exposed `LocalizedEnumsUpdateActionUtils` which contains utils for calculating needed update actions after comparing two lists of `LocalizedEnumValue`s. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
-- **ProductType Sync** - Exposed `PlainEnumsUpdateActionUtils` which contains utils for calculating needed update actions after comparing two lists of `EnumValue`s. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
+- **ProductType Sync** - Exposed `ProductTypeUpdateAttributeDefinitionActionUtils` which contains utils for calculating needed update actions after comparing a list of `AttributeDefinition`s and a list of `AttributeDefinitionDraft`s. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
+- **ProductType Sync** - Exposed `ProductTypeUpdateLocalizedEnumActionUtils` which contains utils for calculating needed update actions after comparing two lists of `LocalizedEnumValue`s. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
+- **ProductType Sync** - Exposed `ProductTypeUpdatePlainEnumActionUtils` which contains utils for calculating needed update actions after comparing two lists of `EnumValue`s. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
 - **ProductType Sync** - Exposed `AttributeDefinitionUpdateActionUtils` which contains utils for calculating needed update actions after comparing an `AttributeDefinition` and an `AttributeDefinitionDraft`. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
-- **ProductType Sync** - Exposed `LocalizedEnumUpdateActionUtils` which contains utils for calculating needed update actions after comparing two `LocalizedEnumValue`s. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
-- **ProductType Sync** - Exposed `PlainEnumUpdateActionUtils` which contains utils for calculating needed update actions after comparing two `EnumValue`s. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
+- **ProductType Sync** - Exposed `LocalizedEnumUpdateActionsUtils` which contains utils for calculating needed update actions after comparing two `LocalizedEnumValue`s. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
+- **ProductType Sync** - Exposed `PlainEnumUpdateActionsUtils` which contains utils for calculating needed update actions after comparing two `EnumValue`s. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
 
 **Enhancements** (7)
 - **Commons** - Bumped gradle to version [gradle-4.10](https://docs.gradle.org/4.10/release-notes.html).
