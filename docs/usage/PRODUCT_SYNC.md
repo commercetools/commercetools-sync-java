@@ -61,10 +61,10 @@ final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(spher
 
 Additional optional configuration for the sync can be configured on the `ProductSyncOptionsBuilder` instance, according to your need:
 - `errorCallBack`
-a callback that is called whenever an event occurs during the sync process that represents an error.
+a callback that is called whenever an error event occurs during the sync process.
 
 - `warningCallBack` 
-a callback that is called whenever an event occurs during the sync process that represents a warning.
+a callback that is called whenever a warning event occurs during the sync process.
 
 - `syncFilter`
  represents either a blacklist or a whitelist for filtering certain update action groups. 

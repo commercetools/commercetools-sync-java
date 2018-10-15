@@ -58,10 +58,10 @@ final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(sp
 
 Additional optional configuration for the sync can be configured on the `CategorySyncOptionsBuilder` instance, according to your need:
 - `errorCallBack`
-a callback that is called whenever an event occurs during the sync process that represents an error.
+a callback that is called whenever an error event occurs during the sync process.
 
 - `warningCallBack` 
-a callback that is called whenever an event occurs during the sync process that represents a warning.
+a callback that is called whenever a warning event occurs during the sync process.
 
 - `beforeUpdateCallback`
 a filter function which can be applied on a generated list of update actions. It allows the user to intercept category 

@@ -96,11 +96,10 @@ Having an inventory entry, with a missing supply channel reference, could be pro
     - If not provided, it is set to `false` by default.
 
 - `errorCallBack`
-a callback that is called whenever an event occurs during the sync process that represents an error.
-An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L391).
+a callback that is called whenever an error event occurs during the sync process.
 
-- `warningCallBack`
-a callback that is called whenever an event occurs during the sync process that represents a warning.
+- `warningCallBack` 
+a callback that is called whenever a warning event occurs during the sync process.
 
 - `beforeUpdateCallback`
 a filter function which can be applied on a generated list of update actions. It allows the user to intercept inventory 
