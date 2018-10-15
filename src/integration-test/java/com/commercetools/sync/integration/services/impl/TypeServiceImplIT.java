@@ -159,7 +159,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void createType_WithInvalidType_ShouldNotCreateType() {
+    public void createType_WithInvalidType_ShouldCompleteExceptionally() {
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
                 TYPE_KEY_1,
                 null,
@@ -205,7 +205,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void updateType_WithInvalidChanges_ShouldNotUpdateType() {
+    public void updateType_WithInvalidChanges_ShouldCompleteExceptionally() {
         final Optional<Type> typeOptional = CTP_TARGET_CLIENT
                 .execute(TypeQuery.of()
                         .withPredicates(typeQueryModel -> typeQueryModel.key().is(OLD_TYPE_KEY)))

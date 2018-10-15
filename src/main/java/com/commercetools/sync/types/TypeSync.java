@@ -156,7 +156,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param <T>          a type that extends of {@link WithKey}.
      * @return the map of keys to {@link Type}/{@link TypeDraft} instances.
      */
-    private <T extends WithKey> Map<String, T> getKeysTypeMap(@Nonnull final List<T> types) {
+    private <T extends WithKey> Map<String, T> getTypeKeysMap(@Nonnull final List<T> types) {
         return types.stream().collect(Collectors.toMap(WithKey::getKey, p -> p,
             (typeA, typeB) -> typeB));
     }
@@ -188,7 +188,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
     private CompletionStage<TypeSyncStatistics> syncBatch(
             @Nonnull final List<Type> oldTypes,
             @Nonnull final List<TypeDraft> newTypes) {
-        final Map<String, Type> oldTypeMap = getKeysTypeMap(oldTypes);
+        final Map<String, Type> oldTypeMap = getTypeKeysMap(oldTypes);
 
         return CompletableFuture.allOf(newTypes
                 .stream()

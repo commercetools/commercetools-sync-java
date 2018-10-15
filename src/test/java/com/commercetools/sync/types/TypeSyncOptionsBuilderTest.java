@@ -36,7 +36,6 @@ public class TypeSyncOptionsBuilderTest {
     public void build_WithClient_ShouldBuildSyncOptions() {
         final TypeSyncOptions typeSyncOptions = typeSyncOptionsBuilder.build();
         assertThat(typeSyncOptions).isNotNull();
-        assertThat(typeSyncOptions.shouldAllowUuidKeys()).isFalse();
         assertThat(typeSyncOptions.getBeforeUpdateCallback()).isNull();
         assertThat(typeSyncOptions.getBeforeCreateCallback()).isNull();
         assertThat(typeSyncOptions.getErrorCallBack()).isNull();
@@ -62,16 +61,6 @@ public class TypeSyncOptionsBuilderTest {
 
         final TypeSyncOptions typeSyncOptions = typeSyncOptionsBuilder.build();
         assertThat(typeSyncOptions.getBeforeCreateCallback()).isNotNull();
-    }
-
-
-    @Test
-    public void allowUuid_WithFalse_ShouldSetFlag() {
-        typeSyncOptionsBuilder.allowUuidKeys(true);
-
-        final TypeSyncOptions typeSyncOptions = typeSyncOptionsBuilder.build();
-        assertThat(typeSyncOptions.shouldAllowUuidKeys()).isNotNull();
-        assertThat(typeSyncOptions.shouldAllowUuidKeys()).isFalse();
     }
 
     @Test
@@ -106,7 +95,6 @@ public class TypeSyncOptionsBuilderTest {
     public void typeSyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
                 .of(CTP_CLIENT)
-                .allowUuidKeys(true)
                 .batchSize(30)
                 .beforeCreateCallback((newType) -> null)
                 .beforeUpdateCallback((updateActions, newType, oldType) -> Collections.emptyList())
@@ -220,7 +208,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeCreateCallBack_WithNullReturnCallback_ShouldReturnEmptyOptional() {
+    public void applyBeforeCreateCallBack_WithCallbackReturningNull_ShouldReturnEmptyOptional() {
         final Function<TypeDraft, TypeDraft> draftFunction = typeDraft -> null;
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(CTP_CLIENT)
                 .beforeCreateCallback(draftFunction)
