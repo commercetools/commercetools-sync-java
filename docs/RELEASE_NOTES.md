@@ -63,6 +63,10 @@
 empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
 optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255)
 
+**Enhancements** (2)
+- **Commons** - Bumped commercetools-jvm-sdk to version [1.35.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_35_0).
+- **Commons** - Bumped `mockito` to 2.23.0.
+
 **Changes** (3)
 - **Product Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
 - **Category Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)

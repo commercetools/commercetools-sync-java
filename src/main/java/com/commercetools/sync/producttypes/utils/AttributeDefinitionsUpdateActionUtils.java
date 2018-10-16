@@ -161,8 +161,7 @@ public final class AttributeDefinitionsUpdateActionUtils {
                             // we remove the attribute definition and add a new one with a new attribute type
                             return Arrays.asList(
                                 RemoveAttributeDefinition.of(oldAttributeDefinitionName),
-                                AddAttributeDefinition
-                                    .of(AttributeDefinitionCustomBuilder.of(attributeDefinitionDraft))
+                                AddAttributeDefinition.of(attributeDefinitionDraft)
                             );
                         }
                     })
@@ -266,11 +265,9 @@ public final class AttributeDefinitionsUpdateActionUtils {
         // TODO It will be fixed in https://github.com/commercetools/commercetools-jvm-sdk/issues/1786
         return newAttributeDefinitionDrafts
             .stream()
-            .filter(attributeDefinitionDraft ->
-                !oldAttributeDefinitionNameMap
-                    .containsKey(attributeDefinitionDraft.getName())
+            .filter(attributeDefinitionDraft -> !oldAttributeDefinitionNameMap
+                .containsKey(attributeDefinitionDraft.getName())
             )
-            .map(AttributeDefinitionCustomBuilder::of)
             .map(AddAttributeDefinition::of)
             .collect(Collectors.toList());
     }

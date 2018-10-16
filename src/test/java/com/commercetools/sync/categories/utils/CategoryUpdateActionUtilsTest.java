@@ -17,6 +17,7 @@ import io.sphere.sdk.categories.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.ResourceIdentifier;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -190,7 +191,7 @@ public class CategoryUpdateActionUtilsTest {
     @Test
     public void buildChangeParentUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
-        when(newCategoryDraft.getParent()).thenReturn(Category.referenceOfId("2"));
+        when(newCategoryDraft.getParent()).thenReturn(Category.referenceOfId("2").toResourceIdentifier());
 
         final UpdateAction<Category> changeParentUpdateAction =
             buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft, CATEGORY_SYNC_OPTIONS).orElse(null);
@@ -198,7 +199,7 @@ public class CategoryUpdateActionUtilsTest {
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction.getAction()).isEqualTo("changeParent");
         assertThat(((ChangeParent) changeParentUpdateAction).getParent())
-            .isEqualTo(Category.referenceOfId("2"));
+            .isEqualTo(ResourceIdentifier.ofId("2"));
     }
 
     @Test
