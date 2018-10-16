@@ -23,6 +23,7 @@ import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.AssetSourceBuilder;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.ResourceIdentifier;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -127,7 +128,7 @@ public class CategorySyncUtilsTest {
             ChangeSlug.of(LocalizedString.of(LOCALE, "differentSlug")),
             SetExternalId.of("differentExternalId"),
             SetDescription.of(LocalizedString.of(LOCALE, "differentDescription")),
-            ChangeParent.of(Category.referenceOfId("differentParentId")),
+            ChangeParent.of(ResourceIdentifier.ofId("differentParentId")),
             ChangeOrderHint.of("differentOrderHint"),
             SetMetaTitle.of(LocalizedString.of(LOCALE, "differentMetaTitle")),
             SetMetaDescription.of(LocalizedString.of(LOCALE, "differentMetaDescription")),
@@ -173,7 +174,7 @@ public class CategorySyncUtilsTest {
             SetMetaDescription.of(LocalizedString.of(LOCALE, "differentMetaDescription")),
             SetMetaTitle.of(LocalizedString.of(LOCALE, "differentMetaTitle")),
             ChangeOrderHint.of("differentOrderHint"),
-            ChangeParent.of(Category.referenceOfId("differentParentId")),
+            ChangeParent.of(ResourceIdentifier.ofId("differentParentId")),
             SetDescription.of(LocalizedString.of(LOCALE, "differentDescription")),
             SetExternalId.of("differentExternalId"),
             ChangeSlug.of(LocalizedString.of(LOCALE, "differentSlug")),

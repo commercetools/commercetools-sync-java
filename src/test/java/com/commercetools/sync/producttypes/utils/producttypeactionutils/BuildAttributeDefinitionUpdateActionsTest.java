@@ -8,6 +8,8 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
+import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
+import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.LocalizedStringAttributeType;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
@@ -131,14 +133,13 @@ public class BuildAttributeDefinitionUpdateActionsTest {
             SYNC_OPTIONS
         );
 
-        // Bug in the commercetools JVM SDK. AddAttributeDefinition should expect an AttributeDefinitionDraft rather
-        // than AttributeDefinition.
-        // TODO It will be fixed in https://github.com/commercetools/commercetools-jvm-sdk/issues/1786
-        assertThat(updateActions).containsExactly(
-            AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_A),
-            AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_B),
-            AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_C)
-        );
+        assertThat(updateActions).hasSize(3);
+        assertThat(updateActions).allSatisfy(action -> {
+            assertThat(action).isExactlyInstanceOf(AddAttributeDefinition.class);
+            final AddAttributeDefinition addAttributeDefinition = (AddAttributeDefinition) action;
+            final AttributeDefinitionDraft attribute = addAttributeDefinition.getAttribute();
+            assertThat(newProductTypeDraft.getAttributes()).contains(attribute);
+        });
     }
 
     @Test
@@ -231,7 +232,11 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         );
 
         assertThat(updateActions).containsExactly(
-            AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_D)
+            AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
+                .of(ATTRIBUTE_DEFINITION_D.getAttributeType(), ATTRIBUTE_DEFINITION_D.getName(),
+                    ATTRIBUTE_DEFINITION_D.getLabel(), ATTRIBUTE_DEFINITION_D.isRequired())
+                .isSearchable(true)
+                .build())
         );
     }
 
@@ -253,7 +258,11 @@ public class BuildAttributeDefinitionUpdateActionsTest {
 
         assertThat(updateActions).containsExactly(
             RemoveAttributeDefinition.of("c"),
-            AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_D)
+            AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
+                .of(ATTRIBUTE_DEFINITION_D.getAttributeType(), ATTRIBUTE_DEFINITION_D.getName(),
+                    ATTRIBUTE_DEFINITION_D.getLabel(), ATTRIBUTE_DEFINITION_D.isRequired())
+                .isSearchable(true)
+                .build())
         );
     }
 
@@ -325,7 +334,10 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         );
 
         assertThat(updateActions).containsExactly(
-            AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_D),
+            AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
+                .of(ATTRIBUTE_DEFINITION_D.getAttributeType(),
+                    ATTRIBUTE_DEFINITION_D.getName(), ATTRIBUTE_DEFINITION_D.getLabel(),
+                    ATTRIBUTE_DEFINITION_D.isRequired()).isSearchable(true).build()),
             ChangeAttributeOrder
                 .of(asList(
                         ATTRIBUTE_DEFINITION_A,
@@ -353,7 +365,12 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         );
 
         assertThat(updateActions).containsExactly(
-            AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_D),
+            AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
+                .of(ATTRIBUTE_DEFINITION_D.getAttributeType(),
+                    ATTRIBUTE_DEFINITION_D.getName(), ATTRIBUTE_DEFINITION_D.getLabel(),
+                    ATTRIBUTE_DEFINITION_D.isRequired())
+                .isSearchable(true)
+                .build()),
             ChangeAttributeOrder
                 .of(asList(
                         ATTRIBUTE_DEFINITION_A,
@@ -382,7 +399,11 @@ public class BuildAttributeDefinitionUpdateActionsTest {
 
         assertThat(updateActions).containsExactly(
             RemoveAttributeDefinition.of("a"),
-            AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_D),
+            AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
+                    .of(ATTRIBUTE_DEFINITION_D.getAttributeType(),
+                        ATTRIBUTE_DEFINITION_D.getName(), ATTRIBUTE_DEFINITION_D.getLabel(),
+                        ATTRIBUTE_DEFINITION_D.isRequired())
+                    .isSearchable(true).build()),
             ChangeAttributeOrder
                 .of(asList(
                         ATTRIBUTE_DEFINITION_C,
@@ -414,7 +435,12 @@ public class BuildAttributeDefinitionUpdateActionsTest {
 
         assertThat(updateActions).containsExactly(
             RemoveAttributeDefinition.of("a"),
-            AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_A_LOCALIZED_TYPE)
+            AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
+                .of(ATTRIBUTE_DEFINITION_A_LOCALIZED_TYPE.getAttributeType(),
+                    ATTRIBUTE_DEFINITION_A_LOCALIZED_TYPE.getName(), ATTRIBUTE_DEFINITION_A_LOCALIZED_TYPE.getLabel(),
+                    ATTRIBUTE_DEFINITION_A_LOCALIZED_TYPE.isRequired())
+                .isSearchable(true)
+                .build())
         );
     }
 }
