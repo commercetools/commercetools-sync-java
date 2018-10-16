@@ -110,8 +110,11 @@ public class ProductTypeServiceImpl implements ProductTypeService {
                                     return Collections.emptySet();
                                 }
                                 return fetchedProductTypes.stream()
-                                                        .flatMap(List::stream)
-                                                        .collect(Collectors.toSet());
+                                                          .flatMap(List::stream)
+                                                          .peek(productType ->
+                                                                  keyToIdCache.put(productType.getKey(),
+                                                                          productType.getId()))
+                                                          .collect(Collectors.toSet());
                             });
     }
 
