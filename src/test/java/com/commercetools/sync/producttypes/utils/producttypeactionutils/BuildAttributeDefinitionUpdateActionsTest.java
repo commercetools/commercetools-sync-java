@@ -463,11 +463,26 @@ public class BuildAttributeDefinitionUpdateActionsTest {
 
         assertThat(updateActions).containsExactly(
                 RemoveAttributeDefinition.of("a"),
-                AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_A),
+                AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
+                        .of(ATTRIBUTE_DEFINITION_A.getAttributeType(),
+                                ATTRIBUTE_DEFINITION_A.getName(), ATTRIBUTE_DEFINITION_A.getLabel(),
+                                ATTRIBUTE_DEFINITION_A.isRequired())
+                        .isSearchable(true)
+                        .build()),
                 RemoveAttributeDefinition.of("b"),
-                AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_B),
+                AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
+                        .of(ATTRIBUTE_DEFINITION_B.getAttributeType(),
+                                ATTRIBUTE_DEFINITION_B.getName(), ATTRIBUTE_DEFINITION_B.getLabel(),
+                                ATTRIBUTE_DEFINITION_B.isRequired())
+                        .isSearchable(true)
+                        .build()),
                 RemoveAttributeDefinition.of("c"),
-                AddAttributeDefinition.of(ATTRIBUTE_DEFINITION_C)
+                AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
+                        .of(ATTRIBUTE_DEFINITION_C.getAttributeType(),
+                                ATTRIBUTE_DEFINITION_C.getName(), ATTRIBUTE_DEFINITION_C.getLabel(),
+                                ATTRIBUTE_DEFINITION_C.isRequired())
+                        .isSearchable(true)
+                        .build())
         );
     }
 }
