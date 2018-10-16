@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 
 public class ProductTypeServiceImpl implements ProductTypeService {
-    private static final String FETCH_FAILED = "Failed to fetch ProductTypes with keys: '%s'. Reason: %s";
+    private static final String FETCH_FAILED = "Failed to fetch product types with keys: '%s'. Reason: %s";
     private final BaseSyncOptions syncOptions;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private boolean isCached = false;
@@ -92,15 +92,16 @@ public class ProductTypeServiceImpl implements ProductTypeService {
 
     @Nonnull
     @Override
-    public CompletionStage<Set<ProductType>> fetchMatchingProductsTypesByKeys(@Nonnull final Set<String> keys) {
+    public CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull final Set<String> keys) {
         if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
 
         final Function<List<ProductType>, List<ProductType>> productTypePageCallBack
                 = productTypePage -> productTypePage;
+
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(),
-                ProductTypeQuery.of().plusPredicates(queryModel -> queryModel.key().isIn(keys)),
+                ProductTypeQuery.of().withPredicates(queryModel -> queryModel.key().isIn(keys)),
                 productTypePageCallBack)
                             .handle((fetchedProductTypes, sphereException) -> {
                                 if (sphereException != null) {

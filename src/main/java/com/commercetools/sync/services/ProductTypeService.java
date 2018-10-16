@@ -63,7 +63,7 @@ public interface ProductTypeService {
      *         corresponding {@code keys}.
      */
     @Nonnull
-    CompletionStage<Set<ProductType>> fetchMatchingProductsTypesByKeys(@Nonnull final Set<String> keys);
+    CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull final Set<String> keys);
 
 
     /**

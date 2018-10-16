@@ -143,7 +143,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      */
     private CompletionStage<Set<ProductType>> fetchExistingProductTypes(@Nonnull final Set<String> keys) {
         return productTypeService
-                .fetchMatchingProductsTypesByKeys(keys)
+                .fetchMatchingProductTypesByKeys(keys)
                 .exceptionally(exception -> {
                     final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keys);
                     handleError(errorMessage, exception, keys.size());

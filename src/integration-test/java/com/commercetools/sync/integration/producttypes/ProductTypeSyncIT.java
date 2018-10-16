@@ -497,7 +497,7 @@ public class ProductTypeSyncIT {
 
         ProductTypeService productTypeServiceMock = mock(ProductTypeServiceImpl.class);
 
-        when(productTypeServiceMock.fetchMatchingProductsTypesByKeys(Mockito.any())).thenReturn(supplyAsync(() -> {
+        when(productTypeServiceMock.fetchMatchingProductTypesByKeys(Mockito.any())).thenReturn(supplyAsync(() -> {
             throw new SphereException();
         }));
 
