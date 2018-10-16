@@ -25,13 +25,11 @@ public final class TypeSyncOptions extends BaseSyncOptions<Type, TypeDraft> {
                 Type, List<UpdateAction<Type>>> beforeUpdateCallback,
         @Nullable final Function<TypeDraft, TypeDraft> beforeCreateCallback
     ) {
-
         super(
             ctpClient,
             updateActionErrorCallBack,
             updateActionWarningCallBack,
             batchSize,
-            false,
             beforeUpdateCallback,
             beforeCreateCallback
         );
