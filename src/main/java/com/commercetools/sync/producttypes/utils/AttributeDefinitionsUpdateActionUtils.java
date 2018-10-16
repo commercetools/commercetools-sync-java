@@ -190,7 +190,16 @@ public final class AttributeDefinitionsUpdateActionUtils {
         @Nonnull final AttributeDefinition attributeDefinitionA,
         @Nonnull final AttributeDefinitionDraft attributeDefinitionB) {
 
-        return attributeDefinitionA.getAttributeType().getClass() == attributeDefinitionB.getAttributeType().getClass();
+        if (attributeDefinitionA.getAttributeType() == null
+                && attributeDefinitionB.getAttributeType() == null) {
+            return true;
+        }
+
+        return attributeDefinitionA.getAttributeType() != null
+                && attributeDefinitionB.getAttributeType() != null
+                && attributeDefinitionA.getAttributeType().getClass()
+                == attributeDefinitionB.getAttributeType().getClass();
+
     }
 
     /**
