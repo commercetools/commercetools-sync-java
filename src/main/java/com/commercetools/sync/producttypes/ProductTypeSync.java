@@ -88,7 +88,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     /**
      * Fetches existing {@link ProductType} objects from CTP project that correspond to passed {@code batch}.
      * Having existing product types fetched, {@code batch} is compared and synced with fetched objects by
-     * {@link ProductTypeSync#syncBatch(Set, List)} function. When fetching existing product types results in
+     * {@link ProductTypeSync#syncBatch(Set, Set)} function. When fetching existing product types results in
      * a {@link ProductTypeSyncStatistics} with initial values {@code 0} of created, updated, failed
      * then {@code batch} isn't processed.
      *
@@ -97,9 +97,9 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      */
     @Override
     protected CompletionStage<ProductTypeSyncStatistics> processBatch(@Nonnull final List<ProductTypeDraft> batch) {
-        final List<ProductTypeDraft> validProductTypeDrafts = batch.stream()
+        final Set<ProductTypeDraft> validProductTypeDrafts = batch.stream()
                                                                    .filter(this::validateDraft)
-                                                                   .collect(toList());
+                                                                   .collect(toSet());
 
         if (validProductTypeDrafts.isEmpty()) {
             statistics.incrementProcessed(batch.size());
@@ -183,7 +183,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     /**
-     * Given a list of product type drafts, attempts to sync the drafts with the existing products types in the CTP
+     * Given a set of product type drafts, attempts to sync the drafts with the existing products types in the CTP
      * project. The product type and the draft are considered to match if they have the same key.
      *
      * @param oldProductTypes old product types.
@@ -192,7 +192,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      */
     private CompletionStage<ProductTypeSyncStatistics> syncBatch(
             @Nonnull final Set<ProductType> oldProductTypes,
-            @Nonnull final List<ProductTypeDraft> newProductTypes) {
+            @Nonnull final Set<ProductTypeDraft> newProductTypes) {
         final Map<String, ProductType> oldProductTypeMap = getProductTypeKeysMap(oldProductTypes);
 
         return CompletableFuture.allOf(newProductTypes
