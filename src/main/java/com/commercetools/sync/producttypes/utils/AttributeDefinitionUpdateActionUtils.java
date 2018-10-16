@@ -1,5 +1,6 @@
 package com.commercetools.sync.producttypes.utils;
 
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -33,22 +34,34 @@ public final class AttributeDefinitionUpdateActionUtils {
      * @param oldAttributeDefinition      the old attribute definition which should be updated.
      * @param newAttributeDefinitionDraft the new attribute definition draft where we get the new fields.
      * @return A list with the update actions or an empty list if the attribute definition fields are identical.
+     * @throws BuildUpdateActionException in case there are attribute definitions with the null attribute type.
      */
     @Nonnull
     public static List<UpdateAction<ProductType>> buildActions(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
-        @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
+        @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) throws BuildUpdateActionException {
 
-        final List<UpdateAction<ProductType>> updateActions;
+        if (oldAttributeDefinition.getAttributeType() == null
+                && newAttributeDefinitionDraft.getAttributeType() == null) {
+            throw new BuildUpdateActionException("Attribute types are not set "
+                    + "for both the old and new/draft attribute definitions.");
+        }
 
-        updateActions = filterEmptyOptionals(
+        if (oldAttributeDefinition.getAttributeType() == null) {
+            throw new BuildUpdateActionException("Attribute type is not set for the old attribute definition.");
+        }
+
+        if (newAttributeDefinitionDraft.getAttributeType() == null) {
+            throw new BuildUpdateActionException("Attribute type is not set for the new/draft attribute definition.");
+        }
+
+        final List<UpdateAction<ProductType>> updateActions = filterEmptyOptionals(
             buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
             buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
             buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
             buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
             buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
         );
-
 
         if (isPlainEnumAttribute(oldAttributeDefinition)) {
             updateActions.addAll(buildEnumValuesUpdateActions(
