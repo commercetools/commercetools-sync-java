@@ -121,7 +121,7 @@ public final class CategoryUpdateActionUtils {
             // are null, then the supplier will not be called at all. The remaining cases all involve the newParent
             // being not null.
             return buildUpdateAction(oldParent,
-                newParent, () -> ChangeParent.of(Category.referenceOfId(newParent.getId())));
+                newParent, () -> ChangeParent.of(ResourceIdentifier.ofId(newParent.getId())));
         }
     }
 

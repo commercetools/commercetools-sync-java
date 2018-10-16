@@ -20,27 +20,21 @@ public final class AttributeDefinitionCustomBuilder {
      * @return The attribute definition with the same fields as the  attribute definition draft.
      */
     public static AttributeDefinition of(@Nonnull final AttributeDefinitionDraft attributeDefinitionDraft) {
-        // Bug in the commercetools JVM SDK. AddAttributeDefinition should expect an AttributeDefinitionDraft rather
-        // than AttributeDefinition. That's why we use AttributeDefinitionCustomBuilder
-        // TODO It will be fixed in https://github.com/commercetools/commercetools-jvm-sdk/issues/1786
-        return AttributeDefinitionBuilder.of(
-            attributeDefinitionDraft.getName(),
-            attributeDefinitionDraft.getLabel(),
-            attributeDefinitionDraft.getAttributeType()
-        )
-        .isRequired(attributeDefinitionDraft.isRequired())
-        .attributeConstraint(Optional.ofNullable(
-            attributeDefinitionDraft.getAttributeConstraint())
-            .orElse(AttributeConstraint.NONE) // Default value is NONE according to commercetools API
-        )
-        .inputTip(attributeDefinitionDraft.getInputTip())
-        .inputHint(Optional.ofNullable(
-            attributeDefinitionDraft.getInputHint())
-            .orElse(TextInputHint.SINGLE_LINE) // Default value is SINGLE_LINE according to commercetools API
-        )
-        .isSearchable(attributeDefinitionDraft.isSearchable())
-        .build();
-
+        return AttributeDefinitionBuilder
+            .of(
+                attributeDefinitionDraft.getName(),
+                attributeDefinitionDraft.getLabel(),
+                attributeDefinitionDraft.getAttributeType())
+            .isRequired(attributeDefinitionDraft.isRequired())
+            .attributeConstraint(Optional
+                .ofNullable(attributeDefinitionDraft.getAttributeConstraint())
+                .orElse(AttributeConstraint.NONE)) // Default value is NONE according to commercetools API
+            .inputTip(attributeDefinitionDraft.getInputTip())
+            .inputHint(Optional
+                .ofNullable(attributeDefinitionDraft.getInputHint())
+                .orElse(TextInputHint.SINGLE_LINE)) // Default value is SINGLE_LINE according to commercetools API
+            .isSearchable(attributeDefinitionDraft.isSearchable())
+            .build();
     }
 
     private AttributeDefinitionCustomBuilder() { }
