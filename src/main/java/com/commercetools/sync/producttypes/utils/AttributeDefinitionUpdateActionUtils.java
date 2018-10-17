@@ -1,6 +1,7 @@
 package com.commercetools.sync.producttypes.utils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.producttypes.helpers.AttributeTypeAssert;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -41,19 +42,9 @@ public final class AttributeDefinitionUpdateActionUtils {
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) throws BuildUpdateActionException {
 
-        if (oldAttributeDefinition.getAttributeType() == null
-                && newAttributeDefinitionDraft.getAttributeType() == null) {
-            throw new BuildUpdateActionException("Attribute types are not set "
-                    + "for both the old and new/draft attribute definitions.");
-        }
-
-        if (oldAttributeDefinition.getAttributeType() == null) {
-            throw new BuildUpdateActionException("Attribute type is not set for the old attribute definition.");
-        }
-
-        if (newAttributeDefinitionDraft.getAttributeType() == null) {
-            throw new BuildUpdateActionException("Attribute type is not set for the new/draft attribute definition.");
-        }
+        AttributeTypeAssert.assertTypesAreNull(
+                oldAttributeDefinition.getAttributeType(),
+                newAttributeDefinitionDraft.getAttributeType());
 
         final List<UpdateAction<ProductType>> updateActions = filterEmptyOptionals(
             buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),

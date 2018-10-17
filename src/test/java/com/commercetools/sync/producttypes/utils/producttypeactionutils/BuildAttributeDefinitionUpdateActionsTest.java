@@ -446,7 +446,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithoutAttributeType_ShouldRemoveOldAttributeAndAddNewAttribute() {
+    public void buildAttributesUpdateActions_WithoutOldAttributeType_ShouldNotBuildActionsAndTriggerErrorCallback() {
         final ProductType oldProductType =
                 readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC_WITHOUT_ATTRIBUTE_TYPE, ProductType.class);
 
@@ -455,35 +455,29 @@ public class BuildAttributeDefinitionUpdateActionsTest {
                 ProductTypeDraft.class
         );
 
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final ProductTypeSyncOptions syncOptions =
+                ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class))
+                                             .errorCallback((errorMessage, exception) -> {
+                                                 errorMessages.add(errorMessage);
+                                                 exceptions.add(exception);
+                                             })
+                                             .build();
+
         final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
                 oldProductType,
                 newProductTypeDraft,
-                SYNC_OPTIONS
+                syncOptions
         );
 
-        assertThat(updateActions).containsExactly(
-                RemoveAttributeDefinition.of("a"),
-                AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
-                        .of(ATTRIBUTE_DEFINITION_A.getAttributeType(),
-                                ATTRIBUTE_DEFINITION_A.getName(), ATTRIBUTE_DEFINITION_A.getLabel(),
-                                ATTRIBUTE_DEFINITION_A.isRequired())
-                        .isSearchable(true)
-                        .build()),
-                RemoveAttributeDefinition.of("b"),
-                AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
-                        .of(ATTRIBUTE_DEFINITION_B.getAttributeType(),
-                                ATTRIBUTE_DEFINITION_B.getName(), ATTRIBUTE_DEFINITION_B.getLabel(),
-                                ATTRIBUTE_DEFINITION_B.isRequired())
-                        .isSearchable(true)
-                        .build()),
-                RemoveAttributeDefinition.of("c"),
-                AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
-                        .of(ATTRIBUTE_DEFINITION_C.getAttributeType(),
-                                ATTRIBUTE_DEFINITION_C.getName(), ATTRIBUTE_DEFINITION_C.getLabel(),
-                                ATTRIBUTE_DEFINITION_C.isRequired())
-                        .isSearchable(true)
-                        .build())
-        );
+        assertThat(updateActions).isEmpty();
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errorMessages.get(0)).matches("Failed to build update actions for the attributes definitions of the "
+                + "product type with the key 'key'. Reason: .*BuildUpdateActionException: "
+                + "Attribute type is not set for the old attribute definition.");
+        assertThat(exceptions).hasSize(1);
+        assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     }
 
     @Test

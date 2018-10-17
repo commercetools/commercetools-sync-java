@@ -4,9 +4,11 @@ import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
 import com.commercetools.sync.producttypes.helpers.AttributeDefinitionCustomBuilder;
+import com.commercetools.sync.producttypes.helpers.AttributeTypeAssert;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
+import io.sphere.sdk.products.attributes.AttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrder;
@@ -155,19 +157,22 @@ public final class AttributeDefinitionsUpdateActionUtils {
             final AttributeDefinitionDraft matchingNewAttributeDefinitionDraft =
                     newAttributesDefinitionsDraftsNameMap.get(oldAttributeDefinitionName);
 
+            AttributeTypeAssert.assertOldAttributeType(oldAttributeDefinition.getAttributeType());
+
             if (matchingNewAttributeDefinitionDraft != null) {
-                if (matchingNewAttributeDefinitionDraft.getAttributeType() != null) {
-                    if (haveSameAttributeType(oldAttributeDefinition, matchingNewAttributeDefinitionDraft)) {
-                        updateActions.addAll(buildActions(oldAttributeDefinition, matchingNewAttributeDefinitionDraft));
-                    } else {
-                        // since there is no way to change an attribute type on CTP,
-                        // we remove the attribute definition and add a new one with a new attribute type
-                        updateActions.add(RemoveAttributeDefinition.of(oldAttributeDefinitionName));
-                        updateActions.add(AddAttributeDefinition.of(matchingNewAttributeDefinitionDraft));
-                    }
+
+                AttributeTypeAssert.assertTypesAreNull(
+                        oldAttributeDefinition.getAttributeType(),
+                        matchingNewAttributeDefinitionDraft.getAttributeType());
+
+                if (haveSameAttributeType(oldAttributeDefinition.getAttributeType(),
+                        matchingNewAttributeDefinitionDraft.getAttributeType())) {
+                    updateActions.addAll(buildActions(oldAttributeDefinition, matchingNewAttributeDefinitionDraft));
                 } else {
-                    throw new BuildUpdateActionException("Attribute type is not set for the new/draft"
-                            + " attribute definition.");
+                    // since there is no way to change an attribute type on CTP,
+                    // we remove the attribute definition and add a new one with a new attribute type
+                    updateActions.add(RemoveAttributeDefinition.of(oldAttributeDefinitionName));
+                    updateActions.add(AddAttributeDefinition.of(matchingNewAttributeDefinitionDraft));
                 }
             } else {
                 updateActions.add(RemoveAttributeDefinition.of(oldAttributeDefinitionName));
@@ -182,24 +187,15 @@ public final class AttributeDefinitionsUpdateActionUtils {
      * Compares the attribute types of the {@code attributeDefinitionA} and the {@code attributeDefinitionB} and
      * returns true if both attribute definitions have the same attribute type, false otherwise.
      *
-     * @param attributeDefinitionA the first attribute definition to compare.
-     * @param attributeDefinitionB the second attribute definition to compare.
+     * @param attributeTypeA the first attribute type to compare.
+     * @param attributeTypeB the second attribute type to compare.
      * @return true if both attribute definitions have the same attribute type, false otherwise.
      */
     private static boolean haveSameAttributeType(
-        @Nonnull final AttributeDefinition attributeDefinitionA,
-        @Nonnull final AttributeDefinitionDraft attributeDefinitionB) {
+        @Nonnull final AttributeType attributeTypeA,
+        @Nonnull final AttributeType attributeTypeB) {
 
-        if (attributeDefinitionA.getAttributeType() == null
-                && attributeDefinitionB.getAttributeType() == null) {
-            return true;
-        }
-
-        return attributeDefinitionA.getAttributeType() != null
-                && attributeDefinitionB.getAttributeType() != null
-                && attributeDefinitionA.getAttributeType().getClass()
-                == attributeDefinitionB.getAttributeType().getClass();
-
+        return attributeTypeA.getClass() == attributeTypeB.getClass();
     }
 
     /**
