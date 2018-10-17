@@ -267,16 +267,8 @@ public class ProductTypeSyncBenchmark {
                 builder.getAttributes()
                        .stream()
                        .map(attributeDefinitionDraft -> AttributeDefinitionDraftBuilder
-                               .of(
-                                       attributeDefinitionDraft.getAttributeType(),
-                                       attributeDefinitionDraft.getName() + "_old",
-                                       attributeDefinitionDraft.getLabel(),
-                                       attributeDefinitionDraft.isRequired()
-                               )
-                               .attributeConstraint(attributeDefinitionDraft.getAttributeConstraint())
-                               .inputTip(attributeDefinitionDraft.getInputTip())
-                               .inputHint(attributeDefinitionDraft.getInputHint())
-                               .isSearchable(attributeDefinitionDraft.isSearchable())
+                               .of(attributeDefinitionDraft)
+                               .name(attributeDefinitionDraft.getName() + "_old")
                                .build())
                        .collect(Collectors.toList());
 
