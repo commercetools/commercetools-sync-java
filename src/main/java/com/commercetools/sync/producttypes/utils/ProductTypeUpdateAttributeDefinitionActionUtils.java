@@ -168,8 +168,7 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
                             } else {
                                 return Arrays.asList(
                                     RemoveAttributeDefinition.of(oldAttributeDefinitionName),
-                                    AddAttributeDefinition
-                                        .of(AttributeDefinitionCustomBuilder.of(attributeDefinitionDraft))
+                                    AddAttributeDefinition.of(attributeDefinitionDraft)
                                 );
                             }
                         } else {
@@ -263,17 +262,11 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
     private static List<UpdateAction<ProductType>> buildAddAttributeDefinitionUpdateActions(
         @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionDrafts,
         @Nonnull final Map<String, AttributeDefinition> oldAttributeDefinitionNameMap) {
-
-        // Bug in the commercetools JVM SDK. AddAttributeDefinition should expect an AttributeDefinitionDraft rather
-        // than AttributeDefinition. That's why we use AttributeDefinitionCustomBuilder
-        // TODO It will be fixed in https://github.com/commercetools/commercetools-jvm-sdk/issues/1786
         return newAttributeDefinitionDrafts
             .stream()
-            .filter(attributeDefinitionDraft ->
-                !oldAttributeDefinitionNameMap
-                    .containsKey(attributeDefinitionDraft.getName())
+            .filter(attributeDefinitionDraft -> !oldAttributeDefinitionNameMap
+                .containsKey(attributeDefinitionDraft.getName())
             )
-            .map(AttributeDefinitionCustomBuilder::of)
             .map(AddAttributeDefinition::of)
             .collect(Collectors.toList());
     }
