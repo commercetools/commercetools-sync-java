@@ -10,8 +10,10 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
+import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.queries.PagedQueryResult;
@@ -23,8 +25,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -32,8 +34,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
@@ -46,9 +46,7 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.LOCALISED
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
-import static java.util.concurrent.CompletableFuture.allOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
@@ -172,8 +170,10 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewCategoryVersion() {
-        // Category draft coming from external source.
+    public void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewCategoryWithSuccess() {
+        // Preparation
+        final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
+
         final LocalizedString newCategoryName = LocalizedString.of(Locale.ENGLISH, "Modern Furniture");
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(newCategoryName, LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
@@ -181,48 +181,48 @@ public class CategorySyncIT {
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
-        final CategorySyncOptions categorySyncOptions =
-            CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                      .build();
-        final CategorySync categorySync1 = new CategorySync(categorySyncOptions);
-        final CategorySync categorySync2 = new CategorySync(categorySyncOptions);
-        final CategorySync categorySync3 = new CategorySync(categorySyncOptions);
-        final CategorySync categorySync4 = new CategorySync(categorySyncOptions);
-        final CategorySync categorySync5 = new CategorySync(categorySyncOptions);
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(spyClient)
+                                                                                  .build();
 
-        final CompletableFuture<CategorySyncStatistics> syncFuture1 =
-            categorySync1.sync(Collections.singletonList(categoryDraft)).toCompletableFuture();
-        final CompletableFuture<CategorySyncStatistics> syncFuture2 =
-            categorySync2.sync(Collections.singletonList(categoryDraft)).toCompletableFuture();
-        final CompletableFuture<CategorySyncStatistics> syncFuture3 =
-            categorySync3.sync(Collections.singletonList(categoryDraft)).toCompletableFuture();
-        final CompletableFuture<CategorySyncStatistics> syncFuture4 =
-            categorySync4.sync(Collections.singletonList(categoryDraft)).toCompletableFuture();
-        final CompletableFuture<CategorySyncStatistics> syncFuture5 =
-            categorySync5.sync(Collections.singletonList(categoryDraft)).toCompletableFuture();
+        final CategorySync categorySync = new CategorySync(categorySyncOptions);
 
-        final List<CompletableFuture<CategorySyncStatistics>> futures =
-            Arrays.asList(syncFuture1, syncFuture2, syncFuture3, syncFuture4, syncFuture5);
+        // Test
+        final CategorySyncStatistics statistics = categorySync.sync(Collections.singletonList(categoryDraft))
+                                                              .toCompletableFuture()
+                                                              .join();
 
-        final CompletableFuture<Void> parallelSyncExecutionFuture =
-            allOf(futures.toArray(new CompletableFuture[futures.size()]));
+        // Assertion
+        assertThat(statistics).hasValues(1, 0, 1, 0);
 
-        executeBlocking(
-            parallelSyncExecutionFuture.thenAccept(voidResult -> {
-                final CompletionStage<PagedQueryResult<Category>> categoryByKeyQuery =
-                    CTP_TARGET_CLIENT.execute(CategoryQuery.of().plusPredicates(categoryQueryModel ->
-                        categoryQueryModel.key().is(categoryDraft.getKey())));
-                final Optional<Category> categoryOptional = executeBlocking(categoryByKeyQuery).head();
-                assertThat(categoryOptional).isNotEmpty();
-                assertThat(categoryOptional.get().getName()).isEqualTo(newCategoryName);
-            }));
+        // Assert CTP state.
+        final PagedQueryResult<Category> queryResult =
+            CTP_TARGET_CLIENT.execute(CategoryQuery.of().plusPredicates(categoryQueryModel ->
+                categoryQueryModel.key().is(categoryDraft.getKey())))
+                             .toCompletableFuture()
+                             .join();
+
+        assertThat(queryResult.head()).hasValueSatisfying(category ->
+            assertThat(category.getName()).isEqualTo(newCategoryName));
+    }
+
+    @Nonnull
+    private SphereClient buildClientWithConcurrentModificationUpdate() {
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final CategoryQuery anyCategoryQuery = any(CategoryQuery.class);
+
+        when(spyClient.execute(anyCategoryQuery))
+            .thenCallRealMethod() // Call real fetch on fetching category keys
+            .thenCallRealMethod() // Call real fetch on fetching matching categories
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+
+        return spyClient;
     }
 
     @Test
     public void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
-        final SphereClient spyClient = getSpyClientThatFailsToFetchOn6thCall();
+        // Preparation
+        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
-        // Category draft coming from external source.
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
@@ -240,51 +240,42 @@ public class CategorySyncIT {
                                           errors.add(error);
                                       })
                                       .build();
+
         final CategorySync categorySync = new CategorySync(categorySyncOptions);
+        final CategorySyncStatistics statistics = categorySync.sync(Collections.singletonList(categoryDraft))
+                                                              .toCompletableFuture()
+                                                              .join();
 
-        final CompletableFuture<CategorySyncStatistics> syncFuture1 =
-            categorySync.sync(Collections.singletonList(categoryDraft)).toCompletableFuture();
-        final CompletableFuture<CategorySyncStatistics> syncFuture2 =
-            categorySync.sync(Collections.singletonList(categoryDraft)).toCompletableFuture();
-        final CompletableFuture<CategorySyncStatistics> syncFuture3 =
-            categorySync.sync(Collections.singletonList(categoryDraft)).toCompletableFuture();
-        final CompletableFuture<CategorySyncStatistics> syncFuture4 =
-            categorySync.sync(Collections.singletonList(categoryDraft)).toCompletableFuture();
-        final CompletableFuture<CategorySyncStatistics> syncFuture5 =
-            categorySync.sync(Collections.singletonList(categoryDraft)).toCompletableFuture();
+        // Test and assertion
+        assertThat(statistics).hasValues(1, 0, 0, 1);
+        assertThat(errorMessages).hasSize(2);
+        assertThat(errors).hasSize(2);
 
-        final List<CompletableFuture<CategorySyncStatistics>> futures =
-            Arrays.asList(syncFuture1, syncFuture2, syncFuture3, syncFuture4, syncFuture5);
+        assertThat(errors.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorMessages.get(0))
+            .contains(format("Failed to fetch Categories with keys: '%s'. Reason: %s",
+                categoryDraft.getKey(), errors.get(0)));
 
-        final CompletableFuture<Void> parallelSyncExecutionFuture =
-            allOf(futures.toArray(new CompletableFuture[futures.size()]));
-
-        executeBlocking(
-            parallelSyncExecutionFuture.thenAccept(voidResult -> {
-                assertThat(errorMessages).contains(
-                    format("Failed to fetch Categories with keys: '%s'. Reason: %s",
-                        categoryDraft.getKey(), errors.get(0)));
-                assertThat(errorMessages).contains(
-                    format("Failed to update Category with key: '%s'. Reason: Failed to fetch category on retry.",
-                        categoryDraft.getKey()));
-                assertThat(errors.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
-            }));
+        assertThat(errorMessages.get(1))
+            .contains(format("Failed to update Category with key: '%s'. Reason: Failed to fetch category on retry.",
+                categoryDraft.getKey()));
     }
 
-    private SphereClient getSpyClientThatFailsToFetchOn6thCall() {
+    @Nonnull
+    private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final CategoryQuery anyCategoryQuery = any(CategoryQuery.class);
 
         when(spyClient.execute(anyCategoryQuery))
-            .thenCallRealMethod() // Test setup delete
-            .thenCallRealMethod() // Test setup delete
             .thenCallRealMethod() // cache category keys
             .thenCallRealMethod() // Call real fetch on fetching matching categories
-            .thenCallRealMethod() // Call real fetch on fetching matching categories
-            .thenCallRealMethod() // Call real fetch on fetching matching categories
-            .thenCallRealMethod() // Call real fetch on fetching matching categories
-            .thenCallRealMethod() // Call real fetch on fetching matching categories
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+
+
+        final CategoryUpdateCommand anyCategoryUpdate = any(CategoryUpdateCommand.class);
+        when(spyClient.execute(anyCategoryUpdate))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()));
+
 
         return spyClient;
     }
