@@ -211,7 +211,7 @@ public class CategorySyncIT {
         final CategoryQuery anyCategoryQuery = any(CategoryQuery.class);
 
         when(spyClient.execute(anyCategoryQuery))
-            .thenCallRealMethod() // cache category keys
+            .thenCallRealMethod() // Call real fetch on fetching category keys
             .thenCallRealMethod() // Call real fetch on fetching matching categories
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
