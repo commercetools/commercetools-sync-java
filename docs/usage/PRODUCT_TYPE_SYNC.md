@@ -52,11 +52,11 @@ events.
 
 - `beforeUpdateCallback`
 a filter function which can be applied on a generated list of update actions. It allows the user to intercept product type
-update and modify (add/remove) update actions just before they are sent to CTP API.
+update and modify (add/remove) **update** actions just before they are sent to CTP API.
 
 - `beforeCreateCallback`
 a filter function which can be applied on a product type draft before a request to create it on CTP is issued. It allows the
-user to intercept product type create requests to modify the draft before the create request is sent to CTP API.
+user to intercept product type **create** requests to modify the draft before the create request is sent to CTP API.
 
 Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning
 streams, would look as follows:
