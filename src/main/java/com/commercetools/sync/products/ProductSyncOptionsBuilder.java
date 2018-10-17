@@ -49,7 +49,7 @@ public final class ProductSyncOptionsBuilder
     /**
      * Set option that indicates whether sync process should create a price channel of given key when it doesn't exist
      * in a target project yet. If set to {@code true} sync process would try to create new price channel of given key,
-     * otherwise the sync process would log error and fail to process draft with the given price channel key.
+     * otherwise the sync process would log an error and fail to process draft with the given price channel key.
      *
      * <p>This property is {@link ProductSyncOptionsBuilder#ENSURE_CHANNELS_DEFAULT} by default.
      *
