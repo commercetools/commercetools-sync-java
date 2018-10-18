@@ -111,7 +111,7 @@ a callback that is called whenever an event occurs during the sync process that 
 
 - `beforeUpdateCallback`
 a filter function which can be applied on a generated list of update actions. It allows the user to intercept inventory 
-entry update and modify (add/remove) **_update_** actions just before they are sent to CTP API.
+entry **_update_** actions just before they are sent to CTP API.
 
 - `beforeCreateCallback`
 a filter function which can be applied on an inventoryEntry draft before a request to create it on CTP is issued. It allows the 

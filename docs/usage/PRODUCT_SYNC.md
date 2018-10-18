@@ -84,7 +84,7 @@ events.
 
 - `beforeUpdateCallback`
 a filter function which can be applied on a generated list of update actions. It allows the user to intercept product 
-update and modify (add/remove) **_update_** actions just before they are sent to CTP API.
+ **_update_** actions just before they are sent to CTP API.
 
 - `beforeCreateCallback`
 a filter function which can be applied on a product draft before a request to create it on CTP is issued. It allows the 
