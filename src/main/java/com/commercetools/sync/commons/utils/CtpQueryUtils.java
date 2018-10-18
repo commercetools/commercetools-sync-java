@@ -94,7 +94,7 @@ public final class CtpQueryUtils {
      * supplied {@code pageSize}.
      * More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset
      *
-     * <p>The method takes a consumer {@link Consumer} that is applied on every page of elements queried.
+     * <p>The method takes {@link Consumer} that is applied on every page of queried elements.
      *
      * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.
      *
