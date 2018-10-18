@@ -119,14 +119,12 @@ final class EnumUpdateActionsUtils {
             @Nonnull final List<T> enumValues) {
 
         return enumValues.stream().collect(
-                toMap(WithKey::getKey, enumValue -> enumValue,
-                        (enumValueA, enumValueB) -> {
-                            throw new DuplicateKeyException(format("Enum Values have duplicated keys. "
-                                            + "Field definition name: '%s', Duplicated enum value: '%s'. "
-                                            + "Enum Values are expected to be unique inside their field definition.",
-                                    fieldDefinitionName, enumValueA.getKey()));
-                        }
-                ));
+                toMap(WithKey::getKey, enumValue -> enumValue, (enumValueA, enumValueB) -> {
+                    throw new DuplicateKeyException(format("Enum Values have duplicated keys. "
+                                        + "Field definition name: '%s', Duplicated enum value: '%s'. "
+                                        + "Enum Values are expected to be unique inside their field definition.",
+                                fieldDefinitionName, enumValueA.getKey()));
+                }));
     }
 
     private EnumUpdateActionsUtils() {

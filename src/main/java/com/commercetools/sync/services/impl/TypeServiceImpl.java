@@ -6,13 +6,11 @@ import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.types.TypeSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
 import io.sphere.sdk.types.commands.TypeUpdateCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
-import io.sphere.sdk.types.queries.TypeQueryBuilder;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
