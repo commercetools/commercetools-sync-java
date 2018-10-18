@@ -47,7 +47,7 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
 
     /**
      * Returns an instance of this class to be used in the superclass's generic methods. Please see the JavaDoc in the
-     * overridden method for further details.'
+     * overridden method for further details.
      *
      * @return an instance of this class.
      */
