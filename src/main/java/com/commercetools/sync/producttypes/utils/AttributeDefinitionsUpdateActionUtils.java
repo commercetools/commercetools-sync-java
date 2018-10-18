@@ -161,9 +161,7 @@ public final class AttributeDefinitionsUpdateActionUtils {
 
             if (matchingNewAttributeDefinitionDraft != null) {
 
-                AttributeTypeAssert.assertTypesAreNull(
-                        oldAttributeDefinition.getAttributeType(),
-                        matchingNewAttributeDefinitionDraft.getAttributeType());
+                AttributeTypeAssert.assertNewAttributeType(matchingNewAttributeDefinitionDraft.getAttributeType());
 
                 if (haveSameAttributeType(oldAttributeDefinition.getAttributeType(),
                         matchingNewAttributeDefinitionDraft.getAttributeType())) {
