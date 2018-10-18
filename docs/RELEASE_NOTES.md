@@ -78,13 +78,12 @@ optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issue
 - **Inventory Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 - **ProductType Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 
-**Breaking Changes** (6)
+**Breaking Changes** (5)
 - **ProductType Sync** - Renamed `ProductTypeUpdateAttributeDefinitionActionUtils` to `AttributeDefinitionsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - Renamed `ProductTypeUpdateLocalizedEnumActionUtils` to `LocalizedEnumsUpdateActionUtils.` [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - Renamed `ProductTypeUpdatePlainEnumActionUtils` to `PlainEnumsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - Renamed `LocalizedEnumUpdateActionsUtils` to `LocalizedEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - Renamed `PlainEnumUpdateActionsUtils` to `PlainEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - Renamed `ProductTypeUpdateEnumActionsUtils` to `EnumsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 
 -->
 
