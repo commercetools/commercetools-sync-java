@@ -59,7 +59,7 @@ public final class CategoryReferenceResolver
      * taken from the id field of the references.
      *
      * @param categoryDraft the categoryDraft to resolve it's references.
-     * @return a {@link CompletionStage} that contains, as a result, a new categoryDraft instance with resolved
+     * @return a {@link CompletionStage} that contains as a result a new categoryDraft instance with resolved
      *          category references or, in case an error occurs during reference resolution,
      *          a {@link ReferenceResolutionException}.
      */
