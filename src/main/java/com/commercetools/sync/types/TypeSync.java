@@ -22,10 +22,9 @@ import java.util.stream.Collectors;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.types.utils.TypeSyncUtils.buildActions;
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -86,7 +85,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
     /**
      * Fetches existing {@link Type} objects from CTP project that correspond to passed {@code batch}.
      * Having existing types fetched, {@code batch} is compared and synced with fetched objects by
-     * {@link TypeSync#syncBatch(List, List)} function. When fetching existing types results in
+     * {@link TypeSync#syncBatch(Set, Set)} function. When fetching existing types results in
      * an empty {@link TypeSyncStatistics} object then {@code batch} isn't processed.
      *
      * @param batch batch of drafts that need to be synced
@@ -94,7 +93,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      */
     @Override
     protected CompletionStage<TypeSyncStatistics> processBatch(@Nonnull final List<TypeDraft> batch) {
-        final List<TypeDraft> validTypeDrafts = batch.stream().filter(this::validateDraft).collect(toList());
+        final Set<TypeDraft> validTypeDrafts = batch.stream().filter(this::validateDraft).collect(toSet());
 
         if (validTypeDrafts.isEmpty()) {
             statistics.incrementProcessed(batch.size());
@@ -135,28 +134,28 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * Given a set of type keys, fetches the corresponding types from CTP if they exist.
      *
      * @param keys the keys of the types that are wanted to be fetched.
-     * @return a {@link CompletionStage} which contains the list of types corresponding to the keys.
+     * @return a {@link CompletionStage} which contains the set of types corresponding to the keys.
      */
-    private CompletionStage<List<Type>> fetchExistingTypes(@Nonnull final Set<String> keys) {
+    private CompletionStage<Set<Type>> fetchExistingTypes(@Nonnull final Set<String> keys) {
         return typeService
                 .fetchMatchingTypesByKeys(keys)
                 .exceptionally(exception -> {
                     final String errorMessage = format(CTP_TYPE_FETCH_FAILED, keys);
                     handleError(errorMessage, exception, keys.size());
 
-                    return emptyList();
+                    return emptySet();
                 });
     }
 
     /**
-     * Given a list of {@link Type} or {@link TypeDraft}, returns a map of keys to the
+     * Given a set of {@link Type} or {@link TypeDraft}, returns a map of keys to the
      * {@link Type}/{@link TypeDraft} instances.
      *
      * @param types list of {@link Type}/{@link TypeDraft}
-     * @param <T>          a type that extends of {@link WithKey}.
+     * @param <T>   a type that extends of {@link WithKey}.
      * @return the map of keys to {@link Type}/{@link TypeDraft} instances.
      */
-    private <T extends WithKey> Map<String, T> getTypeKeysMap(@Nonnull final List<T> types) {
+    private <T extends WithKey> Map<String, T> getTypeKeysMap(@Nonnull final Set<T> types) {
         return types.stream().collect(Collectors.toMap(WithKey::getKey, p -> p,
             (typeA, typeB) -> typeB));
     }
@@ -178,7 +177,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
     }
 
     /**
-     * Given a list of type drafts, attempts to sync the drafts with the existing types in the CTP
+     * Given a set of type drafts, attempts to sync the drafts with the existing types in the CTP
      * project. The type and the draft are considered to match if they have the same key.
      *
      * @param oldTypes old types.
@@ -186,8 +185,8 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
     private CompletionStage<TypeSyncStatistics> syncBatch(
-            @Nonnull final List<Type> oldTypes,
-            @Nonnull final List<TypeDraft> newTypes) {
+            @Nonnull final Set<Type> oldTypes,
+            @Nonnull final Set<TypeDraft> newTypes) {
         final Map<String, Type> oldTypeMap = getTypeKeysMap(oldTypes);
 
         return CompletableFuture.allOf(newTypes

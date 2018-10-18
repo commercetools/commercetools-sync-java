@@ -36,11 +36,11 @@ public interface TypeService {
      * Queries existing {@link Type}'s against set of keys.
      *
      * @param keys {@link Set} of sku values, used in search predicate
-     * @return {@link CompletionStage} of matching types or empty list when there is no type with corresponding
+     * @return {@link CompletionStage} of matching types or empty set when there is no type with corresponding
      * {@code keys}.
      */
     @Nonnull
-    CompletionStage<List<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys);
+    CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys);
 
 
     /**
