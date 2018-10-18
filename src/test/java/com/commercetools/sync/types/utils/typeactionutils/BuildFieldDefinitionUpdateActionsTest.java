@@ -57,7 +57,8 @@ public class BuildFieldDefinitionUpdateActionsTest {
         RES_ROOT + "type-with-field-definitions-cbd.json";
     private static final String TYPE_WITH_FIELDS_ABC_WITH_DIFFERENT_TYPE =
         RES_ROOT + "type-with-field-definitions-abc-with-different-type.json";
-
+    private static final String TYPE_WITH_FIELDS_ABC_WITHOUT_FIELD_TYPE =
+        RES_ROOT + "type-with-field-definitions-abc-without-field-type.json";
 
     private static final TypeSyncOptions SYNC_OPTIONS = TypeSyncOptionsBuilder
         .of(mock(SphereClient.class))
@@ -415,5 +416,39 @@ public class BuildFieldDefinitionUpdateActionsTest {
             RemoveFieldDefinition.of(FIELD_A),
             AddFieldDefinition.of(FIELD_DEFINITION_A_LOCALIZED_TYPE)
         );
+    }
+
+    @Test
+    public void buildUpdateActions_WithoutFieldType_ShouldNotBuildActionsAndTriggerErrorCallback() {
+        final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
+
+        final TypeDraft newTypeDraft = readObjectFromResource(
+                TYPE_WITH_FIELDS_ABC_WITHOUT_FIELD_TYPE,
+                TypeDraft.class
+        );
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final TypeSyncOptions syncOptions =
+                TypeSyncOptionsBuilder.of(mock(SphereClient.class))
+                                             .errorCallback((errorMessage, exception) -> {
+                                                 errorMessages.add(errorMessage);
+                                                 exceptions.add(exception);
+                                             })
+                                             .build();
+
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+                oldType,
+                newTypeDraft,
+                syncOptions
+        );
+
+        assertThat(updateActions).isEmpty();
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errorMessages.get(0)).matches("Failed to build update actions for the field definitions of the "
+                + "type with the key 'key'. Reason: .*BuildUpdateActionException: "
+                + "Field type is not set for the new field definition.");
+        assertThat(exceptions).hasSize(1);
+        assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     }
 }

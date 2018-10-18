@@ -1,5 +1,7 @@
 package com.commercetools.sync.types.utils;
 
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.types.helpers.FieldTypeAssert;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.EnumFieldType;
@@ -29,11 +31,14 @@ public final class FieldDefinitionUpdateActionUtils {
      * @param oldFieldDefinition the old field definition which should be updated.
      * @param newFieldDefinition the new field definition where we get the new fields.
      * @return A list with the update actions or an empty list if the field definition fields are identical.
+     * @throws BuildUpdateActionException in case there are field definitions with the null field type.
      */
     @Nonnull
     public static List<UpdateAction<Type>> buildActions(
         @Nonnull final FieldDefinition oldFieldDefinition,
-        @Nonnull final FieldDefinition newFieldDefinition) {
+        @Nonnull final FieldDefinition newFieldDefinition) throws BuildUpdateActionException {
+
+        FieldTypeAssert.assertTypesAreNull(oldFieldDefinition.getType(), newFieldDefinition.getType());
 
         final List<UpdateAction<Type>> updateActions =
             filterEmptyOptionals(buildChangeLabelUpdateAction(oldFieldDefinition, newFieldDefinition));

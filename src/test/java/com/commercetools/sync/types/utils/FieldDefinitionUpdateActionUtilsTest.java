@@ -1,5 +1,6 @@
 package com.commercetools.sync.types.utils;
 
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
@@ -25,6 +26,7 @@ import static com.commercetools.sync.types.utils.FieldDefinitionUpdateActionUtil
 import static com.commercetools.sync.types.utils.FieldDefinitionUpdateActionUtils.buildChangeLabelUpdateAction;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class FieldDefinitionUpdateActionUtilsTest {
     private static final String FIELD_NAME_1 = "fieldName1";
@@ -67,7 +69,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithNewDifferentValues_ShouldReturnActions() {
+    public void buildActions_WithNewDifferentValues_ShouldReturnActions() throws BuildUpdateActionException {
         final List<UpdateAction<Type>> result = buildActions(old, newDifferent);
 
         assertThat(result).containsExactlyInAnyOrder(
@@ -76,14 +78,14 @@ public class FieldDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithSameValues_ShouldReturnEmpty() {
+    public void buildActions_WithSameValues_ShouldReturnEmpty() throws BuildUpdateActionException {
         final List<UpdateAction<Type>> result = buildActions(old, newSame);
 
         assertThat(result).isEmpty();
     }
 
     @Test
-    public void buildActions_WithNewPlainEnum_ShouldReturnAddEnumValueAction() {
+    public void buildActions_WithNewPlainEnum_ShouldReturnAddEnumValueAction() throws BuildUpdateActionException {
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
                 EnumFieldType.of(Arrays.asList(ENUM_VALUE_A)),
                 FIELD_NAME_1,
@@ -99,16 +101,16 @@ public class FieldDefinitionUpdateActionUtilsTest {
                 false,
                 TextInputHint.SINGLE_LINE);
 
-        final List<UpdateAction<Type>> result =
-                buildActions(oldFieldDefinition, newFieldDefinition);
-
+        final List<UpdateAction<Type>> result = buildActions(oldFieldDefinition, newFieldDefinition);
 
         assertThat(result).containsExactly(AddEnumValue.of(FIELD_NAME_1, ENUM_VALUE_B));
     }
 
 
     @Test
-    public void buildActions_WithoutOldPlainEnum_ShouldNotReturnAnyValueAction() {
+    public void buildActions_WithoutOldPlainEnum_ShouldNotReturnAnyValueAction()
+            throws BuildUpdateActionException {
+
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
                 EnumFieldType.of(Arrays.asList(ENUM_VALUE_A)),
                 FIELD_NAME_1,
@@ -124,7 +126,6 @@ public class FieldDefinitionUpdateActionUtilsTest {
                 TextInputHint.SINGLE_LINE);
 
 
-        //TODO: For type sync there is no remove enum values action for the field definitions.
         final List<UpdateAction<Type>> result = buildActions(oldFieldDefinition, newFieldDefinition);
 
         assertThat(result).isEmpty();
@@ -132,7 +133,8 @@ public class FieldDefinitionUpdateActionUtilsTest {
 
 
     @Test
-    public void buildActions_WithNewLocalizedEnum_ShouldReturnAddLocalizedEnumValueAction() {
+    public void buildActions_WithNewLocalizedEnum_ShouldReturnAddLocalizedEnumValueAction()
+            throws BuildUpdateActionException {
 
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
                 LocalizedEnumFieldType.of(Arrays.asList(LOCALIZED_ENUM_VALUE_A)),
@@ -155,6 +157,69 @@ public class FieldDefinitionUpdateActionUtilsTest {
     }
 
 
+
+    @Test
+    public void buildActions_WithFieldDefinitionsWithoutType_ShouldThrowBuildUpdateActionException() {
+        final FieldDefinition oldFieldDefinitionWithoutType = FieldDefinition.of(
+                null,
+                FIELD_NAME_1,
+                LocalizedString.ofEnglish(LABEL_1),
+                false,
+                TextInputHint.SINGLE_LINE);
+
+        final FieldDefinition newFieldDefinitionWithoutType = FieldDefinition.of(
+                null,
+                FIELD_NAME_1,
+                LocalizedString.ofEnglish(LABEL_1),
+                false,
+                TextInputHint.SINGLE_LINE);
+
+        assertThatThrownBy(() -> buildActions(oldFieldDefinitionWithoutType, newFieldDefinitionWithoutType))
+                .hasMessage("Field types are not set for both the old and new field definitions.")
+                .isExactlyInstanceOf(BuildUpdateActionException.class);
+    }
+
+    @Test
+    public void buildActions_WithOldFieldDefinitionWithoutType_ShouldThrowBuildUpdateActionException() {
+        final FieldDefinition oldFieldDefinitionWithoutType = FieldDefinition.of(
+                null,
+                FIELD_NAME_1,
+                LocalizedString.ofEnglish(LABEL_1),
+                false,
+                TextInputHint.SINGLE_LINE);
+
+        final FieldDefinition newFieldDefinition = FieldDefinition.of(
+                LocalizedEnumFieldType.of(Arrays.asList(LOCALIZED_ENUM_VALUE_A, LOCALIZED_ENUM_VALUE_B)),
+                FIELD_NAME_1,
+                LocalizedString.ofEnglish(LABEL_1),
+                false,
+                TextInputHint.SINGLE_LINE);
+
+        assertThatThrownBy(() -> buildActions(oldFieldDefinitionWithoutType, newFieldDefinition))
+                .hasMessage("Field type is not set for the old field definition.")
+                .isExactlyInstanceOf(BuildUpdateActionException.class);
+    }
+
+    @Test
+    public void buildActions_WithNewFieldDefinitionWithoutType_ShouldThrowBuildUpdateActionException() {
+        final FieldDefinition oldFieldDefinition = FieldDefinition.of(
+                LocalizedEnumFieldType.of(Arrays.asList(LOCALIZED_ENUM_VALUE_A)),
+                FIELD_NAME_1,
+                LocalizedString.ofEnglish(LABEL_1),
+                false,
+                TextInputHint.SINGLE_LINE);
+
+        final FieldDefinition newFieldDefinitionWithoutType = FieldDefinition.of(
+                null,
+                FIELD_NAME_1,
+                LocalizedString.ofEnglish(LABEL_1),
+                false,
+                TextInputHint.SINGLE_LINE);
+
+        assertThatThrownBy(() -> buildActions(oldFieldDefinition, newFieldDefinitionWithoutType))
+                .hasMessage("Field type is not set for the new field definition.")
+                .isExactlyInstanceOf(BuildUpdateActionException.class);
+    }
 
 
 }

@@ -3,8 +3,10 @@ package com.commercetools.sync.types.utils;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
+import com.commercetools.sync.types.helpers.FieldTypeAssert;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.FieldDefinition;
+import io.sphere.sdk.types.FieldType;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.commands.updateactions.AddFieldDefinition;
 import io.sphere.sdk.types.commands.updateactions.ChangeFieldDefinitionOrder;
@@ -12,6 +14,7 @@ import io.sphere.sdk.types.commands.updateactions.RemoveFieldDefinition;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -43,7 +46,8 @@ public final class FieldDefinitionsUpdateActionUtils {
      * @param newFieldDefinitions the new list of field definitions.
      * @return a list of field definitions update actions if the list of field definitions is not identical.
      *         Otherwise, if the field definitions are identical, an empty list is returned.
-     * @throws BuildUpdateActionException in case there are field definitions drafts with duplicate names.
+     * @throws BuildUpdateActionException in case there are field definitions drafts with duplicate names or
+     *         there are field definitions with the null field type.
      */
     @Nonnull
     public static List<UpdateAction<Type>> buildFieldDefinitionsUpdateActions(
@@ -73,7 +77,8 @@ public final class FieldDefinitionsUpdateActionUtils {
      * @param newFieldDefinitions the new list of field definitions drafts.
      * @return a list of field definitions update actions if the list of field definitions is not identical.
      *         Otherwise, if the field definitions are identical, an empty list is returned.
-     * @throws BuildUpdateActionException in case there are field definitions drafts with duplicate names.
+     * @throws BuildUpdateActionException in case there are field definitions with duplicate names or
+     *         there are field definitions with the null field type.
      */
     @Nonnull
     private static List<UpdateAction<Type>> buildUpdateActions(
@@ -114,11 +119,13 @@ public final class FieldDefinitionsUpdateActionUtils {
      *         in the new draft. If the field definition still exists in the new draft, then compare the field
      *         definition fields (name, label, etc..), and add the computed actions to the list of update actions.
      *         Otherwise, if the field definitions are identical, an empty optional is returned.
+     * @throws BuildUpdateActionException in case there are field definitions with duplicate names or
+     *         there are field definitions with the null field type.
      */
     @Nonnull
     private static List<UpdateAction<Type>> buildRemoveFieldDefinitionOrFieldDefinitionUpdateActions(
             @Nonnull final List<FieldDefinition> oldFieldDefinitions,
-            @Nonnull final List<FieldDefinition> newFieldDefinitions) {
+            @Nonnull final List<FieldDefinition> newFieldDefinitions) throws BuildUpdateActionException {
 
         final Map<String, FieldDefinition> newFieldDefinitionsNameMap =
                 newFieldDefinitions
@@ -133,46 +140,48 @@ public final class FieldDefinitionsUpdateActionUtils {
                                 }
                         ));
 
-        return oldFieldDefinitions
-                .stream()
-                .map(oldFieldDefinition -> {
-                    final String oldFieldDefinitionName = oldFieldDefinition.getName();
-                    final FieldDefinition matchingNewFieldDefinition =
-                            newFieldDefinitionsNameMap.get(oldFieldDefinitionName);
+        final List<UpdateAction<Type>> updateActions = new ArrayList<>();
 
-                    if (matchingNewFieldDefinition == null) {
-                        return singletonList(RemoveFieldDefinition.of(oldFieldDefinitionName));
-                    } else {
-                        if (haveSameFieldType(oldFieldDefinition, matchingNewFieldDefinition)) {
-                            return buildActions(oldFieldDefinition, matchingNewFieldDefinition);
-                        } else {
-                            // this is a work around for changing the type of the definition.
-                            // since there is no action, so we remove then add again.
-                            return Arrays.asList(
-                                    RemoveFieldDefinition.of(oldFieldDefinitionName),
-                                    AddFieldDefinition.of(matchingNewFieldDefinition)
-                            );
-                        }
-                    }
-                })
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+        for (FieldDefinition oldFieldDefinition : oldFieldDefinitions) {
+
+            FieldTypeAssert.assertOldFieldType(oldFieldDefinition.getType());
+
+            final String oldFieldDefinitionName = oldFieldDefinition.getName();
+            final FieldDefinition matchingNewFieldDefinition =
+                    newFieldDefinitionsNameMap.get(oldFieldDefinitionName);
+
+            if (matchingNewFieldDefinition != null) {
+
+                FieldTypeAssert.assertNewFieldType(matchingNewFieldDefinition.getType());
+
+                if (haveSameFieldType(oldFieldDefinition.getType(), matchingNewFieldDefinition.getType())) {
+                    updateActions.addAll(buildActions(oldFieldDefinition, matchingNewFieldDefinition));
+                } else {
+                    // since there is no way to change a field type on CTP,
+                    // we remove the field definition and add a new one with a new field type
+                    updateActions.add(RemoveFieldDefinition.of(oldFieldDefinitionName));
+                    updateActions.add(AddFieldDefinition.of(matchingNewFieldDefinition));
+                }
+            } else {
+                updateActions.add(RemoveFieldDefinition.of(oldFieldDefinitionName));
+            }
+        }
+
+        return updateActions;
     }
 
     /**
-     * Compares the field types of the {@code fieldDefinitionA} and the {@code fieldDefinitionB} and
-     * returns true if both field definitions have the same field type, false otherwise.
+     * Compares the field types of the {@code fieldTypeA} and the {@code fieldTypeB}.
      *
-     * @param fieldDefinitionA the first field to compare.
-     * @param fieldDefinitionB the second field definition to compare.
-     * @return true if both field definitions have the same field type, false otherwise.
+     * @param fieldTypeA the first type to compare.
+     * @param fieldTypeB the second field type to compare.
+     * @return true if both field types equal, false otherwise.
      */
     private static boolean haveSameFieldType(
-        @Nonnull final FieldDefinition fieldDefinitionA,
-        @Nonnull final FieldDefinition fieldDefinitionB) {
+        @Nonnull final FieldType fieldTypeA,
+        @Nonnull final FieldType fieldTypeB) {
 
-        return  fieldDefinitionA.getType() != null && fieldDefinitionB.getType() != null
-                && fieldDefinitionA.getType().getClass() == fieldDefinitionB.getType().getClass();
+        return fieldTypeA.getClass() == fieldTypeB.getClass();
     }
 
     /**
@@ -227,8 +236,8 @@ public final class FieldDefinitionsUpdateActionUtils {
      * {@code oldFieldDefinitionNameMap}. If there are, then "add" field definition update actions are built.
      * Otherwise, if there are no new field definitions, then an empty list is returned.
      *
-     * @param oldFieldDefinitions the list of old {@link FieldDefinition}s
-     * @param newFieldDefinitions the list of new {@link FieldDefinition}s
+     * @param oldFieldDefinitions the list of old {@link FieldDefinition}s.
+     * @param newFieldDefinitions the list of new {@link FieldDefinition}s.
      *
      * @return a list of field definition update actions if there are new field definition that should be added.
      *         Otherwise, if the field definitions are identical, an empty optional is returned.
