@@ -14,9 +14,9 @@ import org.junit.rules.ExpectedException;
 import java.util.Collections;
 import java.util.List;
 
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdatePlainEnumActionUtils.buildEnumValuesUpdateActions;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.commercetools.sync.producttypes.utils.PlainEnumsUpdateActionUtils.buildEnumValuesUpdateActions;
 import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class BuildPlainEnumUpdateActionsTest {
 

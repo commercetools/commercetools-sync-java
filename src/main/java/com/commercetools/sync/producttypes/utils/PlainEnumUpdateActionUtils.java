@@ -12,7 +12,7 @@ import java.util.Optional;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 
-public final class PlainEnumUpdateActionsUtils {
+public final class PlainEnumUpdateActionUtils {
     /**
      * Compares all the fields of an old {@link EnumValue} and a new {@link EnumValue} and returns a list of
      * {@link UpdateAction}&lt;{@link ProductType}&gt; as a result. If both {@link EnumValue} have identical fields,
@@ -57,6 +57,6 @@ public final class PlainEnumUpdateActionsUtils {
             () -> ChangePlainEnumValueLabel.of(attributeDefinitionName, newEnumValue));
     }
 
-    private PlainEnumUpdateActionsUtils() {
+    private PlainEnumUpdateActionUtils() {
     }
 }

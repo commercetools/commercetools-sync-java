@@ -1,5 +1,7 @@
 package com.commercetools.sync.producttypes.utils;
 
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.producttypes.helpers.AttributeTypeAssert;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -19,8 +21,8 @@ import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateLocalizedEnumActionUtils.buildLocalizedEnumValuesUpdateActions;
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdatePlainEnumActionUtils.buildEnumValuesUpdateActions;
+import static com.commercetools.sync.producttypes.utils.LocalizedEnumsUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
+import static com.commercetools.sync.producttypes.utils.PlainEnumsUpdateActionUtils.buildEnumValuesUpdateActions;
 
 
 public final class AttributeDefinitionUpdateActionUtils {
@@ -30,25 +32,27 @@ public final class AttributeDefinitionUpdateActionUtils {
      * and the {@link AttributeDefinitionDraft} have identical fields, then no update action is needed and hence an
      * empty {@link List} is returned.
      *
-     * @param oldAttributeDefinition      the attribute definition which should be updated.
-     * @param newAttributeDefinitionDraft the attribute definition draft where we get the new fields.
+     * @param oldAttributeDefinition      the old attribute definition which should be updated.
+     * @param newAttributeDefinitionDraft the new attribute definition draft where we get the new fields.
      * @return A list with the update actions or an empty list if the attribute definition fields are identical.
+     * @throws BuildUpdateActionException in case there are attribute definitions with the null attribute type.
      */
     @Nonnull
     public static List<UpdateAction<ProductType>> buildActions(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
-        @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
+        @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) throws BuildUpdateActionException {
 
-        final List<UpdateAction<ProductType>> updateActions;
+        AttributeTypeAssert.assertTypesAreNull(
+                oldAttributeDefinition.getAttributeType(),
+                newAttributeDefinitionDraft.getAttributeType());
 
-        updateActions = filterEmptyOptionals(
+        final List<UpdateAction<ProductType>> updateActions = filterEmptyOptionals(
             buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
             buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
             buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
             buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
             buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
         );
-
 
         if (isPlainEnumAttribute(oldAttributeDefinition)) {
             updateActions.addAll(buildEnumValuesUpdateActions(

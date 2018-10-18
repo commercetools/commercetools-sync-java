@@ -4,9 +4,11 @@ import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
 import com.commercetools.sync.producttypes.helpers.AttributeDefinitionCustomBuilder;
+import com.commercetools.sync.producttypes.helpers.AttributeTypeAssert;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
+import io.sphere.sdk.products.attributes.AttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrder;
@@ -15,10 +17,8 @@ import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefiniti
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,18 +26,15 @@ import java.util.stream.Stream;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildActions;
 import static java.lang.String.format;
-import static java.util.Collections.singletonList;
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-public final class ProductTypeUpdateAttributeDefinitionActionUtils {
+public final class AttributeDefinitionsUpdateActionUtils {
     /**
      * Compares a list of {@link AttributeDefinition}s with a list of {@link AttributeDefinitionDraft}s.
-     * The method serves as a generic implementation for attribute definitions syncing. The method takes in functions
-     * for building the required update actions (AddAttribute, RemoveAttribute, ChangeAttributeOrder and 1-1
-     * update actions on attribute definitions (e.g. changeAttributeName, changeAttributeLabel, etc..) for the required
-     * resource.
+     * The method serves as a generic implementation for attribute definitions syncing and building the required
+     * update actions (AddAttribute, RemoveAttribute, ChangeAttributeOrder) and 1-1 update actions on attribute
+     * definitions (e.g. changeAttributeName, changeAttributeLabel, etc..) for the required resource.
      *
      * <p>If the list of new {@link AttributeDefinitionDraft}s is {@code null}, then remove actions are built for
      * every existing attribute definition in the {@code oldAttributeDefinitions} list.
@@ -46,7 +43,8 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      * @param newAttributeDefinitionsDrafts the new list of attribute definitions drafts.
      * @return a list of attribute definitions update actions if the list of attribute definitions is not identical.
      *         Otherwise, if the attribute definitions are identical, an empty list is returned.
-     * @throws BuildUpdateActionException in case there are attribute definitions drafts with duplicate names.
+     * @throws BuildUpdateActionException in case there are attribute definitions drafts with duplicate names or
+     *         there are attribute definitions with the null attribute type.
      */
     @Nonnull
     public static List<UpdateAction<ProductType>> buildAttributeDefinitionsUpdateActions(
@@ -79,18 +77,14 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      * @param newAttributeDefinitionsDrafts the new list of attribute definitions drafts.
      * @return a list of attribute definitions update actions if the list of attribute definitions is not identical.
      *         Otherwise, if the attribute definitions are identical, an empty list is returned.
-     * @throws BuildUpdateActionException in case there are attribute definitions drafts with duplicate names.
+     * @throws BuildUpdateActionException in case there are attribute definitions drafts with duplicate names or
+     *         there are attribute definitions with the null attribute type.
      */
     @Nonnull
     private static List<UpdateAction<ProductType>> buildUpdateActions(
         @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
         @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts)
         throws BuildUpdateActionException {
-
-        final Map<String, AttributeDefinition> oldAttributesDefinitionsNameMap =
-            oldAttributeDefinitions
-                .stream()
-                .collect(toMap(AttributeDefinition::getName, attributeDefinition -> attributeDefinition));
 
         try {
             final List<UpdateAction<ProductType>> updateActions =
@@ -101,8 +95,8 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
 
             updateActions.addAll(
                 buildAddAttributeDefinitionUpdateActions(
-                    newAttributeDefinitionsDrafts,
-                    oldAttributesDefinitionsNameMap
+                    oldAttributeDefinitions,
+                    newAttributeDefinitionsDrafts
                 )
             );
 
@@ -135,11 +129,13 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      *         in the new draft. If the attribute definition still exists in the new draft, then compare the attribute
      *         definition fields (name, label, etc..), and add the computed actions to the list of update actions.
      *         Otherwise, if the attribute definitions are identical, an empty optional is returned.
+     * @throws BuildUpdateActionException in case there are attribute definitions drafts with duplicate names or
+     *         there are attribute definitions with the null attribute type.
      */
     @Nonnull
     private static List<UpdateAction<ProductType>> buildRemoveAttributeDefinitionOrAttributeDefinitionUpdateActions(
         @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
-        @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts) {
+        @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts) throws BuildUpdateActionException {
 
         final Map<String, AttributeDefinitionDraft> newAttributesDefinitionsDraftsNameMap =
             newAttributeDefinitionsDrafts
@@ -153,48 +149,51 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
                     }
                 ));
 
-        return oldAttributeDefinitions
-            .stream()
-            .map(oldAttributeDefinition -> {
-                final String oldAttributeDefinitionName = oldAttributeDefinition.getName();
-                final AttributeDefinitionDraft matchingNewAttributeDefinitionDraft =
-                    newAttributesDefinitionsDraftsNameMap.get(oldAttributeDefinitionName);
-                return ofNullable(matchingNewAttributeDefinitionDraft)
-                    .map(attributeDefinitionDraft -> {
-                        // attribute type is required so if null we let commercetools to throw exception
-                        if (attributeDefinitionDraft.getAttributeType() != null) {
-                            if (haveSameAttributeType(oldAttributeDefinition, attributeDefinitionDraft)) {
-                                return buildActions(oldAttributeDefinition, attributeDefinitionDraft);
-                            } else {
-                                return Arrays.asList(
-                                    RemoveAttributeDefinition.of(oldAttributeDefinitionName),
-                                    AddAttributeDefinition.of(attributeDefinitionDraft)
-                                );
-                            }
-                        } else {
-                            return new ArrayList<UpdateAction<ProductType>>();
-                        }
+        final List<UpdateAction<ProductType>> updateActions = new ArrayList<>();
 
-                    })
-                    .orElseGet(() -> singletonList(RemoveAttributeDefinition.of(oldAttributeDefinitionName)));
-            })
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+        for (AttributeDefinition oldAttributeDefinition : oldAttributeDefinitions) {
+
+            final String oldAttributeDefinitionName = oldAttributeDefinition.getName();
+            final AttributeDefinitionDraft matchingNewAttributeDefinitionDraft =
+                    newAttributesDefinitionsDraftsNameMap.get(oldAttributeDefinitionName);
+
+            AttributeTypeAssert.assertOldAttributeType(oldAttributeDefinition.getAttributeType());
+
+            if (matchingNewAttributeDefinitionDraft != null) {
+
+                AttributeTypeAssert.assertNewAttributeType(matchingNewAttributeDefinitionDraft.getAttributeType());
+
+                if (haveSameAttributeType(oldAttributeDefinition.getAttributeType(),
+                        matchingNewAttributeDefinitionDraft.getAttributeType())) {
+                    updateActions.addAll(buildActions(oldAttributeDefinition, matchingNewAttributeDefinitionDraft));
+                } else {
+                    // since there is no way to change an attribute type on CTP,
+                    // we remove the attribute definition and add a new one with a new attribute type
+                    updateActions.add(RemoveAttributeDefinition.of(oldAttributeDefinitionName));
+                    updateActions.add(AddAttributeDefinition.of(matchingNewAttributeDefinitionDraft));
+                }
+            } else {
+                updateActions.add(RemoveAttributeDefinition.of(oldAttributeDefinitionName));
+            }
+
+        }
+
+        return updateActions;
     }
 
     /**
      * Compares the attribute types of the {@code attributeDefinitionA} and the {@code attributeDefinitionB} and
      * returns true if both attribute definitions have the same attribute type, false otherwise.
      *
-     * @param attributeDefinitionA the first attribute definition to compare.
-     * @param attributeDefinitionB the second attribute definition to compare.
+     * @param attributeTypeA the first attribute type to compare.
+     * @param attributeTypeB the second attribute type to compare.
      * @return true if both attribute definitions have the same attribute type, false otherwise.
      */
     private static boolean haveSameAttributeType(
-        @Nonnull final AttributeDefinition attributeDefinitionA,
-        @Nonnull final AttributeDefinitionDraft attributeDefinitionB) {
+        @Nonnull final AttributeType attributeTypeA,
+        @Nonnull final AttributeType attributeTypeB) {
 
-        return attributeDefinitionA.getAttributeType().getClass() == attributeDefinitionB.getAttributeType().getClass();
+        return attributeTypeA.getClass() == attributeTypeB.getClass();
     }
 
     /**
@@ -252,16 +251,25 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
      * Otherwise, if there are no new attribute definitions, then an empty list
      * is returned.
      *
-     * @param newAttributeDefinitionDrafts  the list of new {@link AttributeDefinitionDraft}s.
-     * @param oldAttributeDefinitionNameMap a map of names to AttributeDefinition of the old list
-     *                                      of attribute definition.
+     * @param oldAttributeDefinitions      the list of old {@link AttributeDefinition}s.
+     * @param newAttributeDefinitionDrafts the list of new {@link AttributeDefinitionDraft}s.
+     *
      * @return a list of attribute definition update actions if there are new attribute definition that should be added.
      *         Otherwise, if the attribute definitions are identical, an empty optional is returned.
      */
     @Nonnull
     private static List<UpdateAction<ProductType>> buildAddAttributeDefinitionUpdateActions(
-        @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionDrafts,
-        @Nonnull final Map<String, AttributeDefinition> oldAttributeDefinitionNameMap) {
+        @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
+        @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionDrafts ) {
+
+        final Map<String, AttributeDefinition> oldAttributeDefinitionNameMap =
+                oldAttributeDefinitions
+                        .stream()
+                        .collect(toMap(AttributeDefinition::getName, attributeDefinition -> attributeDefinition));
+
+        // Bug in the commercetools JVM SDK. AddAttributeDefinition should expect an AttributeDefinitionDraft rather
+        // than AttributeDefinition. That's why we use AttributeDefinitionCustomBuilder
+        // TODO It will be fixed in https://github.com/commercetools/commercetools-jvm-sdk/issues/1786
         return newAttributeDefinitionDrafts
             .stream()
             .filter(attributeDefinitionDraft -> !oldAttributeDefinitionNameMap
@@ -271,6 +279,6 @@ public final class ProductTypeUpdateAttributeDefinitionActionUtils {
             .collect(Collectors.toList());
     }
 
-    private ProductTypeUpdateAttributeDefinitionActionUtils() {
+    private AttributeDefinitionsUpdateActionUtils() {
     }
 }
