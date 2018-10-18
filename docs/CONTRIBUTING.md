@@ -83,7 +83,7 @@ are omitted because `javadoc` is previously created in `build` task, we just sho
 ./gradlew clean build bintrayUpload -Dbuild.version={version} 
 ````
 
-For more detailed information on the build and release process, see [Build and Release](BUILD.md) documentation.
+For more detailed information on the build and the release process, see [Build and Release](BUILD.md) documentation.
 
 ### Integration Tests
 
