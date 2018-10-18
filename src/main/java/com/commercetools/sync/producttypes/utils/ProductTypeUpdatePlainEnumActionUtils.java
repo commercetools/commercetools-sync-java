@@ -8,15 +8,15 @@ import io.sphere.sdk.producttypes.commands.updateactions.ChangeEnumValueOrder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateEnumActionsUtils.buildRemoveEnumValuesUpdateActions;
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateEnumActionsUtils.buildMatchingEnumValuesUpdateActions;
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateEnumActionsUtils.buildAddEnumValuesUpdateActions;
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateEnumActionsUtils.buildChangeEnumValuesOrderUpdateAction;
+import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateEnumActionsUtils.buildMatchingEnumValuesUpdateActions;
+import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateEnumActionsUtils.buildRemoveEnumValuesUpdateActions;
 import static java.util.Collections.emptyList;
 
 public final class ProductTypeUpdatePlainEnumActionUtils {
@@ -55,7 +55,7 @@ public final class ProductTypeUpdatePlainEnumActionUtils {
     /**
      * Compares a list of old {@link EnumValue}s with a list of new {@link EnumValue}s for a given attribute
      * definition.
-     * The method serves as a implementation for plain enum values syncing. The method takes in functions
+     * The method serves as an implementation for plain enum values syncing. The method takes in functions
      * for building the required update actions (AddEnumValue, RemoveEnumValue, ChangeEnumValueOrder and 1-1
      * update actions on plain enum values (e.g. changeLabel) for the required resource.
      *
