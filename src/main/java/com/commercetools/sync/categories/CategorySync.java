@@ -433,7 +433,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
 
     /**
-     * Given a {@link Set} of categories and a {@code key}. This method tries to find a category with this key in this
+     * Given a {@link Set} of categories and a {@code key}, this method tries to find a category with this key in this
      * set and returns an optional containing it or an empty optional if no category exists with such key.
      *
      * @param categories set of categories to look for a category with such key.
