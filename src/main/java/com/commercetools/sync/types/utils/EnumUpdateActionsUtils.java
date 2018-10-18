@@ -18,33 +18,7 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
 
-public final class EnumUpdateActionsUtils {
-
-    /**
-     * Given a list of new {@link EnumValue}s, gets a map where the keys are the enum value key, and the values
-     * are the enum instances.
-     *
-     * @param fieldDefinitionName     the field definition name whose the enum values belong to.
-     * @param enumValues              the list of enum values.
-     * @param <T>                     the enum type of the elements of the list.
-     * @return a map with the enum value key as a key of the map, and the enum
-     *         value as a value of the map.
-     */
-    @Nonnull
-    public static <T extends WithKey> Map<String, T> getEnumValuesKeyMapWithKeyValidation(
-        @Nonnull final String fieldDefinitionName,
-        @Nonnull final List<T> enumValues) {
-
-        return enumValues.stream().collect(
-            toMap(WithKey::getKey, enumValue -> enumValue,
-                (enumValueA, enumValueB) -> {
-                    throw new DuplicateKeyException(format("Enum Values have duplicated keys. "
-                            + "Field definition name: '%s', Duplicated enum value: '%s'. "
-                            + "Enum Values are expected to be unique inside their field definition.",
-                        fieldDefinitionName, enumValueA.getKey()));
-                }
-            ));
-    }
+final class EnumUpdateActionsUtils {
 
     /**
      * Compares the order of a list of old enum values and a list of new enum values. If there is a change in order,
@@ -60,7 +34,7 @@ public final class EnumUpdateActionsUtils {
      *         Otherwise, if the enum values order is identical, an empty optional is returned.
      */
     @Nonnull
-    public static <T extends WithKey> Optional<UpdateAction<Type>> buildChangeEnumValuesOrderUpdateAction(
+    static <T extends WithKey> Optional<UpdateAction<Type>> buildChangeEnumValuesOrderUpdateAction(
         @Nonnull final String fieldDefinitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
@@ -106,7 +80,7 @@ public final class EnumUpdateActionsUtils {
      *         Otherwise, if the enum values are identical, an empty optional is returned.
      */
     @Nonnull
-    public static <T extends WithKey> List<UpdateAction<Type>> buildAddEnumValuesUpdateActions(
+    static <T extends WithKey> List<UpdateAction<Type>> buildAddEnumValuesUpdateActions(
         @Nonnull final String fieldDefinitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
@@ -127,6 +101,32 @@ public final class EnumUpdateActionsUtils {
             .filter(newEnumValue -> !oldEnumValuesKeyMap.containsKey(newEnumValue.getKey()))
             .map(newEnumValue -> addEnumCallback.apply(fieldDefinitionName, newEnumValue))
             .collect(Collectors.toList());
+    }
+
+    /**
+     * Given a list of new {@link EnumValue}s, gets a map where the keys are the enum value key, and the values
+     * are the enum instances.
+     *
+     * @param fieldDefinitionName     the field definition name whose the enum values belong to.
+     * @param enumValues              the list of enum values.
+     * @param <T>                     the enum type of the elements of the list.
+     * @return a map with the enum value key as a key of the map, and the enum
+     *         value as a value of the map.
+     */
+    @Nonnull
+    private static <T extends WithKey> Map<String, T> getEnumValuesKeyMapWithKeyValidation(
+            @Nonnull final String fieldDefinitionName,
+            @Nonnull final List<T> enumValues) {
+
+        return enumValues.stream().collect(
+                toMap(WithKey::getKey, enumValue -> enumValue,
+                        (enumValueA, enumValueB) -> {
+                            throw new DuplicateKeyException(format("Enum Values have duplicated keys. "
+                                            + "Field definition name: '%s', Duplicated enum value: '%s'. "
+                                            + "Enum Values are expected to be unique inside their field definition.",
+                                    fieldDefinitionName, enumValueA.getKey()));
+                        }
+                ));
     }
 
     private EnumUpdateActionsUtils() {
