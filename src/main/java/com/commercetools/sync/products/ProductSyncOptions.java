@@ -47,8 +47,8 @@ public final class ProductSyncOptions extends BaseSyncOptions<Product, ProductDr
     }
 
     /**
-     * @return option that indicates whether sync process should create price channel of given key when it doesn't
-     *      exists in a target project yet.
+     * @return option that indicates whether the sync process should create price channel of the given key
+     *      when it doesn't exist in a target project yet.
      */
     public boolean shouldEnsurePriceChannels() {
         return ensurePriceChannels;

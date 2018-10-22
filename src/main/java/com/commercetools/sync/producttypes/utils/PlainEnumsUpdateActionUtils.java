@@ -55,7 +55,7 @@ public final class PlainEnumsUpdateActionUtils {
     /**
      * Compares a list of old {@link EnumValue}s with a list of new {@link EnumValue}s for a given attribute
      * definition.
-     * The method serves as a implementation for plain enum values syncing. The method takes in functions
+     * The method serves as an implementation for plain enum values syncing. The method takes in functions
      * for building the required update actions (AddEnumValue, RemoveEnumValue, ChangeEnumValueOrder and 1-1
      * update actions on plain enum values (e.g. changeLabel) for the required resource.
      *

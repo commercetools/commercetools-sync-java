@@ -2,7 +2,7 @@
 
 ## Setup
 
-1. Benchmarks are run by JUnit as separate source set just like main, test and integration-test. The benchmarks can be 
+1. Benchmarks are run by JUnit as a separate source set just like main, test and integration-test. The benchmarks can be 
 found [here](/src/benchmark/java/com/commercetools/sync/benchmark).
 
 2. Every benchmark writes it's results as JSON to 

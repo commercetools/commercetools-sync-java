@@ -203,7 +203,7 @@ public final class AttributeDefinitionsUpdateActionUtils {
      *
      * @param oldAttributeDefinitions      the list of old {@link AttributeDefinition}s
      * @param newAttributeDefinitionDrafts the list of new {@link AttributeDefinitionDraft}s
-     * @return a list of attribute definition update actions if the the order of attribute definitions is not
+     * @return a list of attribute definition update actions if the order of attribute definitions is not
      *         identical. Otherwise, if the attribute definitions order is identical, an empty optional is returned.
      */
     @Nonnull
