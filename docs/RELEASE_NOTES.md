@@ -78,6 +78,8 @@ optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issue
 - **Inventory Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 - **ProductType Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 
+**Enhancements** (1)
+- **ProductType Sync** - Added `ProductTypeSyncBenchmark` to benchmark the product type sync, to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
 
 -->
 
