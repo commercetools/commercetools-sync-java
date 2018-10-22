@@ -3,7 +3,6 @@ package com.commercetools.sync.types.utils.typeactionutils;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.types.utils.LocalizedEnumUpdateActionUtils;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.commands.updateactions.AddLocalizedEnumValue;
 import io.sphere.sdk.types.commands.updateactions.ChangeLocalizedEnumValueOrder;
@@ -14,43 +13,13 @@ import org.junit.rules.ExpectedException;
 import java.util.Collections;
 import java.util.List;
 
+import static com.commercetools.sync.commons.utils.enums.LocalizedEnumValueTestObjects.*;
 import static com.commercetools.sync.types.utils.LocalizedEnumUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BuildLocalizedEnumUpdateActionsTest {
     private static final String FIELD_NAME_1 = "field1";
-
-    private static final LocalizedEnumValue ENUM_VALUE_A = LocalizedEnumValue.of("a", ofEnglish("label_a"));
-    private static final LocalizedEnumValue ENUM_VALUE_B = LocalizedEnumValue.of("b", ofEnglish("label_b"));
-    private static final LocalizedEnumValue ENUM_VALUE_C = LocalizedEnumValue.of("c", ofEnglish("label_c"));
-    private static final LocalizedEnumValue ENUM_VALUE_D = LocalizedEnumValue.of("d", ofEnglish("label_d"));
-
-    private static final List<LocalizedEnumValue> ENUM_VALUES_ABC = asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_C);
-    private static final List<LocalizedEnumValue> ENUM_VALUES_ABD = asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_D);
-    private static final List<LocalizedEnumValue> ENUM_VALUES_ABB = asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_B);
-    private static final List<LocalizedEnumValue> ENUM_VALUES_ABCD = asList(
-        ENUM_VALUE_A,
-        ENUM_VALUE_B,
-        ENUM_VALUE_C,
-        ENUM_VALUE_D
-    );
-    private static final List<LocalizedEnumValue> ENUM_VALUES_CAB = asList(ENUM_VALUE_C, ENUM_VALUE_A, ENUM_VALUE_B);
-    private static final List<LocalizedEnumValue> ENUM_VALUES_CB = asList(ENUM_VALUE_C, ENUM_VALUE_B);
-    private static final List<LocalizedEnumValue> ENUM_VALUES_ACBD = asList(
-        ENUM_VALUE_A,
-        ENUM_VALUE_C,
-        ENUM_VALUE_B,
-        ENUM_VALUE_D
-    );
-    private static final List<LocalizedEnumValue> ENUM_VALUES_ADBC = asList(
-        ENUM_VALUE_A,
-        ENUM_VALUE_D,
-        ENUM_VALUE_B,
-        ENUM_VALUE_C
-    );
-    private static final List<LocalizedEnumValue> ENUM_VALUES_CBD = asList(ENUM_VALUE_C, ENUM_VALUE_B, ENUM_VALUE_D);
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -214,9 +183,9 @@ public class BuildLocalizedEnumUpdateActionsTest {
     @Test
     public void buildLocalizedEnumUpdateActions_WithDuplicatePlainEnumValues_ShouldTriggerDuplicateKeyError() {
         expectedException.expect(DuplicateKeyException.class);
-        expectedException.expectMessage("Enum Values have duplicated keys. Field definition name: "
+        expectedException.expectMessage("Enum Values have duplicated keys. Definition name: "
                 + "'field_definition_name', Duplicated enum value: 'b'. Enum Values are expected to be unique inside "
-                + "their field definition.");
+                + "their definition.");
 
         LocalizedEnumUpdateActionUtils.buildLocalizedEnumValuesUpdateActions(
                 "field_definition_name",

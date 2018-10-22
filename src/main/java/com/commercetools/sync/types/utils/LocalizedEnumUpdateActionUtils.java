@@ -9,14 +9,9 @@ import io.sphere.sdk.types.commands.updateactions.ChangeLocalizedEnumValueOrder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static com.commercetools.sync.types.utils.EnumUpdateActionsUtils.buildAddEnumValuesUpdateActions;
-import static com.commercetools.sync.types.utils.EnumUpdateActionsUtils.buildChangeEnumValuesOrderUpdateAction;
-import static java.util.Collections.emptyList;
+import static com.commercetools.sync.commons.utils.enums.EnumValuesUpdateActionUtils.buildActions;
 
 public final class LocalizedEnumUpdateActionUtils {
     /**
@@ -39,49 +34,19 @@ public final class LocalizedEnumUpdateActionUtils {
         @Nonnull final List<LocalizedEnumValue> oldEnumValues,
         @Nullable final List<LocalizedEnumValue> newEnumValues) {
 
-        if (newEnumValues != null && !newEnumValues.isEmpty()) {
-            return buildUpdateActions(fieldDefinitionName, oldEnumValues, newEnumValues);
-        }
-
         /*
           TODO: If the list of newEnumValues is null, then remove actions are built
                 for every existing localized enum value in the oldEnumValues list.
          */
 
-        return emptyList();
-    }
-
-
-    @Nonnull
-    private static List<UpdateAction<Type>> buildUpdateActions(
-        @Nonnull final String fieldDefinitionName,
-        @Nonnull final List<LocalizedEnumValue> oldEnumValues,
-        @Nonnull final List<LocalizedEnumValue> newEnumValues) {
-
-
-        final List<UpdateAction<Type>> addEnumValuesUpdateActions = buildAddEnumValuesUpdateActions(
-            fieldDefinitionName,
-            oldEnumValues,
-            newEnumValues,
-            AddLocalizedEnumValue::of
-        );
-
-        final List<UpdateAction<Type>> changeEnumValuesOrderUpdateActions =
-            buildChangeEnumValuesOrderUpdateAction(
-                fieldDefinitionName,
+        return buildActions(fieldDefinitionName,
                 oldEnumValues,
                 newEnumValues,
-                ChangeLocalizedEnumValueOrder::of
-            )
-                .map(Collections::singletonList)
-                .orElse(emptyList());
-
-        return Stream.concat(
-
-            addEnumValuesUpdateActions.stream(),
-            changeEnumValuesOrderUpdateActions.stream()
-
-        ).collect(Collectors.toList());
+                null,
+                null,
+                AddLocalizedEnumValue::of,
+                null,
+                ChangeLocalizedEnumValueOrder::of);
     }
 
     private LocalizedEnumUpdateActionUtils() {

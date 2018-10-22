@@ -3,6 +3,8 @@ package com.commercetools.sync.types.utils;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.types.helpers.FieldTypeAssert;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.EnumValue;
+import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.EnumFieldType;
 import io.sphere.sdk.types.FieldDefinition;
@@ -11,13 +13,14 @@ import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.commands.updateactions.ChangeFieldDefinitionLabel;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.types.utils.LocalizedEnumUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
-import static com.commercetools.sync.types.utils.PlainEnumUpdateActionUtils.buildEnumValuesUpdateActions;
+import static com.commercetools.sync.types.utils.PlainEnumValueUpdateActionUtils.buildEnumValuesUpdateActions;
 
 
 public final class FieldDefinitionUpdateActionUtils {
@@ -38,26 +41,44 @@ public final class FieldDefinitionUpdateActionUtils {
         @Nonnull final FieldDefinition oldFieldDefinition,
         @Nonnull final FieldDefinition newFieldDefinition) throws BuildUpdateActionException {
 
-        FieldTypeAssert.assertTypesAreNull(oldFieldDefinition.getType(), newFieldDefinition.getType());
-
         final List<UpdateAction<Type>> updateActions =
             filterEmptyOptionals(buildChangeLabelUpdateAction(oldFieldDefinition, newFieldDefinition));
 
+        updateActions.addAll(buildEnumUpdateActions(oldFieldDefinition, newFieldDefinition));
+
+        return updateActions;
+    }
+
+    /**
+     * Compares all the {@link EnumValue} and {@link LocalizedEnumValue} values of {@link FieldDefinition}s and returns
+     * a list of {@link UpdateAction}&lt;{@link Type}&gt; as a result. If both {@link FieldDefinition}s have identical
+     * enum values, then no update action is needed and hence an empty {@link List} is returned.
+     *
+     * @param oldFieldDefinition the old field definition which should be updated.
+     * @param newFieldDefinition the new field definition where we get the new fields.
+     * @return A list with the update actions or an empty list if the field definition enums are identical.
+     * @throws BuildUpdateActionException in case there are attribute definitions with the null attribute type.
+     */
+    @Nonnull
+    public static List<UpdateAction<Type>> buildEnumUpdateActions(
+        @Nonnull final FieldDefinition oldFieldDefinition,
+        @Nonnull final FieldDefinition newFieldDefinition) throws BuildUpdateActionException {
+
+        FieldTypeAssert.assertTypesAreNull(oldFieldDefinition.getType(), newFieldDefinition.getType());
+        final List<UpdateAction<Type>> updateActions = new ArrayList<>();
         if (isPlainEnumField(oldFieldDefinition)) {
             updateActions.addAll(buildEnumValuesUpdateActions(
-                    oldFieldDefinition.getName(),
-                    ((EnumFieldType) oldFieldDefinition.getType()).getValues(),
-                    ((EnumFieldType) newFieldDefinition.getType()).getValues()
+                oldFieldDefinition.getName(),
+                ((EnumFieldType) oldFieldDefinition.getType()).getValues(),
+                ((EnumFieldType) newFieldDefinition.getType()).getValues()
             ));
         } else if (isLocalizedEnumField(oldFieldDefinition)) {
             updateActions.addAll(buildLocalizedEnumValuesUpdateActions(
-                    oldFieldDefinition.getName(),
-                    ((LocalizedEnumFieldType) oldFieldDefinition.getType()).getValues(),
-                    ((LocalizedEnumFieldType) newFieldDefinition.getType()).getValues()
+                oldFieldDefinition.getName(),
+                ((LocalizedEnumFieldType) oldFieldDefinition.getType()).getValues(),
+                ((LocalizedEnumFieldType) newFieldDefinition.getType()).getValues()
             ));
         }
-
-
         return updateActions;
     }
 
@@ -100,6 +121,8 @@ public final class FieldDefinitionUpdateActionUtils {
             () -> ChangeFieldDefinitionLabel.of(oldFieldDefinition.getName(), newFieldDefinition.getLabel())
         );
     }
+
+
 
     private FieldDefinitionUpdateActionUtils() {
     }

@@ -1,4 +1,4 @@
-package com.commercetools.sync.producttypes.utils;
+package com.commercetools.sync.commons.utils.enums;
 
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedEnumValue;
@@ -9,7 +9,8 @@ import org.junit.Test;
 
 import java.util.Optional;
 
-import static com.commercetools.sync.producttypes.utils.LocalizedEnumUpdateActionUtils.buildChangeLabelAction;
+
+import static com.commercetools.sync.commons.utils.enums.LocalizedEnumValueUpdateActionUtils.buildChangeLabelAction;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class LocalizedEnumValueUpdateActionUtilsTest {
@@ -22,7 +23,8 @@ public class LocalizedEnumValueUpdateActionUtilsTest {
         final Optional<UpdateAction<ProductType>> result = buildChangeLabelAction(
             "attribute_definition_name_1",
             old,
-            newDifferent
+            newDifferent,
+            ChangeLocalizedEnumValueLabel::of
         );
 
         assertThat(result).contains(ChangeLocalizedEnumValueLabel.of("attribute_definition_name_1", newDifferent));
@@ -33,7 +35,8 @@ public class LocalizedEnumValueUpdateActionUtilsTest {
         final Optional<UpdateAction<ProductType>> result = buildChangeLabelAction(
             "attribute_definition_name_1",
             old,
-            newSame
+            newSame,
+            ChangeLocalizedEnumValueLabel::of
         );
 
         assertThat(result).isEmpty();

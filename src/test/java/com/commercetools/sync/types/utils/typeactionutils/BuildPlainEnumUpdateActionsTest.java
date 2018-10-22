@@ -1,7 +1,6 @@
 package com.commercetools.sync.types.utils.typeactionutils;
 
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.commands.updateactions.AddEnumValue;
 import io.sphere.sdk.types.commands.updateactions.ChangeEnumValueOrder;
@@ -10,43 +9,13 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 
-import static com.commercetools.sync.types.utils.PlainEnumUpdateActionUtils.buildEnumValuesUpdateActions;
+import static com.commercetools.sync.commons.utils.enums.PlainEnumValueTestObjects.*;
+import static com.commercetools.sync.types.utils.PlainEnumValueUpdateActionUtils.buildEnumValuesUpdateActions;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BuildPlainEnumUpdateActionsTest {
     private static final String FIELD_NAME_1 = "field1";
-
-    private static final EnumValue ENUM_VALUE_A = EnumValue.of("a", "label_a");
-    private static final EnumValue ENUM_VALUE_B = EnumValue.of("b", "label_b");
-    private static final EnumValue ENUM_VALUE_C = EnumValue.of("c", "label_c");
-    private static final EnumValue ENUM_VALUE_D = EnumValue.of("d", "label_d");
-
-    private static final List<EnumValue> ENUM_VALUES_ABC = asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_C);
-    private static final List<EnumValue> ENUM_VALUES_ABD = asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_D);
-    private static final List<EnumValue> ENUM_VALUES_ABCD = asList(
-        ENUM_VALUE_A,
-        ENUM_VALUE_B,
-        ENUM_VALUE_C,
-        ENUM_VALUE_D
-    );
-    private static final List<EnumValue> ENUM_VALUES_CAB = asList(ENUM_VALUE_C, ENUM_VALUE_A, ENUM_VALUE_B);
-    private static final List<EnumValue> ENUM_VALUES_CB = asList(ENUM_VALUE_C, ENUM_VALUE_B);
-    private static final List<EnumValue> ENUM_VALUES_ACBD = asList(
-        ENUM_VALUE_A,
-        ENUM_VALUE_C,
-        ENUM_VALUE_B,
-        ENUM_VALUE_D
-    );
-    private static final List<EnumValue> ENUM_VALUES_ADBC = asList(
-        ENUM_VALUE_A,
-        ENUM_VALUE_D,
-        ENUM_VALUE_B,
-        ENUM_VALUE_C
-    );
-    private static final List<EnumValue> ENUM_VALUES_CBD = asList(ENUM_VALUE_C, ENUM_VALUE_B, ENUM_VALUE_D);
-
-
 
     @Test
     public void buildPlainEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOlEnumValues_ShouldNotBuildActions() {

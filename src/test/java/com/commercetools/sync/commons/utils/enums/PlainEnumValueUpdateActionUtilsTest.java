@@ -1,4 +1,4 @@
-package com.commercetools.sync.producttypes.utils;
+package com.commercetools.sync.commons.utils.enums;
 
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import java.util.Optional;
 
-import static com.commercetools.sync.producttypes.utils.PlainEnumUpdateActionUtils.buildChangeLabelAction;
+import static com.commercetools.sync.commons.utils.enums.PlainEnumValueUpdateActionUtils.buildChangeLabelAction;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PlainEnumValueUpdateActionUtilsTest {
@@ -32,7 +32,8 @@ public class PlainEnumValueUpdateActionUtilsTest {
         final Optional<UpdateAction<ProductType>> result = buildChangeLabelAction(
             "attribute_definition_name_1",
             old,
-            newDifferent
+            newDifferent,
+            ChangePlainEnumValueLabel::of
         );
 
         assertThat(result).containsInstanceOf(ChangePlainEnumValueLabel.class);
@@ -44,7 +45,8 @@ public class PlainEnumValueUpdateActionUtilsTest {
         final Optional<UpdateAction<ProductType>> result = buildChangeLabelAction(
             "attribute_definition_name_1",
             old,
-            newSame
+            newSame,
+            ChangePlainEnumValueLabel::of
         );
 
         assertThat(result).isEmpty();

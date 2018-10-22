@@ -2,9 +2,9 @@ package com.commercetools.sync.producttypes.utils.producttypeactionutils;
 
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.updateactions.AddLocalizedEnumValue;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeLocalizedEnumValueLabel;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeLocalizedEnumValueOrder;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
 import org.junit.Rule;
@@ -14,42 +14,13 @@ import org.junit.rules.ExpectedException;
 import java.util.Collections;
 import java.util.List;
 
-import static com.commercetools.sync.producttypes.utils.LocalizedEnumsUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static com.commercetools.sync.commons.utils.enums.LocalizedEnumValueTestObjects.*;
+import static com.commercetools.sync.producttypes.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValueUpdateActions;
+import static com.commercetools.sync.producttypes.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BuildLocalizedEnumUpdateActionsTest {
-    private static final LocalizedEnumValue ENUM_VALUE_A = LocalizedEnumValue.of("a", ofEnglish("label_a"));
-    private static final LocalizedEnumValue ENUM_VALUE_B = LocalizedEnumValue.of("b", ofEnglish("label_b"));
-    private static final LocalizedEnumValue ENUM_VALUE_C = LocalizedEnumValue.of("c", ofEnglish("label_c"));
-    private static final LocalizedEnumValue ENUM_VALUE_D = LocalizedEnumValue.of("d", ofEnglish("label_d"));
-
-    private static final List<LocalizedEnumValue> ENUM_VALUES_ABC = asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_C);
-    private static final List<LocalizedEnumValue> ENUM_VALUES_AB = asList(ENUM_VALUE_A, ENUM_VALUE_B);
-    private static final List<LocalizedEnumValue> ENUM_VALUES_ABB = asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_B);
-    private static final List<LocalizedEnumValue> ENUM_VALUES_ABD = asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_D);
-    private static final List<LocalizedEnumValue> ENUM_VALUES_ABCD = asList(
-        ENUM_VALUE_A,
-        ENUM_VALUE_B,
-        ENUM_VALUE_C,
-        ENUM_VALUE_D
-    );
-    private static final List<LocalizedEnumValue> ENUM_VALUES_CAB = asList(ENUM_VALUE_C, ENUM_VALUE_A, ENUM_VALUE_B);
-    private static final List<LocalizedEnumValue> ENUM_VALUES_CB = asList(ENUM_VALUE_C, ENUM_VALUE_B);
-    private static final List<LocalizedEnumValue> ENUM_VALUES_ACBD = asList(
-        ENUM_VALUE_A,
-        ENUM_VALUE_C,
-        ENUM_VALUE_B,
-        ENUM_VALUE_D
-    );
-    private static final List<LocalizedEnumValue> ENUM_VALUES_ADBC = asList(
-        ENUM_VALUE_A,
-        ENUM_VALUE_D,
-        ENUM_VALUE_B,
-        ENUM_VALUE_C
-    );
-    private static final List<LocalizedEnumValue> ENUM_VALUES_CBD = asList(ENUM_VALUE_C, ENUM_VALUE_B, ENUM_VALUE_D);
 
     @Test
     public void buildLocalizedEnumUpdateActions_WithNullNewEnumValuesAndExistingEnumValues_ShouldBuildRemoveAction() {
@@ -121,9 +92,9 @@ public class BuildLocalizedEnumUpdateActionsTest {
     @Test
     public void buildLocalizedEnumUpdateActions_WithDuplicatePlainEnumValues_ShouldTriggerDuplicateKeyError() {
         expectedException.expect(DuplicateKeyException.class);
-        expectedException.expectMessage("Enum Values have duplicated keys. Attribute definition name: "
+        expectedException.expectMessage("Enum Values have duplicated keys. Definition name: "
             + "'attribute_definition_name_1', Duplicated enum value: 'b'. Enum Values are expected to be unique inside "
-            + "their attribute definition.");
+            + "their definition.");
 
         buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
@@ -261,6 +232,33 @@ public class BuildLocalizedEnumUpdateActionsTest {
                 ENUM_VALUE_B,
                 ENUM_VALUE_D
             ))
+        );
+    }
+
+    @Test
+    public void buildLocalizedEnumUpdateActions_WithDifferentLabels_ShouldReturnChangeLabelAction() {
+        final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValueUpdateActions(
+            "attribute_definition_name_1",
+            ENUM_VALUE_A,
+            ENUM_VALUE_A_DIFFERENT_LABEL
+        );
+
+        assertThat(updateActions).containsAnyOf(
+            ChangeLocalizedEnumValueLabel.of("attribute_definition_name_1", ENUM_VALUE_A_DIFFERENT_LABEL)
+        );
+    }
+
+
+    @Test
+    public void buildLocalizedEnumUpdateActions_WithSameLabels_ShouldNotReturnChangeLabelAction() {
+        final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValueUpdateActions(
+            "attribute_definition_name_1",
+            ENUM_VALUE_A,
+            ENUM_VALUE_A
+        );
+
+        assertThat(updateActions).doesNotContain(
+            ChangeLocalizedEnumValueLabel.of("attribute_definition_name_1", ENUM_VALUE_A)
         );
     }
 }

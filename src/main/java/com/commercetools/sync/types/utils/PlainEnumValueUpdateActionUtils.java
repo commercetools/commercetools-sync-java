@@ -1,5 +1,6 @@
 package com.commercetools.sync.types.utils;
 
+import com.commercetools.sync.commons.utils.enums.EnumValuesUpdateActionUtils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.types.Type;
@@ -8,16 +9,10 @@ import io.sphere.sdk.types.commands.updateactions.ChangeEnumValueOrder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static com.commercetools.sync.types.utils.EnumUpdateActionsUtils.buildAddEnumValuesUpdateActions;
-import static com.commercetools.sync.types.utils.EnumUpdateActionsUtils.buildChangeEnumValuesOrderUpdateAction;
-import static java.util.Collections.emptyList;
+public final class PlainEnumValueUpdateActionUtils {
 
-public final class PlainEnumUpdateActionUtils {
     /**
      * Compares a list of old {@link EnumValue}s with a list of new {@link EnumValue}s for a given
      * field definition.
@@ -37,48 +32,21 @@ public final class PlainEnumUpdateActionUtils {
         @Nonnull final List<EnumValue> oldEnumValues,
         @Nullable final List<EnumValue> newEnumValues) {
 
-        if (newEnumValues != null && !newEnumValues.isEmpty()) {
-            return buildUpdateActions(fieldDefinitionName, oldEnumValues, newEnumValues);
-        }
-
         /*
           TODO: If the list of newEnumValues is null, then remove actions are built
                 for every existing plain enum value in the oldEnumValues list.
          */
 
-        return emptyList();
-    }
-
-
-    @Nonnull
-    private static List<UpdateAction<Type>> buildUpdateActions(
-        @Nonnull final String fieldDefinitionName,
-        @Nonnull final List<EnumValue> oldEnumValues,
-        @Nonnull final List<EnumValue> newEnumValues) {
-
-
-        final List<UpdateAction<Type>> addEnumValuesUpdateActions = buildAddEnumValuesUpdateActions(
-            fieldDefinitionName,
-            oldEnumValues,
-            newEnumValues,
-            AddEnumValue::of
-        );
-
-        final List<UpdateAction<Type>> changeEnumValuesOrderUpdateActions =
-            buildChangeEnumValuesOrderUpdateAction(
-                fieldDefinitionName,
+        return EnumValuesUpdateActionUtils.buildActions(fieldDefinitionName,
                 oldEnumValues,
                 newEnumValues,
-                ChangeEnumValueOrder::of
-            )
-            .map(Collections::singletonList)
-            .orElse(emptyList());
-
-        return Stream.concat(addEnumValuesUpdateActions.stream(), changeEnumValuesOrderUpdateActions.stream())
-                .collect(Collectors.toList());
+                null,
+                null,
+                AddEnumValue::of,
+                null,
+                ChangeEnumValueOrder::of);
     }
 
-
-    private PlainEnumUpdateActionUtils() {
+    private PlainEnumValueUpdateActionUtils() {
     }
 }
