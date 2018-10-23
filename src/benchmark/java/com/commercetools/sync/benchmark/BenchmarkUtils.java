@@ -36,6 +36,7 @@ public class BenchmarkUtils {
     static final String INVENTORY_SYNC = "inventorySync";
     static final String CATEGORY_SYNC = "categorySync";
     static final String TYPE_SYNC = "typeSync";
+    static final String PRODUCT_TYPE_SYNC = "productTypeSync";
     static final String CREATES_ONLY = "createsOnly";
     static final String UPDATES_ONLY = "updatesOnly";
     static final String CREATES_AND_UPDATES = "mix";

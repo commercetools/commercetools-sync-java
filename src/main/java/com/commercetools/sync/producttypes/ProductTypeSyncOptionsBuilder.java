@@ -46,7 +46,7 @@ public final class ProductTypeSyncOptionsBuilder extends BaseSyncOptionsBuilder<
     }
 
     /**
-     * Returns an instance of this class to be used in the super class generic methods. Please see the JavaDoc in the
+     * Returns an instance of this class to be used in the superclass's generic methods. Please see the JavaDoc in the
      * overridden method for further details.
      *
      * @return an instance of this class.

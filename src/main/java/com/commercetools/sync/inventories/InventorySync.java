@@ -99,7 +99,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             .filter(this::validateDraft)
             .collect(toList());
         final List<CompletableFuture<InventorySyncStatistics>> completableFutures = IntStream
-            .range(0, calculateAmountOfBatches(validInventories.size()))
+            .range(0, calculateNumberOfBatches(validInventories.size()))
             .mapToObj(batchIndex -> getBatch(batchIndex, validInventories))
             .map(this::processBatch)
             .map(CompletionStage::toCompletableFuture)
@@ -142,12 +142,13 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     }
 
     /**
-     * Calculates amount of batches, available in a list of a given size. The batch size is specified by a sync options.
+     * Calculates the number of batches, available in a list of a given size.
+     * The batch size is specified by sync options.
      *
      * @param listSize size of a list
-     * @return amount of batches, available in a list of a given size
+     * @return number of batches, available in a list of a given size
      */
-    private int calculateAmountOfBatches(int listSize) {
+    private int calculateNumberOfBatches(int listSize) {
         return (listSize + syncOptions.getBatchSize() - 1) / syncOptions.getBatchSize();
     }
 
