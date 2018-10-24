@@ -260,7 +260,7 @@ public final class AttributeDefinitionsUpdateActionUtils {
     @Nonnull
     private static List<UpdateAction<ProductType>> buildAddAttributeDefinitionUpdateActions(
         @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
-        @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionDrafts ) {
+        @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionDrafts) {
 
         final Map<String, AttributeDefinition> oldAttributeDefinitionNameMap =
                 oldAttributeDefinitions
