@@ -41,7 +41,7 @@ public final class AttributeDefinitionsUpdateActionUtils {
      *
      * @param oldAttributeDefinitions       the old list of attribute definitions.
      * @param newAttributeDefinitionsDrafts the new list of attribute definitions drafts.
-     * @return a list of attribute definitions update actions if the list of attribute definitions is not identical.
+     * @return a list of attribute definitions update actions if the list of attribute definitions are not identical.
      *         Otherwise, if the attribute definitions are identical, an empty list is returned.
      * @throws BuildUpdateActionException in case there are attribute definitions drafts with duplicate names or
      *         there are attribute definitions with the null attribute type.
