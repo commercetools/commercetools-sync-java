@@ -92,7 +92,9 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * then {@code batch} isn't processed.
      *
      * @param batch batch of drafts that need to be synced
-     * @return {@link CompletionStage} of {@link ProductTypeSyncStatistics} that indicates method progress.
+     * @return a {@link CompletionStage} containing an instance
+     *         of {@link ProductTypeSyncStatistics} which contains information about the result of syncing the supplied 
+     *         batch to the target project.
      */
     @Override
     protected CompletionStage<ProductTypeSyncStatistics> processBatch(@Nonnull final List<ProductTypeDraft> batch) {
