@@ -195,6 +195,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     private CompletionStage<ProductTypeSyncStatistics> syncBatch(
             @Nonnull final Set<ProductType> oldProductTypes,
             @Nonnull final Set<ProductTypeDraft> newProductTypes) {
+
         final Map<String, ProductType> oldProductTypeMap = getProductTypeKeysMap(oldProductTypes);
 
         return CompletableFuture.allOf(newProductTypes
