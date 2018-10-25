@@ -30,11 +30,11 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 public final class AttributeDefinitionsUpdateActionUtils {
+
     /**
-     * Compares a list of {@link AttributeDefinition}s with a list of {@link AttributeDefinitionDraft}s.
-     * The method serves as a generic implementation for attribute definitions syncing and building the required
-     * update actions (AddAttribute, RemoveAttribute, ChangeAttributeOrder) and 1-1 update actions on attribute
-     * definitions (e.g. changeAttributeName, changeAttributeLabel, etc..) for the required resource.
+     * Compares a list of {@link AttributeDefinition}s with a list of {@link AttributeDefinitionDraft}s to
+     * returns a {@link List} of {@link UpdateAction}&lt;{@link ProductType}&gt;.If both lists have identical
+     * AttributeDefinitions, then no update actions are needed and hence an empty {@link List} is returned.
      *
      * <p>If the list of new {@link AttributeDefinitionDraft}s is {@code null}, then remove actions are built for
      * every existing attribute definition in the {@code oldAttributeDefinitions} list.
