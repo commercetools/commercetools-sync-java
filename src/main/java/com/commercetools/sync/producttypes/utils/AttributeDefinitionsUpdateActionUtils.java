@@ -267,9 +267,6 @@ public final class AttributeDefinitionsUpdateActionUtils {
                         .stream()
                         .collect(toMap(AttributeDefinition::getName, attributeDefinition -> attributeDefinition));
 
-        // Bug in the commercetools JVM SDK. AddAttributeDefinition should expect an AttributeDefinitionDraft rather
-        // than AttributeDefinition. That's why we use AttributeDefinitionCustomBuilder
-        // TODO It will be fixed in https://github.com/commercetools/commercetools-jvm-sdk/issues/1786
         return newAttributeDefinitionDrafts
             .stream()
             .filter(attributeDefinitionDraft -> !oldAttributeDefinitionNameMap
