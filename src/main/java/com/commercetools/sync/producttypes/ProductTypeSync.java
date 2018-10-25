@@ -156,19 +156,6 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     /**
-     * Given a list of {@link ProductType} or {@link ProductTypeDraft}, returns a map of keys to the
-     * {@link ProductType}/{@link ProductTypeDraft} instances.
-     *
-     * @param productTypes list of {@link ProductType}/{@link ProductTypeDraft}
-     * @param <T>          a type that extends of {@link WithKey}.
-     * @return the map of keys to {@link ProductType}/{@link ProductTypeDraft} instances.
-     */
-    private <T extends WithKey> Map<String, T> getProductTypeKeysMap(@Nonnull final Set<T> productTypes) {
-        return productTypes.stream().collect(Collectors.toMap(WithKey::getKey, p -> p,
-            (productTypeA, productTypeB) -> productTypeB));
-    }
-
-    /**
      * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
      * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
      * incrementing the total number of failed product types to sync.
@@ -209,6 +196,17 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             })
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new)).thenApply(result -> statistics);
+    }
+
+    /**
+     * Given a set of {@link ProductType}, returns a map of keys to the {@link ProductType} instances.
+     *
+     * @param productTypes list of {@link ProductType}
+     * @return the map of keys to {@link ProductType} instances.
+     */
+    private Map<String, ProductType> getProductTypeKeysMap(@Nonnull final Set<ProductType> productTypes) {
+        return productTypes.stream().collect(Collectors.toMap(WithKey::getKey, p -> p,
+            (productTypeA, productTypeB) -> productTypeB));
     }
 
     /**
