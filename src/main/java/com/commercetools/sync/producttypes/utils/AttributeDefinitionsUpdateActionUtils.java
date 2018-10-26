@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,12 +56,13 @@ public final class AttributeDefinitionsUpdateActionUtils {
 
         if (newAttributeDefinitionsDrafts != null) {
             return buildUpdateActions(
-                oldAttributeDefinitions,
-                newAttributeDefinitionsDrafts
+                oldAttributeDefinitions.stream().filter(Objects::nonNull).collect(toList()),
+                newAttributeDefinitionsDrafts.stream().filter(Objects::nonNull).collect(toList())
             );
         } else {
             return oldAttributeDefinitions
                 .stream()
+                .filter(Objects::nonNull)
                 .map(AttributeDefinition::getName)
                 .map(RemoveAttributeDefinition::of)
                 .collect(Collectors.toList());
