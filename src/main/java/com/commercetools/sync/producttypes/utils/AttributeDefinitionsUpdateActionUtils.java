@@ -4,7 +4,6 @@ import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
 import com.commercetools.sync.producttypes.helpers.AttributeDefinitionCustomBuilder;
-import com.commercetools.sync.producttypes.helpers.AttributeTypeAssert;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
@@ -24,6 +23,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionHelper.ensureAttributeDefinitionDraftIsValid;
+import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionHelper.ensureAttributeDefinitionIsValid;
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -153,15 +154,15 @@ public final class AttributeDefinitionsUpdateActionUtils {
 
         for (AttributeDefinition oldAttributeDefinition : oldAttributeDefinitions) {
 
+            ensureAttributeDefinitionIsValid(oldAttributeDefinition);
+
             final String oldAttributeDefinitionName = oldAttributeDefinition.getName();
             final AttributeDefinitionDraft matchingNewAttributeDefinitionDraft =
                     newAttributesDefinitionsDraftsNameMap.get(oldAttributeDefinitionName);
 
-            AttributeTypeAssert.assertOldAttributeType(oldAttributeDefinition.getAttributeType());
-
             if (matchingNewAttributeDefinitionDraft != null) {
 
-                AttributeTypeAssert.assertNewAttributeType(matchingNewAttributeDefinitionDraft.getAttributeType());
+                ensureAttributeDefinitionDraftIsValid(matchingNewAttributeDefinitionDraft);
 
                 if (haveSameAttributeType(oldAttributeDefinition.getAttributeType(),
                         matchingNewAttributeDefinitionDraft.getAttributeType())) {
@@ -175,7 +176,6 @@ public final class AttributeDefinitionsUpdateActionUtils {
             } else {
                 updateActions.add(RemoveAttributeDefinition.of(oldAttributeDefinitionName));
             }
-
         }
 
         return updateActions;

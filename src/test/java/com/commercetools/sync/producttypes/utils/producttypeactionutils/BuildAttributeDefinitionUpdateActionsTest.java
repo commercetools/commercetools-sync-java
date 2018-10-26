@@ -26,6 +26,7 @@ import java.util.List;
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildAttributesUpdateActions;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,6 +61,8 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         RES_ROOT + "product-type-with-attribute-definitions-abc-with-different-type.json";
     private static final String PRODUCT_TYPE_WITH_ATTRIBUTES_ABC_WITHOUT_ATTRIBUTE_TYPE =
             RES_ROOT + "product-type-with-attribute-definitions-abc-without-attribute-type.json";
+    private static final String PRODUCT_TYPE_WITH_ATTRIBUTES_ABC_WITHOUT_ATTRIBUTE_NAME =
+        RES_ROOT + "product-type-with-attribute-definitions-abc-without-attribute-name.json";
 
     private static final ProductTypeSyncOptions SYNC_OPTIONS = ProductTypeSyncOptionsBuilder
         .of(mock(SphereClient.class))
@@ -473,9 +476,13 @@ public class BuildAttributeDefinitionUpdateActionsTest {
 
         assertThat(updateActions).isEmpty();
         assertThat(errorMessages).hasSize(1);
-        assertThat(errorMessages.get(0)).matches("Failed to build update actions for the attributes definitions of the "
-                + "product type with the key 'key'. Reason: .*BuildUpdateActionException: "
-                + "Attribute type is not set for the old attribute definition.");
+        assertThat(errorMessages.get(0)).matches(
+            format("Failed to build update actions for the attributes definitions of the "
+                    + "product type with the key 'key'. Reason: .*BuildUpdateActionException: "
+                    + "Attribute type is not set for the old attribute definition. "
+                    + "Attribute definition name: '%s'. "
+                    + "Attribute definition is expected to be valid.",
+                oldProductType.getAttributes().get(0).getName()));
         assertThat(exceptions).hasSize(1);
         assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     }
@@ -508,9 +515,50 @@ public class BuildAttributeDefinitionUpdateActionsTest {
 
         assertThat(updateActions).isEmpty();
         assertThat(errorMessages).hasSize(1);
-        assertThat(errorMessages.get(0)).matches("Failed to build update actions for the attributes definitions of the "
+        assertThat(errorMessages.get(0)).matches(
+            format("Failed to build update actions for the attributes definitions of the "
                 + "product type with the key 'key'. Reason: .*BuildUpdateActionException: "
-                + "Attribute type is not set for the new/draft attribute definition.");
+                + "Attribute type is not set for the new/draft attribute definition. "
+                + "Attribute definition name: '%s'. "
+                + "Attribute definition draft is expected to be valid.",
+                oldProductType.getAttributes().get(0).getName()));
+        assertThat(exceptions).hasSize(1);
+        assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
+    }
+
+    @Test
+    public void buildAttributesUpdateActions_WithoutAttributeName_ShouldNotBuildActionsAndTriggerErrorCallback() {
+        final ProductType oldProductType =
+            readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC_WITHOUT_ATTRIBUTE_NAME, ProductType.class);
+
+        final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
+            PRODUCT_TYPE_WITH_ATTRIBUTES_ABC,
+            ProductTypeDraft.class
+        );
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final ProductTypeSyncOptions syncOptions =
+            ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class))
+                                         .errorCallback((errorMessage, exception) -> {
+                                             errorMessages.add(errorMessage);
+                                             exceptions.add(exception);
+                                         })
+                                         .build();
+
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
+            oldProductType,
+            newProductTypeDraft,
+            syncOptions
+        );
+
+        assertThat(updateActions).isEmpty();
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errorMessages.get(0)).matches(
+            "Failed to build update actions for the attributes definitions of the "
+                + "product type with the key 'key'. Reason: .*BuildUpdateActionException: "
+                + "Name is not set for the old attribute definition. "
+                + "Attribute definition is expected to be valid.");
         assertThat(exceptions).hasSize(1);
         assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     }

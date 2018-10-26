@@ -39,6 +39,7 @@ import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdat
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildChangeInputHintUpdateAction;
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildChangeAttributeConstraintUpdateAction;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -472,7 +473,10 @@ public class AttributeDefinitionUpdateActionUtilsTest {
                 .build();
 
         assertThatThrownBy(() -> buildActions(attributeDefinitionWithoutType, attributeDefinitionDraftWithoutType))
-                .hasMessage("Attribute types are not set for both the old and new/draft attribute definitions.")
+                .hasMessage(format("Attribute types are not set for both the old and new/draft attribute definitions. "
+                        + "Attribute definitions name: '%s'. "
+                        + "Attribute definitions are expected to be valid.",
+                    attributeDefinitionWithoutType.getName()))
                 .isExactlyInstanceOf(BuildUpdateActionException.class);
     }
 
@@ -505,8 +509,11 @@ public class AttributeDefinitionUpdateActionUtilsTest {
                 .build();
 
         assertThatThrownBy(() -> buildActions(attributeDefinitionWithoutType, attributeDefinitionDraft))
-                .hasMessage("Attribute type is not set for the old attribute definition.")
-                .isExactlyInstanceOf(BuildUpdateActionException.class);
+            .hasMessage(format("Attribute type is not set for the old attribute definition. "
+                    + "Attribute definitions name: '%s'. "
+                    + "Attribute definitions are expected to be valid.",
+                attributeDefinitionWithoutType.getName()))
+            .isExactlyInstanceOf(BuildUpdateActionException.class);
     }
 
     @Test
@@ -538,8 +545,149 @@ public class AttributeDefinitionUpdateActionUtilsTest {
                 .build();
 
         assertThatThrownBy(() -> buildActions(attributeDefinition, attributeDefinitionDraftWithoutType))
-                .hasMessage("Attribute type is not set for the new/draft attribute definition.")
+            .hasMessage(format("Attribute type is not set for the new/draft attribute definition. "
+                    + "Attribute definitions name: '%s'. "
+                    + "Attribute definitions are expected to be valid.",
+                attributeDefinition.getName()))
                 .isExactlyInstanceOf(BuildUpdateActionException.class);
+    }
+
+    @Test
+    public void buildActions_WithAttributeDefinitionsWithoutTypeAndName_ShouldThrowBuildUpdateActionException() {
+        final AttributeDefinition attributeDefinitionWithoutTypeAndName = AttributeDefinitionBuilder
+            .of(
+                null,
+                LocalizedString.ofEnglish("label1"),
+                null)
+            .isRequired(false)
+            .attributeConstraint(AttributeConstraint.NONE)
+            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(false)
+            .build();
+
+
+        final AttributeDefinitionDraft attributeDefinitionDraftWithoutTypeAndName = AttributeDefinitionDraftBuilder
+            .of(
+                null,
+                null,
+                LocalizedString.ofEnglish("label1"),
+                false
+            )
+            .attributeConstraint(AttributeConstraint.NONE)
+            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(false)
+            .build();
+
+        assertThatThrownBy(() -> buildActions(attributeDefinitionWithoutTypeAndName,
+            attributeDefinitionDraftWithoutTypeAndName))
+            .hasMessage("Names are not set for both the old and new/draft attribute definitions. "
+                    + "Attribute types are not set for both the old and new/draft attribute definitions. "
+                    + "Attribute definitions are expected to be valid.")
+            .isExactlyInstanceOf(BuildUpdateActionException.class);
+    }
+
+    @Test
+    public void buildActions_WithAttributeDefinitionWithoutName_ShouldThrowBuildUpdateActionException() {
+        final AttributeDefinition attributeDefinitionWithoutName = AttributeDefinitionBuilder
+            .of(
+                null,
+                LocalizedString.ofEnglish("label1"),
+                LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A))
+            .isRequired(false)
+            .attributeConstraint(AttributeConstraint.NONE)
+            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(false)
+            .build();
+
+
+        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+            .of(
+                LocalizedEnumAttributeType.of(Collections.emptyList()),
+                "attributeName1",
+                LocalizedString.ofEnglish("label1"),
+                false
+            )
+            .attributeConstraint(AttributeConstraint.NONE)
+            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(false)
+            .build();
+
+        assertThatThrownBy(() -> buildActions(attributeDefinitionWithoutName, attributeDefinitionDraft))
+            .hasMessage("Name is not set for the old attribute definition. "
+                + "Attribute definitions are expected to be valid.")
+            .isExactlyInstanceOf(BuildUpdateActionException.class);
+    }
+
+    @Test
+    public void buildActions_WithAttributeDefinitionDraftWithoutName_ShouldThrowBuildUpdateActionException() {
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of(
+                "attributeName1",
+                LocalizedString.ofEnglish("label1"),
+                LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A))
+            .isRequired(false)
+            .attributeConstraint(AttributeConstraint.NONE)
+            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(false)
+            .build();
+
+
+        final AttributeDefinitionDraft attributeDefinitionDraftWithoutName = AttributeDefinitionDraftBuilder
+            .of(
+                LocalizedEnumAttributeType.of(Collections.emptyList()),
+                null,
+                LocalizedString.ofEnglish("label1"),
+                false
+            )
+            .attributeConstraint(AttributeConstraint.NONE)
+            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(false)
+            .build();
+
+        assertThatThrownBy(() -> buildActions(attributeDefinition, attributeDefinitionDraftWithoutName))
+            .hasMessage("Name is not set for the new/draft attribute definition. "
+                    + "Attribute definitions are expected to be valid.")
+            .isExactlyInstanceOf(BuildUpdateActionException.class);
+    }
+
+    @Test
+    public void buildActions_WithAttributeDefinitionsWithDifferentNames_ShouldThrowBuildUpdateActionException() {
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of(
+                "attributeName1",
+                LocalizedString.ofEnglish("label1"),
+                LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A))
+            .isRequired(false)
+            .attributeConstraint(AttributeConstraint.NONE)
+            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(false)
+            .build();
+
+
+        final AttributeDefinitionDraft attributeDefinitionDraftWithDifferentName = AttributeDefinitionDraftBuilder
+            .of(
+                LocalizedEnumAttributeType.of(Collections.emptyList()),
+                "attributeName2",
+                LocalizedString.ofEnglish("label1"),
+                false
+            )
+            .attributeConstraint(AttributeConstraint.NONE)
+            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(false)
+            .build();
+
+        assertThatThrownBy(() -> buildActions(attributeDefinition, attributeDefinitionDraftWithDifferentName))
+            .hasMessage("Names are not equal for the attribute definitions. "
+                + "Attribute definitions are expected to be valid.")
+            .isExactlyInstanceOf(BuildUpdateActionException.class);
     }
 
 }
