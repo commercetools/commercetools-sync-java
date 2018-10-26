@@ -45,7 +45,7 @@ public final class AttributeDefinitionsUpdateActionUtils {
      * @return a list of attribute definitions update actions if the list of attribute definitions are not identical.
      *         Otherwise, if the attribute definitions are identical, an empty list is returned.
      * @throws BuildUpdateActionException in case there are attribute definitions drafts with duplicate names or
-     *         there are attribute definitions with the null attribute type.
+     *         there are attribute definitions with a null attribute type.
      */
     @Nonnull
     public static List<UpdateAction<ProductType>> buildAttributeDefinitionsUpdateActions(
@@ -79,7 +79,7 @@ public final class AttributeDefinitionsUpdateActionUtils {
      * @return a list of attribute definitions update actions if the list of attribute definitions is not identical.
      *         Otherwise, if the attribute definitions are identical, an empty list is returned.
      * @throws BuildUpdateActionException in case there are attribute definitions drafts with duplicate names or
-     *         there are attribute definitions with the null attribute type.
+     *         there are attribute definitions with a null attribute type.
      */
     @Nonnull
     private static List<UpdateAction<ProductType>> buildUpdateActions(
