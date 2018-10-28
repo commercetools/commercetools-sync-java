@@ -6,24 +6,21 @@ import io.sphere.sdk.products.attributes.AttributeDefinition;
 import javax.annotation.Nonnull;
 
 /**
- * Custom container for product variant attribute information: its name, whether a value is required or not and
- * whether it has the constraint "SameForAll" or not.
+ * Custom container for product variant attribute information: its name and whether it has the constraint "SameForAll"
+ * or not.
  */
-public class AttributeMetaData {
+public final class AttributeMetaData {
     private String name;
-    private boolean isRequired;
     private boolean isSameForAll;
 
-    AttributeMetaData(@Nonnull final String name, final boolean isRequired, final boolean isSameForAll) {
+    private AttributeMetaData(@Nonnull final String name, final boolean isSameForAll) {
         this.name = name;
-        this.isRequired = isRequired;
         this.isSameForAll = isSameForAll;
     }
 
     /**
-     * Uses the supplied {@link AttributeDefinition} instance to infer the name, whether a value is required or not and
-     * whether it has the constraint "SameForAll" or not, to instantiate a new {@link AttributeMetaData}
-     * containing the aforementioned information.
+     * Uses the supplied {@link AttributeDefinition} instance to infer the name and whether it has the constraint
+     * "SameForAll" or not, to instantiate a new {@link AttributeMetaData} containing the aforementioned information.
      *
      * @param attributeDefinition the instance for which the needed information is used.
      * @return a new instance of {@link AttributeMetaData}.
@@ -31,8 +28,7 @@ public class AttributeMetaData {
     public static AttributeMetaData of(@Nonnull final AttributeDefinition attributeDefinition) {
         boolean isSameForAll = attributeDefinition.getAttributeConstraint()
                                                   .equals(AttributeConstraint.SAME_FOR_ALL);
-        return new
-            AttributeMetaData(attributeDefinition.getName(), attributeDefinition.isRequired(), isSameForAll);
+        return new AttributeMetaData(attributeDefinition.getName(), isSameForAll);
     }
 
     /**
@@ -42,15 +38,6 @@ public class AttributeMetaData {
      */
     public String getName() {
         return name;
-    }
-
-    /**
-     * Is a value required for the attribute or not.
-     *
-     * @return boolean flag specifying whether a value is required for the attribute or not.
-     */
-    public boolean isRequired() {
-        return isRequired;
     }
 
     /**

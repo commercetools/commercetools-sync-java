@@ -7,6 +7,7 @@ import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
@@ -14,6 +15,7 @@ import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
+import com.commercetools.sync.services.impl.CustomerGroupServiceImpl;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import com.commercetools.sync.services.impl.StateServiceImpl;
@@ -44,6 +46,7 @@ import static com.commercetools.sync.products.utils.ProductSyncUtils.buildAction
 import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.stream.Collectors.toList;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
@@ -76,6 +79,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 new CategoryServiceImpl(CategorySyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
                 new TypeServiceImpl(productSyncOptions),
                 new ChannelServiceImpl(productSyncOptions),
+                new CustomerGroupServiceImpl(productSyncOptions),
                 new TaxCategoryServiceImpl(productSyncOptions),
                 new StateServiceImpl(productSyncOptions, PRODUCT_STATE));
     }
@@ -83,12 +87,14 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService,
                 @Nonnull final ProductTypeService productTypeService, @Nonnull final CategoryService categoryService,
                 @Nonnull final TypeService typeService, @Nonnull final ChannelService channelService,
+                @Nonnull final CustomerGroupService customerGroupService,
                 @Nonnull final TaxCategoryService taxCategoryService, @Nonnull final StateService stateService) {
         super(new ProductSyncStatistics(), productSyncOptions);
         this.productService = productService;
         this.productTypeService = productTypeService;
         this.productReferenceResolver = new ProductReferenceResolver(productSyncOptions, productTypeService,
-            categoryService, typeService, channelService, taxCategoryService, stateService, productService);
+            categoryService, typeService, channelService, customerGroupService, taxCategoryService, stateService,
+            productService);
     }
 
     @Override
@@ -124,7 +130,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                  final Set<String> productDraftKeys = getProductDraftKeys(existingDrafts);
                                  return productService.fetchMatchingProductsByKeys(productDraftKeys)
                                                       .thenAccept(this::processFetchedProducts)
-                                                      .thenCompose(ignoredResult -> createOrUpdateProducts())
+                                                      .thenCompose(ignoredResult -> createAndUpdateProducts())
                                                       .thenApply(ignoredResult -> {
                                                           statistics.incrementProcessed(batch.size());
                                                           return statistics;
@@ -181,11 +187,16 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     @Nonnull
-    private CompletionStage<List<Optional<Product>>> createOrUpdateProducts() {
-        return productService.createProducts(draftsToCreate)
-                             .thenAccept(createdProducts ->
-                                 updateStatistics(createdProducts, draftsToCreate.size()))
-                             .thenCompose(ignoredResult -> syncProducts(productsToSync));
+    private CompletableFuture<Void> createAndUpdateProducts() {
+        final CompletableFuture<Void> createRequestsStage =
+            productService.createProducts(draftsToCreate)
+                          .thenAccept(createdProducts -> updateStatistics(createdProducts, draftsToCreate.size()))
+                          .toCompletableFuture();
+
+        final CompletableFuture<List<Optional<Product>>> updateRequestsStage =
+            syncProducts(productsToSync).toCompletableFuture();
+
+        return allOf(createRequestsStage, updateRequestsStage);
     }
 
     private void updateStatistics(@Nonnull final Set<Product> createdProducts,

@@ -9,3 +9,5 @@ build/
 
 # Benchmarks
 benchmarks.json
+
+out

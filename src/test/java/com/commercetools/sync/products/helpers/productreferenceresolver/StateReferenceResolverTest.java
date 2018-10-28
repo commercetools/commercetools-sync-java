@@ -5,6 +5,7 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.services.CategoryService;
+import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.StateService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.Reference;
@@ -16,7 +17,6 @@ import org.junit.Test;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
@@ -54,28 +54,8 @@ public class StateReferenceResolverTest {
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
         referenceResolver = new ProductReferenceResolver(syncOptions, getMockProductTypeService(PRODUCT_TYPE_ID),
             mock(CategoryService.class), getMockTypeService(),
-            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
-            getMockTaxCategoryService(TAX_CATEGORY_ID), stateService,getMockProductService(PRODUCT_ID));
-    }
-
-    @Test
-    public void resolveStateReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReference() {
-        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                               .allowUuidKeys(true)
-                                                                               .build();
-        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
-            .state(State.referenceOfId(UUID.randomUUID().toString()));
-
-        final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
-            getMockProductTypeService(PRODUCT_TYPE_ID), mock(CategoryService.class), getMockTypeService(),
-            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
+            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)), mock(CustomerGroupService.class),
             getMockTaxCategoryService(TAX_CATEGORY_ID), stateService, getMockProductService(PRODUCT_ID));
-
-        final ProductDraftBuilder resolvedDraft = productReferenceResolver.resolveStateReference(productBuilder)
-                                                                          .toCompletableFuture().join();
-
-        assertThat(resolvedDraft.getState()).isNotNull();
-        assertThat(resolvedDraft.getState().getId()).isEqualTo(STATE_ID);
     }
 
     @Test
@@ -88,23 +68,6 @@ public class StateReferenceResolverTest {
 
         assertThat(resolvedDraft.getState()).isNotNull();
         assertThat(resolvedDraft.getState().getId()).isEqualTo(STATE_ID);
-    }
-
-    @Test
-    public void resolveStateReference_WithKeysAsUuidSetAndNotAllowed_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
-            .state(State.referenceOfId(UUID.randomUUID().toString()))
-            .key("dummyKey");
-
-        assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
-            .hasFailed()
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve reference 'state' on ProductDraft"
-                + " with key:'" + productBuilder.getKey() + "'. Reason: Found a UUID"
-                + " in the id field. Expecting a key without a UUID value. If you want to"
-                + " allow UUID values for reference keys, please use the "
-                + "allowUuidKeys(true) option in the sync options.");
     }
 
     @Test
@@ -162,7 +125,7 @@ public class StateReferenceResolverTest {
     }
 
     @Test
-    public void resolveStateReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReference() {
+    public void resolveStateReference_WithExceptionOnFetch_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .state(State.referenceOfId("stateKey"))
             .key("dummyKey");

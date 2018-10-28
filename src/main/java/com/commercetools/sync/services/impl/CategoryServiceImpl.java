@@ -120,10 +120,10 @@ public final class CategoryServiceImpl extends BaseService<Category, CategoryDra
         if (isCached) {
             return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
         }
-        return cacheAndFetch(key);
+        return fetchAndCache(key);
     }
 
-    private CompletionStage<Optional<String>> cacheAndFetch(@Nonnull final String key) {
+    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
         return cacheKeysToIds()
             .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }

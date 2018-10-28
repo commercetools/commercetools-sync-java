@@ -20,7 +20,6 @@ public final class CategorySyncOptions extends BaseSyncOptions<Category, Categor
                         @Nullable final BiConsumer<String, Throwable> updateActionErrorCallBack,
                         @Nullable final Consumer<String> updateActionWarningCallBack,
                         final int batchSize,
-                        final boolean allowUuid,
                         @Nullable final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category,
                                                     List<UpdateAction<Category>>> beforeUpdateCallback,
                         @Nullable final Function<CategoryDraft, CategoryDraft> beforeCreateCallback) {
@@ -28,7 +27,6 @@ public final class CategorySyncOptions extends BaseSyncOptions<Category, Categor
             updateActionErrorCallBack,
             updateActionWarningCallBack,
             batchSize,
-            allowUuid,
             beforeUpdateCallback,
             beforeCreateCallback);
     }

@@ -4,13 +4,16 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -20,6 +23,10 @@ import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
+import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
+import io.sphere.sdk.products.commands.updateactions.SetAttribute;
+import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
+import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.QueryPredicate;
@@ -30,7 +37,6 @@ import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -64,9 +70,14 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
+import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA;
+import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
@@ -229,21 +240,46 @@ public class ProductSyncIT {
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(singletonList(productDraft)));
 
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ErrorResponseException.class);
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains(format("A duplicate value '\\\"%s\\\"' exists for field"
-            + " 'slug.en' on", product.getMasterData().getStaged().getSlug().get(Locale.ENGLISH)));
+
+        final String duplicatedSlug = product.getMasterData().getStaged().getSlug().get(Locale.ENGLISH);
+        assertThat(errorCallBackExceptions)
+            .hasSize(1)
+            .allSatisfy(exception -> {
+                assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponse = ((ErrorResponseException) exception);
+
+                final List<DuplicateFieldError> fieldErrors = errorResponse
+                    .getErrors()
+                    .stream()
+                    .map(sphereError -> {
+                        assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
+                        return sphereError.as(DuplicateFieldError.class);
+                    })
+                    .collect(toList());
+                assertThat(fieldErrors).hasSize(1);
+                assertThat(fieldErrors).allSatisfy(error -> {
+                    assertThat(error.getField()).isEqualTo("slug.en");
+                    assertThat(error.getDuplicateValue()).isEqualTo(duplicatedSlug);
+                });
+            });
+
+        assertThat(errorCallBackMessages)
+            .hasSize(1)
+            .allSatisfy(errorMessage -> {
+                assertThat(errorMessage).contains("\"code\" : \"DuplicateField\"");
+                assertThat(errorMessage).contains("\"field\" : \"slug.en\"");
+                assertThat(errorMessage).contains(format("\"duplicateValue\" : \"%s\"", duplicatedSlug));
+            });
+
         assertThat(warningCallBackMessages).isEmpty();
     }
 
     @Test
-    @Ignore("TODO: Right now there is always a 'setPrice' update action GITHUB ISSUE: #101")
     public void sync_withEqualProduct_shouldNotUpdateProduct() {
         final ProductDraft productDraft =
             createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH, ProductType.referenceOfId(productType.getKey()),
                 TaxCategory.referenceOfId(targetTaxCategory.getKey()), State.referenceOfId(targetProductState.getKey()),
-                categoryReferencesWithIds, categoryOrderHintsWithKeys);
+                categoryReferencesWithKeys, categoryOrderHintsWithKeys);
 
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
@@ -504,13 +540,35 @@ public class ProductSyncIT {
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(batch));
 
         assertThat(syncStatistics).hasValues(5, 1, 1, 3);
+
+        final String duplicatedSlug = key3Draft.getSlug().get(Locale.ENGLISH);
         assertThat(errorCallBackExceptions).hasSize(3);
-        errorCallBackExceptions
-            .forEach(exception -> assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class));
-        assertThat(errorCallBackMessages).hasSize(3);
-        errorCallBackMessages.forEach(errorMessage -> assertThat(errorMessage)
-            .contains(format("A duplicate value '\\\"%s\\\"' exists for field 'slug.en' on",
-                key3Draft.getSlug().get(Locale.ENGLISH))));
+        assertThat(errorCallBackExceptions).allSatisfy(exception -> {
+            assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
+            final ErrorResponseException errorResponse = ((ErrorResponseException)exception);
+
+            final List<DuplicateFieldError> fieldErrors = errorResponse
+                .getErrors()
+                .stream()
+                .map(sphereError -> {
+                    assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
+                    return sphereError.as(DuplicateFieldError.class);
+                })
+                .collect(toList());
+            assertThat(fieldErrors).hasSize(1);
+            assertThat(fieldErrors).allSatisfy(error -> {
+                assertThat(error.getField()).isEqualTo("slug.en");
+                assertThat(error.getDuplicateValue()).isEqualTo(duplicatedSlug);
+            });
+        });
+
+        assertThat(errorCallBackMessages)
+            .hasSize(3)
+            .allSatisfy(errorMessage -> {
+                assertThat(errorMessage).contains("\"code\" : \"DuplicateField\"");
+                assertThat(errorMessage).contains("\"field\" : \"slug.en\"");
+                assertThat(errorMessage).contains(format("\"duplicateValue\" : \"%s\"", duplicatedSlug));
+            });
         assertThat(warningCallBackMessages).isEmpty();
     }
 
@@ -651,5 +709,91 @@ public class ProductSyncIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Test
+    public void sync_withProductContainingAttributeChanges_shouldSyncProductCorrectly() {
+        // preparation
+        final List<UpdateAction<Product>> updateActions = new ArrayList<>();
+        final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
+            errorCallBackMessages.add(errorMessage);
+            errorCallBackExceptions.add(exception);
+        };
+        final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
+
+
+        final ProductSyncOptions customOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                                                                          .errorCallback(errorCallBack)
+                                                                          .warningCallback(warningCallBack)
+                                                                          .beforeUpdateCallback(
+                                                                              (actions, draft, old) -> {
+                                                                                  updateActions.addAll(actions);
+                                                                                  return actions;
+                                                                              })
+                                                                          .build();
+
+        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
+            ProductType.referenceOfId(productType.getKey()))
+            .categories(emptyList())
+            .taxCategory(null)
+            .state(null)
+            .build();
+
+        // Creating the attribute draft with the changes
+        final AttributeDraft priceInfoAttrDraft =
+            AttributeDraft.of("priceInfo", JsonNodeFactory.instance.textNode("100/kg"));
+        final AttributeDraft angebotAttrDraft =
+            AttributeDraft.of("angebot", JsonNodeFactory.instance.textNode("big discount"));
+        final AttributeDraft unknownAttrDraft =
+            AttributeDraft.of("unknown", JsonNodeFactory.instance.textNode("unknown"));
+
+        // Creating the product variant draft with the product reference attribute
+        final List<AttributeDraft> attributes = asList(priceInfoAttrDraft, angebotAttrDraft, unknownAttrDraft);
+
+        final ProductVariantDraft masterVariant = ProductVariantDraftBuilder.of(productDraft.getMasterVariant())
+                                                                            .attributes(attributes)
+                                                                            .build();
+
+        final ProductDraft productDraftWithChangedAttributes = ProductDraftBuilder.of(productDraft)
+                                                                                  .masterVariant(masterVariant)
+                                                                                  .build();
+
+
+        // test
+        final ProductSync productSync = new ProductSync(customOptions);
+        final ProductSyncStatistics syncStatistics =
+            executeBlocking(productSync.sync(singletonList(productDraftWithChangedAttributes)));
+
+        // assertion
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+
+        final String causeErrorMessage = format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, unknownAttrDraft.getName());
+        final String expectedErrorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, unknownAttrDraft.getName(),
+            productDraft.getMasterVariant().getKey(), productDraft.getKey(), causeErrorMessage);
+
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0).getMessage()).isEqualTo(expectedErrorMessage);
+        assertThat(errorCallBackExceptions.get(0).getCause().getMessage()).isEqualTo(causeErrorMessage);
+        assertThat(errorCallBackMessages).containsExactly(expectedErrorMessage);
+        assertThat(warningCallBackMessages).isEmpty();
+
+        assertThat(updateActions)
+            .filteredOn(updateAction -> ! (updateAction instanceof SetTaxCategory))
+            .filteredOn(updateAction -> ! (updateAction instanceof RemoveFromCategory))
+            .containsExactlyInAnyOrder(
+                SetAttributeInAllVariants.of(priceInfoAttrDraft, true),
+                SetAttribute.of(1, angebotAttrDraft, true),
+                SetAttributeInAllVariants.ofUnsetAttribute("size", true),
+                SetAttributeInAllVariants.ofUnsetAttribute("rinderrasse", true),
+                SetAttributeInAllVariants.ofUnsetAttribute("herkunft", true),
+                SetAttributeInAllVariants.ofUnsetAttribute("teilstueck", true),
+                SetAttributeInAllVariants.ofUnsetAttribute("fuetterung", true),
+                SetAttributeInAllVariants.ofUnsetAttribute("reifung", true),
+                SetAttributeInAllVariants.ofUnsetAttribute("haltbarkeit", true),
+                SetAttributeInAllVariants.ofUnsetAttribute("verpackung", true),
+                SetAttributeInAllVariants.ofUnsetAttribute("anlieferung", true),
+                SetAttributeInAllVariants.ofUnsetAttribute("zubereitung", true),
+                SetAttribute.ofUnsetAttribute(1, "localisedText", true)
+            );
     }
 }

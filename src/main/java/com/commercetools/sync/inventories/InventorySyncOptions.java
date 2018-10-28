@@ -21,7 +21,6 @@ public final class InventorySyncOptions extends BaseSyncOptions<InventoryEntry, 
                          @Nullable final BiConsumer<String, Throwable> updateActionErrorCallBack,
                          @Nullable final Consumer<String> updateActionWarningCallBack,
                          final int batchSize,
-                         final boolean allowUuid,
                          boolean ensureChannels,
                          @Nullable final TriFunction<List<UpdateAction<InventoryEntry>>, InventoryEntryDraft,
                              InventoryEntry, List<UpdateAction<InventoryEntry>>> beforeUpdateCallback,
@@ -30,7 +29,6 @@ public final class InventorySyncOptions extends BaseSyncOptions<InventoryEntry, 
             updateActionErrorCallBack,
             updateActionWarningCallBack,
             batchSize,
-            allowUuid,
             beforeUpdateCallback,
             beforeCreateCallback);
         this.ensureChannels = ensureChannels;
@@ -38,8 +36,8 @@ public final class InventorySyncOptions extends BaseSyncOptions<InventoryEntry, 
     }
 
     /**
-     * @return option that indicates whether sync process should create supply channel of given key when it doesn't
-     *      exists in a target system yet.
+     * @return option that indicates whether the sync process should create a supply channel of the given key
+     *      when it doesn't exist in a target system yet.
      */
     public boolean shouldEnsureChannels() {
         return ensureChannels;

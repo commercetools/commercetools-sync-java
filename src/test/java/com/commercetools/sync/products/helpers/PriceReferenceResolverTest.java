@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.TypeService;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.channels.Channel;
@@ -23,13 +24,15 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroup;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroupService;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -39,10 +42,14 @@ import static org.mockito.Mockito.when;
 public class PriceReferenceResolverTest {
     private TypeService typeService;
     private ChannelService channelService;
+    private CustomerGroupService customerGroupService;
     private ProductSyncOptions syncOptions;
 
     private static final String CHANNEL_KEY = "channel-key_1";
     private static final String CHANNEL_ID = "1";
+
+    private static final String CUSTOMER_GROUP_KEY = "customer-group-key_1";
+    private static final String CUSTOMER_GROUP_ID = "1";
 
     /**
      * Sets up the services and the options needed for reference resolution.
@@ -51,54 +58,8 @@ public class PriceReferenceResolverTest {
     public void setup() {
         typeService = getMockTypeService();
         channelService = getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY));
+        customerGroupService = getMockCustomerGroupService(getMockCustomerGroup(CUSTOMER_GROUP_ID, CUSTOMER_GROUP_KEY));
         syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
-    }
-
-    @Test
-    public void resolveCustomTypeReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReferences() {
-        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                               .allowUuidKeys(true)
-                                                                               .build();
-        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
-            .ofTypeIdAndJson(UUID.randomUUID().toString(), new HashMap<>());
-
-        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
-            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .custom(customFieldsDraft);
-
-        final PriceReferenceResolver priceReferenceResolver =
-            new PriceReferenceResolver(productSyncOptions, typeService, channelService);
-
-
-        final PriceDraftBuilder resolvedDraft = priceReferenceResolver.resolveCustomTypeReference(priceBuilder)
-                                                                             .toCompletableFuture().join();
-
-        assertThat(resolvedDraft.getCustom()).isNotNull();
-        assertThat(resolvedDraft.getCustom().getType().getId()).isEqualTo("typeId");
-    }
-
-    @Test
-    public void resolveCustomTypeReference_WithKeyAsUuidSetAndNotAllowed_ShouldNotResolveCustomTypeReference() {
-        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
-            .ofTypeIdAndJson(UUID.randomUUID().toString(), new HashMap<>());
-
-        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
-            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .country(CountryCode.DE)
-            .custom(customFieldsDraft);
-
-        final PriceReferenceResolver priceReferenceResolver =
-            new PriceReferenceResolver(syncOptions, typeService, channelService);
-
-        assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder).toCompletableFuture())
-            .hasFailed()
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve custom type reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10'. Reason: Found a UUID"
-                + " in the id field. Expecting a key without a UUID value. If you want to"
-                + " allow UUID values for reference keys, please use the "
-                + "allowUuidKeys(true) option in the sync options.");
     }
 
     @Test
@@ -114,7 +75,7 @@ public class PriceReferenceResolverTest {
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final PriceReferenceResolver priceReferenceResolver =
-            new PriceReferenceResolver(syncOptions, typeService, channelService);
+            new PriceReferenceResolver(syncOptions, typeService, channelService, customerGroupService);
 
         assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder).toCompletableFuture())
             .hasNotFailed()
@@ -136,7 +97,7 @@ public class PriceReferenceResolverTest {
             .custom(customFieldsDraft);
 
         final PriceReferenceResolver priceReferenceResolver =
-            new PriceReferenceResolver(syncOptions, typeService, channelService);
+            new PriceReferenceResolver(syncOptions, typeService, channelService, customerGroupService);
 
         assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder).toCompletableFuture())
             .hasFailed()
@@ -155,7 +116,7 @@ public class PriceReferenceResolverTest {
             .custom(customFieldsDraft);
 
         final PriceReferenceResolver priceReferenceResolver =
-            new PriceReferenceResolver(syncOptions, typeService, channelService);
+            new PriceReferenceResolver(syncOptions, typeService, channelService, customerGroupService);
 
         assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder).toCompletableFuture())
             .hasFailed()
@@ -179,7 +140,7 @@ public class PriceReferenceResolverTest {
         when(typeService.fetchCachedTypeId(anyString())).thenReturn(futureThrowingSphereException);
 
         final PriceReferenceResolver priceReferenceResolver =
-            new PriceReferenceResolver(syncOptions, typeService, channelService);
+            new PriceReferenceResolver(syncOptions, typeService, channelService, customerGroupService);
 
         assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder).toCompletableFuture())
             .hasFailed()
@@ -189,57 +150,94 @@ public class PriceReferenceResolverTest {
     }
 
     @Test
-    public void resolveChannelReference_WithChannelKeyAsUuidSetAndAllowed_ShouldResolveChannelReference() {
+    public void resolveChannelReference_WithNonExistingChannelKey_ShouldResolveChannelReference() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                               .allowUuidKeys(true)
                                                                                .build();
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)
-            .channel(Channel.referenceOfId(UUID.randomUUID().toString()));
+            .channel(Channel.referenceOfId("channelKey"));
 
         final PriceReferenceResolver priceReferenceResolver =
-            new PriceReferenceResolver(productSyncOptions, typeService, channelService);
+            new PriceReferenceResolver(productSyncOptions, typeService, channelService, customerGroupService);
 
         final PriceDraftBuilder resolvedBuilder = priceReferenceResolver.resolveChannelReference(priceBuilder)
-                                                               .toCompletableFuture().join();
+                                                                        .toCompletableFuture().join();
         assertThat(resolvedBuilder.getChannel()).isNotNull();
         assertThat(resolvedBuilder.getChannel().getId()).isEqualTo(CHANNEL_ID);
     }
 
     @Test
-    public void resolveChannelReference_WithChannelKeyAsUuidSetAndNotAllowed_ShouldNotResolveChannelReference() {
+    public void
+        resolveSupplyChannelReference_WithNonExistingChannelAndNotEnsureChannel_ShouldNotResolveChannelReference() {
+        when(channelService.fetchCachedChannelId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)
-            .channel(Channel.referenceOfId(UUID.randomUUID().toString()));
+            .channel(Channel.referenceOfId("channelKey"));
 
         final PriceReferenceResolver priceReferenceResolver =
-            new PriceReferenceResolver(syncOptions, typeService, channelService);
+            new PriceReferenceResolver(syncOptions, typeService, channelService, customerGroupService);
 
-        assertThat(priceReferenceResolver.resolveChannelReference(priceBuilder).toCompletableFuture())
-            .hasFailed()
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage("Failed to resolve the channel reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10'. Reason: Found a UUID in the id field. Expecting a key"
-                + " without a UUID value. If you want to allow UUID values for reference keys, please"
-                + " use the allowUuidKeys(true) option in the sync options.");
+
+        priceReferenceResolver.resolveChannelReference(priceBuilder)
+                              .exceptionally(exception -> {
+                                  assertThat(exception).isExactlyInstanceOf(CompletionException.class);
+                                  assertThat(exception.getCause())
+                                      .isExactlyInstanceOf(ReferenceResolutionException.class);
+                                  assertThat(exception.getCause().getCause())
+                                      .isExactlyInstanceOf(ReferenceResolutionException.class);
+                                  assertThat(exception.getCause().getCause().getMessage())
+                                      .isEqualTo("Channel with key 'channelKey' does not exist.");
+                                  return null;
+                              })
+                              .toCompletableFuture()
+                              .join();
     }
 
     @Test
-    public void resolveReferences_WithNoCustomTypeReferenceAndNoChannelReference_ShouldNotResolveReferences() {
+    public void
+        resolveSupplyChannelReference_WithNonExistingChannelAndEnsureChannel_ShouldResolveSupplyChannelReference() {
+        final ProductSyncOptions optionsWithEnsureChannels = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                                      .ensurePriceChannels(true)
+                                                                                      .build();
+        when(channelService.fetchCachedChannelId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .country(CountryCode.DE)
+            .channel(Channel.referenceOfId("channelKey"));
+
+        final PriceReferenceResolver priceReferenceResolver =
+            new PriceReferenceResolver(optionsWithEnsureChannels, typeService, channelService, customerGroupService);
+
+        priceReferenceResolver.resolveChannelReference(priceBuilder)
+                              .thenApply(PriceDraftBuilder::build)
+                              .thenAccept(resolvedDraft -> {
+                                  assertThat(resolvedDraft.getChannel()).isNotNull();
+                                  assertThat(resolvedDraft.getChannel().getId()).isEqualTo(CHANNEL_ID);
+                              })
+                              .toCompletableFuture()
+                              .join();
+    }
+
+    @Test
+    public void resolveReferences_WithNoReferences_ShouldNotResolveReferences() {
         final PriceDraft priceDraft = PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
                                                        .country(CountryCode.DE)
                                                        .build();
 
         final PriceReferenceResolver priceReferenceResolver =
-            new PriceReferenceResolver(syncOptions, typeService, channelService);
+            new PriceReferenceResolver(syncOptions, typeService, channelService, customerGroupService);
 
         final PriceDraft referencesResolvedDraft = priceReferenceResolver.resolveReferences(priceDraft)
                                                                          .toCompletableFuture().join();
 
         assertThat(referencesResolvedDraft.getCustom()).isNull();
         assertThat(referencesResolvedDraft.getChannel()).isNull();
+        assertThat(referencesResolvedDraft.getCustomerGroup()).isNull();
     }
 }

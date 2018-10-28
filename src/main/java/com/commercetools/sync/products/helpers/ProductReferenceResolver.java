@@ -5,6 +5,7 @@ import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
@@ -54,26 +55,29 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
     /**
      * Takes a {@link ProductSyncOptions} instance, a {@link ProductTypeService}, a {@link CategoryService}, a
-     * {@link TypeService}, a {@link ChannelService}, a {@link TaxCategoryService}, a {@link StateService} and a
-     * {@link ProductService} to instantiate a {@link ProductReferenceResolver} instance that could be used to resolve
-     * the product type, categories, variants, tax category and product state references of product drafts in the CTP
-     * project specified in the injected {@link ProductSyncOptions} instance.
+     * {@link TypeService}, a {@link ChannelService}, a {@link CustomerGroupService}, a {@link TaxCategoryService},
+     * a {@link StateService} and a {@link ProductService} to instantiate a {@link ProductReferenceResolver} instance
+     * that could be used to resolve the product type, categories, variants, tax category and product state references
+     * of product drafts in the CTP project specified in the injected {@link ProductSyncOptions} instance.
      *
-     * @param productSyncOptions the container of all the options of the sync process including the CTP project client
-     *                           and/or configuration and other sync-specific options.
-     * @param productTypeService the service to fetch the product type for reference resolution.
-     * @param categoryService    the service to fetch the categories for reference resolution.
-     * @param typeService        the service to fetch the custom types for reference resolution.
-     * @param channelService     the service to fetch the channels for reference resolution.
-     * @param taxCategoryService the service to fetch tax categories for reference resolution.
-     * @param stateService       the service to fetch product states for reference resolution.
-     * @param productService     the service to fetch products for product reference resolution on reference attributes.
+     * @param productSyncOptions   the container of all the options of the sync process including the CTP project client
+     *                             and/or configuration and other sync-specific options.
+     * @param productTypeService   the service to fetch the product type for reference resolution.
+     * @param categoryService      the service to fetch the categories for reference resolution.
+     * @param typeService          the service to fetch the custom types for reference resolution.
+     * @param channelService       the service to fetch the channels for reference resolution.
+     * @param customerGroupService the service to fetch the customer groups for reference resolution.
+     * @param taxCategoryService   the service to fetch tax categories for reference resolution.
+     * @param stateService         the service to fetch product states for reference resolution.
+     * @param productService       the service to fetch products for product reference resolution on reference
+     *                             attributes.
      */
     public ProductReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final ProductTypeService productTypeService,
                                     @Nonnull final CategoryService categoryService,
                                     @Nonnull final TypeService typeService,
                                     @Nonnull final ChannelService channelService,
+                                    @Nonnull final CustomerGroupService customerGroupService,
                                     @Nonnull final TaxCategoryService taxCategoryService,
                                     @Nonnull final StateService stateService,
                                     @Nonnull final ProductService productService) {
@@ -83,7 +87,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         this.taxCategoryService = taxCategoryService;
         this.stateService = stateService;
         this.variantReferenceResolver =
-            new VariantReferenceResolver(productSyncOptions, typeService, channelService, productService);
+            new VariantReferenceResolver(productSyncOptions, typeService, channelService, customerGroupService,
+                productService);
     }
 
     /**
@@ -141,9 +146,11 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     public CompletionStage<ProductDraftBuilder> resolveProductTypeReference(
         @Nonnull final ProductDraftBuilder draftBuilder) {
+
         final ResourceIdentifier<ProductType> productTypeResourceIdentifier = draftBuilder.getProductType();
-        return getProductTypeId(productTypeResourceIdentifier,
-            format(FAILED_TO_RESOLVE_PRODUCT_TYPE, draftBuilder.getKey()))
+        final String resolutionErrorMessage = format(FAILED_TO_RESOLVE_PRODUCT_TYPE, draftBuilder.getKey());
+
+        return getProductTypeId(productTypeResourceIdentifier, resolutionErrorMessage)
             .thenApply(resolvedProductTypeIdOptional -> {
                 resolvedProductTypeIdOptional.ifPresent(resolvedTypeId -> draftBuilder
                     .productType(ResourceIdentifier.ofId(resolvedTypeId, ProductType.referenceTypeId())));
@@ -164,18 +171,18 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     public CompletionStage<ProductDraftBuilder> resolveCategoryReferences(
         @Nonnull final ProductDraftBuilder draftBuilder) {
+
         final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = draftBuilder.getCategories();
         final Set<String> categoryKeys = new HashSet<>();
         for (ResourceIdentifier<Category> categoryResourceIdentifier: categoryResourceIdentifiers) {
             if (categoryResourceIdentifier != null) {
                 try {
-                    final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier,
-                        options.shouldAllowUuidKeys());
+                    final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier);
                     categoryKeys.add(categoryKey);
                 } catch (ReferenceResolutionException referenceResolutionException) {
                     return exceptionallyCompletedFuture(
                         new ReferenceResolutionException(
-                            format(FAILED_TO_RESOLVE_REFERENCE, categoryResourceIdentifier.getTypeId(),
+                            format(FAILED_TO_RESOLVE_REFERENCE, Category.referenceTypeId(),
                                 draftBuilder.getKey(),referenceResolutionException.getMessage())));
                 }
             }
@@ -199,18 +206,18 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     private CompletionStage<ProductDraftBuilder> fetchAndResolveCategoryReferences(
             @Nonnull final ProductDraftBuilder draftBuilder,
             @Nonnull final Set<String> categoryKeys) {
+
         final Map<String, String> categoryOrderHintsMap = new HashMap<>();
         final CategoryOrderHints categoryOrderHints = draftBuilder.getCategoryOrderHints();
 
         return categoryService.fetchMatchingCategoriesByKeys(categoryKeys)
             .thenApply(categories ->
                 categories.stream().map(category -> {
-                    final Reference<Category> categoryReference = category.toReference();
                     if (categoryOrderHints != null) {
                         ofNullable(categoryOrderHints.get(category.getKey()))
                             .ifPresent(orderHintValue -> categoryOrderHintsMap.put(category.getId(), orderHintValue));
                     }
-                    return categoryReference;
+                    return category.toReference();
                 }).collect(toList()))
             .thenApply(categoryReferences -> draftBuilder
                 .categories(categoryReferences)
@@ -231,8 +238,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             @Nonnull final ResourceIdentifier<ProductType> productTypeResourceIdentifier,
             @Nonnull final String referenceResolutionErrorMessage) {
         try {
-            final String productTypeKey = getKeyFromResourceIdentifier(productTypeResourceIdentifier,
-                options.shouldAllowUuidKeys());
+            final String productTypeKey = getKeyFromResourceIdentifier(productTypeResourceIdentifier);
             return productTypeService.fetchCachedProductTypeId(productTypeKey);
         } catch (ReferenceResolutionException exception) {
             return exceptionallyCompletedFuture(
@@ -300,7 +306,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         }
 
         try {
-            final String resourceKey = getKeyFromResourceIdentifier(reference, options.shouldAllowUuidKeys());
+            final String resourceKey = getKeyFromResourceIdentifier(reference);
             return keyToIdMapper.apply(resourceKey)
                 .thenApply(optId -> optId
                     .map(idToReferenceMapper)

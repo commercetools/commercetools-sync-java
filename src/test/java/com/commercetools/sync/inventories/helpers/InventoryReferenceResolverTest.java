@@ -55,66 +55,8 @@ public class InventoryReferenceResolverTest {
     @Before
     public void setup() {
         typeService = getMockTypeService();
-        channelService = InventorySyncMockUtils
-            .getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY));
+        channelService = InventorySyncMockUtils.getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY));
         syncOptions = InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
-    }
-
-    @Test
-    public void resolveCustomTypeReference_WithNoKeysAsUuidSetAndNotAllowed_ShouldResolveReferences() {
-        final InventoryEntryDraftBuilder draftBuilder = InventoryEntryDraftBuilder
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
-
-        final InventoryReferenceResolver referenceResolver =
-            new InventoryReferenceResolver(syncOptions, typeService, channelService);
-        final InventoryEntryDraft draftWithResolvedReferences = referenceResolver
-            .resolveCustomTypeReference(draftBuilder).toCompletableFuture().join()
-            .build();
-
-        assertThat(draftWithResolvedReferences.getCustom()).isNotNull();
-        assertThat(draftWithResolvedReferences.getCustom().getType().getId()).isEqualTo("typeId");
-    }
-
-    @Test
-    public void resolveCustomTypeReference_WithKeysAsUuidSetAndAllowed_ShouldResolveReferences() {
-        final InventorySyncOptions optionsWithAllowedUuid = InventorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                                    .allowUuidKeys(true)
-                                                                                    .build();
-        final InventoryEntryDraftBuilder draftBuilder = InventoryEntryDraftBuilder
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(UUID_KEY))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(UUID_KEY, new HashMap<>()));
-
-        final InventoryReferenceResolver referenceResolver =
-            new InventoryReferenceResolver(optionsWithAllowedUuid, typeService, channelService);
-        final InventoryEntryDraft draftWithResolvedReferences = referenceResolver
-            .resolveCustomTypeReference(draftBuilder).toCompletableFuture().join()
-            .build();
-
-        assertThat(draftWithResolvedReferences.getCustom()).isNotNull();
-        assertThat(draftWithResolvedReferences.getCustom().getType().getId()).isEqualTo("typeId");
-    }
-
-    @Test
-    public void resolveSupplyChannelReference_WithChannelKeyAsUuidSetAndNotAllowed_ShouldNotResolveChannelReference() {
-        final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(UUID_KEY))
-            .withCustom(CustomFieldsDraft.ofTypeIdAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
-
-        final InventoryReferenceResolver referenceResolver =
-            new InventoryReferenceResolver(syncOptions, typeService, channelService);
-
-        referenceResolver.resolveSupplyChannelReference(InventoryEntryDraftBuilder.of(draft))
-                                 .exceptionally(exception -> {
-                                     assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
-                                     assertThat(exception.getMessage())
-                                         .isEqualTo("Failed to resolve supply channel reference on InventoryEntryDraft"
-                                             + " with SKU:'1000'. Reason: Found a UUID in the id field. Expecting a key"
-                                             + " without a UUID"
-                                             + " value. If you want to allow UUID values for reference keys, please"
-                                             + " use the allowUuidKeys(true) option in the sync options.");
-                                     return null;
-                                 }).toCompletableFuture().join();
     }
 
     @Test
@@ -189,29 +131,6 @@ public class InventoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomTypeReference_WithKeyAsUuidSetAndNotAllowed_ShouldNotResolveCustomTypeReference() {
-        final InventoryEntryDraftBuilder draftBuilder = InventoryEntryDraftBuilder
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(UUID_KEY, new HashMap<>()));
-
-        final InventoryReferenceResolver referenceResolver =
-            new InventoryReferenceResolver(syncOptions, typeService, channelService);
-
-        referenceResolver.resolveCustomTypeReference(draftBuilder)
-                         .exceptionally(exception -> {
-                             assertThat(exception).isExactlyInstanceOf(CompletionException.class);
-                             assertThat(exception.getCause())
-                                 .isExactlyInstanceOf(ReferenceResolutionException.class);
-                             assertThat(exception.getCause().getMessage())
-                                 .isEqualTo("Failed to resolve custom type reference on InventoryEntryDraft"
-                                         + " with SKU:'1000'. Reason: Found a UUID in the id field. Expecting a key"
-                                         + " without a UUID value. If you want to allow UUID values for reference keys,"
-                                         + " please use the allowUuidKeys(true) option in the sync options.");
-                             return null;
-                         }).toCompletableFuture().join();
-    }
-
-    @Test
     public void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
@@ -245,10 +164,8 @@ public class InventoryReferenceResolverTest {
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getMessage())
-                                 .isEqualTo("Failed to resolve supply channel reference on InventoryEntryDraft with "
-                                     + "SKU:'1000'. Reason: Key is blank (null/empty) on both expanded reference object"
-                                     + " and reference"
-                                     + " id field.");
+                                 .isEqualTo(format("Failed to resolve supply channel reference on InventoryEntryDraft"
+                                     + " with SKU:'1000'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
                              return null;
                          }).toCompletableFuture().join();
     }
@@ -266,9 +183,8 @@ public class InventoryReferenceResolverTest {
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getMessage())
-                                 .isEqualTo("Failed to resolve supply channel reference on InventoryEntryDraft with"
-                                     + " SKU:'null'. Reason: Key is blank (null/empty) on both expanded reference"
-                                     + " object and reference id field.");
+                                 .isEqualTo(format("Failed to resolve supply channel reference on InventoryEntryDraft"
+                                     + " with SKU:'null'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
                              return null;
                          }).toCompletableFuture().join();
     }
