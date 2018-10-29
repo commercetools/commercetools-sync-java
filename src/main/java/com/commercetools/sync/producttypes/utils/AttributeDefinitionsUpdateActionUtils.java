@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionHelper.ensureAttributeDefinitionDraftIsValid;
+import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionHelper.ensureAttributeDefinitionTypeIsValid;
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionHelper.ensureAttributeDefinitionIsValid;
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildActions;
 import static java.lang.String.format;
@@ -164,7 +164,7 @@ public final class AttributeDefinitionsUpdateActionUtils {
 
             if (matchingNewAttributeDefinitionDraft != null) {
 
-                ensureAttributeDefinitionDraftIsValid(matchingNewAttributeDefinitionDraft);
+                ensureAttributeDefinitionTypeIsValid(matchingNewAttributeDefinitionDraft);
 
                 if (haveSameAttributeType(oldAttributeDefinition.getAttributeType(),
                         matchingNewAttributeDefinitionDraft.getAttributeType())) {

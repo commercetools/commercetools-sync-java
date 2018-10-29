@@ -48,14 +48,13 @@ final class AttributeDefinitionUpdateActionHelper {
             errors.add("Attribute type is not set for the new/draft attribute definition.");
         }
 
-        if (!errors.isEmpty()) {
-            if (areNamesValid) {
-                errors.add(format("Attribute definitions name: '%s'.", attributeDefinition.getName()));
-            }
-
-            errors.add("Attribute definitions are expected to be valid.");
-            throw new BuildUpdateActionException(String.join(" ", errors));
+        if (areNamesValid) {
+            errors.add(format("Attribute definitions name: '%s'.", attributeDefinition.getName()));
         }
+
+        errors.add("Attribute definitions are expected to be valid.");
+        throw new BuildUpdateActionException(String.join(" ", errors));
+
     }
 
     static void ensureAttributeDefinitionIsValid(
@@ -77,17 +76,16 @@ final class AttributeDefinitionUpdateActionHelper {
             errors.add("Attribute type is not set for the old attribute definition.");
         }
 
-        if (!errors.isEmpty()) {
-            if (isNameValid) {
-                errors.add(format("Attribute definition name: '%s'.", attributeDefinition.getName()));
-            }
-
-            errors.add("Attribute definition is expected to be valid.");
-            throw new BuildUpdateActionException(String.join(" ", errors));
+        if (isNameValid) {
+            errors.add(format("Attribute definition name: '%s'.", attributeDefinition.getName()));
         }
+
+        errors.add("Attribute definition is expected to be valid.");
+        throw new BuildUpdateActionException(String.join(" ", errors));
+
     }
 
-    static void ensureAttributeDefinitionDraftIsValid(
+    static void ensureAttributeDefinitionTypeIsValid(
         @Nonnull final AttributeDefinitionDraft attributeDefinitionDraft) throws BuildUpdateActionException {
 
         if (AttributeDefinitionValidationUtils.isValid(attributeDefinitionDraft)) {
@@ -95,25 +93,11 @@ final class AttributeDefinitionUpdateActionHelper {
         }
 
         final List<String> errors = new ArrayList<>();
-        boolean isNameValid = true;
+        errors.add("Attribute type is not set for the new/draft attribute definition.");
+        errors.add(format("Attribute definition name: '%s'.", attributeDefinitionDraft.getName()));
+        errors.add("Attribute definition draft is expected to be valid.");
+        throw new BuildUpdateActionException(String.join(" ", errors));
 
-        if (StringUtils.isBlank(attributeDefinitionDraft.getName())) {
-            isNameValid = false;
-            errors.add("Name is not set for the new/draft attribute definition.");
-        }
-
-        if (attributeDefinitionDraft.getAttributeType() == null) {
-            errors.add("Attribute type is not set for the new/draft attribute definition.");
-        }
-
-        if (!errors.isEmpty()) {
-            if (isNameValid) {
-                errors.add(format("Attribute definition name: '%s'.", attributeDefinitionDraft.getName()));
-            }
-
-            errors.add("Attribute definition draft is expected to be valid.");
-            throw new BuildUpdateActionException(String.join(" ", errors));
-        }
     }
 
     private AttributeDefinitionUpdateActionHelper() {
