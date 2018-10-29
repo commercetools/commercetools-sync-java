@@ -115,17 +115,32 @@ public class AttributeDefinitionValidationUtilsTest {
 
     @Test
     public void areValid_WithAttributeDefinitionWithoutType_ShouldNotBeValid() {
-        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+        final AttributeDefinition attributeDefinitionWithoutType = AttributeDefinitionBuilder
             .of(
                 "attributeName1",
                 LocalizedString.ofEnglish("label1"),
-                LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A))
+                null)
             .isRequired(false)
             .attributeConstraint(AttributeConstraint.NONE)
             .inputTip(LocalizedString.ofEnglish("inputTip1"))
             .inputHint(TextInputHint.SINGLE_LINE)
             .isSearchable(false)
             .build();
+
+        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+            .of(
+                LocalizedEnumAttributeType.of(Collections.emptyList()),
+                "attributeName1",
+                LocalizedString.ofEnglish("label1"),
+                false
+            )
+            .attributeConstraint(AttributeConstraint.NONE)
+            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(false)
+            .build();
+
+        assertThat(areValid(attributeDefinitionWithoutType, attributeDefinitionDraft)).isFalse();
     }
 
     @Test
