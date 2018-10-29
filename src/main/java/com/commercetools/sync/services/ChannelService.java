@@ -24,7 +24,7 @@ public interface ChannelService {
      *         {@link Channel} was found in the CTP project with this external id.
      */
     @Nonnull
-    CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key);
+    CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull String key);
 
     /**
      * Creates a new channel with the supplied {@code key}.
@@ -33,7 +33,7 @@ public interface ChannelService {
      * @return a future containing as a result the created {@link Channel} or a sphere exception.
      */
     @Nonnull
-    CompletionStage<Channel> createChannel(@Nonnull final String key);
+    CompletionStage<Channel> createChannel(@Nonnull String key);
 
     /**
      * Creates a new channel with the supplied {@code key} and puts a new mapping of it's key
