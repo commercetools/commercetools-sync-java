@@ -3,6 +3,7 @@ package com.commercetools.sync.products.helpers;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.AssetReferenceResolver;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
@@ -188,7 +189,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
         final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
         return idField != null
             ? productService.getIdFromCacheOrFetch(idField.asText())
-            : CompletableFuture.completedFuture(Optional.empty());
+            : CompletableFutureUtils.emptyOptionalCompletedFuture();
     }
 
     @Nonnull

@@ -1,6 +1,7 @@
 package com.commercetools.sync.products.helpers;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ChannelService;
@@ -72,7 +73,7 @@ public class PriceReferenceResolverTest {
             .custom(customFieldsDraft);
 
         when(typeService.fetchCachedTypeId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFutureUtils.emptyOptionalCompletedFuture());
 
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(syncOptions, typeService, channelService, customerGroupService);
@@ -171,7 +172,7 @@ public class PriceReferenceResolverTest {
     public void
         resolveSupplyChannelReference_WithNonExistingChannelAndNotEnsureChannel_ShouldNotResolveChannelReference() {
         when(channelService.fetchCachedChannelId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFutureUtils.emptyOptionalCompletedFuture());
 
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
@@ -204,7 +205,7 @@ public class PriceReferenceResolverTest {
                                                                                       .ensurePriceChannels(true)
                                                                                       .build();
         when(channelService.fetchCachedChannelId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFutureUtils.emptyOptionalCompletedFuture());
 
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))

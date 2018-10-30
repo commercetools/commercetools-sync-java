@@ -1,6 +1,7 @@
 package com.commercetools.sync.products.helpers;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ChannelService;
@@ -80,7 +81,7 @@ public class PriceCustomerGroupReferenceResolverTest {
             .customerGroup(CustomerGroup.referenceOfId("nonExistentKey"));
 
         when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFutureUtils.emptyOptionalCompletedFuture());
 
         assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
             .hasNotFailed()

@@ -1,6 +1,7 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.CustomerGroupService;
 import io.sphere.sdk.customergroups.CustomerGroup;
@@ -35,7 +36,7 @@ public final class CustomerGroupServiceImpl implements CustomerGroupService {
     @Override
     public CompletionStage<Optional<String>> fetchCachedCustomerGroupId(@Nullable final String key) {
         if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
+            return CompletableFutureUtils.emptyOptionalCompletedFuture();
         }
         if (keyToIdCache.isEmpty()) {
             return fetchAndCache(key);

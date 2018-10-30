@@ -7,6 +7,7 @@ import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -14,7 +15,6 @@ import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -63,7 +63,7 @@ public class InventoryReferenceResolverTest {
     public void
         resolveSupplyChannelReference_WithNonExistingChannelAndNotEnsureChannel_ShouldNotResolveChannelReference() {
         when(channelService.fetchCachedChannelId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFutureUtils.emptyOptionalCompletedFuture());
 
         final InventoryEntryDraft draft = InventoryEntryDraft
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
@@ -92,7 +92,7 @@ public class InventoryReferenceResolverTest {
                                                                                           .ensureChannels(true)
                                                                                           .build();
         when(channelService.fetchCachedChannelId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFutureUtils.emptyOptionalCompletedFuture());
 
         final InventoryEntryDraft draft = InventoryEntryDraft
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
@@ -116,7 +116,7 @@ public class InventoryReferenceResolverTest {
             .custom(CustomFieldsDraft.ofTypeIdAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         when(typeService.fetchCachedTypeId(anyString()))
-            .thenReturn(CompletableFutureUtils.failed(new SphereException("bad request")));
+            .thenReturn(io.sphere.sdk.utils.CompletableFutureUtils.failed(new SphereException("bad request")));
 
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
@@ -133,7 +133,7 @@ public class InventoryReferenceResolverTest {
     @Test
     public void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
         when(typeService.fetchCachedTypeId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFutureUtils.emptyOptionalCompletedFuture());
 
         final InventoryEntryDraftBuilder draftBuilder = InventoryEntryDraftBuilder
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))

@@ -1,6 +1,7 @@
 package com.commercetools.sync.products.helpers.productreferenceresolver;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
@@ -78,7 +79,7 @@ public class ProductTypeReferenceResolverTest {
             .key("dummyKey");
 
         when(productTypeService.fetchCachedProductTypeId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFutureUtils.emptyOptionalCompletedFuture());
 
         assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
             .hasNotFailed()

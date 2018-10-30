@@ -3,6 +3,7 @@ package com.commercetools.sync.categories.helpers;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
@@ -137,7 +138,7 @@ public class CategoryReferenceResolverTest {
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
             CACHED_CATEGORY_KEY, "customTypeId", new HashMap<>());
         when(categoryService.fetchCachedCategoryId(CACHED_CATEGORY_KEY))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFutureUtils.emptyOptionalCompletedFuture());
 
         referenceResolver.resolveParentReference(categoryDraft)
                                  .thenApply(CategoryDraftBuilder::build)
@@ -169,7 +170,7 @@ public class CategoryReferenceResolverTest {
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
             CACHED_CATEGORY_KEY, "customTypeId", new HashMap<>());
         when(typeService.fetchCachedTypeId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFutureUtils.emptyOptionalCompletedFuture());
 
         referenceResolver.resolveCustomTypeReference(categoryDraft)
                                  .thenApply(CategoryDraftBuilder::build)

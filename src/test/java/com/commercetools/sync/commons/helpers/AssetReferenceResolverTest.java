@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.helpers;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.TypeService;
@@ -51,7 +52,7 @@ public class AssetReferenceResolverTest {
                                                                      .custom(customFieldsDraft);
 
         when(typeService.fetchCachedTypeId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFutureUtils.emptyOptionalCompletedFuture());
 
         final AssetReferenceResolver assetReferenceResolver = new AssetReferenceResolver(syncOptions, typeService);
 

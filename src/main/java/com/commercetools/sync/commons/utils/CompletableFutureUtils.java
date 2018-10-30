@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
@@ -156,6 +157,17 @@ public final class CompletableFutureUtils {
         @Nonnull final Collector<CompletableFuture<T>, ?, S> collector) {
         return values.filter(Objects::nonNull)
                      .map(CompletionStage::toCompletableFuture).collect(collector);
+    }
+
+    private static final CompletableFuture<Optional<?>> EMPTY = CompletableFuture.completedFuture(Optional.empty());
+
+    /**
+     * @return empty {@link CompletableFuture} elements of type {@code <T>}.
+     */
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public static <T> CompletableFuture<T> emptyOptionalCompletedFuture() {
+        return (CompletableFuture<T>)EMPTY;
     }
 
     private CompletableFutureUtils() {

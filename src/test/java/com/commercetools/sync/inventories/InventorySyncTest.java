@@ -1,6 +1,7 @@
 package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.InventoryService;
@@ -351,7 +352,7 @@ public class InventorySyncTest {
 
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
         when(channelService.fetchCachedChannelId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFutureUtils.emptyOptionalCompletedFuture());
 
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraft
             .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_3));
@@ -375,7 +376,7 @@ public class InventorySyncTest {
 
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
         when(channelService.fetchCachedChannelId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFutureUtils.emptyOptionalCompletedFuture());
         when(channelService.createAndCacheChannel(anyString())).thenReturn(failed(new SphereException()));
 
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraft

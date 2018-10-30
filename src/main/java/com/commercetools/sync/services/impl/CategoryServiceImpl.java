@@ -2,6 +2,7 @@ package com.commercetools.sync.services.impl;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
@@ -94,7 +95,7 @@ public final class CategoryServiceImpl extends BaseService<Category, CategoryDra
     @Override
     public CompletionStage<Optional<Category>> fetchCategory(@Nullable final String key) {
         if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
+            return CompletableFutureUtils.emptyOptionalCompletedFuture();
         }
 
         return syncOptions.getCtpClient()

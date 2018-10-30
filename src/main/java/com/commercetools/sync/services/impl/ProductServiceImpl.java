@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.ProductService;
@@ -43,7 +44,7 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
     @Override
     public CompletionStage<Optional<String>> getIdFromCacheOrFetch(@Nullable final String key) {
         if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
+            return CompletableFutureUtils.emptyOptionalCompletedFuture();
         }
         if (keyToIdCache.containsKey(key)) {
             return CompletableFuture.completedFuture(Optional.of(keyToIdCache.get(key)));
@@ -121,7 +122,7 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
     @Override
     public CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key) {
         if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
+            return CompletableFutureUtils.emptyOptionalCompletedFuture();
         }
         final QueryPredicate<Product> queryPredicate = buildProductKeysQueryPredicate(singleton(key));
         return syncOptions.getCtpClient().execute(ProductQuery.of().withPredicates(queryPredicate))

@@ -1,6 +1,7 @@
 package com.commercetools.sync.products.helpers.productreferenceresolver;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
@@ -87,7 +88,7 @@ public class StateReferenceResolverTest {
             .key("dummyKey");
 
         when(stateService.fetchCachedStateId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFutureUtils.emptyOptionalCompletedFuture());
 
         assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
             .hasNotFailed()

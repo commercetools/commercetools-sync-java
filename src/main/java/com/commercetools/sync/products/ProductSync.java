@@ -24,6 +24,7 @@ import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
@@ -252,7 +253,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                              final String productKey = oldProduct.getKey();
                                              handleError(format(UPDATE_FAILED, productKey, sphereException),
                                                  sphereException);
-                                             return CompletableFuture.completedFuture(Optional.empty());
+                                             return CompletableFutureUtils.emptyOptionalCompletedFuture();
                                          });
                                  } else {
                                      statistics.incrementUpdated();
