@@ -35,7 +35,7 @@ public final class AttributeDefinitionsUpdateActionUtils {
 
     /**
      * Compares a list of {@link AttributeDefinition}s with a list of {@link AttributeDefinitionDraft}s to
-     * returns a {@link List} of {@link UpdateAction}&lt;{@link ProductType}&gt;.If both lists have identical
+     * returns a {@link List} of {@link UpdateAction}&lt;{@link ProductType}&gt;. If both lists have identical
      * AttributeDefinitions, then no update actions are needed and hence an empty {@link List} is returned.
      *
      * <p>If the list of new {@link AttributeDefinitionDraft}s is {@code null}, then remove actions are built for
