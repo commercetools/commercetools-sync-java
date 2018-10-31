@@ -41,6 +41,8 @@ public final class AttributeDefinitionsUpdateActionUtils {
      * <p>If the list of new {@link AttributeDefinitionDraft}s is {@code null}, then remove actions are built for
      * every existing attribute definition in the {@code oldAttributeDefinitions} list.
      *
+     * <p>Note: The resulting list of attribute definitions are ensured to contain no null values. </p>
+     *
      * @param oldAttributeDefinitions       the old list of attribute definitions.
      * @param newAttributeDefinitionsDrafts the new list of attribute definitions drafts.
      * @return a list of attribute definitions update actions if the list of attribute definitions are not identical.

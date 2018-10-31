@@ -6,10 +6,14 @@ import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.TextInputHint;
+import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
+import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedStringAttributeType;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
@@ -21,6 +25,7 @@ import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefiniti
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildAttributesUpdateActions;
@@ -562,4 +567,45 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         assertThat(exceptions).hasSize(1);
         assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     }
+
+    @Test
+    public void buildAttributesUpdateActions_WithHasNullAttribute_ShouldNotBuildUpdateActionsForNullAttributes() {
+        final ProductType oldProductType = mock(ProductType.class);
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of(
+                "attributeName1",
+                LocalizedString.ofEnglish("label1"),
+                LocalizedEnumAttributeType.of(Collections.emptyList()))
+            .isRequired(false)
+            .attributeConstraint(AttributeConstraint.NONE)
+            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(false)
+            .build();
+
+        when(oldProductType.getAttributes()).thenReturn(asList(null, attributeDefinition));
+
+        final AttributeDefinitionDraft attributeDefinitionDraftWithDifferentLabel = AttributeDefinitionDraftBuilder
+            .of(
+                LocalizedEnumAttributeType.of(Collections.emptyList()),
+                "attributeName1",
+                LocalizedString.ofEnglish("label2"),
+                false
+            )
+            .attributeConstraint(AttributeConstraint.NONE)
+            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(false)
+            .build();
+
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
+            oldProductType,
+            ProductTypeDraftBuilder
+                .of("key", "name", "key", asList(attributeDefinitionDraftWithDifferentLabel)).build(),
+            SYNC_OPTIONS
+        );
+
+        assertThat(updateActions).hasSize(1);
+    }
+
 }
