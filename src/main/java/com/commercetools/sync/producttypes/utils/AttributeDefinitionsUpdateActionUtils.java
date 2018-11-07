@@ -251,7 +251,7 @@ final class AttributeDefinitionsUpdateActionUtils {
 
     /**
      * Checks if there are any new attribute definition drafts which are not existing in the
-     * {@code oldAttributeDefinitionNameMap}. If there are, then "add" attribute definition update actions are built.
+     * {@code oldAttributeDefinitions}. If there are, then "add" attribute definition update actions are built.
      * Otherwise, if there are no new attribute definitions, then an empty list
      * is returned.
      *
