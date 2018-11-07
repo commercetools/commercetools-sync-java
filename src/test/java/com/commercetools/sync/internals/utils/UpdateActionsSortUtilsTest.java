@@ -494,7 +494,8 @@ class UpdateActionsSortUtilsTest {
         final UpdateAction<Product> setAssetCustomType =
             io.sphere.sdk.products.commands.updateactions.SetAssetCustomType
             .ofVariantIdAndAssetKey(1, "1", CustomFieldsDraft.ofTypeIdAndJson("1", emptyMap()), true);
-        final UpdateAction<Product> setAssetCustomField = io.sphere.sdk.products.commands.updateactions.SetAssetCustomField
+        final UpdateAction<Product> setAssetCustomField =
+            io.sphere.sdk.products.commands.updateactions.SetAssetCustomField
             .ofVariantIdUsingJsonAndAssetKey(1, "1", "name", JsonNodeFactory.instance.objectNode(), true);
 
 
