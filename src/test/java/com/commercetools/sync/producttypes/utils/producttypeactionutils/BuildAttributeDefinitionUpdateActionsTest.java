@@ -20,6 +20,7 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeDefinitionLabel;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrder;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefinition;
 import org.junit.Test;
@@ -450,7 +451,8 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithHasNullAttribute_ShouldNotBuildUpdateActionsForNullAttributes() {
+    public void buildAttributesUpdateActions_WithANullAttributeDefinitonDraft_ShouldSkipNullAttributes() {
+        // preparation
         final ProductType oldProductType = mock(ProductType.class);
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of(
@@ -464,7 +466,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
             .isSearchable(false)
             .build();
 
-        when(oldProductType.getAttributes()).thenReturn(asList(null, attributeDefinition));
+        when(oldProductType.getAttributes()).thenReturn(singletonList(attributeDefinition));
 
         final AttributeDefinitionDraft attributeDefinitionDraftWithDifferentLabel = AttributeDefinitionDraftBuilder
             .of(
@@ -479,14 +481,21 @@ public class BuildAttributeDefinitionUpdateActionsTest {
             .isSearchable(false)
             .build();
 
+        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
+            .of("key", "name", "key", asList(null, attributeDefinitionDraftWithDifferentLabel))
+            .build();
+
+        // test
         final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
             oldProductType,
-            ProductTypeDraftBuilder
-                .of("key", "name", "key", singletonList(attributeDefinitionDraftWithDifferentLabel)).build(),
+            productTypeDraft,
             SYNC_OPTIONS
         );
 
-        assertThat(updateActions).hasSize(1);
+        // assertion
+        assertThat(updateActions).containsExactly(
+            ChangeAttributeDefinitionLabel.of(attributeDefinitionDraftWithDifferentLabel.getName(),
+                attributeDefinitionDraftWithDifferentLabel.getLabel()));
     }
 
 }
