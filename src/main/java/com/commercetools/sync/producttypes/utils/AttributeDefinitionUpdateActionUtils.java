@@ -1,6 +1,5 @@
 package com.commercetools.sync.producttypes.utils;
 
-import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -20,7 +19,6 @@ import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
-import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionHelper.ensureAttributeDefinitionsAreValid;
 import static com.commercetools.sync.producttypes.utils.LocalizedEnumsUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static com.commercetools.sync.producttypes.utils.PlainEnumsUpdateActionUtils.buildEnumValuesUpdateActions;
 
@@ -34,12 +32,11 @@ final class AttributeDefinitionUpdateActionUtils {
      * @param oldAttributeDefinition      the old attribute definition which should be updated.
      * @param newAttributeDefinitionDraft the new attribute definition draft where we get the new fields.
      * @return A list with the update actions or an empty list if the attribute definition fields are identical.
-     * @throws BuildUpdateActionException in case there are attribute definitions with the null attribute type.
      */
     @Nonnull
     static List<UpdateAction<ProductType>> buildActions(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
-        @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) throws BuildUpdateActionException {
+        @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
 
         final List<UpdateAction<ProductType>> updateActions = filterEmptyOptionals(
             buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
@@ -48,8 +45,6 @@ final class AttributeDefinitionUpdateActionUtils {
             buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
             buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
         );
-
-        ensureAttributeDefinitionsAreValid(oldAttributeDefinition, newAttributeDefinitionDraft);
 
         if (isPlainEnumAttribute(oldAttributeDefinition)) {
             updateActions.addAll(buildEnumValuesUpdateActions(
