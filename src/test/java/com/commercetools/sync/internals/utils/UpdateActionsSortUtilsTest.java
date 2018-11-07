@@ -56,8 +56,8 @@ class UpdateActionsSortUtilsTest {
     @ParameterizedTest(name = "[#sortVariantActions]: {0}")
     @MethodSource("sortVariantActionsTestCases")
     void sortVariantActionsTest(@Nonnull final String testCaseName,
-                                  @Nonnull final List<UpdateAction<Product>> updateActions,
-                                  @Nonnull final List<UpdateAction<Product>> expectedResult) {
+                                @Nonnull final List<UpdateAction<Product>> updateActions,
+                                @Nonnull final List<UpdateAction<Product>> expectedResult) {
 
         final List<UpdateAction<Product>> result = sortVariantActions(updateActions, 1);
 
@@ -153,7 +153,8 @@ class UpdateActionsSortUtilsTest {
         final UpdateAction<Product> set = SetAttribute.of(1, "foo", JsonNodeFactory.instance.objectNode(), true);
         final UpdateAction<Product> unset = SetAttribute.of(1, "foo", null, true);
         final UpdateAction<Product> unsetAll = SetAttributeInAllVariants.of("foo", null, true);
-        final UpdateAction<Product> setAll = SetAttributeInAllVariants.of("foo", JsonNodeFactory.instance.objectNode(), true);
+        final UpdateAction<Product> setAll = SetAttributeInAllVariants
+            .of("foo", JsonNodeFactory.instance.objectNode(), true);
 
 
         return Stream.of(
@@ -258,29 +259,41 @@ class UpdateActionsSortUtilsTest {
             Arguments.of(case5, asList(removeImage, moveImageToPosition), asList(removeImage, moveImageToPosition)),
             Arguments.of(case6, asList(moveImageToPosition, removeImage), asList(removeImage, moveImageToPosition)),
 
-            Arguments.of(case7, asList(addExternalImage, moveImageToPosition), asList(addExternalImage, moveImageToPosition)),
-            Arguments.of(case8, asList(moveImageToPosition, addExternalImage), asList(addExternalImage, moveImageToPosition)),
+            Arguments.of(case7, asList(addExternalImage, moveImageToPosition),
+                asList(addExternalImage, moveImageToPosition)),
+            Arguments.of(case8, asList(moveImageToPosition, addExternalImage),
+                asList(addExternalImage, moveImageToPosition)),
 
-            Arguments.of(case9, asList(removeImage, addExternalImage, moveImageToPosition), asList(removeImage, addExternalImage, moveImageToPosition)),
+            Arguments.of(case9, asList(removeImage, addExternalImage, moveImageToPosition),
+                asList(removeImage, addExternalImage, moveImageToPosition)),
             Arguments
-                .of(case10, asList(removeImage, moveImageToPosition, addExternalImage), asList(removeImage, addExternalImage, moveImageToPosition)),
+                .of(case10, asList(removeImage, moveImageToPosition, addExternalImage),
+                    asList(removeImage, addExternalImage, moveImageToPosition)),
 
             Arguments
-                .of(case11, asList(moveImageToPosition, addExternalImage, removeImage), asList(removeImage, addExternalImage, moveImageToPosition)),
+                .of(case11, asList(moveImageToPosition, addExternalImage, removeImage),
+                    asList(removeImage, addExternalImage, moveImageToPosition)),
             Arguments
-                .of(case12, asList(moveImageToPosition, removeImage, addExternalImage), asList(removeImage, addExternalImage, moveImageToPosition)),
+                .of(case12, asList(moveImageToPosition, removeImage, addExternalImage),
+                    asList(removeImage, addExternalImage, moveImageToPosition)),
 
             Arguments
-                .of(case13, asList(addExternalImage, removeImage, moveImageToPosition), asList(removeImage, addExternalImage, moveImageToPosition)),
+                .of(case13, asList(addExternalImage, removeImage, moveImageToPosition),
+                    asList(removeImage, addExternalImage, moveImageToPosition)),
             Arguments
-                .of(case14, asList(addExternalImage, moveImageToPosition, removeImage), asList(removeImage, addExternalImage, moveImageToPosition)),
+                .of(case14, asList(addExternalImage, moveImageToPosition, removeImage),
+                    asList(removeImage, addExternalImage, moveImageToPosition)),
 
-            Arguments.of(case15, asList(addExternalImage, addExternalImage2), asList(addExternalImage, addExternalImage2)),
-            Arguments.of(case16, asList(addExternalImage2, addExternalImage), asList(addExternalImage2, addExternalImage)),
+            Arguments
+                .of(case15, asList(addExternalImage, addExternalImage2), asList(addExternalImage, addExternalImage2)),
+            Arguments
+                .of(case16, asList(addExternalImage2, addExternalImage), asList(addExternalImage2, addExternalImage)),
             Arguments.of(case17, asList(removeImage, removeImage2), asList(removeImage, removeImage2)),
             Arguments.of(case18, asList(removeImage2, removeImage), asList(removeImage2, removeImage)),
-            Arguments.of(case19, asList(moveImageToPosition, moveImageToPosition2), asList(moveImageToPosition, moveImageToPosition2)),
-            Arguments.of(case20, asList(moveImageToPosition2, moveImageToPosition), asList(moveImageToPosition2, moveImageToPosition)),
+            Arguments.of(case19, asList(moveImageToPosition, moveImageToPosition2),
+                asList(moveImageToPosition, moveImageToPosition2)),
+            Arguments.of(case20, asList(moveImageToPosition2, moveImageToPosition),
+                asList(moveImageToPosition2, moveImageToPosition)),
 
             Arguments.of(case21, asList(removeImage, addExternalImage2), asList(removeImage, addExternalImage2)),
             Arguments.of(case22, asList(addExternalImage2, removeImage), asList(removeImage, addExternalImage2)),
@@ -288,26 +301,34 @@ class UpdateActionsSortUtilsTest {
             Arguments.of(case23, asList(removeImage, moveImageToPosition), asList(removeImage, moveImageToPosition)),
             Arguments.of(case24, asList(moveImageToPosition, removeImage), asList(removeImage, moveImageToPosition)),
 
-            Arguments.of(case25, asList(addExternalImage2, moveImageToPosition), asList(addExternalImage2, moveImageToPosition)),
-            Arguments.of(case26, asList(moveImageToPosition, addExternalImage2), asList(addExternalImage2, moveImageToPosition)),
+            Arguments.of(case25, asList(addExternalImage2, moveImageToPosition),
+                asList(addExternalImage2, moveImageToPosition)),
+            Arguments.of(case26, asList(moveImageToPosition, addExternalImage2),
+                asList(addExternalImage2, moveImageToPosition)),
 
             Arguments
-                .of(case27, asList(removeImage, addExternalImage2, moveImageToPosition), asList(removeImage, addExternalImage2, moveImageToPosition)),
+                .of(case27, asList(removeImage, addExternalImage2, moveImageToPosition),
+                    asList(removeImage, addExternalImage2, moveImageToPosition)),
             Arguments
-                .of(case28, asList(removeImage, moveImageToPosition, addExternalImage2), asList(removeImage, addExternalImage2, moveImageToPosition)),
+                .of(case28, asList(removeImage, moveImageToPosition, addExternalImage2),
+                    asList(removeImage, addExternalImage2, moveImageToPosition)),
 
             Arguments
-                .of(case29, asList(moveImageToPosition, addExternalImage2, removeImage), asList(removeImage, addExternalImage2, moveImageToPosition)),
+                .of(case29, asList(moveImageToPosition, addExternalImage2, removeImage),
+                    asList(removeImage, addExternalImage2, moveImageToPosition)),
             Arguments
-                .of(case30, asList(moveImageToPosition, removeImage, addExternalImage2), asList(removeImage, addExternalImage2, moveImageToPosition)),
+                .of(case30, asList(moveImageToPosition, removeImage, addExternalImage2),
+                    asList(removeImage, addExternalImage2, moveImageToPosition)),
 
             Arguments
-                .of(case31, asList(addExternalImage2, removeImage, moveImageToPosition), asList(removeImage, addExternalImage2, moveImageToPosition)),
+                .of(case31, asList(addExternalImage2, removeImage, moveImageToPosition),
+                    asList(removeImage, addExternalImage2, moveImageToPosition)),
             Arguments
-                .of(case32, asList(addExternalImage2, moveImageToPosition, removeImage), asList(removeImage, addExternalImage2, moveImageToPosition))
+                .of(case32, asList(addExternalImage2, moveImageToPosition, removeImage),
+                    asList(removeImage, addExternalImage2, moveImageToPosition))
         );
     }
-    
+
 
     @ParameterizedTest(name = "[#sortPriceActions]: {0}")
     @MethodSource("sortPriceActionsTestCases")
@@ -446,8 +467,8 @@ class UpdateActionsSortUtilsTest {
     @ParameterizedTest(name = "[#sortProductVariantAssetActions]: {0}")
     @MethodSource("sortProductVariantAssetActionsTestCases")
     void sortProductVariantAssetActionsTest(@Nonnull final String testCaseName,
-                                      @Nonnull final List<UpdateAction<Product>> updateActions,
-                                      @Nonnull final List<UpdateAction<Product>> expectedResult) {
+                                            @Nonnull final List<UpdateAction<Product>> updateActions,
+                                            @Nonnull final List<UpdateAction<Product>> expectedResult) {
 
         final List<UpdateAction<Product>> result = sortProductVariantAssetActions(updateActions);
 
@@ -725,7 +746,7 @@ class UpdateActionsSortUtilsTest {
             Arguments.of(case28,
                 //Test case:
                 asList(setAssetDescription, addAsset, setAssetTags, changeAssetOrder,
-                removeAsset, setAssetSources, setAssetCustomType, setAssetCustomField),
+                    removeAsset, setAssetSources, setAssetCustomType, setAssetCustomField),
                 //expected result:
                 asList(removeAsset, setAssetDescription, setAssetTags, setAssetSources, setAssetCustomType,
                     setAssetCustomField, changeAssetOrder, addAsset))
