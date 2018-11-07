@@ -1,4 +1,4 @@
-package com.commercetools.sync.internals.helpers;
+package com.commercetools.sync.internals.utils;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
