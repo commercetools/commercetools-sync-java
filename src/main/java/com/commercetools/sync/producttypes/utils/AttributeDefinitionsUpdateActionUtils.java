@@ -62,13 +62,12 @@ final class AttributeDefinitionsUpdateActionUtils {
 
         if (newAttributeDefinitionsDrafts != null) {
             return buildUpdateActions(
-                oldAttributeDefinitions.stream().filter(Objects::nonNull).collect(toList()),
+                oldAttributeDefinitions,
                 newAttributeDefinitionsDrafts.stream().filter(Objects::nonNull).collect(toList())
             );
         } else {
             return oldAttributeDefinitions
                 .stream()
-                .filter(Objects::nonNull)
                 .map(AttributeDefinition::getName)
                 .map(RemoveAttributeDefinition::of)
                 .collect(Collectors.toList());
