@@ -14,13 +14,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateEnumActionsUtils.buildRemoveEnumValuesUpdateActions;
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateEnumActionsUtils.buildMatchingEnumValuesUpdateActions;
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateEnumActionsUtils.buildAddEnumValuesUpdateActions;
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateEnumActionsUtils.buildChangeEnumValuesOrderUpdateAction;
+import static com.commercetools.sync.producttypes.utils.EnumsUpdateActionUtils.buildAddEnumValuesUpdateActions;
+import static com.commercetools.sync.producttypes.utils.EnumsUpdateActionUtils.buildChangeEnumValuesOrderUpdateAction;
+import static com.commercetools.sync.producttypes.utils.EnumsUpdateActionUtils.buildMatchingEnumValuesUpdateActions;
+import static com.commercetools.sync.producttypes.utils.EnumsUpdateActionUtils.buildRemoveEnumValuesUpdateActions;
 import static java.util.Collections.emptyList;
 
-public final class ProductTypeUpdateLocalizedEnumActionUtils {
+public final class LocalizedEnumsUpdateActionUtils {
     /**
      * Compares a list of old {@link LocalizedEnumValue}s with a list of new {@link LocalizedEnumValue}s for a given
      * attribute definition.
@@ -94,7 +94,7 @@ public final class ProductTypeUpdateLocalizedEnumActionUtils {
                 attributeDefinitionName,
                 oldEnumValues,
                 newEnumValues,
-                LocalizedEnumUpdateActionsUtils::buildActions
+                LocalizedEnumUpdateActionUtils::buildActions
             );
 
         final List<UpdateAction<ProductType>> addEnumValuesUpdateActions = buildAddEnumValuesUpdateActions(
@@ -126,6 +126,6 @@ public final class ProductTypeUpdateLocalizedEnumActionUtils {
         ).collect(Collectors.toList());
     }
 
-    private ProductTypeUpdateLocalizedEnumActionUtils() {
+    private LocalizedEnumsUpdateActionUtils() {
     }
 }

@@ -20,7 +20,7 @@ like [JCenter](https://jcenter.bintray.com/) and [Maven Central](https://search.
 # Release a new version 
 To release the library, you need to create a new git commit tag.
 
-This will trigger a new Travis build. The tag can be created via command line
+This will trigger a new Travis build. The tag can be created via the command line
 
 ```bash
 git tag -a {version} -m "Minor text adjustments."
@@ -30,7 +30,7 @@ git push --tags
 or github UI "Draft new Release":
 https://github.com/commercetools/commercetools-sync-java/releases
 
-Having a tag in the commit will cause travis to call the `bintrayUpload` task specified in the gradle build scripts, which uploads
+Having a tag in the commit will cause Travis to call the `bintrayUpload` task specified in the Gradle build scripts, which uploads
 the artifacts to Bintray. The artifacts have to be then promoted/published from Bintray to _JCenter_ and/or 
 _Maven Central_. See [Publish workflow](#publish-workflow) below for more details.
 
@@ -71,8 +71,8 @@ repo the following command is used:
 
 The `-SNAPSHOT` suffix is mandatory. 
 
-**Note**: for publishing to OSS Sonatype you need specify **API** User/Key (not login credentials) for  
-`OSS_USER`/`OSS_KEY` environment variables or `ossUser`/`ossKey` gradle build properties 
+**Note**: for publishing to OSS Sonatype you need to specify **API** User/Key (not login credentials) for  
+`OSS_USER`/`OSS_KEY` environment variables or `ossUser`/`ossKey` Gradle build properties 
 (the properties have precedence over environment variables). 
 
 See more configuration details of the oss uploading in [oss-publish.gradle](/gradle-scripts/oss-publish.gradle) file.
@@ -80,7 +80,7 @@ See more configuration details of the oss uploading in [oss-publish.gradle](/gra
 
 ## Publish to Bintray
 
-[Bintray documentation about publish process](https://blog.bintray.com/2014/02/11/bintray-as-pain-free-gateway-to-maven-central/)
+[Bintray documentation about the publishing process](https://blog.bintray.com/2014/02/11/bintray-as-pain-free-gateway-to-maven-central/)
 
 Bintray publish is performed by [`gradle-bintray-plugin`](https://github.com/bintray/gradle-bintray-plugin). 
 The artifacts are published to [bintray commercetools maven repo](https://bintray.com/commercetools/maven/commercetools-sync-java).
@@ -123,7 +123,7 @@ Publishing to Maven Central requires the following steps:
     "a stock built-in key-pair so that it can auto-sign every file you upload"
  1. [Manually release from Bintray web page to Maven Central](https://blog.bintray.com/2015/09/17/publishing-your-maven-project-to-bintray/)
  
-**Note**: Maven Central has much stricter requirements to published artifacts, e.g. the should have mandatory POM fields 
+**Note**: Maven Central has much stricter requirements to published artifacts, e.g. it should have mandatory POM fields 
 (like developers list, SCM references; this is configured in the [build script](/maven-publish.gradle)) 
 and mandatory signed by GPG key (could be performed by Bintray settings). For more info about Maven Central 
 requirements see [Requirements](http://central.sonatype.org/pages/requirements.html) page.
