@@ -33,6 +33,7 @@ import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -481,7 +482,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
             oldProductType,
             ProductTypeDraftBuilder
-                .of("key", "name", "key", asList(attributeDefinitionDraftWithDifferentLabel)).build(),
+                .of("key", "name", "key", singletonList(attributeDefinitionDraftWithDifferentLabel)).build(),
             SYNC_OPTIONS
         );
 
