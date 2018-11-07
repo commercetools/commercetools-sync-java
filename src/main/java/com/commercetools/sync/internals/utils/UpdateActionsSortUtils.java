@@ -52,6 +52,8 @@ public final class UpdateActionsSortUtils {
      * <p>This is to ensure that there are no conflicts when updating variants.
      *
      * @param updateActions list of update actions to sort.
+     * @param masterVariantId the id of the master variant. This is needed to be able to distinguish between non-master
+     *                         variant remove actions and master variant remove actions.
      * @return a new sorted list of update actions.
      */
     @Nonnull
@@ -296,7 +298,8 @@ public final class UpdateActionsSortUtils {
      * Given a list of update actions, this method returns a copy of the supplied list but sorted with the following
      * precedence:
      * <ol>
-     * <li>{@link RemoveAsset}</li> {@link ChangeAssetName} OR {@link SetAssetDescription} OR {@link SetAssetTags} OR
+     * <li>{@link RemoveAsset}</li>
+     * <li>{@link ChangeAssetName} or {@link SetAssetDescription} OR {@link SetAssetTags} OR
      * {@link SetAssetSources} OR {@link SetAssetCustomField} OR {@link SetAssetCustomType}</li>
      * <li>{@link ChangeAssetOrder}</li>
      * <li>{@link AddAsset}</li>
@@ -351,7 +354,7 @@ public final class UpdateActionsSortUtils {
      * precedence:
      * <ol>
      * <li>{@link io.sphere.sdk.categories.commands.updateactions.RemoveAsset}</li>
-     * {@link io.sphere.sdk.categories.commands.updateactions.ChangeAssetName} OR
+     * <li>{@link io.sphere.sdk.categories.commands.updateactions.ChangeAssetName} OR
      * {@link io.sphere.sdk.categories.commands.updateactions.SetAssetDescription} OR
      * {@link io.sphere.sdk.categories.commands.updateactions.SetAssetTags} OR
      * {@link io.sphere.sdk.categories.commands.updateactions.SetAssetSources} OR
