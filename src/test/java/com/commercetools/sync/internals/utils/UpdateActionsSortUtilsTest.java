@@ -478,19 +478,21 @@ class UpdateActionsSortUtilsTest {
 
     private static Stream<Arguments> sortProductVariantAssetActionsTestCases() {
         final AssetDraft assetDraft = AssetDraftBuilder.of(emptyList(), ofEnglish("name")).build();
-        final UpdateAction<Product> removeAsset = io.sphere.sdk.products.commands.updateactions.
-            RemoveAsset.ofVariantIdWithKey(1, "1");
+        final UpdateAction<Product> removeAsset = io.sphere.sdk.products.commands.updateactions.RemoveAsset
+            .ofVariantIdWithKey(1, "1");
         final UpdateAction<Product> addAsset = io.sphere.sdk.products.commands.updateactions.AddAsset
             .ofVariantId(1, assetDraft);
         final UpdateAction<Product> changeAssetOrder = io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder
             .ofVariantId(1, emptyList(), true);
-        final UpdateAction<Product> setAssetDescription = io.sphere.sdk.products.commands.updateactions.SetAssetDescription
+        final UpdateAction<Product> setAssetDescription =
+            io.sphere.sdk.products.commands.updateactions.SetAssetDescription
             .ofVariantIdAndAssetKey(1, "1", ofEnglish("desc"), true);
         final UpdateAction<Product> setAssetTags = io.sphere.sdk.products.commands.updateactions.SetAssetTags
             .ofVariantIdAndAssetKey(1, "1", emptySet(), true);
         final UpdateAction<Product> setAssetSources = io.sphere.sdk.products.commands.updateactions.SetAssetSources
             .ofVariantIdAndAssetKey(1, "1", emptyList(), true);
-        final UpdateAction<Product> setAssetCustomType = io.sphere.sdk.products.commands.updateactions.SetAssetCustomType
+        final UpdateAction<Product> setAssetCustomType =
+            io.sphere.sdk.products.commands.updateactions.SetAssetCustomType
             .ofVariantIdAndAssetKey(1, "1", CustomFieldsDraft.ofTypeIdAndJson("1", emptyMap()), true);
         final UpdateAction<Product> setAssetCustomField = io.sphere.sdk.products.commands.updateactions.SetAssetCustomField
             .ofVariantIdUsingJsonAndAssetKey(1, "1", "name", JsonNodeFactory.instance.objectNode(), true);
