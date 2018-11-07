@@ -31,7 +31,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-public final class AttributeDefinitionsUpdateActionUtils {
+final class AttributeDefinitionsUpdateActionUtils {
 
     /**
      * Compares a list of {@link AttributeDefinition}s with a list of {@link AttributeDefinitionDraft}s to
@@ -51,7 +51,7 @@ public final class AttributeDefinitionsUpdateActionUtils {
      *         there are attribute definitions with a null attribute type.
      */
     @Nonnull
-    public static List<UpdateAction<ProductType>> buildAttributeDefinitionsUpdateActions(
+    static List<UpdateAction<ProductType>> buildAttributeDefinitionsUpdateActions(
         @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
         @Nullable final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts)
         throws BuildUpdateActionException {
