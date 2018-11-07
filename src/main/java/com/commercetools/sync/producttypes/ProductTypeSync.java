@@ -6,7 +6,6 @@ import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.WithKey;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 
@@ -17,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
@@ -25,6 +23,8 @@ import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -183,7 +183,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             @Nonnull final Set<ProductType> oldProductTypes,
             @Nonnull final Set<ProductTypeDraft> newProductTypes) {
 
-        final Map<String, ProductType> oldProductTypeMap = getProductTypeKeysMap(oldProductTypes);
+        final Map<String, ProductType> oldProductTypeMap =
+            oldProductTypes.stream().collect(toMap(ProductType::getKey, identity()));
 
         return CompletableFuture.allOf(newProductTypes
             .stream()
@@ -196,17 +197,6 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             })
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new)).thenApply(result -> statistics);
-    }
-
-    /**
-     * Given a set of {@link ProductType}, returns a map of keys to the {@link ProductType} instances.
-     *
-     * @param productTypes list of {@link ProductType}
-     * @return the map of keys to {@link ProductType} instances.
-     */
-    private Map<String, ProductType> getProductTypeKeysMap(@Nonnull final Set<ProductType> productTypes) {
-        return productTypes.stream().collect(Collectors.toMap(WithKey::getKey, p -> p,
-            (productTypeA, productTypeB) -> productTypeB));
     }
 
     /**
