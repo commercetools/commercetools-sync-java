@@ -24,8 +24,7 @@ import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdat
 import static com.commercetools.sync.producttypes.utils.LocalizedEnumsUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static com.commercetools.sync.producttypes.utils.PlainEnumsUpdateActionUtils.buildEnumValuesUpdateActions;
 
-
-public final class AttributeDefinitionUpdateActionUtils {
+final class AttributeDefinitionUpdateActionUtils {
     /**
      * Compares all the fields of an {@link AttributeDefinition} and an {@link AttributeDefinitionDraft} and returns
      * a list of {@link UpdateAction}&lt;{@link ProductType}&gt; as a result. If both the {@link AttributeDefinition}
@@ -38,7 +37,7 @@ public final class AttributeDefinitionUpdateActionUtils {
      * @throws BuildUpdateActionException in case there are attribute definitions with the null attribute type.
      */
     @Nonnull
-    public static List<UpdateAction<ProductType>> buildActions(
+    static List<UpdateAction<ProductType>> buildActions(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) throws BuildUpdateActionException {
 
@@ -100,7 +99,7 @@ public final class AttributeDefinitionUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the labels are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<ProductType>> buildChangeLabelUpdateAction(
+    static Optional<UpdateAction<ProductType>> buildChangeLabelUpdateAction(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
 
@@ -121,7 +120,7 @@ public final class AttributeDefinitionUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the labels are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<ProductType>> buildSetInputTipUpdateAction(
+    static Optional<UpdateAction<ProductType>> buildSetInputTipUpdateAction(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
 
@@ -141,7 +140,7 @@ public final class AttributeDefinitionUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the 'isSearchable' fields are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<ProductType>> buildChangeIsSearchableUpdateAction(
+    static Optional<UpdateAction<ProductType>> buildChangeIsSearchableUpdateAction(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
 
@@ -161,7 +160,7 @@ public final class AttributeDefinitionUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the input hints are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<ProductType>> buildChangeInputHintUpdateAction(
+    static Optional<UpdateAction<ProductType>> buildChangeInputHintUpdateAction(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
 
@@ -181,7 +180,7 @@ public final class AttributeDefinitionUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the attribute constraints are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<ProductType>> buildChangeAttributeConstraintUpdateAction(
+    static Optional<UpdateAction<ProductType>> buildChangeAttributeConstraintUpdateAction(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
 
