@@ -194,10 +194,10 @@ public class ProductTypeSyncOptionsBuilderTest {
 
         final Optional<ProductTypeDraft> filteredDraft =
                 productTypeSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        
+        assertThat(filteredDraft).hasValueSatisfying(productTypeDraft ->
+            assertThat(productTypeDraft.getKey()).isEqualTo("myKey_filteredKey"));
 
-        assertThat(filteredDraft).isNotEmpty();
-        filteredDraft.ifPresent(
-            productTypeDraft -> assertThat(productTypeDraft.getKey()).isEqualTo("myKey_filteredKey"));
     }
 
     @Test
