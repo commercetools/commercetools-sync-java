@@ -61,13 +61,13 @@ public final class UpdateActionsSortUtils {
 
         final List<UpdateAction<Product>> actionsCopy = new ArrayList<>(updateActions);
         actionsCopy.sort((action1, action2) -> {
-            if (isNormalVariantRemoveAction(action1, masterVariantId)
-                && !isNormalVariantRemoveAction(action2, masterVariantId)) {
+            if (isNonMasterVariantRemoveAction(action1, masterVariantId)
+                && !isNonMasterVariantRemoveAction(action2, masterVariantId)) {
                 return -1;
             }
 
-            if (!isNormalVariantRemoveAction(action1, masterVariantId)
-                && isNormalVariantRemoveAction(action2, masterVariantId)) {
+            if (!isNonMasterVariantRemoveAction(action1, masterVariantId)
+                && isNonMasterVariantRemoveAction(action2, masterVariantId)) {
                 return 1;
             }
 
@@ -110,8 +110,8 @@ public final class UpdateActionsSortUtils {
         return actionsCopy;
     }
 
-    private static boolean isNormalVariantRemoveAction(@Nonnull final UpdateAction<Product> action,
-                                                       @Nonnull final Integer masterVariantId) {
+    private static boolean isNonMasterVariantRemoveAction(@Nonnull final UpdateAction<Product> action,
+                                                          @Nonnull final Integer masterVariantId) {
         return action instanceof RemoveVariant
             && !Objects.equals(((RemoveVariant) action).getId(), masterVariantId);
     }
