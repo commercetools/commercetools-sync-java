@@ -33,6 +33,9 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+/**
+ * This class is only meant for the internal use of the commercetools-sync-java library.
+ */
 final class AttributeDefinitionsUpdateActionUtils {
 
     /**

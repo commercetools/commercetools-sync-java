@@ -22,6 +22,9 @@ import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOpti
 import static com.commercetools.sync.producttypes.utils.LocalizedEnumsUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static com.commercetools.sync.producttypes.utils.PlainEnumsUpdateActionUtils.buildEnumValuesUpdateActions;
 
+/**
+ * This class is only meant for the internal use of the commercetools-sync-java library.
+ */
 final class AttributeDefinitionUpdateActionUtils {
     /**
      * Compares all the fields of an {@link AttributeDefinition} and an {@link AttributeDefinitionDraft} and returns
