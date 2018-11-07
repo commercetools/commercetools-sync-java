@@ -26,32 +26,10 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
-public final class ProductTypeUpdateEnumActionsUtils {
-    /**
-     * Given a list of new {@link EnumValue}s, gets a map where the keys are the enum value key, and the values
-     * are the enum instances.
-     *
-     * @param attributeDefinitionName the attribute definition name whose the enum values belong to.
-     * @param enumValues              the list of enum values.
-     * @param <T>                     the enum type of the elements of the list.
-     * @return a map with the enum value key as a key of the map, and the enum
-     *         value as a value of the map.
-     */
-    @Nonnull
-    public static <T extends WithKey> Map<String, T> getEnumValuesKeyMapWithKeyValidation(
-        @Nonnull final String attributeDefinitionName,
-        @Nonnull final List<T> enumValues) {
-
-        return enumValues.stream().collect(
-            toMap(WithKey::getKey, enumValue -> enumValue,
-                (enumValueA, enumValueB) -> {
-                    throw new DuplicateKeyException(format("Enum Values have duplicated keys. "
-                            + "Attribute definition name: '%s', Duplicated enum value: '%s'. "
-                            + "Enum Values are expected to be unique inside their attribute definition.",
-                        attributeDefinitionName, enumValueA.getKey()));
-                }
-            ));
-    }
+/**
+ * This class is only meant for the internal use of the commercetools-sync-java library.
+ */
+final class EnumsUpdateActionUtils {
 
     /**
      * Checks if there are any old enum values which are not existing in the {@code newEnumValues}.
@@ -67,7 +45,7 @@ public final class ProductTypeUpdateEnumActionsUtils {
      *         Otherwise, if the enum values are identical, an empty optional is returned.
      */
     @Nonnull
-    public static <T extends WithKey> Optional<UpdateAction<ProductType>> buildRemoveEnumValuesUpdateActions(
+    static <T extends WithKey> Optional<UpdateAction<ProductType>> buildRemoveEnumValuesUpdateActions(
         @Nonnull final String attributeDefinitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nullable final List<T> newEnumValues) {
@@ -100,7 +78,7 @@ public final class ProductTypeUpdateEnumActionsUtils {
      *         Otherwise, if the enum values order is identical, an empty optional is returned.
      */
     @Nonnull
-    public static <T extends WithKey> Optional<UpdateAction<ProductType>> buildChangeEnumValuesOrderUpdateAction(
+    static <T extends WithKey> Optional<UpdateAction<ProductType>> buildChangeEnumValuesOrderUpdateAction(
         @Nonnull final String attributeDefinitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
@@ -147,7 +125,7 @@ public final class ProductTypeUpdateEnumActionsUtils {
      *         Otherwise, if the enum values are identical, an empty optional is returned.
      */
     @Nonnull
-    public static <T extends WithKey> List<UpdateAction<ProductType>> buildAddEnumValuesUpdateActions(
+    static <T extends WithKey> List<UpdateAction<ProductType>> buildAddEnumValuesUpdateActions(
         @Nonnull final String attributeDefinitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
@@ -182,7 +160,7 @@ public final class ProductTypeUpdateEnumActionsUtils {
      *         Otherwise, if the enum values are identical, an empty optional is returned.
      */
     @Nonnull
-    public static <T extends WithKey> List<UpdateAction<ProductType>> buildMatchingEnumValuesUpdateActions(
+    static <T extends WithKey> List<UpdateAction<ProductType>> buildMatchingEnumValuesUpdateActions(
         @Nonnull final String attributeDefinitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
@@ -205,6 +183,31 @@ public final class ProductTypeUpdateEnumActionsUtils {
             .collect(Collectors.toList());
     }
 
-    private ProductTypeUpdateEnumActionsUtils() {
+    /**
+     * Given a list of new {@link EnumValue}s, gets a map where the keys are the enum value key, and the values
+     * are the enum instances.
+     *
+     * @param attributeDefinitionName the attribute definition name whose the enum values belong to.
+     * @param enumValues              the list of enum values.
+     * @param <T>                     the enum type of the elements of the list.
+     * @return a map with the enum value key as a key of the map, and the enum
+     *         value as a value of the map.
+     */
+    @Nonnull
+    private static <T extends WithKey> Map<String, T> getEnumValuesKeyMapWithKeyValidation(
+            @Nonnull final String attributeDefinitionName,
+            @Nonnull final List<T> enumValues) {
+
+        return enumValues.stream().collect(
+            toMap(WithKey::getKey, enumValue -> enumValue, (enumValueA, enumValueB) -> {
+                    throw new DuplicateKeyException(format("Enum Values have duplicated keys. "
+                                    + "Attribute definition name: '%s', Duplicated enum value: '%s'. "
+                                    + "Enum Values are expected to be unique inside their attribute definition.",
+                            attributeDefinitionName, enumValueA.getKey()));
+                }
+            ));
+    }
+
+    private EnumsUpdateActionUtils() {
     }
 }

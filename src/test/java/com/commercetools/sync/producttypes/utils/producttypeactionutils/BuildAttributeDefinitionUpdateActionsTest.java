@@ -6,21 +6,27 @@ import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.TextInputHint;
+import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
+import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedStringAttributeType;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeDefinitionLabel;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrder;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefinition;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildAttributesUpdateActions;
@@ -28,6 +34,7 @@ import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -58,7 +65,6 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         RES_ROOT + "product-type-with-attribute-definitions-cbd.json";
     private static final String PRODUCT_TYPE_WITH_ATTRIBUTES_ABC_WITH_DIFFERENT_TYPE =
         RES_ROOT + "product-type-with-attribute-definitions-abc-with-different-type.json";
-
 
     private static final ProductTypeSyncOptions SYNC_OPTIONS = ProductTypeSyncOptionsBuilder
         .of(mock(SphereClient.class))
@@ -443,4 +449,53 @@ public class BuildAttributeDefinitionUpdateActionsTest {
                 .build())
         );
     }
+
+    @Test
+    public void buildAttributesUpdateActions_WithANullAttributeDefinitonDraft_ShouldSkipNullAttributes() {
+        // preparation
+        final ProductType oldProductType = mock(ProductType.class);
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of(
+                "attributeName1",
+                LocalizedString.ofEnglish("label1"),
+                LocalizedEnumAttributeType.of(Collections.emptyList()))
+            .isRequired(false)
+            .attributeConstraint(AttributeConstraint.NONE)
+            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(false)
+            .build();
+
+        when(oldProductType.getAttributes()).thenReturn(singletonList(attributeDefinition));
+
+        final AttributeDefinitionDraft attributeDefinitionDraftWithDifferentLabel = AttributeDefinitionDraftBuilder
+            .of(
+                LocalizedEnumAttributeType.of(Collections.emptyList()),
+                "attributeName1",
+                LocalizedString.ofEnglish("label2"),
+                false
+            )
+            .attributeConstraint(AttributeConstraint.NONE)
+            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(false)
+            .build();
+
+        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
+            .of("key", "name", "key", asList(null, attributeDefinitionDraftWithDifferentLabel))
+            .build();
+
+        // test
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
+            oldProductType,
+            productTypeDraft,
+            SYNC_OPTIONS
+        );
+
+        // assertion
+        assertThat(updateActions).containsExactly(
+            ChangeAttributeDefinitionLabel.of(attributeDefinitionDraftWithDifferentLabel.getName(),
+                attributeDefinitionDraftWithDifferentLabel.getLabel()));
+    }
+
 }

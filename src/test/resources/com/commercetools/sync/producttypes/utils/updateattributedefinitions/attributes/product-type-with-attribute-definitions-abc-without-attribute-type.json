@@ -1,0 +1,31 @@
+{
+  "name": "name",
+  "key": "key",
+  "description": "description",
+  "attributes": [
+    {
+      "name": "a",
+      "label": {
+        "en": "label_en"
+      },
+      "isRequired": false,
+      "isSearchable": true
+    },
+    {
+      "name": "b",
+      "label": {
+        "en": "label_en"
+      },
+      "isRequired": false,
+      "isSearchable": true
+    },
+    {
+      "name": "c",
+      "label": {
+        "en": "label_en"
+      },
+      "isRequired": false,
+      "isSearchable": true
+    }
+  ]
+}

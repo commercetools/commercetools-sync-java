@@ -6,7 +6,6 @@ import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.WithKey;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 
@@ -17,17 +16,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
 import static java.lang.String.format;
+import static java.util.Collections.emptySet;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
-import static java.util.stream.Collectors.toList;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static java.util.Collections.emptyList;
 
 /**
  * This class syncs product type drafts with the corresponding product types in the CTP project.
@@ -86,19 +85,23 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     /**
-     * Fetches existing {@link ProductType} objects from CTP project that correspond to passed {@code batch}.
-     * Having existing product types fetched, {@code batch} is compared and synced with fetched objects by
-     * {@link ProductTypeSync#syncBatch(List, List)} function. When fetching existing product types results in
-     * an empty optional then {@code batch} isn't processed.
+     * This method first creates a new {@link Set} of valid {@link ProductTypeDraft} elements. For more on the rules of
+     * validation, check: {@link ProductTypeSync#validateDraft(ProductTypeDraft)}. Using the resulting set of
+     * {@code validProductTypeDrafts}, the matching productTypes in the target CTP project are fetched then the method
+     * {@link ProductTypeSync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
+     * requests accordingly) on the target project.
      *
      * @param batch batch of drafts that need to be synced
-     * @return {@link CompletionStage} of {@link Void} that indicates method progress.
+     * @return a {@link CompletionStage} containing an instance
+     *         of {@link ProductTypeSyncStatistics} which contains information about the result of syncing the supplied 
+     *         batch to the target project.
      */
     @Override
     protected CompletionStage<ProductTypeSyncStatistics> processBatch(@Nonnull final List<ProductTypeDraft> batch) {
-        final List<ProductTypeDraft> validProductTypeDrafts = batch.stream()
-                                                                   .filter(this::validateDraft)
-                                                                   .collect(toList());
+
+        final Set<ProductTypeDraft> validProductTypeDrafts = batch.stream()
+                                                                  .filter(this::validateDraft)
+                                                                  .collect(toSet());
 
         if (validProductTypeDrafts.isEmpty()) {
             statistics.incrementProcessed(batch.size());
@@ -139,30 +142,17 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * Given a set of product type keys, fetches the corresponding product types from CTP if they exist.
      *
      * @param keys the keys of the product types that are wanted to be fetched.
-     * @return a future which contains the list of product types corresponding to the keys.
+     * @return a {@link CompletionStage} which contains the set of product types corresponding to the keys.
      */
-    private CompletionStage<List<ProductType>> fetchExistingProductTypes(@Nonnull final Set<String> keys) {
+    private CompletionStage<Set<ProductType>> fetchExistingProductTypes(@Nonnull final Set<String> keys) {
         return productTypeService
-                .fetchMatchingProductsTypesByKeys(keys)
+                .fetchMatchingProductTypesByKeys(keys)
                 .exceptionally(exception -> {
                     final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keys);
                     handleError(errorMessage, exception, keys.size());
 
-                    return emptyList();
+                    return emptySet();
                 });
-    }
-
-    /**
-     * Given a list of {@link ProductType} or {@link ProductTypeDraft}, returns a map of keys to the
-     * {@link ProductType}/{@link ProductTypeDraft} instances.
-     *
-     * @param productTypes list of {@link ProductType}/{@link ProductTypeDraft}
-     * @param <T>          a type that extends of {@link WithKey}.
-     * @return the map of keys to {@link ProductType}/{@link ProductTypeDraft} instances.
-     */
-    private <T extends WithKey> Map<String, T> getKeysProductTypeMap(@Nonnull final List<T> productTypes) {
-        return productTypes.stream().collect(Collectors.toMap(WithKey::getKey, p -> p,
-            (productTypeA, productTypeB) -> productTypeB));
     }
 
     /**
@@ -182,17 +172,19 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     /**
-     * Given a list of product type drafts, attempts to sync the drafts with the existing products types in the CTP
+     * Given a set of product type drafts, attempts to sync the drafts with the existing products types in the CTP
      * project. The product type and the draft are considered to match if they have the same key.
      *
      * @param oldProductTypes old product types.
      * @param newProductTypes drafts that need to be synced.
-     * @return a future which contains an empty result after execution of the update
+     * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
     private CompletionStage<ProductTypeSyncStatistics> syncBatch(
-            @Nonnull final List<ProductType> oldProductTypes,
-            @Nonnull final List<ProductTypeDraft> newProductTypes) {
-        final Map<String, ProductType> oldProductTypeMap = getKeysProductTypeMap(oldProductTypes);
+            @Nonnull final Set<ProductType> oldProductTypes,
+            @Nonnull final Set<ProductTypeDraft> newProductTypes) {
+
+        final Map<String, ProductType> oldProductTypeMap =
+            oldProductTypes.stream().collect(toMap(ProductType::getKey, identity()));
 
         return CompletableFuture.allOf(newProductTypes
             .stream()
@@ -215,7 +207,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * is called.
      *
      * @param productTypeDraft the product type draft to create the product type from.
-     * @return a future which contains an empty result after execution of the create.
+     * @return a {@link CompletionStage} which contains an empty result after execution of the create.
      */
     private CompletionStage<Void> createProductType(@Nonnull final ProductTypeDraft productTypeDraft) {
         return syncOptions.applyBeforeCreateCallBack(productTypeDraft)
@@ -244,7 +236,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      *
      * @param oldProductType existing product type that could be updated.
      * @param newProductType draft containing data that could differ from data in {@code oldProductType}.
-     * @return a future which contains an empty result after execution of the update.
+     * @return a {@link CompletionStage} which contains an empty result after execution of the update.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> updateProductType(@Nonnull final ProductType oldProductType,
