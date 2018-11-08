@@ -1,7 +1,5 @@
 package com.commercetools.sync.producttypes.utils;
 
-import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
-import com.commercetools.sync.producttypes.helpers.AttributeTypeAssert;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
@@ -40,22 +38,21 @@ final class AttributeDefinitionUpdateActionUtils {
      * @param oldAttributeDefinition      the old attribute definition which should be updated.
      * @param newAttributeDefinitionDraft the new attribute definition draft where we get the new fields.
      * @return A list with the update actions or an empty list if the attribute definition fields are identical.
-     * @throws BuildUpdateActionException in case there are attribute definitions with the null attribute type.
      */
     @Nonnull
     static List<UpdateAction<ProductType>> buildActions(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
-        @Nonnull final AttributeDefinitionDraft newAttributeDefinition) throws BuildUpdateActionException {
+        @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
 
         final List<UpdateAction<ProductType>> updateActions = filterEmptyOptionals(
-                buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinition),
-                buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinition),
-                buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinition),
-                buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinition),
-                buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinition)
+                buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
         );
 
-        updateActions.addAll(buildEnumUpdateActions(oldAttributeDefinition, newAttributeDefinition));
+        updateActions.addAll(buildEnumUpdateActions(oldAttributeDefinition, newAttributeDefinitionDraft));
         return updateActions;
     }
 
@@ -65,32 +62,27 @@ final class AttributeDefinitionUpdateActionUtils {
      * result. If both the {@link AttributeDefinition} and the {@link AttributeDefinitionDraft} have identical
      * enum values, then no update action is needed and hence an empty {@link List} is returned.
      *
-     * @param oldAttributeDefinition the attribute definition which should be updated.
-     * @param newAttributeDefinition the new attribute definition draft where we get the new fields.
+     * @param oldAttributeDefinition      the attribute definition which should be updated.
+     * @param newAttributeDefinitionDraft the new attribute definition draft where we get the new fields.
      * @return A list with the update actions or an empty list if the attribute definition enums are identical.
-     * @throws BuildUpdateActionException in case there are attribute definitions with the null attribute type.
      */
     @Nonnull
-    public static List<UpdateAction<ProductType>> buildEnumUpdateActions(
+    static List<UpdateAction<ProductType>> buildEnumUpdateActions(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
-        @Nonnull final AttributeDefinitionDraft newAttributeDefinition) throws BuildUpdateActionException {
-
-        AttributeTypeAssert.assertTypesAreNull(
-            oldAttributeDefinition.getAttributeType(),
-            newAttributeDefinition.getAttributeType());
+        @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
 
         final List<UpdateAction<ProductType>> updateActions = new ArrayList<>();
         if (isPlainEnumAttribute(oldAttributeDefinition)) {
             updateActions.addAll(buildEnumValuesUpdateActions(
                 oldAttributeDefinition.getName(),
                 ((EnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
-                ((EnumAttributeType) newAttributeDefinition.getAttributeType()).getValues()
+                ((EnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
             ));
         } else if (isLocalizedEnumAttribute(oldAttributeDefinition)) {
             updateActions.addAll(buildLocalizedEnumValuesUpdateActions(
                 oldAttributeDefinition.getName(),
                 ((LocalizedEnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
-                ((LocalizedEnumAttributeType) newAttributeDefinition.getAttributeType()).getValues()
+                ((LocalizedEnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
             ));
         }
 
