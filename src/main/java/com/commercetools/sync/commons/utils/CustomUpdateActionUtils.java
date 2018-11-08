@@ -177,7 +177,7 @@ public final class CustomUpdateActionUtils {
     }
 
     /**
-     * Compares a non null {@link CustomFields} to a non null {@link CustomFieldsDraft} and returns a
+     * Compares a non-null {@link CustomFields} to a non-null {@link CustomFieldsDraft} and returns a
      * {@link List}&lt;{@link UpdateAction}&gt; as a result. The keys are used to compare the custom types.
      * The key of the old resource custom type is fetched from the caching mechanism of the {@link TypeService} instance
      * supplied as a param to the method. The key of the new resource custom type is expected to be set on the type.

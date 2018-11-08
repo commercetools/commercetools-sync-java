@@ -16,6 +16,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -134,7 +135,7 @@ public class ProductTypeSyncOptionsBuilderTest {
                 .build();
         assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNull();
 
-        final List<UpdateAction<ProductType>> updateActions = Collections.singletonList(ChangeName.of("name"));
+        final List<UpdateAction<ProductType>> updateActions = singletonList(ChangeName.of("name"));
         final List<UpdateAction<ProductType>> filteredList = productTypeSyncOptions
                 .applyBeforeUpdateCallBack(updateActions, mock(ProductTypeDraft.class), mock(ProductType.class));
         assertThat(filteredList).isSameAs(updateActions);
@@ -151,7 +152,7 @@ public class ProductTypeSyncOptionsBuilderTest {
                 .build();
         assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-        final List<UpdateAction<ProductType>> updateActions = Collections.singletonList(ChangeName.of("name"));
+        final List<UpdateAction<ProductType>> updateActions = singletonList(ChangeName.of("name"));
         final List<UpdateAction<ProductType>> filteredList =
                 productTypeSyncOptions.applyBeforeUpdateCallBack(updateActions,
                         mock(ProductTypeDraft.class), mock(ProductType.class));
@@ -170,7 +171,7 @@ public class ProductTypeSyncOptionsBuilderTest {
                 .build();
         assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-        final List<UpdateAction<ProductType>> updateActions = Collections.singletonList(ChangeName.of("name"));
+        final List<UpdateAction<ProductType>> updateActions = singletonList(ChangeName.of("name"));
         final List<UpdateAction<ProductType>> filteredList =
                 productTypeSyncOptions.applyBeforeUpdateCallBack(updateActions,
                         mock(ProductTypeDraft.class), mock(ProductType.class));
@@ -194,9 +195,10 @@ public class ProductTypeSyncOptionsBuilderTest {
 
         final Optional<ProductTypeDraft> filteredDraft =
                 productTypeSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        
+        assertThat(filteredDraft).hasValueSatisfying(productTypeDraft ->
+            assertThat(productTypeDraft.getKey()).isEqualTo("myKey_filteredKey"));
 
-        assertThat(filteredDraft).isNotEmpty();
-        assertThat(filteredDraft.get().getKey()).isEqualTo("myKey_filteredKey");
     }
 
     @Test

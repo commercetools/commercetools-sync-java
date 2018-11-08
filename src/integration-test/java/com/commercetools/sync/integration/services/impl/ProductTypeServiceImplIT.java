@@ -17,6 +17,7 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -109,7 +110,6 @@ public class ProductTypeServiceImplIT {
         assertThat(newProductTypeId).isEmpty();
     }
 
-
     @Test
     public void fetchCachedProductAttributeMetaDataMap_WithMetadataCache_ShouldReturnAnyAttributeMetadata() {
         final Optional<String> productTypeId = productTypeService.fetchCachedProductTypeId(OLD_PRODUCT_TYPE_KEY)
@@ -187,6 +187,8 @@ public class ProductTypeServiceImplIT {
         assertThat(errorCallBackMessages).isEmpty();
     }
 
+    // TODO: GITHUB ISSUE#331
+    @Ignore
     @Test
     public void fetchMatchingProductTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadeGatewayException on any request.

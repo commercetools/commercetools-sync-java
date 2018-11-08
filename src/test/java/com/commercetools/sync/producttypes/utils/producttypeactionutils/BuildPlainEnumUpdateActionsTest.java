@@ -18,6 +18,7 @@ import static com.commercetools.sync.commons.utils.enums.PlainEnumValueTestObjec
 import static com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActionUtils.buildEnumValueUpdateActions;
 import static com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActionUtils.buildEnumValuesUpdateActions;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BuildPlainEnumUpdateActionsTest {
@@ -113,7 +114,7 @@ public class BuildPlainEnumUpdateActionsTest {
         );
 
         assertThat(updateActions).containsExactly(
-            RemoveEnumValues.of("attribute_definition_name_1", asList("c"))
+            RemoveEnumValues.of("attribute_definition_name_1", singletonList("c"))
         );
     }
 
@@ -139,7 +140,7 @@ public class BuildPlainEnumUpdateActionsTest {
         );
 
         assertThat(updateActions).containsExactly(
-            RemoveEnumValues.of("attribute_definition_name_1", asList("c")),
+            RemoveEnumValues.of("attribute_definition_name_1", Collections.singletonList("c")),
             AddEnumValue.of("attribute_definition_name_1", ENUM_VALUE_D)
         );
     }
@@ -170,7 +171,7 @@ public class BuildPlainEnumUpdateActionsTest {
         );
 
         assertThat(updateActions).containsExactly(
-            RemoveEnumValues.of("attribute_definition_name_1", asList("a")),
+            RemoveEnumValues.of("attribute_definition_name_1", singletonList("a")),
             ChangeEnumValueOrder.of("attribute_definition_name_1", asList(
                 ENUM_VALUE_C,
                 ENUM_VALUE_B
@@ -225,7 +226,7 @@ public class BuildPlainEnumUpdateActionsTest {
         );
 
         assertThat(updateActions).containsExactly(
-            RemoveEnumValues.of("attribute_definition_name_1", asList("a")),
+            RemoveEnumValues.of("attribute_definition_name_1", Collections.singletonList("a")),
             AddEnumValue.of("attribute_definition_name_1", ENUM_VALUE_D),
             ChangeEnumValueOrder.of("attribute_definition_name_1", asList(
                 ENUM_VALUE_C,

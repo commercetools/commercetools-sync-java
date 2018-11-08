@@ -6,7 +6,6 @@ import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.WithKey;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 
@@ -17,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
@@ -25,6 +23,8 @@ import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -85,20 +85,23 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     /**
-     * Fetches existing {@link ProductType} objects from CTP project that correspond to passed {@code batch}.
-     * Having existing product types fetched, {@code batch} is compared and synced with fetched objects by
-     * {@link ProductTypeSync#syncBatch(Set, Set)} function. When fetching existing product types results in
-     * a {@link ProductTypeSyncStatistics} with initial values {@code 0} of created, updated, failed
-     * then {@code batch} isn't processed.
+     * This method first creates a new {@link Set} of valid {@link ProductTypeDraft} elements. For more on the rules of
+     * validation, check: {@link ProductTypeSync#validateDraft(ProductTypeDraft)}. Using the resulting set of
+     * {@code validProductTypeDrafts}, the matching productTypes in the target CTP project are fetched then the method
+     * {@link ProductTypeSync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
+     * requests accordingly) on the target project.
      *
      * @param batch batch of drafts that need to be synced
-     * @return {@link CompletionStage} of {@link ProductTypeSyncStatistics} that indicates method progress.
+     * @return a {@link CompletionStage} containing an instance
+     *         of {@link ProductTypeSyncStatistics} which contains information about the result of syncing the supplied 
+     *         batch to the target project.
      */
     @Override
     protected CompletionStage<ProductTypeSyncStatistics> processBatch(@Nonnull final List<ProductTypeDraft> batch) {
+
         final Set<ProductTypeDraft> validProductTypeDrafts = batch.stream()
-                                                                   .filter(this::validateDraft)
-                                                                   .collect(toSet());
+                                                                  .filter(this::validateDraft)
+                                                                  .collect(toSet());
 
         if (validProductTypeDrafts.isEmpty()) {
             statistics.incrementProcessed(batch.size());
@@ -153,19 +156,6 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     /**
-     * Given a list of {@link ProductType} or {@link ProductTypeDraft}, returns a map of keys to the
-     * {@link ProductType}/{@link ProductTypeDraft} instances.
-     *
-     * @param productTypes list of {@link ProductType}/{@link ProductTypeDraft}
-     * @param <T>          a type that extends of {@link WithKey}.
-     * @return the map of keys to {@link ProductType}/{@link ProductTypeDraft} instances.
-     */
-    private <T extends WithKey> Map<String, T> getProductTypeKeysMap(@Nonnull final Set<T> productTypes) {
-        return productTypes.stream().collect(Collectors.toMap(WithKey::getKey, p -> p,
-            (productTypeA, productTypeB) -> productTypeB));
-    }
-
-    /**
      * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
      * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
      * incrementing the total number of failed product types to sync.
@@ -192,7 +182,9 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     private CompletionStage<ProductTypeSyncStatistics> syncBatch(
             @Nonnull final Set<ProductType> oldProductTypes,
             @Nonnull final Set<ProductTypeDraft> newProductTypes) {
-        final Map<String, ProductType> oldProductTypeMap = getProductTypeKeysMap(oldProductTypes);
+
+        final Map<String, ProductType> oldProductTypeMap =
+            oldProductTypes.stream().collect(toMap(ProductType::getKey, identity()));
 
         return CompletableFuture.allOf(newProductTypes
             .stream()

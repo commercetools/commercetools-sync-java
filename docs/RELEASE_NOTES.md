@@ -70,10 +70,11 @@ optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issue
 - **Type Sync** - Exposed `FieldDefinitionsUpdateActionUtils` which contains utils for calculating needed update actions after comparing a list of `FieldDefinition`s and a list of `FieldDefinition`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 - **Type Sync** - Exposed `FieldDefinitionUpdateActionUtils` which contains utils for calculating needed update actions after comparing a `FieldDefinition` and a `FieldDefinition`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 
-**Enhancements** (3)
+**Enhancements** (4)
 - **Commons** - Bumped commercetools-jvm-sdk to version [1.35.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_35_0).
 - **Commons** - Bumped `mockito` to 2.23.0.
 - **Type Sync** - Added `TypeSyncBenchmark` to benchmark the type sync, to be able to compare the performance of the sync with the future releases. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
+- **ProductType Sync** - Added `ProductTypeSyncBenchmark` to benchmark the product type sync, to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
 
 **Changes** (3)
 - **Product Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
@@ -85,7 +86,12 @@ optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issue
 - **Category Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 - **Inventory Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 - **ProductType Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
-- **ProductType Sync** - Renamed `ProductTypeUpdateAttributeDefinitionActionUtils` to `AttributeDefinitionsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+- **ProductType Sync** - Renamed `ProductTypeUpdateAttributeDefinitionActionUtils` to `AttributeDefinitionsUpdateActionUtils`. It is also now meant to be **only used internally** by the library. 
+Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+- **ProductType Sync** - `AttributeDefinitionUpdateActionUtils` is now meant to be **only used internally** by the library. 
+Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+- **ProductType Sync** - `EnumsUpdateActionUtils` is now meant to be **only used internally** by the library. 
+Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - Renamed `ProductTypeUpdateLocalizedEnumActionUtils` to `LocalizedEnumsUpdateActionUtils.` [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - Renamed `ProductTypeUpdatePlainEnumActionUtils` to `PlainEnumsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - Renamed `LocalizedEnumUpdateActionsUtils` to `LocalizedEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
@@ -98,6 +104,9 @@ optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issue
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M13...v1.0.0-M14) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M14)
+
+**Bug Fixes** (1)
+- **Product Sync** - Fixed a bug where the removed attributes in the source product variant draft were not being removed from the target variant. [#238](https://github.com/commercetools/commercetools-sync-java/issues/308)
 
 **Enhancements** (8)
 - **Product Sync** - Products create and update requests are now issued in parallel. This should lead to a performance improvement. [#238](https://github.com/commercetools/commercetools-sync-java/issues/238)
@@ -113,8 +122,6 @@ optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issue
 - **Product Sync** - `AttributeMetaData#isRequired` is now removed. [#308](https://github.com/commercetools/commercetools-sync-java/issues/308)
 - **Product Sync** - `ProductVariantAttributeUpdateActionUtils#buildProductVariantAttributeUpdateAction` now takes a map of all meta data instead of the specific metadata entry. [#308](https://github.com/commercetools/commercetools-sync-java/issues/308)
 
-**Bug Fixes** (1)
-- **Product Sync** - Fixed a bug where the removed attributes in the source product variant draft were not being removed from the target variant. [#238](https://github.com/commercetools/commercetools-sync-java/issues/308)
 
 ### v1.0.0-M13 -  Sept 5, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M12...v1.0.0-M13) |

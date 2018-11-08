@@ -18,6 +18,7 @@ import static com.commercetools.sync.commons.utils.enums.LocalizedEnumValueTestO
 import static com.commercetools.sync.producttypes.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValueUpdateActions;
 import static com.commercetools.sync.producttypes.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BuildLocalizedEnumUpdateActionsTest {
@@ -113,7 +114,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
         );
 
         assertThat(updateActions).containsExactly(
-            RemoveEnumValues.of("attribute_definition_name_1", asList("c"))
+            RemoveEnumValues.of("attribute_definition_name_1", singletonList("c"))
         );
     }
 
@@ -139,7 +140,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
         );
 
         assertThat(updateActions).containsExactly(
-            RemoveEnumValues.of("attribute_definition_name_1", asList("c")),
+            RemoveEnumValues.of("attribute_definition_name_1", singletonList("c")),
             AddLocalizedEnumValue.of("attribute_definition_name_1", ENUM_VALUE_D)
         );
     }
@@ -170,7 +171,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
         );
 
         assertThat(updateActions).containsExactly(
-            RemoveEnumValues.of("attribute_definition_name_1", asList("a")),
+            RemoveEnumValues.of("attribute_definition_name_1", singletonList("a")),
             ChangeLocalizedEnumValueOrder.of("attribute_definition_name_1", asList(
                 ENUM_VALUE_C,
                 ENUM_VALUE_B
@@ -225,7 +226,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
         );
 
         assertThat(updateActions).containsExactly(
-            RemoveEnumValues.of("attribute_definition_name_1", asList("a")),
+            RemoveEnumValues.of("attribute_definition_name_1", singletonList("a")),
             AddLocalizedEnumValue.of("attribute_definition_name_1", ENUM_VALUE_D),
             ChangeLocalizedEnumValueOrder.of("attribute_definition_name_1", asList(
                 ENUM_VALUE_C,

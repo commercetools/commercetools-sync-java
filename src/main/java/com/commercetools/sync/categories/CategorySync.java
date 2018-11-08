@@ -239,7 +239,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * resolution, the error callback is triggered and the category is skipped.
      *
      * @param categoryDrafts the input list of category drafts in the sync batch.
-     * @param keyToIdCache the cache containing mapping of all existing category keys to ids.
+     * @param keyToIdCache   the cache containing the mapping of all existing category keys to ids.
      */
     private void prepareDraftsForProcessing(@Nonnull final List<CategoryDraft> categoryDrafts,
                                             @Nonnull final Map<String, String> keyToIdCache) {
@@ -285,14 +285,14 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     /**
      * This method first gets the parent key either from the expanded category object or from the id field on the
-     * reference and validates it. If its valid, then it checks if the parent category is missing, this is done by
+     * reference and validates it. If it is valid, then it checks if the parent category is missing, this is done by
      * checking if the key exists in the {@code keyToIdCache} map. If it is missing, then it adds the key to the map
      * {@code statistics#categoryKeysWithMissingParents}, then it returns a category draft identical to the supplied one
      * but with a {@code null} parent. If it is not missing, then the same identical category draft is returned with the
      * same parent.
      *
      * @param categoryDraft the category draft to check whether it's parent is missing or not.
-     * @param keyToIdCache  the cache containing mapping of all existing category keys to ids.
+     * @param keyToIdCache  the cache containing the mapping of all existing category keys to ids.
      * @return the same identical supplied category draft. However, with a null parent field, if the parent is missing.
      * @throws ReferenceResolutionException thrown if the parent key is not valid.
      */
@@ -433,15 +433,15 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
 
     /**
-     * Given a {@link Set} of categories and a {@code key}. This method tries to find a category with this key in this
-     * set and returns an optional containing it or an empty optional if no category exist with such key.
+     * Given a {@link Set} of categories and a {@code key}, this method tries to find a category with this key in this
+     * set and returns an optional containing it or an empty optional if no category exists with such key.
      *
      * @param categories set of categories to look for a category with such key.
-     * @param key the key to look for a category for in the supplied set of categories.
-     * @return an optional containing the category or an empty optional if no category exist with such key.
+     * @param key        the key to look for a category for in the supplied set of categories.
+     * @return an optional containing the category or an empty optional if no category exists with such key.
      */
     private static Optional<Category> getCategoryByKeyIfExists(@Nonnull final Set<Category> categories,
-                                                        @Nonnull final String key) {
+                                                               @Nonnull final String key) {
         return categories.stream()
                          .filter(category -> Objects.equals(category.getKey(), key))
                          .findFirst();
@@ -449,14 +449,14 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     /**
      * Given a {@link Set} of categoryDrafts and a {@code key}. This method tries to find a categoryDraft with this key
-     * in this set and returns an optional containing it or an empty optional if no categoryDraft exist with such key.
+     * in this set and returns an optional containing it or an empty optional if no categoryDraft exists with such key.
      *
      * @param categoryDrafts set of categoryDrafts to look for a categoryDraft with such key.
-     * @param key the key to look for a categoryDraft for in the supplied set of categoryDrafts.
-     * @return an optional containing the categoryDraft or an empty optional if no category exist with such key.
+     * @param key            the key to look for a categoryDraft for in the supplied set of categoryDrafts.
+     * @return an optional containing the categoryDraft or an empty optional if no category exists with such key.
      */
     private static Optional<CategoryDraft> getDraftByKeyIfExists(@Nonnull final Set<CategoryDraft> categoryDrafts,
-                                                          @Nonnull final String key) {
+                                                                 @Nonnull final String key) {
         return categoryDrafts.stream()
                              .filter(categoryDraft -> Objects.equals(categoryDraft.getKey(), key))
                              .findFirst();
@@ -479,7 +479,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     }
 
     /**
-     * Compares the parent references of a category and a categoryDraft to check whether a
+     * Compares the parent references of a {@link Category} and a {@link CategoryDraft} to check whether a
      * {@link io.sphere.sdk.categories.commands.updateactions.ChangeParent} update action is required to sync the
      * draft to the category or not
      *
@@ -489,7 +489,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *          sync the draft to the category.
      */
     static boolean requiresChangeParentUpdateAction(@Nonnull final Category category,
-                                                     @Nonnull final CategoryDraft categoryDraft) {
+                                                    @Nonnull final CategoryDraft categoryDraft) {
         return !Objects.equals(category.getParent(), categoryDraft.getParent());
     }
 
