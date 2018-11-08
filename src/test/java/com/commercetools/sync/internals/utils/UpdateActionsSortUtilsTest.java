@@ -83,6 +83,31 @@ class UpdateActionsSortUtilsTest {
         final String case4 = "removeMasterVariant, setAttribute, addPrice"
             + "removeVariant, addVariant, removeImage, addPrice, changeMasterVariant";
 
+        final String case5 = "removeMasterVariant, changeMasterVariant";
+        final String case6 = "removeMasterVariant, addVariant";
+        final String case7 = "removeMasterVariant, removeVariant";
+        final String case8 = "removeMasterVariant, setAttribute";
+
+        final String case9 = "changeMasterVariant, removeMasterVariant";
+        final String case10 = "changeMasterVariant, addVariant";
+        final String case11 = "changeMasterVariant, removeVariant";
+        final String case12 = "changeMasterVariant, setAttribute";
+
+        final String case13 = "addVariant, changeMasterVariant";
+        final String case14 = "addVariant, removeMasterVariant";
+        final String case15 = "addVariant, removeVariant";
+        final String case16 = "addVariant, setAttribute";
+
+        final String case17 = "removeVariant, changeMasterVariant";
+        final String case18 = "removeVariant, addVariant";
+        final String case19 = "removeVariant, removeMasterVariant";
+        final String case20 = "removeVariant, setAttribute";
+
+        final String case21 = "setAttribute, changeMasterVariant";
+        final String case22 = "setAttribute, addVariant";
+        final String case23 = "setAttribute, removeVariant";
+        final String case24 = "setAttribute, removeMasterVariant";
+
         final UpdateAction<Product> removeVariant = RemoveVariant.ofVariantId(2, true);
         final UpdateAction<Product> set = SetAttribute.of(1, "foo", JsonNodeFactory.instance.objectNode(), true);
         final UpdateAction<Product> removeImage = RemoveImage.ofVariantId(1, "foo", true);
@@ -107,7 +132,87 @@ class UpdateActionsSortUtilsTest {
                     removeImage, addPrice, changeMasterVariant),
 
                 asList(removeVariant, set, addPrice, removeImage, addPrice,
-                    addVariant, changeMasterVariant, removeMasterVariant))
+                    addVariant, changeMasterVariant, removeMasterVariant)),
+
+            Arguments.of(case5,
+                asList(removeMasterVariant, changeMasterVariant),
+                asList(changeMasterVariant, removeMasterVariant)),
+
+            Arguments.of(case6,
+                asList(removeMasterVariant, addVariant),
+                asList(addVariant, removeMasterVariant)),
+
+            Arguments.of(case7,
+                asList(removeMasterVariant, removeVariant),
+                asList(removeVariant, removeMasterVariant)),
+
+            Arguments.of(case8,
+                asList(removeMasterVariant, set),
+                asList(set, removeMasterVariant)),
+
+            Arguments.of(case9,
+                asList(changeMasterVariant, removeMasterVariant),
+                asList(changeMasterVariant, removeMasterVariant)),
+
+            Arguments.of(case10,
+                asList(changeMasterVariant, addVariant),
+                asList(addVariant, changeMasterVariant)),
+
+            Arguments.of(case11,
+                asList(changeMasterVariant, removeVariant),
+                asList(removeVariant, changeMasterVariant)),
+
+            Arguments.of(case12,
+                asList(changeMasterVariant, set),
+                asList(set, changeMasterVariant)),
+
+            Arguments.of(case13,
+                asList(addVariant, changeMasterVariant),
+                asList(addVariant, changeMasterVariant)),
+
+            Arguments.of(case14,
+                asList(addVariant, removeMasterVariant),
+                asList(addVariant, removeMasterVariant)),
+
+            Arguments.of(case15,
+                asList(addVariant, removeVariant),
+                asList(removeVariant, addVariant)),
+
+            Arguments.of(case16,
+                asList(addVariant, set),
+                asList(set, addVariant)),
+
+            Arguments.of(case17,
+                asList(removeVariant, changeMasterVariant),
+                asList(removeVariant, changeMasterVariant)),
+
+            Arguments.of(case18,
+                asList(removeVariant, addVariant),
+                asList(removeVariant, addVariant)),
+
+            Arguments.of(case19,
+                asList(removeVariant, removeMasterVariant),
+                asList(removeVariant, removeMasterVariant)),
+
+            Arguments.of(case20,
+                asList(removeVariant, set),
+                asList(removeVariant, set)),
+
+            Arguments.of(case21,
+                asList(set, changeMasterVariant),
+                asList(set, changeMasterVariant)),
+
+            Arguments.of(case22,
+                asList(set, addVariant),
+                asList(set, addVariant)),
+
+            Arguments.of(case23,
+                asList(set, removeVariant),
+                asList(removeVariant, set)),
+
+            Arguments.of(case24,
+                asList(set, removeMasterVariant),
+                asList(set, removeMasterVariant))
         );
     }
 
