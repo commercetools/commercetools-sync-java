@@ -247,18 +247,18 @@ public final class CategoryUpdateActionUtils {
         @Nonnull final CategoryDraft newCategory,
         @Nonnull final CategorySyncOptions syncOptions) {
 
+        List<UpdateAction<Category>> unsortedActions;
         try {
-            final List<UpdateAction<Category>> unsortedActions = AssetsUpdateActionUtils.buildAssetsUpdateActions(
+            unsortedActions = AssetsUpdateActionUtils.buildAssetsUpdateActions(
                 oldCategory.getAssets(),
                 newCategory.getAssets(),
                 new CategoryAssetActionFactory(syncOptions));
-            return sortCategoryAssetActions(unsortedActions);
-
         } catch (final BuildUpdateActionException exception) {
             syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
                 + "of the category with the key '%s'. Reason: %s", oldCategory.getKey(), exception), exception);
             return emptyList();
         }
+        return sortAssetActions(unsortedActions);
     }
 
     private CategoryUpdateActionUtils() {

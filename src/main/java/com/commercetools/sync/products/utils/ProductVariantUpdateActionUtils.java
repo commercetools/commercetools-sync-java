@@ -253,20 +253,19 @@ public final class ProductVariantUpdateActionUtils {
         @Nonnull final ProductVariantDraft newProductVariant,
         @Nonnull final ProductSyncOptions syncOptions) {
 
+        List<UpdateAction<Product>> actions;
         try {
-            final List<UpdateAction<Product>> unsortedActions = buildAssetsUpdateActions(
+            actions = buildAssetsUpdateActions(
                 oldProductVariant.getAssets(),
                 newProductVariant.getAssets(),
                 new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions));
-
-            return sortProductVariantAssetActions(unsortedActions);
-
         } catch (final BuildUpdateActionException exception) {
             syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
                     + "of the product variant with the sku '%s'. Reason: %s", oldProductVariant.getSku(), exception),
                 exception);
             return emptyList();
         }
+        return sortAssetActions(actions);
     }
 
 
