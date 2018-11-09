@@ -19,6 +19,7 @@ import io.sphere.sdk.types.queries.TypeQuery;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -162,6 +163,8 @@ public class TypeServiceImplIT {
         assertThat(errorCallBackMessages).isEmpty();
     }
 
+    // TODO: GITHUB ISSUE#331
+    @Ignore
     @Test
     public void fetchMatchingTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadeGatewayException on any request.

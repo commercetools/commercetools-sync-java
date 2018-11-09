@@ -6,11 +6,13 @@ import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.types.TypeSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
 import io.sphere.sdk.types.commands.TypeUpdateCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
+import io.sphere.sdk.types.queries.TypeQueryBuilder;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -22,10 +24,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-import static java.lang.String.format;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Implementation of TypeService interface.
@@ -61,25 +61,16 @@ public final class TypeServiceImpl implements TypeService {
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
 
-        final Function<List<Type>, List<Type>> typePageCallback
-                = typePage -> typePage;
+        final TypeQuery typeQuery = TypeQueryBuilder
+            .of()
+            .plusPredicates(queryModel -> queryModel.key().isIn(keys))
+            .build();
 
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(),
-                TypeQuery.of().withPredicates(queryModel -> queryModel.key().isIn(keys)),
-                typePageCallback)
-                            .handle((fetchedTypes, sphereException) -> {
-                                if (sphereException != null) {
-                                    syncOptions
-                                            .applyErrorCallback(format(FETCH_FAILED, keys, sphereException),
-                                                    sphereException);
-                                    return Collections.emptySet();
-                                }
-                                return fetchedTypes.stream()
-                                                   .flatMap(List::stream)
-                                                   .peek(type ->
-                                                           keyToIdCache.put(type.getKey(), type.getId()))
-                                                   .collect(Collectors.toSet());
-                            });
+        return QueryExecutionUtils.queryAll(syncOptions.getCtpClient(), typeQuery)
+                                  .thenApply(types -> types
+                                      .stream()
+                                      .peek(type -> keyToIdCache.put(type.getKey(), type.getId()))
+                                      .collect(toSet()));
     }
 
     @Nonnull
