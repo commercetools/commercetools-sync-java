@@ -9,11 +9,13 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.TextInputHint;
 import io.sphere.sdk.types.FieldDefinition;
+import io.sphere.sdk.types.LocalizedEnumFieldType;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.commands.updateactions.AddFieldDefinition;
+import io.sphere.sdk.types.commands.updateactions.ChangeFieldDefinitionLabel;
 import io.sphere.sdk.types.commands.updateactions.ChangeFieldDefinitionOrder;
 import io.sphere.sdk.types.commands.updateactions.RemoveFieldDefinition;
 import org.junit.Test;
@@ -27,6 +29,8 @@ import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildFiel
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -414,5 +418,43 @@ public class BuildFieldDefinitionUpdateActionsTest {
             RemoveFieldDefinition.of(FIELD_A),
             AddFieldDefinition.of(FIELD_DEFINITION_A_LOCALIZED_TYPE)
         );
+    }
+
+    @Test
+    public void buildUpdateActions_WithANullNewFieldDefinition_ShouldSkipNullFieldDefinitions() {
+        // preparation
+        final Type oldType = mock(Type.class);
+        final FieldDefinition oldFieldDefinition = FieldDefinition.of(
+            LocalizedEnumFieldType.of(emptyList()),
+            "field_1",
+            LocalizedString.ofEnglish("label1"),
+            false,
+            TextInputHint.SINGLE_LINE);
+
+
+        when(oldType.getFieldDefinitions()).thenReturn(singletonList(oldFieldDefinition));
+
+        final FieldDefinition newFieldDefinition = FieldDefinition.of(
+            LocalizedEnumFieldType.of(emptyList()),
+            "field_1",
+            LocalizedString.ofEnglish("label2"),
+            false,
+            TextInputHint.SINGLE_LINE);
+
+        final TypeDraft typeDraft = TypeDraftBuilder
+            .of("key", LocalizedString.ofEnglish("label"), emptySet())
+            .fieldDefinitions(asList(null, newFieldDefinition))
+            .build();
+
+        // test
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+            oldType,
+            typeDraft,
+            SYNC_OPTIONS
+        );
+
+        // assertion
+        assertThat(updateActions).containsExactly(
+            ChangeFieldDefinitionLabel.of(newFieldDefinition.getName(), newFieldDefinition.getLabel()));
     }
 }

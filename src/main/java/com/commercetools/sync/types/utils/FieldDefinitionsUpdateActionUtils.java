@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,6 +46,9 @@ final class FieldDefinitionsUpdateActionUtils {
      * <p>If the list of new {@link FieldDefinition}s is {@code null}, then remove actions are built for
      * every existing field definition in the {@code oldFieldDefinitions} list.
      *
+     * <p>Note: The method will ignore/filter out {@code null} field definitions from the passed
+     * {@code newFieldDefinitions}.</p>
+     *
      * @param oldFieldDefinitions the old list of field definitions.
      * @param newFieldDefinitions the new list of field definitions.
      * @return a list of field definitions update actions if the list of field definitions is not identical.
@@ -58,7 +62,9 @@ final class FieldDefinitionsUpdateActionUtils {
         throws BuildUpdateActionException {
 
         if (newFieldDefinitions != null) {
-            return buildUpdateActions(oldFieldDefinitions, newFieldDefinitions);
+            return buildUpdateActions(
+                oldFieldDefinitions,
+                newFieldDefinitions.stream().filter(Objects::nonNull).collect(toList()));
         } else {
             return oldFieldDefinitions
                 .stream()
