@@ -258,7 +258,7 @@ public final class EnumValuesUpdateActionUtils {
         return buildUpdateAction(
             keysPair.getLeft(), //all keys
             keysPair.getRight(), // new keys
-            () -> changeOrderEnumCallback.apply(definitionName, keysPair.getLeft())
+            () -> changeOrderEnumCallback.apply(definitionName, keysPair.getRight())
         );
     }
 

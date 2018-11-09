@@ -89,7 +89,6 @@ public class BuildLocalizedEnumUpdateActionsTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-
     @Test
     public void buildLocalizedEnumUpdateActions_WithDuplicatePlainEnumValues_ShouldTriggerDuplicateKeyError() {
         expectedException.expect(DuplicateKeyException.class);
@@ -103,7 +102,6 @@ public class BuildLocalizedEnumUpdateActionsTest {
             ENUM_VALUES_ABB
         );
     }
-
 
     @Test
     public void buildLocalizedEnumUpdateActions_WithOneMissingPlainEnumValue_ShouldBuildRemoveEnumValueAction() {
@@ -248,7 +246,6 @@ public class BuildLocalizedEnumUpdateActionsTest {
             ChangeLocalizedEnumValueLabel.of("attribute_definition_name_1", ENUM_VALUE_A_DIFFERENT_LABEL)
         );
     }
-
 
     @Test
     public void buildLocalizedEnumUpdateActions_WithSameLabels_ShouldNotReturnChangeLabelAction() {

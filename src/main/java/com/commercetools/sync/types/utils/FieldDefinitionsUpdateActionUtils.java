@@ -3,7 +3,6 @@ package com.commercetools.sync.types.utils;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
-import com.commercetools.sync.types.helpers.FieldTypeAssert;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.FieldDefinition;
 import io.sphere.sdk.types.FieldType;
@@ -15,6 +14,8 @@ import io.sphere.sdk.types.commands.updateactions.RemoveFieldDefinition;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,10 +25,15 @@ import java.util.stream.Stream;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.types.utils.FieldDefinitionUpdateActionUtils.buildActions;
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-public final class FieldDefinitionsUpdateActionUtils {
+/**
+ * This class is only meant for the internal use of the commercetools-sync-java library.
+ */
+final class FieldDefinitionsUpdateActionUtils {
 
     /**
      * Compares a list of {@link FieldDefinition}s with a list of {@link FieldDefinition}s.
@@ -43,11 +49,10 @@ public final class FieldDefinitionsUpdateActionUtils {
      * @param newFieldDefinitions the new list of field definitions.
      * @return a list of field definitions update actions if the list of field definitions is not identical.
      *         Otherwise, if the field definitions are identical, an empty list is returned.
-     * @throws BuildUpdateActionException in case there are field definitions drafts with duplicate names or
-     *         there are field definitions with the null field type.
+     * @throws DuplicateNameException in case there are field definitions with duplicate names.
      */
     @Nonnull
-    public static List<UpdateAction<Type>> buildFieldDefinitionsUpdateActions(
+    static List<UpdateAction<Type>> buildFieldDefinitionsUpdateActions(
         @Nonnull final List<FieldDefinition> oldFieldDefinitions,
         @Nullable final List<FieldDefinition> newFieldDefinitions)
         throws BuildUpdateActionException {
@@ -74,8 +79,8 @@ public final class FieldDefinitionsUpdateActionUtils {
      * @param newFieldDefinitions the new list of field definitions drafts.
      * @return a list of field definitions update actions if the list of field definitions is not identical.
      *         Otherwise, if the field definitions are identical, an empty list is returned.
-     * @throws BuildUpdateActionException in case there are field definitions with duplicate names or
-     *         there are field definitions with the null field type.
+     * @throws BuildUpdateActionException in case there are field definitions with duplicate names or enums
+     *         duplicate keys.
      */
     @Nonnull
     private static List<UpdateAction<Type>> buildUpdateActions(
@@ -137,34 +142,35 @@ public final class FieldDefinitionsUpdateActionUtils {
                                 }
                         ));
 
-        final List<UpdateAction<Type>> updateActions = new ArrayList<>();
-
-        for (FieldDefinition oldFieldDefinition : oldFieldDefinitions) {
-
-            FieldTypeAssert.assertOldFieldType(oldFieldDefinition.getType());
-
-            final String oldFieldDefinitionName = oldFieldDefinition.getName();
-            final FieldDefinition matchingNewFieldDefinition =
+        return oldFieldDefinitions
+            .stream()
+            .map(oldFieldDefinition -> {
+                final String oldFieldDefinitionName = oldFieldDefinition.getName();
+                final FieldDefinition matchingNewFieldDefinition =
                     newFieldDefinitionsNameMap.get(oldFieldDefinitionName);
 
-            if (matchingNewFieldDefinition != null) {
-
-                FieldTypeAssert.assertNewFieldType(matchingNewFieldDefinition.getType());
-
-                if (haveSameFieldType(oldFieldDefinition.getType(), matchingNewFieldDefinition.getType())) {
-                    updateActions.addAll(buildActions(oldFieldDefinition, matchingNewFieldDefinition));
-                } else {
-                    // since there is no way to change a field type on CTP,
-                    // we remove the field definition and add a new one with a new field type
-                    updateActions.add(RemoveFieldDefinition.of(oldFieldDefinitionName));
-                    updateActions.add(AddFieldDefinition.of(matchingNewFieldDefinition));
-                }
-            } else {
-                updateActions.add(RemoveFieldDefinition.of(oldFieldDefinitionName));
-            }
-        }
-
-        return updateActions;
+                return ofNullable(matchingNewFieldDefinition)
+                    .map(newFieldDefinition -> {
+                        if (newFieldDefinition.getType() != null) {
+                            // field type is required so if null we let commercetools to throw exception
+                            if (haveSameFieldType(oldFieldDefinition.getType(), newFieldDefinition.getType())) {
+                                return buildActions(oldFieldDefinition, newFieldDefinition);
+                            } else {
+                                // since there is no way to change an field type on CTP,
+                                // we remove the field definition and add a new one with a new field type
+                                return Arrays.asList(
+                                    RemoveFieldDefinition.of(oldFieldDefinitionName),
+                                    AddFieldDefinition.of(newFieldDefinition)
+                                );
+                            }
+                        } else {
+                            return new ArrayList<UpdateAction<Type>>();
+                        }
+                    })
+                    .orElseGet(() -> singletonList(RemoveFieldDefinition.of(oldFieldDefinitionName)));
+            })
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
     }
 
     /**

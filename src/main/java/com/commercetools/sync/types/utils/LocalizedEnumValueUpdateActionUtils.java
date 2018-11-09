@@ -13,7 +13,7 @@ import java.util.List;
 
 import static com.commercetools.sync.commons.utils.enums.EnumValuesUpdateActionUtils.buildActions;
 
-public final class LocalizedEnumUpdateActionUtils {
+public final class LocalizedEnumValueUpdateActionUtils {
     /**
      * Compares a list of old {@link LocalizedEnumValue}s with a list of new {@link LocalizedEnumValue}s for a given
      * field definition.
@@ -49,6 +49,6 @@ public final class LocalizedEnumUpdateActionUtils {
                 ChangeLocalizedEnumValueOrder::of);
     }
 
-    private LocalizedEnumUpdateActionUtils() {
+    private LocalizedEnumValueUpdateActionUtils() {
     }
 }

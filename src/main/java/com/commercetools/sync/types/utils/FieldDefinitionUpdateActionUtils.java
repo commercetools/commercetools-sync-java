@@ -1,7 +1,5 @@
 package com.commercetools.sync.types.utils;
 
-import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
-import com.commercetools.sync.types.helpers.FieldTypeAssert;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
@@ -19,11 +17,13 @@ import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
-import static com.commercetools.sync.types.utils.LocalizedEnumUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
+import static com.commercetools.sync.types.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static com.commercetools.sync.types.utils.PlainEnumValueUpdateActionUtils.buildEnumValuesUpdateActions;
 
-
-public final class FieldDefinitionUpdateActionUtils {
+/**
+ * This class is only meant for the internal use of the commercetools-sync-java library.
+ */
+final class FieldDefinitionUpdateActionUtils {
 
     /**
      * Compares all the fields of old {@link FieldDefinition} with new {@link FieldDefinition} and returns
@@ -34,12 +34,11 @@ public final class FieldDefinitionUpdateActionUtils {
      * @param oldFieldDefinition the old field definition which should be updated.
      * @param newFieldDefinition the new field definition where we get the new fields.
      * @return A list with the update actions or an empty list if the field definition fields are identical.
-     * @throws BuildUpdateActionException in case there are field definitions with the null field type.
      */
     @Nonnull
-    public static List<UpdateAction<Type>> buildActions(
+    static List<UpdateAction<Type>> buildActions(
         @Nonnull final FieldDefinition oldFieldDefinition,
-        @Nonnull final FieldDefinition newFieldDefinition) throws BuildUpdateActionException {
+        @Nonnull final FieldDefinition newFieldDefinition) {
 
         final List<UpdateAction<Type>> updateActions =
             filterEmptyOptionals(buildChangeLabelUpdateAction(oldFieldDefinition, newFieldDefinition));
@@ -57,14 +56,12 @@ public final class FieldDefinitionUpdateActionUtils {
      * @param oldFieldDefinition the old field definition which should be updated.
      * @param newFieldDefinition the new field definition where we get the new fields.
      * @return A list with the update actions or an empty list if the field definition enums are identical.
-     * @throws BuildUpdateActionException in case there are attribute definitions with the null attribute type.
      */
     @Nonnull
-    public static List<UpdateAction<Type>> buildEnumUpdateActions(
+    static List<UpdateAction<Type>> buildEnumUpdateActions(
         @Nonnull final FieldDefinition oldFieldDefinition,
-        @Nonnull final FieldDefinition newFieldDefinition) throws BuildUpdateActionException {
+        @Nonnull final FieldDefinition newFieldDefinition) {
 
-        FieldTypeAssert.assertTypesAreNull(oldFieldDefinition.getType(), newFieldDefinition.getType());
         final List<UpdateAction<Type>> updateActions = new ArrayList<>();
         if (isPlainEnumField(oldFieldDefinition)) {
             updateActions.addAll(buildEnumValuesUpdateActions(
@@ -113,7 +110,7 @@ public final class FieldDefinitionUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the labels are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Type>> buildChangeLabelUpdateAction(
+    static Optional<UpdateAction<Type>> buildChangeLabelUpdateAction(
         @Nonnull final FieldDefinition oldFieldDefinition,
         @Nonnull final FieldDefinition newFieldDefinition) {
 
