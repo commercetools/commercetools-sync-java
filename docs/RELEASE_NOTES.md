@@ -64,7 +64,7 @@ empty optionals in a supplied list (with a varargs variation) returning a list o
 optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255)
 
 **Enhancements** (2)
-- **Commons** - Bumped commercetools-jvm-sdk to version [1.35.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_35_0).
+- **Commons** - Bumped commercetools-jvm-sdk to version [1.37.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_37_0).
 - **Commons** - Bumped `mockito` to 2.23.0.
 
 **Changes** (3)
