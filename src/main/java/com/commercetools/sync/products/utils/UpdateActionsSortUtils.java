@@ -1,6 +1,5 @@
-package com.commercetools.sync.internals.utils;
+package com.commercetools.sync.products.utils;
 
-import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.commands.updateactions.AddAsset;
@@ -31,12 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * This class is only meant for the internal use of the commercetools-sync-java library.
- */
-public final class UpdateActionsSortUtils {
-
-
+final class UpdateActionsSortUtils {
     /**
      * Given a list of update actions, this method returns a copy of the supplied list but sorted with the following
      * precedence:
@@ -50,15 +44,14 @@ public final class UpdateActionsSortUtils {
      *
      * <p>This is to ensure that there are no conflicts when updating variants.
      *
-     * @param updateActions list of update actions to sort.
+     * @param updateActions   list of update actions to sort.
      * @param masterVariantId the id of the master variant. This is needed to be able to distinguish between non-master
-     *                         variant remove actions and master variant remove actions.
+     *                        variant remove actions and master variant remove actions.
      * @return a new sorted list of update actions.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> sortVariantActions(
-        @Nonnull final List<UpdateAction<Product>> updateActions,
-        @Nonnull final Integer masterVariantId) {
+    static List<UpdateAction<Product>> sortVariantActions(@Nonnull final List<UpdateAction<Product>> updateActions,
+                                                          @Nonnull final Integer masterVariantId) {
 
         final List<UpdateAction<Product>> actionsCopy = new ArrayList<>(updateActions);
         actionsCopy.sort((action1, action2) -> {
@@ -130,8 +123,7 @@ public final class UpdateActionsSortUtils {
      * @return a new sorted list of update actions.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> sortAttributeActions(
-        @Nonnull final List<UpdateAction<Product>> updateActions) {
+    static List<UpdateAction<Product>> sortAttributeActions(@Nonnull final List<UpdateAction<Product>> updateActions) {
 
         final List<UpdateAction<Product>> actionsCopy = new ArrayList<>(updateActions);
         actionsCopy.sort((action1, action2) -> {
@@ -172,8 +164,7 @@ public final class UpdateActionsSortUtils {
      * @return a new sorted list of update actions.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> sortImageActions(
-        @Nonnull final List<UpdateAction<Product>> updateActions) {
+    static List<UpdateAction<Product>> sortImageActions(@Nonnull final List<UpdateAction<Product>> updateActions) {
 
         final List<UpdateAction<Product>> actionsCopy = new ArrayList<>(updateActions);
         actionsCopy.sort((action1, action2) -> {
@@ -214,8 +205,7 @@ public final class UpdateActionsSortUtils {
      * @return a new sorted list of update actions (remove, change, add).
      */
     @Nonnull
-    public static List<UpdateAction<Product>> sortPriceActions(
-        @Nonnull final List<UpdateAction<Product>> updateActions) {
+    static List<UpdateAction<Product>> sortPriceActions(@Nonnull final List<UpdateAction<Product>> updateActions) {
 
         final List<UpdateAction<Product>> actionsCopy = new ArrayList<>(updateActions);
         actionsCopy.sort((action1, action2) -> {
@@ -261,8 +251,7 @@ public final class UpdateActionsSortUtils {
      * @return a new sorted list of update actions.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> sortProductVariantAssetActions(
-        @Nonnull final List<UpdateAction<Product>> updateActions) {
+    static List<UpdateAction<Product>> sortAssetActions(@Nonnull final List<UpdateAction<Product>> updateActions) {
 
         final List<UpdateAction<Product>> actionsCopy = new ArrayList<>(updateActions);
         actionsCopy.sort((action1, action2) -> {
@@ -287,71 +276,6 @@ public final class UpdateActionsSortUtils {
             }
 
             if (action1 instanceof ChangeAssetOrder && !(action2 instanceof ChangeAssetOrder)) {
-                return 1;
-            }
-
-            return 0;
-        });
-        return actionsCopy;
-    }
-
-    /**
-     * Given a list of update actions, this method returns a copy of the supplied list but sorted with the following
-     * precedence:
-     * <ol>
-     * <li>{@link io.sphere.sdk.categories.commands.updateactions.RemoveAsset}</li>
-     * <li>{@link io.sphere.sdk.categories.commands.updateactions.ChangeAssetName} OR
-     * {@link io.sphere.sdk.categories.commands.updateactions.SetAssetDescription} OR
-     * {@link io.sphere.sdk.categories.commands.updateactions.SetAssetTags} OR
-     * {@link io.sphere.sdk.categories.commands.updateactions.SetAssetSources} OR
-     * {@link io.sphere.sdk.categories.commands.updateactions.SetAssetCustomField} OR
-     * {@link io.sphere.sdk.categories.commands.updateactions.SetAssetCustomType}</li>
-     * <li>{@link io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder}</li>
-     * <li>{@link io.sphere.sdk.categories.commands.updateactions.AddAsset}</li>
-     * </ol>
-     *
-     * <p>This is to ensure that there are no conflicts when adding a new asset that might have a duplicate value for
-     * a unique field, which could already be changed or removed. It is important to have a changeAssetOrder action
-     * before an addAsset action, since changeAssetOrder requires asset ids for sorting them, and new assets don't have
-     * ids yet since they are generated by CTP after an asset is created. Therefore, first set the correct order, then
-     * we add the asset at the correct index.
-     *
-     * @param updateActions list of update actions to sort.
-     * @return a new sorted list of update actions.
-     */
-    @Nonnull
-    public static List<UpdateAction<Category>> sortCategoryAssetActions(
-        @Nonnull final List<UpdateAction<Category>> updateActions) {
-
-        final List<UpdateAction<Category>> actionsCopy = new ArrayList<>(updateActions);
-        actionsCopy.sort((action1, action2) -> {
-            if (action1 instanceof io.sphere.sdk.categories.commands.updateactions.RemoveAsset
-                && !(action2 instanceof io.sphere.sdk.categories.commands.updateactions.RemoveAsset)) {
-                return -1;
-            }
-
-            if (!(action1 instanceof io.sphere.sdk.categories.commands.updateactions.RemoveAsset)
-                && action2 instanceof io.sphere.sdk.categories.commands.updateactions.RemoveAsset) {
-                return 1;
-            }
-
-            if (!(action1 instanceof io.sphere.sdk.categories.commands.updateactions.AddAsset)
-                && action2 instanceof io.sphere.sdk.categories.commands.updateactions.AddAsset) {
-                return -1;
-            }
-
-            if (action1 instanceof io.sphere.sdk.categories.commands.updateactions.AddAsset
-                && !(action2 instanceof io.sphere.sdk.categories.commands.updateactions.AddAsset)) {
-                return 1;
-            }
-
-            if (!(action1 instanceof io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder)
-                && action2 instanceof io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder) {
-                return -1;
-            }
-
-            if (action1 instanceof io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder
-                && !(action2 instanceof io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder)) {
                 return 1;
             }
 
