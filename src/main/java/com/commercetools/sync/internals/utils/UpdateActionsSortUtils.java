@@ -1,16 +1,13 @@
 package com.commercetools.sync.internals.utils;
 
 import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
-import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
-import io.sphere.sdk.products.commands.updateactions.SetAssetDescription;
-import io.sphere.sdk.products.commands.updateactions.SetAssetSources;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.AddPrice;
 import io.sphere.sdk.products.commands.updateactions.AddVariant;
+import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangePrice;
@@ -19,13 +16,15 @@ import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemovePrice;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
+import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
+import io.sphere.sdk.products.commands.updateactions.SetAssetDescription;
+import io.sphere.sdk.products.commands.updateactions.SetAssetSources;
 import io.sphere.sdk.products.commands.updateactions.SetAssetTags;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomType;
-import io.sphere.sdk.products.commands.updateactions.SetSku;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -43,7 +42,7 @@ public final class UpdateActionsSortUtils {
      * precedence:
      * <ol>
      * <li>{@link RemoveVariant} only if it's a non master variant</li>
-     * <li>Variant Change actions. Check: {@link #isVariantChangeAction}</li>
+     * <li>Variant Change actions. For example: sku, attributes, images, prices, assets update actions</li>
      * <li>{@link AddVariant}</li>
      * <li>{@link ChangeMasterVariant}</li>
      * <li>{@link RemoveVariant} only if it's a master variant</li>
@@ -91,14 +90,6 @@ public final class UpdateActionsSortUtils {
                 return 1;
             }
 
-            if (isVariantChangeAction(action1) && !isVariantChangeAction(action2)) {
-                return -1;
-            }
-
-            if (!isVariantChangeAction(action1) && isVariantChangeAction(action2)) {
-                return 1;
-            }
-
             if (!(action1 instanceof AddVariant) && action2 instanceof AddVariant) {
                 return -1;
             }
@@ -122,58 +113,6 @@ public final class UpdateActionsSortUtils {
                                                        @Nonnull final Integer masterVariantId) {
         return action instanceof RemoveVariant
             && Objects.equals(((RemoveVariant) action).getId(), masterVariantId);
-    }
-
-    private static boolean isVariantChangeAction(@Nonnull final UpdateAction<Product> action) {
-        return isAttributeAction(action)
-            || isImageAction(action)
-            || isPriceAction(action)
-            || isVariantAssetAction(action)
-            || action instanceof SetSku;
-    }
-
-    private static boolean isVariantAssetAction(@Nonnull final UpdateAction<Product> action) {
-        return action instanceof RemoveAsset
-            || action instanceof ChangeAssetName
-            || action instanceof SetAssetDescription
-            || action instanceof SetAssetTags
-            || action instanceof SetAssetSources
-            || action instanceof SetAssetCustomField
-            || action instanceof SetAssetCustomType
-            || action instanceof ChangeAssetOrder
-            || action instanceof AddAsset;
-    }
-
-    private static boolean isPriceAction(@Nonnull final UpdateAction<Product> action) {
-        return action instanceof RemovePrice
-            || action instanceof ChangePrice
-            || action instanceof SetProductPriceCustomField
-            || action instanceof SetProductPriceCustomType
-            || action instanceof AddPrice;
-    }
-
-    private static boolean isImageAction(@Nonnull final UpdateAction<Product> action) {
-        return action instanceof RemoveImage
-            || action instanceof AddExternalImage
-            || action instanceof MoveImageToPosition;
-    }
-
-    private static boolean isAttributeAction(@Nonnull final UpdateAction<Product> action) {
-        return isSetAttribute(action) || isUnSetAttribute(action);
-    }
-
-    private static boolean isSetAttribute(@Nonnull final UpdateAction<Product> action) {
-        return (action instanceof SetAttribute
-            && Objects.nonNull(((SetAttribute) action).getValue()))
-            || (action instanceof SetAttributeInAllVariants
-            && Objects.nonNull(((SetAttributeInAllVariants) action).getValue()));
-    }
-
-    private static boolean isUnSetAttribute(@Nonnull final UpdateAction<Product> action) {
-        return (action instanceof SetAttribute
-            && Objects.isNull(((SetAttribute) action).getValue()))
-            || (action instanceof SetAttributeInAllVariants
-            && Objects.isNull(((SetAttributeInAllVariants) action).getValue()));
     }
 
     /**
@@ -206,6 +145,13 @@ public final class UpdateActionsSortUtils {
             return 0;
         });
         return actionsCopy;
+    }
+
+    private static boolean isUnSetAttribute(@Nonnull final UpdateAction<Product> action) {
+        return (action instanceof SetAttribute
+            && Objects.isNull(((SetAttribute) action).getValue()))
+            || (action instanceof SetAttributeInAllVariants
+            && Objects.isNull(((SetAttributeInAllVariants) action).getValue()));
     }
 
     /**
