@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionsUpdateActionUtils.buildAttributeDefinitionsUpdateActions;
+import static com.commercetools.sync.producttypes.utils.UpdateActionsSortUtils.sortAttributeDefinitionActions;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 
@@ -77,17 +78,18 @@ public final class ProductTypeUpdateActionUtils {
         @Nonnull final ProductTypeDraft newProductType,
         @Nonnull final ProductTypeSyncOptions syncOptions) {
 
+        List<UpdateAction<ProductType>> actions;
         try {
-            return buildAttributeDefinitionsUpdateActions(
+            actions = buildAttributeDefinitionsUpdateActions(
                 oldProductType.getAttributes(),
-                newProductType.getAttributes()
-            );
+                newProductType.getAttributes());
         } catch (final BuildUpdateActionException exception) {
             syncOptions.applyErrorCallback(format("Failed to build update actions for the attributes definitions "
                     + "of the product type with the key '%s'. Reason: %s", oldProductType.getKey(), exception),
                 exception);
             return emptyList();
         }
+        return sortAttributeDefinitionActions(actions);
     }
 
     private ProductTypeUpdateActionUtils() {

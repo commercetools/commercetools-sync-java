@@ -21,6 +21,8 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.producttypes.utils.LocalizedEnumsUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static com.commercetools.sync.producttypes.utils.PlainEnumsUpdateActionUtils.buildEnumValuesUpdateActions;
+import static com.commercetools.sync.producttypes.utils.UpdateActionsSortUtils.sortEnumActions;
+import static com.commercetools.sync.producttypes.utils.UpdateActionsSortUtils.sortLocalizedEnumActions;
 
 /**
  * This class is only meant for the internal use of the commercetools-sync-java library.
@@ -50,17 +52,25 @@ final class AttributeDefinitionUpdateActionUtils {
         );
 
         if (isPlainEnumAttribute(oldAttributeDefinition)) {
-            updateActions.addAll(buildEnumValuesUpdateActions(
-                oldAttributeDefinition.getName(),
-                ((EnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
-                ((EnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
-            ));
+            updateActions.addAll(
+                sortEnumActions(
+                    buildEnumValuesUpdateActions(
+                        oldAttributeDefinition.getName(),
+                        ((EnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
+                        ((EnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
+                    )
+                )
+            );
         } else if (isLocalizedEnumAttribute(oldAttributeDefinition)) {
-            updateActions.addAll(buildLocalizedEnumValuesUpdateActions(
-                oldAttributeDefinition.getName(),
-                ((LocalizedEnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
-                ((LocalizedEnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
-            ));
+            updateActions.addAll(
+                sortLocalizedEnumActions(
+                    buildLocalizedEnumValuesUpdateActions(
+                        oldAttributeDefinition.getName(),
+                        ((LocalizedEnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
+                        ((LocalizedEnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
+                    )
+                )
+            );
         }
 
         return updateActions;
