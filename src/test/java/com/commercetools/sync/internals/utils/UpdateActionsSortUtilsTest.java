@@ -672,6 +672,10 @@ class UpdateActionsSortUtilsTest {
             "setAssetDescription, addAsset, setAssetTags, changeAssetOrder, removeAsset, setAssetSources,"
                 + " setAssetCustomType, setAssetCustomField";
 
+        final String case29 = "changeAssetOrder, setAssetSources";
+        final String case30 = "setAssetSources, changeAssetOrder";
+
+
         return Stream.of(
             Arguments.of(case1, emptyList(), emptyList()),
             Arguments.of(case2, singletonList(removeAsset), singletonList(removeAsset)),
@@ -716,7 +720,15 @@ class UpdateActionsSortUtilsTest {
                     removeAsset, setAssetSources, setAssetCustomType, setAssetCustomField),
                 //expected result:
                 asList(removeAsset, setAssetDescription, setAssetTags, setAssetSources, setAssetCustomType,
-                    setAssetCustomField, changeAssetOrder, addAsset))
+                    setAssetCustomField, changeAssetOrder, addAsset)),
+
+            Arguments.of(case29,
+                asList(changeAssetOrder, setAssetSources),
+                asList(setAssetSources, changeAssetOrder)),
+
+            Arguments.of(case30,
+                asList(setAssetSources, changeAssetOrder),
+                asList(setAssetSources, changeAssetOrder))
         );
     }
 
@@ -813,6 +825,9 @@ class UpdateActionsSortUtilsTest {
             "setAssetDescription, addAsset, setAssetTags, changeAssetOrder, removeAsset, setAssetSources,"
                 + " setAssetCustomType, setAssetCustomField";
 
+        final String case29 = "changeAssetOrder, setAssetSources";
+        final String case30 = "setAssetSources, changeAssetOrder";
+
         return Stream.of(
             Arguments.of(case1, emptyList(), emptyList()),
             Arguments.of(case2, singletonList(removeAsset), singletonList(removeAsset)),
@@ -857,7 +872,15 @@ class UpdateActionsSortUtilsTest {
                     removeAsset, setAssetSources, setAssetCustomType, setAssetCustomField),
                 //expected result:
                 asList(removeAsset, setAssetDescription, setAssetTags, setAssetSources, setAssetCustomType,
-                    setAssetCustomField, changeAssetOrder, addAsset))
+                    setAssetCustomField, changeAssetOrder, addAsset)),
+
+            Arguments.of(case29,
+                asList(changeAssetOrder, setAssetSources),
+                asList(setAssetSources, changeAssetOrder)),
+
+            Arguments.of(case30,
+                asList(setAssetSources, changeAssetOrder),
+                asList(setAssetSources, changeAssetOrder))
         );
     }
 }
