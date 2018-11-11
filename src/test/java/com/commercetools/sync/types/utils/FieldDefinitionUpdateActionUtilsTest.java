@@ -25,6 +25,8 @@ import static com.commercetools.sync.types.FieldDefinitionTestHelper.stringField
 import static com.commercetools.sync.types.utils.FieldDefinitionUpdateActionUtils.buildActions;
 import static com.commercetools.sync.types.utils.FieldDefinitionUpdateActionUtils.buildChangeLabelUpdateAction;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Arrays.*;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -87,7 +89,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
     @Test
     public void buildActions_WithNewPlainEnum_ShouldReturnAddEnumValueAction() {
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
-                EnumFieldType.of(Arrays.asList(ENUM_VALUE_A)),
+                EnumFieldType.of(asList(ENUM_VALUE_A)),
                 FIELD_NAME_1,
                 LocalizedString.ofEnglish(LABEL_1),
                 false,
@@ -95,7 +97,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
 
 
         final FieldDefinition newFieldDefinition = FieldDefinition.of(
-                EnumFieldType.of(Arrays.asList(ENUM_VALUE_A, ENUM_VALUE_B)),
+                EnumFieldType.of(asList(ENUM_VALUE_A, ENUM_VALUE_B)),
                 FIELD_NAME_1,
                 LocalizedString.ofEnglish(LABEL_1),
                 false,
@@ -111,14 +113,14 @@ public class FieldDefinitionUpdateActionUtilsTest {
     public void buildActions_WithoutOldPlainEnum_ShouldNotReturnAnyValueAction() {
 
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
-                EnumFieldType.of(Arrays.asList(ENUM_VALUE_A)),
+                EnumFieldType.of(asList(ENUM_VALUE_A)),
                 FIELD_NAME_1,
                 LocalizedString.ofEnglish(LABEL_1),
                 false,
                 TextInputHint.SINGLE_LINE);
 
         final FieldDefinition newFieldDefinition = FieldDefinition.of(
-                EnumFieldType.of(Collections.emptyList()),
+                EnumFieldType.of(emptyList()),
                 FIELD_NAME_1,
                 LocalizedString.ofEnglish(LABEL_1),
                 false,
@@ -135,14 +137,14 @@ public class FieldDefinitionUpdateActionUtilsTest {
     public void buildActions_WithNewLocalizedEnum_ShouldReturnAddLocalizedEnumValueAction() {
 
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
-                LocalizedEnumFieldType.of(Arrays.asList(LOCALIZED_ENUM_VALUE_A)),
+                LocalizedEnumFieldType.of(asList(LOCALIZED_ENUM_VALUE_A)),
                 FIELD_NAME_1,
                 LocalizedString.ofEnglish(LABEL_1),
                 false,
                 TextInputHint.SINGLE_LINE);
 
         final FieldDefinition newFieldDefinition = FieldDefinition.of(
-                LocalizedEnumFieldType.of(Arrays.asList(LOCALIZED_ENUM_VALUE_A, LOCALIZED_ENUM_VALUE_B)),
+                LocalizedEnumFieldType.of(asList(LOCALIZED_ENUM_VALUE_A, LOCALIZED_ENUM_VALUE_B)),
                 FIELD_NAME_1,
                 LocalizedString.ofEnglish(LABEL_1),
                 false,

@@ -17,6 +17,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -47,7 +49,7 @@ public class TypeSyncOptionsBuilderTest {
     @Test
     public void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
         final TriFunction<List<UpdateAction<Type>>, TypeDraft, Type, List<UpdateAction<Type>>>
-                beforeUpdateCallback = (updateActions, newType, oldType) -> Collections.emptyList();
+                beforeUpdateCallback = (updateActions, newType, oldType) -> emptyList();
 
         typeSyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
@@ -97,7 +99,7 @@ public class TypeSyncOptionsBuilderTest {
                 .of(CTP_CLIENT)
                 .batchSize(30)
                 .beforeCreateCallback((newType) -> null)
-                .beforeUpdateCallback((updateActions, newType, oldType) -> Collections.emptyList())
+                .beforeUpdateCallback((updateActions, newType, oldType) -> emptyList())
                 .build();
         assertThat(typeSyncOptions).isNotNull();
     }
@@ -132,7 +134,7 @@ public class TypeSyncOptionsBuilderTest {
                 .build();
         assertThat(typeSyncOptions.getBeforeUpdateCallback()).isNull();
 
-        final List<UpdateAction<Type>> updateActions = Collections.singletonList(ChangeName.of(ofEnglish("name")));
+        final List<UpdateAction<Type>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
 
         final List<UpdateAction<Type>> filteredList =
                 typeSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(TypeDraft.class), mock(Type.class));
@@ -150,7 +152,7 @@ public class TypeSyncOptionsBuilderTest {
                 .build();
         assertThat(typeSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-        final List<UpdateAction<Type>> updateActions = Collections.singletonList(ChangeName.of(ofEnglish("name")));
+        final List<UpdateAction<Type>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<Type>> filteredList =
                 typeSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(TypeDraft.class), mock(Type.class));
         assertThat(filteredList).isNotEqualTo(updateActions);
@@ -160,7 +162,7 @@ public class TypeSyncOptionsBuilderTest {
     @Test
     public void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
         final TriFunction<List<UpdateAction<Type>>, TypeDraft, Type, List<UpdateAction<Type>>>
-                beforeUpdateCallback = (updateActions, newType, oldType) -> Collections.emptyList();
+                beforeUpdateCallback = (updateActions, newType, oldType) -> emptyList();
 
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(CTP_CLIENT)
                 .beforeUpdateCallback(
@@ -168,7 +170,7 @@ public class TypeSyncOptionsBuilderTest {
                 .build();
         assertThat(typeSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-        final List<UpdateAction<Type>> updateActions = Collections.singletonList(ChangeName.of(ofEnglish("name")));
+        final List<UpdateAction<Type>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<Type>> filteredList =
                 typeSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(TypeDraft.class), mock(Type.class));
         assertThat(filteredList).isNotEqualTo(updateActions);

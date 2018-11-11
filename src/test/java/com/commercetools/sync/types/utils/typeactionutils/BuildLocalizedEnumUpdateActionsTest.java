@@ -16,6 +16,7 @@ import java.util.List;
 import static com.commercetools.sync.commons.utils.enums.LocalizedEnumValueTestObjects.*;
 import static com.commercetools.sync.types.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BuildLocalizedEnumUpdateActionsTest {
@@ -28,8 +29,8 @@ public class BuildLocalizedEnumUpdateActionsTest {
     public void buildLocalizedEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOlEnumValues_ShouldNotBuildActions() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
-            Collections.emptyList(),
-            Collections.emptyList()
+            emptyList(),
+            emptyList()
         );
 
         assertThat(updateActions).isEmpty();
@@ -39,7 +40,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     public void buildLocalizedEnumUpdateActions_WithNewPlainEnumValuesAndNoOldPlainEnumValues_ShouldBuild3AddActions() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
-            Collections.emptyList(),
+            emptyList(),
             ENUM_VALUES_ABC
         );
 

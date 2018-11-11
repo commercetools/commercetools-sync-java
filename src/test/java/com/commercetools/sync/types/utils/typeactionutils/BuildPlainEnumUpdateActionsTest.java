@@ -12,6 +12,7 @@ import java.util.List;
 import static com.commercetools.sync.commons.utils.enums.PlainEnumValueTestObjects.*;
 import static com.commercetools.sync.types.utils.PlainEnumValueUpdateActionUtils.buildEnumValuesUpdateActions;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BuildPlainEnumUpdateActionsTest {
@@ -21,8 +22,8 @@ public class BuildPlainEnumUpdateActionsTest {
     public void buildPlainEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOlEnumValues_ShouldNotBuildActions() {
         final List<UpdateAction<Type>> updateActions = buildEnumValuesUpdateActions(
             FIELD_NAME_1,
-            Collections.emptyList(),
-            Collections.emptyList()
+            emptyList(),
+            emptyList()
         );
 
         assertThat(updateActions).isEmpty();
@@ -32,7 +33,7 @@ public class BuildPlainEnumUpdateActionsTest {
     public void buildPlainEnumUpdateActions_WithNewPlainEnumValuesAndNoOldPlainEnumValues_ShouldBuild3AddActions() {
         final List<UpdateAction<Type>> updateActions = buildEnumValuesUpdateActions(
             FIELD_NAME_1,
-            Collections.emptyList(),
+            emptyList(),
             ENUM_VALUES_ABC
         );
 
