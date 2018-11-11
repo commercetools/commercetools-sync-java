@@ -1,4 +1,4 @@
-package com.commercetools.sync.commons.utils.enums;
+package com.commercetools.sync.commons.utils;
 
 import io.sphere.sdk.models.EnumValue;
 

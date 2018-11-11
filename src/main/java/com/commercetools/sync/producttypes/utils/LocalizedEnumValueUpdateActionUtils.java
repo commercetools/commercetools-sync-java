@@ -12,10 +12,11 @@ import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
-import static com.commercetools.sync.commons.utils.enums.EnumValuesUpdateActionUtils.buildActions;
-import static com.commercetools.sync.commons.utils.enums.LocalizedEnumValueUpdateActionUtils.buildChangeLabelAction;
+import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildActions;
 
 public final class LocalizedEnumValueUpdateActionUtils {
 
@@ -73,11 +74,30 @@ public final class LocalizedEnumValueUpdateActionUtils {
             @Nonnull final LocalizedEnumValue newEnumValue) {
 
         return filterEmptyOptionals(
-                buildChangeLabelAction(attributeDefinitionName,
-                        oldEnumValue,
-                        newEnumValue,
-                        ChangeLocalizedEnumValueLabel::of)
+            buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue)
         );
+    }
+
+    /**
+     * Compares the {@code label} values of an old {@link LocalizedEnumValue} and a new {@link LocalizedEnumValue}
+     * and returns an {@link Optional} of update action, which would contain the {@code "changeLabel"}
+     * {@link UpdateAction}. If both, old and new {@link LocalizedEnumValue} have the same {@code label} values,
+     * then no update action is needed and empty optional will be returned.
+     *
+     * @param attributeDefinitionName the attribute definition name whose localized enum values belong to.
+     * @param oldEnumValue            the old localized enum value.
+     * @param newEnumValue            the new localized enum value which contains the new description.
+     * @return optional containing update action or empty optional if labels
+     *         are identical.
+     */
+    @Nonnull
+    public static Optional<UpdateAction<ProductType>> buildChangeLabelAction(
+        @Nonnull final String attributeDefinitionName,
+        @Nonnull final LocalizedEnumValue oldEnumValue,
+        @Nonnull final LocalizedEnumValue newEnumValue) {
+
+        return buildUpdateAction(oldEnumValue.getLabel(), newEnumValue.getLabel(),
+            () -> ChangeLocalizedEnumValueLabel.of(attributeDefinitionName, newEnumValue));
     }
 
     private LocalizedEnumValueUpdateActionUtils() {

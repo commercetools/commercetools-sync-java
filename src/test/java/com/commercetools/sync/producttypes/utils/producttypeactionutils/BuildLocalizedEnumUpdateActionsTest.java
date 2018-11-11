@@ -14,7 +14,7 @@ import org.junit.rules.ExpectedException;
 import java.util.Collections;
 import java.util.List;
 
-import static com.commercetools.sync.commons.utils.enums.LocalizedEnumValueTestObjects.*;
+import static com.commercetools.sync.commons.utils.LocalizedEnumValueTestObjects.*;
 import static com.commercetools.sync.producttypes.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValueUpdateActions;
 import static com.commercetools.sync.producttypes.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static java.util.Arrays.asList;

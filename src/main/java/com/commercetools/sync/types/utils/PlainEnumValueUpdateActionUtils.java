@@ -1,6 +1,6 @@
 package com.commercetools.sync.types.utils;
 
-import com.commercetools.sync.commons.utils.enums.EnumValuesUpdateActionUtils;
+import com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.types.Type;

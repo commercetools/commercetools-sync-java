@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-import static com.commercetools.sync.commons.utils.enums.EnumValuesUpdateActionUtils.buildActions;
+import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildActions;
 
 public final class LocalizedEnumValueUpdateActionUtils {
     /**

@@ -1,6 +1,5 @@
-package com.commercetools.sync.commons.utils.enums;
+package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.producttypes.ProductType;
@@ -16,13 +15,13 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
-import static com.commercetools.sync.commons.utils.enums.EnumValuesUpdateActionUtils.buildActions;
-import static com.commercetools.sync.commons.utils.enums.EnumValuesUpdateActionUtils.buildAddEnumValuesUpdateActions;
-import static com.commercetools.sync.commons.utils.enums.EnumValuesUpdateActionUtils.buildChangeEnumValuesOrderUpdateAction;
-import static com.commercetools.sync.commons.utils.enums.EnumValuesUpdateActionUtils.buildMatchingEnumValuesUpdateActions;
-import static com.commercetools.sync.commons.utils.enums.EnumValuesUpdateActionUtils.buildRemoveEnumValuesUpdateAction;
-import static com.commercetools.sync.commons.utils.enums.PlainEnumValueTestObjects.*;
-import static com.commercetools.sync.commons.utils.enums.PlainEnumValueUpdateActionUtils.buildChangeLabelAction;
+import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildActions;
+import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildAddEnumValuesUpdateActions;
+import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildChangeEnumValuesOrderUpdateAction;
+import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildMatchingEnumValuesUpdateActions;
+import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildRemoveEnumValuesUpdateAction;
+import static com.commercetools.sync.commons.utils.PlainEnumValueTestObjects.*;
+import static com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActionUtils.buildChangeLabelAction;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -317,8 +316,7 @@ public class EnumValuesUpdateActionUtilsTest {
             return filterEmptyOptionals(
                 buildChangeLabelAction(attributeDefinitionName,
                     oldEnumValue,
-                    newEnumValue,
-                    ChangePlainEnumValueLabel::of
+                    newEnumValue
                 ));
         };
     }

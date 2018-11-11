@@ -1,7 +1,6 @@
-package com.commercetools.sync.commons.utils.enums;
+package com.commercetools.sync.commons.utils;
 
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
-import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.WithKey;
