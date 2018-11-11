@@ -60,7 +60,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -656,7 +655,7 @@ public class TypeSyncIT {
 
         // Since the error message and exception is coming from commercetools, we don't test the actual message and
         // exception
-        verify(spyTypeSyncOptions, times(2)).applyErrorCallback(any(), any());
+        verify(spyTypeSyncOptions).applyErrorCallback(any(), any());
 
         AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
