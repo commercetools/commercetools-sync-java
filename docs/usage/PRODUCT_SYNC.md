@@ -50,8 +50,8 @@ order for the sync to resolve the actual ids of those references, those `key`s h
     - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the 
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
    
-   You can instantiate the client the same way it is instantiated in the integration tests for this library found
-   [here](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
+  If you have no special requirements on sphere client creation then you can use `ClientConfigurationUtils#createClient`
+  util which applies best practices already.
 
 4. After the `sphereClient` is set up, a `ProductSyncOptions` should be built as follows: 
 ````java

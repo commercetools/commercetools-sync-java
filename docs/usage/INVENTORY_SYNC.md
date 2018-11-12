@@ -46,8 +46,8 @@ A utility which provides an API for building CTP inventory update actions and in
     - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the 
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
    
-   You can use the same client instantiating used in the integration tests for this library found 
-   [here](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
+   If you have no special requirements on sphere client creation then you can use `ClientConfigurationUtils#createClient`
+   util which applies best practices already.
 
 4. After the `sphereClient` is setup, a `InventorySyncOptions` should be be built as follows: 
 ````java
