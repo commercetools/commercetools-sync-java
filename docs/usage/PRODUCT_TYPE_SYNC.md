@@ -122,22 +122,7 @@ More examples of those utils for different fields can be found [here](/src/test/
 ## Caveats
 
 1. Product types are either created or updated. Currently the tool does not support product type deletion.
-2. The sync library is not meant to be executed in a parallel fashion. For example:
-    ````java
-    final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions);
-    final CompletableFuture<ProductTypeSyncStatistics> syncFuture1 = productTypeSync.sync(batch1).toCompletableFuture();
-    final CompletableFuture<ProductTypeSyncStatistics> syncFuture2 = productTypeSync.sync(batch2).toCompletableFuture();
-    CompletableFuture.allOf(syncFuture1, syncFuture2).join;
-    ````
-    The aforementioned example demonstrates how the library should **not** be used. The library, however, should be instead
-    used in a sequential fashion:
-    ````java
-    final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions);
-    productTypeSync.sync(batch1)
-               .thenCompose(result -> productTypeSync.sync(batch2))
-               .toCompletableFuture()
-               .join();
-    ````
+2. The sync library is not meant to be executed in a parallel fashion. Check the example in [point #2 here](/docs/usage/PRODUCT_SYNC.md#caveats).
     By design, scaling the sync process should **not** be done by executing the batches themselves in parallel. However, it can be done either by:
      - Changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) within the `sphereClient` configuration. It defines how many requests the client can execute in parallel.
      - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-). It defines how many drafts can one batch constitute.
