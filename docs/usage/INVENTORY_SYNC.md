@@ -114,7 +114,7 @@ CompletionStage<InventorySyncStatistics> syncStatisticsStage = inventorySync.syn
 ````
 The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `InventorySyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created, 
-failed, processed categories and the processing time of the sync in different time units and in a
+failed, processed inventories and the processing time of the sync in different time units and in a
 human readable format.
 ````java
 final InventorySyncStatistics stats = syncStatisticsStage.toCompletebleFuture().join();
