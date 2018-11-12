@@ -12,7 +12,7 @@ import java.util.Optional;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 
-public final class LocalizedEnumUpdateActionsUtils {
+public final class LocalizedEnumUpdateActionUtils {
     /**
      * Compares all the fields of an old {@link LocalizedEnumValue} and a new {@link LocalizedEnumValue} and returns a
      * list of {@link UpdateAction}&lt;{@link ProductType}&gt; as a result. If both {@link LocalizedEnumValue} have
@@ -57,6 +57,6 @@ public final class LocalizedEnumUpdateActionsUtils {
             () -> ChangeLocalizedEnumValueLabel.of(attributeDefinitionName, newEnumValue));
     }
 
-    private LocalizedEnumUpdateActionsUtils() {
+    private LocalizedEnumUpdateActionUtils() {
     }
 }

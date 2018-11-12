@@ -1,6 +1,6 @@
 # commercetools category sync
 
-Utility which provides API for building CTP category update actions and category synchronisation.
+A utility which provides an API for building CTP category update actions and category synchronisation.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -24,7 +24,7 @@ Utility which provides API for building CTP category update actions and category
 
 #### Prerequisites
 1. The sync expects a list of non-null `CategoryDraft` objects that have their `key` fields set to match the
-categories from the source to the target. Also the target project is expected to have the `key` fields set, otherwise they won't be
+categories from the source to the target. Also, the target project is expected to have the `key` fields set, otherwise they won't be
 matched.
 2. Every category may have a reference to a `parent category` and a reference to the `Type` of its custom fields. Categories 
    and Types are matched by their `key` Therefore, in order for the sync to resolve the 
@@ -42,15 +42,15 @@ matched.
      
    Example of its usage can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130).
 3. It is an important responsibility of the user of the library to instantiate a `sphereClient` that has the following properties:
-    - Limits the amount of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with 
+    - Limits the number of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with 
    [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html) 
     - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the 
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
    
-   You can use the same client instantiating used in the integration tests for this library found 
+   You can instantiate the client the same way it is instantiated in the integration tests for this library found
    [here](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
 
-4. After the `sphereClient` is setup, a `CategorySyncOptions` should be be built as follows: 
+4. After the `sphereClient` is set up, a `CategorySyncOptions` should be built as follows: 
 ````java
 // instantiating a CategorySyncOptions
 final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(sphereClient).build();
@@ -65,11 +65,11 @@ a callback that is called whenever a warning event occurs during the sync proces
 
 - `beforeUpdateCallback`
 a filter function which can be applied on a generated list of update actions. It allows the user to intercept category 
-updates and modify (add/remove) update actions just before they are sent to CTP API.
+ **_update_** actions just before they are sent to CTP API.
 
 - `beforeCreateCallback`
 a filter function which can be applied on a category draft before a request to create it on CTP is issued. It allows the 
-user to intercept category create requests modify the draft before the create request is sent to CTP API.
+user to intercept category **_create_** requests to modify the draft before the create request is sent to CTP API.
 
 - `batchSize`
 a number that could be used to set the batch size with which categories are fetched and processed with,
@@ -78,7 +78,7 @@ as categories are obtained from the target CTP project in batches for better per
 in a single request. Playing with this option can slightly improve or reduce processing speed. (The default value is `50`).
 
 Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
-streams, would look as follows:
+streams would look as follows:
 ```java
 final Logger logger = LoggerFactory.getLogger(MySync.class);
 final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(sphereClient)
@@ -100,7 +100,7 @@ CompletionStage<CategorySyncStatistics> syncStatisticsStage = categorySync.sync(
 The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `CategorySyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created, 
 failed, processed categories and the processing time of the last sync batch in different time units and in a
-human readable format.
+human-readable format.
 
 ````java
 final CategorySyncStatistics stats = syncStatisticsStage.toCompletebleFuture().join();
@@ -110,10 +110,10 @@ stats.getReportMessage();
 
 __Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
  1. The sync processing time should not take into account the time between supplying batches to the sync. 
- 2. It is not not known by the sync which batch is going to be the last one supplied.
+ 2. It is not known by the sync which batch is going to be the last one supplied.
 
 More examples of how to use the sync 
-1. From another CTP project as source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
+1. From another CTP project as a source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
 2. From an external source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java). 
  
 
@@ -131,7 +131,7 @@ Examples of its usage can be found in the tests
 
 ### Build particular update action(s)
 
-Utility methods provided by the library to compare the specific fields of a Category and a new CategoryDraft, and in turn builds
+Utility methods provided by the library to compare the specific fields of a Category and a new CategoryDraft, and in turn, build
  the update action. One example is the `buildChangeNameUpdateAction` which compares names:
 ````java
 Optional<UpdateAction<Category>> updateAction = buildChangeNameUpdateAction(oldCategory, categoryDraft);

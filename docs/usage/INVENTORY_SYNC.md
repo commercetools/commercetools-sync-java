@@ -1,6 +1,6 @@
 # commercetools inventory sync
 
-Utility which provides API for building CTP inventory update actions and inventory synchronisation.
+A utility which provides an API for building CTP inventory update actions and inventory synchronisation.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -75,17 +75,23 @@ a callback that is called whenever a warning event occurs during the sync proces
 
 - `beforeUpdateCallback`
 a filter function which can be applied on a generated list of update actions. It allows the user to intercept inventory 
-entry updates and modify (add/remove) update actions just before they are sent to CTP API.
+entry **_update_** actions just before they are sent to CTP API.
 
 - `beforeCreateCallback`
-a filter function which can be applied on a inventoryEntry draft before a request to create it on CTP is issued. It allows the 
-user to intercept inventoryEntry create requests modify the draft before the create request is sent to CTP API.
+a filter function which can be applied on an inventoryEntry draft before a request to create it on CTP is issued. It allows the 
+user to intercept inventoryEntry **_create_** requests to modify the draft before the create request is sent to CTP API.
 
 - `batchSize`
 a number that could be used to set the batch size with which inventory entries are fetched and processed with,
 as inventory entries are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
 `batchSize` inventory entries from the input list, then fetches the corresponding inventory entries from the target CTP project
-in a single request. Playing with this option can slightly improve or reduce processing speed. (The default value is `150`).
+in a single request and then performs the update actions needed. Playing with this option can slightly improve or reduce processing speed.
+An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L318).
+    - If not provided, it is set to `30` by default.
+
+- `errorCallBack`
+a callback that is called whenever an event occurs during the sync process that represents an error.
+An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L391)..
 
 Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
 streams, would look as follows:
@@ -118,7 +124,7 @@ stats.getReportMessage();
 
 __Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
  1. The sync processing time should not take into account the time between supplying batches to the sync. 
- 2. It is not not known by the sync which batch is going to be the last one supplied.
+ 2. It is not known by the sync which batch is going to be the last one supplied.
 
 
 More examples of how to use the sync [here](/src/integration-test/java/com/commercetools/sync/integration/inventories/InventorySyncIT.java).

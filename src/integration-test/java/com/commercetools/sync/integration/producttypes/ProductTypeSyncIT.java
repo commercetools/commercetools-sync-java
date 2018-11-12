@@ -37,7 +37,6 @@ import java.util.stream.IntStream;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-
 import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
 import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_2;
 import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_3;
@@ -497,7 +496,7 @@ public class ProductTypeSyncIT {
 
         ProductTypeService productTypeServiceMock = mock(ProductTypeServiceImpl.class);
 
-        when(productTypeServiceMock.fetchMatchingProductsTypesByKeys(Mockito.any())).thenReturn(supplyAsync(() -> {
+        when(productTypeServiceMock.fetchMatchingProductTypesByKeys(Mockito.any())).thenReturn(supplyAsync(() -> {
             throw new SphereException();
         }));
 
@@ -644,8 +643,6 @@ public class ProductTypeSyncIT {
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-        // Since the error message and exception is coming from commercetools, we don't test the actual message and
-        // exception
         verify(spyProductTypeSyncOptions).applyErrorCallback(any(), any());
 
         AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
