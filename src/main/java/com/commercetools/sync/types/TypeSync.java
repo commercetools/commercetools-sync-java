@@ -7,7 +7,6 @@ import com.commercetools.sync.types.helpers.TypeSyncStatistics;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.WithKey;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 
@@ -18,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.types.utils.TypeSyncUtils.buildActions;
@@ -26,6 +24,8 @@ import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -150,19 +150,6 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
     }
 
     /**
-     * Given a set of {@link Type} or {@link TypeDraft}, returns a map of keys to the
-     * {@link Type}/{@link TypeDraft} instances.
-     *
-     * @param types list of {@link Type}/{@link TypeDraft}
-     * @param <T>   a type that extends of {@link WithKey}.
-     * @return the map of keys to {@link Type}/{@link TypeDraft} instances.
-     */
-    private <T extends WithKey> Map<String, T> getTypeKeysMap(@Nonnull final Set<T> types) {
-        return types.stream().collect(Collectors.toMap(WithKey::getKey, p -> p,
-            (typeA, typeB) -> typeB));
-    }
-
-    /**
      * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
      * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
      * incrementing the total number of failed types to sync.
@@ -189,7 +176,8 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
     private CompletionStage<TypeSyncStatistics> syncBatch(
             @Nonnull final Set<Type> oldTypes,
             @Nonnull final Set<TypeDraft> newTypes) {
-        final Map<String, Type> oldTypeMap = getTypeKeysMap(oldTypes);
+
+        final Map<String, Type> oldTypeMap = oldTypes.stream().collect(toMap(Type::getKey, identity()));
 
         return CompletableFuture.allOf(newTypes
                 .stream()
