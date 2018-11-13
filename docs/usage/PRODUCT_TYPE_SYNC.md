@@ -129,4 +129,7 @@ More examples of those utils for different fields can be found [here](/src/test/
      
     The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
     is the recommended good balance for stability and performance for the sync process.
+    
+    In order to exploit the number of `max parallel requests`, the `batch size` should have a value set which is equal or higher.
+    
 3. Syncing product types with an attribute of type [NestedType](https://docs.commercetools.com/http-api-projects-productTypes.html#nestedtype) is not supported yet.

@@ -178,6 +178,9 @@ More examples of those utils for different fields can be found [here](/src/integ
      
     The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
     is the recommended good balance for stability and performance for the sync process.
+    
+    In order to exploit the number of `max parallel requests`, the `batch size` should have a value set which is equal or higher.
+    
 3. Syncing attribute field types with  `ReferenceType` and `SetType` (of `elementType: ReferenceType`) field definitions, except 
 for Product references, is not supported yet. (See more: [#87](https://github.com/commercetools/commercetools-sync-java/issues/87) [#160](https://github.com/commercetools/commercetools-sync-java/issues/87)). This
 also applies to an attribute field of type `NestedType` which has any of the aforementioned types as an inner field.

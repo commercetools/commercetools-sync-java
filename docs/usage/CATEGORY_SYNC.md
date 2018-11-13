@@ -149,4 +149,7 @@ More examples of those utils for different fields can be found [here](/src/integ
      
     The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
     is the recommended good balance for stability and performance for the sync process.
+    
+    In order to exploit the number of `max parallel requests`, the `batch size` should have a value set which is equal or higher.
+    
 3. The library will sync all field types of custom fields, except `ReferenceType`. [#87](https://github.com/commercetools/commercetools-sync-java/issues/87). 
