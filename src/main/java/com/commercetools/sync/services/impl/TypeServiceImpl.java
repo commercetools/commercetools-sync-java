@@ -79,7 +79,7 @@ public final class TypeServiceImpl implements TypeService {
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<Type>> fetchType(@Nullable String key) {
+    public CompletionStage<Optional<Type>> fetchType(@Nullable final String key) {
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
@@ -88,7 +88,8 @@ public final class TypeServiceImpl implements TypeService {
                           .execute(TypeQuery.of().plusPredicates(typeQueryModel -> typeQueryModel.key().is(key)))
                           .thenApply(PagedResult::head)
                           .exceptionally(sphereException -> {
-                              syncOptions.applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
+                              syncOptions.applyErrorCallback(format(FETCH_FAILED, key, sphereException),
+                                  sphereException);
                               return Optional.empty();
                           });
     }

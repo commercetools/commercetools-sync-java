@@ -12,7 +12,7 @@ import org.junit.rules.ExpectedException;
 
 import java.util.List;
 
-import static com.commercetools.sync.commons.utils.LocalizedEnumValueTestObjects.*;
+import static com.commercetools.sync.commons.utils.LocalizedEnumValueFixtures.*;
 import static com.commercetools.sync.types.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;

@@ -14,7 +14,7 @@ import org.junit.rules.ExpectedException;
 import java.util.Collections;
 import java.util.List;
 
-import static com.commercetools.sync.commons.utils.PlainEnumValueTestObjects.*;
+import static com.commercetools.sync.commons.utils.PlainEnumValueFixtures.*;
 import static com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActionUtils.buildEnumValueUpdateActions;
 import static com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActionUtils.buildEnumValuesUpdateActions;
 import static java.util.Arrays.asList;
@@ -93,9 +93,9 @@ public class BuildPlainEnumUpdateActionsTest {
     @Test
     public void buildPlainEnumUpdateActions_WithDuplicatePlainEnumValues_ShouldTriggerDuplicateKeyError() {
         expectedException.expect(DuplicateKeyException.class);
-        expectedException.expectMessage("Enum Values have duplicated keys. Attribute definition name: "
+        expectedException.expectMessage("Enum Values have duplicated keys. Definition name: "
             + "'attribute_definition_name_1', Duplicated enum value: 'b'. Enum Values are expected to be unique inside "
-            + "their attribute definition.");
+            + "their definition.");
 
         buildEnumValuesUpdateActions(
             "attribute_definition_name_1",

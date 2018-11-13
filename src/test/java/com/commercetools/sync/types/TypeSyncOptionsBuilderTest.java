@@ -9,7 +9,6 @@ import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.commands.updateactions.ChangeName;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;

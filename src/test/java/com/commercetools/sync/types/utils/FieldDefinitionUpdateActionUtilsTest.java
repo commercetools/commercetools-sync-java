@@ -1,6 +1,5 @@
 package com.commercetools.sync.types.utils;
 
-import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
@@ -16,8 +15,6 @@ import io.sphere.sdk.types.commands.updateactions.ChangeFieldDefinitionLabel;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,10 +22,10 @@ import static com.commercetools.sync.types.FieldDefinitionTestHelper.stringField
 import static com.commercetools.sync.types.utils.FieldDefinitionUpdateActionUtils.buildActions;
 import static com.commercetools.sync.types.utils.FieldDefinitionUpdateActionUtils.buildChangeLabelUpdateAction;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static java.util.Arrays.*;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class FieldDefinitionUpdateActionUtilsTest {
     private static final String FIELD_NAME_1 = "fieldName1";
@@ -89,7 +86,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
     @Test
     public void buildActions_WithNewPlainEnum_ShouldReturnAddEnumValueAction() {
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
-                EnumFieldType.of(asList(ENUM_VALUE_A)),
+                EnumFieldType.of(singletonList(ENUM_VALUE_A)),
                 FIELD_NAME_1,
                 LocalizedString.ofEnglish(LABEL_1),
                 false,
@@ -113,7 +110,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
     public void buildActions_WithoutOldPlainEnum_ShouldNotReturnAnyValueAction() {
 
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
-                EnumFieldType.of(asList(ENUM_VALUE_A)),
+                EnumFieldType.of(singletonList(ENUM_VALUE_A)),
                 FIELD_NAME_1,
                 LocalizedString.ofEnglish(LABEL_1),
                 false,
@@ -137,7 +134,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
     public void buildActions_WithNewLocalizedEnum_ShouldReturnAddLocalizedEnumValueAction() {
 
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
-                LocalizedEnumFieldType.of(asList(LOCALIZED_ENUM_VALUE_A)),
+                LocalizedEnumFieldType.of(singletonList(LOCALIZED_ENUM_VALUE_A)),
                 FIELD_NAME_1,
                 LocalizedString.ofEnglish(LABEL_1),
                 false,

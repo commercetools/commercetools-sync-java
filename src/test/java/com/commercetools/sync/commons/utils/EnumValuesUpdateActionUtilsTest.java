@@ -20,7 +20,7 @@ import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.b
 import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildChangeEnumValuesOrderUpdateAction;
 import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildMatchingEnumValuesUpdateActions;
 import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildRemoveEnumValuesUpdateAction;
-import static com.commercetools.sync.commons.utils.PlainEnumValueTestObjects.*;
+import static com.commercetools.sync.commons.utils.PlainEnumValueFixtures.*;
 import static com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActionUtils.buildChangeLabelAction;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
