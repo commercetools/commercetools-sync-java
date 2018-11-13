@@ -1,6 +1,7 @@
 group = 'com.commercetools'
 version = System.getProperty('build.version') ?: versionWIP
-description = "Java library that provides different modules to synchronise your new commercetools project data to your " +
-        "existing commercetools project."
+description = "Java Library used to import and/or sync (taking care of changes) data into one or more commercetools" +
+        " projects from external sources such as CSV, XML, JSON, etc.. or even from an already existing" +
+        " commercetools project."
 
 logger.lifecycle("\nActual Build Version: [{}]\n", version)

@@ -32,8 +32,8 @@ matched.
     - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
 
-   You can instantiate the client the same way it is instantiated in the integration tests for this library found
-   [here](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
+   If you have no special requirements on sphere client creation then you can use `ClientConfigurationUtils#createClient`
+   util which applies best practices already.
 
 4. After the `sphereClient` is setup, a `ProductTypeSyncOptions` should be be built as follows:
 ````java
@@ -41,14 +41,12 @@ matched.
 final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder.of(sphereClient).build();
 ````
 
-The options can be used to provide additional optional configuration for the sync as well:
+Additional optional configuration for the sync can be configured on the `ProductTypeSyncOptionsBuilder` instance, according to your need:
 - `errorCallBack`
-a callback that is called whenever an event occurs during the sync process that represents an error. Currently, these
-events.
+a callback that is called whenever an error event occurs during the sync process.
 
-- `warningCallBack`
-a callback that is called whenever an event occurs during the sync process that represents a warning. Currently, these
-events.
+- `warningCallBack` 
+a callback that is called whenever a warning event occurs during the sync process.
 
 - `beforeUpdateCallback`
 a filter function which can be applied on a generated list of update actions. It allows the user to intercept product type
@@ -57,6 +55,15 @@ a filter function which can be applied on a generated list of update actions. It
 - `beforeCreateCallback`
 a filter function which can be applied on a product type draft before a request to create it on CTP is issued. It allows the
 user to intercept product type **_create_** requests to modify the draft before the create request is sent to CTP API.
+
+- `allowUuid`
+a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
+
+- `batchSize`
+a number that could be used to set the batch size with which product types are fetched and processed with,
+as product types are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
+`batchSize` product types from the input list, then fetches the corresponding product types from the target CTP project
+in a single request. Playing with this option can slightly improve or reduce processing speed. (The default value is `50`).
 
 Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning
 streams, would look as follows:
@@ -114,5 +121,15 @@ More examples of those utils for different fields can be found [here](/src/test/
 
 ## Caveats
 
-1. Product types are either created or updated. Currently, the tool does not support product type deletion.
-2. Syncing product types with an attribute of type [NestedType](https://docs.commercetools.com/http-api-projects-productTypes.html#nestedtype) is not supported yet.
+1. Product types are either created or updated. Currently the tool does not support product type deletion.
+2. The sync library is not meant to be executed in a parallel fashion. Check the example in [point #2 here](/docs/usage/PRODUCT_SYNC.md#caveats).
+    By design, scaling the sync process should **not** be done by executing the batches themselves in parallel. However, it can be done either by:
+     - Changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) within the `sphereClient` configuration. It defines how many requests the client can execute in parallel.
+     - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-). It defines how many drafts can one batch contain.
+     
+    The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
+    is the recommended good balance for stability and performance for the sync process.
+    
+    In order to exploit the number of `max parallel requests`, the `batch size` should have a value set which is equal or higher.
+    
+3. Syncing product types with an attribute of type [NestedType](https://docs.commercetools.com/http-api-projects-productTypes.html#nestedtype) is not supported yet.

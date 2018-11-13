@@ -7,8 +7,15 @@
 [![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
-Java API which exposes utilities for building update actions and automatic syncing of CTP data from external sources 
- such as CSV, XML, JSON, etc.. or an already existing CTP project into a target project.
+ 
+Java Library used to import and/or sync (taking care of changes) data into one or more commercetools projects from external sources such 
+as CSV, XML, JSON, etc.. or even from an already existing commercetools project.
+
+Currently this library supports synchronising the following entities in commercetools
+ - [Categories](/docs/usage/CATEGORY_SYNC.md)
+ - [Products](/docs/usage/PRODUCT_SYNC.md)
+ - [InventoryEntries](/docs/usage/INVENTORY_SYNC.md)
+ - [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md)
 
 ![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/9512131/31230702-0f2255a6-a9e5-11e7-9412-04ed52641dde.png)
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -39,11 +46,6 @@ commercetools sync is a Java library that could be used to synchronise CTP data 
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
 
-Currently this library supports synchronising
- - [Categories](/docs/usage/CATEGORY_SYNC.md)
- - [Products](/docs/usage/PRODUCT_SYNC.md) (_Beta_: Not recommended for production use yet.)
- - [InventoryEntries](/docs/usage/INVENTORY_SYNC.md) (_Beta_: Not recommended for production use yet.)
- - [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md) (_Beta_: Not recommended for production use yet.)
 
 ### Prerequisites
  
