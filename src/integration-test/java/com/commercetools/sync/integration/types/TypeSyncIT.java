@@ -8,6 +8,9 @@ import com.commercetools.sync.types.TypeSync;
 import com.commercetools.sync.types.TypeSyncOptions;
 import com.commercetools.sync.types.TypeSyncOptionsBuilder;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
+import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.ConcurrentModificationException;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
@@ -21,13 +24,17 @@ import io.sphere.sdk.types.StringFieldType;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.TypeDraftBuilder;
+import io.sphere.sdk.types.commands.TypeUpdateCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -51,6 +58,7 @@ import static com.commercetools.sync.integration.types.utils.TypeITUtils.TYPE_NA
 import static com.commercetools.sync.integration.types.utils.TypeITUtils.getTypeByKey;
 import static com.commercetools.sync.integration.types.utils.TypeITUtils.populateSourceProject;
 import static com.commercetools.sync.integration.types.utils.TypeITUtils.populateTargetProject;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -741,6 +749,87 @@ public class TypeSyncIT {
                     assertThat(enumValue.getKey()).isEqualTo(enumValueDraft.getKey());
                     assertThat(enumValue.getLabel()).isEqualTo(enumValueDraft.getLabel());
                 });
+    }
+
+    @Test
+    public void sync_WithChangedTypeButBadGatewayException_ShouldFailUpdateType() {
+        // Mock sphere client to return BadGatewayException on the first update request.
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        when(spyClient.execute(any(TypeUpdateCommand.class)))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> errors = new ArrayList<>();
+
+        final TypeSyncOptions typeSyncOptions =
+            TypeSyncOptionsBuilder.of(spyClient)
+                                  .errorCallback((errorMessage, error) -> {
+                                      errorMessages.add(errorMessage);
+                                      errors.add(error);
+                                  })
+                                  .build();
+
+        final TypeDraft typeDraft = TypeDraftBuilder.of(
+            TYPE_KEY_1,
+            TYPE_NAME_2,
+            ResourceTypeIdsSetBuilder.of().addCategories().build())
+                                                    .description(TYPE_DESCRIPTION_2)
+                                                    .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
+                                                    .build();
+
+        final TypeSync typeSync = new TypeSync(typeSyncOptions);
+        final TypeSyncStatistics statistics = typeSync.sync(Collections.singletonList(typeDraft))
+                                                      .toCompletableFuture()
+                                                      .join();
+
+        // Test and assertion
+        AssertionsForStatistics.assertThat(statistics).hasValues(1, 0, 0, 1);
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errors).hasSize(1);
+
+        assertThat(errors.get(0)).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorMessages.get(0))
+            .contains(format("Failed to update type of key '%s'.",
+                typeDraft.getKey(), errors.get(0)));
+    }
+
+    @Test
+    public void sync_WithChangedTypeButConcurrentModificationException_ShouldRetryToUpdateNewTypeWithSuccess() {
+
+        // Mock sphere client to return ConcurrentModification on the first update request.
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        when(spyClient.execute(any(TypeUpdateCommand.class)))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenCallRealMethod();
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> errors = new ArrayList<>();
+
+        final TypeSyncOptions typeSyncOptions =
+            TypeSyncOptionsBuilder.of(spyClient)
+                                      .errorCallback((errorMessage, error) -> {
+                                          errorMessages.add(errorMessage);
+                                          errors.add(error);
+                                      })
+                                      .build();
+
+        final TypeDraft typeDraft = TypeDraftBuilder.of(
+            TYPE_KEY_1,
+            TYPE_NAME_2,
+            ResourceTypeIdsSetBuilder.of().addCategories().build())
+                                                    .description(TYPE_DESCRIPTION_2)
+                                                    .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
+                                                    .build();
+
+        final TypeSync typeSync = new TypeSync(typeSyncOptions);
+        final TypeSyncStatistics statistics = typeSync.sync(Collections.singletonList(typeDraft))
+                                                              .toCompletableFuture()
+                                                              .join();
+
+        // Test and assertion
+        AssertionsForStatistics.assertThat(statistics).hasValues(1, 0, 1, 0);
+        assertThat(errorMessages).isEmpty();
+        assertThat(errors).isEmpty();
     }
 
 }

@@ -6,6 +6,7 @@ import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.types.TypeSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.queries.PagedResult;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
@@ -15,6 +16,7 @@ import io.sphere.sdk.types.queries.TypeQuery;
 import io.sphere.sdk.types.queries.TypeQueryBuilder;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +27,9 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.http.util.TextUtils.isBlank;
 
 /**
  * Implementation of TypeService interface.
@@ -71,6 +75,22 @@ public final class TypeServiceImpl implements TypeService {
                                       .stream()
                                       .peek(type -> keyToIdCache.put(type.getKey(), type.getId()))
                                       .collect(toSet()));
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Optional<Type>> fetchType(@Nullable String key) {
+        if (isBlank(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+
+        return syncOptions.getCtpClient()
+                          .execute(TypeQuery.of().plusPredicates(typeQueryModel -> typeQueryModel.key().is(key)))
+                          .thenApply(PagedResult::head)
+                          .exceptionally(sphereException -> {
+                              syncOptions.applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
+                              return Optional.empty();
+                          });
     }
 
     @Nonnull

@@ -5,6 +5,7 @@ import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.WithKey;
 import io.sphere.sdk.types.Type;
@@ -38,6 +39,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
     private static final String CTP_TYPE_CREATE_FAILED = "Failed to create type of key '%s'.";
     private static final String TYPE_DRAFT_HAS_NO_KEY = "Failed to process type draft without key.";
     private static final String TYPE_DRAFT_IS_NULL = "Failed to process null type draft.";
+    private static final String FETCH_ON_RETRY = "Failed to fetch type on retry.";
 
     private final TypeService typeService;
 
@@ -231,11 +233,12 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * Given an existing {@link Type} and a new {@link TypeDraft}, the method calculates all the
      * update actions required to synchronize the existing type to be the same as the new one. If there are
      * update actions found, a request is made to CTP to update the existing type, otherwise it doesn't issue a
-     * request.
+     * request.  If the update request failed due to a {@link ConcurrentModificationException}, the method recalculates
+     * the update actions required for syncing the {@link Type} and reissues the update request.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
-     * out successfully or not. If an exception was thrown on executing the request to CTP, the error handling method
-     * is called.
+     * out successfully or not. If an exception was thrown on executing the request to CTP,
+     * the optional error callback specified in the {@code syncOptions} is called.
      *
      * @param oldType existing type that could be updated.
      * @param newType draft containing data that could differ from data in {@code oldType}.
@@ -255,15 +258,41 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
 
         if (!updateActionsAfterCallback.isEmpty()) {
             return typeService.updateType(oldType, updateActionsAfterCallback)
-                    .thenAccept(updatedType -> statistics.incrementUpdated())
-                    .exceptionally(exception -> {
-                        final String errorMessage = format(CTP_TYPE_UPDATE_FAILED, newType.getKey());
-                        handleError(errorMessage, exception, 1);
+                              .handle((updatedType, sphereException) -> sphereException)
+                              .thenCompose(sphereException -> {
+                                  if (sphereException != null) {
+                                      return executeSupplierIfConcurrentModificationException(
+                                          sphereException,
+                                          () -> fetchAndUpdate(oldType, newType),
+                                          () -> {
+                                              final String errorMessage = format(CTP_TYPE_UPDATE_FAILED,
+                                                  newType.getKey());
+                                              handleError(errorMessage, sphereException, 1);
 
-                        return null;
-                    });
+                                              return completedFuture(null);
+                                          });
+                                  } else {
+                                      statistics.incrementUpdated();
+                                      return completedFuture(null);
+                                  }
+                              });
         }
 
         return completedFuture(null);
+    }
+
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
+    private CompletionStage<Void> fetchAndUpdate(@Nonnull final Type oldType,
+                                                 @Nonnull final TypeDraft newType) {
+
+        final String key = oldType.getKey();
+        return typeService.fetchType(key)
+                          .thenCompose(typeOptional ->
+                              typeOptional
+                                  .map(fetchedType -> updateType(fetchedType, newType))
+                                  .orElseGet(() -> {
+                                      handleError(format(CTP_TYPE_UPDATE_FAILED, key, FETCH_ON_RETRY), null, 1);
+                                      return CompletableFuture.completedFuture(null);
+                                  }));
     }
 }

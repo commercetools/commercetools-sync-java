@@ -17,6 +17,7 @@ import io.sphere.sdk.types.commands.updateactions.ChangeKey;
 import io.sphere.sdk.types.commands.updateactions.ChangeName;
 import io.sphere.sdk.types.queries.TypeQuery;
 import io.sphere.sdk.utils.CompletableFutureUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -37,6 +38,7 @@ import static com.commercetools.sync.integration.types.utils.TypeITUtils.FIELD_D
 import static com.commercetools.sync.integration.types.utils.TypeITUtils.TYPE_DESCRIPTION_1;
 import static com.commercetools.sync.integration.types.utils.TypeITUtils.TYPE_KEY_1;
 import static com.commercetools.sync.integration.types.utils.TypeITUtils.TYPE_NAME_1;
+import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -318,6 +320,62 @@ public class TypeServiceImplIT {
                        return null;
                    })
                    .toCompletableFuture().join();
+    }
+
+    @Test
+    public void fetchType_WithExistingTypeKey_ShouldFetchType() {
+        final Optional<Type> typeOptional = CTP_TARGET_CLIENT
+            .execute(TypeQuery.of()
+                              .withPredicates(typeQueryModel -> typeQueryModel.key().is(OLD_TYPE_KEY)))
+            .toCompletableFuture().join().head();
+        assertThat(typeOptional).isNotNull();
+
+        final Optional<Type> fetchedTypeOptional =
+            executeBlocking(typeService.fetchType(OLD_TYPE_KEY));
+        assertThat(fetchedTypeOptional).isEqualTo(typeOptional);
+    }
+
+    @Test
+    public void fetchType_WithBlankKey_ShouldNotFetchType() {
+        final Optional<Type> fetchedTypeOptional =
+            executeBlocking(typeService.fetchType(StringUtils.EMPTY));
+        assertThat(fetchedTypeOptional).isEmpty();
+    }
+
+    @Test
+    public void fetchType_WithNullKey_ShouldNotFetchType() {
+        final Optional<Type> fetchedTypeOptional =
+            executeBlocking(typeService.fetchType(null));
+        assertThat(fetchedTypeOptional).isEmpty();
+    }
+
+    @Test
+    public void fetchType_WithBadGateWayExceptionAlways_ShouldFail() {
+        // Mock sphere client to return BadeGatewayException on any request.
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        when(spyClient.execute(any(TypeQuery.class)))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
+            .thenCallRealMethod();
+        final TypeSyncOptions spyOptions = TypeSyncOptionsBuilder.of(spyClient)
+                                                                         .errorCallback(
+                                                                             (errorMessage, exception) -> {
+                                                                                 errorCallBackMessages
+                                                                                     .add(errorMessage);
+                                                                                 errorCallBackExceptions
+                                                                                     .add(exception);
+                                                                             })
+                                                                         .build();
+        final TypeService spyTypeService = new TypeServiceImpl(spyOptions);
+
+        final Optional<Type> fetchedTypeOptional =
+            executeBlocking(spyTypeService.fetchType(OLD_TYPE_KEY));
+        assertThat(fetchedTypeOptional).isEmpty();
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualToIgnoringCase(format("Failed to fetch types with keys: '%s'. Reason: %s",
+                OLD_TYPE_KEY, errorCallBackExceptions.get(0)));
     }
 
 }
