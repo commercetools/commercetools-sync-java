@@ -3,6 +3,7 @@ package com.commercetools.sync.categories;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CategoryService;
+import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -11,6 +12,7 @@ import io.sphere.sdk.models.LocalizedString;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -44,6 +47,19 @@ public class CategorySyncTest {
     private CategorySyncOptions categorySyncOptions;
     private List<String> errorCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
+
+    // protected method access helper
+    private class CategorySyncTestie extends CategorySync {
+
+        public CategorySyncTestie(@Nonnull CategorySyncOptions syncOptions, @Nonnull TypeService typeService, @Nonnull CategoryService categoryService) {
+            super(syncOptions, typeService, categoryService);
+        }
+
+        @Override
+        protected CompletionStage<CategorySyncStatistics> syncBatches(@Nonnull List<List<CategoryDraft>> batches, @Nonnull CompletionStage<CategorySyncStatistics> result) {
+            return super.syncBatches(batches, result);
+        }
+    }
 
     /**
      * Initializes instances of  {@link CategorySyncOptions} and {@link CategorySync} which will be used by some
@@ -317,9 +333,9 @@ public class CategorySyncTest {
                                    .collect(Collectors.toList());
         final CategoryService mockCategoryService =
             mockCategoryService(emptySet(), new HashSet<>(mockedCreatedCategories));
-        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
+        final CategorySyncTestie categorySync = new CategorySyncTestie(categorySyncOptions, getMockTypeService(),
             mockCategoryService);
-        final CategorySync syncSpy = spy(categorySync);
+        final CategorySyncTestie syncSpy = spy(categorySync);
 
         syncSpy.sync(categoryDrafts).toCompletableFuture().join();
 
@@ -342,9 +358,9 @@ public class CategorySyncTest {
                                    .collect(Collectors.toList());
         final CategoryService mockCategoryService =
             mockCategoryService(emptySet(), new HashSet<>(mockedCreatedCategories));
-        final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
+        final CategorySyncTestie categorySync = new CategorySyncTestie(categorySyncOptions, getMockTypeService(),
             mockCategoryService);
-        final CategorySync syncSpy = spy(categorySync);
+        final CategorySyncTestie syncSpy = spy(categorySync);
 
         syncSpy.sync(categoryDrafts).toCompletableFuture().join();
 

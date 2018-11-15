@@ -104,17 +104,6 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     @Override
-    protected CompletionStage<ProductSyncStatistics> syncBatches(@Nonnull final List<List<ProductDraft>> batches,
-                                                                 @Nonnull final CompletionStage<ProductSyncStatistics>
-                                                                     result) {
-        if (batches.isEmpty()) {
-            return result;
-        }
-        final List<ProductDraft> firstBatch = batches.remove(0);
-        return syncBatches(batches, result.thenCompose(subResult -> processBatch(firstBatch)));
-    }
-
-    @Override
     protected CompletionStage<ProductSyncStatistics> processBatch(@Nonnull final List<ProductDraft> batch) {
         productsToSync = new HashMap<>();
         draftsToCreate = new HashSet<>();
