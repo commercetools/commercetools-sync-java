@@ -51,12 +51,16 @@ public class CategorySyncTest {
     // protected method access helper
     private class CategorySyncTestie extends CategorySync {
 
-        public CategorySyncTestie(@Nonnull CategorySyncOptions syncOptions, @Nonnull TypeService typeService, @Nonnull CategoryService categoryService) {
+        public CategorySyncTestie(@Nonnull final CategorySyncOptions syncOptions,
+                                  @Nonnull final TypeService typeService,
+                                  @Nonnull final CategoryService categoryService) {
             super(syncOptions, typeService, categoryService);
         }
 
         @Override
-        protected CompletionStage<CategorySyncStatistics> syncBatches(@Nonnull List<List<CategoryDraft>> batches, @Nonnull CompletionStage<CategorySyncStatistics> result) {
+        protected CompletionStage<CategorySyncStatistics> syncBatches(
+                @Nonnull final List<List<CategoryDraft>> batches,
+                @Nonnull final CompletionStage<CategorySyncStatistics> result) {
             return super.syncBatches(batches, result);
         }
     }
