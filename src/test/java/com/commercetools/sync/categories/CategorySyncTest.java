@@ -49,9 +49,9 @@ public class CategorySyncTest {
     private List<Throwable> errorCallBackExceptions;
 
     // protected method access helper
-    private class CategorySyncTestie extends CategorySync {
+    private static class CategorySyncTestie extends CategorySync {
 
-        public CategorySyncTestie(@Nonnull final CategorySyncOptions syncOptions,
+        CategorySyncTestie(@Nonnull final CategorySyncOptions syncOptions,
                                   @Nonnull final TypeService typeService,
                                   @Nonnull final CategoryService categoryService) {
             super(syncOptions, typeService, categoryService);
