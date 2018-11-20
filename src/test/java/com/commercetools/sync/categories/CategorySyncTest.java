@@ -49,11 +49,11 @@ public class CategorySyncTest {
     private List<Throwable> errorCallBackExceptions;
 
     // protected method access helper
-    private static class CategorySyncTestie extends CategorySync {
+    private static class CategorySyncMock extends CategorySync {
 
-        CategorySyncTestie(@Nonnull final CategorySyncOptions syncOptions,
-                                  @Nonnull final TypeService typeService,
-                                  @Nonnull final CategoryService categoryService) {
+        CategorySyncMock(@Nonnull final CategorySyncOptions syncOptions,
+                         @Nonnull final TypeService typeService,
+                         @Nonnull final CategoryService categoryService) {
             super(syncOptions, typeService, categoryService);
         }
 
@@ -337,9 +337,9 @@ public class CategorySyncTest {
                                    .collect(Collectors.toList());
         final CategoryService mockCategoryService =
             mockCategoryService(emptySet(), new HashSet<>(mockedCreatedCategories));
-        final CategorySyncTestie categorySync = new CategorySyncTestie(categorySyncOptions, getMockTypeService(),
+        final CategorySyncMock categorySync = new CategorySyncMock(categorySyncOptions, getMockTypeService(),
             mockCategoryService);
-        final CategorySyncTestie syncSpy = spy(categorySync);
+        final CategorySyncMock syncSpy = spy(categorySync);
 
         syncSpy.sync(categoryDrafts).toCompletableFuture().join();
 
@@ -362,9 +362,9 @@ public class CategorySyncTest {
                                    .collect(Collectors.toList());
         final CategoryService mockCategoryService =
             mockCategoryService(emptySet(), new HashSet<>(mockedCreatedCategories));
-        final CategorySyncTestie categorySync = new CategorySyncTestie(categorySyncOptions, getMockTypeService(),
+        final CategorySyncMock categorySync = new CategorySyncMock(categorySyncOptions, getMockTypeService(),
             mockCategoryService);
-        final CategorySyncTestie syncSpy = spy(categorySync);
+        final CategorySyncMock syncSpy = spy(categorySync);
 
         syncSpy.sync(categoryDrafts).toCompletableFuture().join();
 
