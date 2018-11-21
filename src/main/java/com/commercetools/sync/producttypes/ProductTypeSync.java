@@ -71,19 +71,6 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
 
-    @Override
-    protected CompletionStage<ProductTypeSyncStatistics> syncBatches(
-            @Nonnull final List<List<ProductTypeDraft>> batches,
-            @Nonnull final CompletionStage<ProductTypeSyncStatistics> result) {
-
-        if (batches.isEmpty()) {
-            return result;
-        }
-
-        final List<ProductTypeDraft> firstBatch = batches.remove(0);
-        return syncBatches(batches, result.thenCompose(subResult -> processBatch(firstBatch)));
-    }
-
     /**
      * This method first creates a new {@link Set} of valid {@link ProductTypeDraft} elements. For more on the rules of
      * validation, check: {@link ProductTypeSync#validateDraft(ProductTypeDraft)}. Using the resulting set of

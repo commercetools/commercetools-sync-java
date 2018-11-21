@@ -134,17 +134,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
 
-    @Override
-    protected CompletionStage<CategorySyncStatistics> syncBatches(@Nonnull final List<List<CategoryDraft>> batches,
-                                                                  @Nonnull final
-                                                                  CompletionStage<CategorySyncStatistics> result) {
-        if (batches.isEmpty()) {
-            return result;
-        }
-        final List<CategoryDraft> firstBatch = batches.remove(0);
-        return syncBatches(batches, result.thenCompose(subResult -> processBatch(firstBatch)));
-    }
-
     /**
      * Given a list of {@code CategoryDraft} that represent a batch of category drafts, this method for the first batch
      * only caches a list of all the categories in the CTP project in a cached map that representing each category's
