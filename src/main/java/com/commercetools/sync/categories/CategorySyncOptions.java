@@ -22,12 +22,16 @@ public final class CategorySyncOptions extends BaseSyncOptions<Category, Categor
                         final int batchSize,
                         @Nullable final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category,
                                                     List<UpdateAction<Category>>> beforeUpdateCallback,
-                        @Nullable final Function<CategoryDraft, CategoryDraft> beforeCreateCallback) {
+                        @Nullable final Function<CategoryDraft, CategoryDraft> beforeCreateCallback,
+                        @Nullable final BiConsumer<Category, List<UpdateAction<Category>>> afterUpdateCallback,
+                        @Nullable final Consumer<Category> afterCreateCallback) {
         super(ctpClient,
             updateActionErrorCallBack,
             updateActionWarningCallBack,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback);
+            beforeCreateCallback,
+            afterUpdateCallback,
+            afterCreateCallback);
     }
 }

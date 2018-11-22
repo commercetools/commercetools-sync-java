@@ -285,7 +285,10 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             InventorySyncUtils.buildActions(entry, draft, syncOptions);
         if (!updateActions.isEmpty()) {
             return inventoryService.updateInventoryEntry(entry, updateActions)
-                .thenAccept(updatedInventory -> statistics.incrementUpdated())
+                .thenAccept(updatedInventory -> {
+                    syncOptions.applyAfterUpdateCallBack(updatedInventory, updateActions);
+                    statistics.incrementUpdated();
+                })
                 .exceptionally(exception -> {
                     final Reference<Channel> supplyChannel = draft.getSupplyChannel();
                     final String errorMessage = format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
@@ -312,7 +315,10 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         return syncOptions.applyBeforeCreateCallBack(draft)
                 .map(inventoryService::createInventoryEntry)
                 .map(creationFuture -> creationFuture
-                                .thenAccept(createdInventory -> statistics.incrementCreated())
+                                .thenAccept(createdInventory -> {
+                                    syncOptions.applyAfterCreateCallBack(createdInventory);
+                                    statistics.incrementCreated();
+                                })
                                 .exceptionally(exception -> {
                                     final Reference<Channel> supplyChannel = draft.getSupplyChannel();
                                     final String errorMessage = format(CTP_INVENTORY_ENTRY_CREATE_FAILED,

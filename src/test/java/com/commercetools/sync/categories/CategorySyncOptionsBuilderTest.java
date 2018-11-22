@@ -36,12 +36,35 @@ public class CategorySyncOptionsBuilderTest {
     public void build_WithClient_ShouldBuildCategorySyncOptions() {
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
         assertThat(categorySyncOptions).isNotNull();
+        assertThat(categorySyncOptions.getAfterUpdateCallback()).isNull();
+        assertThat(categorySyncOptions.getAfterCreateCallback()).isNull();
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNull();
         assertThat(categorySyncOptions.getBeforeCreateCallback()).isNull();
         assertThat(categorySyncOptions.getErrorCallBack()).isNull();
         assertThat(categorySyncOptions.getWarningCallBack()).isNull();
         assertThat(categorySyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
         assertThat(categorySyncOptions.getBatchSize()).isEqualTo(CategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+    }
+
+    @Test
+    public void afterUpdateCallBack_WithCallBack_ShouldSetCallBack() {
+        final BiConsumer<Category, List<UpdateAction<Category>>> afterUpdateCallBack =
+            (updatedProduct, updateActions) -> {
+            };
+        categorySyncOptionsBuilder.afterUpdateCallback(afterUpdateCallBack);
+
+        final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
+        assertThat(categorySyncOptions.getAfterUpdateCallback()).isNotNull();
+    }
+
+    @Test
+    public void afterCreateCallBack_WithCallBack_ShouldSetCallBack() {
+        final Consumer<Category> afterCreateCallBack = (createdProduct) -> {
+        };
+        categorySyncOptionsBuilder.afterCreateCallback(afterCreateCallBack);
+
+        final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
+        assertThat(categorySyncOptions.getAfterCreateCallback()).isNotNull();
     }
 
     @Test

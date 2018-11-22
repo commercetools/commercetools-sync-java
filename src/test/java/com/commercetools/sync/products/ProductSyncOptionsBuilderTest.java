@@ -39,6 +39,8 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions).isNotNull();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
         assertThat(productSyncOptions.getSyncFilter()).isSameAs(SyncFilter.of());
+        assertThat(productSyncOptions.getAfterUpdateCallback()).isNull();
+        assertThat(productSyncOptions.getAfterCreateCallback()).isNull();
         assertThat(productSyncOptions.getBeforeUpdateCallback()).isNull();
         assertThat(productSyncOptions.getBeforeCreateCallback()).isNull();
         assertThat(productSyncOptions.getErrorCallBack()).isNull();
@@ -60,6 +62,27 @@ public class ProductSyncOptionsBuilderTest {
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
+    }
+
+    @Test
+    public void afterUpdateCallBack_WithCallBack_ShouldSetCallBack() {
+        final BiConsumer<Product, List<UpdateAction<Product>>> afterUpdateCallBack =
+            (updatedProduct, updateActions) -> {
+            };
+        productSyncOptionsBuilder.afterUpdateCallback(afterUpdateCallBack);
+
+        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
+        assertThat(productSyncOptions.getAfterUpdateCallback()).isNotNull();
+    }
+
+    @Test
+    public void afterCreateCallBack_WithCallBack_ShouldSetCallBack() {
+        final Consumer<Product> afterCreateCallBack = (createdProduct) -> {
+        };
+        productSyncOptionsBuilder.afterCreateCallback(afterCreateCallBack);
+
+        final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
+        assertThat(productSyncOptions.getAfterCreateCallback()).isNotNull();
     }
 
     @Test

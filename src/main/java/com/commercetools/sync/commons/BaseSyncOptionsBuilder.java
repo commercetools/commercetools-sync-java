@@ -19,6 +19,8 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     protected int batchSize = 30;
     protected TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
     protected Function<V, V> beforeCreateCallback;
+    protected BiConsumer<U, List<UpdateAction<U>>> afterUpdateCallback;
+    protected Consumer<U> afterCreateCallback;
 
     /**
      * Sets the {@code errorCallback} function of the sync module. This callback will be called whenever an event occurs
@@ -96,6 +98,33 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      */
     public T beforeCreateCallback(@Nonnull final Function<V, V> beforeCreateCallback) {
         this.beforeCreateCallback = beforeCreateCallback;
+        return getThis();
+    }
+
+    /**
+     * Sets the afterUpdateCallback {@link TriFunction} which can be applied after the supplied list of update actions
+     * generated from comparing an old resource of type {@code U} (e.g. {@link io.sphere.sdk.products.Product}) to a new
+     * draft of type {@code V} (e.g. {@link io.sphere.sdk.products.ProductDraft}) were applied. This can be used to
+     * intercept the sync process after issuing an update request and to be able to do something with it.
+     *
+     * @param afterUpdateCallback function which can be applied after generated list of update actions were applied.
+     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
+     */
+    public T afterUpdateCallback(@Nonnull final BiConsumer<U, List<UpdateAction<U>>> afterUpdateCallback) {
+        this.afterUpdateCallback = afterUpdateCallback;
+        return getThis();
+    }
+
+    /**
+     * Sets the afterCreateCallback {@link Function} which can be applied after a new resource draft of type {@code V}
+     * (e.g. {@link io.sphere.sdk.products.ProductDraft}) is created by the sync. This can be used to intercept the
+     * sync process after creating the resource and to be able to do something with it.
+     *
+     * @param afterCreateCallback function which can be applied after a new draft is created by the sync.
+     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
+     */
+    public T afterCreateCallback(@Nonnull final Consumer<U> afterCreateCallback) {
+        this.afterCreateCallback = afterCreateCallback;
         return getThis();
     }
 

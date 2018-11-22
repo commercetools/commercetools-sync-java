@@ -75,6 +75,8 @@ public final class ProductSyncOptionsBuilder
             syncFilter,
             beforeUpdateCallback,
             beforeCreateCallback,
+            afterUpdateCallback,
+            afterCreateCallback,
             ensurePriceChannels
         );
     }

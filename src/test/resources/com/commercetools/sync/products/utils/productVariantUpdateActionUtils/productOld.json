@@ -1,5 +1,9 @@
 {
   "key": "productToSyncKey",
+  "productType": {
+    "typeId": "product-type",
+    "id": "cda0dbf7-b42e-40bf-8453-241d5b587f93"
+  },
   "masterData": {
     "staged": {
       "name": {

@@ -763,6 +763,53 @@ public class ProductTypeSyncIT {
         verify(spyProductTypeSyncOptions, never()).applyBeforeCreateCallBack(newProductTypeDraft);
     }
 
+    @Test
+    public void sync_afterCreate_ShouldCallAfterCreateCallback() {
+        final Optional<ProductType> productTypeBefore = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_2);
+        assertThat(productTypeBefore).isEmpty();
+
+        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
+            PRODUCT_TYPE_KEY_2,
+            PRODUCT_TYPE_NAME_2,
+            PRODUCT_TYPE_DESCRIPTION_2,
+            singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
+        );
+
+        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .build();
+
+        ProductTypeSyncOptions spyProductTypeSyncOptions = spy(productTypeSyncOptions);
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(spyProductTypeSyncOptions);
+
+        productTypeSync.sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
+
+        verify(spyProductTypeSyncOptions).applyAfterCreateCallBack(any());
+    }
+
+    @Test
+    public void sync_afterUpdate_ShouldCallAfterUpdateCallback() {
+        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
+            PRODUCT_TYPE_KEY_1,
+            PRODUCT_TYPE_NAME_2,
+            PRODUCT_TYPE_DESCRIPTION_2,
+            singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
+        );
+
+        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .build();
+
+        ProductTypeSyncOptions spyProductTypeSyncOptions = spy(productTypeSyncOptions);
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(spyProductTypeSyncOptions);
+
+        productTypeSync.sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
+
+        verify(spyProductTypeSyncOptions).applyAfterUpdateCallBack(any(), any());
+    }
+
     private static void assertAttributesAreEqual(@Nonnull final List<AttributeDefinition> attributes,
                                                  @Nonnull final List<AttributeDefinitionDraft> attributesDrafts) {
 

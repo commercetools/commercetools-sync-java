@@ -190,7 +190,10 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private CompletableFuture<Void> createAndUpdateProducts() {
         final CompletableFuture<Void> createRequestsStage =
             productService.createProducts(draftsToCreate)
-                          .thenAccept(createdProducts -> updateStatistics(createdProducts, draftsToCreate.size()))
+                          .thenAccept(createdProducts -> {
+                              createdProducts.forEach(syncOptions::applyAfterCreateCallBack);
+                              updateStatistics(createdProducts, draftsToCreate.size());
+                          })
                           .toCompletableFuture();
 
         final CompletableFuture<List<Optional<Product>>> updateRequestsStage =
@@ -256,6 +259,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                          });
                                  } else {
                                      statistics.incrementUpdated();
+                                     syncOptions.applyAfterUpdateCallBack(updatedProduct, updateActions);
                                      return CompletableFuture.completedFuture(Optional.of(updatedProduct));
                                  }
                              });

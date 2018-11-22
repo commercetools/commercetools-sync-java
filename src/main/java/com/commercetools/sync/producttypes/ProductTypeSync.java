@@ -213,7 +213,10 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         return syncOptions.applyBeforeCreateCallBack(productTypeDraft)
                 .map(productTypeService::createProductType)
                 .map(creationFuture -> creationFuture
-                        .thenAccept(createdProductType -> statistics.incrementCreated())
+                        .thenAccept(createdProductType -> {
+                            statistics.incrementCreated();
+                            syncOptions.applyAfterCreateCallBack(createdProductType);
+                        })
                         .exceptionally(exception -> {
                             final String errorMessage = format(CTP_PRODUCT_TYPE_CREATE_FAILED,
                                     productTypeDraft.getKey());
@@ -252,7 +255,10 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
         if (!updateActionsAfterCallback.isEmpty()) {
             return productTypeService.updateProductType(oldProductType, updateActionsAfterCallback)
-                    .thenAccept(updatedProductType -> statistics.incrementUpdated())
+                    .thenAccept(updatedProductType -> {
+                        statistics.incrementUpdated();
+                        syncOptions.applyAfterUpdateCallBack(updatedProductType, updateActionsAfterCallback);
+                    })
                     .exceptionally(exception -> {
                         final String errorMessage = format(CTP_PRODUCT_TYPE_UPDATE_FAILED, newProductType.getKey());
                         handleError(errorMessage, exception, 1);

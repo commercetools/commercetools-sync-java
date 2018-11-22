@@ -41,7 +41,9 @@ public final class ProductTypeSyncOptionsBuilder extends BaseSyncOptionsBuilder<
             warningCallback,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback
+            beforeCreateCallback,
+            afterUpdateCallback,
+            afterCreateCallback
         );
     }
 

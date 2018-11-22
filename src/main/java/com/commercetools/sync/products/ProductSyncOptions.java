@@ -28,9 +28,11 @@ public final class ProductSyncOptions extends BaseSyncOptions<Product, ProductDr
                        @Nullable final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product,
                            List<UpdateAction<Product>>> beforeUpdateCallback,
                        @Nullable final Function<ProductDraft, ProductDraft> beforeCreateCallback,
+                       @Nullable final BiConsumer<Product, List<UpdateAction<Product>>> afterUpdateCallback,
+                       @Nullable final Consumer<Product> afterCreateCallback,
                        boolean ensurePriceChannels) {
         super(ctpClient, errorCallBack, warningCallBack, batchSize, beforeUpdateCallback,
-            beforeCreateCallback);
+            beforeCreateCallback, afterUpdateCallback, afterCreateCallback);
         this.syncFilter = ofNullable(syncFilter).orElseGet(SyncFilter::of);
         this.ensurePriceChannels = ensurePriceChannels;
     }

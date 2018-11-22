@@ -7,6 +7,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,6 +45,8 @@ public class CategorySyncTest {
     private CategorySyncOptions categorySyncOptions;
     private List<String> errorCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
+    private Category item;
+    private List<UpdateAction<Category>> updateActions;
 
     /**
      * Initializes instances of  {@link CategorySyncOptions} and {@link CategorySync} which will be used by some
@@ -53,6 +56,8 @@ public class CategorySyncTest {
     public void setup() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
+        item = null;
+        updateActions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
         categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
                                                         .errorCallback((errorMessage, exception) -> {
@@ -354,4 +359,47 @@ public class CategorySyncTest {
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
+
+    @Test
+    public void sync_WithNoExistingCategory_ShouldCallAfterCreateCallback() {
+        categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
+            .afterCreateCallback((created) -> item = created)
+            .build();
+
+        final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
+        final CategoryService mockCategoryService = mockCategoryService(emptySet(), singleton(mockCategory));
+        final CategorySync mockCategorySync =
+            new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
+        final List<CategoryDraft> categoryDrafts = singletonList(
+            getMockCategoryDraft(Locale.ENGLISH, "name", "newKey", "parentKey", "customTypeId", new HashMap<>()));
+
+        mockCategorySync.sync(categoryDrafts).toCompletableFuture().join();
+
+        assertThat(item).isNotNull();
+        assertThat(updateActions).isEmpty();
+    }
+
+    @Test
+    public void sync_WithExistingCategory_ShouldCallAfterUpdateCallback() {
+        categorySyncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
+            .afterUpdateCallback((updated, actions) -> {
+                item = updated;
+                updateActions = actions;
+            })
+            .build();
+
+        final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
+        final CategoryService mockCategoryService =
+            mockCategoryService(singleton(mockCategory), emptySet(), mockCategory);
+        final CategorySync mockCategorySync =
+            new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
+        final List<CategoryDraft> categoryDrafts = singletonList(
+            getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey", "customTypeId", new HashMap<>()));
+
+        mockCategorySync.sync(categoryDrafts).toCompletableFuture().join();
+
+        assertThat(item).isNotNull();
+        assertThat(updateActions).isNotEmpty();
+    }
+
 }

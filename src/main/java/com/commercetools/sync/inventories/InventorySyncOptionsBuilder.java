@@ -63,7 +63,9 @@ public final class InventorySyncOptionsBuilder extends
             batchSize,
             ensureChannels,
             beforeUpdateCallback,
-            beforeCreateCallback);
+            beforeCreateCallback,
+            afterUpdateCallback,
+            afterCreateCallback);
     }
 
     /**

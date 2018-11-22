@@ -22,6 +22,8 @@ public class BaseSyncOptions<U, V> {
     private int batchSize;
     private final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
     private final Function<V, V> beforeCreateCallback;
+    private final BiConsumer<U, List<UpdateAction<U>>> afterUpdateCallback;
+    private final Consumer<U> afterCreateCallback;
 
     protected BaseSyncOptions(@Nonnull final SphereClient ctpClient,
                               @Nullable final BiConsumer<String, Throwable> errorCallBack,
@@ -29,13 +31,17 @@ public class BaseSyncOptions<U, V> {
                               final int batchSize,
                               @Nullable final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
                                   beforeUpdateCallback,
-                              @Nullable final Function<V, V> beforeCreateCallback) {
+                              @Nullable final Function<V, V> beforeCreateCallback,
+                              @Nullable final BiConsumer<U, List<UpdateAction<U>>> afterUpdateCallback,
+                              @Nullable final Consumer<U> afterCreateCallback) {
         this.ctpClient = ctpClient;
         this.errorCallBack = errorCallBack;
         this.batchSize = batchSize;
         this.warningCallBack = warningCallBack;
         this.beforeUpdateCallback = beforeUpdateCallback;
         this.beforeCreateCallback = beforeCreateCallback;
+        this.afterUpdateCallback = afterUpdateCallback;
+        this.afterCreateCallback = afterCreateCallback;
     }
 
     /**
@@ -197,4 +203,57 @@ public class BaseSyncOptions<U, V> {
         return ofNullable(
                 beforeCreateCallback != null ? beforeCreateCallback.apply(newResourceDraft) : newResourceDraft);
     }
+
+    /**
+     * Returns the {@code afterUpdateCallback} {@link BiConsumer}&lt;{@code U}, {@link List}&lt;{@link
+     * UpdateAction}&lt; {@code U}&gt;&gt;&gt; function set to {@code this} {@link BaseSyncOptions}.
+     * It represents the callback that is called after {@code U} was updated.
+     *
+     * @return the {@code afterUpdateCallback} {@link BiConsumer}&lt;{@code U}, {@link List}&lt;{@link
+     * UpdateAction}&lt; {@code U}&gt;&gt;&gt; function set to {@code this} {@link BaseSyncOptions}.
+     */
+    @Nullable
+    public BiConsumer<U, List<UpdateAction<U>>> getAfterUpdateCallback() {
+        return afterUpdateCallback;
+    }
+
+    /**
+     * Returns the {@code afterCreateCallback} {@link Consumer}&lt;{@code U}&gt; function set to {@code this}
+     * {@link BaseSyncOptions}. It represents the callback that is called after {@code U} was created.
+     *
+     * @return the {@code afterCreateCallback} {@link Consumer}&lt;{@code U}&gt; function set to {@code this}
+     * {@link BaseSyncOptions}.
+     */
+    @Nullable
+    public Consumer<U> getAfterCreateCallback() {
+        return afterCreateCallback;
+    }
+
+    /**
+     * Given an updated resource of the type {@code U} and {@link List} of {@link UpdateAction}, this method applies
+     * the {@code afterUpdateCallback} function which is set to {@code this} instance of the {@link BaseSyncOptions}.
+     * If the {@code afterUpdateCallback} is null, this method does nothing.
+     *
+     * @param updatedResource the updated resource.
+     * @param updateActions the list of update actions applied used to update resource.
+     */
+    public void applyAfterUpdateCallBack(@Nonnull final U updatedResource,
+        @Nonnull final List<UpdateAction<U>> updateActions) {
+        if (afterUpdateCallback != null) {
+            afterUpdateCallback.accept(updatedResource, updateActions);
+        }
+    }
+
+    /**
+     * Given a newly created resource of type {@code V} this method applies the {@code afterCreateCallback} function
+     * which is set to {@code this} instance of the {@link BaseSyncOptions}.
+     *
+     * @param createdResource the newly created resource.
+     */
+    public void applyAfterCreateCallBack(@Nonnull final U createdResource) {
+        if (afterCreateCallback != null) {
+            afterCreateCallback.accept(createdResource);
+        }
+    }
+
 }

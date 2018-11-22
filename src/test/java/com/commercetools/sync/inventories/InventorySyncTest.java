@@ -7,6 +7,7 @@ import com.commercetools.sync.services.InventoryService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
@@ -73,6 +74,8 @@ public class InventorySyncTest {
     private List<InventoryEntry> existingInventories;
     private List<String> errorCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
+    private InventoryEntry item;
+    private List<UpdateAction<InventoryEntry>> updateActions;
 
     /**
      * Initialises test data.
@@ -109,6 +112,8 @@ public class InventorySyncTest {
 
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
+        item = null;
+        updateActions = new ArrayList<>();
     }
 
     @Test
@@ -419,6 +424,70 @@ public class InventorySyncTest {
         assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process null inventory draft.");
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
+    }
+
+    @Test
+    public void syncDrafts_WithNewSupplyChannelAndEnsure_ShouldCallAfterCreateCallback() {
+        final InventorySyncOptions options = InventorySyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .batchSize(3)
+            .ensureChannels(true)
+            .afterCreateCallback((created) -> item = created)
+            .build();
+
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+
+        final ChannelService channelService = getMockChannelService(
+            getMockSupplyChannel(REF_3, KEY_3));
+        when(channelService.fetchCachedChannelId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
+        final InventoryEntryDraft newInventoryDraft = InventoryEntryDraft
+            .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_3));
+        final InventorySync inventorySync = new InventorySync(options, inventoryService,
+            channelService,
+            mock(TypeService.class));
+
+        inventorySync.sync(singletonList(newInventoryDraft))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(item).isNotNull();
+        assertThat(updateActions).isEmpty();
+    }
+
+    @Test
+    public void syncDrafts_WithNewSupplyChannelAndEnsure_ShouldCallAfterUpdateCallback() {
+        final InventorySyncOptions options = InventorySyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .batchSize(3)
+            .ensureChannels(false)
+            .afterUpdateCallback((updated, actions) -> {
+                item = updated;
+                updateActions = actions;
+            })
+            .build();
+
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+
+        final ChannelService channelService = getMockChannelService(
+            getMockSupplyChannel(REF_3, KEY_3));
+        when(inventoryService.fetchInventoryEntriesBySkus(singleton(SKU_1)))
+            .thenReturn(getCompletionStageWithException());
+
+        final InventorySync inventorySync = new InventorySync(options, inventoryService,
+            channelService,
+            mock(TypeService.class));
+
+        inventorySync.sync(Collections.singletonList(
+            InventoryEntryDraft.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, null)
+        )).toCompletableFuture().join();
+
+        //assertThat(stats).hasValues(9, 5, 1, 3);
+        assertThat(item).isNotNull();
+        assertThat(updateActions).isNotEmpty();
     }
 
     private InventorySync getInventorySync(int batchSize, boolean ensureChannels) {

@@ -29,6 +29,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
@@ -350,6 +351,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param createdCategories the set of created categories that needs to be processed.
      */
     private void processCreatedCategories(@Nonnull final Set<Category> createdCategories) {
+        createdCategories.forEach(syncOptions::applyAfterCreateCallBack);
+
         final int numberOfFailedCategories = newCategoryDrafts.size() - createdCategories.size();
         statistics.incrementFailed(numberOfFailedCategories);
 
@@ -553,8 +556,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                                  @Nonnull final List<UpdateAction<Category>> updateActions) {
         final String categoryKey = category.getKey();
         return categoryService.updateCategory(category, updateActions)
-                              .handle((updatedCategory, sphereException) -> sphereException)
-                              .thenCompose(sphereException -> {
+                              .handle(ImmutablePair::new)
+                              .thenCompose(updateResponse -> {
+                                  final Category updatedCategory = updateResponse.getKey();
+                                  final Throwable sphereException = updateResponse.getValue();
                                   if (sphereException != null) {
                                       return executeSupplierIfConcurrentModificationException(
                                           sphereException,
@@ -568,6 +573,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                               return CompletableFuture.completedFuture(null);
                                           });
                                   } else {
+                                      syncOptions.applyAfterUpdateCallBack(updatedCategory, updateActions);
                                       if (!processedCategoryKeys.contains(categoryKey)) {
                                           statistics.incrementUpdated();
                                           processedCategoryKeys.add(categoryKey);

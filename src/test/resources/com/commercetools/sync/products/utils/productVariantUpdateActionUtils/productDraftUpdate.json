@@ -1,0 +1,32 @@
+{
+  "key": "productToSyncKey",
+  "masterVariant": {
+    "id": 1,
+    "key": "var-1-key",
+    "sku": "var-1-sku",
+    "prices": [
+    ],
+    "images": [
+      {
+        "url": "https://xxx.ggg/1.png"
+      }
+    ],
+    "attributes": [
+      {
+        "name": "priceInfo",
+        "value": "64,90/kg"
+      },
+      {
+        "name": "size",
+        "value": "ca. 1 x 1000 g"
+      }
+    ],
+    "assets": []
+  },
+  "categories": [],
+  "productType": {
+    "id": "cda0dbf7-b42e-40bf-8453-241d5b587f93",
+    "key": "testProductType"
+  },
+  "variants": []
+}
