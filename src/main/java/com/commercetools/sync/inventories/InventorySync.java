@@ -111,17 +111,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             });
     }
 
-    @Override
-    protected CompletionStage<InventorySyncStatistics> syncBatches(
-        @Nonnull final List<List<InventoryEntryDraft>> batches,
-        @Nonnull final CompletionStage<InventorySyncStatistics> result) {
-        if (batches.isEmpty()) {
-            return result;
-        }
-        final List<InventoryEntryDraft> firstBatch = batches.remove(0);
-        return syncBatches(batches, result.thenCompose(subResult -> processBatch(firstBatch)));
-    }
-
     /**
      * Checks if a draft is valid for further processing. If so, then returns {@code true}. Otherwise handles an error
      * and returns {@code false}. A valid draft is a {@link InventoryEntryDraft} object that is not {@code null} and its

@@ -83,8 +83,14 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
      *      {@link BaseSyncStatistics} representing the {@code statistics} of the sync process executed on the
      *      given list of batches.
      */
-    protected abstract CompletionStage<U> syncBatches(@Nonnull final List<List<T>> batches,
-                                                      @Nonnull final CompletionStage<U> result);
+    protected CompletionStage<U> syncBatches(@Nonnull final List<List<T>> batches,
+                                                      @Nonnull final CompletionStage<U> result) {
+        if (batches.isEmpty()) {
+            return result;
+        }
+        final List<T> firstBatch = batches.remove(0);
+        return syncBatches(batches, result.thenCompose(subResult -> processBatch(firstBatch)));
+    }
 
     protected abstract CompletionStage<U> processBatch(@Nonnull final List<T> batch);
 
