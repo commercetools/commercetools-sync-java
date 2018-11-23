@@ -71,19 +71,6 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
         return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
 
-    @Override
-    protected CompletionStage<TypeSyncStatistics> syncBatches(
-            @Nonnull final List<List<TypeDraft>> batches,
-            @Nonnull final CompletionStage<TypeSyncStatistics> result) {
-
-        if (batches.isEmpty()) {
-            return result;
-        }
-
-        final List<TypeDraft> firstBatch = batches.remove(0);
-        return syncBatches(batches, result.thenCompose(subResult -> processBatch(firstBatch)));
-    }
-
     /**
      * Fetches existing {@link Type} objects from CTP project that correspond to passed {@code batch}.
      * Having existing types fetched, {@code batch} is compared and synced with fetched objects by
