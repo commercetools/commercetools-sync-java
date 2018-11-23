@@ -51,24 +51,24 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-<!--
 
 ### v1.0.0-M15 -  Oct 20, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...v1.0.0-M15) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M15/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M15)
 
-**New Features** (8)
+**New Features** (9)
 - **Commons** - Added `OptionalUtils#filterEmptyOptionals` which are utility methods that filter out the 
 empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
 optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255) 
 - **Type Sync** - Support for syncing types. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300) For more info how to use it please refer to [Type usage doc](/docs/usage/TYPE_SYNC.md). 
 - **Type Sync** - Exposed `TypeSyncUtils#buildActions` which calculates all needed update actions after comparing a `Type` and a `TypeDraft`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 - **Type Sync** - Exposed `TypeUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `Type` and a `TypeDraft`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
-- **Type Sync** - Exposed `LocalizedEnumUpdateActionUtils` which contains utils for calculating needed update actions after comparing two lists of `LocalizedEnumValue`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
-- **Type Sync** - Exposed `PlainEnumUpdateActionUtils` which contains utils for calculating needed update actions after comparing two lists of `EnumValue`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
+- **Type Sync** - Exposed `LocalizedEnumValueUpdateActionUtils` which contains utils for calculating needed update actions after comparing two lists of `LocalizedEnumValue`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
+- **Type Sync** - Exposed `PlainEnumValueUpdateActionUtils` which contains utils for calculating needed update actions after comparing two lists of `EnumValue`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 - **Type Sync** - Exposed `FieldDefinitionsUpdateActionUtils` which contains utils for calculating needed update actions after comparing a list of `FieldDefinition`s and a list of `FieldDefinition`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 - **Type Sync** - Exposed `FieldDefinitionUpdateActionUtils` which contains utils for calculating needed update actions after comparing a `FieldDefinition` and a `FieldDefinition`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
+- **Commons** - Exposed `EnumValuesUpdateActionUtils` which contains generic utilities for calculating needed update actions after comparing two lists of `EnumValue`s or `LocalizedEnumValue`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 
 **Enhancements** (4)
 - **Commons** - Bumped commercetools-jvm-sdk to version [1.35.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_35_0).
@@ -81,7 +81,7 @@ optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issue
 - **Category Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
 - **Inventory Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
 
-**Breaking Changes** (9)
+**Breaking Changes** (11)
 - **Product Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 - **Category Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 - **Inventory Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
@@ -90,14 +90,11 @@ optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issue
 Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - `AttributeDefinitionUpdateActionUtils` is now meant to be **only used internally** by the library. 
 Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - `EnumsUpdateActionUtils` is now meant to be **only used internally** by the library. 
-Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - Renamed `ProductTypeUpdateLocalizedEnumActionUtils` to `LocalizedEnumsUpdateActionUtils.` [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - Renamed `ProductTypeUpdatePlainEnumActionUtils` to `PlainEnumsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - Renamed `LocalizedEnumUpdateActionsUtils` to `LocalizedEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - Renamed `PlainEnumUpdateActionsUtils` to `PlainEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-
--->
+- **ProductType Sync** - `EnumsUpdateActionUtils` is now removed. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
+- **ProductType Sync** - `ProductTypeUpdateLocalizedEnumActionUtils` is now removed. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
+- **ProductType Sync** - `ProductTypeUpdatePlainEnumActionUtils` is now removed. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
+- **ProductType Sync** - Renamed `LocalizedEnumUpdateActionsUtils` to `LocalizedEnumValueUpdateActionUtils`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
+- **ProductType Sync** - Renamed `PlainEnumUpdateActionsUtils` to `PlainEnumValueUpdateActionUtils`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 
 
 ### v1.0.0-M14 -  Oct 5, 2018
