@@ -63,6 +63,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
@@ -598,7 +599,7 @@ public class TypeSyncIT {
                 .toCompletableFuture().join();
 
         verify(spyTypeSyncOptions)
-                .applyErrorCallback(eq("Failed to update type of key 'key_1'."), any());
+                .applyErrorCallback(startsWith("Failed to update type with key: 'key_1'."), any());
 
         AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
@@ -789,7 +790,10 @@ public class TypeSyncIT {
         assertThat(errors).hasSize(1);
 
         assertThat(errors.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorMessages.get(0)).contains(format("Failed to update type of key '%s'.", typeDraft.getKey()));
+
+        assertThat(errorMessages.get(0))
+            .contains(format("Failed to update type with key: '%s'. Reason: %s",
+                typeDraft.getKey(), errors.get(0)));
     }
 
     @Test
@@ -830,6 +834,59 @@ public class TypeSyncIT {
         AssertionsForStatistics.assertThat(statistics).hasValues(1, 0, 1, 0);
         assertThat(errorMessages).isEmpty();
         assertThat(errors).isEmpty();
+    }
+
+    @Test
+    public void sync_WithChangedTypeButBadGatewayException_ShouldFailToReFetchAndUpdate() {
+        // Mock sphere client to return ConcurrentModification on the first update request.
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        when(spyClient.execute(any(TypeUpdateCommand.class)))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(
+                new Exception("concurrency modification issue on test", new ConcurrentModificationException())))
+            .thenCallRealMethod();
+
+        when(spyClient.execute(any(TypeQuery.class)))
+            .thenCallRealMethod() // fetchMatchingTypesByKeys
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> errors = new ArrayList<>();
+
+        final TypeSyncOptions typeSyncOptions =
+            TypeSyncOptionsBuilder.of(spyClient)
+                                  .errorCallback((errorMessage, error) -> {
+                                      errorMessages.add(errorMessage);
+                                      errors.add(error);
+                                  })
+                                  .build();
+
+        final TypeDraft typeDraft = TypeDraftBuilder.of(
+            TYPE_KEY_1,
+            TYPE_NAME_2,
+            ResourceTypeIdsSetBuilder.of().addCategories().build())
+                                                    .description(TYPE_DESCRIPTION_2)
+                                                    .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
+                                                    .build();
+
+        final TypeSync typeSync = new TypeSync(typeSyncOptions);
+        final TypeSyncStatistics statistics = typeSync.sync(Collections.singletonList(typeDraft))
+                                                      .toCompletableFuture()
+                                                      .join();
+
+        // Test and assertion
+        AssertionsForStatistics.assertThat(statistics).hasValues(1, 0, 0, 1);
+        assertThat(errorMessages).hasSize(2);
+        assertThat(errors).hasSize(2);
+
+        assertThat(errors.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorMessages.get(0))
+            .contains(format("Failed to fetch types with keys: '%s'. Reason: %s",
+                typeDraft.getKey(), errors.get(0)));
+
+        assertThat(errorMessages.get(1))
+            .contains(format("Failed to update type with key: '%s'. Reason: Failed to fetch type on retry.",
+                typeDraft.getKey()));
     }
 
 }

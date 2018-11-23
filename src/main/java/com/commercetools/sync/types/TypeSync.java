@@ -35,7 +35,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOptions> {
 
     private static final String CTP_TYPE_FETCH_FAILED = "Failed to fetch existing types of keys '%s'.";
-    private static final String CTP_TYPE_UPDATE_FAILED = "Failed to update type of key '%s'.";
+    private static final String CTP_TYPE_UPDATE_FAILED = "Failed to update type with key: '%s'. Reason: %s" ;
     private static final String CTP_TYPE_CREATE_FAILED = "Failed to create type of key '%s'.";
     private static final String TYPE_DRAFT_HAS_NO_KEY = "Failed to process type draft without key.";
     private static final String TYPE_DRAFT_IS_NULL = "Failed to process null type draft.";
@@ -254,7 +254,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
                                           () -> fetchAndUpdate(oldType, newType),
                                           () -> {
                                               final String errorMessage = format(CTP_TYPE_UPDATE_FAILED,
-                                                  newType.getKey());
+                                                  newType.getKey(), sphereException);
                                               handleError(errorMessage, sphereException, 1);
 
                                               return completedFuture(null);
