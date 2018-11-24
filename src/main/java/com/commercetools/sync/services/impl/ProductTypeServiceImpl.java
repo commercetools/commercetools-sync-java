@@ -29,15 +29,12 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 
-public class ProductTypeServiceImpl implements ProductTypeService {
+public class ProductTypeServiceImpl extends BaseService<ProductType, ProductTypeDraft> implements ProductTypeService {
     private static final String FETCH_FAILED = "Failed to fetch product types with keys: '%s'. Reason: %s";
-    private final BaseSyncOptions syncOptions;
-    private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
-    private boolean isCached = false;
     private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData = new ConcurrentHashMap<>();
 
     public ProductTypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
-        this.syncOptions = syncOptions;
+        super(syncOptions);
     }
 
     @Nonnull
@@ -121,9 +118,9 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     @Nonnull
     @Override
     public CompletionStage<ProductType> updateProductType(
-            @Nonnull final ProductType productType, @Nonnull final List<UpdateAction<ProductType>> updateActions) {
-
-        return syncOptions.getCtpClient().execute(ProductTypeUpdateCommand.of(productType, updateActions));
+            @Nonnull final ProductType productType,
+            @Nonnull final List<UpdateAction<ProductType>> updateActions) {
+        return updateResource(productType, ProductTypeUpdateCommand::of, updateActions);
     }
 
     private CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
