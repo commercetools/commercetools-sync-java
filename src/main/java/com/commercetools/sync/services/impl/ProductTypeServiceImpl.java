@@ -15,6 +15,7 @@ import io.sphere.sdk.queries.QueryExecutionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ProductTypeServiceImpl extends BaseService<ProductType, BaseSyncOptions> implements ProductTypeService {
 
@@ -136,5 +138,27 @@ public class ProductTypeServiceImpl extends BaseService<ProductType, BaseSyncOpt
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
                 .thenApply(result ->
                         Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Optional<ProductType>> fetchProductType(@Nullable final String key) {
+        if (isBlank(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+
+        return syncOptions.getCtpClient()
+                .execute(ProductTypeQuery.of().plusPredicates(queryModel -> queryModel.key().is(key)))
+                .thenApply(productTypePagedQueryResult -> {
+
+                    final Optional<ProductType> productTypeOptional = productTypePagedQueryResult.head();
+                    productTypeOptional.ifPresent(productType ->
+                            keyToIdCache.putIfAbsent(productType.getKey(), productType.getId()));
+                    return productTypeOptional;
+                })
+                .exceptionally(sphereException -> {
+                    syncOptions.applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
+                    return Optional.empty();
+                });
     }
 }
