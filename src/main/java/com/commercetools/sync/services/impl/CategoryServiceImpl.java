@@ -126,9 +126,8 @@ public final class CategoryServiceImpl extends BaseService<Category, CategorySyn
     @Override
     public CompletionStage<Optional<Category>> createCategory(@Nonnull final CategoryDraft categoryDraft) {
         final String draftKey = categoryDraft.getKey();
-        if (isNotBlank(draftKey)) {
-            syncOptions.applyErrorCallback(
-                    format(CREATE_FAILED, draftKey, "Draft key is blank!"));
+        if (isBlank(draftKey)) {
+            syncOptions.applyErrorCallback(format(CREATE_FAILED, draftKey, "Draft key is blank!"));
             return CompletableFuture.completedFuture(Optional.empty());
         } else {
             return syncOptions

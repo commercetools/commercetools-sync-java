@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 
 public class ProductServiceImpl extends BaseService<Product, ProductSyncOptions> implements ProductService {
@@ -144,9 +143,8 @@ public class ProductServiceImpl extends BaseService<Product, ProductSyncOptions>
     public CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
 
         final String draftKey = productDraft.getKey();
-        if (isNotBlank(draftKey)) {
-            syncOptions.applyErrorCallback(
-                    format(CREATE_FAILED, draftKey, "Draft key is blank!"));
+        if (isBlank(draftKey)) {
+            syncOptions.applyErrorCallback(format(CREATE_FAILED, draftKey, "Draft key is blank!"));
             return CompletableFuture.completedFuture(Optional.empty());
         } else {
             return syncOptions
