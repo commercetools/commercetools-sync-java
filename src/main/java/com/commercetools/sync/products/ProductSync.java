@@ -207,13 +207,18 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                                                                            oldProduct,
                                                                                        @Nonnull final ProductDraft
                                                                                            newProduct) {
+
         return productTypeService.fetchCachedProductAttributeMetaDataMap(oldProduct.getProductType().getId())
                 .thenCompose(optionalAttributesMetaDataMap ->
                         optionalAttributesMetaDataMap.map(attributeMetaDataMap -> {
                             final List<UpdateAction<Product>> updateActions =
                                     buildActions(oldProduct, newProduct, syncOptions, attributeMetaDataMap);
-                            if (!updateActions.isEmpty()) {
-                                return updateProduct(oldProduct, newProduct, updateActions);
+
+                            final List<UpdateAction<Product>> beforeUpdateCallBackApplied =
+                                    syncOptions.applyBeforeUpdateCallBack(updateActions, newProduct, oldProduct);
+
+                            if (!beforeUpdateCallBackApplied.isEmpty()) {
+                                return updateProduct(oldProduct, newProduct, beforeUpdateCallBackApplied);
                             }
                             return CompletableFuture.completedFuture(Optional.of(oldProduct));
                         }).orElseGet(() -> {

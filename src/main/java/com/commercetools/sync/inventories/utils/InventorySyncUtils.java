@@ -51,7 +51,8 @@ public final class InventorySyncUtils {
 
         actions.addAll(buildPrimaryResourceCustomUpdateActions(oldEntry, newEntry, inventoryCustomActionBuilder,
             syncOptions));
-        return syncOptions.applyBeforeUpdateCallBack(actions, newEntry, oldEntry);
+
+        return actions;
     }
 
     private InventorySyncUtils() { }

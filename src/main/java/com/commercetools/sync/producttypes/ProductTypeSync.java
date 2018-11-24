@@ -231,11 +231,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
         final List<UpdateAction<ProductType>> updateActions = buildActions(oldProductType, newProductType, syncOptions);
 
-        final List<UpdateAction<ProductType>> updateActionsAfterCallback = syncOptions.applyBeforeUpdateCallBack(
-            updateActions,
-            newProductType,
-            oldProductType
-        );
+        final List<UpdateAction<ProductType>> updateActionsAfterCallback =
+                syncOptions.applyBeforeUpdateCallBack(updateActions, newProductType, oldProductType);
 
         if (!updateActionsAfterCallback.isEmpty()) {
             return productTypeService.updateProductType(oldProductType, updateActionsAfterCallback)

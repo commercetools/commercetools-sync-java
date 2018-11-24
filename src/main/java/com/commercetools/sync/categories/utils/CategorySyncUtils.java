@@ -68,7 +68,7 @@ public final class CategorySyncUtils {
         updateActions.addAll(categoryCustomUpdateActions);
         updateActions.addAll(assetsUpdateActions);
 
-        return syncOptions.applyBeforeUpdateCallBack(updateActions, newCategory, oldCategory);
+        return updateActions;
     }
 
     private CategorySyncUtils() {
