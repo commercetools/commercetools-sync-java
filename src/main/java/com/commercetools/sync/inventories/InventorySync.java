@@ -102,7 +102,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 .range(0, calculateNumberOfBatches(validInventories.size()))
                 .mapToObj(batchIndex -> getBatch(batchIndex, validInventories))
                 .map(this::processBatch)
-                .map(CompletionStage::toCompletableFuture).toArray(CompletableFuture[]::new))
+                .map(CompletionStage::toCompletableFuture)
+                .toArray(CompletableFuture[]::new))
             .thenApply(v -> {
                 statistics.incrementProcessed(inventories.size());
                 return statistics;
