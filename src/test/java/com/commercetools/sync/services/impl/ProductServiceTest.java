@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletionException;
 
 import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
@@ -55,6 +56,7 @@ public class ProductServiceTest {
     public void createProduct_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
+        when(mock.getKey()).thenReturn("productKey");
 
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
 
@@ -82,7 +84,8 @@ public class ProductServiceTest {
         assertThat(productOptional).isEmpty();
         assertThat(errorMessages).hasSize(1);
         assertThat(errorExceptions).hasSize(1);
-        assertThat(errorExceptions.get(0)).isExactlyInstanceOf(BadRequestException.class);
+        assertThat(errorExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
+        assertThat(errorExceptions.get(0)).hasCauseExactlyInstanceOf(BadRequestException.class);
         assertThat(errorMessages.get(0)).contains("Failed to create draft with key: 'productKey'.");
         assertThat(errorMessages.get(0)).contains("BadRequestException");
     }
