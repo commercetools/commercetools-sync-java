@@ -9,7 +9,14 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
 
+/**
+ * @param <T> Resource Draft (e.g. {@link io.sphere.sdk.products.ProductDraft},
+ *             {@link io.sphere.sdk.categories.CategoryDraft}, etc..
+ * @param <U> Subclass of {@link BaseSyncStatistics}
+ * @param <V> Subclass of {@link BaseSyncOptions}
+ */
 public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSyncOptions> {
+
     protected final U statistics;
     protected final V syncOptions;
 
@@ -115,6 +122,7 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
         @Nonnull final Throwable sphereException,
         @Nonnull final Supplier<S> onConcurrentModificationSupplier,
         @Nonnull final Supplier<S> onOtherExceptionSupplier) {
+
         final Throwable completionExceptionCause = sphereException.getCause();
         if (completionExceptionCause instanceof ConcurrentModificationException) {
             return onConcurrentModificationSupplier.get();
