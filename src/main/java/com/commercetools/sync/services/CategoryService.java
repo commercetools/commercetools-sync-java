@@ -50,17 +50,6 @@ public interface CategoryService {
     CompletionStage<Optional<Category>> fetchCategory(@Nullable final String key);
 
     /**
-     * Given a {@link Set} of categoryDrafts, this method creates Categories corresponding to them in the CTP project
-     * defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}.
-     *
-     * @param categoryDrafts set of categoryDrafts to create on the CTP project.
-     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a {@link Set}
-     *          of all created categories.
-     */
-    @Nonnull
-    CompletionStage<Set<Category>> createCategories(@Nonnull final Set<CategoryDraft> categoryDrafts);
-
-    /**
      * Given a {@code key}, this method first checks if cached map of category keys -&gt; ids is not empty.
      * If not, it returns a completed future that contains an optional that contains what this key maps to in
      * the cache. If the cache is empty, the method populates the cache with the mapping of all categories' keys

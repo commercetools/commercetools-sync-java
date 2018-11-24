@@ -50,6 +50,7 @@ import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.stream.Collectors.toList;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
+
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
     private static final String UNEXPECTED_DELETE = "Product with key: '%s' was deleted unexpectedly.";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
@@ -178,14 +179,29 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     @Nonnull
     private CompletableFuture<Void> createAndUpdateProducts() {
         final CompletableFuture<Void> createRequestsStage =
-            productService.createProducts(draftsToCreate)
-                          .thenAccept(createdProducts -> updateStatistics(createdProducts, draftsToCreate.size()))
-                          .toCompletableFuture();
+                createProducts(draftsToCreate)
+                        .thenAccept(createdProducts -> updateStatistics(createdProducts, draftsToCreate.size()))
+                        .toCompletableFuture();
 
         final CompletableFuture<List<Optional<Product>>> updateRequestsStage =
             syncProducts(productsToSync).toCompletableFuture();
 
         return allOf(createRequestsStage, updateRequestsStage);
+    }
+
+    @Nonnull
+    private CompletionStage<Set<Product>> createProducts(@Nonnull final Set<ProductDraft> productsDrafts) {
+        return mapValuesToFutureOfCompletedValues(productsDrafts, this::applyCallbackAndCreate)
+                .thenApply(results -> results.filter(Optional::isPresent).map(Optional::get))
+                .thenApply(createdProducts -> createdProducts.collect(Collectors.toSet()));
+    }
+
+    @Nonnull
+    private CompletionStage<Optional<Product>> applyCallbackAndCreate(@Nonnull final ProductDraft productDraft) {
+        return syncOptions
+                .applyBeforeCreateCallBack(productDraft)
+                .map(productService::createProduct)
+                .orElse(CompletableFuture.completedFuture(Optional.empty()));
     }
 
     private void updateStatistics(@Nonnull final Set<Product> createdProducts,

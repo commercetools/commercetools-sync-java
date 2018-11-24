@@ -80,8 +80,6 @@ public class MockUtils {
         final Map<String, String> keyToIds =
             existingCategories.stream().collect(Collectors.toMap(Category::getKey, Category::getId));
         when(mockCategoryService.cacheKeysToIds()).thenReturn(completedFuture(keyToIds));
-
-        when(mockCategoryService.createCategories(any())).thenReturn(completedFuture(createdCategories));
         return mockCategoryService;
     }
 

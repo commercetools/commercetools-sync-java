@@ -11,7 +11,6 @@ import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.queries.PagedResult;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,7 +25,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -58,7 +56,7 @@ public final class CategoryServiceImpl extends BaseService<Category, CategorySyn
             categoriesPage.forEach(category -> {
                 final String key = category.getKey();
                 final String id = category.getId();
-                if (StringUtils.isNotBlank(key)) {
+                if (isNotBlank(key)) {
                     keyToIdCache.put(key, id);
                 } else {
                     syncOptions.applyWarningCallback(format(CATEGORY_KEY_NOT_SET, id));
@@ -112,14 +110,6 @@ public final class CategoryServiceImpl extends BaseService<Category, CategorySyn
 
     @Nonnull
     @Override
-    public CompletionStage<Set<Category>> createCategories(@Nonnull final Set<CategoryDraft> categoryDrafts) {
-        return mapValuesToFutureOfCompletedValues(categoryDrafts, this::createCategory)
-            .thenApply(results -> results.filter(Optional::isPresent).map(Optional::get))
-            .thenApply(createdCategories -> createdCategories.collect(Collectors.toSet()));
-    }
-
-    @Nonnull
-    @Override
     public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String key) {
         if (isCached) {
             return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
@@ -135,7 +125,6 @@ public final class CategoryServiceImpl extends BaseService<Category, CategorySyn
     @Nonnull
     @Override
     public CompletionStage<Optional<Category>> createCategory(@Nonnull final CategoryDraft categoryDraft) {
-
         final String draftKey = categoryDraft.getKey();
         if (isNotBlank(draftKey)) {
             syncOptions.applyErrorCallback(

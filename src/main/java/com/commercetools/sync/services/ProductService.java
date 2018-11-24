@@ -73,17 +73,6 @@ public interface ProductService {
     CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key);
 
     /**
-     * Given a {@link Set} of productsDrafts, this method creates Products corresponding to them in the CTP project
-     * defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}.
-     *
-     * @param productsDrafts set of productsDrafts to create on the CTP project.
-     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a {@link Set}
-     *          of all created products.
-     */
-    @Nonnull
-    CompletionStage<Set<Product>> createProducts(@Nonnull final Set<ProductDraft> productsDrafts);
-
-    /**
      * Given a {@link ProductDraft}, this method creates a {@link Product} based on it in the CTP project defined in
      * a potentially injected {@link io.sphere.sdk.client.SphereClient}. The created product's id and key are also
      * cached. This method returns {@link CompletionStage}&lt;{@link Product}&gt; in which the result of it's
