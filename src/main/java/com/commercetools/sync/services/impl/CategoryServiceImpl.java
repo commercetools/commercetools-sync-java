@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * Implementation of CategoryService interface.
@@ -38,6 +39,7 @@ public final class CategoryServiceImpl extends BaseService<Category, CategorySyn
         implements CategoryService {
 
     private static final String FETCH_FAILED = "Failed to fetch Categories with keys: '%s'. Reason: %s";
+    private static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
         + "category matching.";
 
@@ -133,7 +135,26 @@ public final class CategoryServiceImpl extends BaseService<Category, CategorySyn
     @Nonnull
     @Override
     public CompletionStage<Optional<Category>> createCategory(@Nonnull final CategoryDraft categoryDraft) {
-        return applyCallbackAndCreate(categoryDraft, categoryDraft.getKey(), CategoryCreateCommand::of);
+
+        final String draftKey = categoryDraft.getKey();
+        if (isNotBlank(draftKey)) {
+            syncOptions.applyErrorCallback(
+                    format(CREATE_FAILED, draftKey, "Draft key is blank!"));
+            return CompletableFuture.completedFuture(Optional.empty());
+        } else {
+            return syncOptions
+                    .getCtpClient()
+                    .execute(CategoryCreateCommand.of(categoryDraft))
+                    .thenApply(category -> {
+                        keyToIdCache.put(category.getKey(), category.getId());
+                        return Optional.of(category);
+                    })
+                    .exceptionally(sphereException -> {
+                        syncOptions.applyErrorCallback(
+                                format(CREATE_FAILED, draftKey, sphereException), sphereException);
+                        return Optional.empty();
+                    });
+        }
     }
 
     @Nonnull
