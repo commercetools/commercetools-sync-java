@@ -8,8 +8,6 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
-import io.sphere.sdk.products.commands.updateactions.Publish;
-import io.sphere.sdk.products.commands.updateactions.RevertStagedChanges;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.queries.QueryPredicate;
 import org.apache.commons.lang3.StringUtils;
@@ -158,17 +156,5 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
     public CompletionStage<Product> updateProduct(@Nonnull final Product product,
                                                   @Nonnull final List<UpdateAction<Product>> updateActions) {
         return updateResource(product, ProductUpdateCommand::of, updateActions);
-    }
-
-    @Nonnull
-    @Override
-    public CompletionStage<Product> publishProduct(@Nonnull final Product product) {
-        return syncOptions.getCtpClient().execute(ProductUpdateCommand.of(product, Publish.of()));
-    }
-
-    @Nonnull
-    @Override
-    public CompletionStage<Product> revertProduct(@Nonnull final Product product) {
-        return syncOptions.getCtpClient().execute(ProductUpdateCommand.of(product, RevertStagedChanges.of()));
     }
 }
