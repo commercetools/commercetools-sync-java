@@ -29,7 +29,8 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 
-public class ProductTypeServiceImpl extends BaseService<ProductType, ProductTypeDraft> implements ProductTypeService {
+public class ProductTypeServiceImpl extends BaseService<ProductType, BaseSyncOptions> implements ProductTypeService {
+
     private static final String FETCH_FAILED = "Failed to fetch product types with keys: '%s'. Reason: %s";
     private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData = new ConcurrentHashMap<>();
 

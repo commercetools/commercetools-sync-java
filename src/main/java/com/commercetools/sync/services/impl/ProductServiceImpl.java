@@ -30,7 +30,8 @@ import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 
-public class ProductServiceImpl extends BaseService<Product, ProductDraft> implements ProductService {
+public class ProductServiceImpl extends BaseService<Product, ProductSyncOptions> implements ProductService {
+
     private static final String FETCH_FAILED = "Failed to fetch products with keys: '%s'. Reason: %s";
 
     public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {

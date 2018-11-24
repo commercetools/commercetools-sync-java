@@ -17,17 +17,17 @@ import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 
 /**
  * @param <U> Resource (e.g. {@link io.sphere.sdk.products.Product}, {@link io.sphere.sdk.categories.Category}, etc..
- * @param <V> Resource Draft (e.g. {@link io.sphere.sdk.products.ProductDraft},
- *            {@link io.sphere.sdk.categories.CategoryDraft}, etc..
+ * @param <S> Subclass of {@link BaseSyncOptions}
  */
-class BaseService<U extends Resource<U>, V> {
-    final BaseSyncOptions<U, V> syncOptions;
+class BaseService<U extends Resource<U>, S extends BaseSyncOptions> {
+
+    final S syncOptions;
     boolean isCached = false;
     final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
     private static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;
 
-    BaseService(@Nonnull final BaseSyncOptions<U, V> syncOptions) {
+    BaseService(@Nonnull final S syncOptions) {
         this.syncOptions = syncOptions;
     }
 
