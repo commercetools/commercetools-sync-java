@@ -25,6 +25,7 @@ import io.sphere.sdk.models.AssetSourceBuilder;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -137,6 +138,7 @@ public class CategorySyncUtilsTest {
             AddAsset.of(ASSET_DRAFTS.get(1), 1));
     }
 
+    @Ignore("TODO: MAKE AS IT")
     @Test
     public void buildActions_FromDraftsWithMultipleDifferentValuesWithFilterFunction_ShouldBuildFilteredActions() {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder

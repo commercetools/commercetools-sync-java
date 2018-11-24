@@ -41,6 +41,7 @@ import io.sphere.sdk.search.SearchKeyword;
 import io.sphere.sdk.search.SearchKeywords;
 import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -221,6 +222,7 @@ public class ProductSyncUtilsTest {
         );
     }
 
+    @Ignore("TODO: MAKE AS IT")
     @Test
     public void buildActions_FromDraftsWithMultipleDifferentValuesWithFilterFunction_ShouldBuildFilteredActions() {
         final ProductDraft newProductDraft =
