@@ -44,6 +44,26 @@ public final class CategoryServiceImpl extends BaseService<CategoryDraft, Catego
         super(syncOptions);
     }
 
+
+    @Nonnull
+    @Override
+    public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nullable final String key) {
+        if (isBlank(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+
+        if (keyToIdCache.containsKey(key)) {
+            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
+        }
+        return fetchAndCache(key);
+    }
+
+    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
+        return cacheKeysToIds()
+                .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
+    }
+
+
     @Nonnull
     @Override
     public CompletionStage<Map<String, String>> cacheKeysToIds() {
@@ -105,20 +125,6 @@ public final class CategoryServiceImpl extends BaseService<CategoryDraft, Catego
                     syncOptions.applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
                     return Optional.empty();
                 });
-    }
-
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String key) {
-        if (isCached) {
-            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
-        }
-        return fetchAndCache(key);
-    }
-
-    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
-        return cacheKeysToIds()
-            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 
     @Nonnull

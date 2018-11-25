@@ -44,10 +44,10 @@ public class ProductTypeServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedProductTypeId(@Nonnull final String key) {
-        if (!isCached) {
-            return fetchAndCache(key);
+        if (keyToIdCache.containsKey(key)) {
+            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
         }
-        return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
+        return fetchAndCache(key);
     }
 
     @Nonnull
@@ -68,7 +68,6 @@ public class ProductTypeServiceImpl
 
         return CtpQueryUtils
             .queryAll(syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
-            .thenAccept(result -> isCached = true)
             .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 
