@@ -302,7 +302,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void createProductType_WithInvalidProductType_ShouldHaveEmpyOptionalAsAResult() {
+    public void createProductType_WithInvalidProductType_ShouldHaveEmptyOptionalAsAResult() {
         // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
                 "",
