@@ -8,11 +8,13 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -34,7 +36,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncStatistics, ProductTypeSyncOptions> {
     private static final String CTP_PRODUCT_TYPE_FETCH_FAILED = "Failed to fetch existing product types of keys '%s'.";
     private static final String CTP_PRODUCT_TYPE_UPDATE_FAILED = "Failed to update product type of key '%s'.";
-    private static final String CTP_PRODUCT_TYPE_CREATE_FAILED = "Failed to create product type of key '%s'.";
     private static final String PRODUCT_TYPE_DRAFT_HAS_NO_KEY = "Failed to process product type draft without key.";
     private static final String PRODUCT_TYPE_DRAFT_IS_NULL = "Failed to process null product type draft.";
     private static final String FETCH_ON_RETRY = "Failed to fetch category on retry.";
@@ -181,7 +182,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
                 return ofNullable(oldProductType)
                     .map(productType -> buildActionsAndUpdate(oldProductType, newProductType))
-                    .orElseGet(() -> createProductType(newProductType));
+                    .orElseGet(() -> applyCallbackAndCreate(newProductType));
             })
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new)).thenApply(result -> statistics);
@@ -197,24 +198,20 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param productTypeDraft the product type draft to create the product type from.
      * @return a {@link CompletionStage} which contains an empty result after execution of the create.
      */
-    private CompletionStage<Void> createProductType(@Nonnull final ProductTypeDraft productTypeDraft) {
-        return syncOptions.applyBeforeCreateCallBack(productTypeDraft)
-                .map(productTypeService::createProductType)
-                .map(creationFuture -> creationFuture
-                        .thenAccept(createdProductType -> statistics.incrementCreated())
-                        .exceptionally(exception -> {
-                            final String errorMessage = format(CTP_PRODUCT_TYPE_CREATE_FAILED,
-                                    productTypeDraft.getKey());
-                            handleError(errorMessage, exception, 1);
+    @Nonnull
+    private CompletionStage<Optional<ProductType>> applyCallbackAndCreate(
+            @Nonnull final ProductTypeDraft productTypeDraft) {
 
-                            return null;
-                        }))
-                .orElseGet(() -> CompletableFuture.completedFuture(null));
+        return syncOptions
+                .applyBeforeCreateCallBack(productTypeDraft)
+                .map(productTypeService::createProductType)
+                .orElse(CompletableFuture.completedFuture(Optional.empty()));
     }
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<Void> buildActionsAndUpdate(@Nonnull final ProductType oldProductType,
-                                                        @Nonnull final ProductTypeDraft newProductType) {
+    private CompletionStage<Optional<ProductType>> buildActionsAndUpdate(
+            @Nonnull final ProductType oldProductType,
+            @Nonnull final ProductTypeDraft newProductType) {
 
         final List<UpdateAction<ProductType>> updateActions = buildActions(oldProductType, newProductType, syncOptions);
 
@@ -242,14 +239,16 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param newProductType draft containing data that could differ from data in {@code oldProductType}.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update.
      */
-    private CompletionStage<Void> updateProductType(@Nonnull final ProductType oldProductType,
+    private CompletionStage<Optional<ProductType>> updateProductType(@Nonnull final ProductType oldProductType,
                                                     @Nonnull final ProductTypeDraft newProductType,
                                                     @Nonnull final List<UpdateAction<ProductType>> updateActions) {
 
         return productTypeService
                 .updateProductType(oldProductType, updateActions)
-                .handle((updatedCategory, sphereException) -> sphereException)
-                .thenCompose(sphereException -> {
+                .handle(ImmutablePair::new)
+                .thenCompose(updateResponse -> {
+                    final ProductType updatedProductType = updateResponse.getKey();
+                    final Throwable sphereException = updateResponse.getValue();
                     if (sphereException != null) {
                         return executeSupplierIfConcurrentModificationException(
                             sphereException,
@@ -258,17 +257,17 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                                 final String errorMessage =
                                         format(CTP_PRODUCT_TYPE_UPDATE_FAILED, newProductType.getKey());
                                 handleError(errorMessage, sphereException, 1);
-                                return CompletableFuture.completedFuture(null);
+                                return CompletableFuture.completedFuture(Optional.empty());
                             });
                     } else {
                         statistics.incrementUpdated();
-                        return CompletableFuture.completedFuture(null);
+                        return CompletableFuture.completedFuture(Optional.of(updatedProductType));
                     }
                 });
     }
 
-    private CompletionStage<Void> fetchAndUpdate(@Nonnull final ProductType oldProductType,
-                                                 @Nonnull final ProductTypeDraft newProductType) {
+    private CompletionStage<Optional<ProductType>> fetchAndUpdate(@Nonnull final ProductType oldProductType,
+                                                                  @Nonnull final ProductTypeDraft newProductType) {
         final String key = oldProductType.getKey();
         return productTypeService
                 .fetchProductType(key)
@@ -279,7 +278,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                                     final String errorMessage = format("%s%s",
                                             format(CTP_PRODUCT_TYPE_UPDATE_FAILED, key), FETCH_ON_RETRY);
                                     handleError(errorMessage, null, 1);
-                                    return CompletableFuture.completedFuture(null);
+                                    return CompletableFuture.completedFuture(Optional.empty());
                                 }));
     }
 }
