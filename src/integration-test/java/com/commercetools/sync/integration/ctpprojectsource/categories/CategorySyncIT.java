@@ -451,9 +451,8 @@ public class CategorySyncIT {
         assertThat(callBackExceptions)
             .hasSize(2)
             .allSatisfy(exception -> {
-                assertThat(exception).isExactlyInstanceOf(CompletionException.class);
-                assertThat(exception).hasCauseExactlyInstanceOf(ErrorResponseException.class);
-                final ErrorResponseException errorResponse = ((ErrorResponseException)exception.getCause());
+                assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponse = ((ErrorResponseException)exception);
 
                 final List<DuplicateFieldError> fieldErrors = errorResponse
                     .getErrors()
