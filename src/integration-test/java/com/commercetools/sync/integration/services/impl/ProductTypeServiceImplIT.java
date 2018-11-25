@@ -6,7 +6,9 @@ import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
@@ -36,13 +38,15 @@ import static com.commercetools.sync.integration.producttypes.utils.ProductTypeI
 import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_1;
 import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_1;
 import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_1;
-
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ProductTypeServiceImplIT {
@@ -251,7 +255,8 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void createProductType_WithValidProductType_ShouldCreateProductType() {
+    public void createProductType_WithValidProductType_ShouldCreateProductTypeAndCacheIds() {
+        // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
                 PRODUCT_TYPE_KEY_1,
                 PRODUCT_TYPE_NAME_1,
@@ -259,41 +264,120 @@ public class ProductTypeServiceImplIT {
                 singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
         );
 
-        final ProductType createdProductType = productTypeService.createProductType(newProductTypeDraft)
-                                                                 .toCompletableFuture().join();
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final ProductTypeSyncOptions spyOptions =
+                ProductTypeSyncOptionsBuilder.of(spyClient)
+                        .errorCallback((errorMessage, exception) -> {
+                            errorCallBackMessages.add(errorMessage);
+                            errorCallBackExceptions.add(exception);
+                        })
+                        .build();
 
-        assertThat(createdProductType).isNotNull();
+        final ProductTypeService spyProductTypeService = new ProductTypeServiceImpl(spyOptions);
 
-        final Optional<ProductType> productTypeOptional = CTP_TARGET_CLIENT
-                .execute(ProductTypeQuery.of()
-                                         .withPredicates(productTypeQueryModel ->
-                                                 productTypeQueryModel.key().is(createdProductType.getKey())))
+        // test
+        final Optional<ProductType> createdOptional =
+                spyProductTypeService
+                        .createProductType(newProductTypeDraft)
+                        .toCompletableFuture().join();
+        // assertion
+        final Optional<ProductType> queriedOptional = CTP_TARGET_CLIENT
+                .execute(ProductTypeQuery.of().withPredicates(productTypeQueryModel ->
+                        productTypeQueryModel.key().is(PRODUCT_TYPE_KEY_1)))
                 .toCompletableFuture().join().head();
 
-        assertThat(productTypeOptional).isNotEmpty();
-        final ProductType fetchedProductType = productTypeOptional.get();
-        assertThat(fetchedProductType.getKey()).isEqualTo(newProductTypeDraft.getKey());
-        assertThat(fetchedProductType.getDescription()).isEqualTo(createdProductType.getDescription());
-        assertThat(fetchedProductType.getName()).isEqualTo(createdProductType.getName());
-        assertThat(fetchedProductType.getAttributes()).isEqualTo(createdProductType.getAttributes());
+        assertThat(queriedOptional).hasValueSatisfying(
+                queried ->
+                        assertThat(createdOptional).hasValueSatisfying(
+                                created -> {
+                                    assertThat(created.getKey()).isEqualTo(queried.getKey());
+                                    assertThat(created.getDescription()).isEqualTo(queried.getDescription());
+                                    assertThat(created.getName()).isEqualTo(queried.getName());
+                                    assertThat(created.getAttributes()).isEqualTo(queried.getAttributes());
+                                }));
+
+        // Assert that the created product type is cached
+        final Optional<String> productTypeId =
+                spyProductTypeService.fetchCachedProductTypeId(PRODUCT_TYPE_KEY_1).toCompletableFuture().join();
+        assertThat(productTypeId).isPresent();
+        verify(spyClient, times(0)).execute(any(ProductTypeQuery.class));
     }
 
     @Test
-    public void createProductType_WithInvalidProductType_ShouldCompleteExceptionally() {
+    public void createProductType_WithInvalidProductType_ShouldHaveEmpyOptionalAsAResult() {
+        // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
-                PRODUCT_TYPE_KEY_1,
+                "",
                 PRODUCT_TYPE_NAME_1,
                 PRODUCT_TYPE_DESCRIPTION_1,
                 singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
         );
 
-        productTypeService.createProductType(newProductTypeDraft)
-                          .exceptionally(exception -> {
-                              assertThat(exception).isNotNull();
-                              assertThat(exception.getMessage()).contains("Request body does not contain valid JSON.");
-                              return null;
-                          })
-                          .toCompletableFuture().join();
+        final ProductTypeSyncOptions options = ProductTypeSyncOptionsBuilder
+                .of(CTP_TARGET_CLIENT)
+                .errorCallback((errorMessage, exception) -> {
+                    errorCallBackMessages.add(errorMessage);
+                    errorCallBackExceptions.add(exception);
+                })
+                .build();
+
+        final ProductTypeService service = new ProductTypeServiceImpl(options);
+
+        // test
+        final Optional<ProductType> result =
+                service.createProductType(newProductTypeDraft).toCompletableFuture().join();
+
+        // assertion
+        assertThat(result).isEmpty();
+        assertThat(errorCallBackMessages)
+                .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
+    }
+
+    @Test
+    public void createProductType_WithDuplicateKey_ShouldHaveEmptyOptionalAsAResult() {
+        //preparation
+        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
+                OLD_PRODUCT_TYPE_KEY,
+                PRODUCT_TYPE_NAME_1,
+                PRODUCT_TYPE_DESCRIPTION_1,
+                singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
+        );
+
+        final ProductTypeSyncOptions options = ProductTypeSyncOptionsBuilder
+                .of(CTP_TARGET_CLIENT)
+                .errorCallback((errorMessage, exception) -> {
+                    errorCallBackMessages.add(errorMessage);
+                    errorCallBackExceptions.add(exception);
+                })
+                .build();
+
+        final ProductTypeService service = new ProductTypeServiceImpl(options);
+
+        // test
+        final Optional<ProductType> result =
+                service.createProductType(newProductTypeDraft).toCompletableFuture().join();
+
+        // assertion
+        assertThat(result).isEmpty();
+        assertThat(errorCallBackMessages)
+                .hasSize(1)
+                .hasOnlyOneElementSatisfying(msg -> assertThat(msg).contains("A duplicate value"));
+        assertThat(errorCallBackExceptions)
+                .hasSize(1)
+                .hasOnlyOneElementSatisfying(exception -> {
+                    assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
+                    final ErrorResponseException errorResponseException = (ErrorResponseException) exception;
+
+                    final List<DuplicateFieldError> fieldErrors = errorResponseException
+                            .getErrors()
+                            .stream()
+                            .map(sphereError -> {
+                                assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
+                                return sphereError.as(DuplicateFieldError.class);
+                            })
+                            .collect(toList());
+                    assertThat(fieldErrors).hasSize(1);
+                });
     }
 
     @Test
