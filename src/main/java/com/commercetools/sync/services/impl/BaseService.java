@@ -122,10 +122,10 @@ class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions> {
             return syncOptions
                     .getCtpClient()
                     .execute(createCommand.apply(draft))
-                    .handle(((category, exception) -> {
+                    .handle(((resource, exception) -> {
                         if (exception == null) {
-                            keyToIdCache.put(draftKey, category.getId());
-                            return Optional.of(category);
+                            keyToIdCache.put(draftKey, resource.getId());
+                            return Optional.of(resource);
                         } else {
                             syncOptions.applyErrorCallback(
                                     format(CREATE_FAILED, draftKey, exception.getMessage()), exception);
