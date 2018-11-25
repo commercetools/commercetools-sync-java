@@ -255,7 +255,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void createProductType_WithValidProductType_ShouldCreateProductTypeAndCacheIds() {
+    public void createProductType_WithValidProductType_ShouldCreateProductTypeAndCacheId() {
         // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
                 PRODUCT_TYPE_KEY_1,
