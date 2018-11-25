@@ -290,7 +290,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                         .map(fetchedProduct -> fetchProductAttributesMetadataAndUpdate(fetchedProduct, newProduct))
                         .orElseGet(() -> {
                             handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE));
-                            return CompletableFuture.completedFuture(productOptional);
+                            return CompletableFuture.completedFuture(Optional.empty());
                         })
                 );
     }
