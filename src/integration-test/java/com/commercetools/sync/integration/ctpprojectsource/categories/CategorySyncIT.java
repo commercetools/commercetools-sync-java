@@ -395,6 +395,7 @@ public class CategorySyncIT {
 
     @Test
     public void syncDrafts_fromCategoriesWithoutKeys_ShouldNotUpdateCategories() {
+        // preparation
         final CategoryDraft oldCategoryDraft1 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat1"), LocalizedString.of(Locale.ENGLISH, "furniture1"))
             .custom(getCustomFieldsDraft())
@@ -413,7 +414,7 @@ public class CategorySyncIT {
                                              .toCompletableFuture());
         futureCreations.add(CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft2))
                                              .toCompletableFuture());
-        CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()])).join();
+        CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[0])).join();
 
         // Create two categories in the target without Keys.
         futureCreations = new ArrayList<>();
@@ -424,9 +425,8 @@ public class CategorySyncIT {
         futureCreations.add(CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft2))
                                              .toCompletableFuture());
 
-        CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()])).join();
+        CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[0])).join();
 
-        //---------
 
         final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
                                                            .toCompletableFuture().join().getResults();
@@ -434,8 +434,11 @@ public class CategorySyncIT {
         // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
 
+        // test
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
+
+        // assertions
         assertThat(syncStatistics).hasValues(2, 0, 0, 2, 0);
 
         assertThat(callBackErrorResponses)
@@ -448,8 +451,9 @@ public class CategorySyncIT {
         assertThat(callBackExceptions)
             .hasSize(2)
             .allSatisfy(exception -> {
-                assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
-                final ErrorResponseException errorResponse = ((ErrorResponseException)exception);
+                assertThat(exception).isExactlyInstanceOf(CompletionException.class);
+                assertThat(exception).hasCauseExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponse = ((ErrorResponseException)exception.getCause());
 
                 final List<DuplicateFieldError> fieldErrors = errorResponse
                     .getErrors()
