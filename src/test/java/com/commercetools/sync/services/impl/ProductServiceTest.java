@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletionException;
 
 import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
@@ -71,6 +70,7 @@ public class ProductServiceTest {
 
     @Test
     public void createProduct_WithUnSuccessfulMockCtpResponse_ShouldNotCreateProduct() {
+        // preparation
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
 
@@ -79,15 +79,23 @@ public class ProductServiceTest {
 
         final ProductDraft draft = mock(ProductDraft.class);
         when(draft.getKey()).thenReturn("productKey");
+
+        // test
         final Optional<Product> productOptional = service.createProduct(draft).toCompletableFuture().join();
 
+        // assertion
         assertThat(productOptional).isEmpty();
-        assertThat(errorMessages).hasSize(1);
-        assertThat(errorExceptions).hasSize(1);
-        assertThat(errorExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorExceptions.get(0)).hasCauseExactlyInstanceOf(BadRequestException.class);
-        assertThat(errorMessages.get(0)).contains("Failed to create draft with key: 'productKey'.");
-        assertThat(errorMessages.get(0)).contains("BadRequestException");
+        assertThat(errorMessages)
+                .hasSize(1)
+                .hasOnlyOneElementSatisfying(message -> {
+                    assertThat(message).contains("Failed to create draft with key: 'productKey'.");
+                    assertThat(message).contains("BadRequestException");
+                });
+
+        assertThat(errorExceptions)
+                .hasSize(1)
+                .hasOnlyOneElementSatisfying(exception ->
+                        assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
     }
 
     @Test
