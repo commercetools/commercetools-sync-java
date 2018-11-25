@@ -91,13 +91,13 @@ class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions> {
      * Given a resource draft of type {@code T}, this method attempts to create a resource {@code U} based on it in
      * the CTP project defined by the sync options.
      *
-     * A completion stage containing an empty option and the error callback will be triggered in those cases:
+     * <p>A completion stage containing an empty option and the error callback will be triggered in those cases:
      * <ul>
      *     <li>the draft has a blank key</li>
      *     <li>the create request fails on CTP</li>
      * </ul>
      *
-     * On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
+     * <p>On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
      * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
      * contains an instance {@link Optional} of the resource which was created.
      *

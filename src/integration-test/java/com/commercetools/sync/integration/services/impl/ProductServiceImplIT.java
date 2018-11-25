@@ -280,22 +280,22 @@ public class ProductServiceImplIT {
         when(spyClient.execute(any(ProductQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
-        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder.of(spyClient)
-                                                                         .errorCallback(
-                                                                             (errorMessage, exception) -> {
-                                                                                 errorCallBackMessages
-                                                                                     .add(errorMessage);
-                                                                                 errorCallBackExceptions
-                                                                                     .add(exception);
-                                                                             })
-                                                                         .build();
+        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
+                .of(spyClient)
+                .errorCallback((errorMessage, exception) -> {
+                    errorCallBackMessages.add(errorMessage);
+                    errorCallBackExceptions.add(exception);
+                })
+                .build();
         final ProductService spyProductService = new ProductServiceImpl(spyOptions);
 
 
         final Set<String> keys =  new HashSet<>();
         keys.add(product.getKey());
-        final Set<Product> fetchedProducts = spyProductService.fetchMatchingProductsByKeys(keys)
-                                                                  .toCompletableFuture().join();
+        final Set<Product> fetchedProducts = spyProductService
+                .fetchMatchingProductsByKeys(keys)
+                .toCompletableFuture().join();
+
         assertThat(fetchedProducts).hasSize(0);
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);

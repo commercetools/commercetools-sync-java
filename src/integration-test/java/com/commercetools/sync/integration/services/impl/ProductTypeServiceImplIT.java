@@ -265,36 +265,34 @@ public class ProductTypeServiceImplIT {
         );
 
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        final ProductTypeSyncOptions spyOptions =
-                ProductTypeSyncOptionsBuilder.of(spyClient)
-                        .errorCallback((errorMessage, exception) -> {
-                            errorCallBackMessages.add(errorMessage);
-                            errorCallBackExceptions.add(exception);
-                        })
-                        .build();
+        final ProductTypeSyncOptions spyOptions = ProductTypeSyncOptionsBuilder
+                .of(spyClient)
+                .errorCallback((errorMessage, exception) -> {
+                    errorCallBackMessages.add(errorMessage);
+                    errorCallBackExceptions.add(exception);
+                })
+                .build();
 
         final ProductTypeService spyProductTypeService = new ProductTypeServiceImpl(spyOptions);
 
         // test
-        final Optional<ProductType> createdOptional =
-                spyProductTypeService
-                        .createProductType(newProductTypeDraft)
-                        .toCompletableFuture().join();
+        final Optional<ProductType> createdOptional = spyProductTypeService
+                .createProductType(newProductTypeDraft)
+                .toCompletableFuture().join();
         // assertion
         final Optional<ProductType> queriedOptional = CTP_TARGET_CLIENT
                 .execute(ProductTypeQuery.of().withPredicates(productTypeQueryModel ->
                         productTypeQueryModel.key().is(PRODUCT_TYPE_KEY_1)))
                 .toCompletableFuture().join().head();
 
-        assertThat(queriedOptional).hasValueSatisfying(
-                queried ->
-                        assertThat(createdOptional).hasValueSatisfying(
-                                created -> {
-                                    assertThat(created.getKey()).isEqualTo(queried.getKey());
-                                    assertThat(created.getDescription()).isEqualTo(queried.getDescription());
-                                    assertThat(created.getName()).isEqualTo(queried.getName());
-                                    assertThat(created.getAttributes()).isEqualTo(queried.getAttributes());
-                                }));
+        assertThat(queriedOptional)
+                .hasValueSatisfying(queried -> assertThat(createdOptional)
+                        .hasValueSatisfying(created -> {
+                            assertThat(created.getKey()).isEqualTo(queried.getKey());
+                            assertThat(created.getDescription()).isEqualTo(queried.getDescription());
+                            assertThat(created.getName()).isEqualTo(queried.getName());
+                            assertThat(created.getAttributes()).isEqualTo(queried.getAttributes());
+                        }));
 
         // Assert that the created product type is cached
         final Optional<String> productTypeId =
