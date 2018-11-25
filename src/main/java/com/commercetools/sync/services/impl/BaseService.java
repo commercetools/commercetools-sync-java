@@ -7,7 +7,6 @@ import io.sphere.sdk.commands.UpdateCommand;
 import io.sphere.sdk.models.Resource;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -111,8 +110,10 @@ class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions> {
     @Nonnull
     CompletionStage<Optional<U>> createResource(
             @Nonnull final T draft,
-            @Nullable final String draftKey,
+            @Nonnull final Function<T, String> keyMapper,
             @Nonnull final Function<T, DraftBasedCreateCommand<U, T>> createCommand) {
+
+        final String draftKey = keyMapper.apply(draft);
 
         if (isBlank(draftKey)) {
             syncOptions.applyErrorCallback(format(CREATE_FAILED, draftKey, "Draft key is blank!"));

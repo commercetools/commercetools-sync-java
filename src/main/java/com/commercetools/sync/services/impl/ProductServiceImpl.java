@@ -33,7 +33,6 @@ public class ProductServiceImpl
         extends BaseService<ProductDraft, Product, ProductSyncOptions> implements ProductService {
 
     private static final String FETCH_FAILED = "Failed to fetch products with keys: '%s'. Reason: %s";
-    private static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
 
     public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
         super(syncOptions);
@@ -142,7 +141,7 @@ public class ProductServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
-        return createResource(productDraft, productDraft.getKey(), ProductCreateCommand::of);
+        return createResource(productDraft, ProductDraft::getKey, ProductCreateCommand::of);
     }
 
     @Nonnull

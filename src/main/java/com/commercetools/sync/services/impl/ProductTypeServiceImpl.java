@@ -52,6 +52,7 @@ public class ProductTypeServiceImpl
 
     @Nonnull
     private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
+
         final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
                 productTypePage.forEach(type -> {
                     final String fetchedTypeKey = type.getKey();
@@ -85,6 +86,7 @@ public class ProductTypeServiceImpl
     @Override
     public CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchCachedProductAttributeMetaDataMap(
             @Nonnull final String productTypeId) {
+
         if (productsAttributesMetaData.isEmpty()) {
             return fetchAndCacheProductMetaData(productTypeId);
         }
@@ -96,6 +98,7 @@ public class ProductTypeServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull final Set<String> keys) {
+
         if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
@@ -115,8 +118,8 @@ public class ProductTypeServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<ProductType> createProductType(@Nonnull final ProductTypeDraft productTypeDraft) {
-        return syncOptions.getCtpClient().execute(ProductTypeCreateCommand.of(productTypeDraft));
+    public CompletionStage<Optional<ProductType>> createProductType(@Nonnull final ProductTypeDraft productTypeDraft) {
+        return createResource(productTypeDraft, ProductTypeDraft::getKey, ProductTypeCreateCommand::of);
     }
 
     @Nonnull
@@ -144,6 +147,7 @@ public class ProductTypeServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<ProductType>> fetchProductType(@Nullable final String key) {
+
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }

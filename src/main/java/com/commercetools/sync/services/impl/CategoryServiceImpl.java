@@ -124,7 +124,7 @@ public final class CategoryServiceImpl extends BaseService<CategoryDraft, Catego
     @Nonnull
     @Override
     public CompletionStage<Optional<Category>> createCategory(@Nonnull final CategoryDraft categoryDraft) {
-        return createResource(categoryDraft, categoryDraft.getKey(), CategoryCreateCommand::of);
+        return createResource(categoryDraft, CategoryDraft::getKey, CategoryCreateCommand::of);
     }
 
     @Nonnull
