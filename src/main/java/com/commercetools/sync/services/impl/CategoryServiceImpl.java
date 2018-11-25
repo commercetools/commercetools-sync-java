@@ -47,6 +47,7 @@ public final class CategoryServiceImpl extends BaseService<CategoryDraft, Catego
 
     @Nonnull
     @Override
+    //TODO: Test changes.
     public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nullable final String key) {
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());

@@ -189,6 +189,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     /**
+     * TODO: FIX Javadoc
      * Given a product type draft, issues a request to the CTP project to create a corresponding Product Type.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
