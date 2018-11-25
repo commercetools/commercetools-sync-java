@@ -29,7 +29,8 @@ import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 
-public class ProductServiceImpl extends BaseService<Product, ProductSyncOptions> implements ProductService {
+public class ProductServiceImpl
+        extends BaseService<ProductDraft, Product, ProductSyncOptions> implements ProductService {
 
     private static final String FETCH_FAILED = "Failed to fetch products with keys: '%s'. Reason: %s";
     private static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
@@ -141,25 +142,7 @@ public class ProductServiceImpl extends BaseService<Product, ProductSyncOptions>
     @Nonnull
     @Override
     public CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
-
-        final String draftKey = productDraft.getKey();
-        if (isBlank(draftKey)) {
-            syncOptions.applyErrorCallback(format(CREATE_FAILED, draftKey, "Draft key is blank!"));
-            return CompletableFuture.completedFuture(Optional.empty());
-        } else {
-            return syncOptions
-                    .getCtpClient()
-                    .execute(ProductCreateCommand.of(productDraft))
-                    .thenApply(product -> {
-                        keyToIdCache.put(product.getKey(), product.getId());
-                        return Optional.of(product);
-                    })
-                    .exceptionally(sphereException -> {
-                        syncOptions.applyErrorCallback(
-                                format(CREATE_FAILED, draftKey, sphereException), sphereException);
-                        return Optional.empty();
-                    });
-        }
+        return createResource(productDraft, productDraft.getKey(), ProductCreateCommand::of);
     }
 
     @Nonnull

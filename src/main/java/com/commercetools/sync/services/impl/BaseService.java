@@ -1,31 +1,40 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.commands.UpdateCommand;
 import io.sphere.sdk.models.Resource;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
+ * @param <T> Resource Draft (e.g. {@link io.sphere.sdk.products.ProductDraft},
+ *  {@link io.sphere.sdk.categories.CategoryDraft}, etc..
  * @param <U> Resource (e.g. {@link io.sphere.sdk.products.Product}, {@link io.sphere.sdk.categories.Category}, etc..
  * @param <S> Subclass of {@link BaseSyncOptions}
  */
-class BaseService<U extends Resource<U>, S extends BaseSyncOptions> {
+class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions> {
 
     final S syncOptions;
     boolean isCached = false;
     final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
     private static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;
+    private static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
 
     BaseService(@Nonnull final S syncOptions) {
         this.syncOptions = syncOptions;
@@ -77,5 +86,32 @@ class BaseService<U extends Resource<U>, S extends BaseSyncOptions> {
                 syncOptions.getCtpClient().execute(updateCommandFunction.apply(updatedProduct, batch)));
         }
         return resultStage;
+    }
+
+    @Nonnull
+    CompletionStage<Optional<U>> createResource(
+            @Nonnull final T draft,
+            @Nullable final String draftKey,
+            @Nonnull final Function<T, DraftBasedCreateCommand<U, T>> createCommand) {
+
+        if (isBlank(draftKey)) {
+            syncOptions.applyErrorCallback(format(CREATE_FAILED, draftKey, "Draft key is blank!"));
+            return CompletableFuture.completedFuture(Optional.empty());
+        } else {
+            return syncOptions
+                    .getCtpClient()
+                    .execute(createCommand.apply(draft))
+                    .handle(((category, exception) -> {
+                        if (exception == null) {
+                            keyToIdCache.put(draftKey, category.getId());
+                            return Optional.of(category);
+                        } else {
+                            syncOptions.applyErrorCallback(
+                                    format(CREATE_FAILED, draftKey, exception.getMessage()), exception);
+                            return Optional.empty();
+                        }
+                    }));
+        }
+
     }
 }
