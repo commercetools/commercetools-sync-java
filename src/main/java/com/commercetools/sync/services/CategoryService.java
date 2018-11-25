@@ -67,15 +67,22 @@ public interface CategoryService {
     CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String key);
 
     /**
-     * Given a {@link CategoryDraft}, this method creates a {@link Category} based on it in the CTP project defined in
-     * a potentially injected {@link io.sphere.sdk.client.SphereClient}. The created category's id and key are also
-     * cached. This method returns {@link CompletionStage}&lt;{@link Category}&gt; in which the result of it's
-     * completion contains an instance of the {@link Category} which was created in the CTP project.
+     * Given a resource draft of type {@link CategoryDraft}, this method attempts to create a resource
+     * {@link Category} based on it in the CTP project defined by the sync options.
      *
-     * @param categoryDraft the {@link CategoryDraft} to create a {@link Category} based off of.
-     * @return {@link CompletionStage}&lt;{@link Category}&gt; containing as a result of it's completion an instance of
-     *         the {@link Category} which was created in the CTP project or a
-     *         {@link io.sphere.sdk.models.SphereException}.
+     * A completion stage containing an empty option and the error callback will be triggered in those cases:
+     * <ul>
+     *     <li>the draft has a blank key</li>
+     *     <li>the create request fails on CTP</li>
+     * </ul>
+     *
+     * On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
+     * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
+     * contains an instance {@link Optional} of the resource which was created.
+     *
+     * @param categoryDraft the resource draft to create a resource based off of.
+     * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
+     *         empty optional.
      */
     @Nonnull
     CompletionStage<Optional<Category>> createCategory(@Nonnull final CategoryDraft categoryDraft);

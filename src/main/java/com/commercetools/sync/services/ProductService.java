@@ -73,15 +73,22 @@ public interface ProductService {
     CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key);
 
     /**
-     * Given a {@link ProductDraft}, this method creates a {@link Product} based on it in the CTP project defined in
-     * a potentially injected {@link io.sphere.sdk.client.SphereClient}. The created product's id and key are also
-     * cached. This method returns {@link CompletionStage}&lt;{@link Product}&gt; in which the result of it's
-     * completion contains an instance of the {@link Product} which was created in the CTP project.
+     * Given a resource draft of type {@link ProductDraft}, this method attempts to create a resource
+     * {@link Product} based on it in the CTP project defined by the sync options.
      *
-     * @param productDraft the {@link ProductDraft} to create a {@link Product} based off of.
-     * @return {@link CompletionStage}&lt;{@link Product}&gt; containing as a result of it's completion an instance of
-     *          the {@link Product} which was created in the CTP project or a
-     *          {@link io.sphere.sdk.models.SphereException}.
+     * A completion stage containing an empty option and the error callback will be triggered in those cases:
+     * <ul>
+     *     <li>the draft has a blank key</li>
+     *     <li>the create request fails on CTP</li>
+     * </ul>
+     *
+     * On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
+     * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
+     * contains an instance {@link Optional} of the resource which was created.
+     *
+     * @param productDraft the resource draft to create a resource based off of.
+     * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
+     *         empty optional.
      */
     @Nonnull
     CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft);
