@@ -44,8 +44,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
         + "CategoryDraft with key:'%s'. Reason: %s";
     private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
-    private static final String UNEXPECTED_DELETE = "Not found when attempting to fetch on retrying " +
-            "from concurrency modification.";
+    private static final String UNEXPECTED_DELETE = "Not found when attempting to fetch on retrying "
+        + "from concurrency modification.";
 
     private final CategoryService categoryService;
     private final CategoryReferenceResolver referenceResolver;

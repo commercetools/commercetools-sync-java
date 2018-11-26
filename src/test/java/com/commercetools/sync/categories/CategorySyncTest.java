@@ -415,7 +415,7 @@ public class CategorySyncTest {
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(message ->
                         assertThat(message).contains("Failed to build a cache of keys to ids.")
-                );
+            );
 
         assertThat(errorCallBackExceptions)
                 .hasSize(1)
@@ -469,7 +469,7 @@ public class CategorySyncTest {
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(message ->
                         assertThat(message).contains("Failed to fetch existing categories")
-                );
+            );
 
         assertThat(errorCallBackExceptions)
                 .hasSize(1)

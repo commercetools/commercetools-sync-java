@@ -53,8 +53,8 @@ import static java.util.stream.Collectors.toList;
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
 
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
-    private static final String UNEXPECTED_DELETE = "Not found when attempting to fetch on retrying " +
-            "from concurrency modification.";
+    private static final String UNEXPECTED_DELETE = "Not found when attempting to fetch on retrying "
+        + "from concurrency modification.";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
         + "ProductDraft with key:'%s'. Reason: %s";
     private static final String FAILED_TO_FETCH_PRODUCT_TYPE = "Failed to fetch a productType for the product to "

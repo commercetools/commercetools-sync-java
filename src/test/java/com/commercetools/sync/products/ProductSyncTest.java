@@ -53,7 +53,8 @@ public class ProductSyncTest {
         final List<Throwable> exceptions = new ArrayList<>();
 
         final SphereClient mockClient = mock(SphereClient.class);
-        when(mockClient.execute(any(ProductQuery.class))).thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+        when(mockClient.execute(any(ProductQuery.class)))
+                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
             .of(mockClient)
@@ -113,7 +114,8 @@ public class ProductSyncTest {
         final List<Throwable> exceptions = new ArrayList<>();
 
         final SphereClient mockClient = mock(SphereClient.class);
-        when(mockClient.execute(any(ProductQuery.class))).thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+        when(mockClient.execute(any(ProductQuery.class)))
+                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
                 .of(mockClient)
@@ -151,7 +153,7 @@ public class ProductSyncTest {
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(message ->
                         assertThat(message).contains("Failed to fetch existing products")
-                );
+            );
 
         assertThat(exceptions)
                 .hasSize(1)
