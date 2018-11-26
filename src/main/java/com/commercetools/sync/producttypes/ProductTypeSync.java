@@ -8,6 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,7 +21,6 @@ import java.util.concurrent.CompletionStage;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
 import static java.lang.String.format;
-import static java.util.Collections.emptySet;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
@@ -41,12 +41,24 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     private final ProductTypeService productTypeService;
 
     public ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions) {
-        super(new ProductTypeSyncStatistics(), productTypeSyncOptions);
-        this.productTypeService = new ProductTypeServiceImpl(productTypeSyncOptions);
+        this(productTypeSyncOptions, new ProductTypeServiceImpl(productTypeSyncOptions));
     }
 
-    public ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions,
-                           @Nonnull final ProductTypeService productTypeService) {
+    /**
+     * Takes a {@link ProductTypeSyncOptions} and a {@link ProductTypeService} instances to instantiate
+     * a new {@link ProductTypeSync} instance that could be used to sync productType drafts in the CTP project specified
+     * in the injected {@link ProductTypeSyncOptions} instance.
+     *
+     * <p>NOTE: This constructor is mainly to be used for tests where the services can be mocked and passed to.
+     *
+     * @param productTypeSyncOptions the container of all the options of the sync process including the CTP project
+     *                               client and/or configuration and other sync-specific options.
+     * @param productTypeService     the type service which is responsible for fetching/caching the Types from the CTP
+     *                               project.
+     */
+    ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions,
+                    @Nonnull final ProductTypeService productTypeService) {
+
         super(new ProductTypeSyncStatistics(), productTypeSyncOptions);
         this.productTypeService = productTypeService;
     }
