@@ -1,4 +1,4 @@
-package com.commercetools.sync.integration.types.utils;
+package com.commercetools.sync.integration.commons.utils;
 
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
@@ -143,6 +143,6 @@ public final class TypeITUtils {
     }
 
     private TypeITUtils() {
-        
+
     }
 }
