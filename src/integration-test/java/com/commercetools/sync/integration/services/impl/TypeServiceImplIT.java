@@ -240,22 +240,24 @@ public class TypeServiceImplIT {
                                                        .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
                                                        .build();
 
-        final Type createdType = typeService.createType(newTypeDraft)
+        final Optional<Type> createdType = typeService.createType(newTypeDraft)
                                             .toCompletableFuture().join();
 
         assertThat(createdType).isNotNull();
 
-        final Optional<Type> typeOptional = CTP_TARGET_CLIENT
-                .execute(TypeQuery.of()
-                                  .withPredicates(typeQueryModel -> typeQueryModel.key().is(createdType.getKey())))
-                .toCompletableFuture().join().head();
+        final Optional<Type> fetchedType = CTP_TARGET_CLIENT
+            .execute(TypeQuery.of()
+                              .withPredicates(typeQueryModel ->
+                                  typeQueryModel.key().is(createdType.get().getKey())))
+            .toCompletableFuture().join().head();
 
-        assertThat(typeOptional).isNotEmpty();
-        final Type fetchedType = typeOptional.get();
-        assertThat(fetchedType.getKey()).isEqualTo(newTypeDraft.getKey());
-        assertThat(fetchedType.getDescription()).isEqualTo(createdType.getDescription());
-        assertThat(fetchedType.getName()).isEqualTo(createdType.getName());
-        assertThat(fetchedType.getFieldDefinitions()).isEqualTo(createdType.getFieldDefinitions());
+        assertThat(fetchedType).hasValueSatisfying(oldType ->
+            assertThat(createdType).hasValueSatisfying(newType -> {
+                assertThat(newType.getKey()).isEqualTo(newTypeDraft.getKey());
+                assertThat(newType.getDescription()).isEqualTo(oldType.getDescription());
+                assertThat(newType.getName()).isEqualTo(oldType.getName());
+                assertThat(newType.getFieldDefinitions()).isEqualTo(oldType.getFieldDefinitions());
+            }));
     }
 
     @Test

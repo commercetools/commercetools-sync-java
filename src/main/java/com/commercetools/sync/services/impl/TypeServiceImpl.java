@@ -1,6 +1,5 @@
 package com.commercetools.sync.services.impl;
 
-
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.TypeService;
@@ -35,18 +34,17 @@ import static org.apache.http.util.TextUtils.isBlank;
  * Implementation of TypeService interface.
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
-public final class TypeServiceImpl implements TypeService {
+public final class TypeServiceImpl extends BaseService<Type, TypeDraft> implements TypeService {
     private static final String FETCH_FAILED = "Failed to fetch types with keys: '%s'. Reason: %s";
-    private final BaseSyncOptions syncOptions;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private boolean isCached = false;
 
-    public TypeServiceImpl(@Nonnull final TypeSyncOptions syncOptions) {
-        this.syncOptions = syncOptions;
+    public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
+        super(syncOptions);
     }
 
-    public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
-        this.syncOptions = syncOptions;
+    public TypeServiceImpl(@Nonnull final TypeSyncOptions syncOptions) {
+        super(syncOptions);
     }
 
     @Nonnull
@@ -96,15 +94,16 @@ public final class TypeServiceImpl implements TypeService {
 
     @Nonnull
     @Override
-    public CompletionStage<Type> createType(@Nonnull final TypeDraft typeDraft) {
-        return syncOptions.getCtpClient().execute(TypeCreateCommand.of(typeDraft));
+    public CompletionStage<Optional<Type>> createType(@Nonnull final TypeDraft typeDraft) {
+        return applyCallbackAndCreate(typeDraft, typeDraft.getKey(), TypeCreateCommand::of);
     }
 
     @Nonnull
     @Override
     public CompletionStage<Type> updateType(@Nonnull final Type type,
                                             @Nonnull final List<UpdateAction<Type>> updateActions) {
-        return syncOptions.getCtpClient().execute(TypeUpdateCommand.of(type, updateActions));
+
+        return updateResource(type, TypeUpdateCommand::of, updateActions);
     }
 
     @Nonnull

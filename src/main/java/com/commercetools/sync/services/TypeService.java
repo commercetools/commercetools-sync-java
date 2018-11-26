@@ -1,6 +1,5 @@
 package com.commercetools.sync.services;
 
-
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -57,20 +56,29 @@ public interface TypeService {
     CompletionStage<Optional<Type>> fetchType(@Nullable final String key);
 
     /**
-     * Creates new type from {@code typeDraft}.
+     * Given a {@link TypeDraft}, this method creates a {@link Type} based on it in the CTP project defined in
+     * a potentially injected {@link io.sphere.sdk.client.SphereClient}. The created type's id and key are also
+     * cached. This method returns {@link CompletionStage}&lt;{@link Type}&gt; in which the result of it's
+     * completion contains an instance of the {@link Type} which was created in the CTP project.
      *
-     * @param typeDraft draft with data for new type
-     * @return {@link CompletionStage} with created {@link Type}.
+     * @param typeDraft the {@link TypeDraft} to create a {@link Type} based off of.
+     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
+     *         {@link Optional} that contains the matching {@link Type} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Type> createType(@Nonnull final TypeDraft typeDraft);
+    CompletionStage<Optional<Type>> createType(@Nonnull final TypeDraft typeDraft);
 
     /**
-     * Updates existing type with {@code updateActions}.
+     * Given a {@link Type} and a {@link List}&lt;{@link UpdateAction}&lt;{@link Type}&gt;&gt;, this method
+     * issues an update request with these update actions on this {@link Type} in the CTP project defined in a
+     * potentially injected {@link io.sphere.sdk.client.SphereClient}. This method returns
+     * {@link CompletionStage}&lt;{@link Type}&gt; in which the result of it's completion contains an instance of
+     * the {@link Type} which was updated in the CTP project.
      *
-     * @param type  type that should be updated
-     * @param updateActions {@link List} of actions that should be applied to {@code type}
-     * @return {@link CompletionStage} with updated {@link Type}.
+     * @param type          the {@link Type} to update.
+     * @param updateActions the update actions to update the {@link Type} with.
+     * @return {@link CompletionStage}&lt;{@link Type}&gt; containing as a result of it's completion an instance of
+     *         the {@link Type} which was updated in the CTP project or a {@link io.sphere.sdk.models.SphereException}.
      */
     @Nonnull
     CompletionStage<Type> updateType(@Nonnull final Type type,
