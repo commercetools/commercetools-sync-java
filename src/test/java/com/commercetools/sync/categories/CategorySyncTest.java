@@ -432,6 +432,10 @@ public class CategorySyncTest {
 
         final String categoryKey = "key";
         final Category mockCategory = getMockCategory("foo", categoryKey);
+
+        // It is safe here to cast PagedQueryResult to PagedQueryResult<Category> since we are sure
+        // it can be safely casted but the compiler doesn't see the generic type because of erasure.
+        @SuppressWarnings("unchecked")
         final PagedQueryResult<Category> pagedQueryResult = mock(PagedQueryResult.class);
         when(pagedQueryResult.getResults()).thenReturn(singletonList(mockCategory));
 
