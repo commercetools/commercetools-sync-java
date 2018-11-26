@@ -16,6 +16,7 @@ Currently this library supports synchronising the following entities in commerce
  - [Products](/docs/usage/PRODUCT_SYNC.md)
  - [InventoryEntries](/docs/usage/INVENTORY_SYNC.md)
  - [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md)
+ - [Types](/docs/usage/TYPE_SYNC.md)
 
 ![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/9512131/31230702-0f2255a6-a9e5-11e7-9412-04ed52641dde.png)
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -45,13 +46,6 @@ commercetools sync is a Java library that could be used to synchronise CTP data 
 [JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
-
-Currently this library supports synchronising
- - [Categories](/docs/usage/CATEGORY_SYNC.md)
- - [Products](/docs/usage/PRODUCT_SYNC.md) (_Beta_: Not recommended for production use yet.)
- - [InventoryEntries](/docs/usage/INVENTORY_SYNC.md) (_Beta_: Not recommended for production use yet.)
- - [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md) (_Beta_: Not recommended for production use yet.)
- - [Types](/docs/usage/TYPE_SYNC.md) (_Beta_: Not recommended for production use yet.)
 
 ### Prerequisites
  
