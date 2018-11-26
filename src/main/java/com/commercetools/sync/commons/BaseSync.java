@@ -84,7 +84,7 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
      *      given list of batches.
      */
     protected CompletionStage<U> syncBatches(@Nonnull final List<List<T>> batches,
-                                                      @Nonnull final CompletionStage<U> result) {
+                                             @Nonnull final CompletionStage<U> result) {
         if (batches.isEmpty()) {
             return result;
         }
