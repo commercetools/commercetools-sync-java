@@ -95,16 +95,15 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
 
-        final Function<List<Product>, List<Product>> productPageCallBack = productsPage -> productsPage;
-        final QueryPredicate<Product> queryPredicate = buildProductKeysQueryPredicate(productKeys);
+        final ProductQuery productQuery = ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(productKeys));
 
         return CtpQueryUtils
-            .queryAll(syncOptions.getCtpClient(), ProductQuery.of().withPredicates(queryPredicate), productPageCallBack)
-            .thenApply(fetchedProducts -> fetchedProducts
-                .stream()
-                .flatMap(List::stream)
-                .peek(product -> keyToIdCache.put(product.getKey(), product.getId()))
-                .collect(Collectors.toSet()));
+                .queryAll(syncOptions.getCtpClient(), productQuery, Function.identity())
+                .thenApply(fetchedProducts -> fetchedProducts
+                        .stream()
+                        .flatMap(List::stream)
+                        .peek(product -> keyToIdCache.put(product.getKey(), product.getId()))
+                        .collect(Collectors.toSet()));
     }
 
     @Nonnull
@@ -113,17 +112,20 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
-        final QueryPredicate<Product> queryPredicate = buildProductKeysQueryPredicate(singleton(key));
+
+        final ProductQuery productQuery = ProductQuery
+                .of().withPredicates(buildProductKeysQueryPredicate(singleton(key)));
+
         return syncOptions
-            .getCtpClient()
-            .execute(ProductQuery.of().withPredicates(queryPredicate))
-            .thenApply(productPagedQueryResult -> //Cache after fetch
-                productPagedQueryResult
-                    .head()
-                    .map(product -> {
-                        keyToIdCache.put(product.getKey(), product.getId());
-                        return product;
-                    }));
+                .getCtpClient()
+                .execute(productQuery)
+                .thenApply(productPagedQueryResult ->
+                        productPagedQueryResult
+                                .head()
+                                .map(product -> {
+                                    keyToIdCache.put(product.getKey(), product.getId());
+                                    return product;
+                                }));
     }
 
     @Nonnull
