@@ -32,7 +32,7 @@ import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 
-public class ProductServiceImpl extends BaseService<Product, ProductDraft> implements ProductService {
+public final class ProductServiceImpl extends BaseService<Product, ProductDraft> implements ProductService {
     public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
         super(syncOptions);
     }

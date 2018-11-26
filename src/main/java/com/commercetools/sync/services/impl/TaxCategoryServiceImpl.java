@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class TaxCategoryServiceImpl implements TaxCategoryService {
+public final class TaxCategoryServiceImpl implements TaxCategoryService {
     private final ProductSyncOptions syncOptions;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 

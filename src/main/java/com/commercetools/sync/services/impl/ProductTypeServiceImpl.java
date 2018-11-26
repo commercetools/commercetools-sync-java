@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 
-public class ProductTypeServiceImpl implements ProductTypeService {
+public final class ProductTypeServiceImpl implements ProductTypeService {
     private final BaseSyncOptions syncOptions;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
     private boolean isCached = false;
