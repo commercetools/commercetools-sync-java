@@ -205,7 +205,17 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
         return syncOptions
                 .applyBeforeCreateCallBack(productTypeDraft)
-                .map(productTypeService::createProductType)
+                .map(draft -> productTypeService
+                        .createProductType(draft)
+                        .thenApply(productTypeOptional -> {
+                            if (productTypeOptional.isPresent()) {
+                                statistics.incrementCreated();
+                            } else {
+                                statistics.incrementFailed();
+                            }
+                            return productTypeOptional;
+                        })
+                )
                 .orElse(CompletableFuture.completedFuture(Optional.empty()));
     }
 
