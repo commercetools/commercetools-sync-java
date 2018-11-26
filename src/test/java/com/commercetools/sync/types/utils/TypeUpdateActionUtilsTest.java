@@ -40,10 +40,8 @@ public class TypeUpdateActionUtilsTest {
         final LocalizedString name = LocalizedString.ofEnglish("type for standard categories");
         final LocalizedString desc = LocalizedString.ofEnglish("description for category custom type");
 
-        //this enables the type only to be used for categories
         final Set<String> resourceTypeIds = ResourceTypeIdsSetBuilder.of()
                 .addCategories()
-                //there are more methods for other objects which support custom
                 .build();
 
         final List<FieldDefinition> fieldDefinitions =
