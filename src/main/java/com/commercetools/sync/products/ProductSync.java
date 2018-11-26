@@ -116,34 +116,47 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         final BatchProcessor batchProcessor = new BatchProcessor(batch, this);
         batchProcessor.validateBatch();
 
+        final Set<String> keysToCache = batchProcessor.getKeysToCache();
         return productService
-            .cacheKeysToIds(batchProcessor.getKeysToCache())
-            .thenCompose(keyToIdCache -> {
+                .cacheKeysToIds(keysToCache)
+                .handle(ImmutablePair::new)
+                .thenCompose(cachingResponse -> {
 
-                prepareDraftsForProcessing(batchProcessor.getValidDrafts(), keyToIdCache);
-                final Set<String> productDraftKeys = getProductDraftKeys(existingDrafts);
-                return productService
-                    .fetchMatchingProductsByKeys(productDraftKeys)
-                    .handle(ImmutablePair::new)
-                    .thenCompose(fetchResponse -> {
-                        final Set<Product> fetchedProducts = fetchResponse.getKey();
-                        final Throwable exception = fetchResponse.getValue();
+                    final Map<String, String> keyToIdCache = cachingResponse.getKey();
+                    final Throwable cachingException = cachingResponse.getValue();
 
-                        if (exception != null) {
-                            final String errorMessage = format("Failed to fetch existing products with keys: '%s'.",
-                                productDraftKeys);
-                            handleError(errorMessage, exception, productDraftKeys.size());
-                            return CompletableFuture.completedFuture(null);
-                        } else {
-                            processFetchedProducts(fetchedProducts);
-                            return createAndUpdateProducts();
-                        }
-                    })
-                    .thenApply(ignoredResult -> {
-                        statistics.incrementProcessed(batch.size());
-                        return statistics;
-                    });
-            });
+                    if (cachingException != null) {
+                        handleError("Failed to build a cache of keys to ids.", cachingException, keysToCache.size());
+                        return CompletableFuture.completedFuture(null);
+                    } else {
+
+                        prepareDraftsForProcessing(batchProcessor.getValidDrafts(), keyToIdCache);
+                        final Set<String> productDraftKeys = getProductDraftKeys(existingDrafts);
+
+                        return productService
+                                .fetchMatchingProductsByKeys(productDraftKeys)
+                                .handle(ImmutablePair::new)
+                                .thenCompose(fetchResponse -> {
+                                    final Set<Product> fetchedProducts = fetchResponse.getKey();
+                                    final Throwable fetchException = fetchResponse.getValue();
+
+                                    if (fetchException != null) {
+                                        final String errorMessage =
+                                                format("Failed to fetch existing products with keys: '%s'.",
+                                                        productDraftKeys);
+                                        handleError(errorMessage, fetchException, productDraftKeys.size());
+                                        return CompletableFuture.completedFuture(null);
+                                    } else {
+                                        processFetchedProducts(fetchedProducts);
+                                        return createAndUpdateProducts();
+                                    }
+                                });
+                    }
+                })
+                .thenApply(ignoredResult -> {
+                    statistics.incrementProcessed(batch.size());
+                    return statistics;
+                });
     }
 
 
