@@ -179,7 +179,7 @@ public class CategoryServiceImplIT {
 
     @Test
     public void fetchMatchingCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-        // Mock sphere client to return BadeGatewayException on any request.
+        // Mock sphere client to return BadGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(CategoryQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
@@ -198,15 +198,11 @@ public class CategoryServiceImplIT {
 
         final Set<String> keys =  new HashSet<>();
         keys.add(oldCategoryKey);
-        final Set<Category> fetchedCategories = spyCategoryService.fetchMatchingCategoriesByKeys(keys)
-                                                                  .toCompletableFuture().join();
-        assertThat(fetchedCategories).hasSize(0);
-        assertThat(errorCallBackExceptions).isNotEmpty();
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0))
-            .isEqualToIgnoringCase(format("Failed to fetch Categories with keys: '%s'. Reason: %s",
-                keys.toString(), errorCallBackExceptions.get(0)));
+
+        // test and assert
+        assertThat(spyCategoryService.fetchMatchingCategoriesByKeys(keys))
+                .hasFailedWithThrowableThat()
+                .isExactlyInstanceOf(BadGatewayException.class);
     }
 
     @Test
@@ -526,7 +522,7 @@ public class CategoryServiceImplIT {
 
     @Test
     public void fetchCategory_WithBadGateWayExceptionAlways_ShouldFail() {
-        // Mock sphere client to return BadeGatewayException on any request.
+        // Mock sphere client to return BadGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(CategoryQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
@@ -542,15 +538,10 @@ public class CategoryServiceImplIT {
                                                                          .build();
         final CategoryService spyCategoryService = new CategoryServiceImpl(spyOptions);
 
-        final Optional<Category> fetchedCategoryOptional =
-            executeBlocking(spyCategoryService.fetchCategory(oldCategoryKey));
-        assertThat(fetchedCategoryOptional).isEmpty();
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0))
-            .isEqualToIgnoringCase(format("Failed to fetch Categories with keys: '%s'. Reason: %s",
-                oldCategoryKey, errorCallBackExceptions.get(0)));
+        // test and assertion
+        assertThat(spyCategoryService.fetchCategory(oldCategoryKey))
+                .hasFailedWithThrowableThat()
+                .isExactlyInstanceOf(BadGatewayException.class);
     }
 
 }
