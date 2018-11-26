@@ -46,10 +46,12 @@ import static com.commercetools.sync.products.utils.ProductSyncUtils.buildAction
 import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.stream.Collectors.toList;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
+
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
     private static final String UNEXPECTED_DELETE = "Product with key: '%s' was deleted unexpectedly.";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
@@ -113,18 +115,34 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         final BatchProcessor batchProcessor = new BatchProcessor(batch, this);
         batchProcessor.validateBatch();
 
-        return productService.cacheKeysToIds(batchProcessor.getKeysToCache())
-                             .thenCompose(keyToIdCache -> {
-                                 prepareDraftsForProcessing(batchProcessor.getValidDrafts(), keyToIdCache);
-                                 final Set<String> productDraftKeys = getProductDraftKeys(existingDrafts);
-                                 return productService.fetchMatchingProductsByKeys(productDraftKeys)
-                                                      .thenAccept(this::processFetchedProducts)
-                                                      .thenCompose(ignoredResult -> createAndUpdateProducts())
-                                                      .thenApply(ignoredResult -> {
-                                                          statistics.incrementProcessed(batch.size());
-                                                          return statistics;
-                                                      });
-                             });
+        return productService
+            .cacheKeysToIds(batchProcessor.getKeysToCache())
+            .thenCompose(keyToIdCache -> {
+
+                prepareDraftsForProcessing(batchProcessor.getValidDrafts(), keyToIdCache);
+                final Set<String> productDraftKeys = getProductDraftKeys(existingDrafts);
+                return productService
+                    .fetchMatchingProductsByKeys(productDraftKeys)
+                    .handle(ImmutablePair::new)
+                    .thenCompose(fetchResponse -> {
+                        final Set<Product> fetchedProducts = fetchResponse.getKey();
+                        final Throwable exception = fetchResponse.getValue();
+
+                        if (exception != null) {
+                            final String errorMessage = format("Failed to fetch existing products with keys: '%s'.",
+                                productDraftKeys);
+                            handleError(errorMessage, exception, productDraftKeys.size());
+                            return CompletableFuture.completedFuture(null);
+                        } else {
+                            processFetchedProducts(fetchedProducts);
+                            return createAndUpdateProducts();
+                        }
+                    })
+                    .thenApply(ignoredResult -> {
+                        statistics.incrementProcessed(batch.size());
+                        return statistics;
+                    });
+            });
     }
 
 
@@ -241,7 +259,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                              final String productKey = oldProduct.getKey();
                                              handleError(format(UPDATE_FAILED, productKey, sphereException),
                                                  sphereException);
-                                             return CompletableFuture.completedFuture(Optional.empty());
+                                             return CompletableFuture.completedFuture(empty());
                                          });
                                  } else {
                                      statistics.incrementUpdated();
@@ -251,27 +269,38 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     /**
-     * Given an existing {@link Product} and a new {@link ProductDraft}, first resolves all references on the category
-     * draft, then it calculates all the update actions required to synchronize the existing category to be the
+     * Given an existing {@link Product} and a new {@link ProductDraft}, first fetches a fresh copy of the existing
+     * product, then it calculates all the update actions required to synchronize the existing product to be the
      * same as the new one. If there are update actions found, a request is made to CTP to update the
-     * existing category, otherwise it doesn't issue a request.
+     * existing one, otherwise it doesn't issue a request.
      *
-     * @param oldProduct the category which could be updated.
-     * @param newProduct the category draft where we get the new data.
+     * @param oldProduct the product which could be updated.
+     * @param newProduct the product draft where we get the new data.
      * @return a future which contains an empty result after execution of the update.
      */
     @Nonnull
     private CompletionStage<Optional<Product>> fetchAndUpdate(@Nonnull final Product oldProduct,
                                                               @Nonnull final ProductDraft newProduct) {
         final String key = oldProduct.getKey();
-        return productService.fetchProduct(key)
-                .thenCompose(productOptional -> productOptional
-                        .map(fetchedProduct -> fetchProductAttributesMetadataAndUpdate(fetchedProduct, newProduct))
-                        .orElseGet(() -> {
-                            handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE));
-                            return CompletableFuture.completedFuture(productOptional);
-                        })
-                );
+        return productService
+            .fetchProduct(key)
+            .handle(ImmutablePair::new)
+            .thenCompose(fetchResponse -> {
+                final Optional<Product> fetchedProductOptional = fetchResponse.getKey();
+                final Throwable exception = fetchResponse.getValue();
+
+                if (exception != null) {
+                    handleError(format("Failed to fetch existing product with key: '%s'.", key), exception);
+                    return CompletableFuture.completedFuture(empty());
+                }
+
+                return fetchedProductOptional
+                    .map(fetchedProduct -> fetchProductAttributesMetadataAndUpdate(fetchedProduct, newProduct))
+                    .orElseGet(() -> {
+                        handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE));
+                        return CompletableFuture.completedFuture(empty());
+                    });
+            });
     }
 
     /**
@@ -296,5 +325,22 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
         syncOptions.applyErrorCallback(errorMessage, exception);
         statistics.incrementFailed();
+    }
+
+    /**
+     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
+     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
+     * incrementing the total number of failed product to sync with the supplied {@code failedTimes}.
+     *
+     * @param errorMessage The error message describing the reason(s) of failure.
+     * @param exception    The exception that called caused the failure, if any.
+     * @param failedTimes  The number of times that the failed products counter is incremented.
+     */
+    private void handleError(@Nonnull final String errorMessage,
+                             @Nullable final Throwable exception,
+                             final int failedTimes) {
+
+        syncOptions.applyErrorCallback(errorMessage, exception);
+        statistics.incrementFailed(failedTimes);
     }
 }
