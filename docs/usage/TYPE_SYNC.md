@@ -111,7 +111,7 @@ and field definitions can be found [here](/src/test/java/com/commercetools/sync/
 
 ## Caveats
 
-1. Types are either created or updated. Currently, the tool does not support type deletion.
-2. Updating the label of enum values and localized enum values of field definition is not supported yet.
-3. Removing the enum values from the field definition is not supported yet.
-4. Updating the input hint of field definition is not supported yet.
+1. Updating the label of enum values and localized enum values of field definition is not supported yet.
+2. Removing the enum values from the field definition is not supported yet.
+3. Updating the input hint of field definition is not supported yet.
+4. Syncing types with an field of type [SetType](https://docs.commercetools.com/http-api-projects-types.html#settype) is not supported yet.
