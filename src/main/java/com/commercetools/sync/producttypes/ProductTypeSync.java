@@ -67,7 +67,6 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             @Nonnull final List<ProductTypeDraft> productTypeDrafts) {
 
         final List<List<ProductTypeDraft>> batches = batchElements(productTypeDrafts, syncOptions.getBatchSize());
-
         return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
 
@@ -96,8 +95,22 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         } else {
             final Set<String> keys = validProductTypeDrafts.stream().map(ProductTypeDraft::getKey).collect(toSet());
 
-            return fetchExistingProductTypes(keys)
-                .thenCompose(oldProductTypes -> syncBatch(oldProductTypes, validProductTypeDrafts))
+
+            return productTypeService
+                .fetchMatchingProductTypesByKeys(keys)
+                .handle(ImmutablePair::new)
+                .thenCompose(fetchResponse -> {
+                    final Set<ProductType> fetchedProductTypes = fetchResponse.getKey();
+                    final Throwable exception = fetchResponse.getValue();
+
+                    if (exception != null) {
+                        final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keys);
+                        handleError(errorMessage, exception, keys.size());
+                        return CompletableFuture.completedFuture(null);
+                    } else {
+                        return syncBatch(fetchedProductTypes, validProductTypeDrafts);
+                    }
+                })
                 .thenApply(ignored -> {
                     statistics.incrementProcessed(batch.size());
                     return statistics;
@@ -123,23 +136,6 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         }
 
         return false;
-    }
-
-    /**
-     * Given a set of product type keys, fetches the corresponding product types from CTP if they exist.
-     *
-     * @param keys the keys of the product types that are wanted to be fetched.
-     * @return a {@link CompletionStage} which contains the set of product types corresponding to the keys.
-     */
-    private CompletionStage<Set<ProductType>> fetchExistingProductTypes(@Nonnull final Set<String> keys) {
-        return productTypeService
-                .fetchMatchingProductTypesByKeys(keys)
-                .exceptionally(exception -> {
-                    final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keys);
-                    handleError(errorMessage, exception, keys.size());
-
-                    return emptySet();
-                });
     }
 
     /**
