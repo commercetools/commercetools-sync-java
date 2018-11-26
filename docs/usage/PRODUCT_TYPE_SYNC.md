@@ -133,3 +133,4 @@ More examples of those utils for different fields can be found [here](/src/test/
     In order to exploit the number of `max parallel requests`, the `batch size` should have a value set which is equal or higher.
     
 3. Syncing product types with an attribute of type [NestedType](https://docs.commercetools.com/http-api-projects-productTypes.html#nestedtype) is not supported yet.
+4. Syncing product types with an attribute of type [SetType](https://docs.commercetools.com/http-api-projects-productTypes.html#settype) is not supported yet.
