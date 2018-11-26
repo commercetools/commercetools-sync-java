@@ -757,8 +757,7 @@ public class TypeSyncIT {
         // Mock sphere client to return BadGatewayException on the first update request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(TypeUpdateCommand.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(
-                new Exception("bad gateway issue on test", new BadGatewayException())));
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture( new BadGatewayException()));
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> errors = new ArrayList<>();
@@ -802,8 +801,7 @@ public class TypeSyncIT {
         // Mock sphere client to return ConcurrentModification on the first update request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(TypeUpdateCommand.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(
-                new Exception("concurrency modification issue on test", new ConcurrentModificationException())))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
         final List<String> errorMessages = new ArrayList<>();
@@ -841,8 +839,7 @@ public class TypeSyncIT {
         // Mock sphere client to return ConcurrentModification on the first update request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(TypeUpdateCommand.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(
-                new Exception("concurrency modification issue on test", new ConcurrentModificationException())))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture( new ConcurrentModificationException()))
             .thenCallRealMethod();
 
         when(spyClient.execute(any(TypeQuery.class)))
