@@ -10,7 +10,6 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.queries.PagedResult;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -73,21 +72,16 @@ public final class CategoryServiceImpl extends BaseService<Category, CategoryDra
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
 
-        final Function<List<Category>, List<Category>> categoryPageCallBack = categoriesPage -> categoriesPage;
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(),
-            CategoryQuery.of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys)),
-            categoryPageCallBack)
-                            .handle((fetchedCategories, sphereException) -> {
-                                if (sphereException != null) {
-                                    syncOptions
-                                        .applyErrorCallback(format(FETCH_FAILED, categoryKeys, sphereException),
-                                            sphereException);
-                                    return Collections.emptySet();
-                                }
-                                return fetchedCategories.stream()
-                                                        .flatMap(List::stream)
-                                                        .collect(Collectors.toSet());
-                            });
+        final CategoryQuery categoryQuery = CategoryQuery
+                .of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys));
+
+        return CtpQueryUtils
+                .queryAll(syncOptions.getCtpClient(), categoryQuery, Function.identity())
+                .thenApply(fetchedCategories -> fetchedCategories
+                        .stream()
+                        .flatMap(List::stream)
+                        .peek(category -> keyToIdCache.put(category.getKey(), category.getId()))
+                        .collect(Collectors.toSet()));
     }
 
     @Nonnull
@@ -97,13 +91,19 @@ public final class CategoryServiceImpl extends BaseService<Category, CategoryDra
             return CompletableFuture.completedFuture(Optional.empty());
         }
 
-        return syncOptions.getCtpClient()
-                .execute(CategoryQuery.of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().is(key)))
-                .thenApply(PagedResult::head)
-                .exceptionally(sphereException -> {
-                    syncOptions.applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
-                    return Optional.empty();
-                });
+        final CategoryQuery categoryQuery = CategoryQuery
+                .of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().is(key));
+
+        return syncOptions
+                .getCtpClient()
+                .execute(categoryQuery)
+                .thenApply(categoryPagedQueryResult ->
+                        categoryPagedQueryResult
+                                .head()
+                                .map(category -> {
+                                    keyToIdCache.put(category.getKey(), category.getId());
+                                    return category;
+                                }));
     }
 
     @Nonnull

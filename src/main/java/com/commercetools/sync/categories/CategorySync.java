@@ -15,6 +15,7 @@ import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.ResourceIdentifier;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,7 +44,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
         + "CategoryDraft with key:'%s'. Reason: %s";
     private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
-    private static final String FETCH_ON_RETRY = "Failed to fetch category on retry.";
+    private static final String UNEXPECTED_DELETE = "Not found when attempting to fetch on retrying " +
+            "from concurrency modification.";
 
     private final CategoryService categoryService;
     private final CategoryReferenceResolver referenceResolver;
@@ -161,27 +163,41 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         categoryKeysWithResolvedParents = ConcurrentHashMap.newKeySet();
         categoryDraftsToUpdate = new ConcurrentHashMap<>();
 
-        return categoryService.cacheKeysToIds()
-                              .thenCompose(keyToIdCache -> {
-                                  prepareDraftsForProcessing(categoryDrafts, keyToIdCache);
-                                  categoryKeysToFetch = existingCategoryDrafts.stream().map(CategoryDraft::getKey)
-                                                                              .collect(Collectors.toSet());
-                                  return categoryService.createCategories(newCategoryDrafts)
-                                                        .thenAccept(this::processCreatedCategories)
-                                                        .thenCompose(result -> categoryService
-                                                            .fetchMatchingCategoriesByKeys(categoryKeysToFetch))
-                                                        .thenAccept(fetchedCategories ->
-                                                            processFetchedCategories(fetchedCategories,
-                                                                referencesResolvedDrafts, keyToIdCache))
-                                                        .thenAccept(ignoredResult ->
-                                                            updateCategoriesSequentially(categoryDraftsToUpdate))
-                                                        .thenCompose(ignoredResult ->
-                                                            updateCategoriesInParallel(categoryDraftsToUpdate))
-                                                        .thenApply((ignoredResult) -> {
-                                                            statistics.incrementProcessed(numberOfNewDraftsToProcess);
-                                                            return statistics;
-                                                        });
-                              });
+        return categoryService
+                .cacheKeysToIds()
+                .thenCompose(keyToIdCache -> {
+                    prepareDraftsForProcessing(categoryDrafts, keyToIdCache);
+                    categoryKeysToFetch =
+                            existingCategoryDrafts.stream().map(CategoryDraft::getKey).collect(Collectors.toSet());
+                    return categoryService
+                            .createCategories(newCategoryDrafts)
+                            .thenAccept(this::processCreatedCategories)
+                            .thenCompose(result -> categoryService
+                                    .fetchMatchingCategoriesByKeys(categoryKeysToFetch)
+                                    .handle(ImmutablePair::new)
+                                    .thenCompose(fetchResponse -> {
+                                        final Set<Category> fetchedCategories = fetchResponse.getKey();
+                                        final Throwable exception = fetchResponse.getValue();
+
+                                        if (exception != null) {
+                                            final String errorMessage =
+                                                    format("Failed to fetch existing categories with keys: '%s'.",
+                                                    categoryKeysToFetch);
+                                            handleError(errorMessage, exception, categoryKeysToFetch.size());
+                                            return CompletableFuture.completedFuture(null);
+                                        } else {
+                                            processFetchedCategories(fetchedCategories,
+                                                    referencesResolvedDrafts, keyToIdCache);
+                                            updateCategoriesSequentially(categoryDraftsToUpdate);
+                                            return updateCategoriesInParallel(categoryDraftsToUpdate);
+                                        }
+                                    })
+                            )
+                            .thenApply(ignoredResult -> {
+                                statistics.incrementProcessed(numberOfNewDraftsToProcess);
+                                return statistics;
+                            });
+                });
     }
 
     /**
@@ -572,14 +588,25 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private CompletionStage<Void> fetchAndUpdate(@Nonnull final Category oldCategory,
                                                  @Nonnull final CategoryDraft newCategory) {
         final String key = oldCategory.getKey();
-        return categoryService.fetchCategory(key)
-                .thenCompose(categoryOptional ->
-                        categoryOptional
-                                .map(fetchedCategory -> buildUpdateActionsAndUpdate(fetchedCategory, newCategory))
-                                .orElseGet(() -> {
-                                    handleError(format(UPDATE_FAILED, key, FETCH_ON_RETRY), null);
-                                    return CompletableFuture.completedFuture(null);
-                                }));
+        return categoryService
+                .fetchCategory(key)
+                .handle(ImmutablePair::new)
+                .thenCompose(fetchResponse -> {
+                    final Optional<Category> fetchedCategoryOptional = fetchResponse.getKey();
+                    final Throwable exception = fetchResponse.getValue();
+
+                    if (exception != null) {
+                        handleError(format("Failed to fetch existing category with key: '%s'.", key), exception);
+                        return CompletableFuture.completedFuture(null);
+                    }
+
+                    return fetchedCategoryOptional
+                            .map(fetchedCategory -> buildUpdateActionsAndUpdate(fetchedCategory, newCategory))
+                            .orElseGet(() -> {
+                                handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE), null);
+                                return CompletableFuture.completedFuture(null);
+                            });
+                });
     }
 
     /**
@@ -593,5 +620,22 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
         syncOptions.applyErrorCallback(errorMessage, exception);
         statistics.incrementFailed();
+    }
+
+    /**
+     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
+     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
+     * incrementing the total number of failed category to sync with the supplied {@code failedTimes}.
+     *
+     * @param errorMessage The error message describing the reason(s) of failure.
+     * @param exception    The exception that called caused the failure, if any.
+     * @param failedTimes  The number of times that the failed category counter is incremented.
+     */
+    private void handleError(@Nonnull final String errorMessage,
+                             @Nullable final Throwable exception,
+                             final int failedTimes) {
+
+        syncOptions.applyErrorCallback(errorMessage, exception);
+        statistics.incrementFailed(failedTimes);
     }
 }
