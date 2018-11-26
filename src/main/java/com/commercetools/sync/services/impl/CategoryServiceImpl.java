@@ -34,7 +34,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
 public final class CategoryServiceImpl extends BaseService<Category, CategoryDraft> implements CategoryService {
-    private static final String FETCH_FAILED = "Failed to fetch Categories with keys: '%s'. Reason: %s";
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
         + "category matching.";
 
