@@ -4,11 +4,16 @@ import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
+import io.sphere.sdk.categories.commands.CategoryCreateCommand;
+import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.SphereException;
+import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
@@ -35,6 +41,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -373,5 +380,102 @@ public class CategorySyncTest {
         verify(syncSpy, times(expectedNumberOfCalls)).syncBatches(any(), any());
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
+    }
+
+    @Test
+    public void sync_WithFailOnCachingKeysToIds_ShouldTriggerErrorCallbackAndReturnProperStats() {
+        // preparation
+        final SphereClient mockClient = mock(SphereClient.class);
+        when(mockClient.execute(any(CategoryQuery.class)))
+                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+
+        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder
+                .of(mockClient)
+                .errorCallback((errorMessage, exception) -> {
+                    errorCallBackMessages.add(errorMessage);
+                    errorCallBackExceptions.add(exception);
+                })
+                .build();
+
+        final CategoryService categoryServiceSpy = spy(new CategoryServiceImpl(syncOptions));
+
+        final CategorySync mockCategorySync = new CategorySync(syncOptions, getMockTypeService(), categoryServiceSpy);
+
+        CategoryDraft categoryDraft =
+                getMockCategoryDraft(Locale.ENGLISH, "name", "newKey", "parentKey", "customTypeId", new HashMap<>());
+
+        // test
+        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(singletonList(categoryDraft))
+                .toCompletableFuture().join();
+
+        // assertions
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+
+        assertThat(errorCallBackMessages)
+                .hasSize(1)
+                .hasOnlyOneElementSatisfying(message ->
+                        assertThat(message).contains("Failed to build a cache of keys to ids.")
+                );
+
+        assertThat(errorCallBackExceptions)
+                .hasSize(1)
+                .hasOnlyOneElementSatisfying(throwable -> {
+                    assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
+                    assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+                });
+    }
+
+    @Test
+    public void sync_WithFailOnFetchingCategories_ShouldTriggerErrorCallbackAndReturnProperStats() {
+        // preparation
+        final SphereClient mockClient = mock(SphereClient.class);
+
+        final String categoryKey = "key";
+        final Category mockCategory = getMockCategory("foo", categoryKey);
+        final PagedQueryResult<Category> pagedQueryResult = mock(PagedQueryResult.class);
+        when(pagedQueryResult.getResults()).thenReturn(singletonList(mockCategory));
+
+        // successful caching but exception on fetch.
+        when(mockClient.execute(any(CategoryQuery.class)))
+                .thenReturn(CompletableFuture.completedFuture(pagedQueryResult))
+                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+
+        when(mockClient.execute(any(CategoryCreateCommand.class)))
+                .thenReturn(CompletableFuture.completedFuture(mockCategory));
+
+        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder
+                .of(mockClient)
+                .errorCallback((errorMessage, exception) -> {
+                    errorCallBackMessages.add(errorMessage);
+                    errorCallBackExceptions.add(exception);
+                })
+                .build();
+
+        final CategoryService categoryServiceSpy = spy(new CategoryServiceImpl(syncOptions));
+
+        final CategorySync mockCategorySync = new CategorySync(syncOptions, getMockTypeService(), categoryServiceSpy);
+
+        final CategoryDraft categoryDraft =
+                getMockCategoryDraft(Locale.ENGLISH, "name", categoryKey, "parentKey", "customTypeId", new HashMap<>());
+
+        // test
+        final CategorySyncStatistics syncStatistics = mockCategorySync.sync(singletonList(categoryDraft))
+                .toCompletableFuture().join();
+
+        // assertions
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+
+        assertThat(errorCallBackMessages)
+                .hasSize(1)
+                .hasOnlyOneElementSatisfying(message ->
+                        assertThat(message).contains("Failed to fetch existing categories")
+                );
+
+        assertThat(errorCallBackExceptions)
+                .hasSize(1)
+                .hasOnlyOneElementSatisfying(throwable -> {
+                    assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
+                    assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+                });
     }
 }
