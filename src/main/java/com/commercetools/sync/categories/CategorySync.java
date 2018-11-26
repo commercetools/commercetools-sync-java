@@ -44,8 +44,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
         + "CategoryDraft with key:'%s'. Reason: %s";
     private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
-    private static final String UNEXPECTED_DELETE = "Not found when attempting to fetch on retrying "
-        + "from concurrency modification.";
 
     private final CategoryService categoryService;
     private final CategoryReferenceResolver referenceResolver;
@@ -607,14 +605,19 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     final Throwable exception = fetchResponse.getValue();
 
                     if (exception != null) {
-                        handleError(format("Failed to fetch existing category with key: '%s'.", key), exception);
+                        final String errorMessage = format(UPDATE_FAILED, key, "Failed to fetch from CTP while "
+                                + "retrying after concurrency modification.");
+                        handleError(errorMessage, exception);
                         return CompletableFuture.completedFuture(null);
                     }
 
                     return fetchedCategoryOptional
                             .map(fetchedCategory -> buildUpdateActionsAndUpdate(fetchedCategory, newCategory))
                             .orElseGet(() -> {
-                                handleError(format(UPDATE_FAILED, key, UNEXPECTED_DELETE), null);
+                                final String errorMessage =
+                                        format(UPDATE_FAILED, key, "Not found when attempting to fetch while retrying "
+                                                + "after concurrency modification.");
+                                handleError(errorMessage, null);
                                 return CompletableFuture.completedFuture(null);
                             });
                 });
