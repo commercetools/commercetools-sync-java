@@ -25,6 +25,10 @@ public final class TypeSyncUtils {
      * result. If no update actions are needed, for example in case where both the {@link Type} and the
      * {@link TypeDraft} have the same fields, an empty {@link List} is returned.
      *
+     * <p>
+     *  TODO: Check GITHUB ISSUE#339 for missing FieldDefinition update actions.
+     * </p>
+     *
      * @param oldType       the {@link Type} which should be updated.
      * @param newType       the {@link TypeDraft} where we get the new data.
      * @param syncOptions   the sync options wrapper which contains options related to the sync process supplied by

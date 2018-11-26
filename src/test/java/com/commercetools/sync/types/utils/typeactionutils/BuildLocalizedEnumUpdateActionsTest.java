@@ -168,7 +168,6 @@ public class BuildLocalizedEnumUpdateActionsTest {
             ENUM_VALUES_CBD
         );
 
-        // remove enum value actions not exists for type resources
         assertThat(updateActions).containsExactly(
             AddLocalizedEnumValue.of(FIELD_NAME_1, ENUM_VALUE_D),
             ChangeLocalizedEnumValueOrder.of(FIELD_NAME_1, asList(

@@ -20,6 +20,10 @@ public final class PlainEnumValueUpdateActionUtils {
      * for building the required update actions (AddEnumValue, ChangeEnumValueOrder
      * and 1-1 update actions on plain enum values (e.g. changeLabel) for the required resource.
      *
+     * <p>
+     *  TODO: Check GITHUB ISSUE#339 for missing FieldDefinition update actions.
+     * </p>
+     *
      * @param fieldDefinitionName     the field name whose plain enum values are going to be synced.
      * @param oldEnumValues           the old list of plain enum values.
      * @param newEnumValues           the new list of plain enum values.
@@ -31,11 +35,6 @@ public final class PlainEnumValueUpdateActionUtils {
         @Nonnull final String fieldDefinitionName,
         @Nonnull final List<EnumValue> oldEnumValues,
         @Nullable final List<EnumValue> newEnumValues) {
-
-        /*
-          TODO: If the list of newEnumValues is null, then remove actions are built
-                for every existing plain enum value in the oldEnumValues list.
-         */
 
         return EnumValuesUpdateActionUtils.buildActions(fieldDefinitionName,
                 oldEnumValues,

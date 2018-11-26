@@ -21,6 +21,10 @@ public final class LocalizedEnumValueUpdateActionUtils {
      * for building the required update actions (AddLocalizedEnumValue, RemoveEnumValue, ChangeLocalizedEnumValueOrder
      * and 1-1 update actions on localized enum values (e.g. changeLabel) for the required resource.
      *
+     * <p>
+     *  TODO: Check GITHUB ISSUE#339 for missing FieldDefinition update actions.
+     * </p>
+     *
      * @param fieldDefinitionName     the field name whose localized enum values are going to be synced.
      * @param oldEnumValues           the old list of localized enum values.
      * @param newEnumValues           the new list of localized enum values.
@@ -33,11 +37,6 @@ public final class LocalizedEnumValueUpdateActionUtils {
         @Nonnull final String fieldDefinitionName,
         @Nonnull final List<LocalizedEnumValue> oldEnumValues,
         @Nullable final List<LocalizedEnumValue> newEnumValues) {
-
-        /*
-          TODO: If the list of newEnumValues is null, then remove actions are built
-                for every existing localized enum value in the oldEnumValues list.
-         */
 
         return buildActions(fieldDefinitionName,
                 oldEnumValues,

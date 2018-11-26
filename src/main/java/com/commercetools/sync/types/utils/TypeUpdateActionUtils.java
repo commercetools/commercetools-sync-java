@@ -63,6 +63,10 @@ public final class TypeUpdateActionUtils {
      * if values are different.  In case, the new type draft has a list of field definitions in which a
      * duplicate name exists, the error callback is triggered and an empty list is returned.
      *
+     * <p>
+     *  TODO: Check GITHUB ISSUE#339 for missing FieldDefinition update actions.
+     * </p>
+     *
      * @param oldType        the type which should be updated.
      * @param newType        the type draft where we get the key.
      * @param syncOptions    responsible for supplying the sync options to the sync utility method.
