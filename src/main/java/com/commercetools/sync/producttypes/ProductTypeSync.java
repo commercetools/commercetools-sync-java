@@ -166,7 +166,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param newProductTypes drafts that need to be synced.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
-    private CompletionStage<ProductTypeSyncStatistics> syncBatch(
+    private CompletionStage<Void> syncBatch(
             @Nonnull final Set<ProductType> oldProductTypes,
             @Nonnull final Set<ProductTypeDraft> newProductTypes) {
 
@@ -183,7 +183,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                     .orElseGet(() -> createProductType(newProductType));
             })
             .map(CompletionStage::toCompletableFuture)
-            .toArray(CompletableFuture[]::new)).thenApply(result -> statistics);
+            .toArray(CompletableFuture[]::new));
     }
 
     /**
