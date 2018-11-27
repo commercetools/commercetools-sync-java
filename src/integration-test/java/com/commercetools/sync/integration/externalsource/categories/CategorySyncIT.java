@@ -257,7 +257,6 @@ public class CategorySyncIT {
                         + "after concurrency modification.", categoryDraft.getKey()));
     }
 
-
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
