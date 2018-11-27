@@ -56,9 +56,6 @@ a filter function which can be applied on a generated list of update actions. It
 a filter function which can be applied on a product type draft before a request to create it on CTP is issued. It allows the
 user to intercept product type **_create_** requests to modify the draft before the create request is sent to CTP API.
 
-- `allowUuid`
-a flag, if set to `true`, enables the user to use keys with UUID format for references. By default, it is set to `false`.
-
 - `batchSize`
 a number that could be used to set the batch size with which product types are fetched and processed with,
 as product types are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
