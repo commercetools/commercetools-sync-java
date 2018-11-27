@@ -353,6 +353,17 @@ public class CategoryServiceImplIT {
     }
 
     @Test
+    public void fetchCachedCategoryId_WithBlankKey_ShouldReturnFutureContainingEmptyOptional() {
+        // test
+        final Optional<String> result = categoryService.fetchCachedCategoryId("").toCompletableFuture().join();
+
+        // assertions
+        assertThat(result).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
     public void createCategory_WithValidCategory_ShouldCreateCategory() {
         final String newCategoryKey = "newCategoryKey";
         final CategoryDraft categoryDraft = CategoryDraftBuilder

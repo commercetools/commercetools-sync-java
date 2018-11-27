@@ -116,6 +116,7 @@ public final class CategoryServiceImpl extends BaseService<Category, CategoryDra
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String key) {
+
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
