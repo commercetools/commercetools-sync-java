@@ -136,11 +136,17 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     /**
      * Given a list of {@code CategoryDraft} that represent a batch of category drafts, this method for the first batch
-     * only caches a list of all the categories in the CTP project in a cached map that representing each category's
-     * key to the id. It then validates the category drafts, then resolves all the references. Then it creates all
-     * categories that need to be created in parallel while keeping track of the categories that have their
-     * non-existing parents. Then it does update actions that don't require parent changes in parallel. Then in a
-     * blocking fashion issues update actions that don't involve parent changes sequentially.
+     * only caches a mapping of key to the id of <b>all categories</b> in the CTP project. It then validates the
+     * category drafts, then resolves all the references. Then it creates all categories that need to be created in
+     * parallel while keeping track of the categories that have their non-existing parents. Then it does update actions
+     * that don't require parent changes in parallel. Then in a blocking fashion issues update actions that don't
+     * involve parent changes sequentially.
+     *
+     *
+     * <p> In case of error during of fetch during the caching of category keys or during of fetching of existing
+     * categories, the error callback will be triggered. And the sync process would stop for the given batch.
+     * </p>
+     *
      *
      * <p>More on the exact implementation of how the sync works here:
      * https://github.com/commercetools/commercetools-sync-java/wiki/Category-Sync-Underlying-Concept

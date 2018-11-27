@@ -89,6 +89,10 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * {@link ProductTypeSync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
      * requests accordingly) on the target project.
      *
+     * <p> In case of error during of fetching of existing productTypes, the error callback will be triggered.
+     * And the sync process would stop for the given batch.
+     * </p>
+     *
      * @param batch batch of drafts that need to be synced
      * @return a {@link CompletionStage} containing an instance
      *         of {@link ProductTypeSyncStatistics} which contains information about the result of syncing the supplied 
