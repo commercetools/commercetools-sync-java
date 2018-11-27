@@ -1,0 +1,21 @@
+# Table of contents
+
+* [README](README.md)
+* [docs](docs/README.md)
+  * [usage](docs/usage/README.md)
+    * [INVENTORY\_SYNC](docs/usage/inventory_sync.md)
+    * [SYNC\_OPTIONS](docs/usage/sync_options.md)
+    * [CATEGORY\_SYNC](docs/usage/category_sync.md)
+    * [Quick Start](docs/usage/quick_start.md)
+    * [PRODUCT\_TYPE\_SYNC](docs/usage/product_type_sync.md)
+    * [product\_sync](docs/usage/product_sync.md)
+    * [UTILITIES](docs/usage/utilities.md)
+  * [CONTRIBUTING](docs/contributing.md)
+  * [BUILD](docs/build.md)
+  * [CODE\_OF\_CONDUCT](docs/code_of_conduct.md)
+  * [RELEASE\_NOTES](docs/release_notes.md)
+  * [BENCHMARKS](docs/benchmarks.md)
+* [.github](.github/README.md)
+  * [ISSUE\_TEMPLATE](.github/issue_template.md)
+  * [PULL\_REQUEST\_TEMPLATE](.github/pull_request_template.md)
+
