@@ -17,9 +17,9 @@ implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M14'
 ````
 
 
-### Import Products
+### Sync Products
 
-#### Setup Syncing Options
+#### 1. Setup Syncing Options
 
  ```java
  final Logger logger = LoggerFactory.getLogger(MySync.class);
@@ -29,7 +29,7 @@ implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M14'
                                                                         .build();
  ```
  
-#### Start Syncing
+#### 2. Start Syncing
  ````java
  
  // Transform your product feed batch into a list of ProductDrafts using your prefered way.
@@ -40,7 +40,7 @@ implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M14'
  // execute the sync on your list of products
  CompletionStage<ProductSyncStatistics> syncStatisticsStage = productSync.sync(productDraftsBatch);
  ````
-#### And you're Done!
+#### 3. And you're Done!
  ````java
  final ProductSyncStatistics stats = syncStatisticsStage.toCompletebleFuture().join();
  stats.getReportMessage(); 
