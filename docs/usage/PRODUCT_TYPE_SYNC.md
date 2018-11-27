@@ -1,4 +1,4 @@
-# commercetools product type sync
+# ProductType sync
 
 A utility which provides an API for building CTP product type update actions and product type synchronisation.
 

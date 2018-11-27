@@ -1,4 +1,4 @@
-# commercetools category sync
+# Category Sync
 
 A utility which provides an API for building CTP category update actions and category synchronisation.
 
