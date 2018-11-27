@@ -52,7 +52,6 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <!--
-
 ### v1.0.0-M15 -  Oct 20, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...v1.0.0-M15) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M15/) | 
@@ -63,22 +62,29 @@
 empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
 optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255)
 
-**Enhancements** (2)
-- **Commons** - Bumped commercetools-jvm-sdk to version [1.35.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_35_0).
-- **Commons** - Bumped `mockito` to 2.23.0.
+**Enhancements** (11)
+- **ProductType Sync** - Added `ProductTypeSyncBenchmark` to benchmark the product type sync, to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
+- **Commons** - Bumped commercetools-jvm-sdk to version [1.37.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_37_0).
+- **Commons** - Bumped `mockito` to 2.23.4.
+- **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
+- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.3.2.
+- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.3.2.
+- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.3.2.
+- **Commons** - Bumped `org.ajoberstar.git-publish` to 2.0.0.
+- **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
+- **Commons** - Bumped `org.ajoberstar.grgit` to 3.0.0.
+- **Commons** - Bumped gradle to version [gradle-5.0](https://docs.gradle.org/5.0/release-notes.html).
 
 **Changes** (3)
 - **Product Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
 - **Category Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
 - **Inventory Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
 
-**Breaking Changes** (4)
+**Breaking Changes** (11)
 - **Product Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 - **Category Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 - **Inventory Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 - **ProductType Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
-
-**Breaking Changes** (7)
 - **ProductType Sync** - Renamed `ProductTypeUpdateAttributeDefinitionActionUtils` to `AttributeDefinitionsUpdateActionUtils`. It is also now meant to be **only used internally** by the library. 
 Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - `AttributeDefinitionUpdateActionUtils` is now meant to be **only used internally** by the library. 
@@ -89,10 +95,6 @@ Its  behaviour is not guaranteed if used externally. [#302](https://github.com/c
 - **ProductType Sync** - Renamed `ProductTypeUpdatePlainEnumActionUtils` to `PlainEnumsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - Renamed `LocalizedEnumUpdateActionsUtils` to `LocalizedEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - Renamed `PlainEnumUpdateActionsUtils` to `PlainEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-
-**Enhancements** (1)
-- **ProductType Sync** - Added `ProductTypeSyncBenchmark` to benchmark the product type sync, to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
-
 -->
 
 
