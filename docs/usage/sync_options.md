@@ -1,4 +1,4 @@
-# Utilities
+# Sync Options
 
 Additional optional configuration for the sync can be configured on the `ProductTypeSyncOptionsBuilder` instance, according to your need:
 
