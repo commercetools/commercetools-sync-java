@@ -449,7 +449,7 @@ public class ProductSyncIT {
         assertThat(errorCallBackExceptions).hasSize(1);
 
         assertThat(errorCallBackMessages.get(0)).contains(
-            format("Failed to update Category with key: '%s'. Reason: Not found when attempting to fetch while"
+            format("Failed to update Product with key: '%s'. Reason: Not found when attempting to fetch while"
                 + " retrying after concurrency modification.", productDraft.getKey()));
     }
 
