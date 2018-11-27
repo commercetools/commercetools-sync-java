@@ -218,16 +218,6 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void fetchCachedCategoryId_WithNonExistingCategory_ShouldNotFetchACategory() {
-        final Optional<String> categoryId = categoryService.fetchCachedCategoryId("non-existing-category-key")
-                                                           .toCompletableFuture()
-                                                           .join();
-        assertThat(categoryId).isEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
     public void createCategories_WithAllValidCategories_ShouldCreateCategories() {
         final CategoryDraft categoryDraft1 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture1"),
@@ -317,6 +307,16 @@ public class CategoryServiceImplIT {
         assertThat(errorCallBackMessages.toString()).contains("\"duplicateValue\" : \"furniture\"");
 
         assertThat(createdCategories).isEmpty();
+    }
+
+    @Test
+    public void fetchCachedCategoryId_WithNonExistingCategory_ShouldNotFetchACategory() {
+        final Optional<String> categoryId = categoryService.fetchCachedCategoryId("non-existing-category-key")
+                                                           .toCompletableFuture()
+                                                           .join();
+        assertThat(categoryId).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
     }
 
     @Test
