@@ -32,20 +32,21 @@ implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M14'
  
 #### 2. Start Syncing
  ````java
- 
- // Transform your product feed batch into a list of ProductDrafts using your prefered way.
+ // Transform your product feed batch into a list of ProductDrafts 
+ // using your preferred way.
  final List<ProductDraft> productDraftsBatch = ...
  
  final ProductSync productSync = new ProductSync(productSyncOptions);
  
  // execute the sync on your list of products
  final CompletionStage<ProductSyncStatistics> syncStatisticsStage = 
-                                                    productSync.sync(productDraftsBatch);
+                        productSync.sync(productDraftsBatch);
  ````
-#### 3. And you're Done!
+#### 3. And you're done ✨
  ````java
  final ProductSyncStatistics stats = syncStatisticsStage.toCompletebleFuture()
                                                         .join();
  stats.getReportMessage(); 
- /*"Summary: 2000 products were processed in total (1000 created, 995 updated and 5 failed to sync)."*/
+ /*"Summary: 2000 products were processed in total 
+            (1000 created, 995 updated and 5 failed to sync)."*/
  ````
