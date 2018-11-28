@@ -24,7 +24,7 @@ public final class LocalizedEnumValueUpdateActionUtils {
      * Compares a list of old {@link LocalizedEnumValue}s with a list of new {@link LocalizedEnumValue}s for a given
      * attribute definition.
      * The method serves as a generic implementation for localized enum values syncing. The method takes in functions
-     * for building the required update actions (AddLocalizedEnumValue, RemoveEnumValue, ChangeLocalizedEnumValueOrder
+     * for building the required update actions (AddLocalizedEnumValue, RemoveEnumValue, ChangeLocalizedEnumValueOrder)
      * and 1-1 update actions on localized enum values (e.g. changeLabel) for the required resource.
      *
      * <p>If the list of new {@link LocalizedEnumValue}s is {@code null}, then remove actions are built for
