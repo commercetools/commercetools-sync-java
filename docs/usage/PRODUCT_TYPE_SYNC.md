@@ -26,16 +26,10 @@ A utility which provides an API for building CTP product type update actions and
 1. The sync expects a list of non-null `ProductTypeDrafts` objects that have their `key` fields set to match the
 product types from the source to the target. Also, the target project is expected to have the `key` fields set, otherwise they won't be
 matched.
-2. It is an important responsibility of the user of the library to instantiate a `sphereClient` that has the following properties:
-    - Limits the number of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with
-   [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html)
-    - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the
-   [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
 
-   If you have no special requirements on sphere client creation then you can use `ClientConfigurationUtils#createClient`
-   util which applies best practices already.
+2. Create a `sphereClient` [as described here](/docs/usage/IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
-4. After the `sphereClient` is setup, a `ProductTypeSyncOptions` should be be built as follows:
+3. After the `sphereClient` is setup, a `ProductTypeSyncOptions` should be be built as follows:
 ````java
 // instantiating a ProductTypeSyncOptions
 final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder.of(sphereClient).build();

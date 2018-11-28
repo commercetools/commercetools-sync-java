@@ -41,14 +41,8 @@ matched.
     ````
      
    Example of its usage can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130).
-3. It is an important responsibility of the user of the library to instantiate a `sphereClient` that has the following properties:
-    - Limits the number of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with 
-   [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html) 
-    - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the 
-   [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
-   
-   If you have no special requirements on the sphere client creation, then you can use the `ClientConfigurationUtils#createClient` 
-   util which applies the best practices.
+
+3. Create a `sphereClient` [as described here](/docs/usage/IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 4. After the `sphereClient` is set up, a `CategorySyncOptions` should be built as follows: 
 ````java
