@@ -5,8 +5,6 @@
 
 
 - [1. Installation](#1-installation)
-  - [Maven](#maven)
-  - [Gradle](#gradle)
 - [2. Setup Syncing Options](#2-setup-syncing-options)
 - [3. Start Syncing](#3-start-syncing)
 - [4. And you're done ✨](#4-and-youre-done-)
