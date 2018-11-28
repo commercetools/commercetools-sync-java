@@ -14,18 +14,42 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ### 1. Installation
-There are multiple ways to download the commercetools sync dependency, based on your dependency manager. Here are the 
-most popular ones:
-#### Maven 
+- Make sure you have `Java 8`.
+- Add the following dependencies in your application:
+- For Maven users: 
 ````xml
+<!-- Add commercetools-jvm-sdk dependencies. -->
+<dependency>
+  <groupId>com.commercetools.sdk.jvm.core</groupId>
+  <artifactId>commercetools-models</artifactId>
+  <version>1.36.0</version>
+</dependency>
+<dependency>
+  <groupId>com.commercetools.sdk.jvm.core</groupId>
+  <artifactId>commercetools-java-client</artifactId>
+  <version>1.36.0</version>
+</dependency>
+<dependency>
+  <groupId>com.commercetools.sdk.jvm.core</groupId>
+  <artifactId>commercetools-convenience</artifactId>
+  <version>1.36.0</version>
+</dependency>
+
+<!-- Add commercetools-sync-java dependency. -->
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
   <version>v1.0.0-M14</version>
 </dependency>
 ````
-#### Gradle
+- For Gradle users:
 ````groovy
+// Add commercetools-jvm-sdk dependencies.
+implementation 'com.commercetools.sdk.jvm.core:commercetools-models:1.37.0'
+implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client:1.37.0'
+implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:1.37.0'
+
+// Add commercetools-sync-java dependency.
 implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M14'
 ````
 
@@ -42,21 +66,18 @@ implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M14'
  
 ### 3. Start Syncing
  ````java
- // Transform your product feed batch into a list of ProductDrafts 
- // using your preferred way.
+ // Transform your product feed batch into a list of ProductDrafts using your preferred way.
  final List<ProductDraft> productDraftsBatch = ...
  
  final ProductSync productSync = new ProductSync(productSyncOptions);
  
  // execute the sync on your list of products
- final CompletionStage<ProductSyncStatistics> syncStatisticsStage = 
-                        productSync.sync(productDraftsBatch);
+ final CompletionStage<ProductSyncStatistics> syncStatisticsStage = productSync.sync(productDraftsBatch);
  ````
 ### 4. And you're done ✨
  ````java
  final ProductSyncStatistics stats = syncStatisticsStage.toCompletebleFuture()
                                                         .join();
  stats.getReportMessage(); 
- /*"Summary: 2000 products were processed in total 
-            (1000 created, 995 updated and 5 failed to sync)."*/
+ /*"Summary: 2000 products were processed in total (1000 created, 995 updated and 5 failed to sync)."*/
  ````
