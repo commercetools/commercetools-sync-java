@@ -33,7 +33,7 @@ matched.
    You can instantiate the client the same way it is instantiated in the integration tests for this library found
    [here](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45).
 
-4. After the `sphereClient` is setup, a `TypeSyncOptions` should be be built as follows:
+4. After the `sphereClient` is set up, a `TypeSyncOptions` should be be built as follows:
 ````java
 // instantiating a TypeSyncOptions
 final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(sphereClient).build();

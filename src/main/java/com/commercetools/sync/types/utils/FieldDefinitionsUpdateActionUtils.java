@@ -157,11 +157,11 @@ final class FieldDefinitionsUpdateActionUtils {
                 return ofNullable(matchingNewFieldDefinition)
                     .map(newFieldDefinition -> {
                         if (newFieldDefinition.getType() != null) {
-                            // field type is required so if null we let commercetools to throw exception
+                            // field type is required so if null we let CTP to throw exception
                             if (haveSameFieldType(oldFieldDefinition.getType(), newFieldDefinition.getType())) {
                                 return buildActions(oldFieldDefinition, newFieldDefinition);
                             } else {
-                                // since there is no way to change an field type on CTP,
+                                // since there is no way to change a field type on CTP,
                                 // we remove the field definition and add a new one with a new field type
                                 return Arrays.asList(
                                     RemoveFieldDefinition.of(oldFieldDefinitionName),

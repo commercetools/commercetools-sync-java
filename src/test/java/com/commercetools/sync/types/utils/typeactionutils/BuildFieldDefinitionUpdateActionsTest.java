@@ -112,7 +112,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithNullNewAFieldDefinitionsAndNoOldFieldDefinitions_ShouldNotBuildActions() {
+    public void buildUpdateActions_WithNullNewFieldDefinitionsAndNoOldFieldDefinitions_ShouldNotBuildActions() {
         final Type oldType = mock(Type.class);
         when(oldType.getFieldDefinitions()).thenReturn(emptyList());
         when(oldType.getKey()).thenReturn("type_key_1");
@@ -245,7 +245,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithOneFieldDefinitionSwitch_ShouldBuildRemoveAndAddAFieldDefinitionsActions() {
+    public void buildUpdateActions_WithOneFieldDefinitionSwitch_ShouldBuildRemoveAndAddFieldDefinitionsActions() {
         final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
         final TypeDraft newTypeDraft = readObjectFromResource(
@@ -421,7 +421,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithANullNewFieldDefinition_ShouldSkipNullFieldDefinitions() {
+    public void buildUpdateActions_WithNullNewFieldDefinition_ShouldSkipNullFieldDefinitions() {
         // preparation
         final Type oldType = mock(Type.class);
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
