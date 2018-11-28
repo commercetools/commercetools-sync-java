@@ -1,6 +1,8 @@
 # Category Sync
 
-A utility which provides an API for building CTP category update actions and category synchronisation.
+Module used for importing/syncing Categories into a commercetools project. 
+It also provides utilities for generating update actions based on the comparison of a [Category](https://docs.commercetools.com/http-api-projects-categories.html#category) 
+against a [CategoryDraft](https://docs.commercetools.com/http-api-projects-categories.html#categorydraft).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->

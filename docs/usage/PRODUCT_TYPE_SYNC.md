@@ -1,6 +1,8 @@
 # ProductType Sync
 
-A utility which provides an API for building CTP product type update actions and product type synchronisation.
+Module used for importing/syncing ProductTypes into a commercetools project. 
+It also provides utilities for generating update actions based on the comparison of a [ProductType](https://docs.commercetools.com/http-api-projects-productTypes.html#producttype) 
+against a [ProductTypeDraft](https://docs.commercetools.com/http-api-projects-productTypes.html#producttypedraft).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->

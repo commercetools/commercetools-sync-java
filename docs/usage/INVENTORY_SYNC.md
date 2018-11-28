@@ -1,6 +1,8 @@
 # InventoryEntry Sync
 
-A utility which provides an API for building CTP inventory update actions and inventory synchronisation.
+Module used for importing/syncing InventoryEntries into a commercetools project. 
+It also provides utilities for generating update actions based on the comparison of a [InventoryEntry](https://docs.commercetools.com/http-api-projects-inventory.html#inventoryentry) 
+against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects-inventory.html#inventoryentrydraft).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->

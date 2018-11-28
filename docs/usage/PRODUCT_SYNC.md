@@ -1,6 +1,8 @@
 # Product Sync
 
-A utility which provides an API for building CTP product update actions and product synchronisation.
+Module used for importing/syncing Products into a commercetools project. 
+It also provides utilities for generating update actions based on the comparison of a [Product](https://docs.commercetools.com/http-api-projects-products.html#product) 
+against a [ProductDraft](https://docs.commercetools.com/http-api-projects-products.html#productdraft).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
