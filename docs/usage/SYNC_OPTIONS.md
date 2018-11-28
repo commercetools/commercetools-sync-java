@@ -27,12 +27,12 @@ in a single request. Playing with this option can slightly improve or reduce pro
 #### `syncFilter` (Only for Product Sync Options)
  represents either a blacklist or a whitelist for filtering certain update action groups. 
   - __Blacklisting__ an update action group means that everything in products will be synced except for any group 
-  in the blacklist. A typical use case is to blacklist prices when syncing products is to sync everything in products
-  except prices. 
+  in the blacklist. A typical use case is to blacklist prices when syncing products. In other words, syncing everything 
+  in products except prices. 
   
   - __Whitelisting__ an update action group means that the groups in this whitelist will be the *only* group synced in 
-  products. One use case could be to whitelist prices when syncing products, so as to only sync prices in products and
-  nothing else.
+  products. One use case could be to whitelist prices when syncing products. In other words, syncing prices only in 
+  products and nothing else.
   
   - The list of action groups allowed to be blacklisted or whitelisted on products can be found [here](/src/main/java/com/commercetools/sync/products/ActionGroup.java). 
 
