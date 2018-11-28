@@ -118,7 +118,6 @@ More examples of those utils for different fields can be found [here](/src/test/
 
 ## Caveats
 
-1. Product types are either created or updated. Currently the tool does not support product type deletion.
 2. The sync library is not meant to be executed in a parallel fashion. Check the example in [point #2 here](/docs/usage/PRODUCT_SYNC.md#caveats).
     By design, scaling the sync process should **not** be done by executing the batches themselves in parallel. However, it can be done either by:
      - Changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) within the `sphereClient` configuration. It defines how many requests the client can execute in parallel.

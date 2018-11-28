@@ -46,6 +46,9 @@ commercetools sync is a Java library that could be used to synchronise CTP data 
 [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
+
+> Synchronise: Resources will either be created or updated. But they will **not** be deleted.
+
 Check out the [Quick Start Guide](/docs/usage/QUICK_START.md) to start using the library right away! ⚡
 
 ### Prerequisites
