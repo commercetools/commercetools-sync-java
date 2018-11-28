@@ -16,10 +16,9 @@ import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.b
 public final class LocalizedEnumValueUpdateActionUtils {
     /**
      * Compares a list of old {@link LocalizedEnumValue}s with a list of new {@link LocalizedEnumValue}s for a given
-     * field definition.
-     * The method serves as an implementation for localized enum values syncing. The method takes in functions
-     * for building the required update actions (AddLocalizedEnumValue, RemoveEnumValue, ChangeLocalizedEnumValueOrder)
-     * and 1-1 update actions on localized enum values (e.g. changeLabel) for the required resource.
+     * field definition and builds required update actions (e.g addLocalizedEnumValue, changeLocalizedEnumValueOrder).
+     * If both the {@link LocalizedEnumValue}'s are identical, then no update action is needed and hence
+     * an empty {@link List} is returned.
      *
      * <p>
      *  TODO: Check GITHUB ISSUE#339 for missing FieldDefinition update actions.

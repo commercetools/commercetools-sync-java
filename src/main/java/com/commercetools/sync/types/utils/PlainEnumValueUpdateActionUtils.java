@@ -15,10 +15,9 @@ public final class PlainEnumValueUpdateActionUtils {
 
     /**
      * Compares a list of old {@link EnumValue}s with a list of new {@link EnumValue}s for a given
-     * field definition.
-     * The method serves as an implementation for plain enum values syncing. The method takes in functions
-     * for building the required update actions (AddEnumValue, ChangeEnumValueOrder
-     * and 1-1 update actions on plain enum values (e.g. changeLabel) for the required resource.
+     * field definition and builds required update actions (e.g addEnumValue, changeEnumValueOrder).
+     * If both the {@link EnumValue}'s are identical, then no update action is needed and hence
+     * an empty {@link List} is returned.
      *
      * <p>
      *  TODO: Check GITHUB ISSUE#339 for missing FieldDefinition update actions.
