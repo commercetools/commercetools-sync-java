@@ -421,7 +421,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithANullNewFieldDefinition_ShouldSkipNullFieldDefinitions() {
+    public void buildUpdateActions_WithNullNewFieldDefinition_ShouldSkipNullFieldDefinitions() {
         // preparation
         final Type oldType = mock(Type.class);
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
