@@ -1,18 +1,22 @@
 # Sync Options
 
 #### `errorCallBack`
-a callback that is called whenever an error event occurs during the sync process.
+a callback that is called whenever an error event occurs during the sync process. It contains information about the 
+error message and the exception.
 
 #### `warningCallBack` 
-a callback that is called whenever a warning event occurs during the sync process.
+a callback that is called whenever a warning event occurs during the sync process. It contains information about the 
+warning message.
 
 #### `beforeUpdateCallback`
-a filter function which can be applied on a generated list of update actions. It allows the user to intercept 
-**_update_** actions just before they are sent to CTP API.
+during the sync process if a target resource and a resource draft are matched, this callback can be used to intercept 
+the **_update_** request just before it is sent to CTP. It contains information about the resource draft, the target
+resource and the update actions that were calculated after comparing both.  
 
 #### `beforeCreateCallback`
-a filter function which can be applied on a draft before a request to create it on CTP is issued. It allows the 
-user to intercept **_create_** requests modify the draft before the create request is sent to CTP API.
+during the sync process if a resource draft should be created, this callback can be used to intercept 
+the **_create_** request just before it sent to CTP.  It contains information about the resource draft that should be
+created.
 
 #### `batchSize`
 a number that could be used to set the batch size with which resources are fetched and processed with,
