@@ -67,7 +67,7 @@ final class AttributeDefinitionUpdateActionUtils {
      * @return A list with the update actions or an empty list if the attribute definition enums are identical.
      */
     @Nonnull
-    static List<UpdateAction<ProductType>> buildEnumUpdateActions(
+    private static List<UpdateAction<ProductType>> buildEnumUpdateActions(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
 
