@@ -18,7 +18,7 @@
    **Breaking Changes** (n) 🚧 
    **Major Enhancements** (n) ✨
    **Enhancements** (n) 🛠️ 
-   **Doc Fixes** (n) 📋
+   **Doc Changes** (n) 📋
    **Critical Bug Fixes** (n) 🔥 
    **Bug Fixes** (n)🐞
    - **Category Sync** - Sync now supports product variant images syncing. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
@@ -60,6 +60,11 @@
 - **Commons** - Added `OptionalUtils#filterEmptyOptionals` which are utility methods that filter out the 
 empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
 optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255)
+
+**Doc Changes** (3) 📋
+- **Commons** - Added a [Quick Start Guide](/docs/usage/QUICK_START.md) for a convinient entry into the library.
+- **Commons** - Moved documentation of sync options to a separate [doc](/docs/usage/SYNC_OPTIONS.md).
+- **Commons** - Added a the earliest compatible version of the commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a prerequisite for using the library.
 
 **Enhancements** (11) 🛠️
 - **ProductType Sync** - Added `ProductTypeSyncBenchmark` to benchmark the product type sync, to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
