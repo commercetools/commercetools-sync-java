@@ -47,8 +47,8 @@ matched.
     - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the 
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
    
-   If you have no special requirements on sphere client creation then you can use `ClientConfigurationUtils#createClient` 
-   util which applies best practices already.
+   If you have no special requirements on the sphere client creation, then you can use the `ClientConfigurationUtils#createClient` 
+   util which applies the best practices.
 
 4. After the `sphereClient` is set up, a `CategorySyncOptions` should be built as follows: 
 ````java
