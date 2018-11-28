@@ -24,13 +24,11 @@ in a single request. Playing with this option can slightly improve or reduce pro
  represents either a blacklist or a whitelist for filtering certain update action groups. 
   - __Blacklisting__ an update action group means that everything in products will be synced except for any group 
   in the blacklist. A typical use case it to blacklist prices when syncing products, so as to sync everything in products
-  except prices. [Here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L142-L143)
-  is an example where the sync is performed while blacklisting product categories. 
+  except prices. 
   
   - __Whitelisting__ an update action group means that the groups in this whitelist will be the *only* group synced in 
   products. One use case could be to whitelist prices when syncing products, so as to only sync prices in products and
-  nothing else. [Here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L173)
-  is an example where the sync is performed while whitelisting product names.
+  nothing else.
   
   - The list of action groups allowed to be blacklist or whitelisted on products can be found [here](/src/main/java/com/commercetools/sync/products/ActionGroup.java). 
 
@@ -45,17 +43,20 @@ If it fails to create the supply channel, the inventory entry/product won't sync
 
 ### Examples
 
-1. Using `errorCallBack` and `warningCallBack` for logging
+#####1. Using `errorCallBack` and `warningCallBack` for logging
+```java
 
- ```java
  final Logger logger = LoggerFactory.getLogger(MySync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder.of(sphereClient)
                                                                         .errorCallBack(logger::error)
                                                                         .warningCallBack(logger::warn)
                                                                         .build();
  ```
+#####2. [Using `beforeUpdateCallback` for syncing a single locale](/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/KeepOtherVariantsSync.java).
 
+#####3. [Using `beforeUpdateCallback` for keeping other variants](/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/SyncSingleLocale.java).
 
-2. [Using `beforeUpdateCallback` for syncing a single locale.](/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/KeepOtherVariantsSync.java)
+#####4. [Using `syncFilter` for blacklisting product categories while syncing products](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L142-L143).
 
-3. [Using `beforeUpdateCallback` for keeping other variants.](/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/SyncSingleLocale.java)
+#####5. [Using `syncFilter` for whitelisting product names while syncing products](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L173).
+ 
