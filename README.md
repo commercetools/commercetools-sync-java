@@ -49,7 +49,7 @@ commercetools sync is a Java library that could be used to synchronise CTP data 
 
 > Synchronise: Resources will either be created or updated. But they will **not** be deleted.
 
-Check out the [Quick Start Guide](/docs/usage/QUICK_START.md) to start using the library right away! ⚡
+⚡ Take a look at the [Quick Start Guide](/docs/usage/QUICK_START.md) to find out how to build a product importer in a glance!
 
 ### Prerequisites
  
