@@ -50,59 +50,15 @@ order for the sync to resolve the actual ids of those references, those `key`s h
     - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the 
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
    
-  If you have no special requirements on sphere client creation then you can use `ClientConfigurationUtils#createClient`
-  util which applies best practices already.
+   If you have no special requirements on sphere client creation then you can use `ClientConfigurationUtils#createClient`
+   util which applies best practices already.
 
 4. After the `sphereClient` is set up, a `ProductSyncOptions` should be built as follows: 
 ````java
 // instantiating a ProductSyncOptions
 final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(sphereClient).build();
 ````
-
-Additional optional configuration for the sync can be configured on the `ProductSyncOptionsBuilder` instance, according to your need:
-- `errorCallBack`
-a callback that is called whenever an error event occurs during the sync process.
-
-- `warningCallBack` 
-a callback that is called whenever a warning event occurs during the sync process.
-
-- `syncFilter`
- represents either a blacklist or a whitelist for filtering certain update action groups. 
-  - __Blacklisting__ an update action group means that everything in products will be synced except for any group 
-  in the blacklist. A typical use case it to blacklist prices when syncing products, so as to sync everything in products
-  except prices. [Here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L142-L143)
-  is an example where the sync is performed while blacklisting product categories. 
-  
-  - __Whitelisting__ an update action group means that the groups in this whitelist will be the *only* group synced in 
-  products. One use case could be to whitelist prices when syncing products, so as to only sync prices in products and
-  nothing else. [Here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L173)
-  is an example where the sync is performed while whitelisting product names.
-  
-  - The list of action groups allowed to be blacklist or whitelisted on products can be found [here](/src/main/java/com/commercetools/sync/products/ActionGroup.java). 
-
-- `beforeUpdateCallback`
-a filter function which can be applied on a generated list of update actions. It allows the user to intercept product 
- **_update_** actions just before they are sent to CTP API.
-
-- `beforeCreateCallback`
-a filter function which can be applied on a product draft before a request to create it on CTP is issued. It allows the 
-user to intercept product **_create_** requests modify the draft before the create request is sent to CTP API.
-
-- `batchSize`
-a number that could be used to set the batch size with which products are fetched and processed with,
-as products are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
-`batchSize` products from the input list, then fetches the corresponding products from the target CTP project
-in a single request. Playing with this option can slightly improve or reduce processing speed. (The default value is `30`).
-
-Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
-streams, would look as follows:
- ```java
- final Logger logger = LoggerFactory.getLogger(MySync.class);
- final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder.of(sphereClient)
-                                                                        .errorCallBack(logger::error)
-                                                                        .warningCallBack(logger::warn)
-                                                                        .build();
- ```
+[More information about Sync Options](/docs/usage/SYNC_OPTIONS.md). 
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:

@@ -54,54 +54,7 @@ A utility which provides an API for building CTP inventory update actions and in
 // instantiating a InventorySyncOptions
 final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(sphereClient).build();
 ````
-
-Additional optional configuration for the sync can be configured on the `InventorySyncOptionsBuilder` instance, according to your need:
-
-- `ensureChannels`
-a flag which represents a strategy to handle syncing inventory entries with missing supply channels.
-Having an inventory entry, with a missing supply channel reference, could be processed in either of the following ways:
-    - If `ensureChannels` is set to `false` this inventory entry won't be synced and the `errorCallback` will be triggered.
-    An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/inventories/InventorySyncIT.java#L310).
-    - If `ensureChannels` is set to `true` the sync will attempt to create the missing channel with the given key.
-      If it fails to create the supply channel, the inventory entry won't sync and `errorCallback` will be triggered.
-      An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/inventories/InventorySyncIT.java#L286).
-    - If not provided, it is set to `false` by default.
-
-- `errorCallBack`
-a callback that is called whenever an error event occurs during the sync process.
-
-- `warningCallBack` 
-a callback that is called whenever a warning event occurs during the sync process.
-
-- `beforeUpdateCallback`
-a filter function which can be applied on a generated list of update actions. It allows the user to intercept inventory 
-entry **_update_** actions just before they are sent to CTP API.
-
-- `beforeCreateCallback`
-a filter function which can be applied on an inventoryEntry draft before a request to create it on CTP is issued. It allows the 
-user to intercept inventoryEntry **_create_** requests to modify the draft before the create request is sent to CTP API.
-
-- `batchSize`
-a number that could be used to set the batch size with which inventory entries are fetched and processed with,
-as inventory entries are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
-`batchSize` inventory entries from the input list, then fetches the corresponding inventory entries from the target CTP project
-in a single request and then performs the update actions needed. Playing with this option can slightly improve or reduce processing speed.
-An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L318).
-    - If not provided, it is set to `30` by default.
-
-- `errorCallBack`
-a callback that is called whenever an event occurs during the sync process that represents an error.
-An example of use can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/inventories/InventorySyncItTest.java#L391)..
-
-Example of options usage, that sets the error and warning callbacks to output the message to the log error and warning 
-streams, would look as follows:
- ```java
- final Logger logger = LoggerFactory.getLogger(MySync.class);
- final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(sphereClient)
-                                                                              .errorCallBack(logger::error)
-                                                                              .warningCallBack(logger::warn)
-                                                                              .build();
- ```
+[More information about Sync Options](/docs/usage/SYNC_OPTIONS.md).
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
