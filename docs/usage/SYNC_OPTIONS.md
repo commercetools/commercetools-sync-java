@@ -45,7 +45,7 @@ If it fails to create the supply channel, the inventory entry/product won't sync
 
 ### Examples
 
-#### Using `errorCallBack` and `warningCallBack` for logging
+1. Using `errorCallBack` and `warningCallBack` for logging
 
  ```java
  final Logger logger = LoggerFactory.getLogger(MySync.class);
@@ -56,6 +56,6 @@ If it fails to create the supply channel, the inventory entry/product won't sync
  ```
 
 
-#### [Using `beforeUpdateCallback` for importing a single locale.](/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/KeepOtherVariantsSync.java)
+2. [Using `beforeUpdateCallback` for syncing a single locale.](/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/KeepOtherVariantsSync.java)
 
-#### [Using `beforeUpdateCallback` for keeping other variants.](/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/SyncSingleLocale.java)
+3. [Using `beforeUpdateCallback` for keeping other variants.](/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/SyncSingleLocale.java)
