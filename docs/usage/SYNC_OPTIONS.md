@@ -43,7 +43,7 @@ If it fails to create the supply channel, the inventory entry/product won't sync
 
 ### Examples
 
-#####1. Using `errorCallBack` and `warningCallBack` for logging
+##### 1. Using `errorCallBack` and `warningCallBack` for logging
 ```java
 
  final Logger logger = LoggerFactory.getLogger(MySync.class);
@@ -52,11 +52,11 @@ If it fails to create the supply channel, the inventory entry/product won't sync
                                                                         .warningCallBack(logger::warn)
                                                                         .build();
  ```
-#####2. [Using `beforeUpdateCallback` for syncing a single locale](/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/KeepOtherVariantsSync.java).
+##### 2. [Using `beforeUpdateCallback` for syncing a single locale](/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/KeepOtherVariantsSync.java).
 
-#####3. [Using `beforeUpdateCallback` for keeping other variants](/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/SyncSingleLocale.java).
+##### 3. [Using `beforeUpdateCallback` for keeping other variants](/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/SyncSingleLocale.java).
 
-#####4. [Using `syncFilter` for blacklisting product categories while syncing products](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L142-L143).
+##### 4. [Using `syncFilter` for blacklisting product categories while syncing products](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L142-L143).
 
-#####5. [Using `syncFilter` for whitelisting product names while syncing products](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L173).
+##### 5. [Using `syncFilter` for whitelisting product names while syncing products](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L173).
  
