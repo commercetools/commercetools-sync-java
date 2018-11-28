@@ -540,6 +540,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     private CompletionStage<Void> updateCategoriesInParallel(
         @Nonnull final Map<CategoryDraft, Category> matchingCategories) {
+
         final List<CompletableFuture<Void>> futures =
             matchingCategories.entrySet().stream()
                               .filter(entry -> !requiresChangeParentUpdateAction(entry.getValue(), entry.getKey()))

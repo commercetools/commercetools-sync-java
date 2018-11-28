@@ -207,6 +207,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     @Nonnull
     private CompletableFuture<Void> createAndUpdateProducts() {
+
         final CompletableFuture<Void> createRequestsStage =
                 createProducts(draftsToCreate)
                         .thenAccept(createdProducts -> updateStatistics(createdProducts, draftsToCreate.size()))

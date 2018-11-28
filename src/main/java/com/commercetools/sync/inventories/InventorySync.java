@@ -204,6 +204,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     private CompletionStage<InventorySyncStatistics> syncBatch(@Nonnull final List<InventoryEntry> oldInventories,
                                             @Nonnull final List<InventoryEntryDraft> inventoryEntryDrafts) {
+
         final Map<InventoryEntryIdentifier , InventoryEntry> identifierToOldInventoryEntry = oldInventories
             .stream().collect(toMap(InventoryEntryIdentifier::of, identity()));
         final List<CompletableFuture<Void>> futures = new ArrayList<>(inventoryEntryDrafts.size());

@@ -137,5 +137,4 @@ public class ProductTypeSyncTest {
         verify(spyProductTypeSyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
         verify(spyProductTypeSyncOptions, never()).applyBeforeCreateCallBack(newProductTypeDraft);
     }
-
 }
