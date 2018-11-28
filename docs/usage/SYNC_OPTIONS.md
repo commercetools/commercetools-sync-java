@@ -19,7 +19,7 @@ the **_create_** request just before it sent to CTP.  It contains information ab
 created.
 
 #### `batchSize`
-a number that could be used to set the batch size with which resources are fetched and processed with,
+a number that could be used to set the batch size with which resources are fetched and processed,
 as resources are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
 `batchSize` resources from the input list, then fetches the corresponding resources from the target CTP project
 in a single request. Playing with this option can slightly improve or reduce processing speed.
