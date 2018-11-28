@@ -127,13 +127,12 @@ final class FieldDefinitionsUpdateActionUtils {
      *         in the new draft. If the field definition still exists in the new draft, then compare the field
      *         definition fields (name, label, etc..), and add the computed actions to the list of update actions.
      *         Otherwise, if the field definitions are identical, an empty optional is returned.
-     * @throws BuildUpdateActionException in case there are field definitions with duplicate names or
-     *         there are field definitions with the null field type.
+     * @throws DuplicateNameException in case there are field definitions drafts with duplicate names.
      */
     @Nonnull
     private static List<UpdateAction<Type>> buildRemoveFieldDefinitionOrFieldDefinitionUpdateActions(
             @Nonnull final List<FieldDefinition> oldFieldDefinitions,
-            @Nonnull final List<FieldDefinition> newFieldDefinitions) throws BuildUpdateActionException {
+            @Nonnull final List<FieldDefinition> newFieldDefinitions) {
 
         final Map<String, FieldDefinition> newFieldDefinitionsNameMap =
                 newFieldDefinitions
