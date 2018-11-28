@@ -88,32 +88,7 @@ More examples of how to use the sync
 2. From an external source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java). 
 3. Syncing with blacklisting/whitelisting [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java).
 
-
-##### Usage Tip
-The sync library is not meant to be executed in a parallel fashion. For example:
-````java
-final ProductSync productSync = new ProductSync(syncOptions);
-final CompletableFuture<ProductSyncStatistics> syncFuture1 = productSync.sync(batch1).toCompletableFuture();
-final CompletableFuture<ProductSyncStatistics> syncFuture2 = productSync.sync(batch2).toCompletableFuture();
-CompletableFuture.allOf(syncFuture1, syncFuture2).join;
-````
-The aforementioned example demonstrates how the library should **not** be used. The library, however, should be instead
-used in a sequential fashion:
-````java
-final ProductSync productSync = new ProductSync(syncOptions);
-productSync.sync(batch1)
-           .thenCompose(result -> productSync.sync(batch2))
-           .toCompletableFuture()
-           .join();
-````
-By design, scaling the sync process should **not** be done by executing the batches themselves in parallel. However, it can be done either by:
- - Changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) within the `sphereClient` configuration. It defines how many requests the client can execute in parallel.
- - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-). It defines how many drafts can one batch contain.
- 
-The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
-is the recommended good balance for stability and performance for the sync process.
-
-In order to exploit the number of `max parallel requests`, the `batch size` should have a value set which is equal or higher.
+*Make sure to read the [Important Usage Tips](/docs/usage/IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
 ### Build all update actions
 
