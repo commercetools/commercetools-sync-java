@@ -53,7 +53,7 @@ Check out the [Quick Start Guide](/docs/usage/QUICK_START.md) to start using the
 
 ### Prerequisites
  
- - `Java 8`
+ - Make sure you have `JDK 8` installed.
  - a target CTP project to which your source of data would be synced to.
  - [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a dependency in your JVM-based 
   application. (Make sure to use a version `>= 1.35.0`).
