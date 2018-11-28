@@ -1,6 +1,19 @@
-# Quick Start
+# Quick Start ⚡
 
-### Installation
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [1. Installation](#1-installation)
+  - [Maven](#maven)
+  - [Gradle](#gradle)
+- [2. Setup Syncing Options](#2-setup-syncing-options)
+- [3. Start Syncing](#3-start-syncing)
+- [4. And you're done ✨](#4-and-youre-done-)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### 1. Installation
 There are multiple ways to download the commercetools sync dependency, based on your dependency manager. Here are the 
 most popular ones:
 #### Maven 
@@ -16,10 +29,7 @@ most popular ones:
 implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M14'
 ````
 
-
-### Sync Products
-
-#### 1. Setup Syncing Options
+### 2. Setup Syncing Options
 
  ```java
  final Logger logger = LoggerFactory.getLogger(MySync.class);
@@ -30,7 +40,7 @@ implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M14'
                                  .build();
  ```
  
-#### 2. Start Syncing
+### 3. Start Syncing
  ````java
  // Transform your product feed batch into a list of ProductDrafts 
  // using your preferred way.
@@ -42,7 +52,7 @@ implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M14'
  final CompletionStage<ProductSyncStatistics> syncStatisticsStage = 
                         productSync.sync(productDraftsBatch);
  ````
-#### 3. And you're done ✨
+### 4. And you're done ✨
  ````java
  final ProductSyncStatistics stats = syncStatisticsStage.toCompletebleFuture()
                                                         .join();

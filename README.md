@@ -21,6 +21,7 @@ Currently this library supports synchronising the following entities in commerce
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 - [Usage](#usage)
+  - [Quick Start](/docs/usage/QUICK_START.md)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
     - [Maven](#maven)
@@ -45,7 +46,7 @@ commercetools sync is a Java library that could be used to synchronise CTP data 
 [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
-
+Check out the [Quick Start Guide](/docs/usage/QUICK_START.md) to start using the library right away! ⚡
 
 ### Prerequisites
  
