@@ -1,4 +1,4 @@
-# ProductType sync
+# ProductType Sync
 
 A utility which provides an API for building CTP product type update actions and product type synchronisation.
 

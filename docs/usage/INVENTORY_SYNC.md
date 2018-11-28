@@ -1,4 +1,4 @@
-# InventoryEntry sync
+# InventoryEntry Sync
 
 A utility which provides an API for building CTP inventory update actions and inventory synchronisation.
 
