@@ -79,3 +79,8 @@ implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M14'
  stats.getReportMessage(); 
  /*"Summary: 2000 products were processed in total (1000 created, 995 updated and 5 failed to sync)."*/
  ````
+
+
+#### More Details
+*[Product Sync](/docs/usage/PRODUCT_SYNC.md), [ProductType Sync](/docs/usage/PRODUCT_TYPE_SYNC.md), 
+[Category Sync](/docs/usage/CATEGORY_SYNC.md), [Inventory Sync](/docs/usage/INVENTORY_SYNC.md)*
