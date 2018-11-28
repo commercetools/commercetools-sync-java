@@ -47,8 +47,8 @@ matched.
     - Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the 
    [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
    
-  If you have no special requirements on sphere client creation then you can use `ClientConfigurationUtils#createClient`
-  util which applies best practices already.
+   If you have no special requirements on sphere client creation then you can use `ClientConfigurationUtils#createClient` 
+   util which applies best practices already.
 
 4. After the `sphereClient` is set up, a `CategorySyncOptions` should be built as follows: 
 ````java
@@ -85,7 +85,17 @@ __Note__ The statistics object contains the processing time of the last batch on
 More examples of how to use the sync 
 1. From another CTP project as a source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
 2. From an external source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java). 
+
+##### Usage Tip
+The sync library is not meant to be executed in a parallel fashion. Check the example in [point #2 here](/docs/usage/PRODUCT_SYNC.md#caveats). 
+By design, scaling the sync process should **not** be done by executing the batches themselves in parallel. However, it can be done either by:
+  - Changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) within the `sphereClient` configuration. It defines how many requests the client can execute in parallel.
+  - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-). It defines how many drafts can one batch contain.
  
+The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
+is the recommended good balance for stability and performance for the sync process.
+
+In order to exploit the number of `max parallel requests`, the `batch size` should have a value set which is equal or higher.
 
 
 ### Build all update actions
@@ -109,16 +119,5 @@ Optional<UpdateAction<Category>> updateAction = buildChangeNameUpdateAction(oldC
 More examples of those utils for different fields can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/updateactionutils).
 
 
-## Caveats
-
-2. The sync library is not meant to be executed in a parallel fashion. Check the example in [point #2 here](/docs/usage/PRODUCT_SYNC.md#caveats). 
-    By design, scaling the sync process should **not** be done by executing the batches themselves in parallel. However, it can be done either by:
-      - Changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) within the `sphereClient` configuration. It defines how many requests the client can execute in parallel.
-      - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-). It defines how many drafts can one batch contain.
-     
-    The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
-    is the recommended good balance for stability and performance for the sync process.
-    
-    In order to exploit the number of `max parallel requests`, the `batch size` should have a value set which is equal or higher.
-    
-3. The library will sync all field types of custom fields, except `ReferenceType`. [#87](https://github.com/commercetools/commercetools-sync-java/issues/87). 
+## Caveats   
+1. The library will sync all field types of custom fields, except `ReferenceType`. [#87](https://github.com/commercetools/commercetools-sync-java/issues/87). 

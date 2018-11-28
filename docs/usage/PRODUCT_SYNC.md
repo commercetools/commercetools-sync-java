@@ -26,7 +26,6 @@ A utility which provides an API for building CTP product update actions and prod
 1. The sync expects a list of non-null `ProductDraft` objects that have their `key` fields set to match the
 products from the source to the target. Also, the target project is expected to have the `key` fields set,
 otherwise they won't be matched.
-
 **NOTE: PLEASE MAKE SURE THE `SKU` FIELDS OF ALL PRODUCTS ARE SET AS THE SYNC LIBRARY WILL BE MIGRATED TO MATCH PRODUCTS BY `SKU` INSTEAD OF `KEY` IN THE FUTURE.**
 
 2. Every product may have several references including `product type`, `categories`, `taxCategory`, etc.. Variants
@@ -89,6 +88,33 @@ More examples of how to use the sync
 2. From an external source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java). 
 3. Syncing with blacklisting/whitelisting [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java).
 
+
+##### Usage Tip
+The sync library is not meant to be executed in a parallel fashion. For example:
+````java
+final ProductSync productSync = new ProductSync(syncOptions);
+final CompletableFuture<ProductSyncStatistics> syncFuture1 = productSync.sync(batch1).toCompletableFuture();
+final CompletableFuture<ProductSyncStatistics> syncFuture2 = productSync.sync(batch2).toCompletableFuture();
+CompletableFuture.allOf(syncFuture1, syncFuture2).join;
+````
+The aforementioned example demonstrates how the library should **not** be used. The library, however, should be instead
+used in a sequential fashion:
+````java
+final ProductSync productSync = new ProductSync(syncOptions);
+productSync.sync(batch1)
+           .thenCompose(result -> productSync.sync(batch2))
+           .toCompletableFuture()
+           .join();
+````
+By design, scaling the sync process should **not** be done by executing the batches themselves in parallel. However, it can be done either by:
+ - Changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) within the `sphereClient` configuration. It defines how many requests the client can execute in parallel.
+ - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-). It defines how many drafts can one batch contain.
+ 
+The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
+is the recommended good balance for stability and performance for the sync process.
+
+In order to exploit the number of `max parallel requests`, the `batch size` should have a value set which is equal or higher.
+
 ### Build all update actions
 
 A utility method provided by the library to compare a Product with a new ProductDraft and results in a list of product
@@ -111,32 +137,7 @@ Optional<UpdateAction<Product>> updateAction = buildChangeNameUpdateAction(oldPr
 More examples of those utils for different fields can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/utils).
 
 ## Caveats
-2. The sync library is not meant to be executed in a parallel fashion. For example:
-    ````java
-    final ProductSync productSync = new ProductSync(syncOptions);
-    final CompletableFuture<ProductSyncStatistics> syncFuture1 = productSync.sync(batch1).toCompletableFuture();
-    final CompletableFuture<ProductSyncStatistics> syncFuture2 = productSync.sync(batch2).toCompletableFuture();
-    CompletableFuture.allOf(syncFuture1, syncFuture2).join;
-    ````
-    The aforementioned example demonstrates how the library should **not** be used. The library, however, should be instead
-    used in a sequential fashion:
-    ````java
-    final ProductSync productSync = new ProductSync(syncOptions);
-    productSync.sync(batch1)
-               .thenCompose(result -> productSync.sync(batch2))
-               .toCompletableFuture()
-               .join();
-    ````
-    By design, scaling the sync process should **not** be done by executing the batches themselves in parallel. However, it can be done either by:
-     - Changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) within the `sphereClient` configuration. It defines how many requests the client can execute in parallel.
-     - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-). It defines how many drafts can one batch contain.
-     
-    The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
-    is the recommended good balance for stability and performance for the sync process.
-    
-    In order to exploit the number of `max parallel requests`, the `batch size` should have a value set which is equal or higher.
-    
-3. Syncing attribute field types with  `ReferenceType` and `SetType` (of `elementType: ReferenceType`) field definitions, except 
+1. Syncing attribute field types with  `ReferenceType` and `SetType` (of `elementType: ReferenceType`) field definitions, except 
 for Product references, is not supported yet. (See more: [#87](https://github.com/commercetools/commercetools-sync-java/issues/87) [#160](https://github.com/commercetools/commercetools-sync-java/issues/87)). This
 also applies to an attribute field of type `NestedType` which has any of the aforementioned types as an inner field.
 

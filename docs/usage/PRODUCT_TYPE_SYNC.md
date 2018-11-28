@@ -69,6 +69,18 @@ __Note__ The statistics object contains the processing time of the last batch on
 
 More examples of how to use the sync can be found [here](/src/integration-test/java/com/commercetools/sync/integration/producttypes/ProductTypeSyncIT.java).
 
+##### Usage Tip
+The sync library is not meant to be executed in a parallel fashion. Check the example in [point #2 here](/docs/usage/PRODUCT_SYNC.md#caveats).
+By design, scaling the sync process should **not** be done by executing the batches themselves in parallel. However, it can be done either by:
+ - Changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) within the `sphereClient` configuration. It defines how many requests the client can execute in parallel.
+ - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-). It defines how many drafts can one batch contain.
+ 
+The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
+is the recommended good balance for stability and performance for the sync process.
+
+In order to exploit the number of `max parallel requests`, the `batch size` should have a value set which is equal or higher.
+
+
 ### Build all update actions
 
 A utility method provided by the library to compare a ProductType with a new ProductTypeDraft and results in a list of product type update actions.
@@ -86,16 +98,5 @@ Optional<UpdateAction<ProductType>> updateAction = ProductTypeUpdateActionUtils.
 More examples of those utils for different fields can be found [here](/src/test/java/com/commercetools/sync/producttypes/utils/ProductTypeUpdateActionUtilsTest.java).
 
 
-## Caveats
-
-2. The sync library is not meant to be executed in a parallel fashion. Check the example in [point #2 here](/docs/usage/PRODUCT_SYNC.md#caveats).
-    By design, scaling the sync process should **not** be done by executing the batches themselves in parallel. However, it can be done either by:
-     - Changing the number of [max parallel requests](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) within the `sphereClient` configuration. It defines how many requests the client can execute in parallel.
-     - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-). It defines how many drafts can one batch contain.
-     
-    The current overridable default [configuration](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
-    is the recommended good balance for stability and performance for the sync process.
-    
-    In order to exploit the number of `max parallel requests`, the `batch size` should have a value set which is equal or higher.
-    
-3. Syncing product types with an attribute of type [NestedType](https://docs.commercetools.com/http-api-projects-productTypes.html#nestedtype) is not supported yet.
+## Caveats    
+1. Syncing product types with an attribute of type [NestedType](https://docs.commercetools.com/http-api-projects-productTypes.html#nestedtype) is not supported yet.
