@@ -35,15 +35,20 @@ import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.MockUtils.mockCategoryService;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
+import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -497,5 +502,62 @@ public class CategorySyncTest {
                     assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                     assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
                 });
+    }
+
+    @Test
+    public void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
+        // preparation
+        final CategoryDraft categoryDraft =
+            getMockCategoryDraft(Locale.ENGLISH, "name", "foo", "parentKey", "customTypeId", new HashMap<>());
+
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .build();
+
+        final Category createdCategory = mock(Category.class);
+        when(createdCategory.getKey()).thenReturn(categoryDraft.getKey());
+
+        final CategoryService categoryService = mockCategoryService(emptySet(), createdCategory);
+
+        final CategorySyncOptions spyCategorySyncOptions = spy(categorySyncOptions);
+
+        // test
+        new CategorySync(spyCategorySyncOptions, getMockTypeService(), categoryService)
+            .sync(singletonList(categoryDraft)).toCompletableFuture().join();
+
+        // assertion
+        verify(spyCategorySyncOptions).applyBeforeCreateCallBack(any());
+        verify(spyCategorySyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
+    }
+
+    @Test
+    public void sync_WithNoDraftsToCreate_ShouldOnlyCallBeforeUpdateCallback() {
+        // preparation
+        final CategoryDraft categoryDraft =
+            getMockCategoryDraft(Locale.ENGLISH, "name", "1", "parentKey", "customTypeId", new HashMap<>());
+
+
+        final Category mockedExistingCategory =
+            readObjectFromResource(CATEGORY_KEY_1_RESOURCE_PATH, Category.class);
+
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .build();
+
+        final CategoryService categoryService = mockCategoryService(singleton(mockedExistingCategory),
+            mockedExistingCategory, mockedExistingCategory);
+
+        when(categoryService.cacheKeysToIds())
+            .thenReturn(completedFuture(singletonMap("1", UUID.randomUUID().toString())));
+
+        final CategorySyncOptions spyCategorySyncOptions = spy(categorySyncOptions);
+
+        // test
+        new CategorySync(spyCategorySyncOptions, getMockTypeService(), categoryService)
+            .sync(singletonList(categoryDraft)).toCompletableFuture().join();
+
+        // assertion
+        verify(spyCategorySyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(spyCategorySyncOptions, never()).applyBeforeCreateCallBack(any());
     }
 }
