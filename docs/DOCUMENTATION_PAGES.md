@@ -1,7 +1,10 @@
-# Welcome to MkDocs
+# Building the Documentation Pages
+
+The documentation pages are published here: https://commercetools.github.io/commercetools-sync-java
 
 * [mkdocs documentation](http://mkdocs.org).
 * [mkdocs-material documentation](https://squidfunk.github.io/mkdocs-material/).
+
 
 ## Project layout
 
