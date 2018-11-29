@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/snap-test/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/snap-test/usage/QUICK_START/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/snap-test/usage/PRODUCT_SYNC/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/snap-test/usage/PRODUCT_TYPE_SYNC/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/snap-test/usage/CATEGORY_SYNC/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/snap-test/usage/INVENTORY_SYNC/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/snap-test/usage/SYNC_OPTIONS/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/snap-test/usage/IMPORTANT_USAGE_TIPS/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc></loc>
+     
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/snap-test/RELEASE_NOTES/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc></loc>
+     
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc></loc>
+     
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc></loc>
+     
+     <changefreq>daily</changefreq>
+    </url>
+</urlset>
