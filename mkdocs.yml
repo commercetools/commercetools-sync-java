@@ -45,7 +45,7 @@ markdown_extensions:
   - pymdownx.superfences
 
 nav:
-  - Overview: README.md
+  - Overview: ../README.md
   - User guide:
       - Quick Start: usage/QUICK_START.md
       - Product Sync: usage/PRODUCT_SYNC.md
