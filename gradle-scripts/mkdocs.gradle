@@ -1,6 +1,6 @@
 mkdocs {
     // mkdocs sources
-    sourcesDir = '' // default is 'docs' in the root directory.
+    sourcesDir = '.' // default is 'docs' in the root directory.
     // strict build (fail on build errors)
     strict = true
     // target build directory (publication root)
