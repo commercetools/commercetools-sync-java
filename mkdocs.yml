@@ -26,7 +26,6 @@ theme:
       link: 'https://github.com/commercetools'
 
 
-
 # Extensions
 markdown_extensions:
   - admonition
@@ -45,13 +44,15 @@ markdown_extensions:
   - pymdownx.superfences
 
 nav:
-  - Overview: ../README.md
   - User guide:
       - Quick Start: usage/QUICK_START.md
       - Product Sync: usage/PRODUCT_SYNC.md
       - ProductType Sync: usage/PRODUCT_TYPE_SYNC.md
       - Category Sync: usage/CATEGORY_SYNC.md
       - InventoryEntry Sync: usage/INVENTORY_SYNC.md
+      - Advanced:
+        - Sync Options: usage/SYNC_OPTIONS.md
+        - Usage Tips: usage/IMPORTANT_USAGE_TIPS.md
   - Javadoc: https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/
   - Release notes: RELEASE_NOTES.md
   - Roadmap: https://github.com/commercetools/commercetools-sync-java/milestones
