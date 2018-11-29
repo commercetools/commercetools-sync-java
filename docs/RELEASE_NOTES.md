@@ -28,28 +28,6 @@
 
 -->
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-
-- [v1.0.0-M14 -  Oct 5, 2018](#v100-m14----oct-5-2018)
-- [v1.0.0-M13 -  Sept 5, 2018](#v100-m13----sept-5-2018)
-- [v1.0.0-M12 -  Jun 05, 2018](#v100-m12----jun-05-2018)
-- [v1.0.0-M11 -  Mar 08, 2018](#v100-m11----mar-08-2018)
-- [v1.0.0-M10 -  Feb 13, 2018](#v100-m10----feb-13-2018)
-- [v1.0.0-M9 -  Jan 22, 2018](#v100-m9----jan-22-2018)
-- [v1.0.0-M8 -  Dec 29, 2017](#v100-m8----dec-29-2017)
-- [v1.0.0-M7 -  Dec 15, 2017](#v100-m7----dec-15-2017)
-- [v1.0.0-M6 -  Dec 5, 2017](#v100-m6----dec-5-2017)
-- [v1.0.0-M5 -  Nov 16, 2017](#v100-m5----nov-16-2017)
-- [v1.0.0-M4 -  Nov 7, 2017](#v100-m4----nov-7-2017)
-- [v1.0.0-M3 -  Nov 3, 2017](#v100-m3----nov-3-2017)
-- [v1.0.0-M2 -  Oct 12, 2017](#v100-m2----oct-12-2017)
-- [v1.0.0-M2-beta -  Sep 28, 2017](#v100-m2-beta----sep-28-2017)
-- [v1.0.0-M1 -  Sep 06, 2017](#v100-m1----sep-06-2017)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 <!--
 ### v1.0.0-M15 -  Oct 20, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...v1.0.0-M15) |
