@@ -1,0 +1,54 @@
+site_name: commercetools-sync-java
+
+# Meta tags (placed in header)
+site_description: Java Library used to import and/or sync (taking care of changes) data into one or more commercetools projects from external sources such as CSV, XML, JSON, etc.. or even from an already existing commercetools project.
+#site_author: Your Name
+#site_url: https://you.github.io/commercetools-sync-java
+
+# Repository (add link to repository on each page)
+repo_name: commercetools-sync-java
+repo_url: http://github.com/commercetools/commercetools-sync-java
+#edit_uri: edit/master/src/docs/docs/
+
+#Copyright (shown at the footer)
+copyright: 'Copyright &copy; 2018 commercetools'
+
+theme:
+  name: 'material'
+  palette:
+    primary: 'white'
+    accent: 'orange'
+  logo: 'images/ct.png'
+
+  social:
+    - type: 'github'
+      link: 'https://github.com/you'
+    - type: 'twitter'
+      link: 'https://twitter.com/you'
+
+
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+
+nav:
+  - User guide:
+      - Quick Start: usage/QUICK_START.md
+      - Product Sync: usage/PRODUCT_SYNC.md
+  - About:
+      - Release notes: RELEASE_NOTES.md
+      - Roadmap: https://github.com/commercetools/commercetools-sync-java/milestones
