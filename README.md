@@ -21,6 +21,7 @@ Currently this library supports synchronising the following entities in commerce
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 - [Usage](#usage)
+  - [Quick Start](/docs/usage/QUICK_START.md)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
     - [Maven](#maven)
@@ -38,19 +39,24 @@ Currently this library supports synchronising the following entities in commerce
 commercetools sync is a Java library that could be used to synchronise CTP data in any of the following ways:
 
 1. Synchronise data coming from an external system in any form (CSV, XML, etc..) that has been already mapped to 
-[JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
+[commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
 2. Synchronise data coming from an already-existing commercetools project in the form of 
-[JVM-SDK](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
+[commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
 
+> Synchronise: Resources will either be created or updated. But they will **not** be deleted.
+
+⚡ Take a look at the [Quick Start Guide](/docs/usage/QUICK_START.md) to find out how to build a product importer in a glance!
 
 ### Prerequisites
  
- - install Java 8
+ - Make sure you have `JDK 8` installed.
  - a target CTP project to which your source of data would be synced to.
+ - [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a dependency in your JVM-based 
+  application. (Make sure to use a version `>= 1.35.0`).
 
 
 ### Installation
