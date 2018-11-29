@@ -19,7 +19,7 @@ gitPublish {
     // what to keep in the existing branch (include=keep)
     preserve {
         include 'v/**', 'benchmarks/**'
-        exclude 'v/test**' // always remove documentation of test releases
+        exclude 'v/test**', 'test**', 'v/development-SNAPSHOT', 'development-SNAPSHOT' // always remove documentation of test releases
     }
 
     // message used when committing changes
