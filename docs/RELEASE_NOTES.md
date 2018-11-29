@@ -9,19 +9,18 @@
 3. link to Javadoc of release.
 4. link to Jar of release.
 
+4. Add a summary of the release that is not too detailed or technical.
+
 5. Depending on the contents of the release use the subtitles below to 
   document the new changes in the release accordingly. Please always include
   a link to the releated issue number. 
-   **New Features** (n)
-   **Beta Features** (n)
-   **Major Enhancements** (n)
-   **Changes** (n)
-   **Breaking Changes** (n)
-   **Enhancements** (n)
-   **Doc Fixes** (n)
-   **Critical Bug Fixes** (n)
-   **Bug Fixes** (n)
-   **Hotfix** (n)
+   **New Features** (n) 🎉 
+   **Breaking Changes** (n) 🚧 
+   **Major Enhancements** (n) ✨
+   **Enhancements** (n) 🛠️ 
+   **Doc Changes** (n) 📋
+   **Critical Bug Fixes** (n) 🔥 
+   **Bug Fixes** (n)🐞
    - **Category Sync** - Sync now supports product variant images syncing. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
    - **Build Tools** - Convinient handelling of env vars for integration tests.
 
@@ -52,33 +51,42 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <!--
-
 ### v1.0.0-M15 -  Oct 20, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...v1.0.0-M15) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M15/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M15)
 
-**New Features** (1)
+**New Features** (1) 🎉
 - **Commons** - Added `OptionalUtils#filterEmptyOptionals` which are utility methods that filter out the 
 empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
 optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255)
 
-**Enhancements** (2)
-- **Commons** - Bumped commercetools-jvm-sdk to version [1.35.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_35_0).
-- **Commons** - Bumped `mockito` to 2.23.0.
+**Doc Changes** (3) 📋
+- **Commons** - Added a [Quick Start Guide](/docs/usage/QUICK_START.md) for a convinient entry into the library.
+- **Commons** - Moved documentation of sync options to a separate [doc](/docs/usage/SYNC_OPTIONS.md).
+- **Commons** - Added a the earliest compatible version of the commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a prerequisite for using the library.
 
-**Changes** (3)
+**Enhancements** (11) 🛠️
+- **ProductType Sync** - Added `ProductTypeSyncBenchmark` to benchmark the product type sync, to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
 - **Product Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
 - **Category Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
 - **Inventory Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
+- **Commons** - Bumped commercetools-jvm-sdk to version [1.37.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_37_0).
+- **Commons** - Bumped `mockito` to 2.23.4.
+- **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
+- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.3.2.
+- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.3.2.
+- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.3.2.
+- **Commons** - Bumped `org.ajoberstar.git-publish` to 2.0.0.
+- **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
+- **Commons** - Bumped `org.ajoberstar.grgit` to 3.0.0.
+- **Commons** - Bumped gradle to version [gradle-5.0](https://docs.gradle.org/5.0/release-notes.html)
 
-**Breaking Changes** (4)
+**Breaking Changes** (11) 🚧
 - **Product Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 - **Category Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 - **Inventory Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
 - **ProductType Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
-
-**Breaking Changes** (7)
 - **ProductType Sync** - Renamed `ProductTypeUpdateAttributeDefinitionActionUtils` to `AttributeDefinitionsUpdateActionUtils`. It is also now meant to be **only used internally** by the library. 
 Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - `AttributeDefinitionUpdateActionUtils` is now meant to be **only used internally** by the library. 
@@ -89,10 +97,6 @@ Its  behaviour is not guaranteed if used externally. [#302](https://github.com/c
 - **ProductType Sync** - Renamed `ProductTypeUpdatePlainEnumActionUtils` to `PlainEnumsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - Renamed `LocalizedEnumUpdateActionsUtils` to `LocalizedEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 - **ProductType Sync** - Renamed `PlainEnumUpdateActionsUtils` to `PlainEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-
-**Enhancements** (1)
-- **ProductType Sync** - Added `ProductTypeSyncBenchmark` to benchmark the product type sync, to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
-
 -->
 
 
@@ -101,10 +105,10 @@ Its  behaviour is not guaranteed if used externally. [#302](https://github.com/c
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M14)
 
-**Bug Fixes** (1)
+**Bug Fixes** (1) 🐞
 - **Product Sync** - Fixed a bug where the removed attributes in the source product variant draft were not being removed from the target variant. [#238](https://github.com/commercetools/commercetools-sync-java/issues/308)
 
-**Enhancements** (8)
+**Enhancements** (8) 🛠️
 - **Product Sync** - Products create and update requests are now issued in parallel. This should lead to a performance improvement. [#238](https://github.com/commercetools/commercetools-sync-java/issues/238)
 - **Commons** - Bumped `com.adarshr.test-logger` to 1.5.0.
 - **Commons** - Bumped `mockito` to 2.22.0.
@@ -114,7 +118,7 @@ Its  behaviour is not guaranteed if used externally. [#302](https://github.com/c
 - **Commons** - `UnorderedCollectionSyncUtils#buildRemoveUpdateActions ensures no `null` elements in the resulting list and ignores `null` keys now. [#238](https://github.com/commercetools/commercetools-sync-java/issues/308)
 - **Commons** - Bumped gradle to version [gradle-4.10.2](https://docs.gradle.org/4.10.2/release-notes.html).
 
-**Breaking Changes** (2)
+**Breaking Changes** (2) 🚧
 - **Product Sync** - `AttributeMetaData#isRequired` is now removed. [#308](https://github.com/commercetools/commercetools-sync-java/issues/308)
 - **Product Sync** - `ProductVariantAttributeUpdateActionUtils#buildProductVariantAttributeUpdateAction` now takes a map of all meta data instead of the specific metadata entry. [#308](https://github.com/commercetools/commercetools-sync-java/issues/308)
 
@@ -124,7 +128,7 @@ Its  behaviour is not guaranteed if used externally. [#302](https://github.com/c
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M13/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M13)
 
-**New Features** (15)
+**New Features** (15) 🎉
 - **ProductType Sync** - Support for syncing productTypes. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286) For more info how to use it please refer to [ProductType usage doc](/docs/usage/PRODUCT_TYPE_SYNC.md). 
 - **Product Sync** - Support for syncing product prices. [#101](https://github.com/commercetools/commercetools-sync-java/issues/101)
 - **Product Sync** - `ProductSyncUtils#buildActions` now also calculates variants' all price update actions needed. [#101](https://github.com/commercetools/commercetools-sync-java/issues/101)
@@ -141,7 +145,7 @@ Its  behaviour is not guaranteed if used externally. [#302](https://github.com/c
 - **ProductType Sync** - Exposed `LocalizedEnumUpdateActionsUtils` which contains utils for calculating needed update actions after comparing two `LocalizedEnumValue`s. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
 - **ProductType Sync** - Exposed `PlainEnumUpdateActionsUtils` which contains utils for calculating needed update actions after comparing two `EnumValue`s. [#286](https://github.com/commercetools/commercetools-sync-java/issues/286)
 
-**Enhancements** (7)
+**Enhancements** (7) 🛠️
 - **Commons** - Bumped gradle to version [gradle-4.10](https://docs.gradle.org/4.10/release-notes.html).
 - **Commons** - Bumped `com.jfrog.bintray` to 1.8.4.
 - **Commons** - Bumped `assertj` to 3.11.1.
@@ -150,7 +154,7 @@ Its  behaviour is not guaranteed if used externally. [#302](https://github.com/c
 - **Commons** - Bumped `com.adarshr.test-logger` to 1.4.0.
 - **Commons** - Switched to Junit5 using both `junit-jupiter-engine` and `junit-vintage-engine` for backward compatibility.
 
-**Breaking Changes** (3)
+**Breaking Changes** (3) 🚧
 - **Product Sync** - Removed redundant `ProductUpdateActionUtils#buildRemoveVariantUpdateActions`. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Commons** - Moved `SyncUtils#replaceCustomTypeIdWithKeys` to `CustomTypeReferenceReplacementUtils#replaceCustomTypeIdWithKeys`. [#101](https://github.com/commercetools/commercetools-sync-java/issues/101).
 - **Commons** - Moved `SyncUtils#replaceAssetsReferencesIdsWithKeys` to `AssetReferenceReplacementUtils#replaceAssetsReferencesIdsWithKeys`. [#101](https://github.com/commercetools/commercetools-sync-java/issues/101).
@@ -161,7 +165,7 @@ Its  behaviour is not guaranteed if used externally. [#302](https://github.com/c
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M12/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M12)
 
-**Enhancements** (13)
+**Enhancements** (13) 🛠️
 - **Product Sync** - Support for syncing price custom fields. [#277](https://github.com/commercetools/commercetools-sync-java/issues/277)
 - **Product Sync** - `VariantReferenceResolver` now resolves prices' custom type references on all variants. [#277](https://github.com/commercetools/commercetools-sync-java/issues/277)
 - **Product Sync** - `ProductReferenceReplacementUtils#buildProductQuery` now expands custom types on prices. [#277](https://github.com/commercetools/commercetools-sync-java/issues/277)
@@ -182,7 +186,7 @@ Its  behaviour is not guaranteed if used externally. [#302](https://github.com/c
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M11/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M11)
 
-**New Features** (19)
+**New Features** (19) 🎉
 - **Category Sync** - Support of categories' asset syncing. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Product Sync** - Support of product variants' asset syncing. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Category Sync** - `CategorySyncUtils#buildActions` now also calculates all asset update actions needed. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
@@ -214,10 +218,10 @@ for secondary resources (e.g. assets and prices). [#3](https://github.com/commer
 - **Product Sync** - `ProductSyncUtils#buildCoreActions` is now removed. `ProductSyncUtils#buildActions` should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 - **Category Sync** - `CategorySyncUtils#buildCoreActions` is now removed. `CategorySyncUtils#buildActions` should be used instead. [#3](https://github.com/commercetools/commercetools-sync-java/issues/3)
 
-**Enhancements** (1)
+**Enhancements** (1) 🛠️
 - **Build Tools** - Bumped commercetools-jvm-sdk to version [1.30.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_30_0). [#262](https://github.com/commercetools/commercetools-sync-java/issues/262)
 
-**Bug Fixes** (1)
+**Bug Fixes** (1) 🐞
 - **Build Tools** - Fixed bug where jar and Codecov were triggered on benchmark stages of the build when they should 
 only be triggered on the full build. [#249](https://github.com/commercetools/commercetools-sync-java/issues/249)
 
@@ -227,7 +231,7 @@ only be triggered on the full build. [#249](https://github.com/commercetools/com
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M10/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M10)
 
-**New Features** (1)
+**New Features** (1) 🎉
 - **Commons** - Added [benchmarking setup](/docs/BENCHMARKS.md) for the library on every release. [#155](https://github.com/commercetools/commercetools-sync-java/issues/155)
 
 **Changes** (3)
@@ -240,16 +244,16 @@ only be triggered on the full build. [#249](https://github.com/commercetools/com
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M9/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M9)
 
-**New Features** (1)
+**New Features** (1) 🎉
 - **Commons** - Added `getSyncOptions` to the `ProductSync`, `CategorySync` and `InventorySync`. [#230](https://github.com/commercetools/commercetools-sync-java/issues/230)
 
 **Changes** (1)
 - **Product Sync** - Added validation for product drafts' SKUs as a required field on the input product drafts since SKUs will be used for product matching in the future. [#230](https://github.com/commercetools/commercetools-sync-java/issues/230)
 
-**Enhancements** (1)
+**Enhancements** (1) 🛠️
 - **Product Sync** - Changed the product sync to cache product ids per batch as opposed to caching the entire products ids before syncing products. [#230](https://github.com/commercetools/commercetools-sync-java/issues/230) 
 
-**Bug Fixes** (1)
+**Bug Fixes** (1) 🐞
 - **Commons** - Fixed library version in User-Agent headers of JVM SDK clients using the library. Now it is not fetched
  from the JAR manifest but injected by gradle-scripts/set-release-version.gradle. [#227](https://github.com/commercetools/commercetools-sync-java/issues/227)
 
@@ -259,7 +263,7 @@ only be triggered on the full build. [#249](https://github.com/commercetools/com
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M8/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M8)
 
-**New Features** (1)
+**New Features** (1) 🎉
 - **Category Sync** - Exposed new method `CategorySyncStatistics#getNumberOfCategoriesWithMissingParents` which gets the
 total number of categories with missing parents from the statistics instance. [#186](https://github.com/commercetools/commercetools-sync-java/issues/186)
 
@@ -268,7 +272,7 @@ total number of categories with missing parents from the statistics instance. [#
 - **Product Sync** - Exposed new methods `ProductReferenceResolver#resolveStateReference`, `ProductReferenceResolver#resolveTaxCategoryReference`, `ProductReferenceResolver#resolveCategoryReferences` and `ProductReferenceResolver#resolveProductTypeReference`.
 [#218](https://github.com/commercetools/commercetools-sync-java/issues/218)
 
-**Enhancements** (1)
+**Enhancements** (1) 🛠️
 - **Build Tools** - Bumped Gradle to version 4.4. [#205](https://github.com/commercetools/commercetools-sync-java/issues/205)
 
 
@@ -277,7 +281,7 @@ total number of categories with missing parents from the statistics instance. [#
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M7/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M7)
 
-**Bug Fixes** (1)
+**Bug Fixes** (1) 🐞
 - **Commons** - Changed offset-based pagination of querying all elements to a limit-based with sorted ids approach 
 to mitigate problems of previous approach. [#210](https://github.com/commercetools/commercetools-sync-java/issues/210)
 
@@ -287,16 +291,16 @@ to mitigate problems of previous approach. [#210](https://github.com/commercetoo
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M6/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M6)
 
-**New Features** (3)
+**New Features** (3) 🎉
 - **Category Sync** - Introduced `beforeCreateCallback` option which is callback applied on a category draft before a request to create it on CTP is issued. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
 - **Product Sync** - Introduced `beforeCreateCallback` option which is callback applied on a product draft before a request to create it on CTP is issued. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
 - **Inventory Sync** - Introduced `beforeCreateCallback` option which is callback applied on a inventoryEntry draft before a request to create it on CTP is issued. [#183](https://github.com/commercetools/commercetools-sync-java/issues/183)
 
-**Major Enhancements** (2)
+**Major Enhancements** (2) ✨
 - **Category Sync** - Introduced batching on update action requests to allow for requesting updates of more than 500 actions. [#21](https://github.com/commercetools/commercetools-sync-java/issues/21)
 - **Product Sync** - Introduced batching on update action requests to allow for requesting updates of more than 500 actions. [#21](https://github.com/commercetools/commercetools-sync-java/issues/21)
 
-**Bug Fixes** (1)
+**Bug Fixes** (1) 🐞
 - **Commons** - Fixed library version in User-Agent headers of JVM SDK clients using the library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/191)
 
 **Documentation** (1)
@@ -322,13 +326,13 @@ library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M5/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M5)
 
-**New Features** (3)
+**New Features** (3) 🎉
 - **Inventory Sync** - Introduced `beforeUpdateCallback` which is applied after generation of update actions and before 
 actual InventoryEntry update. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
 - **Build Tools** - Added `Add Release Notes entry` checkbox in PR template on Github repo. [#161](https://github.com/commercetools/commercetools-sync-java/issues/161)
 - **Commons** - Appended library name and version to User-Agent headers of JVM SDK clients using the library. [#142](https://github.com/commercetools/commercetools-sync-java/issues/142)
 
-**Enhancements** (3)
+**Enhancements** (3) 🛠️
 - **Commons** - `setUpdateActionsCallback` has been renamed to `beforeUpdateCallback` and now takes a TriFunction instead 
 of Function, which adds more information about the generated list of update actions, namely, the old resource being 
 updated and the new resource draft. [#169](https://github.com/commercetools/commercetools-sync-java/issues/169)
@@ -367,7 +371,7 @@ to JSON parsing not throwing exception on parsing it to reference set. [#179](ht
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M3/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M3)
 
-**New Features** (7)
+**New Features** (7) 🎉
 - **ProductSync** - Introduced Product TaxCategory reference resolution and syncing. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120).
 - **ProductSync** - Introduced Product State reference resolution and syncing. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120).
 - **ProductSync** - Exposed `ProductReferenceReplacementUtils#buildProductQuery` util to create a product query with all needed reference expansions to fetch products from a source CTP project for the sync. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120).
@@ -376,7 +380,7 @@ to JSON parsing not throwing exception on parsing it to reference set. [#179](ht
 - **CategorySync** - Exposed `CategoryReferenceReplacementUtils#buildCategoryQuery` util to create a category query with all needed reference expansions to fetch categories from a source CTP project for the sync. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120).
 - **Commons** - Exposed `replaceCustomTypeIdWithKeys` and `replaceReferenceIdWithKey`. [#120](https://github.com/commercetools/commercetools-sync-java/issues/120).
 
-**Bug Fixes** (1)
+**Bug Fixes** (1) 🐞
 - **Category Sync** - Fixes an issue where retrying on concurrent modification exception wasn't re-fetching the latest 
 Category and rebuilding build update actions. [#94](https://github.com/commercetools/commercetools-sync-java/issues/94)
 
@@ -406,18 +410,18 @@ Category and rebuilding build update actions. [#94](https://github.com/commercet
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M2/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M2)
 
-**New Features** (3)
+**New Features** (3) 🎉
 - **Product Sync** - Supported syncing entire product variant images, putting order into consideration. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
 - **Product Sync** - Exposed `ProductVariantUpdateActionUtils#buildProductVariantImagesUpdateActions` and `ProductVariantUpdateActionUtils#buildMoveImageToPositionUpdateActions` action build util. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
 - **Product Sync** - Supported Blacklisting/Whitelisting update action groups on sync. [#122](https://github.com/commercetools/commercetools-sync-java/issues/122)
 
-**Bug Fixes** (4)
+**Bug Fixes** (4) 🐞
 - **Build Tools** - Fixed issue were JavaDoc jar was not built. [#117](https://github.com/commercetools/commercetools-sync-java/issues/117)
 - **Build Tools** - Fixed issue were JavaDoc was not published on github. [#118](https://github.com/commercetools/commercetools-sync-java/issues/118)
 - **Product Sync** - Fixed a potential bug where an exisitng master variant key could be blank.[#122](https://github.com/commercetools/commercetools-sync-java/issues/122)
 - **Product Sync** - Fixed a potential bug where a product draft could be provided with no master variant set. [#122](https://github.com/commercetools/commercetools-sync-java/issues/122)
 
-**Enhancements** (2)
+**Enhancements** (2) 🛠️
 - **Build Tools** - Integration tests project credentials can now be set on a properties file not only as environment variables and give error messages if not set. [#105](https://github.com/commercetools/commercetools-sync-java/issues/105)
 - **Product Sync** - Validated the SKU before making a `ChangeMasterVariant` request by SKU. [#122](https://github.com/commercetools/commercetools-sync-java/issues/122)
 
@@ -455,7 +459,7 @@ metaDescription, metaKeywords, masterVariant and searchKeywords. [#57](https://g
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M1/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M1)
 
-**New Features** (16)
+**New Features** (16) 🎉
 - **Category Sync** - Introduced syncing category name, description, orderHint, metaDescription, metaTitle, 
 customFields and parent category. [#2](https://github.com/commercetools/commercetools-sync-java/issues/2)
 - **Category Sync** - Exposed update action build utils for category name, description, orderHint, metaDescription, metaTitle, 
