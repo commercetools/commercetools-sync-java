@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/development-SNAPSHOT/usage/QUICK_START/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/development-SNAPSHOT/usage/PRODUCT_SYNC/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/development-SNAPSHOT/usage/PRODUCT_TYPE_SYNC/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/development-SNAPSHOT/usage/CATEGORY_SYNC/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/development-SNAPSHOT/usage/INVENTORY_SYNC/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc></loc>
+     
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://commercetools.github.io/commercetools-sync-java/development-SNAPSHOT/RELEASE_NOTES/</loc>
+     <lastmod>2018-11-29</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc></loc>
+     
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc></loc>
+     
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc></loc>
+     
+     <changefreq>daily</changefreq>
+    </url>
+</urlset>
