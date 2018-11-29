@@ -74,14 +74,16 @@ stats.getReportMessage();
 ````
 
 __Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
+
  1. The sync processing time should not take into account the time between supplying batches to the sync. 
  2. It is not known by the sync which batch is going to be the last one supplied.
 
 
-More examples of how to use the sync
-1. From another CTP project as a source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/ProductSyncIT.java).
-2. From an external source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java). 
-3. Syncing with blacklisting/whitelisting [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java).
+##### More examples of how to use the sync
+
+1. From another CTP project as a source can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/ProductSyncIT.java).
+2. From an external source can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java). 
+3. Syncing with blacklisting/whitelisting [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java).
 
 *Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
@@ -94,7 +96,7 @@ List<UpdateAction<Product>> updateActions = ProductSyncUtils.buildActions(produc
 ```
 
 Examples of its usage can be found in the tests 
-[here](/src/test/java/com/commercetools/sync/products/utils/ProductSyncUtilsTest.java).
+[here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/products/utils/ProductSyncUtilsTest.java).
 
 ### Build particular update action(s)
 
@@ -104,7 +106,7 @@ Utility methods provided by the library to compare the specific fields of a Prod
 ````java
 Optional<UpdateAction<Product>> updateAction = buildChangeNameUpdateAction(oldProduct, productDraft);
 ````
-More examples of those utils for different fields can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/utils).
+More examples of those utils for different fields can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/utils).
 
 ## Caveats
 1. Syncing attribute field types with  `ReferenceType` and `SetType` (of `elementType: ReferenceType`) field definitions, except 

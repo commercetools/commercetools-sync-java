@@ -286,11 +286,11 @@ only be triggered on the full build. [#249](https://github.com/commercetools/com
 
 - 🚧 **Migration guide** (6)
     - **Product Sync** - Removed `removeOtherVariants` option which is already done by the sync by default. Removal of 
-    variants can be prevented through the beforeUpdateCallback. Please check [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/templates/beforeupdatecallback/KeepOtherVariantsSyncIT.java)
+    variants can be prevented through the beforeUpdateCallback. Please check [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/templates/beforeupdatecallback/KeepOtherVariantsSyncIT.java)
     an example of how this can be done. [#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
     - **Commons** - Removed `removeOtherSetEntries`, `removeOtherCollectionEntries` and `removeOtherProperties` options 
     which are already done by the sync by default. The aforementioned options (and even more use cases) can now be covered with help of the beforeCreateCallback and beforeUpdateCallback. Please 
-    check [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/templates/beforeupdatecallback/KeepOtherVariantsSyncIT.java) 
+    check [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/templates/beforeupdatecallback/KeepOtherVariantsSyncIT.java) 
     an example of how removal of variants can be disabled. [#26](https://github.com/commercetools/commercetools-sync-java/issues/26)
     - **Commons** - Removed website and emergency contact e-mail appened in User-Agent headers of JVM SDK clients using the 
     library. [#191](https://github.com/commercetools/commercetools-sync-java/issues/191)

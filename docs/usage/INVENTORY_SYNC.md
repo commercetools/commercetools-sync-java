@@ -71,11 +71,12 @@ stats.getReportMessage();
 ````
 
 __Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
+
  1. The sync processing time should not take into account the time between supplying batches to the sync. 
  2. It is not known by the sync which batch is going to be the last one supplied.
 
 
-More examples of how to use the sync [here](/src/integration-test/java/com/commercetools/sync/integration/inventories/InventorySyncIT.java).
+More examples of how to use the sync [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/inventories/InventorySyncIT.java).
 
 *Make sure to read the [Important Usage Tips](/docs/usage/IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
@@ -89,7 +90,7 @@ List<UpdateAction<InventoryEntry>> updateActions = InventorySyncUtils.buildActio
 ```
 
 Examples of its usage can be found in the tests 
-[here](/src/test/java/com/commercetools/sync/inventories/utils/InventorySyncUtilsTest.java).
+[here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/inventories/utils/InventorySyncUtilsTest.java).
 
 ### Build particular update action(s)
 

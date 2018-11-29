@@ -42,7 +42,7 @@ matched.
     final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
     ````
      
-   Example of its usage can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130).
+   Example of its usage can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130).
 
 3. Create a `sphereClient` [as described here](/docs/usage/IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
@@ -75,12 +75,14 @@ stats.getReportMessage();
 ````
 
 __Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
+
  1. The sync processing time should not take into account the time between supplying batches to the sync. 
  2. It is not known by the sync which batch is going to be the last one supplied.
 
-More examples of how to use the sync 
-1. From another CTP project as a source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
-2. From an external source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java).
+##### More examples of how to use the sync
+
+1. From another CTP project as a source can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
+2. From an external source can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java).
 
 *Make sure to read the [Important Usage Tips](/docs/usage/IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
@@ -92,7 +94,7 @@ List<UpdateAction<Category>> updateActions = CategorySyncUtils.buildActions(cate
 ```
 
 Examples of its usage can be found in the tests 
-[here](/src/test/java/com/commercetools/sync/categories/utils/CategorySyncUtilsTest.java).
+[here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/categories/utils/CategorySyncUtilsTest.java).
 
 
 ### Build particular update action(s)
@@ -102,7 +104,7 @@ Utility methods provided by the library to compare the specific fields of a Cate
 ````java
 Optional<UpdateAction<Category>> updateAction = buildChangeNameUpdateAction(oldCategory, categoryDraft);
 ````
-More examples of those utils for different fields can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/updateactionutils).
+More examples of those utils for different fields can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/updateactionutils).
 
 
 ## Caveats   
