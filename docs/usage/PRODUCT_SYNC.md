@@ -45,14 +45,14 @@ order for the sync to resolve the actual ids of those references, those `key`s h
          final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
          ````
      
-3. Create a `sphereClient` [as described here](/docs/usage/IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
+3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 4. After the `sphereClient` is set up, a `ProductSyncOptions` should be built as follows: 
 ````java
 // instantiating a ProductSyncOptions
 final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(sphereClient).build();
 ````
-[More information about Sync Options](/docs/usage/SYNC_OPTIONS.md). 
+[More information about Sync Options](SYNC_OPTIONS.md). 
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
@@ -83,7 +83,7 @@ More examples of how to use the sync
 2. From an external source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java). 
 3. Syncing with blacklisting/whitelisting [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java).
 
-*Make sure to read the [Important Usage Tips](/docs/usage/IMPORTANT_USAGE_TIPS.md) for optimal performance.*
+*Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
 ### Build all update actions
 
