@@ -19,26 +19,10 @@ Currently this library supports synchronising the following entities in commerce
  - [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md)
 
 ![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/9512131/31230702-0f2255a6-a9e5-11e7-9412-04ed52641dde.png)
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Usage](#usage)
-  - [Quick Start](/docs/usage/QUICK_START.md)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-    - [Maven](#maven)
-    - [Gradle](#gradle)
-    - [SBT](#sbt)
-    - [Ivy](#ivy)
-- [Roadmap](#roadmap)
-- [Release Notes](/docs/RELEASE_NOTES.md)
-- [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/)
-- [Benchmarks](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 ## Usage
 
-commercetools sync is a Java library that could be used to synchronise CTP data in any of the following ways:
+The library could be used to synchronise CTP data in any of the following ways:
 
 1. Synchronise data coming from an external system in any form (CSV, XML, etc..) that has been already mapped to 
 [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
