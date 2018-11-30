@@ -10,7 +10,7 @@ mkdocs {
 
     publish {
         // publication sub-folder (by default project version)
-        docPath = 'doc/$version'
+        docPath = 'doc'
         // generate index.html' for root redirection to the last published version
         rootRedirect = true
         // publish repository uri (by default the same as current repository)
@@ -18,7 +18,7 @@ mkdocs {
         // publication branch
         branch = 'gh-pages'
         // publication comment
-        comment = 'Publish $docPath documentation'
+        comment = 'Publish github pages documentation'
         // directory publication repository checkout, update and push
         repoDir = '.gradle/gh-pages'
     }
