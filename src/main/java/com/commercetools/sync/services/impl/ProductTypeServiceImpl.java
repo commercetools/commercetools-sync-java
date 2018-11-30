@@ -87,6 +87,7 @@ public class ProductTypeServiceImpl
     public CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchCachedProductAttributeMetaDataMap(
             @Nonnull final String productTypeId) {
 
+        //TODO: CHECK IF IT HAS ID better than empty.
         if (productsAttributesMetaData.isEmpty()) {
             return fetchAndCacheProductMetaData(productTypeId);
         }
