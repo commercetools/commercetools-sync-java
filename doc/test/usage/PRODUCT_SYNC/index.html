@@ -693,10 +693,13 @@ against a <a href="https://docs.commercetools.com/http-api-projects-products.htm
 <h4 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h4>
 <ol>
 <li>
-<p>The sync expects a list of non-null <code>ProductDraft</code> objects that have their <code>key</code> fields set to match the
-products from the source to the target. Also, the target project is expected to have the <code>key</code> fields set,
-otherwise they won't be matched.
-<strong>NOTE: PLEASE MAKE SURE THE <code>SKU</code> FIELDS OF ALL PRODUCTS ARE SET AS THE SYNC LIBRARY WILL BE MIGRATED TO MATCH PRODUCTS BY <code>SKU</code> INSTEAD OF <code>KEY</code> IN THE FUTURE.</strong></p>
+<p>The sync expects a list of <code>ProductDraft</code>s that have their <code>key</code> fields set to be matched with
+products in the target CTP project. Also, the products in the target project are expected to have the <code>key</code> fields set,
+otherwise they won't be matched.</p>
+</li>
+<li>
+<p>The sync expects all variants of the supplied list of <code>ProductDraft</code>s to have their <code>sku</code> fields set. Also,
+all the variants in the target project are expected to have the <code>sku</code> fields set.</p>
 </li>
 <li>
 <p>Every product may have several references including <code>product type</code>, <code>categories</code>, <code>taxCategory</code>, etc.. Variants
