@@ -108,6 +108,7 @@ public final class ProductServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key) {
+
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }

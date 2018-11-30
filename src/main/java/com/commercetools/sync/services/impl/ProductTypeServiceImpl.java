@@ -44,6 +44,7 @@ public class ProductTypeServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedProductTypeId(@Nonnull final String key) {
+
         if (keyToIdCache.containsKey(key)) {
             return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
         }
