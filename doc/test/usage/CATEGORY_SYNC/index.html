@@ -692,12 +692,16 @@ against a <a href="https://docs.commercetools.com/http-api-projects-categories.h
 
 <h4 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h4>
 <ol>
-<li>The sync expects a list of non-null <code>CategoryDraft</code> objects that have their <code>key</code> fields set to match the
-categories from the source to the target. Also, the target project is expected to have the <code>key</code> fields set, otherwise they won't be
-matched.</li>
-<li>Every category may have a reference to a <code>parent category</code> and a reference to the <code>Type</code> of its custom fields. Categories 
-   and Types are matched by their <code>key</code> Therefore, in order for the sync to resolve the 
-    actual ids of those references, the <code>key</code> of the <code>Type</code>/parent <code>Category</code> has to be supplied in the following way:<ul>
+<li>
+<p>The sync expects a list of <code>CategoryDraft</code>s that have their <code>key</code> fields set to be matched with
+categories in the target CTP project. Also, the categories in the target project are expected to have the <code>key</code> fields set,
+otherwise they won't be matched.</p>
+</li>
+<li>
+<p>Every category may have a reference to a <code>parent category</code> and a reference to the <code>Type</code> of its custom fields. Categories 
+   and Types are matched by their <code>key</code>s. Therefore, in order for the sync to resolve the 
+    actual ids of those references, the <code>key</code> of the <code>Type</code>/parent <code>Category</code> has to be supplied in the following way:</p>
+<ul>
 <li>Provide the <code>key</code> value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the
 reference would return its <code>key</code>.  </li>
 </ul>
@@ -746,8 +750,8 @@ human-readable format.</p>
 </ol>
 <h5 id="more-examples-of-how-to-use-the-sync">More examples of how to use the sync<a class="headerlink" href="#more-examples-of-how-to-use-the-sync" title="Permanent link">&para;</a></h5>
 <ol>
-<li>From another CTP project as a source can be found <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java">here</a>.</li>
-<li>From an external source can be found <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java">here</a>.</li>
+<li><a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java">Sync from another CTP project as a source</a>.</li>
+<li><a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java">Sync from an external source</a>.</li>
 </ol>
 <p><em>Make sure to read the <a href="/docs/usage/IMPORTANT_USAGE_TIPS.md">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>

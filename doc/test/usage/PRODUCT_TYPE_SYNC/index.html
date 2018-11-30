@@ -667,9 +667,9 @@ against a <a href="https://docs.commercetools.com/http-api-projects-productTypes
 <h4 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h4>
 <ol>
 <li>
-<p>The sync expects a list of non-null <code>ProductTypeDrafts</code> objects that have their <code>key</code> fields set to match the
-product types from the source to the target. Also, the target project is expected to have the <code>key</code> fields set, otherwise they won't be
-matched.</p>
+<p>The sync expects a list of <code>ProductTypeDrafts</code>s that have their <code>key</code> fields set to be matched with
+product types  in the target CTP project. Also, the product types  in the target project are expected to have the <code>key</code>
+fields set, otherwise they won't be matched.</p>
 </li>
 <li>
 <p>Create a <code>sphereClient</code> <a href="/docs/usage/IMPORTANT_USAGE_TIPS.md#sphereclient-creation">as described here</a>.</p>

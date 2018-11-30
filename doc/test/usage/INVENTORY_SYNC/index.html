@@ -667,12 +667,12 @@ against a <a href="https://docs.commercetools.com/http-api-projects-inventory.ht
 <h4 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h4>
 <ol>
 <li>
-<p>The sync expects a list of <code>InventoryEntryDraft</code> objects that have their <code>sku</code> fields set,
+<p>The sync expects a list of <code>InventoryEntryDraft</code>s that have their <code>sku</code> fields set,
    otherwise the sync will trigger an <code>errorCallback</code> function set by the user (more on it can be found down below in the options explanations).</p>
 </li>
 <li>
 <p>Every inventory entry may have a reference to a supply <code>Channel</code> and a reference to the <code>Type</code> of its custom fields. These
-   references are matched by their <code>key</code>. Therefore, in order for the sync to resolve the actual ids of those references,
+   references are matched by their <code>key</code>s. Therefore, in order for the sync to resolve the actual ids of those references,
    their <code>key</code>s has to be supplied in the following way:</p>
 </li>
 <li>

@@ -704,7 +704,7 @@ all the variants in the target project are expected to have the <code>sku</code>
 <li>
 <p>Every product may have several references including <code>product type</code>, <code>categories</code>, <code>taxCategory</code>, etc.. Variants
 of the product also have prices, where each price also has some references including a reference to the <code>Type</code> of its 
-custom fields and a reference to a <code>channel</code>. All these referenced resources are matched by their <code>key</code> Therefore, in 
+custom fields and a reference to a <code>channel</code>. All these referenced resources are matched by their <code>key</code>s. Therefore, in 
 order for the sync to resolve the actual ids of those references, those <code>key</code>s have to be supplied in the following way:</p>
 <ul>
 <li>
@@ -753,9 +753,9 @@ human-readable format.
 </ol>
 <h5 id="more-examples-of-how-to-use-the-sync">More examples of how to use the sync<a class="headerlink" href="#more-examples-of-how-to-use-the-sync" title="Permanent link">&para;</a></h5>
 <ol>
-<li>From another CTP project as a source can be found <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/ProductSyncIT.java">here</a>.</li>
-<li>From an external source can be found <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java">here</a>. </li>
-<li>Syncing with blacklisting/whitelisting <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java">here</a>.</li>
+<li><a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/ProductSyncIT.java">Sync from another CTP project as a source</a>.</li>
+<li><a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java">Sync from an external source</a>. </li>
+<li><a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java">Sync with blacklisting/whitelisting</a>.</li>
 </ol>
 <p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
