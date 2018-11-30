@@ -11,8 +11,6 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
-import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
 import io.sphere.sdk.producttypes.commands.updateactions.SetKey;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
@@ -93,23 +91,6 @@ public class ProductTypeServiceImplIT {
                                                                  .toCompletableFuture()
                                                                  .join();
         assertThat(productTypeId).isNotEmpty();
-    }
-
-    @Test
-    public void fetchCachedProductTypeId_OnSecondTime_ShouldNotFindProductTypeInCache() {
-        // Fetch any product type to populate cache
-        productTypeService.fetchCachedProductTypeId("anyTypeKey").toCompletableFuture().join();
-
-        // Create new type
-        final String newProductTypeKey = "new_type_key";
-        final ProductTypeDraft draft = ProductTypeDraftBuilder
-                .of(newProductTypeKey, "typeName", "typeDescription", new ArrayList<>()).build();
-        CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(draft)).toCompletableFuture().join();
-
-        final Optional<String> newProductTypeId =
-                productTypeService.fetchCachedProductTypeId(newProductTypeKey).toCompletableFuture().join();
-
-        assertThat(newProductTypeId).isEmpty();
     }
 
     @Test
