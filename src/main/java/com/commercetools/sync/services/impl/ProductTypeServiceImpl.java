@@ -97,6 +97,22 @@ public class ProductTypeServiceImpl
     }
 
     @Nonnull
+    private CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
+            @Nonnull final String productTypeId) {
+
+        final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
+                productTypePage.forEach(type -> {
+                    final String id = type.getId();
+                    productsAttributesMetaData.put(id, getAttributeMetaDataMap(type));
+                });
+
+        // TODO: WHY DO WE QUERY ALL?
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
+                .thenApply(result ->
+                        Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
+    }
+
+    @Nonnull
     @Override
     public CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull final Set<String> keys) {
 
@@ -130,20 +146,6 @@ public class ProductTypeServiceImpl
             @Nonnull final ProductType productType,
             @Nonnull final List<UpdateAction<ProductType>> updateActions) {
         return updateResource(productType, ProductTypeUpdateCommand::of, updateActions);
-    }
-
-    private CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
-        @Nonnull final String productTypeId) {
-
-        final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
-                productTypePage.forEach(type -> {
-                    final String id = type.getId();
-                    productsAttributesMetaData.put(id, getAttributeMetaDataMap(type));
-                });
-
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
-                .thenApply(result ->
-                        Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
     }
 
     @Nonnull
