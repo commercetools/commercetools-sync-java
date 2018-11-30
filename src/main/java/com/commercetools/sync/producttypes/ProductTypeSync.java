@@ -277,8 +277,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                             () -> fetchAndUpdate(oldProductType, newProductType),
                             () -> {
                                 final String errorMessage =
-                                        format(CTP_PRODUCT_TYPE_UPDATE_FAILED, sphereException.getMessage(),
-                                                newProductType.getKey());
+                                        format(CTP_PRODUCT_TYPE_UPDATE_FAILED, newProductType.getKey(),
+                                            sphereException.getMessage());
                                 handleError(errorMessage, sphereException, 1);
                                 return CompletableFuture.completedFuture(Optional.empty());
                             });
