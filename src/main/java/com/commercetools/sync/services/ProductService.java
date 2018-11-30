@@ -49,9 +49,9 @@ public interface ProductService {
     CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> productKeys);
 
     /**
-     * Given a {@link Set} of product keys, this method fetches a set of all the products matching this given set of
-     * keys in the CTP project defined in a potentially injected {@link SphereClient}. A mapping of the key to the id of
-     * the fetched category is persisted in an in-memory map.
+     * Given a {@link Set} of product keys, this method fetches a set of all the products, matching this given set of
+     * keys in the CTP project, defined in a potentially injected {@link SphereClient}. A mapping of the key to the id
+     * of the fetched products is persisted in an in-memory map.
      *
      * @param productKeys set of product keys to fetch matching products by.
      * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a {@link Set}
