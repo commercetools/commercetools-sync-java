@@ -62,8 +62,8 @@ commercetools sync is a Java library that could be used to synchronise CTP data 
 
 
 ### Installation
-There are multiple ways to download the commercetools sync dependency, based on your dependency manager. Here are the 
-most popular ones:
+There are multiple ways to add the commercetools sync dependency to your project, based on your dependency manager. 
+Here are the most popular ones:
 #### Maven 
 ````xml
 <dependency>
