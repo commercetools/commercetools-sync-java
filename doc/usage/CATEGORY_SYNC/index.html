@@ -716,7 +716,7 @@ reference would return its <code>key</code>.  </li>
 <p>Example of its usage can be found <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130">here</a>.</p>
 <ol>
 <li>
-<p>Create a <code>sphereClient</code> <a href="/docs/usage/IMPORTANT_USAGE_TIPS.md#sphereclient-creation">as described here</a>.</p>
+<p>Create a <code>sphereClient</code> <a href="../IMPORTANT_USAGE_TIPS/#sphereclient-creation">as described here</a>.</p>
 </li>
 <li>
 <p>After the <code>sphereClient</code> is set up, a <code>CategorySyncOptions</code> should be built as follows: 
@@ -725,7 +725,7 @@ reference would return its <code>key</code>.  </li>
 </pre></div></p>
 </li>
 </ol>
-<p><a href="/docs/usage/SYNC_OPTIONS.md">More information about Sync Options</a>.</p>
+<p><a href="../SYNC_OPTIONS/">More information about Sync Options</a>.</p>
 <h4 id="running-the-sync">Running the sync<a class="headerlink" href="#running-the-sync" title="Permanent link">&para;</a></h4>
 <p>After all the aforementioned points in the previous section have been fulfilled, to run the sync:
 <div class="codehilite"><pre><span></span><span class="c1">// instantiating a category sync</span>
@@ -753,7 +753,7 @@ human-readable format.</p>
 <li><a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java">Sync from another CTP project as a source</a>.</li>
 <li><a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java">Sync from an external source</a>.</li>
 </ol>
-<p><em>Make sure to read the <a href="/docs/usage/IMPORTANT_USAGE_TIPS.md">Important Usage Tips</a> for optimal performance.</em></p>
+<p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
 <p>A utility method provided by the library to compare a Category with a new CategoryDraft and results in a list of category update actions. 
 <div class="codehilite"><pre><span></span><span class="n">List</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">Category</span><span class="o">&gt;&gt;</span> <span class="n">updateActions</span> <span class="o">=</span> <span class="n">CategorySyncUtils</span><span class="o">.</span><span class="na">buildActions</span><span class="o">(</span><span class="n">category</span><span class="o">,</span> <span class="n">categoryDraft</span><span class="o">,</span> <span class="n">categorySyncOptions</span><span class="o">);</span>

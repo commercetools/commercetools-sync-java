@@ -690,14 +690,14 @@ against a <a href="https://docs.commercetools.com/http-api-projects-inventory.ht
 
 </li>
 <li>
-<p>Create a <code>sphereClient</code> <a href="/docs/usage/IMPORTANT_USAGE_TIPS.md#sphereclient-creation">as described here</a>.</p>
+<p>Create a <code>sphereClient</code> <a href="../IMPORTANT_USAGE_TIPS/#sphereclient-creation">as described here</a>.</p>
 </li>
 <li>
 <p>After the <code>sphereClient</code> is setup, a <code>InventorySyncOptions</code> should be be built as follows: 
 <div class="codehilite"><pre><span></span><span class="c1">// instantiating a InventorySyncOptions</span>
 <span class="kd">final</span> <span class="n">InventorySyncOptions</span> <span class="n">inventorySyncOptions</span> <span class="o">=</span> <span class="n">InventorySyncOptionsBuilder</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">sphereClient</span><span class="o">).</span><span class="na">build</span><span class="o">();</span>
 </pre></div>
-<a href="/docs/usage/SYNC_OPTIONS.md">More information about Sync Options</a>.</p>
+<a href="../SYNC_OPTIONS/">More information about Sync Options</a>.</p>
 </li>
 </ol>
 <h4 id="running-the-sync">Running the sync<a class="headerlink" href="#running-the-sync" title="Permanent link">&para;</a></h4>
@@ -722,7 +722,7 @@ human readable format.
 <li>It is not known by the sync which batch is going to be the last one supplied.</li>
 </ol>
 <p>More examples of how to use the sync <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/inventories/InventorySyncIT.java">here</a>.</p>
-<p><em>Make sure to read the <a href="/docs/usage/IMPORTANT_USAGE_TIPS.md">Important Usage Tips</a> for optimal performance.</em></p>
+<p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
 <p>A utility method provided by the library to compare an InventoryEntry with a new InventoryEntryDraft and results in a list of InventoryEntry
  update actions. 
