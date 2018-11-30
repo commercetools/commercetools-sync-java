@@ -133,42 +133,37 @@ public final class SyncSingleLocale {
                                                                             UpdateAction<Product>> updateActionMapper) {
         final LocalizedString newLocalizedField = newLocalizedFieldMapper.apply(newDraft);
         final LocalizedString oldLocalizedField = oldLocalizedFieldMapper.apply(oldProduct.getMasterData().getStaged());
-        if (oldLocalizedField == null && newLocalizedField == null) {
-            return Optional.empty();
-        } else {
-            if (oldLocalizedField != null && newLocalizedField != null) {
-                // if both old and new localized fields are set, only update if the locale values are not equal.
-                final String newLocaleValue = newLocalizedField.get(locale);
-                final String oldLocaleValue = oldLocalizedField.get(locale);
-                if (!Objects.equals(newLocaleValue, oldLocaleValue)) {
-                    // if old locale value is set, remove it from old localized field
-                    final LocalizedString withLocaleChange = ofNullable(oldLocaleValue)
-                        .map(value -> LocalizedString.of(
-                            oldLocalizedField.stream()
-                                .filter(localization -> !localization.getLocale().equals(locale))
-                                .collect(toMap(LocalizedStringEntry::getLocale,
-                                    LocalizedStringEntry::getValue))))
-                        .orElse(oldLocalizedField);
+        if (oldLocalizedField != null && newLocalizedField != null) {
+            // if both old and new localized fields are set, only update if the locale values are not equal.
+            final String newLocaleValue = newLocalizedField.get(locale);
+            final String oldLocaleValue = oldLocalizedField.get(locale);
 
-                }
-                return Optional.empty();
+            // At this point, we are sure both old locale value and new locale value have different values.
+            // if old locale value is set, remove it from old localized field
+            final LocalizedString withLocaleChange = ofNullable(oldLocaleValue)
+                .map(value -> LocalizedString.of(
+                    oldLocalizedField.stream()
+                        .filter(localization -> !localization.getLocale().equals(locale))
+                        .collect(toMap(LocalizedStringEntry::getLocale,
+                            LocalizedStringEntry::getValue))))
+                .orElse(oldLocalizedField);
+
             // Only if old locale value is not set and the new locale value is set,
             // update the old localized field with the new locale value
             return ofNullable(ofNullable(newLocaleValue)
                     .map(val -> updateActionMapper.apply(withLocaleChange.plus(locale, val)))
                     .orElseGet(() -> updateActionMapper.apply(withLocaleChange)));
+        } else {
+            if (oldLocalizedField != null) {
+                // If old localized field is set but the new one is unset, only update if the locale value is set in
+                // the old field.
+                return ofNullable(oldLocalizedField.get(locale))
+                    .map(localValue -> updateActionMapper.apply(LocalizedString.empty()));
             } else {
-                if (oldLocalizedField != null) {
-                    // If old localized field is set but the new one is unset, only update if the locale value is set in
-                    // the old field.
-                    return ofNullable(oldLocalizedField.get(locale))
-                        .map(localValue -> updateActionMapper.apply(LocalizedString.empty()));
-                } else {
-                    // If old localized field is unset but the new one is set, only update if the locale value is set in
-                    // the new field.
-                    return ofNullable(newLocalizedField.get(locale))
-                        .map(newLocalValue -> updateActionMapper.apply(LocalizedString.of(locale, newLocalValue)));
-                }
+                // If old localized field is unset but the new one is set, only update if the locale value is set in
+                // the new field.
+                return ofNullable(newLocalizedField.get(locale))
+                    .map(newLocalValue -> updateActionMapper.apply(LocalizedString.of(locale, newLocalValue)));
             }
         }
     }
