@@ -25,14 +25,16 @@ against a [ProductDraft](https://docs.commercetools.com/http-api-projects-produc
 <!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
 
 #### Prerequisites
-1. The sync expects a list of non-null `ProductDraft` objects that have their `key` fields set to match the
-products from the source to the target. Also, the target project is expected to have the `key` fields set,
+1. The sync expects a list of `ProductDraft`s that have their `key` fields set to be matched with
+products in the target CTP project. Also, the products in the target project are expected to have the `key` fields set,
 otherwise they won't be matched.
-**NOTE: PLEASE MAKE SURE THE `SKU` FIELDS OF ALL PRODUCTS ARE SET AS THE SYNC LIBRARY WILL BE MIGRATED TO MATCH PRODUCTS BY `SKU` INSTEAD OF `KEY` IN THE FUTURE.**
 
-2. Every product may have several references including `product type`, `categories`, `taxCategory`, etc.. Variants
+2. The sync expects all variants of the supplied list of `ProductDraft`s to have their `sku` fields set. Also,
+all the variants in the target project are expected to have the `sku` fields set.
+
+3. Every product may have several references including `product type`, `categories`, `taxCategory`, etc.. Variants
 of the product also have prices, where each price also has some references including a reference to the `Type` of its 
-custom fields and a reference to a `channel`. All these referenced resources are matched by their `key` Therefore, in 
+custom fields and a reference to a `channel`. All these referenced resources are matched by their `key`s. Therefore, in 
 order for the sync to resolve the actual ids of those references, those `key`s have to be supplied in the following way:
     - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
     reference would return its `key`. 
@@ -45,9 +47,9 @@ order for the sync to resolve the actual ids of those references, those `key`s h
          final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
          ````
      
-3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
+4. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
-4. After the `sphereClient` is set up, a `ProductSyncOptions` should be built as follows: 
+5. After the `sphereClient` is set up, a `ProductSyncOptions` should be built as follows: 
 ````java
 // instantiating a ProductSyncOptions
 final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(sphereClient).build();

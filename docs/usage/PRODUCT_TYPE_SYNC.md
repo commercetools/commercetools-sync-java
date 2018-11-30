@@ -25,9 +25,10 @@ against a [ProductTypeDraft](https://docs.commercetools.com/http-api-projects-pr
 <!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
 
 #### Prerequisites
-1. The sync expects a list of non-null `ProductTypeDrafts` objects that have their `key` fields set to match the
-product types from the source to the target. Also, the target project is expected to have the `key` fields set, otherwise they won't be
-matched.
+
+1. The sync expects a list of `ProductTypeDrafts`s that have their `key` fields set to be matched with
+product types  in the target CTP project. Also, the product types  in the target project are expected to have the `key`
+fields set, otherwise they won't be matched.
 
 2. Create a `sphereClient` [as described here](/docs/usage/IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 

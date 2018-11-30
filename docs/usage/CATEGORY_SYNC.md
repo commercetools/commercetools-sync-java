@@ -25,11 +25,13 @@ against a [CategoryDraft](https://docs.commercetools.com/http-api-projects-categ
 <!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
 
 #### Prerequisites
-1. The sync expects a list of non-null `CategoryDraft` objects that have their `key` fields set to match the
-categories from the source to the target. Also, the target project is expected to have the `key` fields set, otherwise they won't be
-matched.
+
+1. The sync expects a list of `CategoryDraft`s that have their `key` fields set to be matched with
+categories in the target CTP project. Also, the categories in the target project are expected to have the `key` fields set,
+otherwise they won't be matched.
+
 2. Every category may have a reference to a `parent category` and a reference to the `Type` of its custom fields. Categories 
-   and Types are matched by their `key` Therefore, in order for the sync to resolve the 
+   and Types are matched by their `key`s. Therefore, in order for the sync to resolve the 
     actual ids of those references, the `key` of the `Type`/parent `Category` has to be supplied in the following way:
     - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
     reference would return its `key`.  
