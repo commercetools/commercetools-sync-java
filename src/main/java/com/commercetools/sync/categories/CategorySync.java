@@ -593,7 +593,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                   if (sphereException != null) {
                                       return executeSupplierIfConcurrentModificationException(
                                           sphereException,
-                                          () -> fetchAndUpdate(category, newCategory),
+                                          () -> refetchAndUpdate(category, newCategory),
                                           () -> {
                                               if (!processedCategoryKeys.contains(categoryKey)) {
                                                   handleError(format(UPDATE_FAILED, categoryKey, sphereException),
@@ -615,8 +615,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                               });
     }
 
-    private CompletionStage<Void> fetchAndUpdate(@Nonnull final Category oldCategory,
-                                                 @Nonnull final CategoryDraft newCategory) {
+    private CompletionStage<Void> refetchAndUpdate(@Nonnull final Category oldCategory,
+                                                   @Nonnull final CategoryDraft newCategory) {
+
         final String key = oldCategory.getKey();
         return categoryService
                 .fetchCategory(key)
@@ -633,14 +634,14 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     }
 
                     return fetchedCategoryOptional
-                            .map(fetchedCategory -> buildUpdateActionsAndUpdate(fetchedCategory, newCategory))
-                            .orElseGet(() -> {
-                                final String errorMessage =
-                                        format(UPDATE_FAILED, key, "Not found when attempting to fetch while retrying "
-                                                + "after concurrency modification.");
-                                handleError(errorMessage, null);
-                                return CompletableFuture.completedFuture(null);
-                            });
+                        .map(fetchedCategory -> buildUpdateActionsAndUpdate(fetchedCategory, newCategory))
+                        .orElseGet(() -> {
+                            final String errorMessage =
+                                format(UPDATE_FAILED, key, "Not found when attempting to fetch while retrying "
+                                    + "after concurrency modification.");
+                            handleError(errorMessage, null);
+                            return CompletableFuture.completedFuture(null);
+                        });
                 });
     }
 
