@@ -477,5 +477,4 @@ public class ProductSyncIT {
     }
 
     //TODO: IT BEFORE CREATE CALLBACK
-    //TODO: IT BEFORE UPDATE CALLBACK
 }
