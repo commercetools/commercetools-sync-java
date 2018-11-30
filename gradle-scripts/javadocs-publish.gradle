@@ -24,7 +24,7 @@ gitPublish {
 
     // message used when committing changes
     // The .toString() is temporarily used for this issue: https://github.com/ajoberstar/gradle-git-publish/issues/50
-    commitMessage = "Publishing a new java doc for $rootProject.version version.".toString()
+    commitMessage = "Publish a new java doc for $rootProject.version version.".toString()
 }
 
 gitPublishReset {
