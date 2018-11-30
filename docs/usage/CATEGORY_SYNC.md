@@ -46,7 +46,7 @@ otherwise they won't be matched.
      
    Example of its usage can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130).
 
-3. Create a `sphereClient` [as described here](/docs/usage/IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
+3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 4. After the `sphereClient` is set up, a `CategorySyncOptions` should be built as follows: 
 ````java
@@ -54,7 +54,7 @@ otherwise they won't be matched.
 final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(sphereClient).build();
 ````
 
-[More information about Sync Options](/docs/usage/SYNC_OPTIONS.md).
+[More information about Sync Options](SYNC_OPTIONS.md).
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
@@ -86,7 +86,7 @@ __Note__ The statistics object contains the processing time of the last batch on
 1. [Sync from another CTP project as a source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
 2. [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java).
 
-*Make sure to read the [Important Usage Tips](/docs/usage/IMPORTANT_USAGE_TIPS.md) for optimal performance.*
+*Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
 ### Build all update actions
 
