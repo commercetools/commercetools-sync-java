@@ -153,12 +153,13 @@ final class SyncSingleLocale {
                                     LocalizedStringEntry::getValue))))
                         .orElse(oldLocalizedField);
 
-                    // Only if old locale value is not set and the new locale value is set,
-                    // update the old localized field with the new locale value
-                    return ofNullable(newLocaleValue)
-                        .map(val -> updateActionMapper.apply(withLocaleChange.plus(locale, val)));
                 }
                 return Optional.empty();
+            // Only if old locale value is not set and the new locale value is set,
+            // update the old localized field with the new locale value
+            return ofNullable(ofNullable(newLocaleValue)
+                    .map(val -> updateActionMapper.apply(withLocaleChange.plus(locale, val)))
+                    .orElseGet(() -> updateActionMapper.apply(withLocaleChange)));
             } else {
                 if (oldLocalizedField != null) {
                     // If old localized field is set but the new one is unset, only update if the locale value is set in
