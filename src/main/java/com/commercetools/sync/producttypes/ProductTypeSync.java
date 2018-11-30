@@ -34,10 +34,10 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncStatistics, ProductTypeSyncOptions> {
     private static final String CTP_PRODUCT_TYPE_FETCH_FAILED = "Failed to fetch existing product types of keys '%s'.";
-    private static final String CTP_PRODUCT_TYPE_UPDATE_FAILED = "Failed to update product type of key '%s'.";
+    private static final String CTP_PRODUCT_TYPE_UPDATE_FAILED = "Failed to update product type of key '%s'."
+            + " Reason: %s";
     private static final String PRODUCT_TYPE_DRAFT_HAS_NO_KEY = "Failed to process product type draft without key.";
     private static final String PRODUCT_TYPE_DRAFT_IS_NULL = "Failed to process null product type draft.";
-    private static final String FETCH_ON_RETRY = "Failed to fetch category on retry.";
 
     private final ProductTypeService productTypeService;
 
@@ -277,7 +277,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                             () -> fetchAndUpdate(oldProductType, newProductType),
                             () -> {
                                 final String errorMessage =
-                                        format(CTP_PRODUCT_TYPE_UPDATE_FAILED, newProductType.getKey());
+                                        format(CTP_PRODUCT_TYPE_UPDATE_FAILED, sphereException.getMessage(),
+                                                newProductType.getKey());
                                 handleError(errorMessage, sphereException, 1);
                                 return CompletableFuture.completedFuture(Optional.empty());
                             });
@@ -293,14 +294,28 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         final String key = oldProductType.getKey();
         return productTypeService
                 .fetchProductType(key)
-                .thenCompose(productTypeOptional ->
-                        productTypeOptional
-                                .map(productType -> buildActionsAndUpdate(productType, newProductType))
-                                .orElseGet(() -> {
-                                    final String errorMessage = format("%s%s",
-                                            format(CTP_PRODUCT_TYPE_UPDATE_FAILED, key), FETCH_ON_RETRY);
-                                    handleError(errorMessage, null, 1);
-                                    return CompletableFuture.completedFuture(Optional.empty());
-                                }));
+                .handle(ImmutablePair::new)
+                .thenCompose(fetchResponse -> {
+                    final Optional<ProductType> fetchedProductTypeOptional = fetchResponse.getKey();
+                    final Throwable exception = fetchResponse.getValue();
+
+                    if (exception != null) {
+                        final String errorMessage = format(CTP_PRODUCT_TYPE_UPDATE_FAILED, key,
+                                "Failed to fetch from CTP while retrying after concurrency modification.");
+                        handleError(errorMessage, exception, 1);
+                        return CompletableFuture.completedFuture(null);
+                    }
+
+                    return fetchedProductTypeOptional
+                            .map(fetchedProductType -> buildActionsAndUpdate(fetchedProductType, newProductType))
+                            .orElseGet(() -> {
+                                final String errorMessage =
+                                        format(CTP_PRODUCT_TYPE_UPDATE_FAILED, key,
+                                                "Not found when attempting to fetch while retrying "
+                                                + "after concurrency modification.");
+                                handleError(errorMessage, null, 1);
+                                return CompletableFuture.completedFuture(null);
+                            });
+                });
     }
 }

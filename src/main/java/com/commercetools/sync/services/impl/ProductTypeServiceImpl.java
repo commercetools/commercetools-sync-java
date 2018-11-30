@@ -34,7 +34,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class ProductTypeServiceImpl
         extends BaseService<ProductTypeDraft, ProductType, BaseSyncOptions> implements ProductTypeService {
 
-    private static final String FETCH_FAILED = "Failed to fetch product types with keys: '%s'. Reason: %s";
     private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData = new ConcurrentHashMap<>();
 
     public ProductTypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
@@ -156,18 +155,18 @@ public class ProductTypeServiceImpl
             return CompletableFuture.completedFuture(Optional.empty());
         }
 
-        return syncOptions.getCtpClient()
-                .execute(ProductTypeQuery.of().plusPredicates(queryModel -> queryModel.key().is(key)))
-                .thenApply(productTypePagedQueryResult -> {
+        final ProductTypeQuery productTypeQuery =
+                ProductTypeQuery.of().plusPredicates(queryModel -> queryModel.key().is(key));
 
-                    final Optional<ProductType> productTypeOptional = productTypePagedQueryResult.head();
-                    productTypeOptional.ifPresent(productType ->
-                            keyToIdCache.putIfAbsent(productType.getKey(), productType.getId()));
-                    return productTypeOptional;
-                })
-                .exceptionally(sphereException -> {
-                    syncOptions.applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
-                    return Optional.empty();
-                });
+        return syncOptions
+                .getCtpClient()
+                .execute(productTypeQuery)
+                .thenApply(productTypePagedQueryResult ->
+                        productTypePagedQueryResult
+                                .head()
+                                .map(productType -> {
+                                    keyToIdCache.put(productType.getKey(), productType.getId());
+                                    return productType;
+                                }));
     }
 }
