@@ -298,6 +298,8 @@ public class ProductServiceImplIT {
         keys.add(product.getKey());
 
         // test and assert
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
         assertThat(spyProductService.fetchMatchingProductsByKeys(keys))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(BadGatewayException.class);
@@ -986,6 +988,8 @@ public class ProductServiceImplIT {
         final String productKey = product.getKey();
 
         // test and assertion
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
         assertThat(spyProductService.fetchProduct(productKey))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(BadGatewayException.class);
