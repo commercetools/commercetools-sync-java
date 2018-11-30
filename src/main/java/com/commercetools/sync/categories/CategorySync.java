@@ -178,41 +178,56 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     if (cachingException != null) {
                         handleError("Failed to build a cache of keys to ids.", cachingException, categoryDrafts.size());
                         return CompletableFuture.completedFuture(null);
-                    } else {
-
-                        prepareDraftsForProcessing(categoryDrafts, keyToIdCache);
-                        categoryKeysToFetch =
-                                existingCategoryDrafts.stream().map(CategoryDraft::getKey).collect(Collectors.toSet());
-                        return categoryService
-                                .createCategories(newCategoryDrafts)
-                                .thenAccept(this::processCreatedCategories)
-                                .thenCompose(result -> categoryService
-                                        .fetchMatchingCategoriesByKeys(categoryKeysToFetch)
-                                        .handle(ImmutablePair::new)
-                                        .thenCompose(fetchResponse -> {
-                                            final Set<Category> fetchedCategories = fetchResponse.getKey();
-                                            final Throwable exception = fetchResponse.getValue();
-
-                                            if (exception != null) {
-                                                final String errorMessage =
-                                                        format("Failed to fetch existing categories with keys: '%s'.",
-                                                                categoryKeysToFetch);
-                                                handleError(errorMessage, exception, categoryKeysToFetch.size());
-                                                return CompletableFuture.completedFuture(null);
-                                            } else {
-                                                processFetchedCategories(fetchedCategories,
-                                                        referencesResolvedDrafts, keyToIdCache);
-                                                updateCategoriesSequentially(categoryDraftsToUpdate);
-                                                return updateCategoriesInParallel(categoryDraftsToUpdate);
-                                            }
-                                        })
-                                );
                     }
+
+                    prepareDraftsForProcessing(categoryDrafts, keyToIdCache);
+
+                    categoryKeysToFetch = existingCategoryDrafts
+                        .stream()
+                        .map(CategoryDraft::getKey)
+                        .collect(Collectors.toSet());
+
+                    return createAndUpdate(keyToIdCache);
                 })
                 .thenApply(ignoredResult -> {
                     statistics.incrementProcessed(numberOfNewDraftsToProcess);
                     return statistics;
                 });
+    }
+
+    private CompletionStage<Void> createAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
+        return categoryService
+                .createCategories(newCategoryDrafts)
+                .thenAccept(this::processCreatedCategories)
+                .thenCompose(ignoredResult -> fetchAndUpdate(keyToIdCache));
+    }
+
+    private CompletionStage<Void> fetchAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
+        return categoryService
+            .fetchMatchingCategoriesByKeys(categoryKeysToFetch)
+            .handle(ImmutablePair::new)
+            .thenCompose(fetchResponse -> {
+                final Set<Category> fetchedCategories = fetchResponse.getKey();
+                final Throwable exception = fetchResponse.getValue();
+
+                if (exception != null) {
+                    final String errorMessage =
+                        format("Failed to fetch existing categories with keys: '%s'.", categoryKeysToFetch);
+                    handleError(errorMessage, exception, categoryKeysToFetch.size());
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                return processFetchedCategoriesAndUpdate(keyToIdCache, fetchedCategories);
+            });
+    }
+
+    @Nonnull
+    private CompletionStage<Void> processFetchedCategoriesAndUpdate(@Nonnull final Map<String, String> keyToIdCache,
+                                                                    @Nonnull final Set<Category> fetchedCategories) {
+
+        processFetchedCategories(fetchedCategories, referencesResolvedDrafts, keyToIdCache);
+        updateCategoriesSequentially(categoryDraftsToUpdate);
+        return updateCategoriesInParallel(categoryDraftsToUpdate);
     }
 
     /**
