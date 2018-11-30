@@ -86,7 +86,6 @@ public class ProductTypeServiceImpl
     public CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchCachedProductAttributeMetaDataMap(
             @Nonnull final String productTypeId) {
 
-        //TODO: CHECK IF IT HAS ID better than empty.
         if (productsAttributesMetaData.isEmpty()) {
             return fetchAndCacheProductMetaData(productTypeId);
         }
@@ -105,7 +104,6 @@ public class ProductTypeServiceImpl
                     productsAttributesMetaData.put(id, getAttributeMetaDataMap(type));
                 });
 
-        // TODO: WHY DO WE QUERY ALL?
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
                 .thenApply(result ->
                         Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));

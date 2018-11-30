@@ -27,8 +27,8 @@ public interface CategoryService {
     CompletionStage<Map<String, String>> cacheKeysToIds();
 
     /**
-     * Given a {@link Set} of category keys, this method fetches a set of all the categories matching this given set of
-     * keys in the CTP project defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. A mapping
+     * Given a {@link Set} of category keys, this method fetches a set of all the categories, matching this given set of
+     * keys in the CTP project, defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. A mapping
      * of the key to the id of the fetched categories is persisted in an in-memory map.
      *
      * @param categoryKeys set of category keys to fetch matching categories by.

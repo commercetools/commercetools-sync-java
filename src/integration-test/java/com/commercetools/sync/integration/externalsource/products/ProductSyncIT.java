@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
@@ -149,14 +148,10 @@ public class ProductSyncIT {
     }
 
     private ProductSyncOptions buildSyncOptions() {
-        final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
-            errorCallBackMessages.add(errorMessage);
-            errorCallBackExceptions.add(exception);
-        };
         final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                        .errorCallback(errorCallBack)
+                                        .errorCallback(this::collectErrors)
                                         .warningCallback(warningCallBack)
                                         .build();
     }
@@ -193,10 +188,7 @@ public class ProductSyncIT {
 
         final String keyPrefix = "callback_";
         final ProductSyncOptions options = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                .errorCallback((errorMessage, exception) -> {
-                    errorCallBackMessages.add(errorMessage);
-                    errorCallBackExceptions.add(exception);
-                })
+                .errorCallback(this::collectErrors)
                 .warningCallback(warningMessage -> warningCallBackMessages.add(warningMessage))
                 .beforeCreateCallback(draft -> prefixDraftKey(draft, keyPrefix))
                 .build();
@@ -318,13 +310,7 @@ public class ProductSyncIT {
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
         final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder.of(spyClient)
-                                                                       .errorCallback(
-                                                                           (errorMessage, exception) -> {
-                                                                               errorCallBackMessages
-                                                                                   .add(errorMessage);
-                                                                               errorCallBackExceptions
-                                                                                   .add(exception);
-                                                                           })
+                                                                       .errorCallback(this::collectErrors)
                                                                        .warningCallback(warningMessage ->
                                                                            warningCallBackMessages
                                                                                .add(warningMessage))
@@ -365,12 +351,7 @@ public class ProductSyncIT {
 
         final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder.of(spyClient)
                                                                        .errorCallback(
-                                                                           (errorMessage, exception) -> {
-                                                                               errorCallBackMessages
-                                                                                   .add(errorMessage);
-                                                                               errorCallBackExceptions
-                                                                                   .add(exception);
-                                                                           })
+                                                                               this::collectErrors)
                                                                        .warningCallback(warningMessage ->
                                                                            warningCallBackMessages
                                                                                .add(warningMessage))
@@ -421,13 +402,7 @@ public class ProductSyncIT {
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
         final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder.of(spyClient)
-                                                                       .errorCallback(
-                                                                           (errorMessage, exception) -> {
-                                                                               errorCallBackMessages
-                                                                                   .add(errorMessage);
-                                                                               errorCallBackExceptions
-                                                                                   .add(exception);
-                                                                           })
+                                                                       .errorCallback(this::collectErrors)
                                                                        .warningCallback(warningMessage ->
                                                                            warningCallBackMessages
                                                                                .add(warningMessage))
@@ -842,15 +817,11 @@ public class ProductSyncIT {
     public void sync_withProductContainingAttributeChanges_shouldSyncProductCorrectly() {
         // preparation
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-        final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
-            errorCallBackMessages.add(errorMessage);
-            errorCallBackExceptions.add(exception);
-        };
         final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
 
 
         final ProductSyncOptions customOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                          .errorCallback(errorCallBack)
+                                                                          .errorCallback(this::collectErrors)
                                                                           .warningCallback(warningCallBack)
                                                                           .beforeUpdateCallback(
                                                                               (actions, draft, old) -> {
@@ -922,5 +893,10 @@ public class ProductSyncIT {
                 SetAttributeInAllVariants.ofUnsetAttribute("zubereitung", true),
                 SetAttribute.ofUnsetAttribute(1, "localisedText", true)
             );
+    }
+
+    private void collectErrors(final String errorMessage, final Throwable exception) {
+        errorCallBackMessages.add(errorMessage);
+        errorCallBackExceptions.add(exception);
     }
 }

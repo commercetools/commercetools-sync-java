@@ -203,6 +203,8 @@ public class CategoryServiceImplIT {
         keys.add(oldCategoryKey);
 
         // test and assert
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
         assertThat(spyCategoryService.fetchMatchingCategoriesByKeys(keys))
                 .hasFailedWithThrowableThat()
                 .isExactlyInstanceOf(BadGatewayException.class);
@@ -534,6 +536,8 @@ public class CategoryServiceImplIT {
         final CategoryService spyCategoryService = new CategoryServiceImpl(spyOptions);
 
         // test and assertion
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
         assertThat(spyCategoryService.fetchCategory(oldCategoryKey))
                 .hasFailedWithThrowableThat()
                 .isExactlyInstanceOf(BadGatewayException.class);
