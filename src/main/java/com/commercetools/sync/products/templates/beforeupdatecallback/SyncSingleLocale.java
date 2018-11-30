@@ -12,12 +12,10 @@ import io.sphere.sdk.products.commands.updateactions.SetDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
-import io.sphere.sdk.producttypes.ProductType;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -26,7 +24,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-final class SyncSingleLocale {
+public final class SyncSingleLocale {
     /**
      * Takes in a {@link List} of product update actions that was built from comparing a {@code newProductDraft} and an
      * {@code oldProduct} and maps the update actions so that only localizations with value {@link Locale#FRENCH}
@@ -37,16 +35,14 @@ final class SyncSingleLocale {
      * @param oldProduct    the old existing {@link Product}.
      * @return a new list of update actions that corresponds to changes on French localizations only.
      */
-    private static List<UpdateAction<Product>> syncFrenchDataOnly(
+    public static List<UpdateAction<Product>> syncFrenchDataOnly(
         @Nonnull final List<UpdateAction<Product>> updateActions,
         @Nonnull final ProductDraft newProductDraft,
-        @Nonnull final Product oldProduct,
-        @Nonnull final ProductType productType) {
+        @Nonnull final Product oldProduct) {
 
         final List<Optional<UpdateAction<Product>>> optionalActions =
             updateActions.stream()
-                         .map(action -> filterSingleLocalization(action, newProductDraft, oldProduct, productType,
-                             Locale.FRENCH))
+                         .map(action -> filterSingleLocalization(action, newProductDraft, oldProduct, Locale.FRENCH))
                          .collect(toList());
 
         return filterEmptyOptionals(optionalActions);
@@ -80,9 +76,10 @@ final class SyncSingleLocale {
         @Nonnull final UpdateAction<Product> updateAction,
         @Nonnull final ProductDraft newProductDraft,
         @Nonnull final Product oldProduct,
-        @Nonnull final ProductType productType,
+        //@Nonnull final ProductType productType,
         //TODO: RIGHT NOW NOT USED BUT WILL BE EXTENDED LATER WITH USAGE AND TESTS. GITHUB ISSUE #189
         @Nonnull final Locale locale) {
+        
         if (updateAction instanceof ChangeName) {
             return filterLocalizedField(newProductDraft, oldProduct, locale, ProductDraft::getName,
                 ProductData::getName, ChangeName::of);
