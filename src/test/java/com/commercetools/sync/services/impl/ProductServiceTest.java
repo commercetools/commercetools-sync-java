@@ -88,7 +88,7 @@ public class ProductServiceTest {
         assertThat(errorMessages)
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(message -> {
-                    assertThat(message).contains("Failed to create draft with key: 'productKey'.");
+                    assertThat(message).contains("Failed to create draft with key 'productKey'.");
                     assertThat(message).contains("BadRequestException");
                 });
 
@@ -107,7 +107,7 @@ public class ProductServiceTest {
         assertThat(errorMessages).hasSize(1);
         assertThat(errorExceptions).hasSize(1);
         assertThat(errorMessages.get(0))
-            .isEqualTo("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
+            .isEqualTo("Failed to create draft with key 'null'. Reason: Draft key is blank!");
     }
 
     @Test
