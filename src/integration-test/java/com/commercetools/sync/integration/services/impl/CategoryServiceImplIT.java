@@ -352,7 +352,7 @@ public class CategoryServiceImplIT {
         // assertion
         assertThat(createdOptional).isEmpty();
         assertThat(errorCallBackMessages)
-                .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
+                .containsExactly("Failed to create draft with key ''. Reason: Draft key is blank!");
     }
 
     @Test
