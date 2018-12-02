@@ -27,7 +27,6 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -48,6 +47,7 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.createCus
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
@@ -117,7 +117,7 @@ public class CategorySyncIT {
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
-        final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
+        final CategorySyncStatistics syncStatistics = categorySync.sync(singletonList(categoryDraft))
                                                         .toCompletableFuture().join();
 
         assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
@@ -132,7 +132,7 @@ public class CategorySyncIT {
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
-        final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
+        final CategorySyncStatistics syncStatistics = categorySync.sync(singletonList(categoryDraft))
                                                         .toCompletableFuture().join();
 
         assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
@@ -148,7 +148,7 @@ public class CategorySyncIT {
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
-        final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
+        final CategorySyncStatistics syncStatistics = categorySync.sync(singletonList(categoryDraft))
                                                         .toCompletableFuture().join();
         
         assertThat(syncStatistics).hasValues(1, 0, 0, 0, 0);
@@ -164,7 +164,7 @@ public class CategorySyncIT {
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
-        final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
+        final CategorySyncStatistics syncStatistics = categorySync.sync(singletonList(categoryDraft))
                                                                   .toCompletableFuture().join();
 
         assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
@@ -188,7 +188,7 @@ public class CategorySyncIT {
         final CategorySync categorySync = new CategorySync(categorySyncOptions);
 
         // Test
-        final CategorySyncStatistics statistics = categorySync.sync(Collections.singletonList(categoryDraft))
+        final CategorySyncStatistics statistics = categorySync.sync(singletonList(categoryDraft))
                                                               .toCompletableFuture()
                                                               .join();
 
@@ -242,7 +242,7 @@ public class CategorySyncIT {
                         .build();
 
         final CategorySync categorySync = new CategorySync(categorySyncOptions);
-        final CategorySyncStatistics statistics = categorySync.sync(Collections.singletonList(categoryDraft))
+        final CategorySyncStatistics statistics = categorySync.sync(singletonList(categoryDraft))
                 .toCompletableFuture()
                 .join();
 
@@ -259,6 +259,7 @@ public class CategorySyncIT {
 
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
+
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final CategoryQuery anyCategoryQuery = any(CategoryQuery.class);
 
@@ -267,11 +268,9 @@ public class CategorySyncIT {
                 .thenCallRealMethod() // Call real fetch on fetching matching categories
                 .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
-
         final CategoryUpdateCommand anyCategoryUpdate = any(CategoryUpdateCommand.class);
         when(spyClient.execute(anyCategoryUpdate))
                 .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()));
-
 
         return spyClient;
     }
@@ -300,7 +299,7 @@ public class CategorySyncIT {
                                       .build();
 
         final CategorySync categorySync = new CategorySync(categorySyncOptions);
-        final CategorySyncStatistics statistics = categorySync.sync(Collections.singletonList(categoryDraft))
+        final CategorySyncStatistics statistics = categorySync.sync(singletonList(categoryDraft))
                                                               .toCompletableFuture()
                                                               .join();
 
@@ -344,7 +343,7 @@ public class CategorySyncIT {
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
-        final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
+        final CategorySyncStatistics syncStatistics = categorySync.sync(singletonList(categoryDraft))
                                                                   .toCompletableFuture().join();
 
         assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
@@ -358,7 +357,7 @@ public class CategorySyncIT {
             .key(oldCategoryKey)
             .build();
 
-        final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
+        final CategorySyncStatistics syncStatistics = categorySync.sync(singletonList(categoryDraft))
                                                                   .toCompletableFuture().join();
 
         assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
@@ -609,7 +608,6 @@ public class CategorySyncIT {
 
         assertThat(syncStatistics).hasValues(6, 5, 0, 1, 0);
     }
-
 
     @Test
     public void syncDrafts_WithValidAndInvalidCustomTypeKeys_ShouldSyncCorrectly() {
