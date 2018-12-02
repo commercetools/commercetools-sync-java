@@ -33,7 +33,7 @@ class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions> {
     final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
     private static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;
-    private static final String CREATE_FAILED = "Failed to create draft with key '%s'. Reason: %s";
+    private static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
 
     BaseService(@Nonnull final S syncOptions) {
         this.syncOptions = syncOptions;
