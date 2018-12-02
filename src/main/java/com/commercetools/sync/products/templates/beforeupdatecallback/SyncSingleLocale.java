@@ -167,4 +167,7 @@ public final class SyncSingleLocale {
             }
         }
     }
+
+    private SyncSingleLocale() {
+    }
 }
