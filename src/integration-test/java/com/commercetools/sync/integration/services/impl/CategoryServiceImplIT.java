@@ -542,5 +542,4 @@ public class CategoryServiceImplIT {
                 .hasFailedWithThrowableThat()
                 .isExactlyInstanceOf(BadGatewayException.class);
     }
-
 }
