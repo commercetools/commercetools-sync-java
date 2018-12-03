@@ -5,13 +5,13 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.products.templates.beforeupdatecallback.SyncSingleLocale;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductProjectionType;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
@@ -19,8 +19,9 @@ import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.commands.updateactions.SetDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
-import io.sphere.sdk.products.queries.ProductProjectionByKeyGet;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.producttypes.ProductType;
+import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -29,8 +30,11 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
@@ -43,7 +47,7 @@ import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.of;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
-import static java.util.Collections.singletonList;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductSyncSingleLocaleIT {
@@ -100,6 +104,7 @@ public class ProductSyncSingleLocaleIT {
                                         .errorCallback(errorCallBack)
                                         .warningCallback(warningCallBack)
                                         .beforeUpdateCallback(actionsCallBack)
+                                        .beforeCreateCallback(SyncSingleLocale::filterFrenchLocales)
                                         .build();
     }
 
@@ -133,7 +138,7 @@ public class ProductSyncSingleLocaleIT {
 
         executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(targetDraft)));
 
-        final ProductDraft newProductDraft = ProductDraftBuilder
+        final ProductDraft matchingDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), nameSource, slugSource,
                     ProductVariantDraftBuilder.of().key("foo").sku("sku").build())
                 .key("existingProduct")
@@ -142,39 +147,72 @@ public class ProductSyncSingleLocaleIT {
                 .isPublish(true)
                 .build();
 
+        final ProductDraft nonMatchingDraft = ProductDraftBuilder
+            .of(referenceOfId(productType.getKey()), nameSource, LocalizedString.of(Locale.FRENCH, "foo"),
+                ProductVariantDraftBuilder.of().key("foo-new").sku("sku-new").build())
+            .key("newProduct")
+            .description(descriptionSource)
+            .metaDescription(metaDescriptionSource)
+            .metaKeywords(ofEnglish("foo"))
+            .build();
+
 
         // test
         final ProductSyncStatistics syncStatistics =
-            executeBlocking(productSync.sync(singletonList(newProductDraft)));
+            executeBlocking(productSync.sync(asList(matchingDraft, nonMatchingDraft)));
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(2, 1, 1, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
 
-        final LocalizedString expectedName = ofEnglish("name_target").plus(Locale.FRENCH, "nom_source");
-        final LocalizedString expectedSlug = ofEnglish("slug_target").plus(Locale.FRENCH, "limace_source");
-        final LocalizedString expectedMetaTitle = of();
+        final LocalizedString expectedUpdatedName = ofEnglish("name_target").plus(Locale.FRENCH, "nom_source");
+        final LocalizedString expectedUpdatedSlug = ofEnglish("slug_target").plus(Locale.FRENCH, "limace_source");
+        final LocalizedString expectedUpdatedMetaTitle = of();
 
         assertThat(updateActionsFromSync).containsExactlyInAnyOrder(
-                ChangeName.of(expectedName),
-                ChangeSlug.of(expectedSlug),
+                ChangeName.of(expectedUpdatedName),
+                ChangeSlug.of(expectedUpdatedSlug),
                 SetDescription.of(descriptionSource),
-                SetMetaTitle.of(expectedMetaTitle),
+                SetMetaTitle.of(expectedUpdatedMetaTitle),
                 Publish.of()
         );
 
-        final ProductProjection productProjection = CTP_TARGET_CLIENT
-            .execute(ProductProjectionByKeyGet.of(newProductDraft.getKey(), ProductProjectionType.STAGED))
-            .toCompletableFuture().join();
+        final ProductProjectionQuery productProjectionQuery = ProductProjectionQuery.ofStaged().plusPredicates(
+            model -> model.masterVariant().sku().isIn(asList("sku", "sku-new")));
 
-        assertThat(productProjection).isNotNull();
-        assertThat(productProjection.getName()).isEqualTo(expectedName);
-        assertThat(productProjection.getSlug()).isEqualTo(expectedSlug);
-        assertThat(productProjection.getMetaTitle()).isNull();
-        assertThat(productProjection.getMetaDescription()).isNull();
-        assertThat(productProjection.getDescription()).isEqualTo(descriptionSource);
-        assertThat(productProjection.getMetaKeywords()).isEqualTo(metaKeywordsTarget);
+
+        final PagedQueryResult<ProductProjection> pagedQueryResult = CTP_TARGET_CLIENT.execute(productProjectionQuery)
+                                                                                      .toCompletableFuture()
+                                                                                      .join();
+
+        final Map<String, ProductProjection> projectionMap =
+            pagedQueryResult.getResults()
+                            .stream()
+                            .collect(Collectors.toMap(ProductProjection::getKey, Function.identity()));
+
+        final ProductProjection updatedProduct = projectionMap.get(matchingDraft.getKey());
+
+        assertThat(updatedProduct).isNotNull();
+        assertThat(updatedProduct.getName()).isEqualTo(expectedUpdatedName);
+        assertThat(updatedProduct.getSlug()).isEqualTo(expectedUpdatedSlug);
+        assertThat(updatedProduct.getMetaTitle()).isNull();
+        assertThat(updatedProduct.getMetaDescription()).isNull();
+        assertThat(updatedProduct.getDescription()).isEqualTo(descriptionSource);
+        assertThat(updatedProduct.getMetaKeywords()).isEqualTo(metaKeywordsTarget);
+
+        final ProductProjection createdProduct = projectionMap.get(nonMatchingDraft.getKey());
+
+        final LocalizedString expectedCreatedName = LocalizedString.of(Locale.FRENCH, "nom_source");
+        final LocalizedString expectedCreatedSlug = LocalizedString.of(Locale.FRENCH, "foo");
+
+        assertThat(createdProduct).isNotNull();
+        assertThat(createdProduct.getName()).isEqualTo(expectedCreatedName);
+        assertThat(createdProduct.getSlug()).isEqualTo(expectedCreatedSlug);
+        assertThat(createdProduct.getMetaTitle()).isNull();
+        assertThat(createdProduct.getMetaDescription()).isNull();
+        assertThat(createdProduct.getDescription()).isEqualTo(descriptionSource);
+        assertThat(createdProduct.getMetaKeywords()).isNull();
     }
 }

@@ -445,7 +445,7 @@ public class ProductSyncIT {
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
         final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
-        final ProductSyncStatistics syncStatistics =  customSync.sync(productDrafts).toCompletableFuture().join();
+        final ProductSyncStatistics syncStatistics = customSync.sync(productDrafts).toCompletableFuture().join();
 
 
         // Assertion
@@ -475,6 +475,4 @@ public class ProductSyncIT {
             SetAttribute.ofUnsetAttribute(1, "localisedText", true)
         );
     }
-
-    //TODO: IT BEFORE CREATE CALLBACK
 }

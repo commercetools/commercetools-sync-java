@@ -6,6 +6,7 @@ import io.sphere.sdk.models.LocalizedStringEntry;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.products.commands.updateactions.SetDescription;
@@ -14,8 +15,10 @@ import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -35,6 +38,7 @@ public final class SyncSingleLocale {
      * @param oldProduct    the old existing {@link Product}.
      * @return a new list of update actions that corresponds to changes on French localizations only.
      */
+    @Nonnull
     public static List<UpdateAction<Product>> syncFrenchDataOnly(
         @Nonnull final List<UpdateAction<Product>> updateActions,
         @Nonnull final ProductDraft newProductDraft,
@@ -72,6 +76,7 @@ public final class SyncSingleLocale {
      * @param locale       the locale value to only compare and map the update action to accordingly.
      * @return an optional containing the mapped update action or empty value if an update action is not needed.
      */
+    @Nonnull
     private static Optional<UpdateAction<Product>> filterSingleLocalization(
         @Nonnull final UpdateAction<Product> updateAction,
         @Nonnull final ProductDraft newProductDraft,
@@ -122,6 +127,7 @@ public final class SyncSingleLocale {
      * @return an optional containing an update action if the localized field with the specific locale has changed or
      *         empty otherwise.
      */
+    @Nonnull
     private static Optional<UpdateAction<Product>> filterLocalizedField(@Nonnull final ProductDraft newDraft,
                                                                         @Nonnull final Product oldProduct,
                                                                         @Nonnull final Locale locale,
@@ -166,6 +172,71 @@ public final class SyncSingleLocale {
                     .map(newLocalValue -> updateActionMapper.apply(LocalizedString.of(locale, newLocalValue)));
             }
         }
+    }
+
+    /**
+     * Takes a {@link ProductDraft} and filters out any localization other than {@link Locale#FRENCH} from
+     * {@link LocalizedString} fields of the supplied {@link ProductDraft}. Note: This method will only
+     * filter the {@link LocalizedString} fields on the {@link ProductDraft} level, so it will not filter out {@link
+     * LocalizedString} fields on the variant level.
+     *
+     * @param productDraft the product draft to filter the localizations from.
+     * @return a new product draft with {@link LocalizedString} fields that have only entries of the
+     *         {@link Locale#FRENCH} locale.
+     */
+    @Nonnull
+    public static ProductDraft filterFrenchLocales(@Nonnull final ProductDraft productDraft) {
+        return filterLocalizedStrings(productDraft, Locale.FRENCH);
+    }
+
+    /**
+     * Takes a {@link ProductDraft} and a locale and filters out any localization other than the specified one in the
+     * locale from {@link LocalizedString} fields of the supplied {@link ProductDraft}. Note: This method will only
+     * filter the {@link LocalizedString} fields on the {@link ProductDraft} level, so it will not filter out {@link
+     * LocalizedString} fields on the variant level.
+     *
+     * @param productDraft the product draft to filter the localizations from.
+     * @param locale       the locale to filter in.
+     * @return a new product draft with {@link LocalizedString} fields that have only entries of the supplied locale.
+     */
+    @Nonnull
+    private static ProductDraft filterLocalizedStrings(@Nonnull final ProductDraft productDraft,
+                                                       @Nonnull final Locale locale) {
+
+        final LocalizedString name = productDraft.getName();
+        final LocalizedString slug = productDraft.getSlug();
+        final LocalizedString description = productDraft.getDescription();
+        final LocalizedString metaDescription = productDraft.getMetaDescription();
+        final LocalizedString metaKeywords = productDraft.getMetaKeywords();
+        final LocalizedString metaTitle = productDraft.getMetaTitle();
+
+
+        return ProductDraftBuilder.of(productDraft)
+                                  .name(filterLocale(name, locale))
+                                  .slug(filterLocale(slug, locale))
+                                  .description(filterLocale(description, locale))
+                                  .metaDescription(filterLocale(metaDescription, locale))
+                                  .metaKeywords(filterLocale(metaKeywords, locale))
+                                  .metaTitle(filterLocale(metaTitle, locale))
+                                  .build();
+    }
+
+    /**
+     * Takes a {@link LocalizedString} and a locale and filters out any localization other than the specified locale.
+     *
+     * @param localizedString the localizedString to filter the localizations from.
+     * @param locale          the locale to filter in.
+     * @return a new {@link LocalizedString} with only entries of the supplied locale.
+     */
+    @Nullable
+    private static LocalizedString filterLocale(@Nullable final LocalizedString localizedString,
+                                                @Nonnull final Locale locale) {
+        return ofNullable(localizedString)
+            .map(lText -> lText.stream()
+                               .filter(localizedStringEntry -> Objects.equals(localizedStringEntry.getLocale(), locale))
+                               .collect(toMap(LocalizedStringEntry::getLocale, LocalizedStringEntry::getValue)))
+            .map(LocalizedString::of)
+            .orElse(null);
     }
 
     private SyncSingleLocale() {
