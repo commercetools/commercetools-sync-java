@@ -27,7 +27,6 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
@@ -155,7 +154,7 @@ public class ProductTypeSyncIT {
             PRODUCT_TYPE_KEY_1,
             PRODUCT_TYPE_NAME_1,
             PRODUCT_TYPE_DESCRIPTION_1,
-            Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_3)
+            asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_3)
         );
 
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
@@ -176,7 +175,7 @@ public class ProductTypeSyncIT {
 
         assertThat(oldProductTypeAfter).hasValueSatisfying(productType ->
             assertAttributesAreEqual(productType.getAttributes(),
-                Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2,
+                asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2,
                     ATTRIBUTE_DEFINITION_DRAFT_3)
             ));
     }
@@ -218,7 +217,7 @@ public class ProductTypeSyncIT {
             PRODUCT_TYPE_KEY_1,
             PRODUCT_TYPE_NAME_1,
             PRODUCT_TYPE_DESCRIPTION_1,
-            Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_1)
+            asList(ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_1)
         );
 
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
@@ -237,7 +236,7 @@ public class ProductTypeSyncIT {
 
         assertThat(oldProductTypeAfter).hasValueSatisfying(productType ->
             assertAttributesAreEqual(productType.getAttributes(),
-                Arrays.asList(
+                asList(
                     ATTRIBUTE_DEFINITION_DRAFT_2,
                     ATTRIBUTE_DEFINITION_DRAFT_1)
             ));
@@ -293,7 +292,7 @@ public class ProductTypeSyncIT {
             null,
             PRODUCT_TYPE_NAME_1,
             PRODUCT_TYPE_DESCRIPTION_1,
-            Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_1)
+            asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_1)
         );
 
         final List<String> errorMessages = new ArrayList<>();
