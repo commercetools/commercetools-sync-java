@@ -34,53 +34,52 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M15/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M15)
 
-**New Features** (1) 🎉
-- **Commons** - Added `OptionalUtils#filterEmptyOptionals` which are utility methods that filter out the 
-empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
-optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255)
+- 🎉 **New Features** (1)
+    - **Commons** - Added `OptionalUtils#filterEmptyOptionals` which are utility methods that filter out the 
+    empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
+    optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255)
 
-**Documentation** (3) 📋
-- **Commons** - Added a [Quick Start Guide](/docs/usage/QUICK_START.md) for a convinient entry into the library.
-- **Commons** - Moved documentation of sync options to a separate [doc](/docs/usage/SYNC_OPTIONS.md).
-- **Commons** - Added a the earliest compatible version of the commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a prerequisite for using the library.
+- 📋 **Documentation** (3)
+    - **Commons** - Added a [Quick Start Guide](/docs/usage/QUICK_START.md) for a convinient entry into the library.
+    - **Commons** - Moved documentation of sync options to a separate [doc](/docs/usage/SYNC_OPTIONS.md).
+    - **Commons** - Added a the earliest compatible version of the commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a prerequisite for using the library.
 
-**Enhancements** (11) 🛠️
-- **ProductType Sync** - Added `ProductTypeSyncBenchmark` to benchmark the product type sync, to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
-- **Product Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
-- **Category Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
-- **Inventory Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
-- **Commons** - Bumped commercetools-jvm-sdk to version [1.37.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_37_0).
-- **Commons** - Bumped `mockito` to 2.23.4.
-- **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
-- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.3.2.
-- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.3.2.
-- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.3.2.
-- **Commons** - Bumped `org.ajoberstar.git-publish` to 2.0.0.
-- **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
-- **Commons** - Bumped `org.ajoberstar.grgit` to 3.0.0.
-- **Commons** - Bumped gradle to version [gradle-5.0](https://docs.gradle.org/5.0/release-notes.html)
+- 🛠️ **Enhancements** (11)
+    - **ProductType Sync** - Added `ProductTypeSyncBenchmark` to benchmark the product type sync, to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
+    - **Product Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
+    - **Category Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
+    - **Inventory Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
+    - **Commons** - Bumped commercetools-jvm-sdk to version [1.37.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_37_0).
+    - **Commons** - Bumped `mockito` to 2.23.4.
+    - **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.3.2.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.3.2.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.3.2.
+    - **Commons** - Bumped `org.ajoberstar.git-publish` to 2.0.0.
+    - **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
+    - **Commons** - Bumped `org.ajoberstar.grgit` to 3.0.0.
+    - **Commons** - Bumped gradle to version [gradle-5.0](https://docs.gradle.org/5.0/release-notes.html)
 
-**Breaking Changes** (11) 🚧
-- **Product Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
-- **Category Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
-- **Inventory Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
-- **ProductType Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
-- **ProductType Sync** - Renamed `ProductTypeUpdateAttributeDefinitionActionUtils` to `AttributeDefinitionsUpdateActionUtils`. It is also now meant to be **only used internally** by the library. 
-Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - `AttributeDefinitionUpdateActionUtils` is now meant to be **only used internally** by the library. 
-Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - `EnumsUpdateActionUtils` is now meant to be **only used internally** by the library. 
-Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - Renamed `ProductTypeUpdateLocalizedEnumActionUtils` to `LocalizedEnumsUpdateActionUtils.` [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - Renamed `ProductTypeUpdatePlainEnumActionUtils` to `PlainEnumsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - Renamed `LocalizedEnumUpdateActionsUtils` to `LocalizedEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - Renamed `PlainEnumUpdateActionsUtils` to `PlainEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+- 🚧 **Breaking Changes** (11) 
+    - **Product Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
+    - **Category Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
+    - **Inventory Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
+    - **ProductType Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
+    - **ProductType Sync** - Renamed `ProductTypeUpdateAttributeDefinitionActionUtils` to `AttributeDefinitionsUpdateActionUtils`. It is also now meant to be **only used internally** by the library. 
+    Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+    - **ProductType Sync** - `AttributeDefinitionUpdateActionUtils` is now meant to be **only used internally** by the library. 
+    Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+    - **ProductType Sync** - `EnumsUpdateActionUtils` is now meant to be **only used internally** by the library. 
+    Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+    - **ProductType Sync** - Renamed `ProductTypeUpdateLocalizedEnumActionUtils` to `LocalizedEnumsUpdateActionUtils.` [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+    - **ProductType Sync** - Renamed `ProductTypeUpdatePlainEnumActionUtils` to `PlainEnumsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+    - **ProductType Sync** - Renamed `LocalizedEnumUpdateActionsUtils` to `LocalizedEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+    - **ProductType Sync** - Renamed `PlainEnumUpdateActionsUtils` to `PlainEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
 
-**Bug Fixes** (3)
-- **Product Sync** - Fixed a bug that caused the statistics not to be updated correctly on fetch failure. [#331](https://github.com/commercetools/commercetools-sync-java/issues/331)
-- **Category Sync** - Fixed a bug that caused the statistics not to be updated correctly on fetch failure. [#331](https://github.com/commercetools/commercetools-sync-java/issues/331)
-- **ProductType Sync** - Fixed a bug that caused the sync process to continue after failed fetch. [#331](https://github.com/commercetools/commercetools-sync-java/issues/331)
-
+- 🐞 **Bug Fixes** (3)
+    - **Product Sync** - Fixed a bug that caused the statistics not to be updated correctly on fetch failure. [#331](https://github.com/commercetools/commercetools-sync-java/issues/331)
+    - **Category Sync** - Fixed a bug that caused the statistics not to be updated correctly on fetch failure. [#331](https://github.com/commercetools/commercetools-sync-java/issues/331)
+    - **ProductType Sync** - Fixed a bug that caused the sync process to continue after failed fetch. [#331](https://github.com/commercetools/commercetools-sync-java/issues/331)
 -->
 
 
