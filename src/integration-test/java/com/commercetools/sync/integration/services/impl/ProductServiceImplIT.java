@@ -16,7 +16,6 @@ import io.sphere.sdk.products.Image;
 import io.sphere.sdk.products.ImageDimensions;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
@@ -25,13 +24,13 @@ import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.products.commands.updateactions.SetKey;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
+import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -43,7 +42,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -282,15 +280,13 @@ public class ProductServiceImplIT {
         when(spyClient.execute(any(ProductQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
-        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder.of(spyClient)
-                                                                         .errorCallback(
-                                                                             (errorMessage, exception) -> {
-                                                                                 errorCallBackMessages
-                                                                                     .add(errorMessage);
-                                                                                 errorCallBackExceptions
-                                                                                     .add(exception);
-                                                                             })
-                                                                         .build();
+        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((errorMessage, exception) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(exception);
+            })
+            .build();
         final ProductService spyProductService = new ProductServiceImpl(spyOptions);
 
 
@@ -341,136 +337,8 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void createProducts_WithAllValidProducts_ShouldCreateProducts() {
-        // create a draft based of the same existing product but with different key, slug and master variant SKU since
-        // these values should be unique on CTP for the product to be created.
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
-            productType.toReference())
-            .key("newKey")
-            .taxCategory(null)
-            .state(null)
-            .categories(emptyList())
-            .categoryOrderHints(null)
-            .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
-            .masterVariant(ProductVariantDraftBuilder.of().build())
-            .build();
-
-        final ProductDraft productDraft2 = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference(),
-            null, null, categoryReferencesWithIds,
-            createRandomCategoryOrderHints(categoryReferencesWithIds));
-
-        final Set<ProductDraft> productDrafts = new HashSet<>();
-        productDrafts.add(productDraft1);
-        productDrafts.add(productDraft2);
-
-        final Set<Product> createdProducts = productService.createProducts(productDrafts)
-                                                           .toCompletableFuture().join();
-
-        assertThat(createdProducts).hasSize(2);
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    @Ignore("Ignoring test because of bug in CTP: https://jira.commercetools.com/browse/SUPPORT-1348")
-    public void createProducts_WithSomeValidProducts_ShouldCreateProductsAndTriggerCallBack() {
-        // create a draft based of the same existing product but with different key, slug and master variant SKU since
-        // these values should be unique on CTP for the product to be created.
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
-            productType.toReference())
-            .key("1")
-            .categories(emptyList())
-            .categoryOrderHints(null)
-            .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
-            .masterVariant(ProductVariantDraftBuilder.of().build())
-            .build();
-
-        final ProductDraft productDraft2 = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference(),
-            null, null, categoryReferencesWithIds,
-            createRandomCategoryOrderHints(categoryReferencesWithIds));
-
-        final Set<ProductDraft> productDrafts = new HashSet<>();
-        productDrafts.add(productDraft1);
-        productDrafts.add(productDraft2);
-
-        final Set<Product> createdProducts = productService.createProducts(productDrafts)
-                                                               .toCompletableFuture().join();
-
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Invalid key '1'. Keys may only contain "
-            + "alphanumeric characters, underscores and hyphens and must have a maximum length of 256 characters.");
-        assertThat(createdProducts).hasSize(1);
-    }
-
-    @Test
-    public void createProducts_WithNoneValidProducts_ShouldTriggerCallBack() {
-        // create a draft based of the same existing product but with different key, slug and master variant SKU since
-        // these values should be unique on CTP for the product to be created.
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
-            productType.toReference())
-            .key("newKey")
-            .taxCategory(null)
-            .state(null)
-            .categories(emptyList())
-            .categoryOrderHints(null)
-            .masterVariant(ProductVariantDraftBuilder.of().build())
-            .build();
-
-        final ProductDraft productDraft2 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
-            productType.toReference())
-            .key("newKey1")
-            .taxCategory(null)
-            .state(null)
-            .categories(emptyList())
-            .categoryOrderHints(null)
-            .masterVariant(ProductVariantDraftBuilder.of().build())
-            .build();
-
-
-        final Set<ProductDraft> productDrafts = new HashSet<>();
-        productDrafts.add(productDraft1);
-        productDrafts.add(productDraft2);
-
-        final Set<Product> createdProducts = productService.createProducts(productDrafts)
-                                                               .toCompletableFuture().join();
-
-        final String duplicatedSlug = "english-slug";
-        assertThat(errorCallBackExceptions)
-            .hasSize(2)
-            .allSatisfy(exception -> {
-                assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
-                final ErrorResponseException errorResponse = ((ErrorResponseException)exception);
-
-                final List<DuplicateFieldError> fieldErrors = errorResponse
-                    .getErrors()
-                    .stream()
-                    .map(sphereError -> {
-                        assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
-                        return sphereError.as(DuplicateFieldError.class);
-                    })
-                    .collect(toList());
-                assertThat(fieldErrors).hasSize(1);
-                assertThat(fieldErrors).allSatisfy(error -> {
-                    assertThat(error.getField()).isEqualTo("slug.en");
-                    assertThat(error.getDuplicateValue()).isEqualTo(duplicatedSlug);
-                });
-            });
-
-        assertThat(errorCallBackMessages)
-            .hasSize(2)
-            .allSatisfy(errorMessage -> {
-                assertThat(errorMessage).contains("\"code\" : \"DuplicateField\"");
-                assertThat(errorMessage).contains("\"field\" : \"slug.en\"");
-                assertThat(errorMessage).contains("\"duplicateValue\" : \"" + duplicatedSlug + "\"");
-            });
-
-        assertThat(createdProducts).isEmpty();
-    }
-
-    @Test
-    @SuppressWarnings("ConstantConditions")
-    public void createProduct_WithValidProduct_ShouldCreateProduct() {
+    public void createProduct_WithValidProduct_ShouldCreateProductAndCacheId() {
+        // preparation
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             productType.toReference())
             .taxCategory(null)
@@ -479,127 +347,77 @@ public class ProductServiceImplIT {
             .categoryOrderHints(null)
             .build();
 
-        final Optional<Product> createdProductOptional = productService.createProduct(productDraft1)
-                                                                       .toCompletableFuture().join();
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((errorMessage, exception) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(exception);
+            })
+            .build();
 
+        final ProductService spyProductService = new ProductServiceImpl(spyOptions);
+
+        // test
+        final Optional<Product> createdProductOptional = spyProductService
+            .createProduct(productDraft1)
+            .toCompletableFuture().join();
+
+        // assertion
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
-        assertThat(createdProductOptional).isNotEmpty();
-        final Product createdProduct = createdProductOptional.get();
-
 
         //assert CTP state
-        final Optional<Product> productOptional = CTP_TARGET_CLIENT
+        final Optional<Product> queriedOptional = CTP_TARGET_CLIENT
             .execute(ProductQuery.of()
-                                  .withPredicates(QueryPredicate.of(format("key = \"%s\"", productDraft1.getKey()))))
+                                 .withPredicates(QueryPredicate.of(format("key = \"%s\"", productDraft1.getKey()))))
             .toCompletableFuture().join().head();
 
-        assertThat(productOptional).isNotEmpty();
-        final Product fetchedProduct = productOptional.get();
-        assertThat(fetchedProduct.getMasterData().getCurrent().getName())
-            .isEqualTo(createdProduct.getMasterData().getCurrent().getName());
-        assertThat(fetchedProduct.getMasterData().getCurrent().getSlug())
-            .isEqualTo(createdProduct.getMasterData().getCurrent().getSlug());
-        assertThat(fetchedProduct.getKey()).isEqualTo(productDraft1.getKey());
+        assertThat(queriedOptional)
+            .hasValueSatisfying(queried -> assertThat(createdProductOptional)
+                .hasValueSatisfying(created -> {
+                    assertThat(created.getKey()).isEqualTo(queried.getKey());
+                    assertThat(queried.getMasterData().getCurrent().getName())
+                        .isEqualTo(created.getMasterData().getCurrent().getName());
+                    assertThat(queried.getMasterData().getCurrent().getSlug())
+                        .isEqualTo(created.getMasterData().getCurrent().getSlug());
+                    assertThat(queried.getKey()).isEqualTo(productDraft1.getKey());
+                }));
+
+        // Assert that the created product is cached
+        final Optional<String> productId =
+            spyProductService.getIdFromCacheOrFetch(productDraft1.getKey()).toCompletableFuture().join();
+        assertThat(productId).isPresent();
+        verify(spyClient, times(0)).execute(any(ProductTypeQuery.class));
     }
 
     @Test
-    public void createProduct_WithBeforeCreateCallbackSet_ShouldCreateFilteredProduct() {
-        final String keyPostfix = "_filteredKey";
-
-        // callback function that post fixes the product draft key with "_filteredKey"
-        final Function<ProductDraft, ProductDraft> draftFunction = productDraft ->
-                ProductDraftBuilder.of(productDraft).key(format("%s%s", productDraft.getKey(), keyPostfix)).build();
-
-        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                .errorCallback((errorMessage, exception) -> {
-                    errorCallBackMessages.add(errorMessage);
-                    errorCallBackExceptions.add(exception);
-                })
-                .warningCallback(warningMessage -> warningCallBackMessages.add(warningMessage))
-                .beforeCreateCallback(draftFunction)
-                .build();
-        final ProductService productService = new ProductServiceImpl(productSyncOptions);
-
+    public void createProduct_WithBlankKey_ShouldNotCreateProduct() {
+        // preparation
+        final String newKey = "";
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-                productType.toReference())
-                .taxCategory(null)
-                .state(null)
-                .categories(emptyList())
-                .categoryOrderHints(null)
-                .build();
+            productType.toReference())
+            .key(newKey)
+            .taxCategory(null)
+            .state(null)
+            .categories(emptyList())
+            .categoryOrderHints(null)
+            .masterVariant(ProductVariantDraftBuilder.of().build())
+            .build();
 
-        final Optional<Product> createdProductOptional = productService.createProduct(productDraft1)
-                .toCompletableFuture().join();
+        // test
+        final Optional<Product> createdProductOptional = productService
+            .createProduct(productDraft1)
+            .toCompletableFuture().join();
 
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(createdProductOptional).isNotEmpty();
-
-        final Product createdProduct = createdProductOptional.get();
-
-        //Query for a product with key post fixed with "_filteredKey" added by the callback
-        final String keyWithCallbackPostFix = format("%s%s", productDraft1.getKey(), keyPostfix);
-        final Optional<Product> productOptional = CTP_TARGET_CLIENT
-                .execute(ProductQuery.of()
-                        .withPredicates(QueryPredicate.of(format("key = \"%s\"", keyWithCallbackPostFix))))
-                .toCompletableFuture().join().head();
-
-        assertThat(productOptional).isNotEmpty();
-        final Product fetchedProduct = productOptional.get();
-        assertThat(fetchedProduct.getKey()).isEqualTo(keyWithCallbackPostFix);
-
-        assertThat(fetchedProduct.getMasterData().getCurrent().getName())
-                .isEqualTo(createdProduct.getMasterData().getCurrent().getName());
-    }
-
-    @Test
-    public void createProduct_WithBeforeCreateCallbackToSkipSet_ShouldNotCreateProduct() {
-        // callback function that skips product creation
-        final Function<ProductDraft, ProductDraft> draftFunction = productDraft -> null;
-
-        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                .errorCallback((errorMessage, exception) -> {
-                    errorCallBackMessages.add(errorMessage);
-                    errorCallBackExceptions.add(exception);
-                })
-                .warningCallback(warningMessage -> warningCallBackMessages.add(warningMessage))
-                .beforeCreateCallback(draftFunction)
-                .build();
-        final ProductService productService = new ProductServiceImpl(productSyncOptions);
-
-        // create a draft based of the same existing product but with different key, slug and master variant SKU since
-        // these values should be unique on CTP for the product to be created.
-        final String newKey = "newKey";
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
-                productType.toReference())
-                .key(newKey)
-                .taxCategory(null)
-                .state(null)
-                .categories(emptyList())
-                .categoryOrderHints(null)
-                .slug(LocalizedString.of(Locale.ENGLISH, "newSlug"))
-                .masterVariant(ProductVariantDraftBuilder.of().build())
-                .build();
-
-        final Optional<Product> createdProductOptional = productService.createProduct(productDraft1)
-                .toCompletableFuture().join();
-
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
+        // assertion
         assertThat(createdProductOptional).isEmpty();
-
-        //Assert that product with key doesn not exist in CTP.
-        final Optional<Product> productOptional = CTP_TARGET_CLIENT
-                .execute(ProductQuery.of()
-                        .withPredicates(QueryPredicate.of(format("key = \"%s\"", newKey))))
-                .toCompletableFuture().join().head();
-
-        assertThat(productOptional).isEmpty();
+        assertThat(errorCallBackMessages)
+            .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
     }
 
     @Test
-    public void createProduct_WithInvalidProduct_ShouldNotCreateProduct() {
+    public void createProduct_WithDuplicateSlug_ShouldNotCreateProduct() {
         // Create product with same slug as existing product
         final String newKey = "newKey";
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
@@ -612,8 +430,10 @@ public class ProductServiceImplIT {
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
 
-        final Optional<Product> createdProductOptional = productService.createProduct(productDraft1)
-                                                                          .toCompletableFuture().join();
+        final Optional<Product> createdProductOptional = productService
+            .createProduct(productDraft1)
+            .toCompletableFuture().join();
+
         assertThat(createdProductOptional).isEmpty();
         final String duplicatedSlug = "english-slug";
         assertThat(errorCallBackExceptions)

@@ -8,8 +8,6 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
-import io.sphere.sdk.products.commands.updateactions.Publish;
-import io.sphere.sdk.products.commands.updateactions.RevertStagedChanges;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.queries.QueryPredicate;
 import org.apache.commons.lang3.StringUtils;
@@ -26,13 +24,14 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 
-public final class ProductServiceImpl extends BaseService<Product, ProductDraft> implements ProductService {
+public final class ProductServiceImpl
+    extends BaseService<ProductDraft, Product, ProductSyncOptions> implements ProductService {
+
     public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
         super(syncOptions);
     }
@@ -109,6 +108,7 @@ public final class ProductServiceImpl extends BaseService<Product, ProductDraft>
     @Nonnull
     @Override
     public CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key) {
+
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
@@ -130,16 +130,8 @@ public final class ProductServiceImpl extends BaseService<Product, ProductDraft>
 
     @Nonnull
     @Override
-    public CompletionStage<Set<Product>> createProducts(@Nonnull final Set<ProductDraft> productsDrafts) {
-        return mapValuesToFutureOfCompletedValues(productsDrafts, this::createProduct)
-            .thenApply(results -> results.filter(Optional::isPresent).map(Optional::get))
-            .thenApply(createdProducts -> createdProducts.collect(Collectors.toSet()));
-    }
-
-    @Nonnull
-    @Override
     public CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
-        return applyCallbackAndCreate(productDraft, productDraft.getKey(), ProductCreateCommand::of);
+        return createResource(productDraft, ProductDraft::getKey, ProductCreateCommand::of);
     }
 
     @Nonnull

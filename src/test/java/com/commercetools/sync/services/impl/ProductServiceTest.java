@@ -55,6 +55,7 @@ public class ProductServiceTest {
     public void createProduct_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
+        when(mock.getKey()).thenReturn("productKey");
 
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
 
@@ -69,6 +70,7 @@ public class ProductServiceTest {
 
     @Test
     public void createProduct_WithUnSuccessfulMockCtpResponse_ShouldNotCreateProduct() {
+        // preparation
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
 
@@ -77,14 +79,23 @@ public class ProductServiceTest {
 
         final ProductDraft draft = mock(ProductDraft.class);
         when(draft.getKey()).thenReturn("productKey");
+
+        // test
         final Optional<Product> productOptional = service.createProduct(draft).toCompletableFuture().join();
 
+        // assertion
         assertThat(productOptional).isEmpty();
-        assertThat(errorMessages).hasSize(1);
-        assertThat(errorExceptions).hasSize(1);
-        assertThat(errorExceptions.get(0)).isExactlyInstanceOf(BadRequestException.class);
-        assertThat(errorMessages.get(0)).contains("Failed to create draft with key: 'productKey'.");
-        assertThat(errorMessages.get(0)).contains("BadRequestException");
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message -> {
+                assertThat(message).contains("Failed to create draft with key: 'productKey'.");
+                assertThat(message).contains("BadRequestException");
+            });
+
+        assertThat(errorExceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(exception ->
+                assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
     }
 
     @Test
