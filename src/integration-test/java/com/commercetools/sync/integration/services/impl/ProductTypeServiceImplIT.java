@@ -17,7 +17,6 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -36,8 +35,6 @@ import static com.commercetools.sync.integration.producttypes.utils.ProductTypeI
 import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_1;
 import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_1;
 import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_1;
-
-import static java.lang.String.format;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -187,11 +184,9 @@ public class ProductTypeServiceImplIT {
         assertThat(errorCallBackMessages).isEmpty();
     }
 
-    // TODO: GITHUB ISSUE#331
-    @Ignore
     @Test
     public void fetchMatchingProductTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-        // Mock sphere client to return BadeGatewayException on any request.
+        // Mock sphere client to return BadGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(ProductTypeQuery.class)))
                 .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
@@ -209,15 +204,13 @@ public class ProductTypeServiceImplIT {
 
         final Set<String> keys = new HashSet<>();
         keys.add(OLD_PRODUCT_TYPE_KEY);
-        final Set<ProductType> fetchedProductTypes = spyProductTypeService.fetchMatchingProductTypesByKeys(keys)
-                                                                          .toCompletableFuture().join();
-        assertThat(fetchedProductTypes).hasSize(0);
-        assertThat(errorCallBackExceptions).isNotEmpty();
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0))
-                .isEqualToIgnoringCase(format("Failed to fetch product types with keys: '%s'. Reason: %s",
-                        keys.toString(), errorCallBackExceptions.get(0)));
+
+        // test and assert
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(spyProductTypeService.fetchMatchingProductTypesByKeys(keys))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(BadGatewayException.class);
     }
 
     @Test

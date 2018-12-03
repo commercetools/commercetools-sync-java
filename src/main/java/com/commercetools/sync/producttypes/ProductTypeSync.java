@@ -8,6 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,7 +21,6 @@ import java.util.concurrent.CompletionStage;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
 import static java.lang.String.format;
-import static java.util.Collections.emptySet;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
@@ -41,12 +41,24 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     private final ProductTypeService productTypeService;
 
     public ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions) {
-        super(new ProductTypeSyncStatistics(), productTypeSyncOptions);
-        this.productTypeService = new ProductTypeServiceImpl(productTypeSyncOptions);
+        this(productTypeSyncOptions, new ProductTypeServiceImpl(productTypeSyncOptions));
     }
 
-    public ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions,
-                           @Nonnull final ProductTypeService productTypeService) {
+    /**
+     * Takes a {@link ProductTypeSyncOptions} and a {@link ProductTypeService} instances to instantiate
+     * a new {@link ProductTypeSync} instance that could be used to sync productType drafts in the CTP project specified
+     * in the injected {@link ProductTypeSyncOptions} instance.
+     *
+     * <p>NOTE: This constructor is mainly to be used for tests where the services can be mocked and passed to.
+     *
+     * @param productTypeSyncOptions the container of all the options of the sync process including the CTP project
+     *                               client and/or configuration and other sync-specific options.
+     * @param productTypeService     the type service which is responsible for fetching/caching the Types from the CTP
+     *                               project.
+     */
+    ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions,
+                    @Nonnull final ProductTypeService productTypeService) {
+
         super(new ProductTypeSyncStatistics(), productTypeSyncOptions);
         this.productTypeService = productTypeService;
     }
@@ -67,7 +79,6 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             @Nonnull final List<ProductTypeDraft> productTypeDrafts) {
 
         final List<List<ProductTypeDraft>> batches = batchElements(productTypeDrafts, syncOptions.getBatchSize());
-
         return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
 
@@ -77,6 +88,10 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * {@code validProductTypeDrafts}, the matching productTypes in the target CTP project are fetched then the method
      * {@link ProductTypeSync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
      * requests accordingly) on the target project.
+     *
+     * <p> In case of error during of fetching of existing productTypes, the error callback will be triggered.
+     * And the sync process would stop for the given batch.
+     * </p>
      *
      * @param batch batch of drafts that need to be synced
      * @return a {@link CompletionStage} containing an instance
@@ -96,8 +111,22 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         } else {
             final Set<String> keys = validProductTypeDrafts.stream().map(ProductTypeDraft::getKey).collect(toSet());
 
-            return fetchExistingProductTypes(keys)
-                .thenCompose(oldProductTypes -> syncBatch(oldProductTypes, validProductTypeDrafts))
+
+            return productTypeService
+                .fetchMatchingProductTypesByKeys(keys)
+                .handle(ImmutablePair::new)
+                .thenCompose(fetchResponse -> {
+                    final Set<ProductType> fetchedProductTypes = fetchResponse.getKey();
+                    final Throwable exception = fetchResponse.getValue();
+
+                    if (exception != null) {
+                        final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keys);
+                        handleError(errorMessage, exception, keys.size());
+                        return CompletableFuture.completedFuture(null);
+                    } else {
+                        return syncBatch(fetchedProductTypes, validProductTypeDrafts);
+                    }
+                })
                 .thenApply(ignored -> {
                     statistics.incrementProcessed(batch.size());
                     return statistics;
@@ -126,23 +155,6 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     /**
-     * Given a set of product type keys, fetches the corresponding product types from CTP if they exist.
-     *
-     * @param keys the keys of the product types that are wanted to be fetched.
-     * @return a {@link CompletionStage} which contains the set of product types corresponding to the keys.
-     */
-    private CompletionStage<Set<ProductType>> fetchExistingProductTypes(@Nonnull final Set<String> keys) {
-        return productTypeService
-                .fetchMatchingProductTypesByKeys(keys)
-                .exceptionally(exception -> {
-                    final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keys);
-                    handleError(errorMessage, exception, keys.size());
-
-                    return emptySet();
-                });
-    }
-
-    /**
      * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
      * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
      * incrementing the total number of failed product types to sync.
@@ -166,7 +178,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param newProductTypes drafts that need to be synced.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
-    private CompletionStage<ProductTypeSyncStatistics> syncBatch(
+    private CompletionStage<Void> syncBatch(
             @Nonnull final Set<ProductType> oldProductTypes,
             @Nonnull final Set<ProductTypeDraft> newProductTypes) {
 
@@ -183,7 +195,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                     .orElseGet(() -> createProductType(newProductType));
             })
             .map(CompletionStage::toCompletableFuture)
-            .toArray(CompletableFuture[]::new)).thenApply(result -> statistics);
+            .toArray(CompletableFuture[]::new));
     }
 
     /**

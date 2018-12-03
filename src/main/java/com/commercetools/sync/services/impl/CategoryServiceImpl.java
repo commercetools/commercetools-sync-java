@@ -10,7 +10,6 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.queries.PagedResult;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -35,7 +34,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
 public final class CategoryServiceImpl extends BaseService<Category, CategoryDraft> implements CategoryService {
-    private static final String FETCH_FAILED = "Failed to fetch Categories with keys: '%s'. Reason: %s";
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
         + "category matching.";
 
@@ -73,21 +71,16 @@ public final class CategoryServiceImpl extends BaseService<Category, CategoryDra
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
 
-        final Function<List<Category>, List<Category>> categoryPageCallBack = categoriesPage -> categoriesPage;
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(),
-            CategoryQuery.of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys)),
-            categoryPageCallBack)
-                            .handle((fetchedCategories, sphereException) -> {
-                                if (sphereException != null) {
-                                    syncOptions
-                                        .applyErrorCallback(format(FETCH_FAILED, categoryKeys, sphereException),
-                                            sphereException);
-                                    return Collections.emptySet();
-                                }
-                                return fetchedCategories.stream()
-                                                        .flatMap(List::stream)
-                                                        .collect(Collectors.toSet());
-                            });
+        final CategoryQuery categoryQuery = CategoryQuery
+                .of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys));
+
+        return CtpQueryUtils
+                .queryAll(syncOptions.getCtpClient(), categoryQuery, Function.identity())
+                .thenApply(fetchedCategories -> fetchedCategories
+                        .stream()
+                        .flatMap(List::stream)
+                        .peek(category -> keyToIdCache.put(category.getKey(), category.getId()))
+                        .collect(Collectors.toSet()));
     }
 
     @Nonnull
@@ -97,13 +90,19 @@ public final class CategoryServiceImpl extends BaseService<Category, CategoryDra
             return CompletableFuture.completedFuture(Optional.empty());
         }
 
-        return syncOptions.getCtpClient()
-                .execute(CategoryQuery.of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().is(key)))
-                .thenApply(PagedResult::head)
-                .exceptionally(sphereException -> {
-                    syncOptions.applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
-                    return Optional.empty();
-                });
+        final CategoryQuery categoryQuery = CategoryQuery
+                .of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().is(key));
+
+        return syncOptions
+                .getCtpClient()
+                .execute(categoryQuery)
+                .thenApply(categoryPagedQueryResult ->
+                        categoryPagedQueryResult
+                                .head()
+                                .map(category -> {
+                                    keyToIdCache.put(category.getKey(), category.getId());
+                                    return category;
+                                }));
     }
 
     @Nonnull
@@ -117,7 +116,11 @@ public final class CategoryServiceImpl extends BaseService<Category, CategoryDra
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String key) {
-        if (isCached) {
+
+        if (isBlank(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+        if (keyToIdCache.containsKey(key)) {
             return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
         }
         return fetchAndCache(key);
