@@ -44,6 +44,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class InventorySyncTest {
@@ -419,6 +422,53 @@ public class InventorySyncTest {
         assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process null inventory draft.");
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
+    }
+
+    @Test
+    public void sync_WithNoDraftsToCreate_ShouldOnlyCallBeforeUpdateCallback() {
+        // preparation
+        final InventoryEntryDraft inventoryEntryDraft = InventoryEntryDraftBuilder.of(SKU_1, 1L)
+                                                                                  .build();
+        final InventorySyncOptions optionsSpy = spy(getInventorySyncOptions(1, false));
+
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+
+        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
+
+        final InventorySync inventorySync = new InventorySync(optionsSpy, inventoryService, channelService,
+            mock(TypeService.class));
+
+        // test
+        inventorySync.sync(singletonList(inventoryEntryDraft)).toCompletableFuture().join();
+
+        // assertion
+        verify(optionsSpy).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(optionsSpy, never()).applyBeforeCreateCallBack(any());
+    }
+
+    @Test
+    public void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
+        // preparation
+        final InventoryEntryDraft inventoryEntryDraft = InventoryEntryDraftBuilder.of("1", 1L)
+                                                                                  .build();
+        final InventorySyncOptions optionsSpy = spy(getInventorySyncOptions(1, false));
+
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+
+        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
+
+        final InventorySync inventorySync = new InventorySync(optionsSpy, inventoryService, channelService,
+            mock(TypeService.class));
+
+        // test
+        inventorySync.sync(singletonList(inventoryEntryDraft))
+                     .toCompletableFuture().join();
+
+        // assertion
+        verify(optionsSpy).applyBeforeCreateCallBack(any());
+        verify(optionsSpy, never()).applyBeforeUpdateCallBack(any(), any(), any());
     }
 
     private InventorySync getInventorySync(int batchSize, boolean ensureChannels) {
