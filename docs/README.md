@@ -8,50 +8,30 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
  
-Java Library used to import and/or sync (taking care of changes) data into one or more commercetools projects from external sources such 
-as CSV, XML, JSON, etc.. or even from an already existing commercetools project.
+Java library that could be used to synchronise commercetools data in any of the following ways:
+             
+ 1. Synchronise data coming from an external system in any form (CSV, XML, etc..) that has been already mapped to 
+ [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
+ (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
+ 
+ 2. Synchronise data coming from an already-existing commercetools project in the form of 
+ [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
+ (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
+ 
+ 
+ > Synchronise: Resources will either be created or updated. But they will **not** be deleted.
+ 
+ ⚡ Take a look at the [Quick Start Guide](https://commercetools.github.io/commercetools-sync-java/doc/usage/QUICK_START/) to find out how to build a product importer in a glance!
 
 Currently this library supports synchronising the following entities in commercetools
     
- - [Categories](/docs/usage/CATEGORY_SYNC.md)
- - [Products](/docs/usage/PRODUCT_SYNC.md)
- - [InventoryEntries](/docs/usage/INVENTORY_SYNC.md)
- - [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md)
+ - [Categories](usage/CATEGORY_SYNC.md)
+ - [Products](usage/PRODUCT_SYNC.md)
+ - [InventoryEntries](usage/INVENTORY_SYNC.md)
+ - [ProductTypes](usage/PRODUCT_TYPE_SYNC.md)
 
 ![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/9512131/31230702-0f2255a6-a9e5-11e7-9412-04ed52641dde.png)
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Usage](#usage)
-  - [Quick Start](/docs/usage/QUICK_START.md)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-    - [Maven](#maven)
-    - [Gradle](#gradle)
-    - [SBT](#sbt)
-    - [Ivy](#ivy)
-- [Roadmap](#roadmap)
-- [Release Notes](/docs/RELEASE_NOTES.md)
-- [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/)
-- [Benchmarks](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-## Usage
-
-commercetools sync is a Java library that could be used to synchronise CTP data in any of the following ways:
-
-1. Synchronise data coming from an external system in any form (CSV, XML, etc..) that has been already mapped to 
-[commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
-(e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
-
-2. Synchronise data coming from an already-existing commercetools project in the form of 
-[commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
-(e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
-
-
-> Synchronise: Resources will either be created or updated. But they will **not** be deleted.
-
-⚡ Take a look at the [Quick Start Guide](/docs/usage/QUICK_START.md) to find out how to build a product importer in a glance!
 
 ### Prerequisites
  
@@ -84,7 +64,3 @@ libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "v1.0.0
 ````xml
 <dependency org="com.commercetools" name="commercetools-sync-java" rev="v1.0.0-M14"/>
 ````
-
-
-## Roadmap
-https://github.com/commercetools/commercetools-sync-java/milestones

@@ -25,14 +25,16 @@ against a [ProductDraft](https://docs.commercetools.com/http-api-projects-produc
 <!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
 
 #### Prerequisites
-1. The sync expects a list of non-null `ProductDraft` objects that have their `key` fields set to match the
-products from the source to the target. Also, the target project is expected to have the `key` fields set,
+1. The sync expects a list of `ProductDraft`s that have their `key` fields set to be matched with
+products in the target CTP project. Also, the products in the target project are expected to have the `key` fields set,
 otherwise they won't be matched.
-**NOTE: PLEASE MAKE SURE THE `SKU` FIELDS OF ALL PRODUCTS ARE SET AS THE SYNC LIBRARY WILL BE MIGRATED TO MATCH PRODUCTS BY `SKU` INSTEAD OF `KEY` IN THE FUTURE.**
 
-2. Every product may have several references including `product type`, `categories`, `taxCategory`, etc.. Variants
+2. The sync expects all variants of the supplied list of `ProductDraft`s to have their `sku` fields set. Also,
+all the variants in the target project are expected to have the `sku` fields set.
+
+3. Every product may have several references including `product type`, `categories`, `taxCategory`, etc.. Variants
 of the product also have prices, where each price also has some references including a reference to the `Type` of its 
-custom fields and a reference to a `channel`. All these referenced resources are matched by their `key` Therefore, in 
+custom fields and a reference to a `channel`. All these referenced resources are matched by their `key`s. Therefore, in 
 order for the sync to resolve the actual ids of those references, those `key`s have to be supplied in the following way:
     - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
     reference would return its `key`. 
@@ -45,14 +47,14 @@ order for the sync to resolve the actual ids of those references, those `key`s h
          final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
          ````
      
-3. Create a `sphereClient` [as described here](/docs/usage/IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
+4. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
-4. After the `sphereClient` is set up, a `ProductSyncOptions` should be built as follows: 
+5. After the `sphereClient` is set up, a `ProductSyncOptions` should be built as follows: 
 ````java
 // instantiating a ProductSyncOptions
 final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(sphereClient).build();
 ````
-[More information about Sync Options](/docs/usage/SYNC_OPTIONS.md). 
+[More information about Sync Options](SYNC_OPTIONS.md). 
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
@@ -74,16 +76,18 @@ stats.getReportMessage();
 ````
 
 __Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
+
  1. The sync processing time should not take into account the time between supplying batches to the sync. 
  2. It is not known by the sync which batch is going to be the last one supplied.
 
 
-More examples of how to use the sync
-1. From another CTP project as a source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/ProductSyncIT.java).
-2. From an external source can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java). 
-3. Syncing with blacklisting/whitelisting [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java).
+##### More examples of how to use the sync
 
-*Make sure to read the [Important Usage Tips](/docs/usage/IMPORTANT_USAGE_TIPS.md) for optimal performance.*
+1. [Sync from another CTP project as a source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/ProductSyncIT.java).
+2. [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java). 
+3. [Sync with blacklisting/whitelisting](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java).
+
+*Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
 ### Build all update actions
 
@@ -94,7 +98,7 @@ List<UpdateAction<Product>> updateActions = ProductSyncUtils.buildActions(produc
 ```
 
 Examples of its usage can be found in the tests 
-[here](/src/test/java/com/commercetools/sync/products/utils/ProductSyncUtilsTest.java).
+[here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/products/utils/ProductSyncUtilsTest.java).
 
 ### Build particular update action(s)
 
@@ -104,7 +108,7 @@ Utility methods provided by the library to compare the specific fields of a Prod
 ````java
 Optional<UpdateAction<Product>> updateAction = buildChangeNameUpdateAction(oldProduct, productDraft);
 ````
-More examples of those utils for different fields can be found [here](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/utils).
+More examples of those utils for different fields can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/utils).
 
 ## Caveats
 1. Syncing attribute field types with  `ReferenceType` and `SetType` (of `elementType: ReferenceType`) field definitions, except 

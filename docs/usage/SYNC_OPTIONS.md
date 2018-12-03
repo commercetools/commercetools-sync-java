@@ -34,7 +34,7 @@ in a single request. Playing with this option can slightly improve or reduce pro
   products. One use case could be to whitelist prices when syncing products. In other words, syncing prices only in 
   products and nothing else.
   
-  - The list of action groups allowed to be blacklisted or whitelisted on products can be found [here](/src/main/java/com/commercetools/sync/products/ActionGroup.java). 
+  - The list of action groups allowed to be blacklisted or whitelisted on products can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/ActionGroup.java). 
 
 #### `ensureChannels` (Only for Product and Inventory Sync Options)
 a flag which represents a strategy to handle syncing inventory entries with missing channels.
@@ -47,20 +47,21 @@ If it fails to create the supply channel, the inventory entry/product won't sync
 
 ### Examples
 
-##### 1. Using `errorCallBack` and `warningCallBack` for logging
-```java
+#### 1. Using `errorCallBack` and `warningCallBack` for logging
 
+````java
  final Logger logger = LoggerFactory.getLogger(MySync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder.of(sphereClient)
                                                                         .errorCallBack(logger::error)
                                                                         .warningCallBack(logger::warn)
                                                                         .build();
- ```
-##### 2. [Using `beforeUpdateCallback` for syncing a single locale](/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/KeepOtherVariantsSync.java).
+````
+ 
+#### 2. [Using `beforeUpdateCallback` for syncing a single locale](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/KeepOtherVariantsSync.java).
 
-##### 3. [Using `beforeUpdateCallback` for keeping other variants](/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/SyncSingleLocale.java).
+#### 3. [Using `beforeUpdateCallback` for keeping other variants](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/SyncSingleLocale.java).
 
-##### 4. [Using `syncFilter` for blacklisting product categories while syncing products](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L142-L143).
+#### 4. [Using `syncFilter` for blacklisting product categories while syncing products](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L142-L143).
 
-##### 5. [Using `syncFilter` for whitelisting product names while syncing products](/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L173).
+#### 5. [Using `syncFilter` for whitelisting product names while syncing products](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L173).
  
