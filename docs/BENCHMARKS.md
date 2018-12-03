@@ -3,7 +3,7 @@
 ## Setup
 
 1. Benchmarks are run by JUnit as a separate source set just like main, test and integration-test. The benchmarks can be 
-found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/benchmark/java/com/commercetools/sync/benchmark).
+found [here](/src/benchmark/java/com/commercetools/sync/benchmark).
 
 2. Every benchmark writes it's results as JSON to 
 [benchmarks.json](https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json) which is saved in
