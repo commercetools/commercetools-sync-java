@@ -7,10 +7,10 @@ export TAG=`if [ "$TRAVIS_PULL_REQUEST" = "false" -a -n "$TRAVIS_TAG" ] ; then e
 
 if [ "$TAG" ]; then
   echo "Build is tagged. Uploading artifact $TAG to Bintray."
-  ./gradlew --info -Dbuild.version="$TAG" gitPublishPush || exit 1
+  ./gradlew --info -Dbuild.version="$TAG" mkdocsPublish || exit 1
   ./gradlew --info -Dbuild.version="$TAG" bintrayUpload
   if [[ $? != 0 ]]; then
-    printf "\nWARNING: javadoc $TAG is published to github, but bintray upload failed.\n\n"
+    printf "\nWARNING: Github pages $TAG is published to github, but bintray upload failed.\n\n"
     exit 1
   fi
 else

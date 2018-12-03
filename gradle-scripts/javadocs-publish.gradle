@@ -18,13 +18,13 @@ gitPublish {
 
     // what to keep in the existing branch (include=keep)
     preserve {
-        include 'v/**', 'benchmarks/**'
-        exclude 'v/test**' // always remove documentation of test releases
+        include 'v/**', 'benchmarks/**', 'doc/**'
+        exclude 'v/test**', 'doc/test**', 'v/development-SNAPSHOT', 'doc/development-SNAPSHOT' // always remove documentation of test releases
     }
 
     // message used when committing changes
     // The .toString() is temporarily used for this issue: https://github.com/ajoberstar/gradle-git-publish/issues/50
-    commitMessage = "Publishing a new java doc for $rootProject.version version.".toString()
+    commitMessage = "Publish a new java doc for $rootProject.version version.".toString()
 }
 
 gitPublishReset {

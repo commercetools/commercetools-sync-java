@@ -25,11 +25,11 @@ against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects
 <!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
 
 #### Prerequisites
-1. The sync expects a list of `InventoryEntryDraft` objects that have their `sku` fields set,
+1. The sync expects a list of `InventoryEntryDraft`s that have their `sku` fields set,
    otherwise the sync will trigger an `errorCallback` function set by the user (more on it can be found down below in the options explanations).
 
 2. Every inventory entry may have a reference to a supply `Channel` and a reference to the `Type` of its custom fields. These
-   references are matched by their `key`. Therefore, in order for the sync to resolve the actual ids of those references,
+   references are matched by their `key`s. Therefore, in order for the sync to resolve the actual ids of those references,
    their `key`s has to be supplied in the following way:
    - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
    reference would return its `key`. 
@@ -42,14 +42,14 @@ against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects
          final List<InventoryEntryDraft> inventoryEntryDrafts = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
          ````
      
-3. Create a `sphereClient` [as described here](/docs/usage/IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
+3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 4. After the `sphereClient` is setup, a `InventorySyncOptions` should be be built as follows: 
 ````java
 // instantiating a InventorySyncOptions
 final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(sphereClient).build();
 ````
-[More information about Sync Options](/docs/usage/SYNC_OPTIONS.md).
+[More information about Sync Options](SYNC_OPTIONS.md).
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
@@ -71,13 +71,14 @@ stats.getReportMessage();
 ````
 
 __Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
+
  1. The sync processing time should not take into account the time between supplying batches to the sync. 
  2. It is not known by the sync which batch is going to be the last one supplied.
 
 
-More examples of how to use the sync [here](/src/integration-test/java/com/commercetools/sync/integration/inventories/InventorySyncIT.java).
+More examples of how to use the sync [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/inventories/InventorySyncIT.java).
 
-*Make sure to read the [Important Usage Tips](/docs/usage/IMPORTANT_USAGE_TIPS.md) for optimal performance.*
+*Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
 
 ### Build all update actions
@@ -89,7 +90,7 @@ List<UpdateAction<InventoryEntry>> updateActions = InventorySyncUtils.buildActio
 ```
 
 Examples of its usage can be found in the tests 
-[here](/src/test/java/com/commercetools/sync/inventories/utils/InventorySyncUtilsTest.java).
+[here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/inventories/utils/InventorySyncUtilsTest.java).
 
 ### Build particular update action(s)
 
