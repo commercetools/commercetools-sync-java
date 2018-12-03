@@ -33,12 +33,14 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
+
     private static final String CATEGORY_DRAFT_KEY_NOT_SET = "CategoryDraft with name: %s doesn't have a key.";
     private static final String CATEGORY_DRAFT_IS_NULL = "CategoryDraft is null.";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
@@ -195,12 +197,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 });
     }
 
-    private CompletionStage<Void> createAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
-        return categoryService
-                .createCategories(newCategoryDrafts)
-                .thenAccept(this::processCreatedCategories)
-                .thenCompose(ignoredResult -> fetchAndUpdate(keyToIdCache));
-    }
 
     private CompletionStage<Void> fetchAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
         return categoryService
@@ -318,6 +314,27 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         }
     }
 
+    @Nonnull
+    private CompletionStage<Void> createAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
+        return createCategories(newCategoryDrafts)
+            .thenAccept(this::processCreatedCategories)
+            .thenCompose(ignoredResult -> fetchAndUpdate(keyToIdCache));
+    }
+
+    @Nonnull
+    private CompletionStage<Set<Category>> createCategories(@Nonnull final Set<CategoryDraft> categoryDrafts) {
+        return mapValuesToFutureOfCompletedValues(categoryDrafts, this::applyCallbackAndCreate)
+            .thenApply(results -> results.filter(Optional::isPresent).map(Optional::get))
+            .thenApply(createdCategories -> createdCategories.collect(Collectors.toSet()));
+    }
+
+    @Nonnull
+    private CompletionStage<Optional<Category>> applyCallbackAndCreate(@Nonnull final CategoryDraft categoryDraft) {
+        return syncOptions
+            .applyBeforeCreateCallBack(categoryDraft)
+            .map(categoryService::createCategory)
+            .orElse(CompletableFuture.completedFuture(Optional.empty()));
+    }
     /**
      * This method first gets the parent key either from the expanded category object or from the id field on the
      * reference and validates it. If it is valid, then it checks if the parent category is missing, this is done by
