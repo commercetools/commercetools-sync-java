@@ -427,7 +427,8 @@ public class ProductTypeSyncIT {
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isExactlyInstanceOf(ErrorResponseException.class);
+                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable.getCause()).isExactlyInstanceOf(ErrorResponseException.class);
                 assertThat(throwable).hasMessageContaining("AttributeDefinitionTypeConflict");
             });
 
