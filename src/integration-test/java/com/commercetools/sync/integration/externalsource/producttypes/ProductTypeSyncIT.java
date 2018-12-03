@@ -5,7 +5,10 @@ import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
+import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.ErrorResponseException;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
@@ -21,6 +24,11 @@ import io.sphere.sdk.products.attributes.MoneyAttributeType;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
+import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
+import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
+import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
+import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
+import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -49,9 +58,15 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateTargetProject;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.util.Lists.emptyList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 public class ProductTypeSyncIT {
 
@@ -577,6 +592,188 @@ public class ProductTypeSyncIT {
 
         assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
     }
+
+    @Test
+    public void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewCategoryWithSuccess() {
+        // Preparation
+        final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
+
+        final ProductTypeDraft productTypeDraft =
+            ProductTypeDraftBuilder.of("key", "foo", "description", emptyList())
+                                   .build();
+
+        CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft)).toCompletableFuture().join();
+
+        final String newProductTypeName = "bar";
+        final ProductTypeDraft updatedDraft =
+            ProductTypeDraftBuilder.of(productTypeDraft)
+                                   .name(newProductTypeName)
+                                   .build();
+
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder.of(spyClient).build();
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions);
+
+        // Test
+        final ProductTypeSyncStatistics statistics = productTypeSync.sync(singletonList(updatedDraft))
+                                                                    .toCompletableFuture()
+                                                                    .join();
+
+        // Assertion
+        assertThat(statistics).hasValues(1, 0, 1, 0);
+
+        // Assert CTP state.
+        final PagedQueryResult<ProductType> queryResult =
+            CTP_TARGET_CLIENT.execute(ProductTypeQuery.of().plusPredicates(queryModel ->
+                queryModel.key().is(productTypeDraft.getKey())))
+                             .toCompletableFuture()
+                             .join();
+
+        assertThat(queryResult.head()).hasValueSatisfying(productType ->
+            assertThat(productType.getName()).isEqualTo(newProductTypeName));
+    }
+
+    @Nonnull
+    private SphereClient buildClientWithConcurrentModificationUpdate() {
+
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+
+        final ProductTypeUpdateCommand anyProductTypeUpdate = any(ProductTypeUpdateCommand.class);
+
+        when(spyClient.execute(anyProductTypeUpdate))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenCallRealMethod();
+
+        return spyClient;
+    }
+
+    @Test
+    public void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+        // Preparation
+        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
+
+        final ProductTypeDraft productTypeDraft =
+            ProductTypeDraftBuilder.of("key", "foo", "description", emptyList())
+                                   .build();
+
+        CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft)).toCompletableFuture().join();
+
+        final String newProductTypeName = "bar";
+        final ProductTypeDraft updatedDraft =
+            ProductTypeDraftBuilder.of(productTypeDraft)
+                                   .name(newProductTypeName)
+                                   .build();
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> errors = new ArrayList<>();
+
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((errorMessage, error) -> {
+                errorMessages.add(errorMessage);
+                errors.add(error);
+            })
+            .build();
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions);
+
+        // Test
+        final ProductTypeSyncStatistics statistics = productTypeSync.sync(singletonList(updatedDraft))
+                                                                    .toCompletableFuture()
+                                                                    .join();
+
+        // Assertion
+        assertThat(statistics).hasValues(1, 0, 0, 1);
+
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errors).hasSize(1);
+
+        assertThat(errors.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorMessages.get(0)).contains(
+            format("Failed to update product type with key: '%s'. Reason: Failed to fetch from CTP while retrying "
+                + "after concurrency modification.", productTypeDraft.getKey()));
+    }
+
+    @Nonnull
+    private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
+
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        when(spyClient.execute(any(ProductTypeQuery.class)))
+            .thenCallRealMethod() // Call real fetch on fetching matching categories
+            .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
+
+        final ProductTypeUpdateCommand anyProductTypeUpdate = any(ProductTypeUpdateCommand.class);
+
+        when(spyClient.execute(anyProductTypeUpdate))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenCallRealMethod();
+
+        return spyClient;
+    }
+
+    @Test
+    public void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+        // Preparation
+        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
+
+        final ProductTypeDraft productTypeDraft =
+            ProductTypeDraftBuilder.of("key", "foo", "description", emptyList())
+                                   .build();
+
+        CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft)).toCompletableFuture().join();
+
+        final String newProductTypeName = "bar";
+        final ProductTypeDraft updatedDraft =
+            ProductTypeDraftBuilder.of(productTypeDraft)
+                                   .name(newProductTypeName)
+                                   .build();
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> errors = new ArrayList<>();
+
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((errorMessage, error) -> {
+                errorMessages.add(errorMessage);
+                errors.add(error);
+            })
+            .build();
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions);
+
+        // Test
+        final ProductTypeSyncStatistics statistics = productTypeSync.sync(singletonList(updatedDraft))
+                                                                    .toCompletableFuture()
+                                                                    .join();
+
+        // Assertion
+        assertThat(statistics).hasValues(1, 0, 0, 1);
+
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errors).hasSize(1);
+        assertThat(errorMessages.get(0)).contains(
+            format("Failed to update product type with key: '%s'. Reason: Not found when attempting to fetch while "
+                + "retrying after concurrency modification.", productTypeDraft.getKey()));
+    }
+
+    @Nonnull
+    private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final ProductTypeQuery anyProductTypeQuery = any(ProductTypeQuery.class);
+
+        when(spyClient.execute(anyProductTypeQuery))
+            .thenCallRealMethod() // Call real fetch on fetching matching categories
+            .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
+
+
+        final ProductTypeUpdateCommand anyProductTypeUpdateCmd = any(ProductTypeUpdateCommand.class);
+        when(spyClient.execute(anyProductTypeUpdateCmd))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()));
+
+
+        return spyClient;
+    }
+
 
     @Test
     public void sync_WithSeveralBatches_ShouldReturnProperStatistics() {
