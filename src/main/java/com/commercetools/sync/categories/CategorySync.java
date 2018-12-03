@@ -537,6 +537,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     private CompletionStage<Void> updateCategoriesInParallel(
         @Nonnull final Map<CategoryDraft, Category> matchingCategories) {
+
         final List<CompletableFuture<Void>> futures =
             matchingCategories.entrySet().stream()
                               .filter(entry -> !requiresChangeParentUpdateAction(entry.getValue(), entry.getKey()))
@@ -549,7 +550,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     /**
      * Given an existing {@link Category} and a new {@link CategoryDraft}, first resolves all references on the category
      * draft, then it calculates all the update actions required to synchronize the existing category to be the same as
-     * the new one. If there are update actions found, a request is made to CTP to update the existing category,
+     * the new one. Then the method applies the {@code ProductSyncOptions#beforeUpdateCallback} on the resultant list
+     * of actions.
+     *
+     * <p>If there are update actions in the resulting list, a request is made to CTP to update the existing category,
      * otherwise it doesn't issue a request.
      *
      * @param oldCategory the category which could be updated.
@@ -561,9 +565,13 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                                               @Nonnull final CategoryDraft newCategory) {
 
         final List<UpdateAction<Category>> updateActions = buildActions(oldCategory, newCategory, syncOptions);
-        if (!updateActions.isEmpty()) {
-            return updateCategory(oldCategory, newCategory, updateActions);
+        final List<UpdateAction<Category>> beforeUpdateCallBackApplied =
+            syncOptions.applyBeforeUpdateCallBack(updateActions, newCategory, oldCategory);
+
+        if (!beforeUpdateCallBackApplied.isEmpty()) {
+            return updateCategory(oldCategory, newCategory, beforeUpdateCallBackApplied);
         }
+
         return CompletableFuture.completedFuture(null);
     }
 
