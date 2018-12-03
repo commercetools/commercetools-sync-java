@@ -39,7 +39,8 @@
     empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
     optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255)
 
-- 📋 **Documentation** (3)
+- 📋 **Documentation** (4)
+    - **Commons** - Added the documentation github pages. https://commercetools.github.io/commercetools-sync-java 
     - **Commons** - Added a [Quick Start Guide](/docs/usage/QUICK_START.md) for a convinient entry into the library.
     - **Commons** - Moved documentation of sync options to a separate [doc](/docs/usage/SYNC_OPTIONS.md).
     - **Commons** - Added a the earliest compatible version of the commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a prerequisite for using the library.
