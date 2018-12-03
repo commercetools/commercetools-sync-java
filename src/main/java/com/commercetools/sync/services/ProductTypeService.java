@@ -1,11 +1,13 @@
 package com.commercetools.sync.services;
 
 import com.commercetools.sync.products.AttributeMetaData;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -105,4 +107,16 @@ public interface ProductTypeService {
     @Nonnull
     CompletionStage<ProductType> updateProductType(@Nonnull final ProductType productType,
                                                    @Nonnull final List<UpdateAction<ProductType>> updateActions);
+
+    /**
+     * Given a productType key, this method fetches a productType that matches this given key in the CTP project defined
+     * in a potentially injected {@link SphereClient}. If there is no matching productType an empty {@link Optional}
+     * will be returned in the returned future.
+     *
+     * @param key the key of the category to fetch.
+     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
+     *         {@link Optional} that contains the matching {@link ProductType} if exists, otherwise empty.
+     */
+    @Nonnull
+    CompletionStage<Optional<ProductType>> fetchProductType(@Nullable final String key);
 }
