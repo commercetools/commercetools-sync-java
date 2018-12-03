@@ -42,6 +42,7 @@ public final class InventorySyncUtils {
     public static List<UpdateAction<InventoryEntry>> buildActions(@Nonnull final InventoryEntry oldEntry,
                                                                   @Nonnull final InventoryEntryDraft newEntry,
                                                                   @Nonnull final InventorySyncOptions syncOptions) {
+
         final List<UpdateAction<InventoryEntry>> actions = filterEmptyOptionals(
             buildChangeQuantityAction(oldEntry, newEntry),
             buildSetRestockableInDaysAction(oldEntry, newEntry),
@@ -51,7 +52,7 @@ public final class InventorySyncUtils {
 
         actions.addAll(buildPrimaryResourceCustomUpdateActions(oldEntry, newEntry, inventoryCustomActionBuilder,
             syncOptions));
-        return syncOptions.applyBeforeUpdateCallBack(actions, newEntry, oldEntry);
+        return actions;
     }
 
     private InventorySyncUtils() { }
