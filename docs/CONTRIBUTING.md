@@ -112,7 +112,7 @@ To run the integration tests with CTP credentials you have 2 options:
   target.clientSecret=fff
   ```
     
-  Use [`it.properties.skeleton`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/resources/it.properties.skeleton) 
+  Use [`it.properties.skeleton`](/src/integration-test/resources/it.properties.skeleton) 
   as a template to setup the credentials.
   
   **Note**: the `it.properties` file must be ignored by VCS. 
