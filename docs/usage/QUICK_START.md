@@ -82,5 +82,5 @@ implementation 'com.commercetools:commercetools-sync-java:v1.0.0-M14'
 
 
 #### More Details
-*[Product Sync](/docs/usage/PRODUCT_SYNC.md), [ProductType Sync](/docs/usage/PRODUCT_TYPE_SYNC.md), 
-[Category Sync](/docs/usage/CATEGORY_SYNC.md), [Inventory Sync](/docs/usage/INVENTORY_SYNC.md)*
+*[Product Sync](PRODUCT_SYNC.md), [ProductType Sync](PRODUCT_TYPE_SYNC.md), 
+[Category Sync](CATEGORY_SYNC.md), [Inventory Sync](INVENTORY_SYNC.md)*
