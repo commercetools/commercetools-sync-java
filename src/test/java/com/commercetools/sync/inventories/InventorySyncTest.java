@@ -343,7 +343,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void syncDrafts_WithNewSupplyChannelAndEnsure_ShouldSync() {
+    public void sync_WithNewSupplyChannelAndEnsure_ShouldSync() {
         final InventorySyncOptions options = getInventorySyncOptions(3, true);
 
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
@@ -367,7 +367,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void syncDrafts_WithExceptionWhenCreatingNewSupplyChannel_ShouldTriggerErrorCallbackAndIncrementFailed() {
+    public void sync_WithExceptionWhenCreatingNewSupplyChannel_ShouldTriggerErrorCallbackAndIncrementFailed() {
         final InventorySyncOptions options = getInventorySyncOptions(3, true);
 
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
@@ -400,7 +400,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void syncDrafts_WithNullInInputList_ShouldIncrementFailedStatistics() {
+    public void sync_WithNullInInputList_ShouldIncrementFailedStatistics() {
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
 
