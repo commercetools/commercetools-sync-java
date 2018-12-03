@@ -421,7 +421,7 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to create draft with key 'key_2'.")
+                assertThat(message).contains("Failed to create draft of key 'key_2'.")
             );
 
         assertThat(exceptions)
@@ -473,7 +473,7 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to update product type with key 'key_1'.")
+                assertThat(message).contains("Failed to update product type of key 'key_1'.")
             );
 
         assertThat(exceptions)
@@ -520,7 +520,7 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to update product type with key 'key_1'.")
+                assertThat(message).contains("Failed to update product type of key 'key_1'.")
             );
 
         assertThat(exceptions)
@@ -579,7 +579,7 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to update product type with key 'key_1'.")
+                assertThat(message).contains("Failed to update product type of key 'key_1'.")
             );
 
         assertThat(exceptions)
