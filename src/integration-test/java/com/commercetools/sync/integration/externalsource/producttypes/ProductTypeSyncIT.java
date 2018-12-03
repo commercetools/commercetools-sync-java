@@ -406,7 +406,7 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to create draft of key 'key_2'.")
+                assertThat(message).contains("Failed to create product type of key 'key_2'.")
             );
 
         assertThat(exceptions)
