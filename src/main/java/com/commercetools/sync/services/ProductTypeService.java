@@ -56,6 +56,15 @@ public interface ProductTypeService {
             @Nonnull final String productTypeId);
 
     /**
+     * Given a {@link Set} of ProductType keys, this method fetches a set of all the ProductTypes, matching this given
+     * set of keys in the CTP project, defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. A
+     * mapping of the key to the id of the fetched ProductType is persisted in an in-memory map.
+     *
+     * @param keys set of ProductType keys to fetch matching ProductTypes by.
+     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a {@link Set}
+     *          of all matching ProductType.
+     */
+    /**
      * Queries existing {@link ProductType}'s against set of keys.
      *
      * @param keys {@link Set} of sku values, used in search predicate
@@ -64,7 +73,6 @@ public interface ProductTypeService {
      */
     @Nonnull
     CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull final Set<String> keys);
-
 
     /**
      * Creates new product type from {@code productTypeDraft}.

@@ -34,6 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
@@ -208,12 +209,69 @@ public class CategorySyncIT {
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdate() {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+
+        final CategoryUpdateCommand anyCategoryUpdate = any(CategoryUpdateCommand.class);
+        when(spyClient.execute(anyCategoryUpdate))
+                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
+                .thenCallRealMethod();
+
+        return spyClient;
+    }
+
+    @Test
+    public void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+        // Preparation
+        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
+
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+                .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
+                        LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
+                .key(oldCategoryKey)
+                .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
+                .build();
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> errors = new ArrayList<>();
+
+        final CategorySyncOptions categorySyncOptions =
+                CategorySyncOptionsBuilder.of(spyClient)
+                        .errorCallback((errorMessage, error) -> {
+                            errorMessages.add(errorMessage);
+                            errors.add(error);
+                        })
+                        .build();
+
+        final CategorySync categorySync = new CategorySync(categorySyncOptions);
+        final CategorySyncStatistics statistics = categorySync.sync(Collections.singletonList(categoryDraft))
+                .toCompletableFuture()
+                .join();
+
+        // Test and assertion
+        assertThat(statistics).hasValues(1, 0, 0, 1);
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errors).hasSize(1);
+
+        assertThat(errors.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorMessages.get(0)).contains(
+                format("Failed to update Category with key: '%s'. Reason: Failed to fetch from CTP while retrying "
+                        + "after concurrency modification.", categoryDraft.getKey()));
+    }
+
+    @Nonnull
+    private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final CategoryQuery anyCategoryQuery = any(CategoryQuery.class);
 
         when(spyClient.execute(anyCategoryQuery))
-            .thenCallRealMethod() // Call real fetch on fetching category keys
-            .thenCallRealMethod() // Call real fetch on fetching matching categories
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+                .thenCallRealMethod() // cache category keys
+                .thenCallRealMethod() // Call real fetch on fetching matching categories
+                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+
+
+        final CategoryUpdateCommand anyCategoryUpdate = any(CategoryUpdateCommand.class);
+        when(spyClient.execute(anyCategoryUpdate))
+                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()));
+
 
         return spyClient;
     }
@@ -221,7 +279,7 @@ public class CategorySyncIT {
     @Test
     public void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
         // Preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
+        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
@@ -248,33 +306,28 @@ public class CategorySyncIT {
 
         // Test and assertion
         assertThat(statistics).hasValues(1, 0, 0, 1);
-        assertThat(errorMessages).hasSize(2);
-        assertThat(errors).hasSize(2);
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errors).hasSize(1);
 
-        assertThat(errors.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorMessages.get(0))
-            .contains(format("Failed to fetch Categories with keys: '%s'. Reason: %s",
-                categoryDraft.getKey(), errors.get(0)));
-
-        assertThat(errorMessages.get(1))
-            .contains(format("Failed to update Category with key: '%s'. Reason: Failed to fetch category on retry.",
-                categoryDraft.getKey()));
+        assertThat(errorMessages.get(0)).contains(
+                format("Failed to update Category with key: '%s'. Reason: Not found when attempting to fetch while"
+                        + " retrying after concurrency modification.", categoryDraft.getKey()));
     }
 
     @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
+    private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final CategoryQuery anyCategoryQuery = any(CategoryQuery.class);
 
         when(spyClient.execute(anyCategoryQuery))
-            .thenCallRealMethod() // cache category keys
-            .thenCallRealMethod() // Call real fetch on fetching matching categories
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+                .thenCallRealMethod() // cache category keys
+                .thenCallRealMethod() // Call real fetch on fetching matching categories
+                .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
 
 
         final CategoryUpdateCommand anyCategoryUpdate = any(CategoryUpdateCommand.class);
         when(spyClient.execute(anyCategoryUpdate))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()));
+                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()));
 
 
         return spyClient;

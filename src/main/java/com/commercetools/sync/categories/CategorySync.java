@@ -15,6 +15,7 @@ import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.ResourceIdentifier;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,7 +44,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
         + "CategoryDraft with key:'%s'. Reason: %s";
     private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
-    private static final String FETCH_ON_RETRY = "Failed to fetch category on retry.";
 
     private final CategoryService categoryService;
     private final CategoryReferenceResolver referenceResolver;
@@ -136,11 +136,17 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     /**
      * Given a list of {@code CategoryDraft} that represent a batch of category drafts, this method for the first batch
-     * only caches a list of all the categories in the CTP project in a cached map that representing each category's
-     * key to the id. It then validates the category drafts, then resolves all the references. Then it creates all
-     * categories that need to be created in parallel while keeping track of the categories that have their
-     * non-existing parents. Then it does update actions that don't require parent changes in parallel. Then in a
-     * blocking fashion issues update actions that don't involve parent changes sequentially.
+     * only caches a mapping of key to the id of <b>all categories</b> in the CTP project. It then validates the
+     * category drafts, then resolves all the references. Then it creates all categories that need to be created in
+     * parallel while keeping track of the categories that have their non-existing parents. Then it does update actions
+     * that don't require parent changes in parallel. Then in a blocking fashion issues update actions that don't
+     * involve parent changes sequentially.
+     *
+     *
+     * <p> In case of error during of fetch during the caching of category keys or during of fetching of existing
+     * categories, the error callback will be triggered. And the sync process would stop for the given batch.
+     * </p>
+     *
      *
      * <p>More on the exact implementation of how the sync works here:
      * https://github.com/commercetools/commercetools-sync-java/wiki/Category-Sync-Underlying-Concept
@@ -161,27 +167,67 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         categoryKeysWithResolvedParents = ConcurrentHashMap.newKeySet();
         categoryDraftsToUpdate = new ConcurrentHashMap<>();
 
-        return categoryService.cacheKeysToIds()
-                              .thenCompose(keyToIdCache -> {
-                                  prepareDraftsForProcessing(categoryDrafts, keyToIdCache);
-                                  categoryKeysToFetch = existingCategoryDrafts.stream().map(CategoryDraft::getKey)
-                                                                              .collect(Collectors.toSet());
-                                  return categoryService.createCategories(newCategoryDrafts)
-                                                        .thenAccept(this::processCreatedCategories)
-                                                        .thenCompose(result -> categoryService
-                                                            .fetchMatchingCategoriesByKeys(categoryKeysToFetch))
-                                                        .thenAccept(fetchedCategories ->
-                                                            processFetchedCategories(fetchedCategories,
-                                                                referencesResolvedDrafts, keyToIdCache))
-                                                        .thenAccept(ignoredResult ->
-                                                            updateCategoriesSequentially(categoryDraftsToUpdate))
-                                                        .thenCompose(ignoredResult ->
-                                                            updateCategoriesInParallel(categoryDraftsToUpdate))
-                                                        .thenApply((ignoredResult) -> {
-                                                            statistics.incrementProcessed(numberOfNewDraftsToProcess);
-                                                            return statistics;
-                                                        });
-                              });
+        return categoryService
+                .cacheKeysToIds()
+                .handle(ImmutablePair::new)
+                .thenCompose(cachingResponse -> {
+
+                    final Map<String, String> keyToIdCache = cachingResponse.getKey();
+                    final Throwable cachingException = cachingResponse.getValue();
+
+                    if (cachingException != null) {
+                        handleError("Failed to build a cache of keys to ids.", cachingException, categoryDrafts.size());
+                        return CompletableFuture.completedFuture(null);
+                    }
+
+                    prepareDraftsForProcessing(categoryDrafts, keyToIdCache);
+
+                    categoryKeysToFetch = existingCategoryDrafts
+                        .stream()
+                        .map(CategoryDraft::getKey)
+                        .collect(Collectors.toSet());
+
+                    return createAndUpdate(keyToIdCache);
+                })
+                .thenApply(ignoredResult -> {
+                    statistics.incrementProcessed(numberOfNewDraftsToProcess);
+                    return statistics;
+                });
+    }
+
+    private CompletionStage<Void> createAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
+        return categoryService
+                .createCategories(newCategoryDrafts)
+                .thenAccept(this::processCreatedCategories)
+                .thenCompose(ignoredResult -> fetchAndUpdate(keyToIdCache));
+    }
+
+    private CompletionStage<Void> fetchAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
+        return categoryService
+            .fetchMatchingCategoriesByKeys(categoryKeysToFetch)
+            .handle(ImmutablePair::new)
+            .thenCompose(fetchResponse -> {
+                final Set<Category> fetchedCategories = fetchResponse.getKey();
+                final Throwable exception = fetchResponse.getValue();
+
+                if (exception != null) {
+                    final String errorMessage =
+                        format("Failed to fetch existing categories with keys: '%s'.", categoryKeysToFetch);
+                    handleError(errorMessage, exception, categoryKeysToFetch.size());
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                return processFetchedCategoriesAndUpdate(keyToIdCache, fetchedCategories);
+            });
+    }
+
+    @Nonnull
+    private CompletionStage<Void> processFetchedCategoriesAndUpdate(@Nonnull final Map<String, String> keyToIdCache,
+                                                                    @Nonnull final Set<Category> fetchedCategories) {
+
+        processFetchedCategories(fetchedCategories, referencesResolvedDrafts, keyToIdCache);
+        updateCategoriesSequentially(categoryDraftsToUpdate);
+        return updateCategoriesInParallel(categoryDraftsToUpdate);
     }
 
     /**
@@ -547,7 +593,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                   if (sphereException != null) {
                                       return executeSupplierIfConcurrentModificationException(
                                           sphereException,
-                                          () -> fetchAndUpdate(category, newCategory),
+                                          () -> refetchAndUpdate(category, newCategory),
                                           () -> {
                                               if (!processedCategoryKeys.contains(categoryKey)) {
                                                   handleError(format(UPDATE_FAILED, categoryKey, sphereException),
@@ -569,17 +615,34 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                               });
     }
 
-    private CompletionStage<Void> fetchAndUpdate(@Nonnull final Category oldCategory,
-                                                 @Nonnull final CategoryDraft newCategory) {
+    private CompletionStage<Void> refetchAndUpdate(@Nonnull final Category oldCategory,
+                                                   @Nonnull final CategoryDraft newCategory) {
+
         final String key = oldCategory.getKey();
-        return categoryService.fetchCategory(key)
-                .thenCompose(categoryOptional ->
-                        categoryOptional
-                                .map(fetchedCategory -> buildUpdateActionsAndUpdate(fetchedCategory, newCategory))
-                                .orElseGet(() -> {
-                                    handleError(format(UPDATE_FAILED, key, FETCH_ON_RETRY), null);
-                                    return CompletableFuture.completedFuture(null);
-                                }));
+        return categoryService
+                .fetchCategory(key)
+                .handle(ImmutablePair::new)
+                .thenCompose(fetchResponse -> {
+                    final Optional<Category> fetchedCategoryOptional = fetchResponse.getKey();
+                    final Throwable exception = fetchResponse.getValue();
+
+                    if (exception != null) {
+                        final String errorMessage = format(UPDATE_FAILED, key, "Failed to fetch from CTP while "
+                                + "retrying after concurrency modification.");
+                        handleError(errorMessage, exception);
+                        return CompletableFuture.completedFuture(null);
+                    }
+
+                    return fetchedCategoryOptional
+                        .map(fetchedCategory -> buildUpdateActionsAndUpdate(fetchedCategory, newCategory))
+                        .orElseGet(() -> {
+                            final String errorMessage =
+                                format(UPDATE_FAILED, key, "Not found when attempting to fetch while retrying "
+                                    + "after concurrency modification.");
+                            handleError(errorMessage, null);
+                            return CompletableFuture.completedFuture(null);
+                        });
+                });
     }
 
     /**
@@ -593,5 +656,22 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
         syncOptions.applyErrorCallback(errorMessage, exception);
         statistics.incrementFailed();
+    }
+
+    /**
+     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
+     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
+     * incrementing the total number of failed category to sync with the supplied {@code failedTimes}.
+     *
+     * @param errorMessage The error message describing the reason(s) of failure.
+     * @param exception    The exception that called caused the failure, if any.
+     * @param failedTimes  The number of times that the failed category counter is incremented.
+     */
+    private void handleError(@Nonnull final String errorMessage,
+                             @Nullable final Throwable exception,
+                             final int failedTimes) {
+
+        syncOptions.applyErrorCallback(errorMessage, exception);
+        statistics.incrementFailed(failedTimes);
     }
 }
