@@ -192,35 +192,36 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
                 return ofNullable(oldProductType)
                     .map(productType -> updateProductType(oldProductType, newProductType))
-                    .orElseGet(() -> createProductType(newProductType));
+                    .orElseGet(() -> applyCallbackAndCreate(newProductType));
             })
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
 
     /**
-     * Given a product type draft, issues a request to the CTP project to create a corresponding Product Type.
-     *
-     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
-     * out successfully or not. If an exception was thrown on executing the request to CTP, the error handling method
-     * is called.
+     * Given a product type draft, this method applies the beforeCreateCallback and then issues a create request to the
+     * CTP project to create the corresponding Product Type.
      *
      * @param productTypeDraft the product type draft to create the product type from.
      * @return a {@link CompletionStage} which contains an empty result after execution of the create.
      */
-    private CompletionStage<Void> createProductType(@Nonnull final ProductTypeDraft productTypeDraft) {
-        return syncOptions.applyBeforeCreateCallBack(productTypeDraft)
-                .map(productTypeService::createProductType)
-                .map(creationFuture -> creationFuture
-                        .thenAccept(createdProductType -> statistics.incrementCreated())
-                        .exceptionally(exception -> {
-                            final String errorMessage = format(CTP_PRODUCT_TYPE_CREATE_FAILED,
-                                    productTypeDraft.getKey());
-                            handleError(errorMessage, exception, 1);
+    @Nonnull
+    private CompletionStage<Void> applyCallbackAndCreate(
+        @Nonnull final ProductTypeDraft productTypeDraft) {
 
-                            return null;
-                        }))
-                .orElseGet(() -> CompletableFuture.completedFuture(null));
+        return syncOptions
+            .applyBeforeCreateCallBack(productTypeDraft)
+            .map(draft -> productTypeService
+                .createProductType(draft)
+                .thenAccept(productTypeOptional -> {
+                    if (productTypeOptional.isPresent()) {
+                        statistics.incrementCreated();
+                    } else {
+                        statistics.incrementFailed();
+                    }
+                })
+            )
+            .orElse(CompletableFuture.completedFuture(null));
     }
 
     /**

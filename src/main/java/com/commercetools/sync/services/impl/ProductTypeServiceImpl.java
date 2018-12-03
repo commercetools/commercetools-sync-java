@@ -29,27 +29,28 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 
-public final class ProductTypeServiceImpl implements ProductTypeService {
-    private final BaseSyncOptions syncOptions;
-    private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
-    private boolean isCached = false;
+public final class ProductTypeServiceImpl
+    extends BaseService<ProductTypeDraft, ProductType, BaseSyncOptions> implements ProductTypeService {
+
     private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData = new ConcurrentHashMap<>();
 
     public ProductTypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
-        this.syncOptions = syncOptions;
+        super(syncOptions);
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedProductTypeId(@Nonnull final String key) {
-        if (!isCached) {
-            return fetchAndCache(key);
+
+        if (keyToIdCache.containsKey(key)) {
+            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
         }
-        return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
+        return fetchAndCache(keyToIdCache.get(key));
     }
 
     @Nonnull
     private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
+
         final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
                 productTypePage.forEach(type -> {
                     final String fetchedTypeKey = type.getKey();
@@ -65,7 +66,6 @@ public final class ProductTypeServiceImpl implements ProductTypeService {
 
         return CtpQueryUtils
             .queryAll(syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
-            .thenAccept(result -> isCached = true)
             .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 
@@ -83,6 +83,7 @@ public final class ProductTypeServiceImpl implements ProductTypeService {
     @Override
     public CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchCachedProductAttributeMetaDataMap(
             @Nonnull final String productTypeId) {
+
         if (productsAttributesMetaData.isEmpty()) {
             return fetchAndCacheProductMetaData(productTypeId);
         }
@@ -92,8 +93,24 @@ public final class ProductTypeServiceImpl implements ProductTypeService {
     }
 
     @Nonnull
+    private CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
+        @Nonnull final String productTypeId) {
+
+        final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
+            productTypePage.forEach(type -> {
+                final String id = type.getId();
+                productsAttributesMetaData.put(id, getAttributeMetaDataMap(type));
+            });
+
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
+                            .thenApply(result ->
+                                Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
+    }
+
+    @Nonnull
     @Override
     public CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull final Set<String> keys) {
+
         if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
@@ -114,8 +131,8 @@ public final class ProductTypeServiceImpl implements ProductTypeService {
 
     @Nonnull
     @Override
-    public CompletionStage<ProductType> createProductType(@Nonnull final ProductTypeDraft productTypeDraft) {
-        return syncOptions.getCtpClient().execute(ProductTypeCreateCommand.of(productTypeDraft));
+    public CompletionStage<Optional<ProductType>> createProductType(@Nonnull final ProductTypeDraft productTypeDraft) {
+        return createResource(productTypeDraft, ProductTypeDraft::getKey, ProductTypeCreateCommand::of);
     }
 
     @Nonnull
@@ -123,20 +140,6 @@ public final class ProductTypeServiceImpl implements ProductTypeService {
     public CompletionStage<ProductType> updateProductType(
             @Nonnull final ProductType productType, @Nonnull final List<UpdateAction<ProductType>> updateActions) {
 
-        return syncOptions.getCtpClient().execute(ProductTypeUpdateCommand.of(productType, updateActions));
-    }
-
-    private CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
-        @Nonnull final String productTypeId) {
-
-        final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
-                productTypePage.forEach(type -> {
-                    final String id = type.getId();
-                    productsAttributesMetaData.put(id, getAttributeMetaDataMap(type));
-                });
-
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
-                .thenApply(result ->
-                        Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
+        return updateResource(productType, ProductTypeUpdateCommand::of, updateActions);
     }
 }

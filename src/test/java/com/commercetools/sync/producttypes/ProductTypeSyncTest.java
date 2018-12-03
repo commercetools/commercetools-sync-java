@@ -69,7 +69,7 @@ public class ProductTypeSyncTest {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to fetch existing product types of keys '[foo]'.")
+                assertThat(message).isEqualTo("Failed to fetch existing product types with keys: '[foo]'.")
             );
 
         assertThat(exceptions)

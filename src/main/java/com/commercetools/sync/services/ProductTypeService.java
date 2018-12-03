@@ -75,13 +75,25 @@ public interface ProductTypeService {
     CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull final Set<String> keys);
 
     /**
-     * Creates new product type from {@code productTypeDraft}.
+     * Given a resource draft of type {@link ProductTypeDraft}, this method attempts to create a resource
+     * {@link ProductType} based on it in the CTP project defined by the sync options.
      *
-     * @param productTypeDraft draft with data for new product type
-     * @return {@link CompletionStage} with created {@link ProductType}.
+     * <p>A completion stage containing an empty option and the error callback will be triggered in those cases:
+     * <ul>
+     *     <li>the draft has a blank key</li>
+     *     <li>the create request fails on CTP</li>
+     * </ul>
+     *
+     * <p>On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
+     * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
+     * contains an instance {@link Optional} of the resource which was created.
+     *
+     * @param productTypeDraft the resource draft to create a resource based off of.
+     * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
+     *         empty optional.
      */
     @Nonnull
-    CompletionStage<ProductType> createProductType(@Nonnull final ProductTypeDraft productTypeDraft);
+    CompletionStage<Optional<ProductType>> createProductType(@Nonnull final ProductTypeDraft productTypeDraft);
 
     /**
      * Updates existing product type with {@code updateActions}.
