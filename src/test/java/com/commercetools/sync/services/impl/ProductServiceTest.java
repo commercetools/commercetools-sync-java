@@ -11,8 +11,6 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
-import io.sphere.sdk.products.commands.updateactions.Publish;
-import io.sphere.sdk.products.commands.updateactions.RevertStagedChanges;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.Before;
@@ -138,27 +136,5 @@ public class ProductServiceTest {
         productKeys.add(null);
         final QueryPredicate<Product> queryPredicate = service.buildProductKeysQueryPredicate(productKeys);
         assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in (\"key1\", \"key2\")");
-    }
-
-    @Test
-    public void publishProduct_WithMockCtpResponse_ShouldReturnMock() {
-        final Product mock = mock(Product.class);
-        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
-
-        final Product product = service.publishProduct(mock).toCompletableFuture().join();
-
-        assertThat(product).isSameAs(mock);
-        verify(productSyncOptions.getCtpClient()).execute(eq(ProductUpdateCommand.of(mock, Publish.of())));
-    }
-
-    @Test
-    public void revertProduct_WithMockCtpResponse_ShouldReturnMock() {
-        final Product mock = mock(Product.class);
-        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
-
-        final Product product = service.revertProduct(mock).toCompletableFuture().join();
-
-        assertThat(product).isSameAs(mock);
-        verify(productSyncOptions.getCtpClient()).execute(eq(ProductUpdateCommand.of(mock, RevertStagedChanges.of())));
     }
 }

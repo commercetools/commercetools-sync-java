@@ -115,32 +115,4 @@ public interface ProductService {
     @Nonnull
     CompletionStage<Product> updateProduct(@Nonnull final Product product,
                                            @Nonnull final List<UpdateAction<Product>> updateActions);
-
-    /**
-     * Given a {@link Product}, this method issues an update request to publish this {@link Product} in the CTP project
-     * defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. This method returns
-     * {@link CompletionStage}&lt;{@link Product}&gt; in which the result of it's completion contains an instance of
-     * the {@link Product} which was published in the CTP project.
-     *
-     * @param product the {@link Product} to publish.
-     * @return {@link CompletionStage}&lt;{@link Product}&gt; containing as a result of it's completion an instance of
-     *          the {@link Product} which was published in the CTP project or a
-     *          {@link io.sphere.sdk.models.SphereException}.
-     */
-    @Nonnull
-    CompletionStage<Product> publishProduct(@Nonnull final Product product);
-
-    /**
-     * Given a {@link Product}, this method issues an update request to revert the staged changes of this
-     * {@link Product} in the CTP project defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}.
-     * This method returns {@link CompletionStage}&lt;{@link Product}&gt; in which the result of it's completion
-     * contains an instance of the {@link Product} which had its staged changes reverted in the CTP project.
-     *
-     * @param product the {@link Product} to revert the staged changes for.
-     * @return {@link CompletionStage}&lt;{@link Product}&gt; containing as a result of it's completion an instance of
-     *          the {@link Product} which was published in the CTP project or a
-     *          {@link io.sphere.sdk.models.SphereException}.
-     */
-    @Nonnull
-    CompletionStage<Product> revertProduct(@Nonnull final Product product);
 }

@@ -148,16 +148,4 @@ public final class ProductServiceImpl extends BaseService<Product, ProductDraft>
                                                   @Nonnull final List<UpdateAction<Product>> updateActions) {
         return updateResource(product, ProductUpdateCommand::of, updateActions);
     }
-
-    @Nonnull
-    @Override
-    public CompletionStage<Product> publishProduct(@Nonnull final Product product) {
-        return syncOptions.getCtpClient().execute(ProductUpdateCommand.of(product, Publish.of()));
-    }
-
-    @Nonnull
-    @Override
-    public CompletionStage<Product> revertProduct(@Nonnull final Product product) {
-        return syncOptions.getCtpClient().execute(ProductUpdateCommand.of(product, RevertStagedChanges.of()));
-    }
 }
