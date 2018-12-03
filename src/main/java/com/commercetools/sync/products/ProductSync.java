@@ -259,9 +259,14 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                         optionalAttributesMetaDataMap.map(attributeMetaDataMap -> {
                             final List<UpdateAction<Product>> updateActions =
                                     buildActions(oldProduct, newProduct, syncOptions, attributeMetaDataMap);
-                            if (!updateActions.isEmpty()) {
-                                return updateProduct(oldProduct, newProduct, updateActions);
+
+                            final List<UpdateAction<Product>> beforeUpdateCallBackApplied =
+                                syncOptions.applyBeforeUpdateCallBack(updateActions, newProduct, oldProduct);
+
+                            if (!beforeUpdateCallBackApplied.isEmpty()) {
+                                return updateProduct(oldProduct, newProduct, beforeUpdateCallBackApplied);
                             }
+
                             return CompletableFuture.completedFuture(Optional.of(oldProduct));
                         }).orElseGet(() -> {
                             final String errorMessage = format(UPDATE_FAILED, oldProduct.getKey(),
@@ -310,6 +315,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     @Nonnull
     private CompletionStage<Optional<Product>> fetchAndUpdate(@Nonnull final Product oldProduct,
                                                               @Nonnull final ProductDraft newProduct) {
+        
         final String key = oldProduct.getKey();
         return productService
             .fetchProduct(key)
