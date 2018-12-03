@@ -1,13 +1,17 @@
-package com.commercetools.sync.integration.producttypes;
+package com.commercetools.sync.integration.externalsource.producttypes;
 
-import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
+
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
+import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.ErrorResponseException;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.TextInputHint;
 import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -21,67 +25,74 @@ import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
+import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
+import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
+import io.sphere.sdk.queries.PagedQueryResult;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_2;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_3;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_1;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_2;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_1;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_2;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_1;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_2;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.getProductTypeByKey;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateTargetProject;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_2;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_3;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_1;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_2;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_1;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_2;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_1;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_2;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.deleteProductTypesFromTargetAndSource;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.getProductTypeByKey;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.populateSourceProject;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.populateTargetProject;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ProductTypeSyncIT {
 
     /**
-     * Deletes product types from source and target CTP projects.
-     * Populates source and target CTP projects with test data.
+     * Deletes product types from target CTP project.
+     * Populates target CTP project with test data.
      */
     @Before
     public void setup() {
-        deleteProductTypesFromTargetAndSource();
-        populateSourceProject();
+        deleteProductTypes(CTP_TARGET_CLIENT);
         populateTargetProject();
     }
 
     /**
-     * Deletes all the test data from the {@code CTP_SOURCE_CLIENT} and the {@code CTP_SOURCE_CLIENT} projects that
+     * Deletes all the test data from the {@code CTP_TARGET_CLIENT} project that
      * were set up in this test class.
      */
     @AfterClass
     public static void tearDown() {
-        deleteProductTypesFromTargetAndSource();
+        deleteProductTypes(CTP_TARGET_CLIENT);
     }
 
     @Test
     public void sync_WithUpdatedProductType_ShouldUpdateProductType() {
+        // preparation
         final Optional<ProductType> oldProductTypeBefore = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
         assertThat(oldProductTypeBefore).isNotEmpty();
 
@@ -99,16 +110,17 @@ public class ProductTypeSyncIT {
 
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
+        // test
         final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
             .sync(singletonList(newProductTypeDraft))
-            .toCompletableFuture().join();
+            .toCompletableFuture()
+            .join();
 
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
-
+        // assertion
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
-        assertThat(oldProductTypeAfter).isNotEmpty();
         assertThat(oldProductTypeAfter).hasValueSatisfying(productType -> {
             assertThat(productType.getName()).isEqualTo(PRODUCT_TYPE_NAME_2);
             assertThat(productType.getDescription()).isEqualTo(PRODUCT_TYPE_DESCRIPTION_2);
@@ -118,9 +130,7 @@ public class ProductTypeSyncIT {
 
     @Test
     public void sync_WithNewProductType_ShouldCreateProductType() {
-        final Optional<ProductType> oldProductTypeBefore = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_2);
-        assertThat(oldProductTypeBefore).isEmpty();
-
+        // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             PRODUCT_TYPE_KEY_2,
             PRODUCT_TYPE_NAME_2,
@@ -134,16 +144,18 @@ public class ProductTypeSyncIT {
 
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
+        // tests
         final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(1, 1, 0, 0);
+
+        // assertions
+        assertThat(productTypeSyncStatistics).hasValues(1, 1, 0, 0);
 
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_2);
 
-        assertThat(oldProductTypeAfter).isNotEmpty();
         assertThat(oldProductTypeAfter).hasValueSatisfying(productType -> {
             assertThat(productType.getName()).isEqualTo(PRODUCT_TYPE_NAME_2);
             assertThat(productType.getDescription()).isEqualTo(PRODUCT_TYPE_DESCRIPTION_2);
@@ -153,15 +165,13 @@ public class ProductTypeSyncIT {
 
     @Test
     public void sync_WithUpdatedProductType_WithNewAttribute_ShouldUpdateProductTypeAddingAttribute() {
-        final Optional<ProductType> oldProductTypeBefore = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
-        assertThat(oldProductTypeBefore).isNotEmpty();
-
+        // preparation
         // Adding ATTRIBUTE_DEFINITION_DRAFT_3
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             PRODUCT_TYPE_KEY_1,
             PRODUCT_TYPE_NAME_1,
             PRODUCT_TYPE_DESCRIPTION_1,
-            asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_3)
+            Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_3)
         );
 
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
@@ -170,28 +180,25 @@ public class ProductTypeSyncIT {
 
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
+        // tests
         final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
-
+        // assertions
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
-        assertThat(oldProductTypeAfter).isNotEmpty();
-        assertAttributesAreEqual(oldProductTypeAfter.get().getAttributes(), asList(
-            ATTRIBUTE_DEFINITION_DRAFT_1,
-            ATTRIBUTE_DEFINITION_DRAFT_2,
-            ATTRIBUTE_DEFINITION_DRAFT_3)
-        );
+        assertThat(oldProductTypeAfter).hasValueSatisfying(productType ->
+            assertAttributesAreEqual(productType.getAttributes(),
+                Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2,
+                    ATTRIBUTE_DEFINITION_DRAFT_3)
+            ));
     }
 
     @Test
     public void sync_WithUpdatedProductType_WithoutOldAttribute_ShouldUpdateProductTypeRemovingAttribute() {
-        final Optional<ProductType> oldProductTypeBefore = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
-        assertThat(oldProductTypeBefore).isNotEmpty();
-
         // Removing ATTRIBUTE_DEFINITION_DRAFT_2
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             PRODUCT_TYPE_KEY_1,
@@ -210,32 +217,28 @@ public class ProductTypeSyncIT {
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
 
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
-        assertThat(oldProductTypeAfter).isNotEmpty();
-        assertAttributesAreEqual(oldProductTypeAfter.get().getAttributes(),
-            singletonList(ATTRIBUTE_DEFINITION_DRAFT_1));
+        assertThat(oldProductTypeAfter).hasValueSatisfying(productType ->
+            assertAttributesAreEqual(productType.getAttributes(), singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)));
     }
 
     @Test
     public void sync_WithUpdatedProductType_ChangingAttributeOrder_ShouldUpdateProductTypeChangingAttributeOrder() {
-        final Optional<ProductType> oldProductTypeBefore = getProductTypeByKey(CTP_SOURCE_CLIENT, PRODUCT_TYPE_KEY_1);
-        assertThat(oldProductTypeBefore).isNotEmpty();
-
         // Changing order from ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2 to
         // ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_1
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             PRODUCT_TYPE_KEY_1,
             PRODUCT_TYPE_NAME_1,
             PRODUCT_TYPE_DESCRIPTION_1,
-            asList(ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_1)
+            Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_1)
         );
 
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
-            .of(CTP_SOURCE_CLIENT)
+            .of(CTP_TARGET_CLIENT)
             .build();
 
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
@@ -244,34 +247,31 @@ public class ProductTypeSyncIT {
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
 
+        final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
-        final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_SOURCE_CLIENT, PRODUCT_TYPE_KEY_1);
-
-        assertThat(oldProductTypeAfter).isNotEmpty();
-        assertAttributesAreEqual(oldProductTypeAfter.get().getAttributes(), asList(
-            ATTRIBUTE_DEFINITION_DRAFT_2,
-            ATTRIBUTE_DEFINITION_DRAFT_1)
-        );
+        assertThat(oldProductTypeAfter).hasValueSatisfying(productType ->
+            assertAttributesAreEqual(productType.getAttributes(),
+                Arrays.asList(
+                    ATTRIBUTE_DEFINITION_DRAFT_2,
+                    ATTRIBUTE_DEFINITION_DRAFT_1)
+            ));
     }
 
     @Test
     public void sync_WithUpdatedProductType_WithUpdatedAttributeDefinition_ShouldUpdateProductTypeUpdatingAttribute() {
-        final Optional<ProductType> oldProductTypeBefore = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
-        assertThat(oldProductTypeBefore).isNotEmpty();
-
-        // Updating ATTRIBUTE_DEFINITION_1 (name = "attr_name_1") changing the label, attribute contraint, input tip,
+        // Updating ATTRIBUTE_DEFINITION_1 (name = "attr_name_1") changing the label, attribute constraint, input tip,
         // input hint, isSearchable fields.
         final AttributeDefinitionDraft attributeDefinitionDraftUpdated = AttributeDefinitionDraftBuilder
             .of(
                 StringAttributeType.of(),
                 "attr_name_1",
-                ofEnglish("attr_label_updated"),
+                LocalizedString.ofEnglish("attr_label_updated"),
                 true
             )
             .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(ofEnglish("inputTip_updated"))
+            .inputTip(LocalizedString.ofEnglish("inputTip_updated"))
             .inputHint(TextInputHint.MULTI_LINE)
             .isSearchable(true)
             .build();
@@ -293,138 +293,13 @@ public class ProductTypeSyncIT {
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
 
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
-        assertThat(oldProductTypeAfter).isNotEmpty();
-        assertAttributesAreEqual(oldProductTypeAfter.get().getAttributes(),
-            singletonList(attributeDefinitionDraftUpdated));
-    }
-
-    @Test
-    public void sync_FromSourceToTargetProjectWithoutUpdates_ShouldReturnProperStatistics() {
-        //Fetch new product types from source project. Convert them to drafts.
-        final List<ProductType> productTypes = CTP_SOURCE_CLIENT
-            .execute(ProductTypeQuery.of())
-            .toCompletableFuture().join().getResults();
-
-        final List<ProductTypeDraft> productTypeDrafts = productTypes
-            .stream()
-            .map(productType -> {
-                List<AttributeDefinitionDraft> attributeDefinitionDrafts = productType
-                    .getAttributes()
-                    .stream()
-                    .map(attribute -> AttributeDefinitionDraftBuilder.of(attribute).build())
-                    .collect(toList());
-
-                return ProductTypeDraftBuilder
-                    .of(
-                        productType.getKey(),
-                        productType.getName(),
-                        productType.getDescription(),
-                        attributeDefinitionDrafts)
-                    .build();
-            })
-            .collect(toList());
-
-        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .build();
-
-        final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
-
-        final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
-            .sync(productTypeDrafts)
-            .toCompletableFuture().join();
-
-        // Attribute Definition with key "key_1" already exists in target, so it's not updated
-        // Attribute Definition with key "key_2" doesn't exist in target, so it's created
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(2, 1, 0, 0);
-    }
-
-    @Test
-    public void sync_FromSourceToTargetProjectWithUpdates_ShouldReturnProperStatistics() {
-        //Fetch new product types from source project. Convert them to drafts.
-        final List<ProductType> productTypes = CTP_SOURCE_CLIENT
-            .execute(ProductTypeQuery.of())
-            .toCompletableFuture().join().getResults();
-
-        final List<ProductTypeDraft> productTypeDrafts = productTypes
-            .stream()
-            .map(productType -> {
-                List<AttributeDefinitionDraft> attributeDefinitionDrafts = productType
-                    .getAttributes()
-                    .stream()
-                    .map(attribute -> AttributeDefinitionDraftBuilder.of(attribute).build())
-                    .collect(toList());
-
-                return ProductTypeDraftBuilder
-                    .of(
-                        productType.getKey(),
-                        productType.getName() + "_updated", // name updated
-                        productType.getDescription(),
-                        attributeDefinitionDrafts)
-                    .build();
-            })
-            .collect(toList());
-
-        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .build();
-
-        final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
-
-        final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
-            .sync(productTypeDrafts)
-            .toCompletableFuture().join();
-
-        // Attribute Definition with key "key_1" already exists in target, so it's updated
-        // Attribute Definition with key "key_2" doesn't exist in target, so it's created
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(2, 1, 1, 0);
-    }
-
-    @Test
-    public void sync_FromSourceToTargetProjectWithUpdates_ShouldReturnProperStatisticsMessage() {
-        //Fetch new product types from source project. Convert them to drafts.
-        final List<ProductType> productTypes = CTP_SOURCE_CLIENT
-            .execute(ProductTypeQuery.of())
-            .toCompletableFuture().join().getResults();
-
-        final List<ProductTypeDraft> productTypeDrafts = productTypes
-            .stream()
-            .map(productType -> {
-                List<AttributeDefinitionDraft> attributeDefinitionDrafts = productType
-                    .getAttributes()
-                    .stream()
-                    .map(attribute -> AttributeDefinitionDraftBuilder.of(attribute).build())
-                    .collect(toList());
-
-                return ProductTypeDraftBuilder
-                    .of(
-                        productType.getKey(),
-                        productType.getName() + "_updated", // name updated
-                        productType.getDescription(),
-                        attributeDefinitionDrafts)
-                    .build();
-            })
-            .collect(toList());
-
-        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .build();
-
-        final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
-
-        final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
-            .sync(productTypeDrafts)
-            .toCompletableFuture().join();
-
-        assertThat(productTypeSyncStatistics
-            .getReportMessage())
-            .isEqualTo("Summary: 2 product types were processed in total"
-                + " (1 created, 1 updated and 0 failed to sync).");
+        assertThat(oldProductTypeAfter).hasValueSatisfying(productType ->
+            assertAttributesAreEqual(productType.getAttributes(), singletonList(attributeDefinitionDraftUpdated)));
     }
 
     @Test
@@ -434,45 +309,75 @@ public class ProductTypeSyncIT {
             null,
             PRODUCT_TYPE_NAME_1,
             PRODUCT_TYPE_DESCRIPTION_1,
-            asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_1)
+            Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_1)
         );
 
-        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
+            .errorCallback((errorMessage, exception) -> {
+                errorMessages.add(errorMessage);
+                exceptions.add(exception);
+            })
             .build();
 
-        ProductTypeSyncOptions spyProductTypeSyncOptions = spy(productTypeSyncOptions);
+        final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions);
 
-        final ProductTypeSync productTypeSync = new ProductTypeSync(spyProductTypeSyncOptions);
-
+        // test
         final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-        verify(spyProductTypeSyncOptions).applyErrorCallback("Failed to process product type draft without key.", null);
+        // assertions
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).isEqualTo("Failed to process product type draft without key.")
+            );
 
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(exceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
+
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
     public void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+        // preparation
         final ProductTypeDraft newProductTypeDraft = null;
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
 
-        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
+            .errorCallback((errorMessage, exception) -> {
+                errorMessages.add(errorMessage);
+                exceptions.add(exception);
+            })
             .build();
 
-        ProductTypeSyncOptions spyProductTypeSyncOptions = spy(productTypeSyncOptions);
+        final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions);
 
-        final ProductTypeSync productTypeSync = new ProductTypeSync(spyProductTypeSyncOptions);
-
+        // test
         final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-        verify(spyProductTypeSyncOptions).applyErrorCallback("Failed to process null product type draft.", null);
+        // assertions
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).isEqualTo("Failed to process null product type draft.")
+            );
 
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(exceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
+
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
@@ -517,18 +422,17 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to create product type of key 'key_2'.")
+                assertThat(message).contains("Failed to create draft with key: 'key_2'.")
             );
 
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-                assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
+                assertThat(throwable).isExactlyInstanceOf(ErrorResponseException.class);
                 assertThat(throwable).hasMessageContaining("AttributeDefinitionTypeConflict");
             });
 
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
@@ -570,7 +474,7 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to update product type of key 'key_1'.")
+                assertThat(message).contains("Failed to update product type with key: 'key_1'.")
             );
 
         assertThat(exceptions)
@@ -581,7 +485,7 @@ public class ProductTypeSyncIT {
                 assertThat(throwable).hasMessageContaining("InvalidInput");
             });
 
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
@@ -617,7 +521,7 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to update product type of key 'key_1'.")
+                assertThat(message).contains("Failed to update product type with key: 'key_1'.")
             );
 
         assertThat(exceptions)
@@ -628,7 +532,7 @@ public class ProductTypeSyncIT {
                 assertThat(throwable).hasMessageContaining("Missing required value");
             });
 
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
@@ -676,7 +580,7 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to update product type of key 'key_1'.")
+                assertThat(message).contains("Failed to update product type with key: 'key_1'.")
             );
 
         assertThat(exceptions)
@@ -687,7 +591,7 @@ public class ProductTypeSyncIT {
                 assertThat(throwable).hasMessageContaining("Missing required value");
             });
 
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
@@ -701,7 +605,7 @@ public class ProductTypeSyncIT {
                 "product_type_description_" + Integer.toString(i),
                 singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
             ))
-            .collect(toList());
+            .collect(Collectors.toList());
 
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
@@ -713,95 +617,188 @@ public class ProductTypeSyncIT {
             .sync(productTypeDrafts)
             .toCompletableFuture().join();
 
-        AssertionsForStatistics.assertThat(productTypeSyncStatistics).hasValues(100, 100, 0, 0);
+        assertThat(productTypeSyncStatistics).hasValues(100, 100, 0, 0);
     }
 
     @Test
-    public void sync_beforeCreate_ShouldCallBeforeCreateCallback() {
-        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_2,
-            PRODUCT_TYPE_NAME_2,
-            PRODUCT_TYPE_DESCRIPTION_2,
-            singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
-        );
+    public void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewCategoryWithSuccess() {
+        // Preparation
+        final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
-        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .build();
+        final ProductTypeDraft productTypeDraft =
+            ProductTypeDraftBuilder.of("key", "foo", "description", emptyList())
+                                   .build();
 
-        ProductTypeSyncOptions spyProductTypeSyncOptions = spy(productTypeSyncOptions);
+        CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft)).toCompletableFuture().join();
 
-        final ProductTypeSync productTypeSync = new ProductTypeSync(spyProductTypeSyncOptions);
+        final String newProductTypeName = "bar";
+        final ProductTypeDraft updatedDraft =
+            ProductTypeDraftBuilder.of(productTypeDraft)
+                                   .name(newProductTypeName)
+                                   .build();
 
-        productTypeSync.sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder.of(spyClient).build();
 
-        verify(spyProductTypeSyncOptions).applyBeforeCreateCallBack(newProductTypeDraft);
+        final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions);
+
+        // Test
+        final ProductTypeSyncStatistics statistics = productTypeSync.sync(singletonList(updatedDraft))
+                                                                    .toCompletableFuture()
+                                                                    .join();
+
+        // Assertion
+        assertThat(statistics).hasValues(1, 0, 1, 0);
+
+        // Assert CTP state.
+        final PagedQueryResult<ProductType> queryResult =
+            CTP_TARGET_CLIENT.execute(ProductTypeQuery.of().plusPredicates(queryModel ->
+                queryModel.key().is(productTypeDraft.getKey())))
+                             .toCompletableFuture()
+                             .join();
+
+        assertThat(queryResult.head()).hasValueSatisfying(productType ->
+            assertThat(productType.getName()).isEqualTo(newProductTypeName));
+    }
+
+    @Nonnull
+    private SphereClient buildClientWithConcurrentModificationUpdate() {
+
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+
+        final ProductTypeUpdateCommand anyProductTypeUpdate = any(ProductTypeUpdateCommand.class);
+
+        when(spyClient.execute(anyProductTypeUpdate))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenCallRealMethod();
+
+        return spyClient;
     }
 
     @Test
-    public void sync_beforeCreate_ShouldNotCallBeforeUpdateCallback() {
-        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_2,
-            PRODUCT_TYPE_NAME_2,
-            PRODUCT_TYPE_DESCRIPTION_2,
-            singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
-        );
+    public void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+        // Preparation
+        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
-        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
+        final ProductTypeDraft productTypeDraft =
+            ProductTypeDraftBuilder.of("key", "foo", "description", emptyList())
+                                   .build();
+
+        CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft)).toCompletableFuture().join();
+
+        final String newProductTypeName = "bar";
+        final ProductTypeDraft updatedDraft =
+            ProductTypeDraftBuilder.of(productTypeDraft)
+                                   .name(newProductTypeName)
+                                   .build();
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> errors = new ArrayList<>();
+
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((errorMessage, error) -> {
+                errorMessages.add(errorMessage);
+                errors.add(error);
+            })
             .build();
 
-        ProductTypeSyncOptions spyProductTypeSyncOptions = spy(productTypeSyncOptions);
+        final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions);
 
-        final ProductTypeSync productTypeSync = new ProductTypeSync(spyProductTypeSyncOptions);
+        // Test
+        final ProductTypeSyncStatistics statistics = productTypeSync.sync(singletonList(updatedDraft))
+                                                                    .toCompletableFuture()
+                                                                    .join();
 
-        productTypeSync.sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
+        // Assertion
+        assertThat(statistics).hasValues(1, 0, 0, 1);
 
-        verify(spyProductTypeSyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errors).hasSize(1);
+
+        assertThat(errors.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorMessages.get(0)).contains(
+            format("Failed to update product type with key: '%s'. Reason: Failed to fetch from CTP while retrying "
+                + "after concurrency modification.", productTypeDraft.getKey()));
+    }
+
+    @Nonnull
+    private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
+
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        when(spyClient.execute(any(ProductTypeQuery.class)))
+            .thenCallRealMethod() // Call real fetch on fetching matching categories
+            .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
+
+        final ProductTypeUpdateCommand anyProductTypeUpdate = any(ProductTypeUpdateCommand.class);
+
+        when(spyClient.execute(anyProductTypeUpdate))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenCallRealMethod();
+
+        return spyClient;
     }
 
     @Test
-    public void sync_beforeUpdate_ShouldCallBeforeUpdateCallback() {
-        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_1,
-            PRODUCT_TYPE_NAME_2,
-            PRODUCT_TYPE_DESCRIPTION_2,
-            singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
-        );
+    public void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+        // Preparation
+        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
-        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
+        final ProductTypeDraft productTypeDraft =
+            ProductTypeDraftBuilder.of("key", "foo", "description", emptyList())
+                                   .build();
+
+        CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft)).toCompletableFuture().join();
+
+        final String newProductTypeName = "bar";
+        final ProductTypeDraft updatedDraft =
+            ProductTypeDraftBuilder.of(productTypeDraft)
+                                   .name(newProductTypeName)
+                                   .build();
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> errors = new ArrayList<>();
+
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((errorMessage, error) -> {
+                errorMessages.add(errorMessage);
+                errors.add(error);
+            })
             .build();
 
-        ProductTypeSyncOptions spyProductTypeSyncOptions = spy(productTypeSyncOptions);
+        final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions);
 
-        final ProductTypeSync productTypeSync = new ProductTypeSync(spyProductTypeSyncOptions);
+        // Test
+        final ProductTypeSyncStatistics statistics = productTypeSync.sync(singletonList(updatedDraft))
+                                                                    .toCompletableFuture()
+                                                                    .join();
 
-        productTypeSync.sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
+        // Assertion
+        assertThat(statistics).hasValues(1, 0, 0, 1);
 
-        verify(spyProductTypeSyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errors).hasSize(1);
+        assertThat(errorMessages.get(0)).contains(
+            format("Failed to update product type with key: '%s'. Reason: Not found when attempting to fetch while "
+                + "retrying after concurrency modification.", productTypeDraft.getKey()));
     }
 
-    @Test
-    public void sync_beforeUpdate_ShouldNotCallBeforeCreateCallback() {
-        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_1,
-            PRODUCT_TYPE_NAME_2,
-            PRODUCT_TYPE_DESCRIPTION_2,
-            singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
-        );
+    @Nonnull
+    private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final ProductTypeQuery anyProductTypeQuery = any(ProductTypeQuery.class);
 
-        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .build();
+        when(spyClient.execute(anyProductTypeQuery))
+            .thenCallRealMethod() // Call real fetch on fetching matching categories
+            .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
 
-        ProductTypeSyncOptions spyProductTypeSyncOptions = spy(productTypeSyncOptions);
 
-        final ProductTypeSync productTypeSync = new ProductTypeSync(spyProductTypeSyncOptions);
+        final ProductTypeUpdateCommand anyProductTypeUpdateCmd = any(ProductTypeUpdateCommand.class);
+        when(spyClient.execute(anyProductTypeUpdateCmd))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()));
 
-        productTypeSync.sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
 
-        verify(spyProductTypeSyncOptions, never()).applyBeforeCreateCallBack(newProductTypeDraft);
+        return spyClient;
     }
 
     private static void assertAttributesAreEqual(@Nonnull final List<AttributeDefinition> attributes,
@@ -835,7 +832,6 @@ public class ProductTypeSyncIT {
                  });
     }
 
-
     private static void assertPlainEnumsValuesAreEqual(@Nonnull final List<EnumValue> enumValues,
                                                        @Nonnull final List<EnumValue> enumValuesDrafts) {
 
@@ -861,6 +857,4 @@ public class ProductTypeSyncIT {
                      assertThat(enumValue.getLabel()).isEqualTo(enumValueDraft.getLabel());
                  });
     }
-
-
 }
