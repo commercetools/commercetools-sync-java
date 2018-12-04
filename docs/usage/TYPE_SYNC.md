@@ -24,7 +24,7 @@ against a [TypeDraft](https://docs.commercetools.com/http-api-projects-types.htm
 
 #### Prerequisites
 1. The sync expects a list of `TypeDraft`s that have their `key` fields set to be matched with
-types  in the target CTP project. Also, the types in the target project are expected to have the `key`
+types in the target CTP project. Also, the types in the target project are expected to have the `key`
 fields set, otherwise they won't be matched.
 
 2. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
