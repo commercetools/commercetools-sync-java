@@ -174,7 +174,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param newTypes drafts that need to be synced.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
-    private CompletionStage<TypeSyncStatistics> syncBatch(
+    private CompletionStage<Void> syncBatch(
             @Nonnull final Set<Type> oldTypes,
             @Nonnull final Set<TypeDraft> newTypes) {
 
@@ -190,7 +190,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
                         .orElseGet(() -> createType(newType));
                 })
                 .map(CompletionStage::toCompletableFuture)
-                .toArray(CompletableFuture[]::new)).thenApply(result -> statistics);
+                .toArray(CompletableFuture[]::new));
     }
 
     /**
