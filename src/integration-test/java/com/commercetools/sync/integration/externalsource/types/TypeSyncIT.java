@@ -2,19 +2,17 @@ package com.commercetools.sync.integration.externalsource.types;
 
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
-import com.commercetools.sync.services.TypeService;
-import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.types.TypeSync;
 import com.commercetools.sync.types.TypeSyncOptions;
 import com.commercetools.sync.types.TypeSyncOptionsBuilder;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ConcurrentModificationException;
+import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.models.TextInputHint;
 import io.sphere.sdk.types.EnumFieldType;
 import io.sphere.sdk.types.FieldDefinition;
@@ -30,19 +28,17 @@ import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.FIELD_DEFINITION_1;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.FIELD_DEFINITION_2;
@@ -61,15 +57,9 @@ import static com.commercetools.sync.integration.commons.utils.TypeITUtils.popul
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
@@ -81,7 +71,7 @@ public class TypeSyncIT {
      */
     @Before
     public void setup() {
-        deleteTypesFromTargetAndSource();
+        deleteTypes(CTP_TARGET_CLIENT);
         populateSourceProject();
         populateTargetProject();
     }
@@ -92,12 +82,13 @@ public class TypeSyncIT {
      */
     @AfterClass
     public static void tearDown() {
-        deleteTypesFromTargetAndSource();
+        deleteTypes(CTP_TARGET_CLIENT);
     }
 
 
     @Test
     public void sync_WithUpdatedType_ShouldUpdateType() {
+        // preparation
         final Optional<Type> oldTypeBefore = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
         assertThat(oldTypeBefore).isNotEmpty();
 
@@ -115,11 +106,13 @@ public class TypeSyncIT {
 
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
+        // test
         final TypeSyncStatistics typeSyncStatistics = typeSync
                 .sync(singletonList(newTypeDraft))
-                .toCompletableFuture().join();
+                .toCompletableFuture()
+                .join();
 
-
+        //assertions
         AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
 
 
@@ -135,9 +128,7 @@ public class TypeSyncIT {
 
     @Test
     public void sync_WithNewType_ShouldCreateType() {
-        final Optional<Type> oldTypeBefore = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_2);
-        assertThat(oldTypeBefore).isEmpty();
-
+        //preparation
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
                 TYPE_KEY_2,
                 TYPE_NAME_2,
@@ -152,12 +143,14 @@ public class TypeSyncIT {
 
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
+        //test
         final TypeSyncStatistics typeSyncStatistics = typeSync
                 .sync(singletonList(newTypeDraft))
-                .toCompletableFuture().join();
+                .toCompletableFuture()
+                .join();
 
+        //assertions
         AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 1, 0, 0);
-
 
         final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_2);
 
@@ -171,9 +164,7 @@ public class TypeSyncIT {
 
     @Test
     public void sync_WithUpdatedType_WithNewFieldDefinitions_ShouldUpdateTypeAddingFieldDefinition() {
-        final Optional<Type> oldTypeBefore = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
-        assertThat(oldTypeBefore).isNotEmpty();
-
+        //preparation
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
                 TYPE_KEY_1,
                 TYPE_NAME_1,
@@ -189,20 +180,25 @@ public class TypeSyncIT {
 
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
+        //test
         final TypeSyncStatistics typeSyncStatistics = typeSync
                 .sync(singletonList(newTypeDraft))
-                .toCompletableFuture().join();
+                .toCompletableFuture()
+                .join();
 
+        //assertions
         AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
 
         final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
 
-        assertThat(oldTypeAfter).isNotEmpty();
-        assertFieldDefinitionsAreEqual(oldTypeAfter.get().getFieldDefinitions(), asList(
-                FIELD_DEFINITION_1,
-                FIELD_DEFINITION_2,
-                FIELD_DEFINITION_3)
-        );
+        assertThat(oldTypeAfter).hasValueSatisfying(type -> {
+            assertFieldDefinitionsAreEqual(type.getFieldDefinitions(),
+                asList(
+                    FIELD_DEFINITION_1,
+                    FIELD_DEFINITION_2,
+                    FIELD_DEFINITION_3
+                ));
+        });
     }
 
     @Test
@@ -239,9 +235,7 @@ public class TypeSyncIT {
 
     @Test
     public void sync_WithUpdatedType_ChangingFieldDefinitionOrder_ShouldUpdateTypeChangingFieldDefinitionOrder() {
-        final Optional<Type> oldTypeBefore = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
-        assertThat(oldTypeBefore).isNotEmpty();
-
+        //preparation
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
                 TYPE_KEY_1,
                 TYPE_NAME_1,
@@ -256,24 +250,24 @@ public class TypeSyncIT {
 
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
+        //test
         final TypeSyncStatistics typeSyncStatistics = typeSync
                 .sync(singletonList(newTypeDraft))
                 .toCompletableFuture().join();
 
+        //assertions
         AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
 
         final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
 
-        assertThat(oldTypeAfter).isNotEmpty();
-        assertFieldDefinitionsAreEqual(oldTypeAfter.get().getFieldDefinitions(),
-                asList(FIELD_DEFINITION_2, FIELD_DEFINITION_1));
+        assertThat(oldTypeAfter).hasValueSatisfying(type ->
+            assertFieldDefinitionsAreEqual(type.getFieldDefinitions(),
+                asList(FIELD_DEFINITION_2, FIELD_DEFINITION_1)));
     }
 
     @Test
     public void sync_WithUpdatedType_WithUpdatedFieldDefinition_ShouldUpdateTypeUpdatingFieldDefinition() {
-        final Optional<Type> oldTypeBefore = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
-        assertThat(oldTypeBefore).isNotEmpty();
-
+        //preparation
         final FieldDefinition fieldDefinitionUpdated = FieldDefinition.of(
                 StringFieldType.of(),
                 FIELD_DEFINITION_NAME_1,
@@ -295,160 +289,19 @@ public class TypeSyncIT {
 
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
+        //test
         final TypeSyncStatistics typeSyncStatistics = typeSync
                 .sync(singletonList(newTypeDraft))
                 .toCompletableFuture().join();
 
+        //assertions
         AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
 
         final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
 
-        assertThat(oldTypeAfter).isNotEmpty();
-        assertFieldDefinitionsAreEqual(oldTypeAfter.get().getFieldDefinitions(),
-                singletonList(fieldDefinitionUpdated));
-    }
-
-    @Test
-    public void sync_FromSourceToTargetProjectWithoutUpdates_ShouldReturnProperStatistics() {
-        //Fetch new types from source project. Convert them to drafts.
-        final List<Type> types = CTP_SOURCE_CLIENT
-                .execute(TypeQuery.of())
-                .toCompletableFuture().join().getResults();
-
-        final List<TypeDraft> typeDrafts = types
-                .stream()
-                .map(type -> {
-                    List<FieldDefinition> newFieldDefinitions = type
-                            .getFieldDefinitions()
-                            .stream()
-                            .map(fieldDefinition ->
-                                    FieldDefinition.of(
-                                            fieldDefinition.getType(),
-                                            fieldDefinition.getName(),
-                                            fieldDefinition.getLabel(),
-                                            fieldDefinition.isRequired(),
-                                            fieldDefinition.getInputHint()))
-                            .collect(Collectors.toList());
-
-                    return TypeDraftBuilder
-                            .of(
-                                    type.getKey(),
-                                    type.getName(),
-                                    type.getResourceTypeIds())
-                            .description(type.getDescription())
-                            .fieldDefinitions(newFieldDefinitions)
-                            .build();
-                })
-                .collect(Collectors.toList());
-
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
-                .of(CTP_TARGET_CLIENT)
-                .build();
-
-        final TypeSync typeSync = new TypeSync(typeSyncOptions);
-
-        final TypeSyncStatistics typeSyncStatistics = typeSync
-                .sync(typeDrafts)
-                .toCompletableFuture().join();
-
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(2, 1, 0, 0);
-    }
-
-    @Test
-    public void sync_FromSourceToTargetProjectWithUpdates_ShouldReturnProperStatistics() {
-        //Fetch new types from source project. Convert them to drafts.
-        final List<Type> types = CTP_SOURCE_CLIENT
-                .execute(TypeQuery.of())
-                .toCompletableFuture().join().getResults();
-
-        final List<TypeDraft> typeDrafts = types
-                .stream()
-                .map(type -> {
-                    List<FieldDefinition> newFieldDefinitions = type
-                            .getFieldDefinitions()
-                            .stream()
-                            .map(fieldDefinition ->
-                                    FieldDefinition.of(
-                                            fieldDefinition.getType(),
-                                            fieldDefinition.getName(),
-                                            fieldDefinition.getLabel(),
-                                            fieldDefinition.isRequired(),
-                                            fieldDefinition.getInputHint()))
-                            .collect(Collectors.toList());
-
-                    return TypeDraftBuilder
-                            .of(
-                                    type.getKey(),
-                                    LocalizedString.ofEnglish(type.getName().get(Locale.ENGLISH) + "_updated"),
-                                    type.getResourceTypeIds())
-                            .description(type.getDescription())
-                            .fieldDefinitions(newFieldDefinitions)
-                            .build();
-                })
-                .collect(Collectors.toList());
-
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
-                .of(CTP_TARGET_CLIENT)
-                .build();
-
-        final TypeSync typeSync = new TypeSync(typeSyncOptions);
-
-        final TypeSyncStatistics typeSyncStatistics = typeSync
-                .sync(typeDrafts)
-                .toCompletableFuture().join();
-
-        // Field Definition with key "key_1" already exists in target, so it's updated
-        // Field Definition with key "key_2" doesn't exist in target, so it's created
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(2, 1, 1, 0);
-    }
-
-    @Test
-    public void sync_FromSourceToTargetProjectWithUpdates_ShouldReturnProperStatisticsMessage() {
-        //Fetch new types from source project. Convert them to drafts.
-        final List<Type> types = CTP_SOURCE_CLIENT
-                .execute(TypeQuery.of())
-                .toCompletableFuture().join().getResults();
-
-        final List<TypeDraft> typeDrafts = types
-                .stream()
-                .map(type -> {
-                    List<FieldDefinition> newFieldDefinitions = type
-                            .getFieldDefinitions()
-                            .stream()
-                            .map(fieldDefinition ->
-                                    FieldDefinition.of(
-                                            fieldDefinition.getType(),
-                                            fieldDefinition.getName(),
-                                            fieldDefinition.getLabel(),
-                                            fieldDefinition.isRequired(),
-                                            fieldDefinition.getInputHint()))
-                            .collect(Collectors.toList());
-
-                    return TypeDraftBuilder
-                            .of(
-                                    type.getKey(),
-                                    LocalizedString.ofEnglish(type.getName().get(Locale.ENGLISH) + "_updated"),
-                                    type.getResourceTypeIds())
-                            .description(type.getDescription())
-                            .fieldDefinitions(newFieldDefinitions)
-                            .build();
-                })
-                .collect(Collectors.toList());
-
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
-                .of(CTP_TARGET_CLIENT)
-                .build();
-
-        final TypeSync typeSync = new TypeSync(typeSyncOptions);
-
-        final TypeSyncStatistics typeSyncStatistics = typeSync
-                .sync(typeDrafts)
-                .toCompletableFuture().join();
-
-        assertThat(typeSyncStatistics
-                .getReportMessage())
-                .isEqualTo("Summary: 2 types were processed in total"
-                        + " (1 created, 1 updated and 0 failed to sync).");
+        assertThat(oldTypeAfter).hasValueSatisfying(type ->
+            assertFieldDefinitionsAreEqual(type.getFieldDefinitions(),
+                singletonList(fieldDefinitionUpdated)));
     }
 
     @Test
@@ -461,151 +314,80 @@ public class TypeSyncIT {
                 .fieldDefinitions(asList(FIELD_DEFINITION_1, FIELD_DEFINITION_2))
                 .build();
 
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
                 .of(CTP_TARGET_CLIENT)
+                .errorCallback((errorMessage, exception) -> {
+                    errorMessages.add(errorMessage);
+                    exceptions.add(exception);
+                })
                 .build();
 
-        TypeSyncOptions spyTypeSyncOptions = spy(typeSyncOptions);
+        final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
-        final TypeSync typeSync = new TypeSync(spyTypeSyncOptions);
-
+        //test
         final TypeSyncStatistics typeSyncStatistics = typeSync
                 .sync(singletonList(newTypeDraft))
-                .toCompletableFuture().join();
+                .toCompletableFuture()
+                .join();
 
-        verify(spyTypeSyncOptions)
-                .applyErrorCallback("Failed to process type draft without key.", null);
+        // assertions
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).isEqualTo("Failed to process type draft without key.")
+            );
+
+        assertThat(exceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
 
         AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
     public void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+        //preparation
         final TypeDraft newTypeDraft = null;
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
 
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
                 .of(CTP_TARGET_CLIENT)
+                .errorCallback((errorMessage, exception) -> {
+                    errorMessages.add(errorMessage);
+                    exceptions.add(exception);
+                })
                 .build();
 
-        TypeSyncOptions spyTypeSyncOptions = spy(typeSyncOptions);
+        final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
-        final TypeSync typeSync = new TypeSync(spyTypeSyncOptions);
-
+        //test
         final TypeSyncStatistics typeSyncStatistics = typeSync
                 .sync(singletonList(newTypeDraft))
-                .toCompletableFuture().join();
+                .toCompletableFuture()
+                .join();
 
-        verify(spyTypeSyncOptions).applyErrorCallback("Failed to process null type draft.", null);
+        //assertions
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).isEqualTo("Failed to process null type draft.")
+            );
 
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
-    }
-
-    @Test
-    public void sync_WithErrorFetchingExistingKeysFromCT_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
-        final TypeDraft newTypeDraft = TypeDraftBuilder.of(
-                TYPE_KEY_1,
-                TYPE_NAME_1,
-                ResourceTypeIdsSetBuilder.of().addCategories().build())
-                .description(TYPE_DESCRIPTION_1)
-                .fieldDefinitions(asList(FIELD_DEFINITION_1, FIELD_DEFINITION_2))
-                .build();
-
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
-                .of(CTP_TARGET_CLIENT)
-                .build();
-
-        TypeSyncOptions spyTypeSyncOptions = spy(typeSyncOptions);
-
-        TypeService typeServiceMock = mock(TypeServiceImpl.class);
-
-        when(typeServiceMock.fetchMatchingTypesByKeys(Mockito.any())).thenReturn(supplyAsync(() -> {
-            throw new SphereException();
-        }));
-
-        final TypeSync typeSync = new TypeSync(spyTypeSyncOptions, typeServiceMock);
-
-        final TypeSyncStatistics typeSyncStatistics = typeSync
-                .sync(singletonList(newTypeDraft))
-                .toCompletableFuture().join();
-
-        verify(spyTypeSyncOptions)
-                .applyErrorCallback(eq("Failed to fetch existing types of keys '[key_1]'."), any());
-
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
-    }
-
-    @Test
-    public void sync_WithErrorCreatingTheTypeInCT_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
-        final TypeDraft newTypeDraft = TypeDraftBuilder.of(
-                TYPE_KEY_2,
-                TYPE_NAME_2,
-                ResourceTypeIdsSetBuilder.of().addCategories().build())
-                .description(TYPE_DESCRIPTION_2)
-                .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
-                .build();
-
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
-                .of(CTP_TARGET_CLIENT)
-                .build();
-
-        TypeSyncOptions spyTypeSyncOptions = spy(typeSyncOptions);
-
-        TypeService typeService = new TypeServiceImpl(spyTypeSyncOptions);
-        TypeService spyTypeService = spy(typeService);
-
-        doReturn(supplyAsync(() -> {
-            throw new SphereException();
-        })).when(spyTypeService).createType(Mockito.any());
-
-        final TypeSync typeSync = new TypeSync(spyTypeSyncOptions, spyTypeService);
-
-        final TypeSyncStatistics typeSyncStatistics = typeSync
-                .sync(singletonList(newTypeDraft))
-                .toCompletableFuture().join();
-
-        verify(spyTypeSyncOptions)
-                .applyErrorCallback(eq("Failed to create type of key 'key_2'."), any());
-
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
-    }
-
-    @Test
-    public void sync_WithErrorUpdatingTheTypeInCT_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
-        final TypeDraft newTypeDraft = TypeDraftBuilder.of(
-                TYPE_KEY_1,
-                TYPE_NAME_1,
-                ResourceTypeIdsSetBuilder.of().addCategories().build())
-                .description(TYPE_DESCRIPTION_1)
-                .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
-                .build();
-
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
-                .of(CTP_TARGET_CLIENT)
-                .build();
-
-        TypeSyncOptions spyTypeSyncOptions = spy(typeSyncOptions);
-
-        TypeService typeService = new TypeServiceImpl(spyTypeSyncOptions);
-        TypeService spyTypeService = spy(typeService);
-
-        doReturn(supplyAsync(() -> {
-            throw new SphereException();
-        })).when(spyTypeService).updateType(Mockito.any(), Mockito.anyList());
-
-        final TypeSync typeSync = new TypeSync(spyTypeSyncOptions, spyTypeService);
-
-        final TypeSyncStatistics typeSyncStatistics = typeSync
-                .sync(singletonList(newTypeDraft))
-                .toCompletableFuture().join();
-
-        verify(spyTypeSyncOptions)
-                .applyErrorCallback(startsWith("Failed to update type with key: 'key_1'."), any());
+        assertThat(exceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
 
         AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
     public void sync_WithoutName_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+        // preparation
+        // Draft without "name" throws a commercetools exception because "name" is a required value
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
                 TYPE_KEY_1,
                 null,
@@ -614,27 +396,46 @@ public class TypeSyncIT {
                 .fieldDefinitions(asList(FIELD_DEFINITION_1, FIELD_DEFINITION_2))
                 .build();
 
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
                 .of(CTP_TARGET_CLIENT)
+                .errorCallback((errorMessage, exception) -> {
+                    errorMessages.add(errorMessage);
+                    exceptions.add(exception);
+                })
                 .build();
 
-        TypeSyncOptions spyTypeSyncOptions = spy(typeSyncOptions);
+        final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
-        final TypeSync typeSync = new TypeSync(spyTypeSyncOptions);
-
+        // test
         final TypeSyncStatistics typeSyncStatistics = typeSync
                 .sync(singletonList(newTypeDraft))
-                .toCompletableFuture().join();
+                .toCompletableFuture()
+                .join();
 
-        // Since the error message and exception is coming from commercetools, we don't test the actual message and
-        // exception
-        verify(spyTypeSyncOptions).applyErrorCallback(any(), any());
+        // assertions
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).contains("Failed to update type with key 'key_1'.")
+            );
+
+        assertThat(exceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(throwable -> {
+                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
+                assertThat(throwable).hasMessageContaining("Missing required value");
+            });
 
         AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
     public void sync_WithoutFieldDefinitionType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+        //preparation
         final FieldDefinition fieldDefinition = FieldDefinition.of(
                 null,
                 FIELD_DEFINITION_NAME_1,
@@ -650,27 +451,46 @@ public class TypeSyncIT {
                 .fieldDefinitions(singletonList(fieldDefinition))
                 .build();
 
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
                 .of(CTP_TARGET_CLIENT)
+                .errorCallback((errorMessage, exception) -> {
+                    errorMessages.add(errorMessage);
+                    exceptions.add(exception);
+                })
                 .build();
 
-        TypeSyncOptions spyTypeSyncOptions = spy(typeSyncOptions);
+        final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
-        final TypeSync typeSync = new TypeSync(spyTypeSyncOptions);
-
+        //test
         final TypeSyncStatistics typeSyncStatistics = typeSync
                 .sync(singletonList(newTypeDraft))
-                .toCompletableFuture().join();
+                .toCompletableFuture()
+                .join();
 
-        // Since the error message and exception is coming from commercetools, we don't test the actual message and
-        // exception
-        verify(spyTypeSyncOptions).applyErrorCallback(any(), any());
+        // assertions
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).contains("Failed to update type with key 'key_1'.")
+            );
+
+        assertThat(exceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(throwable -> {
+                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
+                assertThat(throwable).hasMessageContaining("Missing required value");
+            });
 
         AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
     public void sync_WithSeveralBatches_ShouldReturnProperStatistics() {
+        // preparation
         // Default batch size is 50 (check TypeSyncOptionsBuilder) so we have 2 batches of 50
         final List<TypeDraft> typeDrafts = IntStream
                 .range(0, 100)
@@ -689,10 +509,13 @@ public class TypeSyncIT {
 
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
+        //test
         final TypeSyncStatistics typeSyncStatistics = typeSync
                 .sync(typeDrafts)
-                .toCompletableFuture().join();
+                .toCompletableFuture()
+                .join();
 
+        //assertion
         AssertionsForStatistics.assertThat(typeSyncStatistics)
                 .hasValues(100, 100, 0, 0);
     }
