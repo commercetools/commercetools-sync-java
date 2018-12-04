@@ -61,7 +61,7 @@
     - **Commons** - Bumped `org.ajoberstar.grgit` to 3.0.0.
     - **Commons** - Bumped gradle to version [gradle-5.0](https://docs.gradle.org/5.0/release-notes.html)
     - **Commons** - `ProductSyncUtils#buildActions`, `CategorySyncUtils#buildActions`, `InventorySyncUtils#buildActions` and `ProductTypeSyncUtils#buildActions` now don't apply the `beforeUpdateCallback` implicitly. 
-    If you want you can apply it explicitly on the result. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
+    If you want, you can apply it explicitly on the result of the `..#buildActions` method. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
     
 
 - 🚧 **Breaking Changes** (11) 
