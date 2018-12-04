@@ -592,7 +592,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewCategoryWithSuccess() {
+    public void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewProductTypeWithSuccess() {
         // Preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
@@ -697,7 +697,7 @@ public class ProductTypeSyncIT {
 
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(ProductTypeQuery.class)))
-            .thenCallRealMethod() // Call real fetch on fetching matching categories
+            .thenCallRealMethod() // Call real fetch on fetching matching product types
             .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
 
         final ProductTypeUpdateCommand anyProductTypeUpdate = any(ProductTypeUpdateCommand.class);
@@ -760,7 +760,7 @@ public class ProductTypeSyncIT {
         final ProductTypeQuery anyProductTypeQuery = any(ProductTypeQuery.class);
 
         when(spyClient.execute(anyProductTypeQuery))
-            .thenCallRealMethod() // Call real fetch on fetching matching categories
+            .thenCallRealMethod() // Call real fetch on fetching matching product types
             .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
 
 
