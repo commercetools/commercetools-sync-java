@@ -87,4 +87,4 @@ and field definitions can be found [here](/src/test/java/com/commercetools/sync/
 1. Updating the label of enum values and localized enum values of field definition is not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
 2. Removing the enum values and localized enum values from the field definition is not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
 3. Updating the input hint of field definition is not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
-4. Syncing types with an field of type [SetType](https://docs.commercetools.com/http-api-projects-types.html#settype) is not supported yet.
+4. Syncing types with a field definition with type [SetType](https://docs.commercetools.com/http-api-projects-types.html#settype) is not supported yet. [#313](https://github.com/commercetools/commercetools-sync-java/issues/313)
