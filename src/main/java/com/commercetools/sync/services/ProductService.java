@@ -34,7 +34,7 @@ public interface ProductService {
 
     /**
      * Filters out the keys which are already cached and fetches only the not-cached product keys from the CTP project
-     * defined in a potentially injected {@link SphereClient} and stores a mapping for every product to id in
+     * defined in an injected {@link SphereClient} and stores a mapping for every product to id in
      * the cached map of keys -&gt; ids and returns this cached map.
      *
      * <p>Note: If all the supplied keys are already cached, the cached map is returned right away with no request to
@@ -50,7 +50,7 @@ public interface ProductService {
 
     /**
      * Given a {@link Set} of product keys, this method fetches a set of all the products, matching this given set of
-     * keys in the CTP project, defined in a potentially injected {@link SphereClient}. A mapping of the key to the id
+     * keys in the CTP project, defined in an injected {@link SphereClient}. A mapping of the key to the id
      * of the fetched products is persisted in an in-memory map.
      *
      * @param productKeys set of product keys to fetch matching products by.
