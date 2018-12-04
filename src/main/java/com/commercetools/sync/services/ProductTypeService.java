@@ -64,13 +64,6 @@ public interface ProductTypeService {
      * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a {@link Set}
      *          of all matching ProductType.
      */
-    /**
-     * Queries existing {@link ProductType}'s against set of keys.
-     *
-     * @param keys {@link Set} of sku values, used in search predicate
-     * @return {@link CompletionStage} of matching {@link ProductType}s or empty set when there is no product type with
-     *         corresponding {@code keys}.
-     */
     @Nonnull
     CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull final Set<String> keys);
 
