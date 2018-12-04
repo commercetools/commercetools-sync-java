@@ -335,6 +335,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             .map(categoryService::createCategory)
             .orElse(CompletableFuture.completedFuture(Optional.empty()));
     }
+
     /**
      * This method first gets the parent key either from the expanded category object or from the id field on the
      * reference and validates it. If it is valid, then it checks if the parent category is missing, this is done by

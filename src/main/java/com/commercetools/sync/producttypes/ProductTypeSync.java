@@ -178,6 +178,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param newProductTypes drafts that need to be synced.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
+    @Nonnull
     private CompletionStage<Void> syncBatch(
             @Nonnull final Set<ProductType> oldProductTypes,
             @Nonnull final Set<ProductTypeDraft> newProductTypes) {
@@ -205,6 +206,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param productTypeDraft the product type draft to create the product type from.
      * @return a {@link CompletionStage} which contains an empty result after execution of the create.
      */
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Void> applyCallbackAndCreate(
         @Nonnull final ProductTypeDraft productTypeDraft) {
@@ -239,6 +241,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @return a {@link CompletionStage} which contains an empty result after execution of the update.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    @Nonnull
     private CompletionStage<Void> updateProductType(@Nonnull final ProductType oldProductType,
                                                     @Nonnull final ProductTypeDraft newProductType) {
 
