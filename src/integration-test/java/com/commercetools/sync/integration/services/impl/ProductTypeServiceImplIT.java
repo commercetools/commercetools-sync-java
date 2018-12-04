@@ -28,13 +28,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_1;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_1;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_1;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_1;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_1;
-import static com.commercetools.sync.integration.producttypes.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_1;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
