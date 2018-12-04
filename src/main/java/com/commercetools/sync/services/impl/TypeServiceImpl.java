@@ -12,7 +12,6 @@ import io.sphere.sdk.types.commands.TypeCreateCommand;
 import io.sphere.sdk.types.commands.TypeUpdateCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
 import io.sphere.sdk.types.queries.TypeQueryBuilder;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

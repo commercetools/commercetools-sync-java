@@ -123,10 +123,11 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
                                   } else {
                                       return syncBatch(fetchedTypes, validTypeDrafts);
                                   }
-                              }).thenApply(ignored -> {
-                    statistics.incrementProcessed(batch.size());
-                    return statistics;
-                });
+                              })
+                              .thenApply(ignored -> {
+                                  statistics.incrementProcessed(batch.size());
+                                  return statistics;
+                              });
         }
     }
 
