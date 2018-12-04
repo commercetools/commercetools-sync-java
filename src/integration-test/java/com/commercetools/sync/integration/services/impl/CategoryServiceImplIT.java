@@ -17,6 +17,7 @@ import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
+import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.AfterClass;
@@ -46,6 +47,8 @@ import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class CategoryServiceImplIT {
@@ -154,7 +157,7 @@ public class CategoryServiceImplIT {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).hasSize(1);
         assertThat(warningCallBackMessages.get(0)).isEqualTo(format("Category with id: '%s' has no key set. Keys are"
-                + " required for category matching.", createdCategory.getId()));
+            + " required for category matching.", createdCategory.getId()));
     }
 
     @Test
@@ -185,13 +188,13 @@ public class CategoryServiceImplIT {
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
         final CategorySyncOptions spyOptions = CategorySyncOptionsBuilder.of(spyClient)
-                                                                           .errorCallback(
-                                                                               (errorMessage, exception) -> {
-                                                                                   errorCallBackMessages
-                                                                                       .add(errorMessage);
-                                                                                   errorCallBackExceptions
-                                                                                       .add(exception);
-                                                                               })
+                                                                         .errorCallback(
+                                                                             (errorMessage, exception) -> {
+                                                                                 errorCallBackMessages
+                                                                                     .add(errorMessage);
+                                                                                 errorCallBackExceptions
+                                                                                     .add(exception);
+                                                                             })
                                                                          .build();
         final CategoryService spyCategoryService = new CategoryServiceImpl(spyOptions);
 
@@ -203,8 +206,8 @@ public class CategoryServiceImplIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(spyCategoryService.fetchMatchingCategoriesByKeys(keys))
-                .hasFailedWithThrowableThat()
-                .isExactlyInstanceOf(BadGatewayException.class);
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(BadGatewayException.class);
     }
 
     @Test
@@ -217,98 +220,6 @@ public class CategoryServiceImplIT {
         assertThat(fetchedCategories).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    public void createCategories_WithAllValidCategories_ShouldCreateCategories() {
-        final CategoryDraft categoryDraft1 = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "classic furniture1"),
-                LocalizedString.of(Locale.ENGLISH, "classic-furniture1", Locale.GERMAN, "klassische-moebel1"))
-            .key("key1")
-            .build();
-
-        final CategoryDraft categoryDraft2 = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "classic furniture2"),
-                LocalizedString.of(Locale.ENGLISH, "classic-furniture2", Locale.GERMAN, "klassische-moebel2"))
-            .key("key2")
-            .build();
-
-        final Set<CategoryDraft> categoryDrafts = new HashSet<>();
-        categoryDrafts.add(categoryDraft1);
-        categoryDrafts.add(categoryDraft2);
-
-        final Set<Category> createdCategories = categoryService.createCategories(categoryDrafts)
-                                                               .toCompletableFuture().join();
-
-        assertThat(createdCategories).hasSize(2);
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    public void createCategories_WithSomeValidCategories_ShouldCreateCategoriesAndTriggerCallBack() {
-        // Draft with invalid key
-        final CategoryDraft categoryDraft1 = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "classic furniture1"),
-                LocalizedString.of(Locale.ENGLISH, "classic-furniture1", Locale.GERMAN, "klassische-moebel1"))
-            .key("1")
-            .build();
-
-        final CategoryDraft categoryDraft2 = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "classic furniture2"),
-                LocalizedString.of(Locale.ENGLISH, "classic-furniture2", Locale.GERMAN, "klassische-moebel2"))
-            .key("key2")
-            .build();
-
-        final Set<CategoryDraft> categoryDrafts = new HashSet<>();
-        categoryDrafts.add(categoryDraft1);
-        categoryDrafts.add(categoryDraft2);
-
-        final Set<Category> createdCategories = categoryService.createCategories(categoryDrafts)
-                                                               .toCompletableFuture().join();
-
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Invalid key '1'. Keys may only contain alphanumeric"
-            + " characters, underscores and hyphens and must have a minimum length of 2 characters and maximum length"
-            + " of 256 characters.");
-        assertThat(createdCategories).hasSize(1);
-    }
-
-    @Test
-    public void createCategories_WithNoneValidCategories_ShouldTriggerCallBack() {
-        // Draft with invalid key
-        final CategoryDraft categoryDraft1 = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "classic furniture1"),
-                LocalizedString.of(Locale.ENGLISH, "classic-furniture1", Locale.GERMAN, "klassische-moebel1"))
-            .key("1")
-            .build();
-
-        // Draft with duplicate slug
-        final CategoryDraft categoryDraft2 = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "classic furniture2"),
-                LocalizedString.of(Locale.ENGLISH, "furniture"))
-            .key("key2")
-            .build();
-
-        final Set<CategoryDraft> categoryDrafts = new HashSet<>();
-        categoryDrafts.add(categoryDraft1);
-        categoryDrafts.add(categoryDraft2);
-
-        final Set<Category> createdCategories = categoryService.createCategories(categoryDrafts)
-                                                               .toCompletableFuture().join();
-
-        assertThat(errorCallBackExceptions).hasSize(2);
-        assertThat(errorCallBackMessages).hasSize(2);
-        // Since the order of creation is not ensured by allOf, so we assert in list of error messages (as string):
-        assertThat(errorCallBackMessages.toString()).contains("Invalid key '1'. Keys may only contain alphanumeric"
-            + " characters, underscores and hyphens and must have a minimum length of 2 characters and maximum length"
-            + " of 256 characters.");
-        assertThat(errorCallBackMessages.toString()).contains("\"code\" : \"DuplicateField\"");
-        assertThat(errorCallBackMessages.toString()).contains("\"field\" : \"slug.en\"");
-        assertThat(errorCallBackMessages.toString()).contains("\"duplicateValue\" : \"furniture\"");
-
-        assertThat(createdCategories).isEmpty();
     }
 
     @Test
@@ -367,6 +278,7 @@ public class CategoryServiceImplIT {
 
     @Test
     public void createCategory_WithValidCategory_ShouldCreateCategory() {
+        // preparation
         final String newCategoryKey = "newCategoryKey";
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
@@ -375,32 +287,56 @@ public class CategoryServiceImplIT {
             .custom(getCustomFieldsDraft())
             .build();
 
-        final Optional<Category> createdCategoryOptional = categoryService.createCategory(categoryDraft)
-                                                           .toCompletableFuture().join();
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final CategorySyncOptions spyOptions = CategorySyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((errorMessage, exception) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(exception);
+            })
+            .build();
 
+        final CategoryService spyProductService = new CategoryServiceImpl(spyOptions);
+
+        // test
+        final Optional<Category> createdOptional = categoryService
+            .createCategory(categoryDraft)
+            .toCompletableFuture().join();
+
+
+        // assertion
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
-        assertThat(createdCategoryOptional).isNotEmpty();
-        final Category createdCategory = createdCategoryOptional.get();
 
 
         //assert CTP state
-        final Optional<Category> categoryOptional = CTP_TARGET_CLIENT
+        final Optional<Category> queriedOptional = CTP_TARGET_CLIENT
             .execute(CategoryQuery.of()
                                   .withPredicates(categoryQueryModel -> categoryQueryModel.key().is(newCategoryKey)))
             .toCompletableFuture().join().head();
 
-        assertThat(categoryOptional).isNotEmpty();
-        final Category fetchedCategory = categoryOptional.get();
-        assertThat(fetchedCategory.getName()).isEqualTo(createdCategory.getName());
-        assertThat(fetchedCategory.getSlug()).isEqualTo(createdCategory.getSlug());
-        assertThat(fetchedCategory.getCustom()).isNotNull();
-        assertThat(fetchedCategory.getKey()).isEqualTo(newCategoryKey);
+        assertThat(queriedOptional)
+            .hasValueSatisfying(queried -> assertThat(createdOptional)
+                .hasValueSatisfying(created -> {
+                    assertThat(queried.getName()).isEqualTo(created.getName());
+                    assertThat(queried.getSlug()).isEqualTo(created.getSlug());
+                    assertThat(queried.getCustom()).isNotNull();
+                    assertThat(queried.getKey()).isEqualTo(newCategoryKey);
+                }));
+
+        // Assert that the created category is cached
+        final Optional<String> productId =
+            spyProductService
+                .fetchCachedCategoryId(newCategoryKey)
+                .toCompletableFuture().join();
+        assertThat(productId).isPresent();
+        verify(spyClient, times(0)).execute(any(ProductTypeQuery.class));
     }
 
     @Test
-    public void createCategory_WithInvalidCategory_ShouldNotCreateCategory() {
-        final String newCategoryKey = "1";
+    public void createCategory_WithBlankKey_ShouldCreateCategory() {
+        // preparation
+        final String newCategoryKey = "";
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
@@ -408,14 +344,62 @@ public class CategoryServiceImplIT {
             .custom(getCustomFieldsDraft())
             .build();
 
+        // test
+        final Optional<Category> createdOptional = categoryService
+            .createCategory(categoryDraft)
+            .toCompletableFuture().join();
+
+        // assertion
+        assertThat(createdOptional).isEmpty();
+        assertThat(errorCallBackMessages)
+            .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
+    }
+
+    @Test
+    public void createCategory_WithDuplicateSlug_ShouldNotCreateCategory() {
+        // preparation
+        final String newCategoryKey = "newCat";
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "furniture"),
+                LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(newCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
+
+        // test
         final Optional<Category> createdCategoryOptional = categoryService.createCategory(categoryDraft)
                                                                           .toCompletableFuture().join();
+        // assertion
         assertThat(createdCategoryOptional).isEmpty();
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).contains("Invalid key '1'. Keys may only contain alphanumeric"
-            + " characters, underscores and hyphens and must have a minimum length of 2 characters and maximum length"
-            + " of 256 characters.");
+
+        assertThat(errorCallBackExceptions)
+            .hasSize(1)
+            .allSatisfy(exception -> {
+                assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponse = ((ErrorResponseException)exception);
+
+                final List<DuplicateFieldError> fieldErrors = errorResponse
+                    .getErrors()
+                    .stream()
+                    .map(sphereError -> {
+                        assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
+                        return sphereError.as(DuplicateFieldError.class);
+                    })
+                    .collect(toList());
+                assertThat(fieldErrors).hasSize(1);
+                assertThat(fieldErrors).allSatisfy(error -> {
+                    assertThat(error.getField()).isEqualTo("slug.en");
+                    assertThat(error.getDuplicateValue()).isEqualTo("furniture");
+                });
+            });
+
+        assertThat(errorCallBackMessages)
+            .hasSize(1)
+            .allSatisfy(errorMessage -> {
+                assertThat(errorMessage).contains("\"code\" : \"DuplicateField\"");
+                assertThat(errorMessage).contains("\"field\" : \"slug.en\"");
+                assertThat(errorMessage).contains("\"duplicateValue\" : \"furniture\"");
+            });
 
         //assert CTP state
         final Optional<Category> categoryOptional = CTP_TARGET_CLIENT
@@ -555,8 +539,7 @@ public class CategoryServiceImplIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(spyCategoryService.fetchCategory(oldCategoryKey))
-                .hasFailedWithThrowableThat()
-                .isExactlyInstanceOf(BadGatewayException.class);
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(BadGatewayException.class);
     }
-
 }
