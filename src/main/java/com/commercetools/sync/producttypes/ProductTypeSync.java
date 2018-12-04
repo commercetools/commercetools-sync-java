@@ -295,7 +295,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     private CompletionStage<Optional<ProductType>> fetchAndUpdate(
         @Nonnull final ProductType oldProductType,
         @Nonnull final ProductTypeDraft newProductType) {
-        
+
         final String key = oldProductType.getKey();
         return productTypeService
             .fetchProductType(key)
