@@ -46,7 +46,7 @@
     - **Commons** - Added a the earliest compatible version of the commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a prerequisite for using the library.
 
 - 🛠️ **Enhancements** (16)
-    - **ProductType Sync** - Added concurrnency modification exception handeling. [#325](https://github.com/commercetools/commercetools-sync-java/issues/325)
+    - **ProductType Sync** - Added concurrency modification exception handeling. [#325](https://github.com/commercetools/commercetools-sync-java/issues/325)
     - **Commons** - `ProductSyncUtils#buildActions`, `CategorySyncUtils#buildActions`, `InventorySyncUtils#buildActions` and `ProductTypeSyncUtils#buildActions` now don't apply the `beforeUpdateCallback` implicitly. 
         If you want you can apply it explicitly on the result. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
     - **Product Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
