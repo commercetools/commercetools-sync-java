@@ -29,7 +29,7 @@ fields set, otherwise they won't be matched.
 
 2. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
-4. After the `sphereClient` is set up, a `TypeSyncOptions` should be be built as follows:
+ 3. After the `sphereClient` is set up, a `TypeSyncOptions` should be be built as follows:
 ````java
 // instantiating a TypeSyncOptions
 final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(sphereClient).build();
