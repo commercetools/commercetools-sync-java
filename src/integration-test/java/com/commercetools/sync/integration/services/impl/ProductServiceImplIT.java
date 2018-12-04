@@ -276,7 +276,8 @@ public class ProductServiceImplIT {
 
     @Test
     public void fetchMatchingProductsByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-        // Mock sphere client to return BadeGatewayException on any request.
+        // preparation
+        // Mock sphere client to return BadGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(ProductQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
@@ -295,15 +296,13 @@ public class ProductServiceImplIT {
 
         final Set<String> keys =  new HashSet<>();
         keys.add(product.getKey());
-        final Set<Product> fetchedProducts = spyProductService.fetchMatchingProductsByKeys(keys)
-                                                                  .toCompletableFuture().join();
-        assertThat(fetchedProducts).hasSize(0);
-        assertThat(errorCallBackExceptions).isNotEmpty();
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0))
-            .isEqualToIgnoringCase(format("Failed to fetch products with keys: '%s'. Reason: %s",
-                keys.toString(), errorCallBackExceptions.get(0)));
+
+        // test and assert
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(spyProductService.fetchMatchingProductsByKeys(keys))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(BadGatewayException.class);
     }
 
     @Test
@@ -968,7 +967,8 @@ public class ProductServiceImplIT {
 
     @Test
     public void fetchProduct_WithBadGatewayException_ShouldFail() {
-        // Mock sphere client to return BadeGatewayException on any request.
+        // preparation
+        // Mock sphere client to return BadGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(ProductQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
@@ -986,16 +986,12 @@ public class ProductServiceImplIT {
 
 
         final String productKey = product.getKey();
-        final Optional<Product> fetchedProductOptional = spyProductService.fetchProduct(productKey)
-                                                                          .toCompletableFuture()
-                                                                          .join();
-        assertThat(fetchedProductOptional).isNotNull();
-        assertThat(fetchedProductOptional).isEmpty();
-        assertThat(errorCallBackExceptions).isNotEmpty();
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0))
-            .isEqualToIgnoringCase(format("Failed to fetch products with keys: '%s'. Reason: %s", productKey,
-                errorCallBackExceptions.get(0)));
+
+        // test and assertion
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(spyProductService.fetchProduct(productKey))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(BadGatewayException.class);
     }
 }

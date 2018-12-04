@@ -1,0 +1,62 @@
+site_name: commercetools-sync-java
+
+# Meta tags (placed in header)
+site_description: Java Library used to import and/or sync (taking care of changes) data into one or more commercetools projects from external sources such as CSV, XML, JSON, etc.. or even from an already existing commercetools project.
+site_author: commercetools
+site_url: https://commercetools.github.io/commercetools-sync-java
+
+# Repository (add link to repository on each page)
+repo_name: commercetools-sync-java
+repo_url: http://github.com/commercetools/commercetools-sync-java
+#edit_uri: edit/master/src/docs/docs/
+
+#Copyright (shown at the footer)
+copyright: 'Copyright &copy; 2018 commercetools'
+
+theme:
+  name: 'material'
+  palette:
+    primary: 'white'
+    accent: 'orange'
+  logo: 'images/ct.png'
+  favicon: 'images/ct.png'
+
+  social:
+    - type: 'github'
+      link: 'https://github.com/commercetools'
+
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+
+nav:
+  - Overview: README.md
+  - User guide:
+      - Quick Start: usage/QUICK_START.md
+      - Product Sync: usage/PRODUCT_SYNC.md
+      - ProductType Sync: usage/PRODUCT_TYPE_SYNC.md
+      - Category Sync: usage/CATEGORY_SYNC.md
+      - InventoryEntry Sync: usage/INVENTORY_SYNC.md
+      - Advanced:
+        - Sync Options: usage/SYNC_OPTIONS.md
+        - Usage Tips: usage/IMPORTANT_USAGE_TIPS.md
+  - Javadoc: https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/
+  - Release notes: RELEASE_NOTES.md
+  - Roadmap: https://github.com/commercetools/commercetools-sync-java/milestones
+  - Issues: https://github.com/commercetools/commercetools-sync-java/issues
+  - Benchmarks: https://commercetools.github.io/commercetools-sync-java/benchmarks/
+

@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class StateServiceImpl implements StateService {
+public final class StateServiceImpl implements StateService {
     private final ProductSyncOptions syncOptions;
     private final StateType stateType;
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();

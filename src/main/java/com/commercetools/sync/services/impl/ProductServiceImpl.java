@@ -32,9 +32,7 @@ import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 
-public class ProductServiceImpl extends BaseService<Product, ProductDraft> implements ProductService {
-    private static final String FETCH_FAILED = "Failed to fetch products with keys: '%s'. Reason: %s";
-
+public final class ProductServiceImpl extends BaseService<Product, ProductDraft> implements ProductService {
     public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
         super(syncOptions);
     }
@@ -97,24 +95,15 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
 
-        final Function<List<Product>, List<Product>> productPageCallBack = productsPage -> productsPage;
-        final QueryPredicate<Product> queryPredicate = buildProductKeysQueryPredicate(productKeys);
+        final ProductQuery productQuery = ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(productKeys));
 
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), ProductQuery.of().withPredicates(queryPredicate),
-            productPageCallBack)
-                            .handle((fetchedProducts, sphereException) -> {
-                                if (sphereException != null) {
-                                    syncOptions
-                                        .applyErrorCallback(format(FETCH_FAILED, productKeys, sphereException),
-                                            sphereException);
-                                    return Collections.emptySet();
-                                }
-                                return fetchedProducts.stream()
-                                                      .flatMap(List::stream)
-                                                      .peek(product ->
-                                                          keyToIdCache.put(product.getKey(), product.getId()))
-                                                      .collect(Collectors.toSet());
-                            });
+        return CtpQueryUtils
+                .queryAll(syncOptions.getCtpClient(), productQuery, Function.identity())
+                .thenApply(fetchedProducts -> fetchedProducts
+                        .stream()
+                        .flatMap(List::stream)
+                        .peek(product -> keyToIdCache.put(product.getKey(), product.getId()))
+                        .collect(Collectors.toSet()));
     }
 
     @Nonnull
@@ -123,20 +112,20 @@ public class ProductServiceImpl extends BaseService<Product, ProductDraft> imple
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
-        final QueryPredicate<Product> queryPredicate = buildProductKeysQueryPredicate(singleton(key));
-        return syncOptions.getCtpClient().execute(ProductQuery.of().withPredicates(queryPredicate))
-                          .thenApply(productPagedQueryResult -> //Cache after fetch
-                              productPagedQueryResult.head()
-                                                     .map(product -> {
-                                                         keyToIdCache.put(product.getKey(), product.getId());
-                                                         return product;
-                                                     })
-                          )
-                          .exceptionally(sphereException -> {
-                              syncOptions
-                                      .applyErrorCallback(format(FETCH_FAILED, key, sphereException), sphereException);
-                              return Optional.empty();
-                          });
+
+        final ProductQuery productQuery = ProductQuery
+                .of().withPredicates(buildProductKeysQueryPredicate(singleton(key)));
+
+        return syncOptions
+                .getCtpClient()
+                .execute(productQuery)
+                .thenApply(productPagedQueryResult ->
+                        productPagedQueryResult
+                                .head()
+                                .map(product -> {
+                                    keyToIdCache.put(product.getKey(), product.getId());
+                                    return product;
+                                }));
     }
 
     @Nonnull
