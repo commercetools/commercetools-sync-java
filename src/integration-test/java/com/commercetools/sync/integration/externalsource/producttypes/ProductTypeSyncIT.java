@@ -8,7 +8,6 @@ import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
-import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.TextInputHint;
 import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -250,11 +249,11 @@ public class ProductTypeSyncIT {
             .of(
                 StringAttributeType.of(),
                 "attr_name_1",
-                LocalizedString.ofEnglish("attr_label_updated"),
+                ofEnglish("attr_label_updated"),
                 true
             )
             .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip_updated"))
+            .inputTip(ofEnglish("inputTip_updated"))
             .inputHint(TextInputHint.MULTI_LINE)
             .isSearchable(true)
             .build();
