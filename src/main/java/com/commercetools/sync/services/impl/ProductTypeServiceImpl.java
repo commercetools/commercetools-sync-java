@@ -45,7 +45,7 @@ public final class ProductTypeServiceImpl
         if (keyToIdCache.containsKey(key)) {
             return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
         }
-        return fetchAndCache(keyToIdCache.get(key));
+        return fetchAndCache(key);
     }
 
     @Nonnull
