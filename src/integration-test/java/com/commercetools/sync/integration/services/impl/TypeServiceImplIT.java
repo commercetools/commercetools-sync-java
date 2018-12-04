@@ -165,11 +165,9 @@ public class TypeServiceImplIT {
         assertThat(errorCallBackMessages).isEmpty();
     }
 
-    // TODO: GITHUB ISSUE#331
-    @Ignore
     @Test
     public void fetchMatchingTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-        // Mock sphere client to return BadeGatewayException on any request.
+        // Mock sphere client to return BadGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(TypeQuery.class)))
                 .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
@@ -188,15 +186,12 @@ public class TypeServiceImplIT {
 
         final Set<String> keys = new HashSet<>();
         keys.add(OLD_TYPE_KEY);
-        final Set<Type> fetchedTypes = spyTypeService.fetchMatchingTypesByKeys(keys)
-                                                     .toCompletableFuture().join();
-        assertThat(fetchedTypes).hasSize(0);
-        assertThat(errorCallBackExceptions).isNotEmpty();
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0))
-                .isEqualToIgnoringCase(format("Failed to fetch types with keys: '%s'. Reason: %s",
-                        keys.toString(), errorCallBackExceptions.get(0)));
+        // test and assert
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(spyTypeService.fetchMatchingTypesByKeys(keys))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(BadGatewayException.class);
     }
 
     @Test

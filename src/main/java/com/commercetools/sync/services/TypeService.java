@@ -9,6 +9,7 @@ import io.sphere.sdk.types.TypeDraft;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
@@ -34,11 +35,13 @@ public interface TypeService {
     CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key);
 
     /**
-     * Queries existing {@link Type}'s against set of keys.
+     * Given a {@link Set} of Type keys, this method fetches a set of all the ProductTypes, matching this given
+     * set of keys in the CTP project, defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. A
+     * mapping of the key to the id of the fetched Type is persisted in an in-memory map.
      *
-     * @param keys {@link Set} of sku values, used in search predicate
-     * @return {@link CompletionStage} of matching types or empty set when there is no type with corresponding
-     * {@code keys}.
+     * @param keys set of Type keys to fetch matching Type by.
+     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a {@link Set}
+     *          of all matching Type.
      */
     @Nonnull
     CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys);

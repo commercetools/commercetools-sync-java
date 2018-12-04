@@ -6,13 +6,13 @@ import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.types.TypeSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.queries.PagedResult;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
 import io.sphere.sdk.types.commands.TypeUpdateCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
 import io.sphere.sdk.types.queries.TypeQueryBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
@@ -68,9 +69,10 @@ public final class TypeServiceImpl extends BaseService<Type, TypeDraft> implemen
             .plusPredicates(queryModel -> queryModel.key().isIn(keys))
             .build();
 
-        return QueryExecutionUtils.queryAll(syncOptions.getCtpClient(), typeQuery)
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), typeQuery, Function.identity())
                                   .thenApply(types -> types
                                       .stream()
+                                      .flatMap(List::stream)
                                       .peek(type -> keyToIdCache.put(type.getKey(), type.getId()))
                                       .collect(toSet()));
     }
