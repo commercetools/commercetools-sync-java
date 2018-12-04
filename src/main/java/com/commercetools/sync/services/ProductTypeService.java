@@ -113,7 +113,7 @@ public interface ProductTypeService {
      * in an injected {@link SphereClient}. If there is no matching productType an empty {@link Optional}
      * will be returned in the returned future.
      *
-     * @param key the key of the category to fetch.
+     * @param key the key of the product type to fetch.
      * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
      *         {@link Optional} that contains the matching {@link ProductType} if exists, otherwise empty.
      */
