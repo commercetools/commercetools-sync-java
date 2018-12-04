@@ -537,7 +537,6 @@ public class CategorySyncTest {
         final CategoryDraft categoryDraft =
             getMockCategoryDraft(Locale.ENGLISH, "name", "1", "parentKey", "customTypeId", new HashMap<>());
 
-
         final Category mockedExistingCategory =
             readObjectFromResource(CATEGORY_KEY_1_RESOURCE_PATH, Category.class);
 

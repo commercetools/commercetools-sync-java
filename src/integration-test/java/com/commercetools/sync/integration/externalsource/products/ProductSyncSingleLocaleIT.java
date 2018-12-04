@@ -94,11 +94,11 @@ public class ProductSyncSingleLocaleIT {
 
         final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
             actionsCallBack = (updateActions, newDraft, oldProduct) -> {
-            final List<UpdateAction<Product>> afterCallback =
-                syncFrenchDataOnly(updateActions, newDraft, oldProduct);
-            updateActionsFromSync.addAll(afterCallback);
-            return afterCallback;
-        };
+                final List<UpdateAction<Product>> afterCallback =
+                    syncFrenchDataOnly(updateActions, newDraft, oldProduct);
+                updateActionsFromSync.addAll(afterCallback);
+                return afterCallback;
+            };
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                         .errorCallback(errorCallBack)

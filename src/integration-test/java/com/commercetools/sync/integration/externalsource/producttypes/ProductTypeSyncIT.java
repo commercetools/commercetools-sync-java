@@ -11,7 +11,6 @@ import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
-import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.TextInputHint;
 import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -35,7 +34,6 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -170,7 +168,7 @@ public class ProductTypeSyncIT {
             PRODUCT_TYPE_KEY_1,
             PRODUCT_TYPE_NAME_1,
             PRODUCT_TYPE_DESCRIPTION_1,
-            Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_3)
+            asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_3)
         );
 
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
@@ -191,7 +189,7 @@ public class ProductTypeSyncIT {
 
         assertThat(oldProductTypeAfter).hasValueSatisfying(productType ->
             assertAttributesAreEqual(productType.getAttributes(),
-                Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2,
+                asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2,
                     ATTRIBUTE_DEFINITION_DRAFT_3)
             ));
     }
@@ -233,7 +231,7 @@ public class ProductTypeSyncIT {
             PRODUCT_TYPE_KEY_1,
             PRODUCT_TYPE_NAME_1,
             PRODUCT_TYPE_DESCRIPTION_1,
-            Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_1)
+            asList(ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_1)
         );
 
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
@@ -252,7 +250,7 @@ public class ProductTypeSyncIT {
 
         assertThat(oldProductTypeAfter).hasValueSatisfying(productType ->
             assertAttributesAreEqual(productType.getAttributes(),
-                Arrays.asList(
+                asList(
                     ATTRIBUTE_DEFINITION_DRAFT_2,
                     ATTRIBUTE_DEFINITION_DRAFT_1)
             ));
@@ -266,11 +264,11 @@ public class ProductTypeSyncIT {
             .of(
                 StringAttributeType.of(),
                 "attr_name_1",
-                LocalizedString.ofEnglish("attr_label_updated"),
+                ofEnglish("attr_label_updated"),
                 true
             )
             .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip_updated"))
+            .inputTip(ofEnglish("inputTip_updated"))
             .inputHint(TextInputHint.MULTI_LINE)
             .isSearchable(true)
             .build();
@@ -308,7 +306,7 @@ public class ProductTypeSyncIT {
             null,
             PRODUCT_TYPE_NAME_1,
             PRODUCT_TYPE_DESCRIPTION_1,
-            Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_1)
+            asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_1)
         );
 
         final List<String> errorMessages = new ArrayList<>();
@@ -421,14 +419,13 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to create product type of key 'key_2'.")
+                assertThat(message).contains("Failed to create draft with key: 'key_2'.")
             );
 
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-                assertThat(throwable.getCause()).isExactlyInstanceOf(ErrorResponseException.class);
+                assertThat(throwable).isExactlyInstanceOf(ErrorResponseException.class);
                 assertThat(throwable).hasMessageContaining("AttributeDefinitionTypeConflict");
             });
 
@@ -474,7 +471,7 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to update product type of key 'key_1'.")
+                assertThat(message).contains("Failed to update product type of key: 'key_1'.")
             );
 
         assertThat(exceptions)
@@ -521,7 +518,7 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to update product type of key 'key_1'.")
+                assertThat(message).contains("Failed to update product type of key: 'key_1'.")
             );
 
         assertThat(exceptions)
@@ -580,7 +577,7 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to update product type of key 'key_1'.")
+                assertThat(message).contains("Failed to update product type of key: 'key_1'.")
             );
 
         assertThat(exceptions)

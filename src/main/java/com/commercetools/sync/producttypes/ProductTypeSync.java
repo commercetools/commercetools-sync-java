@@ -180,6 +180,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param newProductTypes drafts that need to be synced.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
+    @Nonnull
     private CompletionStage<Void> syncBatch(
             @Nonnull final Set<ProductType> oldProductTypes,
             @Nonnull final Set<ProductTypeDraft> newProductTypes) {
@@ -207,6 +208,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param productTypeDraft the product type draft to create the product type from.
      * @return a {@link CompletionStage} which contains an empty result after execution of the create.
      */
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Optional<ProductType>> applyCallbackAndCreate(
         @Nonnull final ProductTypeDraft productTypeDraft) {
@@ -228,6 +230,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    @Nonnull
     private CompletionStage<Optional<ProductType>> buildActionsAndUpdate(
         @Nonnull final ProductType oldProductType,
         @Nonnull final ProductTypeDraft newProductType) {
@@ -258,9 +261,11 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param newProductType draft containing data that could differ from data in {@code oldProductType}.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update.
      */
-    private CompletionStage<Optional<ProductType>> updateProductType(@Nonnull final ProductType oldProductType,
-                                                                     @Nonnull final ProductTypeDraft newProductType,
-                                                                     @Nonnull final List<UpdateAction<ProductType>> updateActions) {
+    @Nonnull
+    private CompletionStage<Optional<ProductType>> updateProductType(
+        @Nonnull final ProductType oldProductType,
+        @Nonnull final ProductTypeDraft newProductType,
+        @Nonnull final List<UpdateAction<ProductType>> updateActions) {
 
         return productTypeService
             .updateProductType(oldProductType, updateActions)
@@ -286,8 +291,11 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             });
     }
 
-    private CompletionStage<Optional<ProductType>> fetchAndUpdate(@Nonnull final ProductType oldProductType,
-                                                                  @Nonnull final ProductTypeDraft newProductType) {
+    @Nonnull
+    private CompletionStage<Optional<ProductType>> fetchAndUpdate(
+        @Nonnull final ProductType oldProductType,
+        @Nonnull final ProductTypeDraft newProductType) {
+        
         final String key = oldProductType.getKey();
         return productTypeService
             .fetchProductType(key)

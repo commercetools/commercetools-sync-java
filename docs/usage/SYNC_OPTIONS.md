@@ -57,7 +57,7 @@ If it fails to create the supply channel, the inventory entry/product won't sync
                                                                         .build();
 ````
  
-#### 2. [Using `beforeUpdateCallback` for syncing a single locale](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/KeepOtherVariantsSync.java).
+#### 2. [Using `beforeUpdateCallback` for syncing a single locale](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncSingleLocaleIT.java).
 
 #### 3. [Using `beforeUpdateCallback` for keeping other variants](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/SyncSingleLocale.java).
 
