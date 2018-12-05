@@ -27,7 +27,7 @@ against a [ProductTypeDraft](https://docs.commercetools.com/http-api-projects-pr
 #### Prerequisites
 
 1. The sync expects a list of `ProductTypeDraft`s that have their `key` fields set to be matched with
-product types  in the target CTP project. Also, the product types in the target project are expected to have the `key`
+product types in the target CTP project. Also, the product types in the target project are expected to have the `key`
 fields set, otherwise they won't be matched.
 
 2. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
