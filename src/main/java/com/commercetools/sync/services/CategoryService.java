@@ -16,7 +16,7 @@ import java.util.concurrent.CompletionStage;
 public interface CategoryService {
 
     /**
-     * If not already done once before, it fetches all the category keys from the CTP project defined in a potentially
+     * If not already done once before, it fetches all the category keys from the CTP project defined in an
      * injected {@link io.sphere.sdk.client.SphereClient} and stores a mapping for every category to id in {@link Map}
      * and returns this cached map.
      *
@@ -28,7 +28,7 @@ public interface CategoryService {
 
     /**
      * Given a {@link Set} of category keys, this method fetches a set of all the categories, matching this given set of
-     * keys in the CTP project, defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. A mapping
+     * keys in the CTP project, defined in an injected {@link io.sphere.sdk.client.SphereClient}. A mapping
      * of the key to the id of the fetched categories is persisted in an in-memory map.
      *
      * @param categoryKeys set of category keys to fetch matching categories by.
@@ -52,17 +52,6 @@ public interface CategoryService {
     CompletionStage<Optional<Category>> fetchCategory(@Nullable final String key);
 
     /**
-     * Given a {@link Set} of categoryDrafts, this method creates Categories corresponding to them in the CTP project
-     * defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}.
-     *
-     * @param categoryDrafts set of categoryDrafts to create on the CTP project.
-     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a {@link Set}
-     *          of all created categories.
-     */
-    @Nonnull
-    CompletionStage<Set<Category>> createCategories(@Nonnull final Set<CategoryDraft> categoryDrafts);
-
-    /**
      * Given a {@code key}, this method first checks if cached map of category keys -&gt; ids is not empty.
      * If not, it returns a completed future that contains an optional that contains what this key maps to in
      * the cache. If the cache is empty, the method populates the cache with the mapping of all categories' keys
@@ -80,15 +69,22 @@ public interface CategoryService {
     CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String key);
 
     /**
-     * Given a {@link CategoryDraft}, this method creates a {@link Category} based on it in the CTP project defined in
-     * a potentially injected {@link io.sphere.sdk.client.SphereClient}. The created category's id and key are also
-     * cached. This method returns {@link CompletionStage}&lt;{@link Category}&gt; in which the result of it's
-     * completion contains an instance of the {@link Category} which was created in the CTP project.
+     * Given a resource draft of type {@link CategoryDraft}, this method attempts to create a resource
+     * {@link Category} based on it in the CTP project defined by the sync options.
      *
-     * @param categoryDraft the {@link CategoryDraft} to create a {@link Category} based off of.
-     * @return {@link CompletionStage}&lt;{@link Category}&gt; containing as a result of it's completion an instance of
-     *         the {@link Category} which was created in the CTP project or a
-     *         {@link io.sphere.sdk.models.SphereException}.
+     * <p>A completion stage containing an empty option and the error callback will be triggered in those cases:
+     * <ul>
+     *     <li>the draft has a blank key</li>
+     *     <li>the create request fails on CTP</li>
+     * </ul>
+     *
+     * <p>On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
+     * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
+     * contains an instance {@link Optional} of the resource which was created.
+     *
+     * @param categoryDraft the resource draft to create a resource based off of.
+     * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
+     *         empty optional.
      */
     @Nonnull
     CompletionStage<Optional<Category>> createCategory(@Nonnull final CategoryDraft categoryDraft);

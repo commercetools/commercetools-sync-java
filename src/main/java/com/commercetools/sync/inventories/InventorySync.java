@@ -4,7 +4,6 @@ import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.inventories.helpers.InventoryReferenceResolver;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
-import com.commercetools.sync.inventories.utils.InventorySyncUtils;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.InventoryService;
 import com.commercetools.sync.services.TypeService;
@@ -32,6 +31,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.commercetools.sync.inventories.utils.InventorySyncUtils.buildActions;
 import static java.lang.Math.min;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.allOf;
@@ -98,13 +98,11 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         final List<InventoryEntryDraft> validInventories = inventories.stream()
             .filter(this::validateDraft)
             .collect(toList());
-        final List<CompletableFuture<InventorySyncStatistics>> completableFutures = IntStream
+        return allOf(IntStream
             .range(0, calculateNumberOfBatches(validInventories.size()))
             .mapToObj(batchIndex -> getBatch(batchIndex, validInventories))
             .map(this::processBatch)
-            .map(CompletionStage::toCompletableFuture)
-            .collect(toList());
-        return allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()]))
+            .map(CompletionStage::toCompletableFuture).toArray(CompletableFuture[]::new))
             .thenApply(v -> {
                 statistics.incrementProcessed(inventories.size());
                 return statistics;
@@ -270,10 +268,14 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Void> buildUpdateActionsAndUpdate(@Nonnull final InventoryEntry entry,
                                                               @Nonnull final InventoryEntryDraft draft) {
-        final List<UpdateAction<InventoryEntry>> updateActions =
-            InventorySyncUtils.buildActions(entry, draft, syncOptions);
-        if (!updateActions.isEmpty()) {
-            return inventoryService.updateInventoryEntry(entry, updateActions)
+
+        final List<UpdateAction<InventoryEntry>> updateActions = buildActions(entry, draft, syncOptions);
+        final List<UpdateAction<InventoryEntry>> beforeUpdateCallBackApplied =
+            syncOptions.applyBeforeUpdateCallBack(updateActions, draft, entry);
+
+
+        if (!beforeUpdateCallBackApplied.isEmpty()) {
+            return inventoryService.updateInventoryEntry(entry, beforeUpdateCallBackApplied)
                 .thenAccept(updatedInventory -> statistics.incrementUpdated())
                 .exceptionally(exception -> {
                     final Reference<Channel> supplyChannel = draft.getSupplyChannel();

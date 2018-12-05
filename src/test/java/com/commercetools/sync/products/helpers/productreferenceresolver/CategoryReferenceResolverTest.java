@@ -61,13 +61,13 @@ public class CategoryReferenceResolverTest {
                                                    .mapToObj(i -> i + "")
                                                    .map(key -> getMockCategory(key, key))
                                                    .collect(Collectors.toList());
-        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), emptySet());
+        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), null);
         final List<Reference<Category>> categoryReferences = categories.stream()
                                                                        .map(Category::toReference)
                                                                        .collect(Collectors.toList());
         final Map<String, String> categoryOrderHintValues = categories.stream()
-                                                                       .collect(Collectors.toMap(Category::getKey,
-                                                                           Category::getId));
+                                                                      .collect(Collectors.toMap(Category::getKey,
+                                                                          Category::getId));
         final CategoryOrderHints categoryOrderHints = CategoryOrderHints.of(categoryOrderHintValues);
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .categories(categoryReferences).categoryOrderHints(categoryOrderHints);
@@ -99,7 +99,7 @@ public class CategoryReferenceResolverTest {
                                                    .mapToObj(i -> i + "")
                                                    .map(key -> getMockCategory(key, key))
                                                    .collect(Collectors.toList());
-        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), emptySet());
+        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), null);
         final List<Reference<Category>> categoryReferences = categories.stream()
                                                                        .map(Category::toReference)
                                                                        .collect(Collectors.toList());
@@ -133,7 +133,7 @@ public class CategoryReferenceResolverTest {
                                                    .mapToObj(i -> i + "")
                                                    .map(key -> getMockCategory(key, key))
                                                    .collect(Collectors.toList());
-        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), emptySet());
+        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), null);
         final List<Reference<Category>> categoryReferences = categories.stream()
                                                                        .map(Category::toReference)
                                                                        .collect(Collectors.toList());
@@ -167,7 +167,7 @@ public class CategoryReferenceResolverTest {
         // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
-        final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
+        final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid();
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
@@ -189,7 +189,7 @@ public class CategoryReferenceResolverTest {
         // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
-        final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
+        final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .categories(singleton(Category.referenceOfId("non-existent-category")));
 
@@ -214,7 +214,7 @@ public class CategoryReferenceResolverTest {
         // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
-        final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
+        final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .categories(singleton(Category.referenceOfId(null)));
 
@@ -239,7 +239,7 @@ public class CategoryReferenceResolverTest {
         // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
-        final CategoryService mockCategoryService = mockCategoryService(emptySet(), emptySet());
+        final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .categories(singleton(Category.referenceOfId("")));
 
@@ -267,7 +267,7 @@ public class CategoryReferenceResolverTest {
         final List<Reference<Category>> references = categories.stream().map(Category::toReference)
                                                                .collect(Collectors.toList());
 
-        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), emptySet());
+        final CategoryService mockCategoryService = mockCategoryService(new HashSet<>(categories), null);
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid().categories(references);
 
         final CompletableFuture<Set<Category>> futureThrowingSphereException = new CompletableFuture<>();
@@ -287,7 +287,4 @@ public class CategoryReferenceResolverTest {
             .isExactlyInstanceOf(SphereException.class)
             .hasMessageContaining("CTP error on fetch");
     }
-
-
-
 }

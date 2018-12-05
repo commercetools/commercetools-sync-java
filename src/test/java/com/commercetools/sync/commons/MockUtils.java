@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -72,7 +73,7 @@ public class MockUtils {
     }
 
     public static CategoryService mockCategoryService(@Nonnull final Set<Category> existingCategories,
-                                                      @Nonnull final Set<Category> createdCategories) {
+                                                      @Nullable final Category createdCategory) {
         final CategoryService mockCategoryService = mock(CategoryService.class);
         when(mockCategoryService.fetchMatchingCategoriesByKeys(any()))
             .thenReturn(CompletableFuture.completedFuture(existingCategories));
@@ -80,15 +81,15 @@ public class MockUtils {
         final Map<String, String> keyToIds =
             existingCategories.stream().collect(Collectors.toMap(Category::getKey, Category::getId));
         when(mockCategoryService.cacheKeysToIds()).thenReturn(completedFuture(keyToIds));
-
-        when(mockCategoryService.createCategories(any())).thenReturn(completedFuture(createdCategories));
+        when(mockCategoryService.createCategory(any()))
+            .thenReturn(CompletableFuture.completedFuture(ofNullable(createdCategory)));
         return mockCategoryService;
     }
 
     public static CategoryService mockCategoryService(@Nonnull final Set<Category> existingCategories,
-                                                      @Nonnull final Set<Category> createdCategories,
+                                                      @Nullable final Category createdCategory,
                                                       @Nonnull final Category updatedCategory) {
-        final CategoryService mockCategoryService = mockCategoryService(existingCategories, createdCategories);
+        final CategoryService mockCategoryService = mockCategoryService(existingCategories, createdCategory);
         when(mockCategoryService.updateCategory(any(), any())).thenReturn(completedFuture(updatedCategory));
         return mockCategoryService;
     }

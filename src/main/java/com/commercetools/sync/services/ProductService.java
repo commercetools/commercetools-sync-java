@@ -34,7 +34,7 @@ public interface ProductService {
 
     /**
      * Filters out the keys which are already cached and fetches only the not-cached product keys from the CTP project
-     * defined in a potentially injected {@link SphereClient} and stores a mapping for every product to id in
+     * defined in an injected {@link SphereClient} and stores a mapping for every product to id in
      * the cached map of keys -&gt; ids and returns this cached map.
      *
      * <p>Note: If all the supplied keys are already cached, the cached map is returned right away with no request to
@@ -50,7 +50,7 @@ public interface ProductService {
 
     /**
      * Given a {@link Set} of product keys, this method fetches a set of all the products, matching this given set of
-     * keys in the CTP project, defined in a potentially injected {@link SphereClient}. A mapping of the key to the id
+     * keys in the CTP project, defined in an injected {@link SphereClient}. A mapping of the key to the id
      * of the fetched products is persisted in an in-memory map.
      *
      * @param productKeys set of product keys to fetch matching products by.
@@ -75,26 +75,22 @@ public interface ProductService {
     CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key);
 
     /**
-     * Given a {@link Set} of productsDrafts, this method creates Products corresponding to them in the CTP project
-     * defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}.
+     * Given a resource draft of type {@link ProductDraft}, this method attempts to create a resource
+     * {@link Product} based on it in the CTP project defined by the sync options.
      *
-     * @param productsDrafts set of productsDrafts to create on the CTP project.
-     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a {@link Set}
-     *          of all created products.
-     */
-    @Nonnull
-    CompletionStage<Set<Product>> createProducts(@Nonnull final Set<ProductDraft> productsDrafts);
-
-    /**
-     * Given a {@link ProductDraft}, this method creates a {@link Product} based on it in the CTP project defined in
-     * a potentially injected {@link io.sphere.sdk.client.SphereClient}. The created product's id and key are also
-     * cached. This method returns {@link CompletionStage}&lt;{@link Product}&gt; in which the result of it's
-     * completion contains an instance of the {@link Product} which was created in the CTP project.
+     * <p>A completion stage containing an empty option and the error callback will be triggered in those cases:
+     * <ul>
+     *     <li>the draft has a blank key</li>
+     *     <li>the create request fails on CTP</li>
+     * </ul>
      *
-     * @param productDraft the {@link ProductDraft} to create a {@link Product} based off of.
-     * @return {@link CompletionStage}&lt;{@link Product}&gt; containing as a result of it's completion an instance of
-     *          the {@link Product} which was created in the CTP project or a
-     *          {@link io.sphere.sdk.models.SphereException}.
+     * <p>On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
+     * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
+     * contains an instance {@link Optional} of the resource which was created.
+     *
+     * @param productDraft the resource draft to create a resource based off of.
+     * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
+     *         empty optional.
      */
     @Nonnull
     CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft);
@@ -115,32 +111,4 @@ public interface ProductService {
     @Nonnull
     CompletionStage<Product> updateProduct(@Nonnull final Product product,
                                            @Nonnull final List<UpdateAction<Product>> updateActions);
-
-    /**
-     * Given a {@link Product}, this method issues an update request to publish this {@link Product} in the CTP project
-     * defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. This method returns
-     * {@link CompletionStage}&lt;{@link Product}&gt; in which the result of it's completion contains an instance of
-     * the {@link Product} which was published in the CTP project.
-     *
-     * @param product the {@link Product} to publish.
-     * @return {@link CompletionStage}&lt;{@link Product}&gt; containing as a result of it's completion an instance of
-     *          the {@link Product} which was published in the CTP project or a
-     *          {@link io.sphere.sdk.models.SphereException}.
-     */
-    @Nonnull
-    CompletionStage<Product> publishProduct(@Nonnull final Product product);
-
-    /**
-     * Given a {@link Product}, this method issues an update request to revert the staged changes of this
-     * {@link Product} in the CTP project defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}.
-     * This method returns {@link CompletionStage}&lt;{@link Product}&gt; in which the result of it's completion
-     * contains an instance of the {@link Product} which had its staged changes reverted in the CTP project.
-     *
-     * @param product the {@link Product} to revert the staged changes for.
-     * @return {@link CompletionStage}&lt;{@link Product}&gt; containing as a result of it's completion an instance of
-     *          the {@link Product} which was published in the CTP project or a
-     *          {@link io.sphere.sdk.models.SphereException}.
-     */
-    @Nonnull
-    CompletionStage<Product> revertProduct(@Nonnull final Product product);
 }

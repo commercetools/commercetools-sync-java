@@ -14,6 +14,7 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQueryBuilder;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,28 +29,30 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public final class ProductTypeServiceImpl implements ProductTypeService {
-    private final BaseSyncOptions syncOptions;
-    private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
-    private boolean isCached = false;
+public final class ProductTypeServiceImpl
+    extends BaseService<ProductTypeDraft, ProductType, BaseSyncOptions> implements ProductTypeService {
+
     private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData = new ConcurrentHashMap<>();
 
     public ProductTypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
-        this.syncOptions = syncOptions;
+        super(syncOptions);
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedProductTypeId(@Nonnull final String key) {
-        if (!isCached) {
-            return fetchAndCache(key);
+
+        if (keyToIdCache.containsKey(key)) {
+            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
         }
-        return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
+        return fetchAndCache(key);
     }
 
     @Nonnull
     private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
+
         final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
                 productTypePage.forEach(type -> {
                     final String fetchedTypeKey = type.getKey();
@@ -65,7 +68,6 @@ public final class ProductTypeServiceImpl implements ProductTypeService {
 
         return CtpQueryUtils
             .queryAll(syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
-            .thenAccept(result -> isCached = true)
             .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 
@@ -83,6 +85,7 @@ public final class ProductTypeServiceImpl implements ProductTypeService {
     @Override
     public CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchCachedProductAttributeMetaDataMap(
             @Nonnull final String productTypeId) {
+
         if (productsAttributesMetaData.isEmpty()) {
             return fetchAndCacheProductMetaData(productTypeId);
         }
@@ -92,8 +95,24 @@ public final class ProductTypeServiceImpl implements ProductTypeService {
     }
 
     @Nonnull
+    private CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
+        @Nonnull final String productTypeId) {
+
+        final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
+            productTypePage.forEach(type -> {
+                final String id = type.getId();
+                productsAttributesMetaData.put(id, getAttributeMetaDataMap(type));
+            });
+
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
+                            .thenApply(result ->
+                                Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
+    }
+
+    @Nonnull
     @Override
     public CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull final Set<String> keys) {
+
         if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
@@ -114,8 +133,8 @@ public final class ProductTypeServiceImpl implements ProductTypeService {
 
     @Nonnull
     @Override
-    public CompletionStage<ProductType> createProductType(@Nonnull final ProductTypeDraft productTypeDraft) {
-        return syncOptions.getCtpClient().execute(ProductTypeCreateCommand.of(productTypeDraft));
+    public CompletionStage<Optional<ProductType>> createProductType(@Nonnull final ProductTypeDraft productTypeDraft) {
+        return createResource(productTypeDraft, ProductTypeDraft::getKey, ProductTypeCreateCommand::of);
     }
 
     @Nonnull
@@ -123,20 +142,29 @@ public final class ProductTypeServiceImpl implements ProductTypeService {
     public CompletionStage<ProductType> updateProductType(
             @Nonnull final ProductType productType, @Nonnull final List<UpdateAction<ProductType>> updateActions) {
 
-        return syncOptions.getCtpClient().execute(ProductTypeUpdateCommand.of(productType, updateActions));
+        return updateResource(productType, ProductTypeUpdateCommand::of, updateActions);
     }
 
-    private CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
-        @Nonnull final String productTypeId) {
+    @Nonnull
+    @Override
+    public CompletionStage<Optional<ProductType>> fetchProductType(@Nullable final String key) {
 
-        final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
-                productTypePage.forEach(type -> {
-                    final String id = type.getId();
-                    productsAttributesMetaData.put(id, getAttributeMetaDataMap(type));
-                });
+        if (isBlank(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
 
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
-                .thenApply(result ->
-                        Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
+        final ProductTypeQuery productTypeQuery =
+            ProductTypeQuery.of().plusPredicates(queryModel -> queryModel.key().is(key));
+
+        return syncOptions
+            .getCtpClient()
+            .execute(productTypeQuery)
+            .thenApply(productTypePagedQueryResult ->
+                productTypePagedQueryResult
+                    .head()
+                    .map(productType -> {
+                        keyToIdCache.put(productType.getKey(), productType.getId());
+                        return productType;
+                    }));
     }
 }

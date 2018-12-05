@@ -15,6 +15,11 @@ import java.util.function.Function;
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static java.util.Optional.ofNullable;
 
+/**
+ * @param <V> Resource Draft (e.g. {@link io.sphere.sdk.products.ProductDraft},
+ *             {@link io.sphere.sdk.categories.CategoryDraft}, etc..
+ * @param <U> Resource (e.g. {@link io.sphere.sdk.products.Product}, {@link io.sphere.sdk.categories.Category}, etc..
+ */
 public class BaseSyncOptions<U, V> {
     private final SphereClient ctpClient;
     private final BiConsumer<String, Throwable> errorCallBack;

@@ -33,12 +33,14 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
+
     private static final String CATEGORY_DRAFT_KEY_NOT_SET = "CategoryDraft with name: %s doesn't have a key.";
     private static final String CATEGORY_DRAFT_IS_NULL = "CategoryDraft is null.";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
@@ -195,12 +197,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 });
     }
 
-    private CompletionStage<Void> createAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
-        return categoryService
-                .createCategories(newCategoryDrafts)
-                .thenAccept(this::processCreatedCategories)
-                .thenCompose(ignoredResult -> fetchAndUpdate(keyToIdCache));
-    }
 
     private CompletionStage<Void> fetchAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
         return categoryService
@@ -316,6 +312,28 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 handleError(CATEGORY_DRAFT_IS_NULL, null);
             }
         }
+    }
+
+    @Nonnull
+    private CompletionStage<Void> createAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
+        return createCategories(newCategoryDrafts)
+            .thenAccept(this::processCreatedCategories)
+            .thenCompose(ignoredResult -> fetchAndUpdate(keyToIdCache));
+    }
+
+    @Nonnull
+    private CompletionStage<Set<Category>> createCategories(@Nonnull final Set<CategoryDraft> categoryDrafts) {
+        return mapValuesToFutureOfCompletedValues(categoryDrafts, this::applyCallbackAndCreate)
+            .thenApply(results -> results.filter(Optional::isPresent).map(Optional::get))
+            .thenApply(createdCategories -> createdCategories.collect(Collectors.toSet()));
+    }
+
+    @Nonnull
+    private CompletionStage<Optional<Category>> applyCallbackAndCreate(@Nonnull final CategoryDraft categoryDraft) {
+        return syncOptions
+            .applyBeforeCreateCallBack(categoryDraft)
+            .map(categoryService::createCategory)
+            .orElse(CompletableFuture.completedFuture(Optional.empty()));
     }
 
     /**
@@ -537,6 +555,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     private CompletionStage<Void> updateCategoriesInParallel(
         @Nonnull final Map<CategoryDraft, Category> matchingCategories) {
+
         final List<CompletableFuture<Void>> futures =
             matchingCategories.entrySet().stream()
                               .filter(entry -> !requiresChangeParentUpdateAction(entry.getValue(), entry.getKey()))
@@ -549,7 +568,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     /**
      * Given an existing {@link Category} and a new {@link CategoryDraft}, first resolves all references on the category
      * draft, then it calculates all the update actions required to synchronize the existing category to be the same as
-     * the new one. If there are update actions found, a request is made to CTP to update the existing category,
+     * the new one. Then the method applies the {@code ProductSyncOptions#beforeUpdateCallback} on the resultant list
+     * of actions.
+     *
+     * <p>If there are update actions in the resulting list, a request is made to CTP to update the existing category,
      * otherwise it doesn't issue a request.
      *
      * @param oldCategory the category which could be updated.
@@ -561,9 +583,13 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                                               @Nonnull final CategoryDraft newCategory) {
 
         final List<UpdateAction<Category>> updateActions = buildActions(oldCategory, newCategory, syncOptions);
-        if (!updateActions.isEmpty()) {
-            return updateCategory(oldCategory, newCategory, updateActions);
+        final List<UpdateAction<Category>> beforeUpdateCallBackApplied =
+            syncOptions.applyBeforeUpdateCallBack(updateActions, newCategory, oldCategory);
+
+        if (!beforeUpdateCallBackApplied.isEmpty()) {
+            return updateCategory(oldCategory, newCategory, beforeUpdateCallBackApplied);
         }
+
         return CompletableFuture.completedFuture(null);
     }
 

@@ -1,6 +1,5 @@
 package com.commercetools.sync.products.utils;
 
-import com.commercetools.sync.commons.utils.TriFunction;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import io.sphere.sdk.categories.Category;
@@ -46,7 +45,6 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH;
@@ -218,47 +216,6 @@ public class ProductSyncUtilsTest {
             AddPrice.ofVariantId(1,
                 PriceDraft.of(MoneyImpl.ofCents(118, EUR))
                           .withChannel(Channel.referenceOfId("channel-key_1")), true)
-        );
-    }
-
-    @Test
-    public void buildActions_FromDraftsWithMultipleDifferentValuesWithFilterFunction_ShouldBuildFilteredActions() {
-        final ProductDraft newProductDraft =
-            createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH,
-                ProductType.referenceOfId("anyProductType"))
-                .build();
-
-        final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
-            filterCategoryActions = (unfilteredList, newDraft, oldProduct) ->
-            unfilteredList != null ? unfilteredList.stream()
-                                                   .filter(productUpdateAction ->
-                                                       productUpdateAction instanceof RemoveFromCategory
-                                                           || productUpdateAction instanceof AddToCategory
-                                                           || productUpdateAction instanceof SetCategoryOrderHint)
-                                                   .collect(Collectors.toList()) : null;
-
-        productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                      .beforeUpdateCallback(filterCategoryActions)
-                                                      .build();
-
-        final List<UpdateAction<Product>> updateActions =
-            ProductSyncUtils.buildActions(oldProduct, newProductDraft, productSyncOptions, new HashMap<>());
-        assertThat(updateActions).isNotNull();
-
-        final Category categoryToAdd = mock(Category.class);
-        when(categoryToAdd.getId()).thenReturn("5dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f");
-        when(categoryToAdd.toReference()).thenReturn(Category.referenceOfId("5dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"));
-
-        final Category categoryToRemove = mock(Category.class);
-        when(categoryToRemove.getId()).thenReturn("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f");
-        when(categoryToRemove.toReference()).thenReturn(Category.referenceOfId("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"));
-
-        assertThat(updateActions).containsExactly(
-            AddToCategory.of(categoryToAdd, true),
-            SetCategoryOrderHint.of("3dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", null, true),
-            SetCategoryOrderHint.of("4dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "0.83", true),
-            SetCategoryOrderHint.of("5dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "0.93", true),
-            RemoveFromCategory.of(categoryToRemove, true)
         );
     }
 

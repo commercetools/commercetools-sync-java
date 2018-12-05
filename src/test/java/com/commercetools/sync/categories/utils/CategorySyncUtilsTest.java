@@ -3,7 +3,6 @@ package com.commercetools.sync.categories.utils;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
-import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -27,7 +26,6 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -135,49 +133,5 @@ public class CategorySyncUtilsTest {
             SetMetaKeywords.of(LocalizedString.of(LOCALE, "differentMetaKeywords")),
             AddAsset.of(ASSET_DRAFTS.get(0), 0),
             AddAsset.of(ASSET_DRAFTS.get(1), 1));
-    }
-
-    @Test
-    public void buildActions_FromDraftsWithMultipleDifferentValuesWithFilterFunction_ShouldBuildFilteredActions() {
-        final CategoryDraft newCategoryDraft = CategoryDraftBuilder
-            .of(LocalizedString.of(LOCALE, "differentName"), LocalizedString.of(LOCALE, "differentSlug"))
-            .key(CATEGORY_KEY)
-            .externalId("differentExternalId")
-            .description(LocalizedString.of(LOCALE, "differentDescription"))
-            .metaDescription(LocalizedString.of(LOCALE, "differentMetaDescription"))
-            .metaTitle(LocalizedString.of(LOCALE, "differentMetaTitle"))
-            .metaKeywords(LocalizedString.of(LOCALE, "differentMetaKeywords"))
-            .orderHint("differentOrderHint")
-            .parent(Category.referenceOfId("differentParentId").toResourceIdentifier())
-            .assets(ASSET_DRAFTS)
-            .build();
-
-        final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category, List<UpdateAction<Category>>>
-            reverseOrderFilter = (updateActions, newCategory, oldCategory) -> {
-                if (updateActions != null) {
-                    Collections.reverse(updateActions);
-                }
-                return updateActions;
-            };
-
-        categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                        .beforeUpdateCallback(reverseOrderFilter)
-                                                        .build();
-
-        final List<UpdateAction<Category>> updateActions =
-            CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions);
-        assertThat(updateActions).isNotNull();
-        assertThat(updateActions).containsExactly(
-            AddAsset.of(ASSET_DRAFTS.get(1), 1),
-            AddAsset.of(ASSET_DRAFTS.get(0), 0),
-            SetMetaKeywords.of(LocalizedString.of(LOCALE, "differentMetaKeywords")),
-            SetMetaDescription.of(LocalizedString.of(LOCALE, "differentMetaDescription")),
-            SetMetaTitle.of(LocalizedString.of(LOCALE, "differentMetaTitle")),
-            ChangeOrderHint.of("differentOrderHint"),
-            ChangeParent.of(ResourceIdentifier.ofId("differentParentId")),
-            SetDescription.of(LocalizedString.of(LOCALE, "differentDescription")),
-            SetExternalId.of("differentExternalId"),
-            ChangeSlug.of(LocalizedString.of(LOCALE, "differentSlug")),
-            ChangeName.of(LocalizedString.of(LOCALE, "differentName")));
     }
 }
