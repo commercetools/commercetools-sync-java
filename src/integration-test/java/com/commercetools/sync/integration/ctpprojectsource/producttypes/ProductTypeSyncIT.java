@@ -108,7 +108,7 @@ public class ProductTypeSyncIT {
                 return ProductTypeDraftBuilder
                     .of(
                         productType.getKey(),
-                        productType.getName() + "_updated", // name updated
+                        "newName",
                         productType.getDescription(),
                         attributeDefinitionDrafts)
                     .build();
