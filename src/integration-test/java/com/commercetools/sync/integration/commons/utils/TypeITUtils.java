@@ -34,7 +34,6 @@ public final class TypeITUtils {
     private static final String FIELD_DEFINITION_NAME_2 = "field_name_2";
     private static final String FIELD_DEFINITION_NAME_3 = "field_name_3";
 
-
     public static final LocalizedString FIELD_DEFINITION_LABEL_1 = LocalizedString.ofEnglish("label_1");
     private static final LocalizedString FIELD_DEFINITION_LABEL_2 = LocalizedString.ofEnglish("label_2");
     private static final LocalizedString FIELD_DEFINITION_LABEL_3 = LocalizedString.ofEnglish("label_3");
@@ -48,22 +47,18 @@ public final class TypeITUtils {
             FIELD_DEFINITION_LABEL_1,
             true,
             TextInputHint.SINGLE_LINE);
-
     public static final FieldDefinition FIELD_DEFINITION_2 = FieldDefinition.of(
             StringFieldType.of(),
             FIELD_DEFINITION_NAME_2,
             FIELD_DEFINITION_LABEL_2,
             true,
             TextInputHint.SINGLE_LINE);
-
     public static final FieldDefinition FIELD_DEFINITION_3 = FieldDefinition.of(
             StringFieldType.of(),
             FIELD_DEFINITION_NAME_3,
             FIELD_DEFINITION_LABEL_3,
             true,
             TextInputHint.SINGLE_LINE);
-
-
 
     private static final TypeDraft typeDraft1 = TypeDraftBuilder
         .of(TYPE_KEY_1,
@@ -72,7 +67,6 @@ public final class TypeITUtils {
         .description(TYPE_DESCRIPTION_1)
         .fieldDefinitions(Arrays.asList(FIELD_DEFINITION_1, FIELD_DEFINITION_2))
         .build();
-
     private static final TypeDraft typeDraft2 = TypeDraftBuilder
         .of(TYPE_KEY_2,
             TYPE_NAME_2,
