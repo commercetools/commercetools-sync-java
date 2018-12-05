@@ -44,8 +44,8 @@ public interface TypeService {
     CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys);
 
     /**
-     * Given a type key, this method fetches a type that matches this given key in the CTP project defined in a
-     * potentially injected {@link SphereClient}. If there is no matching type an empty {@link Optional} will be
+     * Given a type key, this method fetches a type that matches this given key in the CTP project defined in an
+     * injected {@link SphereClient}. If there is no matching type an empty {@link Optional} will be
      * returned in the returned future.
      *
      * @param key the key of the type to fetch.
@@ -56,8 +56,8 @@ public interface TypeService {
     CompletionStage<Optional<Type>> fetchType(@Nullable final String key);
 
     /**
-     * Given a {@link TypeDraft}, this method creates a {@link Type} based on it in the CTP project defined in
-     * a potentially injected {@link io.sphere.sdk.client.SphereClient}. The created type's id and key are also
+     * Given a {@link TypeDraft}, this method creates a {@link Type} based on it in the CTP project defined in an
+     * injected {@link io.sphere.sdk.client.SphereClient}. The created type's id and key are also
      * cached. This method returns {@link CompletionStage}&lt;{@link Type}&gt; in which the result of it's
      * completion contains an instance of the {@link Type} which was created in the CTP project.
      *
@@ -70,8 +70,8 @@ public interface TypeService {
 
     /**
      * Given a {@link Type} and a {@link List}&lt;{@link UpdateAction}&lt;{@link Type}&gt;&gt;, this method
-     * issues an update request with these update actions on this {@link Type} in the CTP project defined in a
-     * potentially injected {@link io.sphere.sdk.client.SphereClient}. This method returns
+     * issues an update request with these update actions on this {@link Type} in the CTP project defined in an
+     * injected {@link io.sphere.sdk.client.SphereClient}. This method returns
      * {@link CompletionStage}&lt;{@link Type}&gt; in which the result of it's completion contains an instance of
      * the {@link Type} which was updated in the CTP project.
      *
