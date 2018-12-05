@@ -8,7 +8,6 @@ import com.commercetools.sync.types.TypeSyncOptionsBuilder;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
@@ -39,6 +38,7 @@ import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_NAME_1;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.deleteTypes;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
@@ -69,12 +69,13 @@ public class TypeServiceImplIT {
         deleteTypes(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_TYPE_KEY, OLD_TYPE_LOCALE, OLD_TYPE_NAME, CTP_TARGET_CLIENT);
 
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                      .errorCallback((errorMessage, exception) -> {
-                                                                          errorCallBackMessages.add(errorMessage);
-                                                                          errorCallBackExceptions.add(exception);
-                                                                      })
-                                                                      .build();
+        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .errorCallback((errorMessage, exception) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(exception);
+            })
+            .build();
         typeService = new TypeServiceImpl(typeSyncOptions);
     }
 
@@ -142,7 +143,6 @@ public class TypeServiceImplIT {
                                                    .toCompletableFuture()
                                                    .join();
 
-        assertThat(matchingTypes).isNotEmpty();
         assertThat(matchingTypes).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
@@ -344,7 +344,7 @@ public class TypeServiceImplIT {
                 .toCompletableFuture().join().head();
         assertThat(typeOptional).isNotNull();
 
-        final ChangeName changeNameUpdateAction = ChangeName.of(LocalizedString.ofEnglish("new_type_name"));
+        final ChangeName changeNameUpdateAction = ChangeName.of(ofEnglish("new_type_name"));
 
         final Type updatedType = typeService.updateType(typeOptional.get(), singletonList(changeNameUpdateAction))
                                             .toCompletableFuture().join();
