@@ -81,8 +81,7 @@ public final class SyncSingleLocale {
         @Nonnull final UpdateAction<Product> updateAction,
         @Nonnull final ProductDraft newProductDraft,
         @Nonnull final Product oldProduct,
-        //@Nonnull final ProductType productType,
-        //TODO: RIGHT NOW NOT USED BUT WILL BE EXTENDED LATER WITH USAGE AND TESTS. GITHUB ISSUE #189
+        //TODO: ProductType should be passes to for attribute comparison. GITHUB ISSUE #189
         @Nonnull final Locale locale) {
 
         if (updateAction instanceof ChangeName) {
