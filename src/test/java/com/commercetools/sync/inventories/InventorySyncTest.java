@@ -425,7 +425,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithNoDraftsToCreate_ShouldOnlyCallBeforeUpdateCallback() {
+    public void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
         // preparation
         final InventoryEntryDraft inventoryEntryDraft = InventoryEntryDraftBuilder.of(SKU_1, 1L)
                                                                                   .build();

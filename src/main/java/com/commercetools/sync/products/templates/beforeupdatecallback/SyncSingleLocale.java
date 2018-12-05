@@ -144,7 +144,7 @@ public final class SyncSingleLocale {
             final String newLocaleValue = newLocalizedField.get(locale);
             final String oldLocaleValue = oldLocalizedField.get(locale);
 
-            // At this point, we are sure both old locale value and new locale value have different values.
+            // We are sure that both old locale and new locale have different values in this method.
             // if old locale value is set, remove it from old localized field
             final LocalizedString withLocaleChange = ofNullable(oldLocaleValue)
                 .map(value -> LocalizedString.of(
