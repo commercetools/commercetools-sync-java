@@ -50,7 +50,7 @@ import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductSyncSingleLocaleIT {
+public class SyncSingleLocaleIT {
     private static ProductType productType;
     private ProductSync productSync;
     private List<String> errorCallBackMessages;

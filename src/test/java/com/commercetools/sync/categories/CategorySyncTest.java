@@ -532,7 +532,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithNoDraftsToCreate_ShouldOnlyCallBeforeUpdateCallback() {
+    public void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
         // preparation
         final CategoryDraft categoryDraft =
             getMockCategoryDraft(Locale.ENGLISH, "name", "1", "parentKey", "customTypeId", new HashMap<>());

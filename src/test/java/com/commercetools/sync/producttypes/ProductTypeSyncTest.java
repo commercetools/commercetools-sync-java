@@ -109,7 +109,7 @@ public class ProductTypeSyncTest {
     }
 
     @Test
-    public void sync_WithNoDraftsToCreate_ShouldOnlyCallBeforeUpdateCallback() {
+    public void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
         // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraftBuilder
             .of("newProductType", "productType", "a cool type", emptyList())

@@ -81,8 +81,7 @@ public final class SyncSingleLocale {
         @Nonnull final UpdateAction<Product> updateAction,
         @Nonnull final ProductDraft newProductDraft,
         @Nonnull final Product oldProduct,
-        //@Nonnull final ProductType productType,
-        //TODO: RIGHT NOW NOT USED BUT WILL BE EXTENDED LATER WITH USAGE AND TESTS. GITHUB ISSUE #189
+        //TODO: ProductType should be passes to for attribute comparison. GITHUB ISSUE #189
         @Nonnull final Locale locale) {
 
         if (updateAction instanceof ChangeName) {
@@ -144,7 +143,7 @@ public final class SyncSingleLocale {
             final String newLocaleValue = newLocalizedField.get(locale);
             final String oldLocaleValue = oldLocalizedField.get(locale);
 
-            // At this point, we are sure both old locale value and new locale value have different values.
+            // We are sure that both old locale and new locale have different values in this method.
             // if old locale value is set, remove it from old localized field
             final LocalizedString withLocaleChange = ofNullable(oldLocaleValue)
                 .map(value -> LocalizedString.of(

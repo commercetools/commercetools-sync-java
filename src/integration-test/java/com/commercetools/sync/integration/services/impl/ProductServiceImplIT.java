@@ -376,12 +376,11 @@ public class ProductServiceImplIT {
         assertThat(queriedOptional)
             .hasValueSatisfying(queried -> assertThat(createdProductOptional)
                 .hasValueSatisfying(created -> {
-                    assertThat(created.getKey()).isEqualTo(queried.getKey());
+                    assertThat(queried.getKey()).isEqualTo(created.getKey());
                     assertThat(queried.getMasterData().getCurrent().getName())
                         .isEqualTo(created.getMasterData().getCurrent().getName());
                     assertThat(queried.getMasterData().getCurrent().getSlug())
                         .isEqualTo(created.getMasterData().getCurrent().getSlug());
-                    assertThat(queried.getKey()).isEqualTo(productDraft1.getKey());
                 }));
 
         // Assert that the created product is cached
