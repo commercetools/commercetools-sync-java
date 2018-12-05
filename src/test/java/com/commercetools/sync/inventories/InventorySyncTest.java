@@ -450,7 +450,7 @@ public class InventorySyncTest {
     @Test
     public void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
         // preparation
-        final InventoryEntryDraft inventoryEntryDraft = InventoryEntryDraftBuilder.of("1", 1L)
+        final InventoryEntryDraft inventoryEntryDraft = InventoryEntryDraftBuilder.of("newSKU", 1L)
                                                                                   .build();
         final InventorySyncOptions optionsSpy = spy(getInventorySyncOptions(1, false));
 
