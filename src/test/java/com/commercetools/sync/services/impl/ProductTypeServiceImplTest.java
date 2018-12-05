@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 public class ProductTypeServiceImplTest {
 
     @Test
-    public void fetchProductType_WithEmptyKey_ShouldNotFetchCategory() {
+    public void fetchProductType_WithEmptyKey_ShouldNotFetchProductType() {
         // preparation
         final SphereClient sphereClient = mock(SphereClient.class);
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
@@ -40,7 +40,7 @@ public class ProductTypeServiceImplTest {
     }
 
     @Test
-    public void fetchProductType_WithNullKey_ShouldNotFetchCategory() {
+    public void fetchProductType_WithNullKey_ShouldNotFetchProductType() {
         // preparation
         final SphereClient sphereClient = mock(SphereClient.class);
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
