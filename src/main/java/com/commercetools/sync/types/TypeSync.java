@@ -9,6 +9,7 @@ import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,7 +22,6 @@ import java.util.concurrent.CompletionStage;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.types.utils.TypeSyncUtils.buildActions;
 import static java.lang.String.format;
-import static java.util.Collections.emptySet;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
@@ -48,8 +48,19 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
         this.typeService = new TypeServiceImpl(typeSyncOptions);
     }
 
-    public TypeSync(@Nonnull final TypeSyncOptions typeSyncOptions,
-                    @Nonnull final TypeService typeService) {
+    /**
+     * Takes a {@link TypeSyncOptions} and a {@link TypeService} instances to instantiate
+     * a new {@link TypeSync} instance that could be used to sync type drafts in the CTP project specified
+     * in the injected {@link TypeSyncOptions} instance.
+     *
+     * <p>NOTE: This constructor is mainly to be used for tests where the services can be mocked and passed to.
+     *
+     * @param typeSyncOptions the container of all the options of the sync process including the CTP project
+     *                        client and/or configuration and other sync-specific options.
+     * @param typeService     the type service which is responsible for fetching/caching the Types from the CTP
+     *                        project.
+     */
+     TypeSync(@Nonnull final TypeSyncOptions typeSyncOptions, @Nonnull final TypeService typeService) {
         super(new TypeSyncStatistics(), typeSyncOptions);
         this.typeService = typeService;
     }
@@ -72,16 +83,24 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
     }
 
     /**
-     * Fetches existing {@link Type} objects from CTP project that correspond to passed {@code batch}.
-     * Having existing types fetched, {@code batch} is compared and synced with fetched objects by
-     * {@link TypeSync#syncBatch(Set, Set)} function. When fetching existing types results in
-     * an empty {@link TypeSyncStatistics} object then {@code batch} isn't processed.
+     * This method first creates a new {@link Set} of valid {@link TypeDraft} elements. For more on the rules of
+     * validation, check: {@link TypeSync#validateDraft(TypeDraft)}. Using the resulting set of
+     * {@code validTypeDrafts}, the matching types in the target CTP project are fetched then the method
+     * {@link TypeSync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
+     * requests accordingly) on the target project.
+     *
+     * <p> In case of error during of fetching of existing types, the error callback will be triggered.
+     * And the sync process would stop for the given batch.
+     * </p>
      *
      * @param batch batch of drafts that need to be synced
-     * @return {@link CompletionStage} of {@link TypeSyncStatistics} that indicates method progress.
+     * @return a {@link CompletionStage} containing an instance
+     *         of {@link TypeSyncStatistics} which contains information about the result of syncing the supplied
+     *         batch to the target project.
      */
     @Override
     protected CompletionStage<TypeSyncStatistics> processBatch(@Nonnull final List<TypeDraft> batch) {
+
         final Set<TypeDraft> validTypeDrafts = batch.stream().filter(this::validateDraft).collect(toSet());
 
         if (validTypeDrafts.isEmpty()) {
@@ -90,8 +109,21 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
         } else {
             final Set<String> keys = validTypeDrafts.stream().map(TypeDraft::getKey).collect(toSet());
 
-            return fetchExistingTypes(keys)
-                .thenCompose(oldTypes -> syncBatch(oldTypes, validTypeDrafts))
+            return typeService
+                .fetchMatchingTypesByKeys(keys)
+                .handle(ImmutablePair::new)
+                .thenCompose(fetchResponse -> {
+                    final Set<Type> fetchedTypes = fetchResponse.getKey();
+                    final Throwable exception = fetchResponse.getValue();
+
+                    if (exception != null) {
+                        final String errorMessage = format(CTP_TYPE_FETCH_FAILED, keys);
+                        handleError(errorMessage, exception, keys.size());
+                        return CompletableFuture.completedFuture(null);
+                        } else {
+                        return syncBatch(fetchedTypes, validTypeDrafts);
+                    }
+                })
                 .thenApply(ignored -> {
                     statistics.incrementProcessed(batch.size());
                     return statistics;
@@ -120,23 +152,6 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
     }
 
     /**
-     * Given a set of type keys, fetches the corresponding types from CTP if they exist.
-     *
-     * @param keys the keys of the types that are wanted to be fetched.
-     * @return a {@link CompletionStage} which contains the set of types corresponding to the keys.
-     */
-    private CompletionStage<Set<Type>> fetchExistingTypes(@Nonnull final Set<String> keys) {
-        return typeService
-                .fetchMatchingTypesByKeys(keys)
-                .exceptionally(exception -> {
-                    final String errorMessage = format(CTP_TYPE_FETCH_FAILED, keys);
-                    handleError(errorMessage, exception, keys.size());
-
-                    return emptySet();
-                });
-    }
-
-    /**
      * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
      * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
      * incrementing the total number of failed types to sync.
@@ -160,7 +175,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param newTypes drafts that need to be synced.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
-    private CompletionStage<TypeSyncStatistics> syncBatch(
+    private CompletionStage<Void> syncBatch(
             @Nonnull final Set<Type> oldTypes,
             @Nonnull final Set<TypeDraft> newTypes) {
 
@@ -176,7 +191,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
                         .orElseGet(() -> createType(newType));
                 })
                 .map(CompletionStage::toCompletableFuture)
-                .toArray(CompletableFuture[]::new)).thenApply(result -> statistics);
+                .toArray(CompletableFuture[]::new));
     }
 
     /**

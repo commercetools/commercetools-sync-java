@@ -166,7 +166,7 @@ public class TypeServiceImplIT {
 
     @Test
     public void fetchMatchingTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-        // Mock sphere client to return BadeGatewayException on any request.
+        // Mock sphere client to return BadGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(TypeQuery.class)))
                 .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
