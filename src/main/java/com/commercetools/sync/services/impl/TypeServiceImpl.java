@@ -5,7 +5,6 @@ import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.queries.PagedResult;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
@@ -22,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
@@ -51,6 +51,7 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
     @Nonnull
     @Override
     public CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys) {
+
         if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
@@ -60,9 +61,10 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
             .plusPredicates(queryModel -> queryModel.key().isIn(keys))
             .build();
 
-        return QueryExecutionUtils.queryAll(syncOptions.getCtpClient(), typeQuery)
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), typeQuery, Function.identity())
                                   .thenApply(types -> types
                                       .stream()
+                                      .flatMap(List::stream)
                                       .peek(type -> keyToIdCache.put(type.getKey(), type.getId()))
                                       .collect(toSet()));
     }

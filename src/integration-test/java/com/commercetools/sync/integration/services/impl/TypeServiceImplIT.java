@@ -20,7 +20,6 @@ import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -32,12 +31,12 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.FIELD_DEFINITION_1;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_DESCRIPTION_1;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_KEY_1;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_NAME_1;
+import static com.commercetools.sync.integration.commons.utils.TypeITUtils.deleteTypes;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
@@ -57,14 +56,14 @@ public class TypeServiceImplIT {
     private List<Throwable> errorCallBackExceptions;
 
     /**
-     * Deletes types from source and target CTP projects, then it populates target CTP project with test data.
+     * Deletes types from the target CTP project, then it populates the project with test data.
      */
     @Before
     public void setup() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
 
-        deleteTypesFromTargetAndSource();
+        deleteTypes(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_TYPE_KEY, OLD_TYPE_LOCALE, OLD_TYPE_NAME, CTP_TARGET_CLIENT);
 
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -77,11 +76,11 @@ public class TypeServiceImplIT {
     }
 
     /**
-     * Cleans up the target and source test data that were built in this test class.
+     * Cleans up the target test data that were built in this test class.
      */
     @AfterClass
     public static void tearDown() {
-        deleteTypesFromTargetAndSource();
+        deleteTypes(CTP_TARGET_CLIENT);
     }
 
     @Test
@@ -165,8 +164,6 @@ public class TypeServiceImplIT {
         assertThat(errorCallBackMessages).isEmpty();
     }
 
-    // TODO: GITHUB ISSUE#331
-    @Ignore
     @Test
     public void fetchMatchingTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadeGatewayException on any request.
@@ -188,15 +185,13 @@ public class TypeServiceImplIT {
 
         final Set<String> keys = new HashSet<>();
         keys.add(OLD_TYPE_KEY);
-        final Set<Type> fetchedTypes = spyTypeService.fetchMatchingTypesByKeys(keys)
-                                                     .toCompletableFuture().join();
-        assertThat(fetchedTypes).hasSize(0);
-        assertThat(errorCallBackExceptions).isNotEmpty();
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0))
-                .isEqualToIgnoringCase(format("Failed to fetch types with keys: '%s'. Reason: %s",
-                        keys.toString(), errorCallBackExceptions.get(0)));
+
+        // test and assert
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(spyTypeService.fetchMatchingTypesByKeys(keys))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(BadGatewayException.class);
     }
 
     @Test
