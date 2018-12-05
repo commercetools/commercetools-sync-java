@@ -104,7 +104,7 @@ public final class ProductSyncUtils {
         // lastly publish/unpublish product
         buildPublishUpdateAction(oldProduct, newProduct).ifPresent(updateActions::add);
 
-        return syncOptions.applyBeforeUpdateCallBack(updateActions, newProduct, oldProduct);
+        return updateActions;
     }
 
     /**

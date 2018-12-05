@@ -7,7 +7,6 @@ import io.sphere.sdk.commands.UpdateCommand;
 import io.sphere.sdk.models.Resource;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,66 +21,22 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
+ * @param <T> Resource Draft (e.g. {@link io.sphere.sdk.products.ProductDraft},
+ *  {@link io.sphere.sdk.categories.CategoryDraft}, etc..
  * @param <U> Resource (e.g. {@link io.sphere.sdk.products.Product}, {@link io.sphere.sdk.categories.Category}, etc..
- * @param <V> Resource Draft (e.g. {@link io.sphere.sdk.products.ProductDraft},
- *            {@link io.sphere.sdk.categories.CategoryDraft}, etc..
+ * @param <S> Subclass of {@link BaseSyncOptions}
  */
-class BaseService<U extends Resource<U>, V> {
-    final BaseSyncOptions<U, V> syncOptions;
+class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions> {
+
+    final S syncOptions;
     boolean isCached = false;
     final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
-    private static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
     private static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;
+    private static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
 
-    BaseService(@Nonnull final BaseSyncOptions<U, V> syncOptions) {
+    BaseService(@Nonnull final S syncOptions) {
         this.syncOptions = syncOptions;
-    }
-
-    /**
-     * Applies the BeforeCreateCallback function on a supplied draft, then attempts to create it on CTP if it's not
-     * empty, then applies the supplied handler on the response from CTP. If the draft was empty after applying the
-     * callback an empty optional is returned as the resulting future.
-     *
-     * @param resourceDraft         draft to apply callback on and then create on CTP.
-     * @param draftKey              draft key.
-     * @param createCommandFunction the create command query to create the resource on CTP.
-     * @return a future containing an optional which might contain the resource if successfully created or empty
-     *         otherwise.
-     */
-    @Nonnull
-    CompletionStage<Optional<U>> applyCallbackAndCreate(
-        @Nonnull final V resourceDraft,
-        @Nullable final String draftKey,
-        @Nonnull final Function<V, DraftBasedCreateCommand<U, V>> createCommandFunction) {
-        if (isBlank(draftKey)) {
-            syncOptions.applyErrorCallback(format(CREATE_FAILED, draftKey, "Draft key is blank!"));
-            return CompletableFuture.completedFuture(Optional.empty());
-        } else {
-            final BiFunction<U, Throwable, Optional<U>> responseHandler =
-                (createdResource, sphereException) ->
-                    handleResourceCreation(draftKey, createdResource, sphereException);
-            return syncOptions.applyBeforeCreateCallBack(resourceDraft)
-                              .map(mappedDraft ->
-                                  syncOptions.getCtpClient()
-                                             .execute(createCommandFunction.apply(mappedDraft))
-                                             .handle(responseHandler)
-                              )
-                              .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty()));
-        }
-    }
-
-    @Nonnull
-    private Optional<U> handleResourceCreation(@Nonnull final String draftKey,
-                                               @Nullable final U createdResource,
-                                               @Nullable final Throwable sphereException) {
-        if (createdResource != null) {
-            keyToIdCache.put(draftKey, createdResource.getId());
-            return Optional.of(createdResource);
-        } else {
-            syncOptions.applyErrorCallback(format(CREATE_FAILED, draftKey, sphereException), sphereException);
-            return Optional.empty();
-        }
     }
 
     /**
@@ -130,5 +85,54 @@ class BaseService<U extends Resource<U>, V> {
                 syncOptions.getCtpClient().execute(updateCommandFunction.apply(updatedProduct, batch)));
         }
         return resultStage;
+    }
+
+    /**
+     * Given a resource draft of type {@code T}, this method attempts to create a resource {@code U} based on it in
+     * the CTP project defined by the sync options.
+     *
+     * <p>A completion stage containing an empty option and the error callback will be triggered in those cases:
+     * <ul>
+     *     <li>the draft has a blank key</li>
+     *     <li>the create request fails on CTP</li>
+     * </ul>
+     *
+     * <p>On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
+     * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
+     * contains an instance {@link Optional} of the resource which was created.
+     *
+     * @param draft the resource draft to create a resource based off of.
+     * @param keyMapper a function to get the key from the supplied draft.
+     * @param createCommand a function to get the create command using the supplied draft.
+     * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
+     *         empty optional.
+     */
+    @Nonnull
+    CompletionStage<Optional<U>> createResource(
+        @Nonnull final T draft,
+        @Nonnull final Function<T, String> keyMapper,
+        @Nonnull final Function<T, DraftBasedCreateCommand<U, T>> createCommand) {
+
+        final String draftKey = keyMapper.apply(draft);
+
+        if (isBlank(draftKey)) {
+            syncOptions.applyErrorCallback(format(CREATE_FAILED, draftKey, "Draft key is blank!"));
+            return CompletableFuture.completedFuture(Optional.empty());
+        } else {
+            return syncOptions
+                .getCtpClient()
+                .execute(createCommand.apply(draft))
+                .handle(((resource, exception) -> {
+                    if (exception == null) {
+                        keyToIdCache.put(draftKey, resource.getId());
+                        return Optional.of(resource);
+                    } else {
+                        syncOptions.applyErrorCallback(
+                            format(CREATE_FAILED, draftKey, exception.getMessage()), exception);
+                        return Optional.empty();
+                    }
+                }));
+        }
+
     }
 }

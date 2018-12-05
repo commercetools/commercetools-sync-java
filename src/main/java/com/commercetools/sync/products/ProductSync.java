@@ -207,8 +207,9 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     @Nonnull
     private CompletableFuture<Void> createAndUpdateProducts() {
+
         final CompletableFuture<Void> createRequestsStage =
-            productService.createProducts(draftsToCreate)
+            createProducts(draftsToCreate)
                           .thenAccept(createdProducts -> updateStatistics(createdProducts, draftsToCreate.size()))
                           .toCompletableFuture();
 
@@ -218,8 +219,24 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         return allOf(createRequestsStage, updateRequestsStage);
     }
 
+    @Nonnull
+    private CompletionStage<Set<Product>> createProducts(@Nonnull final Set<ProductDraft> productsDrafts) {
+        return mapValuesToFutureOfCompletedValues(productsDrafts, this::applyCallbackAndCreate)
+            .thenApply(results -> results.filter(Optional::isPresent).map(Optional::get))
+            .thenApply(createdProducts -> createdProducts.collect(Collectors.toSet()));
+    }
+
+    @Nonnull
+    private CompletionStage<Optional<Product>> applyCallbackAndCreate(@Nonnull final ProductDraft productDraft) {
+        return syncOptions
+            .applyBeforeCreateCallBack(productDraft)
+            .map(productService::createProduct)
+            .orElse(CompletableFuture.completedFuture(Optional.empty()));
+    }
+
     private void updateStatistics(@Nonnull final Set<Product> createdProducts,
                                   final int totalNumberOfDraftsToCreate) {
+
         final int numberOfFailedCreations = totalNumberOfDraftsToCreate - createdProducts.size();
         statistics.incrementFailed(numberOfFailedCreations);
         statistics.incrementCreated(createdProducts.size());
@@ -242,9 +259,14 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                         optionalAttributesMetaDataMap.map(attributeMetaDataMap -> {
                             final List<UpdateAction<Product>> updateActions =
                                     buildActions(oldProduct, newProduct, syncOptions, attributeMetaDataMap);
-                            if (!updateActions.isEmpty()) {
-                                return updateProduct(oldProduct, newProduct, updateActions);
+
+                            final List<UpdateAction<Product>> beforeUpdateCallBackApplied =
+                                syncOptions.applyBeforeUpdateCallBack(updateActions, newProduct, oldProduct);
+
+                            if (!beforeUpdateCallBackApplied.isEmpty()) {
+                                return updateProduct(oldProduct, newProduct, beforeUpdateCallBackApplied);
                             }
+
                             return CompletableFuture.completedFuture(Optional.of(oldProduct));
                         }).orElseGet(() -> {
                             final String errorMessage = format(UPDATE_FAILED, oldProduct.getKey(),
@@ -293,6 +315,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     @Nonnull
     private CompletionStage<Optional<Product>> fetchAndUpdate(@Nonnull final Product oldProduct,
                                                               @Nonnull final ProductDraft newProduct) {
+
         final String key = oldProduct.getKey();
         return productService
             .fetchProduct(key)

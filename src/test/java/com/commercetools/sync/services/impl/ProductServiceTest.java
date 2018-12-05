@@ -11,8 +11,6 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
-import io.sphere.sdk.products.commands.updateactions.Publish;
-import io.sphere.sdk.products.commands.updateactions.RevertStagedChanges;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.Before;
@@ -57,6 +55,7 @@ public class ProductServiceTest {
     public void createProduct_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
+        when(mock.getKey()).thenReturn("productKey");
 
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
 
@@ -71,6 +70,7 @@ public class ProductServiceTest {
 
     @Test
     public void createProduct_WithUnSuccessfulMockCtpResponse_ShouldNotCreateProduct() {
+        // preparation
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
 
@@ -79,14 +79,23 @@ public class ProductServiceTest {
 
         final ProductDraft draft = mock(ProductDraft.class);
         when(draft.getKey()).thenReturn("productKey");
+
+        // test
         final Optional<Product> productOptional = service.createProduct(draft).toCompletableFuture().join();
 
+        // assertion
         assertThat(productOptional).isEmpty();
-        assertThat(errorMessages).hasSize(1);
-        assertThat(errorExceptions).hasSize(1);
-        assertThat(errorExceptions.get(0)).isExactlyInstanceOf(BadRequestException.class);
-        assertThat(errorMessages.get(0)).contains("Failed to create draft with key: 'productKey'.");
-        assertThat(errorMessages.get(0)).contains("BadRequestException");
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message -> {
+                assertThat(message).contains("Failed to create draft with key: 'productKey'.");
+                assertThat(message).contains("BadRequestException");
+            });
+
+        assertThat(errorExceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(exception ->
+                assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
     }
 
     @Test
@@ -138,27 +147,5 @@ public class ProductServiceTest {
         productKeys.add(null);
         final QueryPredicate<Product> queryPredicate = service.buildProductKeysQueryPredicate(productKeys);
         assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in (\"key1\", \"key2\")");
-    }
-
-    @Test
-    public void publishProduct_WithMockCtpResponse_ShouldReturnMock() {
-        final Product mock = mock(Product.class);
-        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
-
-        final Product product = service.publishProduct(mock).toCompletableFuture().join();
-
-        assertThat(product).isSameAs(mock);
-        verify(productSyncOptions.getCtpClient()).execute(eq(ProductUpdateCommand.of(mock, Publish.of())));
-    }
-
-    @Test
-    public void revertProduct_WithMockCtpResponse_ShouldReturnMock() {
-        final Product mock = mock(Product.class);
-        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
-
-        final Product product = service.revertProduct(mock).toCompletableFuture().join();
-
-        assertThat(product).isSameAs(mock);
-        verify(productSyncOptions.getCtpClient()).execute(eq(ProductUpdateCommand.of(mock, RevertStagedChanges.of())));
     }
 }
