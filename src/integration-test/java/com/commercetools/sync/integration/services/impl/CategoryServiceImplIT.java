@@ -277,7 +277,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void createCategory_WithValidCategory_ShouldCreateCategory() {
+    public void createCategory_WithValidCategory_ShouldCreateCategoryAndCacheId() {
         // preparation
         final String newCategoryKey = "newCategoryKey";
         final CategoryDraft categoryDraft = CategoryDraftBuilder
@@ -334,7 +334,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void createCategory_WithBlankKey_ShouldCreateCategory() {
+    public void createCategory_WithBlankKey_ShouldNotCreateCategory() {
         // preparation
         final String newCategoryKey = "";
         final CategoryDraft categoryDraft = CategoryDraftBuilder
