@@ -36,7 +36,7 @@ public interface TypeService {
 
     /**
      * Given a {@link Set} of Type keys, this method fetches a set of all the Types, matching this given
-     * set of keys in the CTP project, defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. A
+     * set of keys in the CTP project, defined in an injected {@link io.sphere.sdk.client.SphereClient}. A
      * mapping of the key to the id of the fetched Type is persisted in an in-memory map.
      *
      * @param keys set of Type keys to fetch matching Type by.
