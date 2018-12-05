@@ -528,8 +528,7 @@ public class TypeSyncIT {
                     assertThat(oldFieldDefinition.getName()).isEqualTo(newFieldDefinition.getName());
                     assertThat(oldFieldDefinition.getLabel()).isEqualTo(newFieldDefinition.getLabel());
                     assertThat(oldFieldDefinition.getType()).isEqualTo(newFieldDefinition.getType());
-                    // no update action exists for the input hint
-                    //assertThat(oldFieldDefinition.getInputHint()).isEqualTo(newFieldDefinition.getInputHint());
+                    //TODO: GITHUB ISSUE#339 no update action exists for changing the input hint
                     assertThat(oldFieldDefinition.isRequired()).isEqualTo(newFieldDefinition.isRequired());
 
                     if (oldFieldDefinition.getType().getClass() == EnumFieldType.class) {
