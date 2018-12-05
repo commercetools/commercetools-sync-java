@@ -731,11 +731,11 @@ public class TypeSyncIT {
         assertThat(errorMessages.get(0)).contains(
             format("Failed to update type with key: '%s'. Reason: Not found when attempting to fetch while "
                 + "retrying after concurrency modification.", typeDraft.getKey()));
-
     }
 
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
+
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final TypeQuery anyTypeQuery = any(TypeQuery.class);
 
@@ -743,13 +743,11 @@ public class TypeSyncIT {
             .thenCallRealMethod() // Call real fetch on fetching matching types
             .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
 
-
         final TypeUpdateCommand anyTypeUpdate = any(TypeUpdateCommand.class);
 
         when(spyClient.execute(anyTypeUpdate))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
-
 
         return spyClient;
     }
