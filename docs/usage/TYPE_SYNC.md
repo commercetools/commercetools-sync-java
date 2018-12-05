@@ -83,8 +83,7 @@ Utility methods provided by the library to compare the specific fields of a `Typ
 ````java
 Optional<UpdateAction<Type>> updateAction = TypeUpdateActionUtils.buildChangeNameAction(oldType, typeDraft);
 ````
-More examples of those utils for different types can be found [here](/src/test/java/com/commercetools/sync/types/utils/TypeUpdateActionUtilsTest.java).
-and field definitions can be found [here](/src/test/java/com/commercetools/sync/types/utils/FieldDefinitionUpdateActionUtilsTest.java).
+More examples of those utils for different types can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/types/utils/TypeUpdateActionUtilsTest.java).
 
 ## Caveats
 
