@@ -41,10 +41,11 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key) {
-        if (!isCached) {
-            return fetchAndCache(key);
+
+        if (keyToIdCache.containsKey(key)) {
+            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
         }
-        return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
+        return fetchAndCache(key);
     }
 
     @Nonnull
