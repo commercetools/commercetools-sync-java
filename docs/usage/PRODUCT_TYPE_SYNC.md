@@ -91,3 +91,4 @@ More examples of those utils for different fields can be found [here](https://gi
 
 ## Caveats    
 1. Syncing product types with an attribute of type [NestedType](https://docs.commercetools.com/http-api-projects-productTypes.html#nestedtype) is not supported yet.
+2. Currently the sync would handle changes to Enum or LocalizedEnum Types but not [Set](https://docs.commercetools.com/http-api-projects-types.html#settype) of either. [#313](https://github.com/commercetools/commercetools-sync-java/issues/313)

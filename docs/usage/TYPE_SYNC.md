@@ -29,7 +29,7 @@ fields set, otherwise they won't be matched.
 
 2. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
- 3. After the `sphereClient` is set up, a `TypeSyncOptions` should be be built as follows:
+3. After the `sphereClient` is set up, a `TypeSyncOptions` should be be built as follows:
 ````java
 // instantiating a TypeSyncOptions
 final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(sphereClient).build();
@@ -90,4 +90,4 @@ More examples of those utils for different types can be found [here](https://git
 1. Updating the label of enum values and localized enum values of field definition is not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
 2. Removing the enum values and localized enum values from the field definition is not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
 3. Updating the input hint of a field definition is not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
-4. Syncing types with a field definition with type [SetType](https://docs.commercetools.com/http-api-projects-types.html#settype) is not supported yet. [#313](https://github.com/commercetools/commercetools-sync-java/issues/313)
+4. Currently the sync would handle changes to Enum or LocalizedEnum Types but not [Set](https://docs.commercetools.com/http-api-projects-types.html#settype) of either. [#313](https://github.com/commercetools/commercetools-sync-java/issues/313)
