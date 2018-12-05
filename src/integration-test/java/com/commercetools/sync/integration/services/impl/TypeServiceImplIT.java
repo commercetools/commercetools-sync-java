@@ -180,9 +180,9 @@ public class TypeServiceImplIT {
 
     @Test
     public void fetchMatchingTypesByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedTypeIds() {
-        final Set<Type> fetchedProductTypes = typeService.fetchMatchingTypesByKeys(singleton(OLD_TYPE_KEY))
-                                                         .toCompletableFuture().join();
-        assertThat(fetchedProductTypes).hasSize(1);
+        final Set<Type> fetchedTypes = typeService.fetchMatchingTypesByKeys(singleton(OLD_TYPE_KEY))
+                                                  .toCompletableFuture().join();
+        assertThat(fetchedTypes).hasSize(1);
 
         final Optional<Type> typeOptional = CTP_TARGET_CLIENT
                 .execute(TypeQuery.of().withPredicates(queryModel -> queryModel.key().is(OLD_TYPE_KEY)))
@@ -288,7 +288,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void createProductType_WithDuplicateKey_ShouldHaveEmptyOptionalAsAResult() {
+    public void createType_WithDuplicateKey_ShouldHaveEmptyOptionalAsAResult() {
         //preparation
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
             OLD_TYPE_KEY,
