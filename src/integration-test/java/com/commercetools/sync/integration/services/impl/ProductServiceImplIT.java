@@ -394,7 +394,6 @@ public class ProductServiceImplIT {
     public void createProduct_WithBlankKey_ShouldNotCreateProduct() {
         // preparation
         final String newKey = "";
->>>>>>> master
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             productType.toReference())
             .key(newKey)
@@ -405,84 +404,15 @@ public class ProductServiceImplIT {
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
 
-<<<<<<< HEAD
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
-                .of(spyClient)
-                .errorCallback((errorMessage, exception) -> {
-                    errorCallBackMessages.add(errorMessage);
-                    errorCallBackExceptions.add(exception);
-                })
-                .build();
-
-        final ProductService spyProductService = new ProductServiceImpl(spyOptions);
-
-        // test
-        final Optional<Product> createdProductOptional = spyProductService
-                .createProduct(productDraft1)
-                .toCompletableFuture().join();
-
-        // assertion
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-
-        //assert CTP state
-        final Optional<Product> queriedOptional = CTP_TARGET_CLIENT
-            .execute(ProductQuery.of()
-                                  .withPredicates(QueryPredicate.of(format("key = \"%s\"", productDraft1.getKey()))))
-            .toCompletableFuture().join().head();
-
-        assertThat(queriedOptional)
-                .hasValueSatisfying(queried -> assertThat(createdProductOptional)
-                        .hasValueSatisfying(created -> {
-                            assertThat(created.getKey()).isEqualTo(queried.getKey());
-                            assertThat(queried.getMasterData().getCurrent().getName())
-                                    .isEqualTo(created.getMasterData().getCurrent().getName());
-                            assertThat(queried.getMasterData().getCurrent().getSlug())
-                                    .isEqualTo(created.getMasterData().getCurrent().getSlug());
-                            assertThat(queried.getKey()).isEqualTo(productDraft1.getKey());
-                        }));
-
-        // Assert that the created product is cached
-        final Optional<String> productId =
-                spyProductService.getIdFromCacheOrFetch(productDraft1.getKey()).toCompletableFuture().join();
-        assertThat(productId).isPresent();
-        verify(spyClient, times(0)).execute(any(ProductTypeQuery.class));
-    }
-
-    @Test
-    public void createProduct_WithBlankKey_ShouldNotCreateProduct() {
-        // preparation
-        final String newKey = "";
-        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-                productType.toReference())
-                .key(newKey)
-                .taxCategory(null)
-                .state(null)
-                .categories(emptyList())
-                .categoryOrderHints(null)
-                .masterVariant(ProductVariantDraftBuilder.of().build())
-                .build();
-
-        // test
-        final Optional<Product> createdProductOptional = productService
-                .createProduct(productDraft1)
-                .toCompletableFuture().join();
-=======
         // test
         final Optional<Product> createdProductOptional = productService
             .createProduct(productDraft1)
             .toCompletableFuture().join();
->>>>>>> master
 
         // assertion
         assertThat(createdProductOptional).isEmpty();
         assertThat(errorCallBackMessages)
-<<<<<<< HEAD
                 .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
-=======
-            .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
->>>>>>> master
     }
 
     @Test
@@ -500,13 +430,8 @@ public class ProductServiceImplIT {
             .build();
 
         final Optional<Product> createdProductOptional = productService
-<<<<<<< HEAD
                 .createProduct(productDraft1)
                 .toCompletableFuture().join();
-=======
-            .createProduct(productDraft1)
-            .toCompletableFuture().join();
->>>>>>> master
 
         assertThat(createdProductOptional).isEmpty();
         final String duplicatedSlug = "english-slug";
