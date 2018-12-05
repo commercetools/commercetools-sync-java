@@ -40,7 +40,7 @@ public interface TypeService {
      * mapping of the key to the id of the fetched Type is persisted in an in-memory map.
      *
      * @param keys set of Type keys to fetch matching Type by.
-     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a {@link Set}
+     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of its completion contains a {@link Set}
      *          of all matching Type.
      */
     @Nonnull
