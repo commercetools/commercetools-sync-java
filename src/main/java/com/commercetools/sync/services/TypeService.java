@@ -35,7 +35,7 @@ public interface TypeService {
     CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key);
 
     /**
-     * Given a {@link Set} of Type keys, this method fetches a set of all the ProductTypes, matching this given
+     * Given a {@link Set} of Type keys, this method fetches a set of all the Types, matching this given
      * set of keys in the CTP project, defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. A
      * mapping of the key to the id of the fetched Type is persisted in an in-memory map.
      *
