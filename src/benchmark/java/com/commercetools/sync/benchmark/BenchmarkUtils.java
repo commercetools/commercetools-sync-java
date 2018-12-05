@@ -108,9 +108,9 @@ public class BenchmarkUtils {
     }
 
     private static ObjectNode createVersionNode(@Nonnull final ObjectNode rootNode, @Nonnull final String version) {
-        final ObjectNode newVersionNode = createSyncNode(
+        final ObjectNode newVersionNode = createSyncNode(createSyncNode(createSyncNode(
             createSyncNode(createSyncNode(JsonNodeFactory.instance.objectNode(),
-                PRODUCT_SYNC), INVENTORY_SYNC), CATEGORY_SYNC);
+                PRODUCT_SYNC), INVENTORY_SYNC), CATEGORY_SYNC), PRODUCT_TYPE_SYNC), TYPE_SYNC);
         return (ObjectNode) rootNode.set(version, newVersionNode);
     }
 

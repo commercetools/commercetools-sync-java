@@ -28,6 +28,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.PRODUCT_TYPE_SYNC;
@@ -242,7 +243,7 @@ public class ProductTypeSyncBenchmark {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
 
-        saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_TYPE_SYNC, UPDATES_ONLY, totalTime);
+        saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
     }
 
 
