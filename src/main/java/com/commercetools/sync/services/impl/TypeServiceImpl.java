@@ -3,7 +3,6 @@ package com.commercetools.sync.services.impl;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.TypeService;
-import com.commercetools.sync.types.TypeSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.queries.PagedResult;
 import io.sphere.sdk.queries.QueryExecutionUtils;
@@ -36,10 +35,6 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
     private static final String FETCH_FAILED = "Failed to fetch types with keys: '%s'. Reason: %s";
 
     public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
-        super(syncOptions);
-    }
-
-    public TypeServiceImpl(@Nonnull final TypeSyncOptions syncOptions) {
         super(syncOptions);
     }
 
