@@ -51,7 +51,6 @@ import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_NAME_1;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_NAME_2;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.getTypeByKey;
-import static com.commercetools.sync.integration.commons.utils.TypeITUtils.populateSourceProject;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.populateTargetProject;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -71,7 +70,6 @@ public class TypeSyncIT {
     @Before
     public void setup() {
         deleteTypes(CTP_TARGET_CLIENT);
-        populateSourceProject();
         populateTargetProject();
     }
 
