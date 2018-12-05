@@ -180,6 +180,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param newProductTypes drafts that need to be synced.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
+    @Nonnull
     private CompletionStage<Void> syncBatch(
             @Nonnull final Set<ProductType> oldProductTypes,
             @Nonnull final Set<ProductTypeDraft> newProductTypes) {
@@ -201,16 +202,13 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     /**
-     * TODO: FIX Javadoc
-     * Given a product type draft, issues a request to the CTP project to create a corresponding Product Type.
-     *
-     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
-     * out successfully or not. If an exception was thrown on executing the request to CTP, the error handling method
-     * is called.
+     * Given a product type draft, this method applies the beforeCreateCallback and then issues a create request to the
+     * CTP project to create the corresponding Product Type.
      *
      * @param productTypeDraft the product type draft to create the product type from.
      * @return a {@link CompletionStage} which contains an empty result after execution of the create.
      */
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Optional<ProductType>> applyCallbackAndCreate(
             @Nonnull final ProductTypeDraft productTypeDraft) {
@@ -232,6 +230,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    @Nonnull
     private CompletionStage<Optional<ProductType>> buildActionsAndUpdate(
             @Nonnull final ProductType oldProductType,
             @Nonnull final ProductTypeDraft newProductType) {

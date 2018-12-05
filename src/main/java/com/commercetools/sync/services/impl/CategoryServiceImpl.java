@@ -33,7 +33,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
 public final class CategoryServiceImpl extends BaseService<CategoryDraft, Category, CategorySyncOptions>
-        implements CategoryService {
+    implements CategoryService {
 
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
         + "category matching.";

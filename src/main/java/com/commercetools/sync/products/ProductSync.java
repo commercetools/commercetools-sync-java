@@ -236,6 +236,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     private void updateStatistics(@Nonnull final Set<Product> createdProducts,
                                   final int totalNumberOfDraftsToCreate) {
+
         final int numberOfFailedCreations = totalNumberOfDraftsToCreate - createdProducts.size();
         statistics.incrementFailed(numberOfFailedCreations);
         statistics.incrementCreated(createdProducts.size());
@@ -266,6 +267,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                             if (!beforeUpdateCallBackApplied.isEmpty()) {
                                 return updateProduct(oldProduct, newProduct, beforeUpdateCallBackApplied);
                             }
+
                             return CompletableFuture.completedFuture(Optional.of(oldProduct));
                         }).orElseGet(() -> {
                             final String errorMessage = format(UPDATE_FAILED, oldProduct.getKey(),

@@ -109,9 +109,9 @@ class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions> {
      */
     @Nonnull
     CompletionStage<Optional<U>> createResource(
-            @Nonnull final T draft,
-            @Nonnull final Function<T, String> keyMapper,
-            @Nonnull final Function<T, DraftBasedCreateCommand<U, T>> createCommand) {
+        @Nonnull final T draft,
+        @Nonnull final Function<T, String> keyMapper,
+        @Nonnull final Function<T, DraftBasedCreateCommand<U, T>> createCommand) {
 
         final String draftKey = keyMapper.apply(draft);
 
@@ -133,6 +133,5 @@ class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions> {
                         }
                     }));
         }
-
     }
 }

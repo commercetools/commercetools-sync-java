@@ -83,6 +83,10 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
         assertThat(productTypeSyncStatistics).hasValues(2, 1, 0, 0);
+        assertThat(productTypeSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 2 product types were processed in total"
+                + " (1 created, 0 updated and 0 failed to sync).");
     }
 
     @Test

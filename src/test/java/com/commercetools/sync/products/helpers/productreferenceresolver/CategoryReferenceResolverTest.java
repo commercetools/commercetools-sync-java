@@ -66,8 +66,8 @@ public class CategoryReferenceResolverTest {
                                                                        .map(Category::toReference)
                                                                        .collect(Collectors.toList());
         final Map<String, String> categoryOrderHintValues = categories.stream()
-                                                                       .collect(Collectors.toMap(Category::getKey,
-                                                                           Category::getId));
+                                                                      .collect(Collectors.toMap(Category::getKey,
+                                                                          Category::getId));
         final CategoryOrderHints categoryOrderHints = CategoryOrderHints.of(categoryOrderHintValues);
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .categories(categoryReferences).categoryOrderHints(categoryOrderHints);
@@ -287,7 +287,4 @@ public class CategoryReferenceResolverTest {
             .isExactlyInstanceOf(SphereException.class)
             .hasMessageContaining("CTP error on fetch");
     }
-
-
-
 }

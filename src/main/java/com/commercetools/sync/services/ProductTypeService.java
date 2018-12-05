@@ -59,7 +59,7 @@ public interface ProductTypeService {
 
     /**
      * Given a {@link Set} of ProductType keys, this method fetches a set of all the ProductTypes, matching this given
-     * set of keys in the CTP project, defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. A
+     * set of keys in the CTP project, defined in an injected {@link io.sphere.sdk.client.SphereClient}. A
      * mapping of the key to the id of the fetched ProductType is persisted in an in-memory map.
      *
      * @param keys set of ProductType keys to fetch matching ProductTypes by.
@@ -110,10 +110,10 @@ public interface ProductTypeService {
 
     /**
      * Given a productType key, this method fetches a productType that matches this given key in the CTP project defined
-     * in a potentially injected {@link SphereClient}. If there is no matching productType an empty {@link Optional}
+     * in an injected {@link SphereClient}. If there is no matching productType an empty {@link Optional}
      * will be returned in the returned future.
      *
-     * @param key the key of the category to fetch.
+     * @param key the key of the product type to fetch.
      * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
      *         {@link Optional} that contains the matching {@link ProductType} if exists, otherwise empty.
      */

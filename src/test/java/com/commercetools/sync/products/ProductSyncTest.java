@@ -214,7 +214,7 @@ public class ProductSyncTest {
     }
 
     @Test
-    public void sync_WithNoDraftsToCreate_ShouldOnlyCallBeforeUpdateCallback() {
+    public void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
         // preparation
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
             ProductType.referenceOfId("productTypeKey"))

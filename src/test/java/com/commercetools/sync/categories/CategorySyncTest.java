@@ -210,8 +210,8 @@ public class CategorySyncTest {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
-            + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
-            + " with key:'key'. Reason: %s",
+                + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
+                + " with key:'key'. Reason: %s",
             ReferenceResolutionException.class.getCanonicalName(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -248,7 +248,7 @@ public class CategorySyncTest {
             mockCategoryService);
         final List<CategoryDraft> categoryDrafts = singletonList(
             getMockCategoryDraft(Locale.ENGLISH, "name", "key", "",
-            "customTypeId", new HashMap<>()));
+                "customTypeId", new HashMap<>()));
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
@@ -279,7 +279,7 @@ public class CategorySyncTest {
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
             + " key:'key'. Reason: %s: Failed to resolve custom type reference on CategoryDraft with key:'key'. Reason:"
-                + " %s", ReferenceResolutionException.class.getCanonicalName(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            + " %s", ReferenceResolutionException.class.getCanonicalName(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -456,52 +456,109 @@ public class CategorySyncTest {
 
         // It is safe here to cast PagedQueryResult to PagedQueryResult<Category> since we are sure
         // it can be safely casted but the compiler doesn't see the generic type because of erasure.
-        @SuppressWarnings("unchecked")
-        final PagedQueryResult<Category> pagedQueryResult = mock(PagedQueryResult.class);
+        @SuppressWarnings("unchecked") final PagedQueryResult<Category> pagedQueryResult = mock(PagedQueryResult.class);
         when(pagedQueryResult.getResults()).thenReturn(singletonList(mockCategory));
 
         // successful caching but exception on fetch.
         when(mockClient.execute(any(CategoryQuery.class)))
-                .thenReturn(CompletableFuture.completedFuture(pagedQueryResult))
-                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+            .thenReturn(CompletableFuture.completedFuture(pagedQueryResult))
+            .thenReturn(supplyAsync(() -> {
+                throw new SphereException();
+            }));
 
         when(mockClient.execute(any(CategoryCreateCommand.class)))
-                .thenReturn(CompletableFuture.completedFuture(mockCategory));
+            .thenReturn(CompletableFuture.completedFuture(mockCategory));
 
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder
-                .of(mockClient)
-                .errorCallback((errorMessage, exception) -> {
-                    errorCallBackMessages.add(errorMessage);
-                    errorCallBackExceptions.add(exception);
-                })
-                .build();
+            .of(mockClient)
+            .errorCallback((errorMessage, exception) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(exception);
+            })
+            .build();
 
         final CategoryService categoryServiceSpy = spy(new CategoryServiceImpl(syncOptions));
 
         final CategorySync mockCategorySync = new CategorySync(syncOptions, getMockTypeService(), categoryServiceSpy);
 
         final CategoryDraft categoryDraft =
-                getMockCategoryDraft(Locale.ENGLISH, "name", categoryKey, "parentKey", "customTypeId", new HashMap<>());
+            getMockCategoryDraft(Locale.ENGLISH, "name", categoryKey, "parentKey", "customTypeId", new HashMap<>());
 
         // test
         final CategorySyncStatistics syncStatistics = mockCategorySync.sync(singletonList(categoryDraft))
-                .toCompletableFuture().join();
+                                                                      .toCompletableFuture().join();
 
         // assertions
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
 
         assertThat(errorCallBackMessages)
-                .hasSize(1)
-                .hasOnlyOneElementSatisfying(message ->
-                        assertThat(message).contains("Failed to fetch existing categories")
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).contains("Failed to fetch existing categories")
             );
 
         assertThat(errorCallBackExceptions)
-                .hasSize(1)
-                .hasOnlyOneElementSatisfying(throwable -> {
-                    assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-                    assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
-                });
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(throwable -> {
+                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+            });
+    }
+
+    @Test
+    public void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
+        // preparation
+        final CategoryDraft categoryDraft =
+            getMockCategoryDraft(Locale.ENGLISH, "name", "foo", "parentKey", "customTypeId", new HashMap<>());
+
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .build();
+
+        final Category createdCategory = mock(Category.class);
+        when(createdCategory.getKey()).thenReturn(categoryDraft.getKey());
+
+        final CategoryService categoryService = mockCategoryService(emptySet(), createdCategory);
+
+        final CategorySyncOptions spyCategorySyncOptions = spy(categorySyncOptions);
+
+        // test
+        new CategorySync(spyCategorySyncOptions, getMockTypeService(), categoryService)
+            .sync(singletonList(categoryDraft)).toCompletableFuture().join();
+
+        // assertion
+        verify(spyCategorySyncOptions).applyBeforeCreateCallBack(any());
+        verify(spyCategorySyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
+    }
+
+    @Test
+    public void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
+        // preparation
+        final CategoryDraft categoryDraft =
+            getMockCategoryDraft(Locale.ENGLISH, "name", "1", "parentKey", "customTypeId", new HashMap<>());
+
+        final Category mockedExistingCategory =
+            readObjectFromResource(CATEGORY_KEY_1_RESOURCE_PATH, Category.class);
+
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .build();
+
+        final CategoryService categoryService = mockCategoryService(singleton(mockedExistingCategory),
+            mockedExistingCategory, mockedExistingCategory);
+
+        when(categoryService.cacheKeysToIds())
+            .thenReturn(completedFuture(singletonMap("1", UUID.randomUUID().toString())));
+
+        final CategorySyncOptions spyCategorySyncOptions = spy(categorySyncOptions);
+
+        // test
+        new CategorySync(spyCategorySyncOptions, getMockTypeService(), categoryService)
+            .sync(singletonList(categoryDraft)).toCompletableFuture().join();
+
+        // assertion
+        verify(spyCategorySyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(spyCategorySyncOptions, never()).applyBeforeCreateCallBack(any());
     }
 
     @Test
